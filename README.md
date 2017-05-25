@@ -1,2 +1,2 @@
 # Surface
-Web components based library
+Web components based framework
