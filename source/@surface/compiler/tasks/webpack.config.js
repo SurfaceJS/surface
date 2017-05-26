@@ -1,34 +1,25 @@
-﻿import Webpack = require("webpack");
-
-export = (path: string) =>
-{
+"use strict";
+module.exports = (path) => {
     let configuration = require(path);
-    
-    let config =
-    {
+    let config = {
         devtool: "#source-map",
         context: configuration.context,
-        entry:   configuration.entry,
-        output:
-        {
-            path:          configuration.public,
-            publicPath:    configuration.publicPath,
-            filename:      configuration.filename,
+        entry: configuration.entry,
+        output: {
+            path: configuration.public,
+            publicPath: configuration.publicPath,
+            filename: configuration.filename,
             libraryTarget: configuration.libraryTarget
-        } as Webpack.Output,
-        resolve:
-        {
+        },
+        resolve: {
             extensions: [".ts", ".js"],
             modules: configuration.modules
-        } as Webpack.Resolve,
-        module:
-        {
-            rules:
-            [
+        },
+        module: {
+            rules: [
                 {
                     test: /\.(png|jpe?g|svg)$/,
-                    use:
-                    [
+                    use: [
                         {
                             loader: "file-loader",
                             options: { name: "/resources/[hash].[ext]" }
@@ -37,8 +28,7 @@ export = (path: string) =>
                 },
                 {
                     test: /\.s[ac]ss$/,
-                    use:
-                    [
+                    use: [
                         { loader: "to-string-loader" },
                         { loader: "css-loader" },
                         { loader: "sass-loader" }
@@ -46,12 +36,10 @@ export = (path: string) =>
                 },
                 {
                     test: /\.html$/,
-                    use:
-                    [
-                        {   
+                    use: [
+                        {
                             loader: "html-loader",
-                            options:
-                            {
+                            options: {
                                 attrs: ["img:src", "link:href", "script:src"],
                                 minify: true
                             }
@@ -60,23 +48,20 @@ export = (path: string) =>
                 },
                 {
                     test: /\.ts$/,
-                    use:
-                    [
+                    use: [
                         {
                             loader: "ts-loader",
-                            options:
-                            {
-                                compilerOptions:
-                                {
+                            options: {
+                                compilerOptions: {
                                     target: configuration.target
                                 }
                             },
                         }
                     ]
                 },
-            ] as Array<Webpack.Rule>,
-        } as Webpack.Module
-    } as Webpack.Configuration;
-
+            ],
+        }
+    };
     return config;
-}
+};
+//# sourceMappingURL=webpack.config.js.map

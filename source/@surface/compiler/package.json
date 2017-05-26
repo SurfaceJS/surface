@@ -1,11 +1,13 @@
 {
-  "name": "surface",
+  "name": "@surface/compiler",
   "version": "0.0.0",
-  "description": "Web components based framework",
+  "description": "Surface's compiler module ",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "HitalloExiled",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/HitalloExiled/Surface.git"
@@ -15,8 +17,6 @@
     "webcomponents",
     "framework"
   ],
-  "author": "HitalloExiled",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
@@ -25,7 +25,12 @@
     "@types/node": "^7.0.22",
     "@types/rimraf": "0.0.28",
     "@types/webpack": "^2.2.15",
+    "file-loader": "^0.11.1",
+    "html-loader": "^0.4.5",
     "rimraf": "^2.6.1",
+    "sass-loader": "^6.0.5",
+    "to-string-loader": "^1.1.5",
+    "ts-loader": "^2.1.0",
     "webpack": "^2.6.1"
   }
 }

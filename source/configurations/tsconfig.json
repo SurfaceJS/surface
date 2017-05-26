@@ -1,0 +1,20 @@
+{
+    "compilerOptions":
+    {        
+        "allowSyntheticDefaultImports":   true,
+        "allowJs":                        true,
+        "alwaysStrict":                   true,
+        "checkJs":                        true,
+        "emitDecoratorMetadata":          true,
+        "experimentalDecorators":         true,
+        "importHelpers":                  true,
+        "moduleResolution":               "node",
+        "noEmitOnError":                  true,
+        "noImplicitReturns":              true,
+        "noImplicitThis":                 true,
+        "noUnusedLocals":                 true,
+        "strictNullChecks":               true,
+        "suppressImplicitAnyIndexErrors": true,
+        "target":                         "es6"
+    }
+}
