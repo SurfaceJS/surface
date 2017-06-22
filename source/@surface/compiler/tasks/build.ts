@@ -1,10 +1,11 @@
+#!/usr/bin/env node
 import Webpack       = require("webpack");
 import config        = require("./webpack-config");
 import UserArguments = require("./user-arguments");
 
 const userArguments = UserArguments.resolve(process.argv);
 
-let compiler = Webpack(config(userArguments.configuration.path));
+let compiler = Webpack(config(userArguments.project));
 
 let statOptions: Webpack.Stats.ToStringOptions =
 {

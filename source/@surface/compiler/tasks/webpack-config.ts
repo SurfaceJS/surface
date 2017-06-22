@@ -14,7 +14,7 @@ export = (path: string) =>
     //const NODE_MODULES = Path.resolve(ROOT, "./node_modules");
     //const SERVER       = Path.resolve(ROOT, "../App.Server/public");
     
-    let project = require(path);
+    let project = require(Path.resolve(process.cwd(), path));
 
     let config = 
     {

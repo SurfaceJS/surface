@@ -2,43 +2,88 @@ import Path = require("path");
 
 type UserArguments =
 {
-    build:      boolean;
-    enviroment: "development"|"production";
-    watch:      boolean;
-    configuration:
+    enviroment:    string;
+    project:       string;
+    watch:         boolean;
+}
+
+interface Arguments
+{
+    [key: string]:
     {
-        path: string
+        fallback:   Object,
+        constraint: Array<string>
     }
 }
 
-export = class
+const ARGUMENTS: Arguments =
+{
+    enviroment:
+    {
+        fallback:   null,
+        constraint: ["dev", "development", "prod", "production"]
+    },
+    project:
+    {
+        fallback:   null,
+        constraint: []
+    },
+    watch:
+    {
+        fallback:   true,
+        constraint: []
+    }
+}
+
+export = class UserArgumentsParser
 {
     public static resolve(args: Array<string>): UserArguments
     {
         let userArguments: UserArguments =
         {
-            build:      args.includes("build"),
-            watch:      args.includes("watch"),
-            enviroment: args.includes("production") ? "production" : "development",
-            configuration:
-            {
-                path: ""
-            }
+            enviroment:    "development",
+            project:       "./surface-project.json",
+            watch:         false
         };
 
-        let index = args.indexOf("project");
-        if (index > -1)
+        for (let arg of args.slice(2))
         {
-            if (!args[index + 1])
-                throw new Error("Invalid project path");
-            let path = args[index + 1];
-
-            if (path.endsWith("/"))
-                path = path.concat("surface-project.json");
-
-            userArguments.configuration.path = Path.resolve(process.cwd(), path);
+            if (arg.indexOf("="))
+            {
+                let [key, value] = arg.split("=");
+                userArguments[key] = UserArgumentsParser.validateArguments(key as keyof UserArguments, value, userArguments[key]);
+            }
         }
 
         return userArguments;
+    }
+
+    private static validateArguments<TKey extends keyof UserArguments, T extends string|boolean>(key: TKey, value: string, defaultValue: T): T
+    {
+        switch (key)
+        {
+            case "project":
+                if (value.endsWith("/"))
+                {
+                    return value.concat("surface-project.json") as T;
+                }
+            case "enviroment":
+                if (!["dev","development", "prod","production"].includes(key))
+                {
+                    throw new Error(`argument ${key} has invalid value`)
+                }
+            default:
+                return UserArgumentsParser.treatValue(key, value, defaultValue) as T;
+        }
+    }
+
+    private static treatValue<T extends string|boolean>(key: string, value: string|null, defaultValue: T): T
+    {
+        let property = ARGUMENTS[key];
+
+        if (property.constraint.length > 0 && !property.constraint.includes(value))
+            throw new Error(`argument ${key} has invalid value`);
+
+        return (value || property.fallback || defaultValue) as T;
     }
 }
