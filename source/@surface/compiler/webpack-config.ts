@@ -31,16 +31,16 @@ export = (path: string) =>
         resolve:
         {            
             extensions: [".ts", ".js"],
-            //modules:
-            //[
-            //    Path.resolve(__dirname, "../node_modules")
-            //]//.concat(project.modules.map(x => Path.resolve(process.cwd(), x)))
+            modules:
+            [
+                Path.resolve(__dirname, "./node_modules")
+            ]//.concat(project.modules.map(x => Path.resolve(process.cwd(), x)))
         } as Webpack.Resolve,
         resolveLoader:
         {
             modules:
             [
-                Path.resolve(__dirname, "../node_modules")
+                Path.resolve(__dirname, "./node_modules")
             ]
         } as Webpack.ResolveLoader,
         module:
