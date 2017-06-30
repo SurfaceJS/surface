@@ -1,32 +1,24 @@
 ﻿import Webpack = require("webpack");
 import Path    = require("path");
 
-//import devConfig  = require("./development");
-//import prodConfig = require("./production");
-
-//import InjectViewPlugin = require("../../source/@surface/plugins/inject-view-plugin");
-
 export = (path: string) =>
-{
-    //const DEV          = "DEV";
-    //const ROOT         = Path.resolve(__dirname, "../../");
-    //const SOURCE       = Path.resolve(ROOT, "./source");
-    //const NODE_MODULES = Path.resolve(ROOT, "./node_modules");
-    //const SERVER       = Path.resolve(ROOT, "../App.Server/public");
+{   
+    let defaults     = require(Path.resolve(__dirname, "./surface.config.json"));
+    let customConfig = require(Path.resolve(process.cwd(), path));
     
-    let project = require(Path.resolve(process.cwd(), path));
+    customConfig = Object.assign(defaults, customConfig);
 
-    let config = 
+    let config =
     {
         devtool: "#source-map",
-        context: Path.resolve(process.cwd(), project.context),
-        entry:   project.entry,
+        context: Path.resolve(process.cwd(), customConfig.context),
+        entry:   customConfig.entry,
         output:
         {
-            path:          Path.resolve(process.cwd(), project.public),
-            publicPath:    project.publicPath,
-            filename:      project.filename,
-            libraryTarget: project.libraryTarget
+            path:          Path.resolve(process.cwd(), customConfig.public),
+            publicPath:    customConfig.publicPath,
+            filename:      customConfig.filename,
+            libraryTarget: customConfig.libraryTarget
         } as Webpack.Output,
         resolve:
         {            
@@ -34,7 +26,7 @@ export = (path: string) =>
             modules:
             [
                 Path.resolve(__dirname, "./node_modules")
-            ]//.concat(project.modules.map(x => Path.resolve(process.cwd(), x)))
+            ].concat(customConfig.modules.map(x => Path.resolve(process.cwd(), x)))
         } as Webpack.Resolve,
         resolveLoader:
         {
@@ -100,18 +92,6 @@ export = (path: string) =>
             ] as Array<Webpack.Rule>,
         } as Webpack.Module
     } as Webpack.Configuration;
-
-    //let envConfig = env == DEV ? devConfig : prodConfig;
-
-    //envConfig.plugins = envConfig.plugins || [];
-    //envConfig.plugins.push(new InjectViewPlugin({ useHash: true, views: ["app-main"] }));
-    //envConfig.plugins.push(new Webpack.IgnorePlugin(/vertx/));
-
-    //return Object.assign
-    //(
-    //    config,
-    //    envConfig
-    //) as Webpack.Configuration;
 
     return config;
 }

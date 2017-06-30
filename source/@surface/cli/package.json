@@ -21,8 +21,8 @@
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
   "homepage": "https://github.com/HitalloExiled/Surface#readme",
-  "bin": { "surface": "index.js" },
-  "dependencies": {
-    "@surface/compiler": "0.0.0"
-  }
+  "bin": {
+    "surface-cli": "index.js"
+  },
+  "dependencies": {}
 }
