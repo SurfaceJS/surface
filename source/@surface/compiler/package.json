@@ -23,19 +23,19 @@
   "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "dependencies": {
     "@types/commander": "^2.9.1",
-    "@types/node": "^8.0.4",
+    "@types/node": "^8.0.17",
     "@types/rimraf": "^0.0.28",
-    "@types/webpack": "^3.0.0",
-    "commander": "^2.10.0",
+    "@types/webpack": "^3.0.5",
+    "commander": "^2.11.0",
     "file-loader": "^0.11.2",
-    "html-loader": "^0.4.5",
+    "html-loader": "^0.5.0",
     "node-sass": "^4.5.3",
     "rimraf": "^2.6.1",
     "sass-loader": "^6.0.6",
     "to-string-loader": "^1.1.5",
-    "ts-loader": "^2.2.0",
-    "typescript": "^2.4.1",
-    "webpack": "^3.0.0"
+    "ts-loader": "^2.3.2",
+    "typescript": "^2.4.2",
+    "webpack": "^3.4.1"
   },
   "bin": {
     "surface": "index.js"
