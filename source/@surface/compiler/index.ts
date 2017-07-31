@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander = require("commander");
-import build     = require("./build");
+import build     = require("./tasks/build");
 
 commander
   .version('0.1.0')
