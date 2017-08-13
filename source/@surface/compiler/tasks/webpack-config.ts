@@ -21,10 +21,12 @@ export = (path: string): Webpack.Configuration =>
             libraryTarget: userConfig.libraryTarget
         } as Webpack.Output,
         resolve:
-        {            
+        {
             extensions: ['.ts', '.js'],
             modules:
             [
+                '.',
+                Path.resolve(process.cwd(), userConfig.context),
                 Path.resolve(__dirname, '../node_modules')
             ].concat(userConfig.modules.map(x => Path.resolve(process.cwd(), x)))
         } as Webpack.Resolve,
