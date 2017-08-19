@@ -1,0 +1,26 @@
+{
+  "name": "@surface/custom-element",
+  "version": "0.0.0",
+  "description": "Surface's components library",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HitalloExiled/Surface.git"
+  },
+  "keywords": [
+    "surface",
+    "typescript",
+    "webcomponents"
+  ],
+  "author": "Hitallo Exiled",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HitalloExiled/Surface/issues"
+  },
+  "homepage": "https://github.com/HitalloExiled/Surface#readme",
+  "dependencies": {
+    "@types/reflect-metadata": "0.0.5"
+  }
+}
