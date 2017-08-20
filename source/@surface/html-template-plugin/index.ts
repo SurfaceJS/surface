@@ -13,16 +13,16 @@ namespace HtmlPlugin
 
 class HtmlPlugin
 {
-    private _options: HtmlPlugin.Options|null;
+    private _options: HtmlPlugin.Options;
 
-    constructor(options: HtmlPlugin.Options)
+    public constructor(options: HtmlPlugin.Options)
     {
         this._options = options;
     }
 
     public apply (compiler: WebPack.Compiler)
     {
-        const self = this;
+        const self = this!;
         compiler.plugin
         (
             "emit",

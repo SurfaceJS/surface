@@ -1,7 +1,7 @@
 {
   "author": "HitalloExiled",
   "bin": {
-    "surface": "index.js --preserve-symlinks"
+    "surface": "index.js"
   },
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"

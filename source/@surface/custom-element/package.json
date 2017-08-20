@@ -14,7 +14,7 @@
     "webcomponents"
   ],
   "license": "MIT",
-  "main": "index.js"
+  "main": "index.js",
   "name": "@surface/custom-element",
   "repository": {
     "type": "git",
@@ -23,7 +23,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "types": "index.d.ts"
+  "types": "index.d.ts",
   "version": "0.0.0",
-  "dependencies": {}
+  "peerDependencies": {
+    "@surface/common": "^0.0.0",
+    "@surface/enumerable": "^0.0.0"
+  }
 }
