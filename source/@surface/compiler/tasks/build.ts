@@ -1,6 +1,5 @@
-
-import rimRaf        = require('rimraf');
-import webpack       = require('webpack');
+import rimRaf  = require('rimraf');
+import webpack = require('webpack');
 
 import webpackConfig = require('./webpack-config');
 

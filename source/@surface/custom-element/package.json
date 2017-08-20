@@ -1,28 +1,29 @@
 {
-  "name": "@surface/custom-element",
-  "version": "0.0.0",
-  "description": "Surface's components library",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "author": "HitalloExiled",
+  "bugs": {
+    "url": "https://github.com/HitalloExiled/Surface/issues"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HitalloExiled/Surface.git"
+  "description": "Surface's Custom Element",
+  "devDependencies": {
+    "@types/reflect-metadata": "0.0.5"
   },
+  "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "keywords": [
     "surface",
     "typescript",
     "webcomponents"
   ],
-  "author": "Hitallo Exiled",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/HitalloExiled/Surface/issues"
+  "main": "index.js"
+  "name": "@surface/custom-element",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HitalloExiled/Surface.git"
   },
-  "homepage": "https://github.com/HitalloExiled/Surface#readme",
-  "devDependencies": {
-    "@types/reflect-metadata": "0.0.5"
-  }
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "index.d.ts"
+  "version": "0.0.0",
+  "dependencies": {}
 }

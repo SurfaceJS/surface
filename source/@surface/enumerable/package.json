@@ -1,25 +1,26 @@
 {
-  "name": "@surface/enumerable",
-  "version": "0.0.0",
-  "description": "Enumerable library",
-  "main": "index.js",
-  "types": "index.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "author": "HitalloExiled",
+  "bugs": {
+    "url": "https://github.com/HitalloExiled/Surface/issues"
   },
+  "description": "Surface's enumerable module",
+  "homepage": "https://github.com/HitalloExiled/Surface#readme",
+  "keywords": [
+    "enumerable",
+    "surface",
+    "typescript"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "@surface/enumerable",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HitalloExiled/Surface.git"
   },
-  "keywords": [
-    "surface",
-    "typescript",
-    "enumerable"
-  ],
-  "author": "HitalloExiled",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/HitalloExiled/Surface/issues"
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/HitalloExiled/Surface#readme"
+  "types": "index.d.ts",
+  "version": "0.0.0",
+  "dependencies": {}
 }
