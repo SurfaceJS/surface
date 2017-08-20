@@ -33,7 +33,7 @@ export = function (configPath?: string, env?: string, watch?: boolean)
 
     rimRaf
     (
-        config.output.path,
+        config!.output!.path!,
         () =>
         {
             if (watch)
