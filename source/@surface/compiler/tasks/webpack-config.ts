@@ -3,19 +3,20 @@ import Path    = require('path');
 
 export = (path: string): Webpack.Configuration =>
 {   
+    let root       = process.cwd();
     let defaults   = require(Path.resolve(__dirname, '../surface.config.json')) as Surface.Config;
-    let userConfig = require(Path.resolve(process.cwd(), path))                 as Surface.Config;
+    let userConfig = require(Path.resolve(root, path))                          as Surface.Config;
     
     userConfig = Object.assign(defaults, userConfig);
 
     let config =
     {
         devtool: '#source-map',
-        context: Path.resolve(process.cwd(), userConfig.context),
+        context: Path.resolve(root, userConfig.context),
         entry:   userConfig.entry,
         output:
         {
-            path:          Path.resolve(process.cwd(), userConfig.public),
+            path:          Path.resolve(root, userConfig.public),
             publicPath:    userConfig.publicPath,
             filename:      userConfig.filename,
             libraryTarget: userConfig.libraryTarget
@@ -26,9 +27,9 @@ export = (path: string): Webpack.Configuration =>
             modules:
             [
                 '.',
-                Path.resolve(process.cwd(), userConfig.context),
+                Path.resolve(root, userConfig.context),
                 Path.resolve(__dirname, '../node_modules')
-            ].concat(userConfig.modules.map(x => Path.resolve(process.cwd(), x)))
+            ].concat(userConfig.modules.map(x => Path.resolve(root, x)))
         } as Webpack.Resolve,
         resolveLoader:
         {
@@ -81,6 +82,17 @@ export = (path: string): Webpack.Configuration =>
             ] as Array<Webpack.Rule>,
         } as Webpack.Module
     } as Webpack.Configuration;
+
+    let plugins: Array<Webpack.Plugin> = [];
+
+    for (let plugin of userConfig.plugins)
+    {
+        if (!plugin.name.endsWith("-plugin"))
+            plugin.name = `${plugin.name}-plugin`;
+
+        let targetPlugin = require(Path.resolve(root, `node_modules/@surface/${plugin.name}`)) as Surface.Plugin;
+        plugins.push(new targetPlugin(plugin.options))
+    }
 
     return config;
 }
