@@ -1,5 +1,5 @@
-import { Enumerable } from "@surface/enumerable";
-import { List }       from "@surface/enumerable/list";
+import { Enumerable } from '@surface/enumerable';
+import { List }       from '@surface/enumerable/list';
 
 declare global
 {
@@ -69,7 +69,7 @@ NodeList.prototype.toList = function <T extends Node>(this: NodeListOf<T>)
     return Array.from(this).toList();
 }
 
-declare module "@surface/enumerable"
+declare module '@surface/enumerable'
 {
     interface Enumerable<TSource>
     {

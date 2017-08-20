@@ -1,35 +1,20 @@
 {
-  "name": "@surface/compiler",
-  "version": "0.0.0",
-  "description": "Surface's compiler module ",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "HitalloExiled",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/HitalloExiled/Surface.git"
+  "bin": {
+    "surface": "index.js --preserve-symlinks"
   },
-  "keywords": [
-    "typescript",
-    "webcomponents",
-    "framework"
-  ],
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
-  "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "devDependencies": {
     "@types/commander": "^2.9.1",
-    "@types/node": "^8.0.17",
-    "@types/rimraf": "^0.0.28",
-    "@types/webpack": "^3.0.5"    
+    "@types/node": "^8.0.24",
+    "@types/rimraf": "^2.0.1",
+    "@types/webpack": "^3.0.9"
   },
   "dependencies": {
     "commander": "^2.11.0",
-    "css-loader": "^0.28.4",
+    "css-loader": "^0.28.5",
     "file-loader": "^0.11.2",
     "html-loader": "^0.5.0",
     "node-sass": "^4.5.3",
@@ -37,11 +22,26 @@
     "rimraf": "^2.6.1",
     "sass-loader": "^6.0.6",
     "to-string-loader": "^1.1.5",
-    "ts-loader": "^2.3.2",
-    "typescript": "^2.4.2",
-    "webpack": "^3.4.1"
+    "ts-loader": "^2.3.3",
+    "typescript": "^2.5.1",
+    "webpack": "^3.5.5"
   },
-  "bin": {
-    "surface": "index.js"
-  }
+  "description": "Surface's compiler module",
+  "homepage": "https://github.com/HitalloExiled/Surface#readme",
+  "keywords": [
+    "compiler",
+    "surface",
+    "typescript"
+  ],
+  "license": "MIT",
+  "name": "@surface/compiler",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/HitalloExiled/Surface.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.0.0"
 }

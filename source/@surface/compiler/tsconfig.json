@@ -2,7 +2,7 @@
   "extends": "../../configurations/tscongig.json",
   "compilerOptions":
   {
-    "baseUrl": "./",
+    "baseUrl": "../../",
     "module":  "commonjs",
     "lib":
     [
@@ -14,6 +14,7 @@
     "target":    "es6",
     "typeRoots":
     [
+      "../common/@types",
       "./node_modules/@types"
     ]
   },
