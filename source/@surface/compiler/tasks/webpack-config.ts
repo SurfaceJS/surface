@@ -26,8 +26,7 @@ export = (path: string): Webpack.Configuration =>
             modules:
             [
                 '.',
-                Path.resolve(process.cwd(), userConfig.context),
-                Path.resolve(__dirname, '../node_modules')
+                Path.resolve(process.cwd(), userConfig.context)
             ].concat(userConfig.modules.map(x => Path.resolve(process.cwd(), x)))
         } as Webpack.Resolve,
         resolveLoader:
