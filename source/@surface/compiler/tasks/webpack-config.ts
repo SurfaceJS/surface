@@ -27,8 +27,7 @@ export = (path: string): Webpack.Configuration =>
             modules:
             [
                 '.',
-                Path.resolve(root, userConfig.context),
-                Path.resolve(__dirname, '../node_modules')
+                Path.resolve(root, userConfig.context)
             ].concat(userConfig.modules.map(x => Path.resolve(root, x)))
         } as Webpack.Resolve,
         resolveLoader:
@@ -90,9 +89,11 @@ export = (path: string): Webpack.Configuration =>
         if (!plugin.name.endsWith("-plugin"))
             plugin.name = `${plugin.name}-plugin`;
 
-        let targetPlugin = require(Path.resolve(root, `node_modules/@surface/${plugin.name}`)) as Surface.Plugin;
-        plugins.push(new targetPlugin(plugin.options))
+        let TargetPlugin = require(Path.resolve(root, `node_modules/@surface/${plugin.name}`)) as Surface.Plugin;
+        plugins.push(new TargetPlugin(plugin.options));
     }
+
+    config.plugins = plugins;
 
     return config;
 }

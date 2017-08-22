@@ -3,6 +3,7 @@
   "compilerOptions":
   {
     "baseUrl": "../../",
+    "noEmit": true, /* true for dev */
     "lib":
     [
       "dom",

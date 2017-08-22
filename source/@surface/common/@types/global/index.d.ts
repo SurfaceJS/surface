@@ -34,7 +34,6 @@ declare module '*.css'
     export default  _;
 }
 
-
 declare interface Constructor<T> extends Function
 {
     Symbols: any;

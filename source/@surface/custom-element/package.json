@@ -24,9 +24,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.0.0",
-  "peerDependencies": {
-    "@surface/common": "^0.0.0",
-    "@surface/enumerable": "^0.0.0"
-  }
+  "version": "0.0.0"
 }

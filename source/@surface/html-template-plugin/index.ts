@@ -1,4 +1,6 @@
 import Common  = require('@surface/common');
+import FS      = require('fs');
+import Path    = require('path');
 import WebPack = require('webpack');
 
 namespace HtmlPlugin
@@ -28,18 +30,18 @@ class HtmlPlugin
             "emit",
             function (this: WebPack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
-                for (let entry of self._options.entries)
+                for (let key in self._options.entries)
                 {
                     let keys =
                     {
                         hash: compilation.hash
                     };
                     
-                    let template = require(self._options.template)
+                    let template = FS.readFileSync(Path.resolve(this.options.context!, self._options.template)).toString();
 
-                    let html = Common.templateParse(template, keys)
+                    let html = Common.templateParse(template, keys);
 
-                    compilation.assets[`${entry}/index.html`] =
+                    compilation.assets[`${key}/index.html`] =
                     {
                         source: () => html,
                         size:   () => html.length
