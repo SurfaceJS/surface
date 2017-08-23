@@ -30,18 +30,33 @@ class HtmlPlugin
             "emit",
             function (this: WebPack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
-                for (let key in self._options.entries)
+                if (!this.options.entry)
+                    throw new Error('Entry can\t be null');
+
+                for (let key in compilation.entrypoints)
                 {
+                    let entry = compilation.entrypoints[key];
+                    let chunk = entry.chunks[0];
+
+                    let $module = Array.isArray(this.options.entry[key]) ?
+                        Common.getModule(entry.name) :
+                        Common.getModule(this.options.entry[key]);
+
                     let keys =
                     {
-                        hash: compilation.hash
+                        file:     chunk.files.filter(x => x.match(/.+?\.js$/))[0],
+                        fullHash: compilation.fullHash,
+                        hash:     compilation.hash,
+                        module:   $module,
+                        name:     entry.name,
+                        id:       chunk.id
                     };
-                    
+
                     let template = FS.readFileSync(Path.resolve(this.options.context!, self._options.template)).toString();
 
                     let html = Common.templateParse(template, keys);
 
-                    compilation.assets[`${key}/index.html`] =
+                    compilation.assets[`${entry.name}/index.html`] =
                     {
                         source: () => html,
                         size:   () => html.length

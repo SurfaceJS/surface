@@ -15,10 +15,12 @@ declare namespace Surface
         }
     }
 
+    export type Entry = string|Array<string>|LiteralObject<string>|LiteralObject<Array<string>>;
+
     export interface Config
     {
         context:       string;
-        entry:         string|LiteralObject<string>|Array<LiteralObject<string>>;
+        entry:         Entry;
         filename:      string;
         libraryTarget: string;
         modules:       Array<string>;
