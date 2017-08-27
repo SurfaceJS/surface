@@ -5,14 +5,9 @@
   },
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
-  },
-  "devDependencies": {
-    "@types/commander": "^2.9.1",
-    "@types/node": "^8.0.24",
-    "@types/rimraf": "^2.0.1",
-    "@types/webpack": "^3.0.9"
-  },
+  },  
   "dependencies": {
+    "@surface/common": "0.1.0",
     "commander": "^2.11.0",
     "css-loader": "^0.28.5",
     "file-loader": "^0.11.2",
@@ -23,10 +18,17 @@
     "sass-loader": "^6.0.6",
     "to-string-loader": "^1.1.5",
     "ts-loader": "^2.3.3",
+    "tslib": "^1.7.1",
     "typescript": "^2.5.1",
     "webpack": "^3.5.5"
   },
   "description": "Surface's compiler module",
+  "devDependencies": {
+    "@types/commander": "^2.9.1",
+    "@types/node": "^8.0.24",
+    "@types/rimraf": "^2.0.1",
+    "@types/webpack": "^3.0.9"
+  },
   "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "keywords": [
     "compiler",
@@ -43,5 +45,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.0.0"
+  "version": "0.1.0"
 }

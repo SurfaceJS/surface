@@ -3,6 +3,10 @@
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
+  "dependencies": {
+    "@surface/common": "0.1.0",
+    "@surface/enumerable": "0.1.0"
+  },
   "description": "Surface's Custom Element",
   "devDependencies": {
     "@types/reflect-metadata": "0.0.5"
@@ -24,5 +28,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.0.0"
+  "version": "0.1.0"
 }

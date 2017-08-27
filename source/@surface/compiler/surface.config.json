@@ -1,9 +1,0 @@
-{
-    "context":    "./",
-    "entry":      { "source": "./" },
-    "public":     "./public",
-    "publicPath": "",
-    "filename":   "[name]/[hash].js",
-    "target":     "es6",
-    "modules":    []
-}
