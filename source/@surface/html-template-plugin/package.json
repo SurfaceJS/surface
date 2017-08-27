@@ -1,0 +1,31 @@
+{
+  "author": "HitalloExiled",
+  "bugs": {
+    "url": "https://github.com/HitalloExiled/Surface/issues"
+  },
+  "description": "Surface's plugin for html templating",
+  "devDependencies": {
+    "@types/node": "^8.0.24",
+    "@types/webpack": "^3.0.9"
+  },
+  "homepage": "https://github.com/HitalloExiled/Surface#readme",
+  "keywords": [
+    "html",
+    "surface",
+    "template",
+    "typescript"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "@surface/html-template-plugin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HitalloExiled/Surface.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "index.d.ts",
+  "version": "0.0.0",
+  "dependencies": {}
+}

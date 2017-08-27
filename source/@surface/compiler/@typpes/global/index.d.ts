@@ -1,13 +1,31 @@
 declare namespace Surface
 {
-    interface Config
+    export interface Plugin
+    {
+        new (options: LiteralObject): Plugin;
+        apply: (compiler: any) => void;
+    }
+
+    export namespace Config
+    {
+        interface Plugin
+        {
+            name:    string;
+            options: LiteralObject
+        }
+    }
+
+    export type Entry = string|Array<string>|LiteralObject<string>|LiteralObject<Array<string>>;
+
+    export interface Config
     {
         context:       string;
-        entry:         string|{ [key: string]: string }|Array<{ [key: string]: string }>;
+        entry:         Entry;
         filename:      string;
         libraryTarget: string;
         modules:       Array<string>;
         public:        string;
         publicPath:    string;
+        plugins:       Array<Config.Plugin>
     }
 }
