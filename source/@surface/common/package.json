@@ -3,6 +3,9 @@
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
+  "dependencies": {
+    "@surface/core": "0.1.0"
+  },
   "description": "Surface common modules",
   "devDependencies": {
     "@types/node": "^8.0.26"

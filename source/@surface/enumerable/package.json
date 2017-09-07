@@ -4,7 +4,7 @@
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
   "dependencies": {
-    "@surface/common": "0.1.0"
+    "@surface/core": "0.1.0"
   },
   "description": "Surface's enumerable module",
   "homepage": "https://github.com/HitalloExiled/Surface#readme",

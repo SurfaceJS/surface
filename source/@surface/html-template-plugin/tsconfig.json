@@ -15,7 +15,7 @@
     "typeRoots":
     [
       "./node_modules/@types",
-      "../common/@types"
+      "../core/@types"
     ]
   },
   "include": ["./"],
