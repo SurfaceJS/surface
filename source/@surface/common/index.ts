@@ -1,16 +1,25 @@
-export function templateParse(template: string, keys: LiteralObject<string>): string
-{
-    for (let key in keys)
-        template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
+import FS   = require('fs');
+import Path = require('path');
 
-    return template;
-}
-
-export function getModule(path: string): string
+/**
+ * Resolve 'node_modules' directory.
+ * @param startPath Path to start resolution.
+ */
+export function resolveNodeModules(startPath: string): string
 {
-    let slices = path.split('/').reverse();
-    if (slices.length > 1 && slices[0].match(/index.[tj]s/))
-        return slices[1];
-    else
-        return slices[0];
+    let slices = startPath.replace(/\\/g, '/').split('/');
+
+    while (slices.length > 0)
+    {
+        let path = Path.join(slices.join('/'), 'node_modules');
+
+        if (FS.existsSync(path))
+        {
+            return path;
+        }
+
+        slices.pop();
+    }
+
+    throw new Error('Can\'t find node_modules on provided root path');
 }

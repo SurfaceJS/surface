@@ -14,7 +14,8 @@
     "target":    "es6",
     "typeRoots":
     [
-      "../common/@types",
+      "../core/@types",
+      "./@types",
       "./node_modules/@types"
     ]
   },

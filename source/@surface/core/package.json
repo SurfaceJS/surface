@@ -3,25 +3,15 @@
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
-  "dependencies": {
-    "@surface/core": "0.1.0",
-    "@surface/common": "0.1.0"
-  },
-  "description": "Surface's plugin for html templating",
-  "devDependencies": {
-    "@types/node": "^8.0.24",
-    "@types/webpack": "^3.0.9"
-  },
+  "description": "Surface core modules",
   "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "keywords": [
-    "html",
+    "core",
     "surface",
-    "template",
-    "typescript"
+    "typescrypt"
   ],
   "license": "MIT",
-  "main": "index.js",
-  "name": "@surface/html-template-plugin",
+  "name": "@surface/core",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HitalloExiled/Surface.git"
@@ -29,6 +19,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "types": "index.d.ts",
   "version": "0.1.0"
 }

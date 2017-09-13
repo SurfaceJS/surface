@@ -32,11 +32,12 @@ export function observe(...attributes: Array<string>): ClassDecoratorOf<CustomEl
     }
 }
 
-function templateParse(template: string, style?: string): HTMLTemplateElement
+function templateParse(template?: string, style?: string): HTMLTemplateElement
 {    
-    let templateElement = new DOMParser()
-        .parseFromString(template, 'text/html')
-        .querySelector('template') as HTMLTemplateElement;
+    let templateElement = document.createElement('template') as HTMLTemplateElement;
+
+    if (template)
+        templateElement.innerHTML = template;
 
     if (style)
     {
