@@ -4,8 +4,8 @@
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
   "dependencies": {
-    "@surface/core": "0.1.0",
-    "@surface/enumerable": "0.1.0"
+    "@surface/core": "0.0.1",
+    "@surface/enumerable": "0.0.1"
   },
   "description": "Surface's Custom Element",
   "devDependencies": {
@@ -28,5 +28,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.1.0"
+  "version": "0.0.1"
 }

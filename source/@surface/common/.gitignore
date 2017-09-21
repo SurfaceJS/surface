@@ -1,4 +1,4 @@
-!@types/**/*.d.ts
 *.js
 *.js.map
 *.d.ts
+!@types/**/*.d.ts
