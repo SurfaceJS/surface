@@ -14,6 +14,10 @@ export let surface =
 export let webpack =
 {
     devtool: '#source-map',
+    output:
+    {
+        chunkFilename: '[name]'
+    } as Webpack.Output,
     resolve:
     {
         extensions: ['.ts', '.js']
@@ -64,6 +68,7 @@ export let webpack =
                 use: [{ loader: 'ts-loader' }]
             },
         ] as Array<Webpack.Rule>,
-    } as Webpack.Module
+    } as Webpack.Module,
+    plugins: [ new Webpack.optimize.CommonsChunkPlugin({ name: '.' })]
 } as Webpack.Configuration;
 

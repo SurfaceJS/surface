@@ -7,7 +7,8 @@ namespace CodeSplitterPlugin
 {
     export interface Options
     {
-        entries: Array<string>;
+        entries:      Array<string>;
+        relativePath: Nullable<boolean>;
     }
 }
 
@@ -34,58 +35,84 @@ class CodeSplitterPlugin
                 if (!this.options.context)
                     throw new Error('Context can\'t be null');
 
-                let file = Common.resolveNodeModules(this.options.context);
+                let file = Path.join(Common.resolveNodeModules(this.options.context), '@surface', 'lazy-loader', 'index.js');
 
-                let modules = self.resolveModule(self._options.entries);
+                for (let entry of self._options.entries)
+                {
+                    let paths = self.getPaths(Path.resolve(this.options.context, entry));
 
-                FS.writeFileSync(file, self.writeHeader());
+                    let content = self.writeHeader() + '\n';
 
-                for (let $module in modules)
-                {                    
-                    FS.writeFileSync(file, self.writeEntry($module));
+                    for (let path of paths)
+                    {
+                        if (path.name == 'index')
+                            content += self.writeEntry
+                            (
+                                `${entry}/${Common.getParentPath(Path.format(path))}`,
+                                Path.format(path),
+                                !!self._options.relativePath
+                            ) + '\n';
+                        else
+                            content += self.writeEntry
+                            (
+                                `${entry}/${path.name}`,
+                                Path.format(path),
+                                !!self._options.relativePath
+                            ) + '\n';
+                    }
+
+                    content += self.writeFooter();
+
+                    FS.writeFileSync(file, content);
                 }
 
-                FS.writeFileSync(file, self.writeFooter());
+                callback();
             }
         );
     }
 
-    private resolveModule(entries: Array<string>): Array<string>
+    private getPaths(entry: string): Array<Path.ParsedPath>
     {
-        let result: Array<string> = [];
+        let result: Array<Path.ParsedPath> = [];
+        
+        if (!FS.existsSync(entry))
+            throw new Error('Path not exists');
     
-        for (let entry of entries)
+        if (!FS.lstatSync(entry).isDirectory())
+            throw new Error('Path is not a directory');
+    
+        for (let source of FS.readdirSync(entry))
         {
-            if (!FS.existsSync(entry))
-                throw new Error('Path not exists');
-        
-            if (!FS.lstatSync(entry).isDirectory())
-                throw new Error('Path is not a directory');
-        
-            for (let source of FS.readdirSync(entry))
+            let currentPath = Path.join(entry, source);
+    
+            if (FS.lstatSync(currentPath).isDirectory())
             {
-                let currentPath = Path.join(entry, source);
-        
-                if (FS.lstatSync(currentPath).isDirectory())
-                {
-                    if (FS.existsSync(Path.join(currentPath, 'index.ts')) || FS.existsSync(Path.join(currentPath, 'index.js')))
-                        result.push(currentPath.split('/').reverse()[0]);
-                }
-                else
-                    result.push(currentPath.split('/').reverse()[0]);
+                ['index.ts', 'index.js'].forEach
+                (
+                    fileName =>
+                    {
+                        let file = Path.join(currentPath, fileName)
+                        if (FS.existsSync(file))
+                            result.push(Path.parse(file));
+
+                    }
+                )
             }
+            else
+                result.push(Path.parse(currentPath));
         }
     
         return result;
     }
 
-    private writeEntry($module: string): string
+    private writeEntry(name: string, path: string, relativePath: boolean): string
     {
+        name = relativePath ? name : name.replace('./', '')
         let result =
         [
-            `    case '${$module}':`,
-            `        return import('${$module}');`
-        ].join('');
+            `        case '${name}':`,
+            `            return import(/* webpackChunkName: '${name}' */ '${path.replace(/\\/g, '\\\\')}');`
+        ].join('\n');
     
         return result;
     }
@@ -98,7 +125,7 @@ class CodeSplitterPlugin
             '            return Promise.reject("path not found");',
             '    }',
             '}',
-        ].join('');
+        ].join('\n');
 
         return result;
     }
@@ -111,7 +138,7 @@ class CodeSplitterPlugin
             '{',
             '    switch (name)',
             '    {',
-        ].join('');
+        ].join('\n');
 
         return result;
     }
