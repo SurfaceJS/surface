@@ -3,6 +3,10 @@
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
+  "dependencies": {
+    "@surface/core": "0.0.1",
+    "@surface/common": "0.0.1"
+  },
   "description": "Surface's plugin for html templating",
   "devDependencies": {
     "@types/node": "^8.0.24",
@@ -26,6 +30,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.0.0",
-  "dependencies": {}
+  "version": "0.0.1"
 }
