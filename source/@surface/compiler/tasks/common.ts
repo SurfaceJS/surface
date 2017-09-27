@@ -52,8 +52,8 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
         config.context
     ].concat(config.modules || []);
     
-    if (config.plugins)
-        webpackConfig.plugins = getPlugins(config.plugins, Common.resolveNodeModules(config.context));
+    if (config.plugins && webpackConfig.plugins)
+        webpackConfig.plugins = webpackConfig.plugins.concat(getPlugins(config.plugins, Common.resolveNodeModules(config.context)));
     
     return webpackConfig;
 }

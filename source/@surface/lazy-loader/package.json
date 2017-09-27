@@ -3,25 +3,18 @@
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
-  "dependencies": {
-    "@surface/core": "0.0.1",
-    "@surface/common": "0.0.1"
-  },
-  "description": "Surface's plugin for html templating",
-  "devDependencies": {
-    "@types/node": "^8.0.24",
-    "@types/webpack": "^3.0.9"
-  },
+  "description": "Surface's Lazy Loader",
   "homepage": "https://github.com/HitalloExiled/Surface#readme",
   "keywords": [
-    "html",
+    "lazy",
+    "loader",
     "surface",
-    "template",
-    "typescript"
+    "typescript",
+    "webcomponents"
   ],
   "license": "MIT",
   "main": "index.js",
-  "name": "@surface/html-template-plugin",
+  "name": "@surface/lazy-loader",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HitalloExiled/Surface.git"
@@ -30,5 +23,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.0.1"
+  "version": "0.0.0"
 }

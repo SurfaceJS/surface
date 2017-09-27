@@ -5,7 +5,7 @@
   },
   "bugs": {
     "url": "https://github.com/HitalloExiled/Surface/issues"
-  },  
+  },
   "dependencies": {
     "@surface/core": "0.0.1",
     "@surface/common": "0.0.1",

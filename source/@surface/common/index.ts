@@ -23,3 +23,12 @@ export function resolveNodeModules(startPath: string): string
 
     throw new Error('Can\'t find node_modules on provided root path');
 }
+
+export function getParentPath(path: string): Nullable<string>
+{
+    let dirName = Path.dirname(path);
+    if (!dirName)
+        throw new Error('Invalid path.')
+    
+    return dirName.split(Path.sep).pop();
+} 
