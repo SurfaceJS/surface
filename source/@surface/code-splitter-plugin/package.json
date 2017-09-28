@@ -4,8 +4,9 @@
     "url": "https://github.com/HitalloExiled/Surface/issues"
   },
   "dependencies": {
-    "@surface/common": "0.0.1",
-    "@surface/core": "0.0.1"
+    "@surface/common": "0.0.2",
+    "@surface/core": "0.0.2",
+    "@surface/lazy-loader": "0.0.1"
   },
   "description": "Surface's plugin for html templating",
   "devDependencies": {
@@ -22,9 +23,6 @@
   "license": "MIT",
   "main": "index.js",
   "name": "@surface/code-splitter-plugin",
-  "peerDependencies": {
-    "@surface/lazy-loader": "0.0.1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HitalloExiled/Surface.git"
@@ -33,5 +31,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "index.d.ts",
-  "version": "0.0.0"
+  "version": "0.0.3"
 }

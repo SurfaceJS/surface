@@ -12,10 +12,6 @@
       "es2017"
     ],
     "module": "es2015",
-    "typeRoots":
-    [
-      "../core/@types",
-      "./node_modules/@types"
-    ]
+    "typeRoots": ["./node_modules/@types"]
   }
 }

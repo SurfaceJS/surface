@@ -1,8 +1,10 @@
+import { Constructor } from '@surface/core/typings';
+
 /**
  * Load code splitted modules
  * @param name Module to load
  */
-export default function <T>(name: string): Promise<Constructor<T>>
+export default function<T>(name: string): Promise<Constructor<T>>
 {
     throw new Error('Run code splitter plugin');
 }

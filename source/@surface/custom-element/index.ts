@@ -1,5 +1,6 @@
 import '@surface/custom-element/extensions';
 
+import { Nullable }      from '@surface/core/typings';
 import { List }          from '@surface/enumerable/list';
 import { ElementBinder } from '@surface/custom-element/binder';
 

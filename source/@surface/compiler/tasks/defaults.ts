@@ -1,3 +1,5 @@
+import { Compiler } from '@surface/compiler/typings';
+
 import Path    = require('path');
 import Webpack = require('webpack');
 
@@ -9,7 +11,7 @@ export let surface =
     publicPath: './assets',
     filename:   '[name]/[hash].js',
     target:     'es6'
-} as Surface.Compiler.Config;
+} as Compiler.Config;
 
 export let webpack =
 {

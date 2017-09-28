@@ -1,3 +1,5 @@
+import { Nullable } from '@surface/core/typings';
+
 import Common  = require('@surface/common');
 import FS      = require('fs');
 import Path    = require('path');

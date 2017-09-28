@@ -1,4 +1,6 @@
-﻿export abstract class Enumerable<TSource> implements Iterable<TSource>
+﻿import { Action2, Func1, Func2, Func3, Nullable } from '@surface/core/typings';
+
+export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public abstract [Symbol.iterator]: () => Iterator<any>;
     /**

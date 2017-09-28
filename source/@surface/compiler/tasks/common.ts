@@ -1,8 +1,9 @@
-import Common  = require('@surface/common');
-import FS      = require('fs');
-import Path    = require('path');
-import Webpack = require('webpack');
+import { Compiler } from '@surface/compiler/typings';
 
+import Common   = require('@surface/common');
+import FS       = require('fs');
+import Path     = require('path');
+import Webpack  = require('webpack');
 import Defaults = require('./defaults');
 
 /**
@@ -10,7 +11,7 @@ import Defaults = require('./defaults');
  * @param config  Config to be contextualized.
  * @param context Context relative to Surface config.
  */
-export function contextualize(config: Surface.Compiler.Config, context: string): void
+export function contextualize(config: Compiler.Config, context: string): void
 {
     config.context = Path.resolve(context, config.context);
     config.public  = Path.resolve(context, config.public);
@@ -30,7 +31,7 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
 {
     let surfaceConfig = Defaults.surface;
     let webpackConfig = Defaults.webpack;
-    let config        = require(Path.join(path, file)) as Surface.Compiler.Config;
+    let config        = require(Path.join(path, file)) as Compiler.Config;
     
     contextualize(config, path);
     
@@ -50,7 +51,7 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
     [
         '.',
         config.context
-    ].concat(config.modules || []);
+    ].concat((config.modules && config.modules.map(x => Path.resolve(config.context, x))) || []);
     
     if (config.plugins && webpackConfig.plugins)
         webpackConfig.plugins = webpackConfig.plugins.concat(getPlugins(config.plugins, Common.resolveNodeModules(config.context)));
@@ -63,17 +64,17 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
  * @param plugins         Plugins to be required.
  * @param nodeModulesPath Path to 'node_modules' folder.
  */
-export function getPlugins(plugins: Array<Surface.Compiler.Plugin>, nodeModulesPath: string): Array<Webpack.Plugin>
+export function getPlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<Webpack.Plugin>
 {    
-    let result: Array<Webpack.Plugin> = [];
+    let result: Array<Compiler.Plugin> = [];
     
     for (let plugin of plugins)
     {
         if (!plugin.name.endsWith("-plugin"))
             plugin.name = `${plugin.name}-plugin`;
         
-        let TargetPlugin = require(Path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Surface.Compiler.Plugin;
-        result.push(new TargetPlugin(plugin.options));
+        let Plugin = require(Path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Compiler.Plugin;
+        result.push(new Plugin(plugin.options));
     }
 
     return result;
@@ -84,9 +85,9 @@ export function getPlugins(plugins: Array<Surface.Compiler.Plugin>, nodeModulesP
  * @param entries Entries to be resolved.
  * @param context Context used to resolve entries.
  */
-export function resolveEntries(entries: Surface.Compiler.Entry, context: string): Surface.Compiler.Entry
+export function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entry
 {
-    let result: Surface.Compiler.Entry = { };
+    let result: Compiler.Entry = { };
 
     if (typeof entries == 'string')
     {
@@ -95,7 +96,7 @@ export function resolveEntries(entries: Surface.Compiler.Entry, context: string)
 
     if (Array.isArray(entries))
     {
-        let tmp: Surface.Compiler.Entry = { '.': [] };
+        let tmp: Compiler.Entry = { '.': [] };
         for (let entry of entries)
             tmp['.'].push(entry);
 
@@ -155,7 +156,7 @@ export function resolveEntries(entries: Surface.Compiler.Entry, context: string)
  * @param key    Key of the object.
  * @param value  Value to be setted or pushed.
  */
-export function setOrPush(target: Surface.Compiler.Entry, key: string, value: string): void
+export function setOrPush(target: Compiler.Entry, key: string, value: string): void
 {
     if (!target[key])
         target[key] = value;

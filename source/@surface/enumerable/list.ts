@@ -1,3 +1,4 @@
+import { Nullable }   from '@surface/core/typings';
 import { Enumerable } from '@surface/enumerable';
 
 export class List<TSource> extends Enumerable<TSource>

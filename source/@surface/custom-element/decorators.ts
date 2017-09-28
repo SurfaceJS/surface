@@ -1,4 +1,5 @@
-﻿import { CustomElement } from '@surface/custom-element';
+﻿import { ClassDecoratorOf, Constructor } from '@surface/core/typings';
+import { CustomElement } from '@surface/custom-element';
 
 export function component(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<CustomElement>
 {

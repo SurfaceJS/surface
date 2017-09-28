@@ -1,3 +1,5 @@
+import { LiteralObject } from '@surface/core/typings';
+
 import FS      = require('fs');
 import Path    = require('path');
 import WebPack = require('webpack');
