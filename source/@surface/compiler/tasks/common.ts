@@ -37,6 +37,8 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
     
     config = Object.assign(surfaceConfig, config);
     
+    let nodeModules = Common.resolveNodeModules(config.context);
+
     webpackConfig.context = config.context,    
     webpackConfig.entry   = config.entry,
     webpackConfig.output  =
@@ -50,11 +52,12 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
     (webpackConfig.resolve as Webpack.NewResolve).modules =
     [
         '.',
-        config.context
+        config.context,
+        nodeModules
     ].concat((config.modules && config.modules.map(x => Path.resolve(config.context, x))) || []);
     
     if (config.plugins && webpackConfig.plugins)
-        webpackConfig.plugins = webpackConfig.plugins.concat(getPlugins(config.plugins, Common.resolveNodeModules(config.context)));
+        webpackConfig.plugins = webpackConfig.plugins.concat(getPlugins(config.plugins, nodeModules));
     
     return webpackConfig;
 }
