@@ -4,13 +4,11 @@
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/core": "0.0.3"
-    },
-    "description": "Surface common modules",
-    "devDependencies": {
+        "@surface/core": "0.0.3",
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.13"
     },
+    "description": "Surface common modules",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "common",
@@ -28,5 +26,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.4"
+    "version": "0.0.5"
 }

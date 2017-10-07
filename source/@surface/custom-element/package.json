@@ -5,12 +5,10 @@
     },
     "dependencies": {
         "@surface/core": "0.0.3",
-        "@surface/enumerable": "0.0.3"
-    },
-    "description": "Surface's Custom Element",
-    "devDependencies": {
+        "@surface/enumerable": "0.0.3",
         "@types/reflect-metadata": "0.0.5"
     },
+    "description": "Surface's Custom Element",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "surface",
@@ -28,5 +26,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.3"
+    "version": "0.0.4"
 }

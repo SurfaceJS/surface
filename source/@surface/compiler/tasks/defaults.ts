@@ -26,7 +26,7 @@ export let webpack =
     } as Webpack.NewResolve,
     resolveLoader:
     {
-        modules: [Path.resolve(__dirname, '../node_modules')]
+        modules: ['node_modules', Path.resolve(__dirname, '../node_modules')]
     } as Webpack.ResolveLoader,
     module:
     {

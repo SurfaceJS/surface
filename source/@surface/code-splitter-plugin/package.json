@@ -4,15 +4,13 @@
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/common": "0.0.4",
+        "@surface/common": "0.0.5",
         "@surface/core": "0.0.3",
-        "@surface/lazy-loader": "0.0.2"
-    },
-    "description": "Surface's plugin for html templating",
-    "devDependencies": {
+        "@surface/lazy-loader": "0.0.2",
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.9"
     },
+    "description": "Surface's plugin for html templating",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "html",
@@ -31,5 +29,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.4"
+    "version": "0.0.5"
 }
