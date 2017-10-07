@@ -1,28 +1,28 @@
 {
-  "author": "HitalloExiled",
-  "bugs": {
-    "url": "https://github.com/HitalloExiled/Surface/issues"
-  },
-  "dependencies": {
-    "@surface/core": "0.0.2"
-  },
-  "description": "Surface's enumerable module",
-  "homepage": "https://github.com/HitalloExiled/Surface#readme",
-  "keywords": [
-    "enumerable",
-    "surface",
-    "typescript"
-  ],
-  "license": "MIT",
-  "main": "index.js",
-  "name": "@surface/enumerable",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HitalloExiled/Surface.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "types": "index.d.ts",
-  "version": "0.0.2"
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/HitalloExiled/Surface/issues"
+    },
+    "dependencies": {
+        "@surface/core": "0.0.3"
+    },
+    "description": "Surface's enumerable module",
+    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "keywords": [
+        "enumerable",
+        "surface",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/enumerable",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HitalloExiled/Surface.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "types": "index.d.ts",
+    "version": "0.0.3"
 }
