@@ -27,9 +27,10 @@
         "typescript": "2.5.3",
         "webpack": "3.6.0"
     },
-    "description": "Surface's compiler module",
+    "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
+        "bundler",
         "compiler",
         "surface",
         "typescript"
@@ -44,5 +45,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "version": "0.0.4"
+    "version": "0.0.5"
 }

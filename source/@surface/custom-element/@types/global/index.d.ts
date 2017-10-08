@@ -1,4 +1,4 @@
-/// <reference path='../../../core/@types/global/index.d.ts'/>
+/// <reference path='../../../compiler/@types/global/index.d.ts'/>
 
 declare interface ShadyCSS
 {
