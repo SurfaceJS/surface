@@ -10,7 +10,7 @@
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.9"
     },
-    "description": "Surface's plugin for html templating",
+    "description": "Generate webpack code splits, used in combination with the @surface/lazy-loader module.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "html",
@@ -29,5 +29,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.5"
+    "version": "0.0.6"
 }

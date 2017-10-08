@@ -8,7 +8,7 @@
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.13"
     },
-    "description": "Surface common modules",
+    "description": "Common modules used by @surface's projects.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "common",
@@ -26,5 +26,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.5"
+    "version": "0.0.6"
 }

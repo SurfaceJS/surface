@@ -1,0 +1,1 @@
+## Enumerable module the provides many methods to iterate through of collections. ##

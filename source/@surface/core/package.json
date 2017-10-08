@@ -3,7 +3,7 @@
     "bugs": {
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
-    "description": "Surface core modules",
+    "description": "Core module of @surface projects.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "core",

@@ -9,7 +9,7 @@
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.13"
     },
-    "description": "Surface's plugin for html templating",
+    "description": "@surface's plugin for html templating.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
         "html",
@@ -28,5 +28,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.4"
+    "version": "0.0.5"
 }
