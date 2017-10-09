@@ -15,11 +15,7 @@ export function contextualize(config: Compiler.Config, context: string): void
 {
     config.context = Path.resolve(context, config.context);
     config.public  = Path.resolve(context, config.public);
-
-    if (config.modules)
-        config.modules = config.modules.map(x => Path.resolve(context, x));
-
-    config.entry = resolveEntries(config.entry, config.context);
+    config.entry   = resolveEntries(config.entry, config.context);
 }
 
 /**
@@ -29,37 +25,65 @@ export function contextualize(config: Compiler.Config, context: string): void
  */
 export function getConfig(path: string, file: string, env: string): Webpack.Configuration
 {
-    let surfaceConfig = Defaults.surface;
-    let webpackConfig = Defaults.webpack;
-    let config        = require(Path.join(path, file)) as Compiler.Config;
+    let config = require(Path.join(path, file)) as Compiler.Config;
     
     contextualize(config, path);
     
-    config = Object.assign(surfaceConfig, config);
+    let userWebpack: Webpack.Configuration = { };
+    let webpack = Defaults.webpack;
+
+    if (config.webpack)
+    {
+        if(typeof config.webpack == 'string' && FS.existsSync(config.webpack))
+            userWebpack = require(config.webpack) as Webpack.Configuration;
+        else
+            userWebpack = config.webpack as Webpack.Configuration;
+    }
+
+    webpack = Object.assign(webpack, userWebpack);
     
     let nodeModules = Common.resolveNodeModules(config.context);
 
-    webpackConfig.context = config.context,    
-    webpackConfig.entry   = config.entry,
-    webpackConfig.output  =
-    {
-        path:          config.public,
-        publicPath:    config.publicPath,
-        filename:      config.filename,
-        libraryTarget: config.libraryTarget
-    } as Webpack.Output;
-    
-    (webpackConfig.resolve as Webpack.NewResolve).modules =
+    webpack.output        = (webpack.output        as Webpack.Output);
+    webpack.module        = (webpack.module        as Webpack.NewModule);
+    webpack.resolve       = (webpack.resolve       as Webpack.NewResolve);
+    webpack.resolveLoader = (webpack.resolveLoader as Webpack.NewResolveLoader);
+
+    userWebpack.module        = (userWebpack.module        as Webpack.NewModule);
+    userWebpack.resolve       = (userWebpack.resolve       as Webpack.NewResolve);
+    userWebpack.resolveLoader = (userWebpack.resolveLoader as Webpack.NewResolveLoader);
+
+    webpack.context         = config.context;
+    webpack.entry           = config.entry;
+    webpack.output.path     = config.public;
+    webpack.output.filename = config.filename;
+
+    webpack.resolve.modules =
     [
         '.',
         config.context,
         nodeModules
-    ].concat((config.modules && config.modules.map(x => Path.resolve(config.context, x))) || []);
+    ];
+
+    if (userWebpack.resolve && userWebpack.resolve.modules)
+        webpack.resolve.modules = webpack.resolve.modules.concat(userWebpack.resolve.modules);
+
+    if (webpack.resolve.extensions && userWebpack.resolve && userWebpack.resolve.extensions)
+        webpack.resolve.extensions = webpack.resolve.extensions.concat(userWebpack.resolve.extensions);
+
+    if (webpack.resolveLoader && userWebpack.resolveLoader && userWebpack.resolveLoader.modules)
+        webpack.resolveLoader.modules = webpack.resolve.modules.concat(userWebpack.resolveLoader.modules);
     
-    if (config.plugins && webpackConfig.plugins)
-        webpackConfig.plugins = webpackConfig.plugins.concat(getPlugins(config.plugins, nodeModules));
-    
-    return webpackConfig;
+    if (webpack.plugins && config.plugins)
+        webpack.plugins = webpack.plugins.concat(getPlugins(config.plugins, nodeModules));
+
+    if (webpack.plugins && userWebpack.plugins)
+        webpack.plugins = webpack.plugins.concat(userWebpack.plugins);
+
+    if (webpack.module && userWebpack.module)
+        webpack.module.rules = webpack.module.rules.concat(userWebpack.module.rules);
+
+    return webpack;
 }
 
 /**

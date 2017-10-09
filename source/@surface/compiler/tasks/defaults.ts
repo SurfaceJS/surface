@@ -1,17 +1,6 @@
-import { Compiler } from '@surface/compiler/typings';
-
-import Path    = require('path');
-import Webpack = require('webpack');
-
-export let surface =
-{
-    context:    './',
-    entry:      './',
-    public:     './public',
-    publicPath: './assets',
-    filename:   '[name]/[hash].js',
-    target:     'es6'
-} as Compiler.Config;
+import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import Path                       = require('path');
+import Webpack                    = require('webpack');
 
 export let webpack =
 {
@@ -67,10 +56,28 @@ export let webpack =
             },
             {
                 test: /\.ts$/,
-                use: [{ loader: 'ts-loader' }]
+                use:
+                [
+                    { loader: 'cache-loader' },
+                    {
+                        loader: 'thread-loader',
+                        options:
+                        {
+                          // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+                          workers: require('os').cpus().length - 1,
+                        },
+                    },
+                    {
+                        loader: 'ts-loader',
+                        options: { transpileOnly: true, happyPackMode: false }
+                    }
+                ]
             },
         ] as Array<Webpack.Rule>,
     } as Webpack.Module,
-    plugins: [ new Webpack.optimize.CommonsChunkPlugin({ name: '.' })]
+    plugins:
+    [
+        new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true }),
+        new Webpack.optimize.CommonsChunkPlugin({ name: '.' }),
+    ]
 } as Webpack.Configuration;
-

@@ -1,5 +1,6 @@
-import { LiteralObject } from '@surface/core/typings';
-import * as Webpack      from 'webpack';
+import { LiteralObject }   from '@surface/core/typings';
+import { CompilerOptions } from 'typescript';
+import * as Webpack        from 'webpack';
 
 export namespace Compiler
 {
@@ -14,13 +15,12 @@ export namespace Compiler
 
     export interface Config
     {
-        context:        string;
-        entry:          Entry;
-        filename:       string;
-        libraryTarget?: string;
-        modules?:       Array<string>;
-        public:         string;
-        publicPath:     string;
-        plugins?:       Array<Plugin>
+        context:     string;
+        entry:       Entry;
+        filename:    string;
+        public:      string;
+        plugins?:    Array<Plugin>;
+        webpack?:    string|Webpack.Configuration;
+        typescript?: string|CompilerOptions;
     }
 }
