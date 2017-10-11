@@ -33,4 +33,59 @@ export function getParentPath(path: string): Nullable<string>
         throw new Error('Invalid path.')
     
     return dirName.split(Path.sep).pop();
-} 
+}
+
+export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
+export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+{
+    if (!target)
+        throw new TypeError('target can\'t be null s');
+
+    if (!source)
+        throw new TypeError('source can\'t be null s');
+
+    combineArrays = !!combineArrays;
+    
+    if (!Array.isArray(source))
+        source = [source];
+
+    for (let current of source)
+    {
+        for (let key of Object.keys(current))
+        {
+            if (!current[key])
+                continue;
+                
+            if (target[key] && target[key] instanceof Object)
+            {
+                if (Array.isArray(target[key]) && Array.isArray(current[key]) && combineArrays)
+                {
+                    target[key] = target[key].concat(current[key]);
+                }
+                else if (target[key] instanceof Object && current[key] instanceof Object && target[key].constructor.name == 'Object' && current[key].constructor.name == 'Object')
+                {
+                    target[key] = objectMerge(target[key], current[key], combineArrays);
+                }
+                else if (current[key])
+                {
+                    var descriptor = Object.getOwnPropertyDescriptor(current, key);
+                    
+                    if (descriptor && descriptor.enumerable)
+                        target[key] = current[key];
+                }
+            }
+            else if (current[key])
+            {
+                var descriptor = Object.getOwnPropertyDescriptor(current, key);
+
+                if (descriptor && descriptor.enumerable)
+                    target[key] = current[key];
+            }
+        }
+    }
+
+    return target as TTarget & TSource;
+}

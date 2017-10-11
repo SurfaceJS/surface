@@ -5,18 +5,14 @@ import Webpack                    = require('webpack');
 export let webpack =
 {
     devtool: '#source-map',
-    output:
-    {
-        chunkFilename: '[name]'
-    } as Webpack.Output,
     resolve:
     {
         extensions: ['.ts', '.js']
-    } as Webpack.NewResolve,
+    },
     resolveLoader:
     {
         modules: ['node_modules', Path.resolve(__dirname, '../node_modules')]
-    } as Webpack.ResolveLoader,
+    },
     module:
     {
         rules:
@@ -69,12 +65,12 @@ export let webpack =
                     },
                     {
                         loader: 'ts-loader',
-                        options: { transpileOnly: true, happyPackMode: false }
+                        options: { transpileOnly: true, happyPackMode: true }
                     }
                 ]
             },
-        ] as Array<Webpack.Rule>,
-    } as Webpack.Module,
+        ],
+    },
     plugins:
     [
         new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true }),

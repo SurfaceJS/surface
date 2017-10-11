@@ -1,6 +1,6 @@
 export interface Constructor<T> extends Function
 {
-    new (...args: Array<T>): T;
+    new (...args: Array<any>): T;
     Symbols:   any;
     prototype: T;
 }

@@ -3,12 +3,11 @@ import { CompilerOptions } from 'typescript';
 import * as Webpack        from 'webpack';
 
 export namespace Compiler
-{
-    export interface Plugin extends Webpack.Plugin
+{    
+    export interface Plugin
     {
-        new (options: LiteralObject): Plugin;
-        name:         string;
-        options:      LiteralObject;
+        name:    string;
+        options: LiteralObject;
     }
 
     export type Entry = string|Array<string>|LiteralObject<string>|LiteralObject<Array<string>>;

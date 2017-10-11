@@ -14,12 +14,16 @@ import Enums  = require('./enums');
  */
 export function build(configPath?: string, env?: string, watch?: boolean)
 {
-    env   = Enums.Enviroment[env || 'dev'] as string;
+    let enviroment = Enums.Enviroment.development;
+
+    if (env == 'prod' || env == 'production')
+        enviroment = Enums.Enviroment.production;
+
     watch = !!watch;
 
     let { root, file } = resolveConfig(configPath);
 
-    let config = Common.getConfig(root, file, env);
+    let config = Common.getConfig(root, file, enviroment);
 
     let compiler = Webpack(config);
 
@@ -35,7 +39,7 @@ export function build(configPath?: string, env?: string, watch?: boolean)
     let callback: Webpack.Compiler.Handler =
         (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
-    console.log(`Starting ${watch ? 'Watch' : 'build'} using ${env} configuration.`);
+    console.log(`Starting ${watch ? 'Watch' : 'build'} using ${enviroment} configuration.`);
 
     RimRaf
     (

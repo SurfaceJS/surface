@@ -1,10 +1,13 @@
-import { Compiler } from '@surface/compiler/typings';
+import { Constructor } from '@surface/core/typings';
+import { Compiler }    from '@surface/compiler/typings';
 
-import Common   = require('@surface/common');
-import FS       = require('fs');
-import Path     = require('path');
-import Webpack  = require('webpack');
-import Defaults = require('./defaults');
+import Common         = require('@surface/common');
+import FS             = require('fs');
+import Path           = require('path');
+import UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+import Webpack        = require('webpack');
+import Defaults       = require('./defaults');
+import Enums          = require('./enums');
 
 /**
  * Contextualizes paths referring to the module client.
@@ -23,7 +26,7 @@ export function contextualize(config: Compiler.Config, context: string): void
  * @param path Path to Surface config.
  * @param env  Enviroment variable.
  */
-export function getConfig(path: string, file: string, env: string): Webpack.Configuration
+export function getConfig(path: string, file: string, env: Enums.Enviroment): Webpack.Configuration
 {
     let config = require(Path.join(path, file)) as Compiler.Config;
     
@@ -40,48 +43,28 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
             userWebpack = config.webpack as Webpack.Configuration;
     }
 
-    webpack = Object.assign(webpack, userWebpack);
-    
     let nodeModules = Common.resolveNodeModules(config.context);
 
-    webpack.output        = (webpack.output        as Webpack.Output);
-    webpack.module        = (webpack.module        as Webpack.NewModule);
-    webpack.resolve       = (webpack.resolve       as Webpack.NewResolve);
-    webpack.resolveLoader = (webpack.resolveLoader as Webpack.NewResolveLoader);
+    let primaryConfig =
+    {
+        context: config.context,
+        entry:   config.entry,
+        output:
+        {
+            path:     config.public,
+            filename: config.filename
+        },
+        resolve:
+        {
+            modules: ['.', config.context, nodeModules]
+        },
+        plugins: getSurfacePlugins(config.plugins || [], nodeModules)
+    } as Webpack.Configuration; Webpack.optimize.UglifyJsPlugin
 
-    userWebpack.module        = (userWebpack.module        as Webpack.NewModule);
-    userWebpack.resolve       = (userWebpack.resolve       as Webpack.NewResolve);
-    userWebpack.resolveLoader = (userWebpack.resolveLoader as Webpack.NewResolveLoader);
+    webpack = Common.objectMerge(webpack, [userWebpack, primaryConfig], true);
 
-    webpack.context         = config.context;
-    webpack.entry           = config.entry;
-    webpack.output.path     = config.public;
-    webpack.output.filename = config.filename;
-
-    webpack.resolve.modules =
-    [
-        '.',
-        config.context,
-        nodeModules
-    ];
-
-    if (userWebpack.resolve && userWebpack.resolve.modules)
-        webpack.resolve.modules = webpack.resolve.modules.concat(userWebpack.resolve.modules);
-
-    if (webpack.resolve.extensions && userWebpack.resolve && userWebpack.resolve.extensions)
-        webpack.resolve.extensions = webpack.resolve.extensions.concat(userWebpack.resolve.extensions);
-
-    if (webpack.resolveLoader && userWebpack.resolveLoader && userWebpack.resolveLoader.modules)
-        webpack.resolveLoader.modules = webpack.resolve.modules.concat(userWebpack.resolveLoader.modules);
-    
-    if (webpack.plugins && config.plugins)
-        webpack.plugins = webpack.plugins.concat(getPlugins(config.plugins, nodeModules));
-
-    if (webpack.plugins && userWebpack.plugins)
-        webpack.plugins = webpack.plugins.concat(userWebpack.plugins);
-
-    if (webpack.module && userWebpack.module)
-        webpack.module.rules = webpack.module.rules.concat(userWebpack.module.rules);
+    if (env == Enums.Enviroment.production && webpack.plugins)
+        webpack.plugins = webpack.plugins.concat(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions: { ecma: 6 }}));
 
     return webpack;
 }
@@ -91,16 +74,16 @@ export function getConfig(path: string, file: string, env: string): Webpack.Conf
  * @param plugins         Plugins to be required.
  * @param nodeModulesPath Path to 'node_modules' folder.
  */
-export function getPlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<Webpack.Plugin>
+export function getSurfacePlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<Webpack.Plugin>
 {    
-    let result: Array<Compiler.Plugin> = [];
+    let result: Array<Webpack.Plugin> = [];
     
     for (let plugin of plugins)
     {
         if (!plugin.name.endsWith("-plugin"))
             plugin.name = `${plugin.name}-plugin`;
         
-        let Plugin = require(Path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Compiler.Plugin;
+        let Plugin = require(Path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Constructor<Webpack.Plugin>;
         result.push(new Plugin(plugin.options));
     }
 
