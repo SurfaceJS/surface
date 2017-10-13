@@ -4,16 +4,17 @@ import FS   = require('fs');
 import Path = require('path');
 
 /**
- * Resolve 'node_modules' directory.
+ * Look up for target file/directory.
  * @param startPath Path to start resolution.
+ * @param target    Target file/directory
  */
-export function resolveNodeModules(startPath: string): string
+export function lookUp(startPath: string, target: string): string
 {
-    let slices = startPath.replace(/\\/g, '/').split('/');
+    let slices = startPath.split(Path.sep);
 
     while (slices.length > 0)
     {
-        let path = Path.join(slices.join('/'), 'node_modules');
+        let path = Path.join(slices.join('/'), target);
 
         if (FS.existsSync(path))
         {

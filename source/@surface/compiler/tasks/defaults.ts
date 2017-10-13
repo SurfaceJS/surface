@@ -1,13 +1,48 @@
-import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-import Path                       = require('path');
-import Webpack                    = require('webpack');
+import Path    = require('path');
+import Webpack = require('webpack');
 
+export let loaders =
+{
+    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: Path.resolve(__dirname, './cache-loader') }},
+    cssLoader:   { loader: 'css-loader' },
+    fileLoader:
+    {
+        loader: 'file-loader',
+        options: { name: '/resources/[hash].[ext]' }
+    },
+    htmlLoader:
+    {   
+        loader: 'html-loader',
+        options:
+        {
+            attrs: ['img:src', 'link:href', 'script:src'],
+            minify: true
+        }
+    },
+    sassLoader: { loader: 'sass-loader' },
+    threadLoader:
+    {
+        loader: 'thread-loader',
+        options:
+        {
+          // there should be 1 cpu for the fork-ts-checker-webpack-plugin
+          workers: require('os').cpus().length - 1,
+        },
+    },
+    toStringLoader: { loader: 'to-string-loader' },
+    tsLoader:
+    {
+        loader: 'ts-loader',
+        options: { transpileOnly: true, happyPackMode: true }
+    },
+}
 export let webpack =
 {
     devtool: '#source-map',
     resolve:
     {
-        extensions: ['.ts', '.js']
+        extensions: ['.ts', '.js'],
+        modules:    ['.']
     },
     resolveLoader:
     {
@@ -19,61 +54,30 @@ export let webpack =
         [
             {
                 test: /\.(png|jpe?g|svg)$/,
-                use:
-                [
-                    {
-                        loader: 'file-loader',
-                        options: { name: '/resources/[hash].[ext]' }
-                    }
-                ]
+                use:  [loaders.fileLoader]
             },
             {
                 test: /\.s[ac]ss$/,
                 use:
-                [
-                    { loader: 'to-string-loader' },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' }
+                [   
+                    loaders.toStringLoader,
+                    loaders.cssLoader,
+                    loaders.sassLoader
                 ]
             },
             {
                 test: /\.html$/,
-                use:
-                [
-                    {   
-                        loader: 'html-loader',
-                        options:
-                        {
-                            attrs: ['img:src', 'link:href', 'script:src'],
-                            minify: true
-                        }
-                    }
-                ]
+                use: [loaders.htmlLoader]
             },
             {
                 test: /\.ts$/,
                 use:
                 [
-                    { loader: 'cache-loader' },
-                    {
-                        loader: 'thread-loader',
-                        options:
-                        {
-                          // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-                          workers: require('os').cpus().length - 1,
-                        },
-                    },
-                    {
-                        loader: 'ts-loader',
-                        options: { transpileOnly: true, happyPackMode: true }
-                    }
+                    loaders.cacheLoader,
+                    loaders.threadLoader,
+                    loaders.tsLoader
                 ]
             },
         ],
-    },
-    plugins:
-    [
-        new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true }),
-        new Webpack.optimize.CommonsChunkPlugin({ name: '.' }),
-    ]
+    }    
 } as Webpack.Configuration;

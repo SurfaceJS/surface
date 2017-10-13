@@ -14,12 +14,13 @@ export namespace Compiler
 
     export interface Config
     {
-        context:     string;
-        entry:       Entry;
-        filename:    string;
-        public:      string;
-        plugins?:    Array<Plugin>;
-        webpack?:    string|Webpack.Configuration;
-        typescript?: string|CompilerOptions;
+        context:        string;
+        entry:          Entry;
+        filename:       string;
+        output:         string;
+        runtime?:       string;    
+        plugins?:       Array<Plugin>;
+        webpackConfig?: string|Webpack.Configuration;
+        tsconfig?:      string|CompilerOptions;
     }
 }

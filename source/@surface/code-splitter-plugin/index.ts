@@ -1,5 +1,3 @@
-import { Nullable } from '@surface/core/typings';
-
 import Common  = require('@surface/common');
 import FS      = require('fs');
 import Path    = require('path');
@@ -9,8 +7,7 @@ namespace CodeSplitterPlugin
 {
     export interface Options
     {
-        entries:      Array<string>;
-        relativePath: Nullable<boolean>;
+        entries: Array<string>;
     }
 }
 
@@ -37,7 +34,7 @@ class CodeSplitterPlugin
                 if (!this.options.context)
                     throw new Error('Context can\'t be null');
 
-                let file = Path.join(Common.resolveNodeModules(this.options.context), '@surface', 'lazy-loader', 'index.js');
+                let file = Path.join(Common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
 
                 for (let entry of self._options.entries)
                 {
@@ -51,15 +48,13 @@ class CodeSplitterPlugin
                             content += self.writeEntry
                             (
                                 `${entry}/${Common.getParentPath(Path.format(path))}`,
-                                Path.format(path),
-                                !!self._options.relativePath
+                                Path.format(path)
                             ) + '\n';
                         else
                             content += self.writeEntry
                             (
                                 `${entry}/${path.name}`,
-                                Path.format(path),
-                                !!self._options.relativePath
+                                Path.format(path)
                             ) + '\n';
                     }
 
@@ -107,9 +102,9 @@ class CodeSplitterPlugin
         return result;
     }
 
-    private writeEntry(name: string, path: string, relativePath: boolean): string
+    private writeEntry(name: string, path: string): string
     {
-        name = relativePath ? name : name.replace('./', '')
+        name = name.replace('./', '')
         let result =
         [
             `        case '${name}':`,

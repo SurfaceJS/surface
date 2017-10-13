@@ -14,7 +14,7 @@ namespace HtmlTemplatePlugin
     }
 }
 
-class HtmlTemplatePlugin
+class HtmlTemplatePlugin implements WebPack.Plugin
 {
     private _options: HtmlTemplatePlugin.Options;
 
@@ -43,9 +43,11 @@ class HtmlTemplatePlugin
                         self.getModuleName(entry.name) :
                         self.getModuleName(this.options.entry[key]);
 
+                    let file = self.resolveFilePath(compilation.options.output.path, entry.name, chunk.files.filter(x => x.match(/.+?\.js$/))[0]);
+
                     let keys =
                     {
-                        file:     chunk.files.filter(x => x.match(/.+?\.js$/))[0],
+                        file:     file,
                         fullHash: compilation.fullHash,
                         hash:     compilation.hash,
                         module:   $module,
@@ -76,6 +78,11 @@ class HtmlTemplatePlugin
             return slices[1];
         else
             return slices[0];
+    }
+
+    private resolveFilePath(output: string, entryName: string, file: string): string
+    {
+        return Path.relative(Path.join(output, entryName), Path.join(output, file)).replace(/\\/g, '/');
     }
 
     private templateParse(template: string, keys: LiteralObject<string>): string
