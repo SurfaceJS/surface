@@ -1,31 +1,30 @@
 {
-  "author": "HitalloExiled",
-  "bugs": {
-    "url": "https://github.com/HitalloExiled/Surface/issues"
-  },
-  "dependencies": {
-    "@surface/core": "0.0.1"
-  },
-  "description": "Surface common modules",
-  "devDependencies": {
-    "@types/node": "^8.0.26"
-  },
-  "homepage": "https://github.com/HitalloExiled/Surface#readme",
-  "keywords": [
-    "common",
-    "surface",
-    "typescrypt"
-  ],
-  "license": "MIT",
-  "main": "index.js",
-  "name": "@surface/common",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/HitalloExiled/Surface.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "types": "index.d.ts",
-  "version": "0.0.1"
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/HitalloExiled/Surface/issues"
+    },
+    "dependencies": {
+        "@surface/types": "0.0.0",
+        "@types/node": "8.0.33",
+        "@types/webpack": "3.0.13"
+    },
+    "description": "Common modules used by @surface's projects.",
+    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "keywords": [
+        "common",
+        "surface",
+        "typescrypt"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/common",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/HitalloExiled/Surface.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "types": "index.d.ts",
+    "version": "0.0.7"
 }

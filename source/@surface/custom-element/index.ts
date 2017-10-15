@@ -2,6 +2,7 @@ import '@surface/custom-element/extensions';
 
 import { List }          from '@surface/enumerable/list';
 import { ElementBinder } from '@surface/custom-element/binder';
+import { Nullable }      from '@surface/types';
 
 export abstract class CustomElement extends HTMLElement
 {

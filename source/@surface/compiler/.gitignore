@@ -1,4 +1,6 @@
+**.d.ts
 **.js
 **.js.map
-**.d.ts
-!@types/**/*.d.ts
+cache-loader
+!@types/**/*d.ts
+!typings.d.ts

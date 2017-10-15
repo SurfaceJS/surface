@@ -1,50 +1,53 @@
 {
-  "author": "HitalloExiled",
-  "bin": {
-    "surface": "index.js"
-  },
-  "bugs": {
-    "url": "https://github.com/HitalloExiled/Surface/issues"
-  },
-  "dependencies": {
-    "@surface/core": "0.0.1",
-    "@surface/common": "0.0.1",
-    "commander": "^2.11.0",
-    "css-loader": "^0.28.5",
-    "file-loader": "^0.11.2",
-    "html-loader": "^0.5.0",
-    "node-sass": "^4.5.3",
-    "reflect-metadata": "^0.1.10",
-    "rimraf": "^2.6.1",
-    "sass-loader": "^6.0.6",
-    "to-string-loader": "^1.1.5",
-    "ts-loader": "^2.3.3",
-    "tslib": "^1.7.1",
-    "typescript": "^2.5.1",
-    "webpack": "^3.5.5"
-  },
-  "description": "Surface's compiler module",
-  "devDependencies": {
-    "@types/commander": "^2.9.1",
-    "@types/node": "^8.0.24",
-    "@types/rimraf": "^2.0.1",
-    "@types/webpack": "^3.0.9"
-  },
-  "homepage": "https://github.com/HitalloExiled/Surface#readme",
-  "keywords": [
-    "compiler",
-    "surface",
-    "typescript"
-  ],
-  "license": "MIT",
-  "name": "@surface/compiler",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/HitalloExiled/Surface.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "version": "0.0.1"
+    "author": "HitalloExiled",
+    "bin": {
+        "surface": "index.js"
+    },
+    "bugs": {
+        "url": "https://github.com/HitalloExiled/Surface/issues"
+    },
+    "dependencies": {
+        "@surface/common": "0.0.7",
+        "@surface/types": "0.0.0",
+        "@types/commander": "2.11.0",
+        "@types/node": "8.0.33",
+        "@types/rimraf": "2.0.1",
+        "@types/webpack": "3.0.13",
+        "cache-loader": "1.1.0",
+        "commander": "2.11.0",
+        "css-loader": "0.28.7",
+        "file-loader": "1.1.5",
+        "fork-ts-checker-webpack-plugin": "0.2.8",
+        "html-loader": "0.5.1",
+        "node-sass": "4.5.3",
+        "reflect-metadata": "0.1.10",
+        "rimraf": "2.6.2",
+        "sass-loader": "6.0.6",
+        "thread-loader": "1.1.2",
+        "to-string-loader": "1.1.5",
+        "ts-loader": "2.3.7",
+        "tslib": "1.7.1",
+        "typescript": "2.5.3",
+        "uglifyjs-webpack-plugin": "1.0.0-beta.3",
+        "webpack": "3.6.0"
+    },
+    "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
+    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "keywords": [
+        "bundler",
+        "compiler",
+        "surface",
+        "typescript"
+    ],
+    "license": "MIT",
+    "name": "@surface/compiler",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/HitalloExiled/Surface.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "version": "0.0.7"
 }

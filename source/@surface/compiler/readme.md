@@ -1,0 +1,1 @@
+## Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack. ##

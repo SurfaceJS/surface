@@ -1,7 +1,12 @@
-export enum Enviroment
+export enum EnviromentType
 {
-    dev         = 'development',
     development = 'development',
-    prod        = 'production',
     production  = 'production',
+}
+
+export enum TasksType
+{
+    build   = 'build',
+    clean   = 'clean',
+    rebuild = 'rebuild'
 }

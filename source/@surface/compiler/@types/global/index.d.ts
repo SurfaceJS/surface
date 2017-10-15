@@ -1,31 +1,35 @@
-declare namespace Surface
+declare module '*.css'
 {
-    export namespace Compiler
-    {
-        export interface Plugin
-        {
-            new (options: LiteralObject): Plugin;
-            apply: (compiler: any) => void;
-        }
-        
-        export interface Plugin
-        {
-            name:    string;
-            options: LiteralObject
-        }
+    var _: string;
+    export default  _;
+}
 
-        export type Entry = string|Array<string>|LiteralObject<string>|LiteralObject<Array<string>>;
+declare module '*.html'
+{
+    var _: string;
+    export default  _;
+}
 
-        export interface Config
-        {
-            context:        string;
-            entry:          Entry;
-            filename:       string;
-            libraryTarget?: string;
-            modules?:       Array<string>;
-            public:         string;
-            publicPath:     string;
-            plugins?:       Array<Plugin>
-        }
-    }
+declare module '*.json'
+{
+    var _: string;
+    export default  _;
+}
+
+declare module '*.sass'
+{
+    var _: string;
+    export default  _;
+}
+
+declare module '*.scss'
+{
+    var _: string;
+    export default  _;
+}
+
+declare module '*.txt'
+{
+    var _: string;
+    export default  _;
 }

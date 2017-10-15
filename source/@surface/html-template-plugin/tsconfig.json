@@ -12,11 +12,7 @@
     ],
     "sourceMap": true,
     "target":    "es6",
-    "typeRoots":
-    [
-      "./node_modules/@types",
-      "../core/@types"
-    ]
+    "typeRoots": ["./node_modules/@types"]
   },
   "include": ["./"],
   "exclude": ["./node_modules"]
