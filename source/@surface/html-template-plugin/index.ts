@@ -1,4 +1,4 @@
-import { LiteralObject } from '@surface/core/typings';
+import { LiteralObject } from '@surface/types';
 
 import FS      = require('fs');
 import Path    = require('path');

@@ -1,4 +1,4 @@
-﻿import { Action2, Func1, Func2, Func3, Nullable } from '@surface/core/typings';
+﻿import { Action2, Func1, Func2, Func3, Nullable } from '@surface/types';
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {

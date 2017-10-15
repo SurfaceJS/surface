@@ -1,4 +1,4 @@
-import { Nullable } from '@surface/core/typings';
+import { Nullable } from '@surface/types';
 
 import FS   = require('fs');
 import Path = require('path');

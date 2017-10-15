@@ -3,8 +3,8 @@ import Path    = require('path');
 import RimRaf  = require('rimraf');
 import Webpack = require('webpack');
 
-import { Constructor } from '@surface/core/typings';
-import { Compiler }    from '@surface/compiler/typings';
+import { Compiler }    from '@surface/compiler/types';
+import { Constructor } from '@surface/types';
 
 import Common                     = require('@surface/common');
 import ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');

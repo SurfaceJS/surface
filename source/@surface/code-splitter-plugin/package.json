@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/common": "0.0.5",
-        "@surface/core": "0.0.3",
+        "@surface/types": "0.0.0",
         "@surface/lazy-loader": "0.0.2",
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.9"

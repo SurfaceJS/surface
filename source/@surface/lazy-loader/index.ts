@@ -1,4 +1,4 @@
-import { Constructor } from '@surface/core/typings';
+import { Constructor } from '@surface/types';
 
 /**
  * Load code splitted modules
