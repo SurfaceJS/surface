@@ -7,7 +7,7 @@
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/common": "0.0.5",
+        "@surface/common": "0.0.7",
         "@surface/types": "0.0.0",
         "@types/commander": "2.11.0",
         "@types/node": "8.0.33",
@@ -49,5 +49,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "version": "0.0.5"
+    "version": "0.0.7"
 }

@@ -103,7 +103,7 @@ function getConfig(path: string, Enviroment: Enums.EnviromentType): Webpack.Conf
         },
         resolve:
         {
-            modules: [config.context, nodeModules]
+            modules: [config.context]
         },
         plugins: getSurfacePlugins(config.plugins || [], nodeModules)
     } as Webpack.Configuration;

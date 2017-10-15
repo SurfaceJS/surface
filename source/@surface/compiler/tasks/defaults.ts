@@ -42,7 +42,7 @@ export let webpack =
     resolve:
     {
         extensions: ['.ts', '.js'],
-        modules:    ['.']
+        modules:    ['.', 'node_modules']
     },
     resolveLoader:
     {

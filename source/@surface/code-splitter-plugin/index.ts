@@ -47,7 +47,7 @@ class CodeSplitterPlugin
                         if (path.name == 'index')
                             content += self.writeEntry
                             (
-                                `${entry}/${Common.getParentPath(Path.format(path))}`,
+                                `${entry}/${path.dir.split(Path.sep).pop()}`,
                                 Path.format(path)
                             ) + '\n';
                         else

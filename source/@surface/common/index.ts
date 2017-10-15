@@ -1,12 +1,10 @@
-import { Nullable } from '@surface/types';
-
 import FS   = require('fs');
 import Path = require('path');
 
 /**
  * Look up for target file/directory.
  * @param startPath Path to start resolution.
- * @param target    Target file/directory
+ * @param target    Target file/directory.
  */
 export function lookUp(startPath: string, target: string): string
 {
@@ -27,18 +25,31 @@ export function lookUp(startPath: string, target: string): string
     throw new Error('Can\'t find node_modules on provided root path');
 }
 
-export function getParentPath(path: string): Nullable<string>
-{
-    let dirName = Path.dirname(path);
-    if (!dirName)
-        throw new Error('Invalid path.')
-    
-    return dirName.split(Path.sep).pop();
-}
-
+/**
+ * Deeply merges two or more objects.
+ * @param target Object to receive merge.
+ * @param source Objects to merge to the target.
+ */
 export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+/**
+ * Deeply merges two or more objects, and optionally concatenate array values.
+ * @param target        Object to receive merge.
+ * @param source        Object to merge to the target.
+ * @param combineArrays Specify to combine or not arrays.
+ */
 export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+/**
+ * Deeply merges two objects.
+ * @param target Object to receive merge.
+ * @param source Objects to merge to the target.
+ */
 export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
+/**
+ * Deeply merges two objects, and optionally concatenate array values.
+ * @param target Object to receive merge.
+ * @param source Object to merge to the target.
+ * @param combineArrays 
+ */
 export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
 export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
