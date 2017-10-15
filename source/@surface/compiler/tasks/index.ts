@@ -1,6 +1,6 @@
 import FS      = require('fs');
 import Path    = require('path');
-import RimRaf  = require('rimraf');
+import rimraf  = require('rimraf');
 import Webpack = require('webpack');
 
 import { Compiler }    from '@surface/compiler/types';
@@ -48,7 +48,7 @@ async function build(config: Webpack.Configuration, enviroment: Enums.Enviroment
  */
 async function clean(config: Webpack.Configuration): Promise<void>
 {
-    await new Promise(resolve => RimRaf(config.output!.path!, resolve));
+    await new Promise(resolve => rimraf(config.output!.path!, resolve));
 }
 
 /**
@@ -85,10 +85,13 @@ function getConfig(path: string, Enviroment: Enums.EnviromentType): Webpack.Conf
     if (config.webpackConfig)
     {
         if(typeof config.webpackConfig == 'string' && FS.existsSync(config.webpackConfig))
-            userWebpack = require(config.webpackConfig) as Webpack.Configuration;
+            userWebpack = require(Path.resolve(Path.dirname(path), config.webpackConfig)) as Webpack.Configuration;
         else
             userWebpack = config.webpackConfig as Webpack.Configuration;
     }
+
+    if (config.tsconfig)
+        Defaults.loaders.tsLoader.options.configFile = config.tsconfig;
 
     let nodeModules = Common.lookUp(config.context, 'node_modules');
 

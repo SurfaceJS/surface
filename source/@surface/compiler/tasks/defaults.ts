@@ -33,7 +33,12 @@ export let loaders =
     tsLoader:
     {
         loader: 'ts-loader',
-        options: { transpileOnly: true, happyPackMode: true }
+        options:
+        {
+            configFile:    'tsconfig.json',
+            happyPackMode: true,
+            transpileOnly: true
+        }
     },
 }
 export let webpack =
