@@ -3,4 +3,4 @@
 **.js.map
 cache-loader
 !@types/**/*d.ts
-!typings.d.ts
+!types.d.ts
