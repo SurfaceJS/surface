@@ -281,14 +281,14 @@ export async function execute(task?: Enums.TasksType, config?: string, env?: str
     switch (task)
     {
         case Enums.TasksType.build:
-            build(wepackconfig, enviroment, watch);
+            await build(wepackconfig, enviroment, watch);
             break;
         case Enums.TasksType.clean:
-            clean(wepackconfig);
+            await clean(wepackconfig);
             break;
         case Enums.TasksType.rebuild:
-            clean(wepackconfig);
-            build(wepackconfig, enviroment, watch);
+            await clean(wepackconfig);
+            await build(wepackconfig, enviroment, watch);
             break;
     }
 }
