@@ -21,6 +21,6 @@ export namespace Compiler
         runtime?:       string;    
         plugins?:       Array<Plugin>;
         webpackConfig?: string|Webpack.Configuration;
-        tsconfig?:      string|CompilerOptions;
+        tsconfig?:      string;
     }
 }
