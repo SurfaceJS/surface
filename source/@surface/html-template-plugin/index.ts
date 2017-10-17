@@ -8,9 +8,8 @@ namespace HtmlTemplatePlugin
 {
     export interface Options
     {
-        entries:  Array<string>;
-        pattern:  RegExp;
-        template: string;
+        filename?: string; 
+        template?: string;
     }
 }
 
@@ -18,8 +17,11 @@ class HtmlTemplatePlugin implements WebPack.Plugin
 {
     private _options: HtmlTemplatePlugin.Options;
 
-    public constructor(options: HtmlTemplatePlugin.Options)
+    public constructor(options?: HtmlTemplatePlugin.Options)
     {
+        if (!options)
+            throw new Error('Parameter \'options\' can\'t be null.');
+
         this._options = options;
     }
 
@@ -32,7 +34,12 @@ class HtmlTemplatePlugin implements WebPack.Plugin
             function (this: WebPack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
                 if (!this.options.entry)
-                    throw new Error('Entry can\'t be null');
+                    throw new Error('Entry can\'t be null.');
+
+                if (!self._options.template)
+                    throw new Error('Property \'options.template\' can\'t be null.');
+
+                self._options.filename = self._options.filename || '[name]/index.html';
 
                 for (let key in compilation.entrypoints)
                 {
@@ -43,7 +50,9 @@ class HtmlTemplatePlugin implements WebPack.Plugin
                         self.getModuleName(entry.name) :
                         self.getModuleName(this.options.entry[key]);
 
-                    let file = self.resolveFilePath(compilation.options.output.path, entry.name, chunk.files.filter(x => x.match(/.+?\.js$/))[0]);
+                    let file = '/' + chunk.files.filter(x => Path.extname(x) == '.js')[0] || '';
+
+                    file = file.replace('./', '');
 
                     let keys =
                     {
@@ -55,11 +64,13 @@ class HtmlTemplatePlugin implements WebPack.Plugin
                         id:       chunk.id
                     };
 
-                    let template = FS.readFileSync(Path.resolve(this.options.context!, self._options.template)).toString();
+                    let template = FS.readFileSync(Path.resolve(this.options.context, self._options.template)).toString();
 
                     let html = self.templateParse(template, keys);
 
-                    compilation.assets[`${entry.name}/index.html`] =
+                    let asset = self.filenameParse(self._options.filename, keys);
+
+                    compilation.assets[asset] =
                     {
                         source: () => html,
                         size:   () => html.length
@@ -80,17 +91,20 @@ class HtmlTemplatePlugin implements WebPack.Plugin
             return slices[0];
     }
 
-    private resolveFilePath(output: string, entryName: string, file: string): string
-    {
-        return Path.relative(Path.join(output, entryName), Path.join(output, file)).replace(/\\/g, '/');
-    }
-
     private templateParse(template: string, keys: LiteralObject<string>): string
     {
         for (let key in keys)
             template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
     
         return template;
+    }
+
+    private filenameParse(filename: string, keys: LiteralObject<string>): string
+    {
+        for (let key in keys)
+            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);
+
+        return filename;
     }
 }
 

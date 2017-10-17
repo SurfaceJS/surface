@@ -1,6 +1,6 @@
+import rimraf  = require('rimraf');
 import FS      = require('fs');
 import Path    = require('path');
-import rimraf  = require('rimraf');
 import Webpack = require('webpack');
 
 import { Compiler }    from '@surface/compiler/types';
