@@ -119,7 +119,7 @@ function getConfig(path: string, Enviroment: Enums.EnviromentType): Webpack.Conf
         primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
         primaryConfig.plugins.push(new Webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
 
-    let webpackConfig = Common.objectMerge(Defaults.webpack, [userWebpack, primaryConfig], true);
+    let webpackConfig = Common.objectMerge({ }, [Defaults.webpack, userWebpack, primaryConfig], true);
 
     return webpackConfig;
 }
