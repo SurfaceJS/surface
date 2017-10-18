@@ -48,7 +48,13 @@ async function build(config: Webpack.Configuration, enviroment: Enums.Enviroment
  */
 async function clean(config: Webpack.Configuration): Promise<void>
 {
-    await new Promise(resolve => rimraf(config.output!.path!, resolve));
+    let promises =
+    [
+        new Promise(resolve => rimraf(config.output!.path!, resolve)),
+        new Promise(resolve => rimraf(Path.resolve(__dirname, './cache-loader'), resolve))
+    ];
+    
+    await Promise.all(promises);
 }
 
 /**
@@ -91,7 +97,7 @@ function getConfig(path: string, Enviroment: Enums.EnviromentType): Webpack.Conf
     }
 
     if (config.tsconfig)
-        Defaults.loaders.tsLoader.options.configFile = config.tsconfig;
+        Defaults.loaders.tsLoader.options.configFile = Path.resolve(Path.dirname(path), config.tsconfig);
 
     let nodeModules = Common.lookUp(config.context, 'node_modules');
 
