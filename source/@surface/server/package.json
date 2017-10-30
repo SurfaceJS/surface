@@ -1,21 +1,28 @@
 {
     "author": "HitalloExiled",
+    "bin": {
+        "surface-server": "index.js"
+    },
     "bugs": {
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/types": "0.0.0"
+        "@surface/common": "0.0.7",
+        "@surface/enumerable": "0.0.4",
+        "@surface/types": "0.0.0",
+        "@types/commander": "^2.11.0",
+        "commander": "^2.11.0",
+        "tslib": "^1.8.0"
     },
-    "description": "Enumerable module the provides many methods to iterate through of collections.",
+    "description": "Simple server for @surface projects.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",
     "keywords": [
-        "enumerable",
+        "server",
         "surface",
-        "typescript"
+        "typescrypt"
     ],
     "license": "MIT",
-    "main": "index.js",
-    "name": "@surface/enumerable",
+    "name": "@surface/server",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/HitalloExiled/Surface.git"
@@ -23,6 +30,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "types": "index.d.ts",
-    "version": "0.0.5"
+    "version": "0.0.0"    
 }

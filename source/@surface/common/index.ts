@@ -1,5 +1,37 @@
-import FS   = require('fs');
-import Path = require('path');
+import * as fs   from 'fs';
+import * as path from 'path';
+
+/**
+ * Resolve surface's config file location
+ * @param context  Cotext used to resolve
+ * @param filepath Relative or absolute path to folder or file
+ * @param filename Default filename
+ */
+export function resolveFile(context: string, filepath: string, filename: string)
+{
+    if (!path.isAbsolute(filepath))
+        filepath = path.resolve(context, filepath);
+
+    if (fs.existsSync(filepath))
+    {
+        if (fs.lstatSync(filepath).isDirectory())
+        {
+            let file = 'server.config.json';
+            if (fs.existsSync(path.join(filepath, file)))
+                return path.join(filepath, file);
+            
+            file = 'server.config.js';            
+            if (fs.existsSync(path.join(filepath, file)))
+                return path.join(filepath, file);
+                
+            throw new Error('Configuration file not found');
+        }
+        
+        return filepath;
+    }
+    else
+        throw new Error('Configuration file not found');    
+}
 
 /**
  * Look up for target file/directory.
@@ -8,15 +40,15 @@ import Path = require('path');
  */
 export function lookUp(startPath: string, target: string): string
 {
-    let slices = startPath.split(Path.sep);
+    let slices = startPath.split(path.sep);
 
     while (slices.length > 0)
     {
-        let path = Path.join(slices.join('/'), target);
+        let filepath = path.join(slices.join('/'), target);
 
-        if (FS.existsSync(path))
+        if (fs.existsSync(filepath))
         {
-            return path;
+            return filepath;
         }
 
         slices.pop();
@@ -30,28 +62,28 @@ export function lookUp(startPath: string, target: string): string
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
 /**
  * Deeply merges two or more objects, and optionally concatenate array values.
  * @param target        Object to receive merge.
  * @param source        Object to merge to the target.
  * @param combineArrays Specify to combine or not arrays.
  */
-export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
 /**
  * Deeply merges two objects.
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
 /**
  * Deeply merges two objects, and optionally concatenate array values.
  * @param target Object to receive merge.
  * @param source Object to merge to the target.
  * @param combineArrays 
  */
-export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
-export function objectMerge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
     if (!target)
         throw new TypeError('target can\'t be null s');
@@ -79,7 +111,7 @@ export function objectMerge<TTarget = object, TSource = object>(target: TTarget,
                 }
                 else if (target[key] instanceof Object && current[key] instanceof Object && target[key].constructor.name == 'Object' && current[key].constructor.name == 'Object')
                 {
-                    target[key] = objectMerge(target[key], current[key], combineArrays);
+                    target[key] = merge(target[key], current[key], combineArrays);
                 }
                 else if (current[key])
                 {

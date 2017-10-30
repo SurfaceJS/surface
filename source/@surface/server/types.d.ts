@@ -1,0 +1,4 @@
+interface Startup
+{
+    initilize(): void;
+}

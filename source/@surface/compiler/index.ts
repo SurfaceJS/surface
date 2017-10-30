@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import commander = require('commander');
-import Tasks     = require('./tasks');
+import * as tasks     from './tasks';
+import * as commander from 'commander';
 
 commander
   .version('0.0.1')
@@ -10,4 +10,4 @@ commander
   .option('-w, --watch'     , 'Watch mode compilation', /true|false/)
   .parse(process.argv);
 
-  Tasks.execute(commander.task, commander.config, commander.env, commander.watch);
+  tasks.execute(commander.task, commander.config, commander.env, commander.watch);

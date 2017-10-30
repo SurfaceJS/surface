@@ -1,9 +1,9 @@
-import Path    = require('path');
-import Webpack = require('webpack');
+import * as path    from 'path';
+import * as webpack from 'webpack';
 
 export let loaders =
 {
-    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: Path.resolve(__dirname, './cache-loader') }},
+    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: path.resolve(__dirname, './cache-loader') }},
     cssLoader:   { loader: 'css-loader' },
     fileLoader:
     {
@@ -41,7 +41,7 @@ export let loaders =
         }
     },
 }
-export let webpack =
+export let webpackConfig =
 {
     devtool: '#source-map',
     resolve:
@@ -51,7 +51,7 @@ export let webpack =
     },
     resolveLoader:
     {
-        modules: ['node_modules', Path.resolve(__dirname, '../node_modules')]
+        modules: ['node_modules', path.resolve(__dirname, '../node_modules')]
     },
     module:
     {
@@ -85,4 +85,4 @@ export let webpack =
             },
         ],
     }    
-} as Webpack.Configuration;
+} as webpack.Configuration;

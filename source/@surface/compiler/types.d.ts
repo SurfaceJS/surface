@@ -1,6 +1,6 @@
 import { LiteralObject }   from '@surface/types';
 import { CompilerOptions } from 'typescript';
-import * as Webpack        from 'webpack';
+import * as webpack        from 'webpack';
 
 export namespace Compiler
 {    
@@ -20,7 +20,7 @@ export namespace Compiler
         output:         string;
         runtime?:       string;    
         plugins?:       Array<Plugin>;
-        webpackConfig?: string|Webpack.Configuration;
+        webpackConfig?: string|webpack.Configuration;
         tsconfig?:      string;
     }
 }

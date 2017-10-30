@@ -1,5 +1,5 @@
-import { Action, Func }  from "@surface/types";
-import { CustomElement } from "@surface/custom-element";
+import { CustomElement } from '.';
+import { Action, Func }  from '@surface/types';
 
 enum BindType
 {
@@ -9,18 +9,18 @@ enum BindType
 
 export class ElementBinder<T extends CustomElement>
 {
-    private _context: T;
-    private _content: Node;
+    private context: T;
+    private content: Node;
 
     public constructor(context: T, content: Node)
     {
-		this._context = context;
-        this._content = content;
+		this.context = context;
+        this.content = content;
 	}
 
     public bind(): void
     {
-        this.traverseElement(this._content, this._context);
+        this.traverseElement(this.content, this.context);
     }
 
     private traverseElement(node: Node, context: object): void

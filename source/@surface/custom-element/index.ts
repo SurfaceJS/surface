@@ -1,20 +1,21 @@
-import '@surface/custom-element/extensions';
+import './extensions';
+import '@surface/enumerable/extensions';
 
+import { ElementBinder } from './binder';
 import { List }          from '@surface/enumerable/list';
-import { ElementBinder } from '@surface/custom-element/binder';
 import { Nullable }      from '@surface/types';
 
 export abstract class CustomElement extends HTMLElement
 {
-    private _template: Nullable<HTMLTemplateElement>;
+    private templateValue: Nullable<HTMLTemplateElement>;
 	public get template(): Nullable<HTMLTemplateElement>
     {
-		return this._template;
+		return this.templateValue;
 	}
 
 	public set template(value: Nullable<HTMLTemplateElement>)
     {
-		this._template = value;
+		this.templateValue = value;
 	}
     
     public constructor()
@@ -28,9 +29,9 @@ export abstract class CustomElement extends HTMLElement
         if (window.ShadyCSS)
             window.ShadyCSS.styleElement(this);
             
-        if (this._template)
+        if (this.templateValue)
         {
-            let content = document.importNode(this._template.content, true);
+            let content = document.importNode(this.templateValue.content, true);
             this.applyDateBind(content);
             this.attachShadow({ mode: 'open' }).appendChild(content);
         }
