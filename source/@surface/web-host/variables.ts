@@ -1,4 +1,4 @@
-export let mymeType =
+export const mymeType =
 {
     '.aac':    'audio/aac',
     '.abw':    'application/x-abiword',

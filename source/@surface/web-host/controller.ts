@@ -1,4 +1,4 @@
-import { ActionResult } from '@surface/server/library/action-result';
+import { ActionResult } from '@surface/web-host/action-result';
 import * as http        from 'http';
 
 export class Controller

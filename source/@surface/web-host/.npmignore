@@ -1,4 +1,3 @@
 *.ts
-cache
 tsconfig.json
 !*.d.ts

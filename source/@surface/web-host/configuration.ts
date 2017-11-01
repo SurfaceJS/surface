@@ -1,9 +1,9 @@
 import { Nullable, Overwrite } from '@surface/types';
-import { merge }         from '@surface/common';
+import { merge }               from '@surface/common';
 import * as http               from 'http';
 import * as path               from 'path';
 
-export class ServerConfiguration
+export class Configuration
 {    
     private portValue : number;
     public get port() : number
@@ -27,29 +27,29 @@ export class ServerConfiguration
         this.wwwRootValue = value;
     }
 
-    private startupValue : Nullable<ServerConfiguration.Startup>
-    public get startup(): Nullable<ServerConfiguration.Startup>
+    private startupValue : Nullable<Configuration.Startup>
+    public get startup(): Nullable<Configuration.Startup>
     {
         return this.startupValue;
     }
     
-    public set startup(value: Nullable<ServerConfiguration.Startup>)
+    public set startup(value: Nullable<Configuration.Startup>)
     {
         this.startupValue = value;
     }
 
-    private routesValue : ServerConfiguration.Routes
-    public get routes(): ServerConfiguration.Routes
+    private routesValue : Configuration.Routes
+    public get routes(): Configuration.Routes
     {
         return this.routesValue;
     }
     
-    public set routes(value: ServerConfiguration.Routes)
+    public set routes(value: Configuration.Routes)
     {
         this.routesValue = value;
     }
 
-    public constructor(context: string, config: Partial<ServerConfiguration.Json>)
+    public constructor(context: string, config: Partial<Configuration.Json>)
     {
         this.port = config.port || 1337;
 
@@ -62,9 +62,9 @@ export class ServerConfiguration
     }
 }
 
-export namespace ServerConfiguration
+export namespace Configuration
 {
-    export type Json = Overwrite<ServerConfiguration, { startup: string }>;
+    export type Json = Overwrite<Configuration, { startup: string }>;
 
     export type Routes = { fallback: string, paths: Array<string> }
 

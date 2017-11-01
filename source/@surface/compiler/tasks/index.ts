@@ -1,14 +1,14 @@
-import * as defaults                        from './defaults';
-import * as enums                           from './enums';
-import { Compiler }                         from '../types';
-import { Constructor }                      from '@surface/types';
-import { lookUp, merge, resolveFile }       from '@surface/common';
-import * as fs                              from 'fs';
-import * as path                            from 'path';
-import * as rimraf                          from 'rimraf';
-import * as webpack                         from 'webpack';
-import * as ForkTsCheckerWebpackPlugin      from 'fork-ts-checker-webpack-plugin';
-import * as UglifyJsPlugin                  from 'uglifyjs-webpack-plugin';
+import * as defaults                   from './defaults';
+import * as enums                      from './enums';
+import { Compiler }                    from '../types';
+import { Constructor }                 from '@surface/types';
+import { lookUp, merge, resolveFile }  from '@surface/common';
+import * as fs                         from 'fs';
+import * as path                       from 'path';
+import * as rimraf                     from 'rimraf';
+import * as webpack                    from 'webpack';
+import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import * as UglifyJsPlugin             from 'uglifyjs-webpack-plugin';
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean): Promise<void>
 {

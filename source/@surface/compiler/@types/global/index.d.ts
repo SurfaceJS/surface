@@ -12,7 +12,7 @@ declare module '*.html'
 
 declare module '*.json'
 {
-    var _: string;
+    var _: object;
     export default  _;
 }
 

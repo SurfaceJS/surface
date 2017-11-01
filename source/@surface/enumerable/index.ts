@@ -2,7 +2,7 @@
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
-    public abstract [Symbol.iterator]: () => Iterator<any>;
+    public abstract [Symbol.iterator]: () => Iterator<TSource>;
     /**
      * Create a enumerable object from a iterable source
      * @param source Source used to create the iterable object
@@ -77,15 +77,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /** Casts the Enumerable into array */
     public toArray(): Array<TSource>
     {
-        let values: Array<TSource> = [];
-        let iterator  = this[Symbol.iterator]();
-        let iteration = iterator.next();        
+        let values: Array<TSource> = [];      
 
-        while (!iteration.done)
-        {
-            values.push(iteration.value);
-            iteration = iterator.next();
-        }
+        for (let item of this)
+            values.push(item);
 
         return values;
     }
@@ -191,7 +186,7 @@ class SelectIterator<TSource, TResult> extends Enumerable<TResult>
 
 class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TCollection|TResult>;
+    public [Symbol.iterator]: () => Iterator<TResult>;
 
     public constructor(source: Iterable<TSource>, iterableSelector: Func1<TSource, Iterable<TCollection>>, selector: Func2<TCollection, number, TResult>)
     {

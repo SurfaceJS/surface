@@ -1,20 +1,20 @@
-import { ServerConfiguration } from '../library/server-configuration';
-import * as http               from 'http';
+import { Configuration } from '@surface/web-host/configuration';
+import * as http         from 'http';
 
 export type RoutePath = { route: string, routePaths: Array<RoutePath> };
 
-export class Host
-{    
-    private config: ServerConfiguration;
+export class WebHost
+{
+    private config: Configuration;
 
-    public constructor(config: ServerConfiguration)
+    public constructor(config: Configuration)
     {
         this.config = config;
     }
 
-    public static run(config: ServerConfiguration): void
+    public static run(config: Configuration): void
     {
-        new Host(config).run();
+        new WebHost(config).run();
     }
 
     public run(): void

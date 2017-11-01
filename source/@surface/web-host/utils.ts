@@ -1,8 +1,8 @@
-import * as serverVariables from './server-variables';
-import { Nullable }         from '@surface/types'
-import * as fs              from 'fs';
-import * as http            from 'http';
-import * as path            from 'path';
+import { Nullable } from '@surface/types'
+import { mymeType } from '@surface/web-host/variables';
+import * as fs      from 'fs';
+import * as http    from 'http';
+import * as path    from 'path';
 
 export type RoutePath = { route: string, routePaths: RoutePath[] };
 
@@ -13,7 +13,7 @@ export function loadFile(response: http.ServerResponse, filepath: string): void
         let extension = path.extname(filepath);
         let data      = fs.readFileSync(filepath);
 
-        response.writeHead(200, { "Content-Type": serverVariables.mymeType[extension] });
+        response.writeHead(200, { "Content-Type": mymeType[extension] });
         response.write(data);
         response.end();
     }
