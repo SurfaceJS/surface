@@ -3,6 +3,7 @@
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public abstract [Symbol.iterator]: () => Iterator<TSource>;
+
     /**
      * Create a enumerable object from a iterable source
      * @param source Source used to create the iterable object

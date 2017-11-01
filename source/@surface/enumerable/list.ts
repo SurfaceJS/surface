@@ -1,4 +1,4 @@
-import { Enumerable } from '.';
+import { Enumerable } from '@surface/enumerable';
 import { Nullable }   from '@surface/types';
 
 export class List<TSource> extends Enumerable<TSource>
