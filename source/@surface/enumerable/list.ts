@@ -30,7 +30,7 @@ export class List<TSource> extends Enumerable<TSource>
         else if (source instanceof Enumerable)
             this.source = source.toArray();
         else
-            source = [];
+            this.source = [];
 
         let self = this;
 

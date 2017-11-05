@@ -1,28 +1,54 @@
-import { Configuration } from '@surface/web-host/configuration';
-import * as http         from 'http';
-
-export type RoutePath = { route: string, routePaths: Array<RoutePath> };
+import { Configuration }                        from '@surface/web-host/configuration';
+import * as utils                               from '@surface/web-host/utils';
+import { Router, RountingHandler, RoutingType } from '@surface/router';
+import * as http                                from 'http';
 
 export class WebHost
 {
-    private config: Configuration;
+    private config:  Configuration;
+    private startup: WebHost.Startup;
+    private router:  RountingHandler;
 
-    public constructor(config: Configuration)
+    private static instanceValue: WebHost
+    public static get instance(): WebHost
     {
-        this.config = config;
+        return this.instanceValue;
     }
 
-    public static run(config: Configuration): void
+    private constructor(config: Configuration)
     {
-        new WebHost(config).run();
+        let routes =
+        [
+            '/{controller}',
+            '/{controller}/{action}',
+            '/{controller}/{action}/{id?}',
+            '/api/{controller}',
+            '/api/{controller}/{action}',
+            '/api/{controller}/{action}/{id?}'
+        ];
+
+        this.config = config;
+        this.router = new Router(RoutingType.Abstract, routes);
     }
 
     public run(): void
     {
-        if (this.config.startup && this.config.startup.onStart)
-            this.config.startup.onStart();
+        if (this.startup && this.startup.onStart)
+            this.startup.onStart();
 
         http.createServer(this.listenerFactory()).listen(this.config.port);
+    }
+
+    public useStartup<T extends WebHost.Startup>(startup: T): WebHost
+    {
+        this.startup = startup;
+        return this;
+    }
+
+    public static create(config: Configuration): WebHost
+    {
+        WebHost.instanceValue = new WebHost(config);
+        return WebHost.instanceValue;
     }
 
     private listenerFactory(): (this: http.Server, request: http.IncomingMessage, response: http.ServerResponse) => void
@@ -32,20 +58,18 @@ export class WebHost
         {
             try
             {
-                if (self.config.startup && self.config.startup.onBeginRequest)
-                    self.config.startup.onBeginRequest(request);
-
-                /*
-                let routes = Route.from(self.config.routes.paths).normalized;
+                if (self.startup && self.startup.onBeginRequest)
+                    self.startup.onBeginRequest(request);
                 
                 if (request.url)
                 {
-                    let path = utils.resolveUrl(self.config.wwwroot, request.url, self.config.defaultRoute);
+                    let path = utils.resolveUrl(self.config.wwwroot, request.url, '/app');
 
-                    path = path || self.config.notFound || '';
+                    //path = path || self.config.notFound || '';
                     utils.loadFile(response, path || '');
                 }
 
+                /*
                 if (self.config.startup && self.config.startup.onEndRequest)
                     self.config.startup.onEndRequest(request, response);
                 */
@@ -55,9 +79,20 @@ export class WebHost
                 response.writeHead(404, { 'Content-Type': 'text/plain' });
                 response.end(error.message);
 
-                if (self.config.startup && self.config.startup.onError)
-                    self.config.startup.onError(error, request, response);
+                if (self.startup && self.startup.onError)
+                    self.startup.onError(error, request, response);
             }
         }
+    }
+}
+
+export namespace WebHost
+{
+    export interface Startup
+    {
+        onStart?(): void;
+        onBeginRequest?(request: http.IncomingMessage): void;
+        onEndRequest?(request: http.IncomingMessage, response: http.ServerResponse): void;
+        onError?(error: Error, request: http.IncomingMessage, response: http.ServerResponse): void;
     }
 }

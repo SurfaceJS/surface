@@ -1,4 +1,4 @@
-import { LiteralObject, Nullable } from '@surface/types';
+import { ObjectLiteral, Nullable } from '@surface/types';
 import * as fs           from 'fs';
 import * as path         from 'path';
 import * as webPack      from 'webpack';
@@ -92,7 +92,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
             return slices[0];
     }
 
-    private templateParse(template: string, keys: LiteralObject<string>): string
+    private templateParse(template: string, keys: ObjectLiteral<string>): string
     {
         for (let key in keys)
             template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
@@ -100,7 +100,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
         return template;
     }
 
-    private filenameParse(filename: string, keys: LiteralObject<string>): string
+    private filenameParse(filename: string, keys: ObjectLiteral<string>): string
     {
         for (let key in keys)
             filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);

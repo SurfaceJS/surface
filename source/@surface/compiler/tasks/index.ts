@@ -15,10 +15,7 @@ export async function execute(task?: enums.TasksType, config?: string, env?: str
     task   = task || enums.TasksType.build;
     config = config || './';
 
-    let enviroment = enums.EnviromentType.development;
-    
-    if (env == 'prod' || env == 'production')
-        enviroment = enums.EnviromentType.production;
+    let enviroment = enums.EnviromentType[env || 'debug'];
     
     watch = !!watch;
     
@@ -105,12 +102,9 @@ function getConfig(filepath: string, Enviroment: enums.EnviromentType): webpack.
     if (!config.output)
         throw new TypeError('Property \'output\' can\'t be null');
 
-    config.filename = config.filename || '[name].js'
-
-    config.entry   = resolveEntries(config.entry, config.context);
-    config.runtime = config.runtime || Object.keys(config.entry)[0];
-    
     config.context = path.resolve(root, config.context);
+    config.entry   = resolveEntries(config.entry, config.context);
+    config.runtime = config.runtime || Object.keys(config.entry)[0];    
     config.output  = path.resolve(root, config.output);
     
     let userWebpack: webpack.Configuration = { };
@@ -131,7 +125,7 @@ function getConfig(filepath: string, Enviroment: enums.EnviromentType): webpack.
     let primaryConfig =
     {
         context: config.context,
-        entry:   config.entry,
+        entry:   config.entry,        
         output:
         {
             path:     config.output,
@@ -146,11 +140,11 @@ function getConfig(filepath: string, Enviroment: enums.EnviromentType): webpack.
 
     primaryConfig.plugins = primaryConfig.plugins || [];
 
-    if (Enviroment == enums.EnviromentType.production)
+    if (Enviroment == enums.EnviromentType.release)
         primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true }));
         
-        primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
-        primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
+    primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
 
     let webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
 

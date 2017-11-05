@@ -1,6 +1,6 @@
 import '@surface/enumerable/extensions';
-
-import { Action1, LiteralObject } from '@surface/types';
+import { Route }   from '@surface/router/route';
+import { Action1 } from '@surface/types';
 
 export enum RoutingType
 {
@@ -9,47 +9,33 @@ export enum RoutingType
     History
 }
 
-interface RountingHandler
+export abstract class Router
 {
-    when(route: string, action: Action1<Router.Path>): RountingHandler;
-    routeTo(path: string|Location): void;
-}
-
-export class Router implements RountingHandler
-{   
-    private handler: RountingHandler;
-
-    public constructor(routingType: RoutingType);
-    public  constructor(routingType?: RoutingType)
-    {
+    public static create(routingType: RoutingType, routes: Array<string>): Router
+    {        
+        let route = new Route(routes);
         switch (routingType)
         {
             case RoutingType.Abstract:
                 throw new Error('Not implemented');
             case RoutingType.Hash:
                 throw new Error('Not implemented');
-            case RoutingType.History:                
-                this.handler = new HistoryHandler();
+            case RoutingType.History:
+                return new HistoryHandler(route);
         }
     }
 
-    public when(route: string, action: Action1<Router.Path>): RountingHandler
-    {
-        return this.handler.when(route, action);
-    }
-
-    public routeTo(path: string | Location): void
-    {
-        this.handler.routeTo(path);
-    }
+    public abstract routeTo(path: string): void;
+    public abstract when(route: string, action: Action1<Route>): Router;
 }
 
-class HistoryHandler implements RountingHandler
+class HistoryHandler implements Router
 {
-    private routes: LiteralObject<Action1<Router.Path>> = { };
+    private route: Route
 
-    public constructor()
+    public constructor(route: Route)
     {
+        this.route = route;
         let self = this;
         window.onpopstate = function(this: Window, event: PopStateEvent)
         {
@@ -57,11 +43,9 @@ class HistoryHandler implements RountingHandler
         }
     }
 
-    public routeTo(path: string|Location): void
+    public routeTo(path: string): void
     {
-        if (path instanceof Location)
-            path = path.pathname + path.search;
-
+        /*
         window.history.pushState(null, "", path);
         let route = this.routes[path];
 
@@ -69,49 +53,12 @@ class HistoryHandler implements RountingHandler
             route(this.parsePath(path));
         else if (this.routes['/*'])
             this.routes['/*'](this.parsePath(path));
+        */
     }
 
-    public when(route: string, action: Action1<Router.Path>): RountingHandler
+    public when(route: string, action: Action1<Router.Path>): HistoryHandler
     {
-        this.routes[route] = action;
+        //this.routes[route] = action;
         return this;
-    }
-
-    private parsePath(path: string): Router.Path
-    {
-        let [root, queryString] = path.split('?');
-
-        let args: LiteralObject<string> = { };
-
-        if (queryString)
-        {
-            decodeURIComponent(queryString)
-                .split('&')
-                .asEnumerable()
-                .select
-                (
-                    property =>
-                    {
-                        let [key, value] = property.split('=');
-                        if (key)
-                            return { key, value }
-                        else
-                            return null;
-                    }
-                )
-                .where(x => x != null)
-                .forEach(x => args[x!.key] = x!.value);
-        }
-
-        return { root, args };
-    }
-}
-
-export namespace Router
-{
-    export interface Path
-    {
-        root: string;
-        args: LiteralObject<string>;
     }
 }

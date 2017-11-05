@@ -3,11 +3,19 @@ import * as path from 'path';
 
 /**
  * Resolve surface's config file location
- * @param context  Cotext used to resolve
- * @param filepath Relative or absolute path to folder or file
- * @param filename Default filename
+ * @param context  Cotext used to resolve.
+ * @param filepath Relative or absolute path to folder or file.
+ * @param filename Filename to resolve.
  */
-export function resolveFile(context: string, filepath: string, filename: string)
+export function resolveFile(context: string, filepath: string, filename: string);
+/**
+ * Resolve surface's config file location
+ * @param context   Cotext used to resolve.
+ * @param filepath  Relative or absolute path to folder or file.
+ * @param filenames Possible filenames to resolve.
+ */
+export function resolveFile(context: string, filepath: string, filenames: Array<string>);
+export function resolveFile(context: string, filepath: string, filenames: string|Array<string>)
 {
     if (!path.isAbsolute(filepath))
         filepath = path.resolve(context, filepath);
@@ -16,13 +24,14 @@ export function resolveFile(context: string, filepath: string, filename: string)
     {
         if (fs.lstatSync(filepath).isDirectory())
         {
-            let file = 'server.config.json';
-            if (fs.existsSync(path.join(filepath, file)))
-                return path.join(filepath, file);
-            
-            file = 'server.config.js';            
-            if (fs.existsSync(path.join(filepath, file)))
-                return path.join(filepath, file);
+            if (!Array.isArray(filenames))
+                filenames = [filenames];
+                
+            for (let filename of filenames)
+            {
+                if (fs.existsSync(path.join(filepath, filename)))
+                    return path.join(filepath, filename);
+            }
                 
             throw new Error('Configuration file not found');
         }
