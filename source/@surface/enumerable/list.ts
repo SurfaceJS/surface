@@ -7,7 +7,7 @@ export class List<TSource> extends Enumerable<TSource>
     
     private source: Array<TSource>;
     
-    /** Returns Length of the list */
+    /** Returns Length of the list. */
     public get length(): number
     {
         return this.source.length;
@@ -15,11 +15,11 @@ export class List<TSource> extends Enumerable<TSource>
     
     public constructor();
     /**
-     * @param source Array<TSource> used to create the list
+     * @param source Array<TSource> used to create the list.
      */
     public constructor(source: Array<TSource>);
     /**
-     * @param source Enumerable<TSource> used to create the list
+     * @param source Enumerable<TSource> used to create the list.
      */
     public constructor(source: Enumerable<TSource>);
     public constructor(source?: Array<TSource>|Enumerable<TSource>)
@@ -42,8 +42,8 @@ export class List<TSource> extends Enumerable<TSource>
     }
 
     /**
-     * Adds provided item to the list
-     * @param item Item to insert
+     * Adds provided item to the list.
+     * @param item Item to insert.
      */
     public add(item: TSource): void
     {
@@ -51,21 +51,21 @@ export class List<TSource> extends Enumerable<TSource>
     }
 
     /**
-     * Adds to the list the provided item at specified index
-     * @param item Item to insert
-     * @param index Position from item to insert
+     * Adds to the list the provided item at specified index.
+     * @param item Item to insert.
+     * @param index Position from item to insert.
      */
     public addAt(item: TSource, index): void;
     /**
-     * Adds to the list the provided Array<TSource> object at specified index
-     * @param items Items to insert
-     * @param index Position from items to insert
+     * Adds to the list the provided Array<TSource> object at specified index.
+     * @param items Items to insert.
+     * @param index Position from items to insert.
      */
     public addAt(items: Array<TSource>, index): void;
     /**
-     * Adds to the list the provided List<TSource> object at specified index
-     * @param items Items to insert
-     * @param index Position from items to insert
+     * Adds to the list the provided List<TSource> object at specified index.
+     * @param items Items to insert.
+     * @param index Position from items to insert.
      */
     public addAt(items: List<TSource>, index): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index): void
@@ -89,19 +89,19 @@ export class List<TSource> extends Enumerable<TSource>
     }
 
     /**
-     * Removes from the list the specified item
-     * @param item Item to remove
+     * Removes from the list the specified item.
+     * @param item Item to remove.
      */
     public remove(item: TSource): void;
     /**
-     * Removes from the list the item in the specified index
-     * @param index Position from item to remove
+     * Removes from the list the item in the specified index.
+     * @param index Position from item to remove.
      */
     public remove(index: number): void;
     /**
-     * Removes from the list the amount of items specified from the index
-     * @param index Position from item to remove
-     * @param count Quantity of items to remove
+     * Removes from the list the amount of items specified from the index.
+     * @param index Position from item to remove.
+     * @param count Quantity of items to remove.
      */
     public remove(index: number, count: number): void;
     public remove(indexOritem: number|TSource, count?: number): void
@@ -123,8 +123,8 @@ export class List<TSource> extends Enumerable<TSource>
     }
 
     /**
-     * Returns the item at the specified index
-     * @param index Position of the item
+     * Returns the item at the specified index.
+     * @param index Position of the item.
      */
     public item(index: number): TSource
     {
