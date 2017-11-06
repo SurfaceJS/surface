@@ -74,16 +74,7 @@ export class PathTree
         }
     
         this.childs = Object.keys(tmp).asEnumerable()
-            .select
-            (
-                key =>
-                new PathTree
-                (
-                    key,
-                    this,
-                    tmp[key].select(route => new PathTree(route)).toList()
-                )
-            )
+            .select(key => new PathTree(key, this, tmp[key].select(route => new PathTree(route)).toList()))
             .toList();
     }        
 }

@@ -4,91 +4,58 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public abstract [Symbol.iterator]: () => Iterator<TSource>;
 
-    /**
-     * Create a enumerable object from a iterable source
-     * @param source Source used to create the iterable object
-     */
-    public static from<T>(source: Iterable<T>): Enumerable<T>
+    /** Casts the elements of an IEnumerable to the specified type. Note that no type checking is performed at runtime. */
+    public cast<T extends TSource>(): Enumerable<T>
     {
-        return new EnumerableIterator(source);
+        return (this as Enumerable<TSource>) as Enumerable<T>;
     }
 
     /**
-     * Filter the enumeration using the specified predicate
-     * @param predicate Predicate used to filter the enumeration
-     */
-    public where(predicate: Func1<TSource, boolean>): Enumerable<TSource>
-    {
-        return new WhereIterator(this, predicate);
-    }
-    
-    /**
-     * Select the enumeration result using the specified selector
-     * @param selector Selector used to returns the result, provides a second argument with the index of the iteration
-     */
-    public select<TResult>(selector: Func2<TSource, number, TResult>): Enumerable<TResult>
-    {
-        return new SelectIterator<TSource, TResult>(this, selector);
-    }
-
-    /**
-     * 
-     * @param iterableSelector 
-     */
-    public selectMany<TResult>(iterableSelector: Func1<TSource, Iterable<TResult>>): Enumerable<TResult>;
-    /**
-     * 
-     * @param iterableSelector 
-     * @param selector 
-     */
-    public selectMany<TCollection, TResult>(iterableSelector: Func1<TSource, Iterable<TCollection>>, selector: Func2<TCollection, number, TResult>): Enumerable<TResult>;
-    public selectMany<TCollection, TResult>(iterableSelector: Func1<TSource, Iterable<TCollection>>, selector?: Func2<TCollection, number, TResult>): Enumerable<TResult>
-    {
-        if (!selector)
-            selector = x => x as any;
-
-        return new SelectManyIterator(this, iterableSelector, selector);
-    }
-
-    /** Return the first item of the enumeration or null */
-    public firstOrDefault(): Nullable<TSource>
-    {
-        return this[Symbol.iterator]().next().value;
-    }
-
-    /** Return the first item of the enumeration or throw a exception cause not found */
-    public first(): TSource
-    {
-        let value = this[Symbol.iterator]().next().value;
-        if (value)
-            return value;
-        else
-            throw new Error("Value can't be null");
-    }
-
-    /**
-     * Returns the provided value if the enumeration returns no result
-     * @param value Default value to be used
+     * Returns the elements of the specified sequence or the specified value in a singleton collection if the sequence is empty.
+     * @param value The value to return if the sequence is empty.
      */
     public defaultIfEmpty(value: TSource): Enumerable<TSource>
     {
         return new DefaultIfEmptyIterator(this, value);
     }
 
-    /** Casts the Enumerable into array */
-    public toArray(): Array<TSource>
+    /** Returns the first element of a sequence. */
+    public first(): TSource;
+    /**
+     * Returns the first element of the sequence that satisfies a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public first(predicate: Func1<TSource, boolean>): TSource;
+    public first(predicate?: Func1<TSource, boolean>): TSource
     {
-        let values: Array<TSource> = [];      
+        let value: Nullable<TSource> = null;
 
-        for (let item of this)
-            values.push(item);
+        value = predicate && this.firstOrDefault(predicate) || this.firstOrDefault();
 
-        return values;
+        if (!value)
+            throw new Error("Value can't be null");
+
+        return value;
+    }
+
+    /** Returns the first element of a sequence, or undefined|null if the sequence contains no elements. */
+    public firstOrDefault(): Nullable<TSource>;
+    /**
+     * Returns the first element of the sequence that satisfies a condition or a default value if no such element is found.
+     * @param predicate A function to test each element for a condition.
+     */
+    public firstOrDefault(predicate: Func1<TSource, boolean>): Nullable<TSource>;
+    public firstOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
+    {
+        if (predicate)
+            return this.where(predicate).firstOrDefault();
+
+        return this[Symbol.iterator]().next().value;
     }
     
     /**
-     * Iterates the enumeration by executing the specified action
-     * @param action Action to be executed, provides a second argument with the index of the iteration
+     * Performs the specified action on each element of the sequence by incorporating the element's index.
+     * @param action The Action2<TSource, number> delegate to perform on each element of the sequence.
      */
     public forEach(action: Action2<TSource, number>)
     {
@@ -100,15 +67,110 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         }
     }
 
-    public zip<TCollection, TResult>(collection: TCollection, selector: Func3<TSource, TCollection, number, TResult>): Enumerable<TResult>
+    /** Returns the last element of a sequence. */
+    public last(): TSource;
+    /**
+     * Returns the last element of the sequence that satisfies a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public last(predicate: Func1<TSource, boolean>): TSource;
+    public last(predicate?: Func1<TSource, boolean>): TSource
     {
-        return new ZipIterator(this, collection, selector);
+        let value: Nullable<TSource> = null;
+
+        value = predicate && this.lastOrDefault(predicate) || this.lastOrDefault();
+
+        if (!value)
+            throw new Error("Value can't be null");
+
+        return value;
     }
 
-    /** Convert enumerable to a derived type. Note that no type checking is performed at runtime */
-    public cast<T extends TSource>(): Enumerable<T>
+    /** Returns the last element of a sequence, or undefined|null if the sequence contains no elements. */
+    public lastOrDefault(): Nullable<TSource>;
+    /**
+     * Returns the last element of the sequence that satisfies a condition or a default value if no such element is found.
+     * @param predicate A function to test each element for a condition.
+     */
+    public lastOrDefault(predicate: Func1<TSource, boolean>): Nullable<TSource>;
+    public lastOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
     {
-        return (this as Enumerable<TSource>) as Enumerable<T>;
+        if (predicate)
+            return this.where(predicate).lastOrDefault();
+
+        let value: Nullable<TSource> = null;
+
+        for (let element of this)
+            value = element;
+        
+        return value;
+    }
+
+    /**
+     * Projects each element of a sequence into a new form by incorporating the element's index.
+     * @param selector A transform function to apply to each source element; the second parameter of the function represents the index of the source element.
+     */
+    public select<TResult>(selector: Func2<TSource, number, TResult>): Enumerable<TResult>
+    {
+        return new SelectIterator<TSource, TResult>(this, selector);
+    }
+
+    /**
+     * Projects each element of a sequence to an Enumerable<T> and flattens the resulting sequences into one sequence.
+     * @param collectionSelector A transform function to apply to each element of the input sequence.
+     */
+    public selectMany<TResult>(collectionSelector: Func1<TSource, Iterable<TResult>>): Enumerable<TResult>;
+    /**
+     * 
+     * @param collectionSelector A transform function to apply to each element of the input sequence.
+     * @param selector           A transform function to apply to each element of the intermediate sequence.
+     */
+    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector: Func2<TCollection, number, TResult>): Enumerable<TResult>;
+    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector?: Func2<TCollection, number, TResult>): Enumerable<TResult>
+    {
+        if (!selector)
+            selector = x => x as any;
+
+        return new SelectManyIterator(this, collectionSelector, selector);
+    }
+
+    /** Creates an array from a Enumerable<T>. */
+    public toArray(): Array<TSource>
+    {
+        let values: Array<TSource> = [];      
+
+        for (let item of this)
+            values.push(item);
+
+        return values;
+    }
+
+    /**
+     * Filters a sequence of values based on a predicate.
+     * @param predicate A function to test each element for a condition.
+     */
+    public where(predicate: Func1<TSource, boolean>): Enumerable<TSource>
+    {
+        return new WhereIterator(this, predicate);
+    }
+
+    /**
+     * Applies a specified function to the corresponding elements of two sequences, producing a sequence of the results.
+     * @param second   The second sequence to merge.
+     * @param selector A function that specifies how to merge the elements from the two sequences.
+     */
+    public zip<TSecond, TResult>(second: TSecond, selector: Func3<TSource, TSecond, number, TResult>): Enumerable<TResult>
+    {
+        return new ZipIterator(this, second, selector);
+    }
+
+    /**
+     * Create a enumerable object from a iterable source
+     * @param source Source used to create the iterable object
+     */
+    public static from<T>(source: Iterable<T>): Enumerable<T>
+    {
+        return new EnumerableIterator(source);
     }
 }
 

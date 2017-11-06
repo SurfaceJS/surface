@@ -1,13 +1,13 @@
-import { Configuration }                        from '@surface/web-host/configuration';
-import * as utils                               from '@surface/web-host/utils';
-import { Router, RountingHandler, RoutingType } from '@surface/router';
-import * as http                                from 'http';
+import { Configuration }       from '@surface/web-host/configuration';
+import * as utils              from '@surface/web-host/utils';
+import { Router, RoutingType } from '@surface/router';
+import * as http               from 'http';
 
 export class WebHost
 {
     private config:  Configuration;
     private startup: WebHost.Startup;
-    private router:  RountingHandler;
+    private router:  Router;
 
     private static instanceValue: WebHost
     public static get instance(): WebHost
@@ -20,7 +20,7 @@ export class WebHost
         let routes =
         [
             '/{controller}',
-            '/{controller}/{action}',
+            '/{controller}/{area}/{action}',
             '/{controller}/{action}/{id?}',
             '/api/{controller}',
             '/api/{controller}/{action}',
@@ -28,7 +28,7 @@ export class WebHost
         ];
 
         this.config = config;
-        this.router = new Router(RoutingType.Abstract, routes);
+        this.router = Router.create(RoutingType.Abstract, routes);
     }
 
     public run(): void

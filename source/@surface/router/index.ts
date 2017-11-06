@@ -14,35 +14,101 @@ export abstract class Router
     public static create(routingType: RoutingType, routes: Array<string>): Router
     {        
         let route = new Route(routes);
+        
+        let x = route.match('/foo/bar/1');
+        let y = route.match('/api/foo/bar/1');
+        console.log({ x, y });
+
         switch (routingType)
         {
             case RoutingType.Abstract:
-                throw new Error('Not implemented');
+                throw new AbstractRouter(route);
             case RoutingType.Hash:
-                throw new Error('Not implemented');
+                throw new HashRouter(route);
             case RoutingType.History:
-                return new HistoryHandler(route);
+                return new HistoryRouter(route);
         }
     }
 
+    public abstract match(path: string): Route;
     public abstract routeTo(path: string): void;
     public abstract when(route: string, action: Action1<Route>): Router;
 }
 
-class HistoryHandler implements Router
+class AbstractRouter extends Router
 {
-    private route: Route
+    
+    private route: Route;
 
     public constructor(route: Route)
     {
+        super();
         this.route = route;
-        let self = this;
+    }
+
+    public match(path: string): Route
+    {
+        let foo = this.route.match(path);
+
+        console.log(foo);
+        return {} as Route;
+    }
+
+    public routeTo(path: string): void
+    {
+        throw new Error("Method not implemented.");
+    }
+
+    public when(route: string, action: Action1<Route>): Router
+    {
+        throw new Error("Method not implemented.");
+    }
+}
+
+class HashRouter extends Router
+{
+    private route: Route;
+
+    public constructor(route: Route)
+    {
+        super();
+        this.route = route;
+    }
+
+    public match(path: string): Route
+    {
+        throw new Error("Method not implemented.");
+    }
+    
+    public routeTo(path: string): void
+    {
+        throw new Error("Method not implemented.");
+    }
+    public when(route: string, action: Action1<Route>): Router {
+        throw new Error("Method not implemented.");
+    }    
+}
+
+class HistoryRouter extends Router
+{
+    private route: Route;
+
+    public constructor(route: Route)
+    {
+        super();
+        this.route = route;
+        let self   = this;
         window.onpopstate = function(this: Window, event: PopStateEvent)
         {
             self.routeTo(this.location.pathname);
         }
     }
 
+    public match(path: string): Route
+    {
+        throw new Error("Method not implemented.");
+    }
+    
     public routeTo(path: string): void
     {
         /*
@@ -56,7 +122,7 @@ class HistoryHandler implements Router
         */
     }
 
-    public when(route: string, action: Action1<Router.Path>): HistoryHandler
+    public when(route: string, action: Action1<Route>): HistoryRouter
     {
         //this.routes[route] = action;
         return this;
