@@ -4,10 +4,10 @@
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/common": "0.0.7",
-        "@surface/enumerable": "0.0.4",
+        "@surface/common": "0.0.8",
+        "@surface/enumerable": "0.0.5",
         "@surface/router": "0.0.0",
-        "@surface/types": "0.0.0"
+        "@surface/types": "0.0.1"
     },
     "description": "Simple web host for @surface projects.",
     "homepage": "https://github.com/HitalloExiled/Surface#readme",

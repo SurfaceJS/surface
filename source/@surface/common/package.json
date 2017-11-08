@@ -4,7 +4,7 @@
         "url": "https://github.com/HitalloExiled/Surface/issues"
     },
     "dependencies": {
-        "@surface/types": "0.0.0",
+        "@surface/types": "0.0.1",
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.13"
     },
