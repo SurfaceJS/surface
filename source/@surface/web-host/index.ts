@@ -20,8 +20,9 @@ export class WebHost
         let routes =
         [
             '/{controller}',
-            '/{controller}/{area}/{action}',
-            '/{controller}/{action}/{id?}',
+            '/{controller=home}/{action=index}/{id=1}',
+            '/{controller}/*/{action}/{id?}',
+            '/{area}/{controller}/{action}/{id?}',
             '/api/{controller}',
             '/api/{controller}/{action}',
             '/api/{controller}/{action}/{id?}'

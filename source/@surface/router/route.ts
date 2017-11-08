@@ -32,33 +32,75 @@ export class Route
 
     public match(path: string): ObjectLiteral
     {
-        const pattern = /{ *([^}]+) *}/;
-        let result: ObjectLiteral = { };
-        
-        let matchChild = (fragments: Array<string>, pathTree: PathTree) =>
-        {
-            fragments.asEnumerable()
-                .forEach
-                (
-                    (fragment, index) =>
-                    {            
-                        let current = pathTree.childs.firstOrDefault(x => x.value == fragment) || pathTree.childs.firstOrDefault(x => pattern.test(x.value));
-                        
-                        if (current)
-                        {
-                            let match = pattern.exec(current.value);
-                            if (match)
-                                result[match[1]] = fragment;
-                            else
-                                result['path'] = result['path'] || '/' + fragment + '/';
+        const pattern           = /^ *{ *([^}]+) *}|(\*) *$/;
+        const optionalPattern   = /^ *{ *([^}]+\?) *} *$/;
+        const hasDefaultPattern = /^ *{ *([^}]+)=([^}]+) *} *$/;
 
-                            matchChild(fragments.splice(index + 1, fragments.length), current);
-                        }
-                    }
-                );
+        let result: ObjectLiteral<string> = { };
+        
+        let matchDefaults = (pathTree: PathTree): boolean =>
+        {
+            if (pathTree.childs.length > 0)
+                matchDefaults(pathTree.childs.first());
+
+            let match = hasDefaultPattern.exec(pathTree.value);
+
+            if (match)
+            {
+                result[match[1]] = match[2];
+                return true;
+            }
+
+            return false;
         }
 
-        matchChild(path.replace(/^\/|\/$/g, '').split('/'), this.pathTree);
+        let executeMatch = (target: PathTree, pathTree: PathTree): boolean =>
+        {
+            let matching = false;
+
+            let current = pathTree.childs.firstOrDefault(x => x.value == target.value)
+            
+            if (current)
+            {   
+                result['path'] = result['path'] || '/' + target.value + '/';
+
+                matching = executeMatch(target.childs.first(), current);
+            }
+            else
+            {
+                for (let child of pathTree.childs.where(x => pattern.test(x.value) || optionalPattern.test(x.value)))
+                {
+                    if (target.childs.length > 0 && child.childs.length > 0)
+                        matching = executeMatch(target.childs.first(), child);
+                    else
+                        matching = target.childs.length == 0 && child.childs.length == 0;
+
+                    if (matching)
+                    {
+                        let match = pattern.exec(child.value);
+                        if (match)
+                            result[match[1] || match[2]] = target.value;
+
+                        return true;
+                    }
+                    else
+                        return matchDefaults(child.childs.first()) || optionalPattern.test(child.childs.first().value);
+                }
+            }
+
+            return matching;
+        }
+         
+        if (path == '/')
+        {
+            for (let child of this.pathTree.childs)
+                matchDefaults(child);
+        }
+        else
+        {
+            executeMatch(PathTree.from([path]).childs.first(), this.pathTree);
+        }
+
 
         return result;
     }

@@ -49,9 +49,14 @@ export class PathTree
         this.normalize();
     }
 
-    public static from(source: List<string>)
+    public static from(source: Array<string>): PathTree;
+    public static from(source: List<string>): PathTree;
+    public static from(source: Array<string>|List<string>): PathTree
     {
-        return new PathTree('/', null, source.select(x => new PathTree(x.replace(/^\/|\/$/, ''))).toList());
+        if (Array.isArray(source))
+            source = new List(source);
+
+        return new PathTree('/', null, source.select(x => new PathTree(x.replace(/^\/|\/$/g, ''))).toList());
     }
 
     private normalize(): void

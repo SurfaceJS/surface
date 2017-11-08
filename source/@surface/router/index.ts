@@ -15,9 +15,10 @@ export abstract class Router
     {        
         let route = new Route(routes);
         
-        let x = route.match('/foo/bar/1');
-        let y = route.match('/api/foo/bar/1');
-        console.log({ x, y });
+        let x = route.match('/');
+        let y = route.match('/about/');
+        let z = route.match('/controller/foo/action/1');
+        console.log({ x, y, z });
 
         switch (routingType)
         {
