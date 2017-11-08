@@ -9,27 +9,16 @@ export class WebHost
     private startup: WebHost.Startup;
     private router:  Router;
 
-    private static instanceValue: WebHost
+    private static _instance: WebHost
     public static get instance(): WebHost
     {
-        return this.instanceValue;
+        return this._instance;
     }
 
     private constructor(config: Configuration)
     {
-        let routes =
-        [
-            '/{controller}',
-            '/{controller=home}/{action=index}/{id=1}',
-            '/{controller}/*/{action}/{id?}',
-            '/{area}/{controller}/{action}/{id?}',
-            '/api/{controller}',
-            '/api/{controller}/{action}',
-            '/api/{controller}/{action}/{id?}'
-        ];
-
         this.config = config;
-        this.router = Router.create(RoutingType.Abstract, routes);
+        this.router = Router.create(RoutingType.Abstract, config.routes.paths);
     }
 
     public run(): void
@@ -48,8 +37,8 @@ export class WebHost
 
     public static create(config: Configuration): WebHost
     {
-        WebHost.instanceValue = new WebHost(config);
-        return WebHost.instanceValue;
+        WebHost._instance = new WebHost(config);
+        return WebHost._instance;
     }
 
     private listenerFactory(): (this: http.Server, request: http.IncomingMessage, response: http.ServerResponse) => void

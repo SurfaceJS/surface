@@ -14,18 +14,13 @@ export abstract class Router
     public static create(routingType: RoutingType, routes: Array<string>): Router
     {        
         let route = new Route(routes);
-        
-        let x = route.match('/');
-        let y = route.match('/about/');
-        let z = route.match('/controller/foo/action/1');
-        console.log({ x, y, z });
 
         switch (routingType)
         {
             case RoutingType.Abstract:
-                throw new AbstractRouter(route);
+                return new AbstractRouter(route);
             case RoutingType.Hash:
-                throw new HashRouter(route);
+                return new HashRouter(route);
             case RoutingType.History:
                 return new HistoryRouter(route);
         }
@@ -37,8 +32,7 @@ export abstract class Router
 }
 
 class AbstractRouter extends Router
-{
-    
+{    
     private route: Route;
 
     public constructor(route: Route)

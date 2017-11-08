@@ -3,37 +3,37 @@ import * as path from 'path';
 
 export class Configuration
 {    
-    private portValue : number;
+    private _port : number;
     public get port() : number
     {
-        return this.portValue;
+        return this._port;
     }
     
     public set port(value : number)
     {
-        this.portValue = value;
+        this._port = value;
     }
 
-    private routesValue : Configuration.Routes
+    private _routes : Configuration.Routes
     public get routes(): Configuration.Routes
     {
-        return this.routesValue;
+        return this._routes;
     }
     
     public set routes(value: Configuration.Routes)
     {
-        this.routesValue = value;
+        this._routes = value;
     }
 
-    private wwwRootValue: string;
+    private _wwwRoot: string;
     public get wwwroot(): string
     {
-        return this.wwwRootValue
+        return this._wwwRoot
     }
     
     public set wwwroot(value: string)
     {
-        this.wwwRootValue = value;
+        this._wwwRoot = value;
     }
 
     public constructor(context: string, config: Partial<Configuration>)

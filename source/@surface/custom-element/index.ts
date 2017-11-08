@@ -7,15 +7,15 @@ import { Nullable }      from '@surface/types';
 
 export abstract class CustomElement extends HTMLElement
 {
-    private templateValue: Nullable<HTMLTemplateElement>;
+    private _template: Nullable<HTMLTemplateElement>;
 	public get template(): Nullable<HTMLTemplateElement>
     {
-		return this.templateValue;
+		return this._template;
 	}
 
 	public set template(value: Nullable<HTMLTemplateElement>)
     {
-		this.templateValue = value;
+		this._template = value;
 	}
     
     public constructor()
@@ -29,9 +29,9 @@ export abstract class CustomElement extends HTMLElement
         if (window.ShadyCSS)
             window.ShadyCSS.styleElement(this);
             
-        if (this.templateValue)
+        if (this._template)
         {
-            let content = document.importNode(this.templateValue.content, true);
+            let content = document.importNode(this._template.content, true);
             this.applyDateBind(content);
             this.attachShadow({ mode: 'open' }).appendChild(content);
         }

@@ -4,37 +4,37 @@ import { ObjectLiteral, Nullable } from '@surface/types';
 
 export class PathTree
 {
-    private valueValue: string;
+    private _value: string;
     public get value(): string
     {
-        return this.valueValue;
+        return this._value;
     }
     
     public set value(value: string)
     {
-        this.valueValue = value;
+        this._value = value;
     }
 
-    private childsValue: List<PathTree>;
+    private _childs: List<PathTree>;
     public get childs(): List<PathTree>
     {
-        return this.childsValue;
+        return this._childs;
     }
     
     public set childs(value: List<PathTree>)
     {
-        this.childsValue = value;
+        this._childs = value;
     }
 
-    private parentValue: Nullable<PathTree>
+    private _parent: Nullable<PathTree>
     public get parent(): Nullable<PathTree>
     {
-        return this.parentValue;
+        return this._parent;
     }
     
     public set parent(value: Nullable<PathTree>)
     {
-        this.parentValue = value;
+        this._parent = value;
     }
 
     public constructor();

@@ -3,22 +3,22 @@ import * as http        from 'http';
 
 export class Controller
 {
-    private requestValue : http.IncomingMessage
+    private _request : http.IncomingMessage
     public get request(): http.IncomingMessage
     {
-        return this.requestValue;
+        return this._request;
     }
 
-    private responseValue : http.ServerResponse
+    private _response : http.ServerResponse
     public get response(): http.ServerResponse
     {
-        return this.responseValue;
+        return this._response;
     }
 
     public constructor(request: http.IncomingMessage, response: http.ServerResponse)
     {
-        this.requestValue  = request;
-        this.responseValue = response;
+        this._request  = request;
+        this._response = response;
     }
 
     public view(): ActionResult

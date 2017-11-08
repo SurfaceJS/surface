@@ -3,15 +3,15 @@ import { ObjectLiteral } from '@surface/types';
 
 export class Route
 {
-    private pathTreeValue: PathTree
+    private _pathTree: PathTree
     public get pathTree(): PathTree
     {
-        return this.pathTreeValue;
+        return this._pathTree;
     }
     
     public set pathTree(value: PathTree)
     {
-        this.pathTreeValue = value;
+        this._pathTree = value;
     }
 
     public constructor();
