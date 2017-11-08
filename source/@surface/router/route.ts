@@ -32,9 +32,9 @@ export class Route
 
     public match(path: string): ObjectLiteral
     {
-        const pattern           = /^ *{ *([^}]+) *}|(\*) *$/;
-        const optionalPattern   = /^ *{ *([^}]+\?) *} *$/;
-        const hasDefaultPattern = /^ *{ *([^}]+)=([^}]+) *} *$/;
+        const pattern            = /^ *{ *([^}]+) *}|(\*) *$/;
+        const optionalPattern    = /^ *{ *([^}]+\?) *} *$/;
+        const withDefaultPattern = /^ *{ *([^}=]+)(?:=([^}]+))? *} *|(\*)$/;
 
         let result: ObjectLiteral<string> = { };
         
@@ -43,7 +43,7 @@ export class Route
             if (pathTree.childs.length > 0)
                 matchDefaults(pathTree.childs.first());
 
-            let match = hasDefaultPattern.exec(pathTree.value);
+            let match = withDefaultPattern.exec(pathTree.value);
 
             if (match)
             {
@@ -72,19 +72,19 @@ export class Route
                 {
                     if (target.childs.length > 0 && child.childs.length > 0)
                         matching = executeMatch(target.childs.first(), child);
+                    else if (child.childs.length > 0)
+                        matching = matchDefaults(child.childs.first()) || optionalPattern.test(child.childs.first().value);
                     else
                         matching = target.childs.length == 0 && child.childs.length == 0;
 
                     if (matching)
                     {
-                        let match = pattern.exec(child.value);
+                        let match = withDefaultPattern.exec(child.value);
                         if (match)
-                            result[match[1] || match[2]] = target.value;
+                            result[match[1] || match[3]] = target.value;
 
                         return true;
                     }
-                    else
-                        return matchDefaults(child.childs.first()) || optionalPattern.test(child.childs.first().value);
                 }
             }
 
