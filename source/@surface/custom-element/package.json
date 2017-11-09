@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/HitalloExiled/Surface/issues"
+        "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
         "@surface/types": "0.0.1",
@@ -9,7 +9,7 @@
         "@types/reflect-metadata": "0.0.5"
     },
     "description": "Base class used to define custom elements.",
-    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",
         "typescript",
@@ -20,7 +20,7 @@
     "name": "@surface/custom-element",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/HitalloExiled/Surface.git"
+        "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

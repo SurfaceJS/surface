@@ -1,17 +1,17 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/HitalloExiled/Surface/issues"
+        "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
         "@surface/common": "0.0.8",
-        "@surface/types": "0.0.1",
         "@surface/lazy-loader": "0.0.4",
-        "@types/node": "8.0.33",
-        "@types/webpack": "3.0.9"
+        "@surface/types": "0.0.1",
+        "@types/node": "8.0.50",
+        "@types/webpack": "3.8.1"
     },
     "description": "Generate webpack code splits, used in combination with the @surface/lazy-loader module.",
-    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "html",
         "surface",
@@ -23,7 +23,7 @@
     "name": "@surface/code-splitter-plugin",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/HitalloExiled/Surface.git"
+        "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

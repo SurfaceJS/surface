@@ -1,10 +1,10 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/HitalloExiled/Surface/issues"
+        "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "description": "Types module of @surface projects.",
-    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "types",
         "surface",
@@ -14,7 +14,7 @@
     "name": "@surface/types",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/HitalloExiled/Surface.git"
+        "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
