@@ -30,28 +30,54 @@ export class Route
         }
     }
 
-    public match(path: string): ObjectLiteral
+    public match(route: string): ObjectLiteral
     {
-        const pattern            = /^ *{ *([^}]+) *}|(\*) *$/;
-        const optionalPattern    = /^ *{ *([^}]+\?) *} *$/;
-        const withDefaultPattern = /^ *{ *([^}=]+)(?:=([^}]+))? *} *|(\*)$/;
+        const pattern = /^ *{ *([^} =]+\??)(?: *= *([^} =]+))? *}| *(\*) *$/;
 
-        let result: ObjectLiteral<string> = { };
+        let result: ObjectLiteral<string> = { route };
         
         let matchDefaults = (pathTree: PathTree): boolean =>
         {
-            if (pathTree.childs.length > 0)
-                matchDefaults(pathTree.childs.first());
-
-            let match = withDefaultPattern.exec(pathTree.value);
-
-            if (match)
+            let matching = false;
+            
+            if (matching = pathTree.childs.length == 0 || pathTree.childs.any(x => matchDefaults(x)))
             {
-                result[match[1]] = match[2];
-                return true;
+                if (pathTree.childs.length == 0)
+                {
+                    let slices: Array<string> = [];
+
+                    let tmp = pathTree;
+                    
+                    do
+                    {
+                        slices.push(tmp.value);
+                        
+                        if (tmp.parent)
+                            tmp = tmp.parent;
+                    }
+                    while (tmp.parent)
+
+                    result['fullpath'] = slices.reverse().join('/');
+                }
+
+                let match = pattern.exec(pathTree.value);
+
+                if (match && !match[1].endsWith('?'))
+                {
+                    result[match[1]] = match[2];
+                    return true;
+                }
             }
 
             return false;
+        }
+
+        let recurseOptional = (pathTree: PathTree): boolean =>
+        {
+            if (pathTree.childs.length > 0)
+                return pathTree.childs.any(x => recurseOptional(x));
+
+            return pathTree.value == '*';
         }
 
         let executeMatch = (target: PathTree, pathTree: PathTree): boolean =>
@@ -68,18 +94,36 @@ export class Route
             }
             else
             {
-                for (let child of pathTree.childs.where(x => pattern.test(x.value) || optionalPattern.test(x.value)))
+                for (let path of pathTree.childs.where(x => pattern.test(x.value)))
                 {
-                    if (target.childs.length > 0 && child.childs.length > 0)
-                        matching = executeMatch(target.childs.first(), child);
-                    else if (child.childs.length > 0)
-                        matching = matchDefaults(child.childs.first()) || optionalPattern.test(child.childs.first().value);
+                    if (target.childs.length > 0 && path.childs.length > 0)
+                        matching = executeMatch(target.childs.first(), path);
+                    else if (path.childs.length > 0)
+                        matching = path.childs.any(x => recurseOptional(x)) || path.childs.any(x => matchDefaults(x));
                     else
-                        matching = target.childs.length == 0 && child.childs.length == 0;
+                        matching = target.childs.length == 0 && path.childs.length == 0;
 
                     if (matching)
                     {
-                        let match = withDefaultPattern.exec(child.value);
+                        if (path.childs.length == 0)
+                        {
+                            let slices: Array<string> = [];
+
+                            let tmp = path;
+                            
+                            do
+                            {
+                                slices.push(tmp.value);
+                                
+                                if (tmp.parent)
+                                    tmp = tmp.parent;
+                            }
+                            while (tmp.parent)
+
+                            result['fullpath'] = slices.reverse().join('/');
+                        }
+
+                        let match = pattern.exec(path.value);
                         if (match)
                             result[match[1] || match[3]] = target.value;
 
@@ -91,14 +135,14 @@ export class Route
             return matching;
         }
          
-        if (path == '/')
+        if (route == '/')
         {
             for (let child of this.pathTree.childs)
                 matchDefaults(child);
         }
         else
         {
-            executeMatch(PathTree.from([path]).childs.first(), this.pathTree);
+            executeMatch(PathTree.from([route]).childs.first(), this.pathTree);
         }
 
 

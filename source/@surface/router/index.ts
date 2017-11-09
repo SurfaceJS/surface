@@ -43,10 +43,7 @@ class AbstractRouter extends Router
 
     public match(path: string): Route
     {
-        let foo = this.route.match(path);
-
-        console.log(foo);
-        return {} as Route;
+        return this.route.match(path) as Route;
     }
 
     public routeTo(path: string): void

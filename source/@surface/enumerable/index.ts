@@ -4,6 +4,31 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public abstract [Symbol.iterator]: () => Iterator<TSource>;
 
+    /** Determines whether a sequence contains any elements. */
+    public any(): boolean;
+    /**
+     * Determines whether any element of a sequence satisfies a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public any(predicate: Func1<TSource, boolean>): boolean;
+    public any(predicate?: Func1<TSource, boolean>): boolean
+    {
+        let hasAny = false;
+
+        let enumerable: Enumerable<TSource> = this;
+
+        if (predicate)
+            enumerable = enumerable.where(predicate);
+        
+        for (let item of enumerable)
+        {
+            hasAny = item == item;
+            break;
+        }
+
+        return hasAny;
+    }
+
     /** Casts the elements of an IEnumerable to the specified type. Note that no type checking is performed at runtime. */
     public cast<T extends TSource>(): Enumerable<T>
     {
