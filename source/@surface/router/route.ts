@@ -1,151 +1,80 @@
-import { PathTree }      from '@surface/router/path-tree';
-import { ObjectLiteral } from '@surface/types';
+import { ObjectLiteral, Nullable } from '@surface/types';
+
+//import { ObjectLiteral } from '@surface/types';
 
 export class Route
 {
-    private _pathTree: PathTree
-    public get pathTree(): PathTree
+    private _expression: RegExp
+    public get expression(): RegExp
     {
-        return this._pathTree;
+        return this._expression;
+    }
+
+    private _isDefault: boolean
+    public get isDefault(): boolean
+    {
+        return this._isDefault;
     }
     
-    public set pathTree(value: PathTree)
+    private _pattern: string
+    public get pattern(): string
     {
-        this._pathTree = value;
+        return this._pattern;
     }
 
-    public constructor();
-    public constructor(routes: Array<string>);
-    public constructor(pathTree: PathTree);
-    public constructor(routesOrPathTree?: Array<string>|PathTree)
+    public constructor(pattern: string);
+    public constructor(pattern: string, isDefault: boolean);
+    public constructor(pattern: string, isDefault?: boolean)
     {
-        if (routesOrPathTree)
-        {
-            if (Array.isArray(routesOrPathTree))
-                this.pathTree = PathTree.from(routesOrPathTree.toList());
-            else if (routesOrPathTree instanceof PathTree)
-                this.pathTree = routesOrPathTree;
-            else
-                throw new TypeError('Invalid argument type.');
-        }
+        this._pattern = pattern;
+
+        this._expression = this.toExpression(pattern);
     }
 
-    public match(route: string): ObjectLiteral
+    public match(route: string): Nullable<Route.Match>
     {
-        const pattern = /^ *{ *([^} =]+\??)(?: *= *([^} =]+))? *}| *(\*) *$/;
+        let [path, search] = route.split('?');
 
-        let result: ObjectLiteral<string> = { route };
-        
-        let matchDefaults = (pathTree: PathTree): boolean =>
+        let params: ObjectLiteral<string> = { };
+
+        if (this._expression.test(route))
         {
-            let matching = false;
-            
-            if (matching = pathTree.childs.length == 0 || pathTree.childs.any(x => matchDefaults(x)))
+            let keys   = this._expression.exec(this._pattern);
+            let values = this._expression.exec(path);
+
+            if (keys && values)
             {
-                if (pathTree.childs.length == 0)
-                {
-                    let slices: Array<string> = [];
-
-                    let tmp = pathTree;
-                    
-                    do
-                    {
-                        slices.push(tmp.value);
-                        
-                        if (tmp.parent)
-                            tmp = tmp.parent;
-                    }
-                    while (tmp.parent)
-
-                    result['fullpath'] = slices.reverse().join('/');
-                }
-
-                let match = pattern.exec(pathTree.value);
-
-                if (match && !match[1].endsWith('?'))
-                {
-                    result[match[1]] = match[2];
-                    return true;
-                }
+                Array.from(keys).asEnumerable()
+                    .zip(Array.from(values), (key, value) => ({ key, value }))
+                    .forEach(x => params[x.key] = x.value);
             }
 
-            return false;
+            return { match: this.pattern, route, params, search };
         }
 
-        let recurseOptional = (pathTree: PathTree): boolean =>
-        {
-            if (pathTree.childs.length > 0)
-                return pathTree.childs.any(x => recurseOptional(x));
+        return null;
+    }
 
-            return pathTree.value == '*';
-        }
+    private toExpression(pattern: string): RegExp
+    {        
+        let expression = pattern.replace(/^\/|\/$/g, '').split('/').asEnumerable()
+            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, '([^\\\/]+?)').replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, '([^\\\/]*?)'))
+            .toArray()
+            .join('\\\/');
 
-        let executeMatch = (target: PathTree, pathTree: PathTree): boolean =>
-        {
-            let matching = false;
+        expression = expression.replace(/(\(\[\^\\\/\]\*\?\))(\\\/)/g, '$1\\\/?');
 
-            let current = pathTree.childs.firstOrDefault(x => x.value == target.value)
-            
-            if (current)
-            {   
-                result['path'] = result['path'] || '/' + target.value + '/';
+        return new RegExp(`^\/?${expression}\/?$`);
+    }
+}
 
-                matching = executeMatch(target.childs.first(), current);
-            }
-            else
-            {
-                for (let path of pathTree.childs.where(x => pattern.test(x.value)))
-                {
-                    if (target.childs.length > 0 && path.childs.length > 0)
-                        matching = executeMatch(target.childs.first(), path);
-                    else if (path.childs.length > 0)
-                        matching = path.childs.any(x => recurseOptional(x)) || path.childs.any(x => matchDefaults(x));
-                    else
-                        matching = target.childs.length == 0 && path.childs.length == 0;
-
-                    if (matching)
-                    {
-                        if (path.childs.length == 0)
-                        {
-                            let slices: Array<string> = [];
-
-                            let tmp = path;
-                            
-                            do
-                            {
-                                slices.push(tmp.value);
-                                
-                                if (tmp.parent)
-                                    tmp = tmp.parent;
-                            }
-                            while (tmp.parent)
-
-                            result['fullpath'] = slices.reverse().join('/');
-                        }
-
-                        let match = pattern.exec(path.value);
-                        if (match)
-                            result[match[1] || match[3]] = target.value;
-
-                        return true;
-                    }
-                }
-            }
-
-            return matching;
-        }
-         
-        if (route == '/')
-        {
-            for (let child of this.pathTree.childs)
-                matchDefaults(child);
-        }
-        else
-        {
-            executeMatch(PathTree.from([route]).childs.first(), this.pathTree);
-        }
-
-
-        return result;
+export namespace Route
+{
+    export interface Match
+    {
+        match:  string;
+        params: ObjectLiteral<string>;
+        route:  string;
+        search: string;
     }
 }

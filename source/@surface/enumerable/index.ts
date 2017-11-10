@@ -184,7 +184,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param second   The second sequence to merge.
      * @param selector A function that specifies how to merge the elements from the two sequences.
      */
-    public zip<TSecond, TResult>(second: TSecond, selector: Func3<TSource, TSecond, number, TResult>): Enumerable<TResult>
+    public zip<TSecond, TResult>(second: Iterable<TSecond>, selector: Func3<TSource, TSecond, number, TResult>): Enumerable<TResult>
     {
         return new ZipIterator(this, second, selector);
     }

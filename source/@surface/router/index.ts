@@ -1,6 +1,8 @@
 import '@surface/enumerable/extensions';
-import { Route }   from '@surface/router/route';
-import { Action1 } from '@surface/types';
+import { Enumerable }        from '@surface/enumerable';
+import { List }              from '@surface/enumerable/list';
+import { Route }             from '@surface/router/route';
+import { Action1, Nullable } from '@surface/types';
 
 export enum RoutingType
 {
@@ -11,9 +13,16 @@ export enum RoutingType
 
 export abstract class Router
 {
+    protected _routes: List<Route>;
+
+    public constructor(routes: List<Route>)
+    {
+        this._routes = routes;
+    }
+
     public static create(routingType: RoutingType, routes: Array<string>): Router
     {        
-        let route = new Route(routes);
+        let route = routes.asEnumerable().select(x => new Route(x)).toList();
 
         switch (routingType)
         {
@@ -26,24 +35,20 @@ export abstract class Router
         }
     }
 
-    public abstract match(path: string): Route;
+    public match(path: string): Nullable<Route.Match>
+    {
+        return this._routes.select(x => x.match(path)).firstOrDefault(x => !!x);
+    }
+
     public abstract routeTo(path: string): void;
     public abstract when(route: string, action: Action1<Route>): Router;
 }
 
 class AbstractRouter extends Router
-{    
-    private route: Route;
-
-    public constructor(route: Route)
+{
+    public constructor(routes: List<Route>)
     {
-        super();
-        this.route = route;
-    }
-
-    public match(path: string): Route
-    {
-        return this.route.match(path) as Route;
+        super(routes);
     }
 
     public routeTo(path: string): void
@@ -59,17 +64,9 @@ class AbstractRouter extends Router
 
 class HashRouter extends Router
 {
-    private route: Route;
-
-    public constructor(route: Route)
+    public constructor(routes: List<Route>)
     {
-        super();
-        this.route = route;
-    }
-
-    public match(path: string): Route
-    {
-        throw new Error("Method not implemented.");
+        super(routes);
     }
     
     public routeTo(path: string): void
@@ -83,22 +80,16 @@ class HashRouter extends Router
 
 class HistoryRouter extends Router
 {
-    private route: Route;
-
-    public constructor(route: Route)
+    
+    public constructor(routes: List<Route>)
     {
-        super();
-        this.route = route;
-        let self   = this;
+        super(routes);
+
+        let self = this;
         window.onpopstate = function(this: Window, event: PopStateEvent)
         {
             self.routeTo(this.location.pathname);
         }
-    }
-
-    public match(path: string): Route
-    {
-        throw new Error("Method not implemented.");
     }
     
     public routeTo(path: string): void
