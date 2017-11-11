@@ -1,5 +1,4 @@
 import '@surface/enumerable/extensions';
-import { Enumerable }        from '@surface/enumerable';
 import { List }              from '@surface/enumerable/list';
 import { Route }             from '@surface/router/route';
 import { Action1, Nullable } from '@surface/types';

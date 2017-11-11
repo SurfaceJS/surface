@@ -294,11 +294,11 @@ class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResu
     }
 }
 
-class ZipIterator<TSource, TCollection, TResult> extends Enumerable<TResult>
+class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
 {
     public [Symbol.iterator]: () => Iterator<TResult>;
 
-    public constructor(source: Iterable<TSource>, collection: TCollection, selector: Func3<TSource, TCollection, number, TResult>)
+    public constructor(source: Iterable<TSource>, collection: Iterable<TSecond>, selector: Func3<TSource, TSecond, number, TResult>)
     {
         super();
         this[Symbol.iterator] = function* ()

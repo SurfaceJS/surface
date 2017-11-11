@@ -4,8 +4,8 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/types": "0.0.1",
         "@surface/enumerable": "0.0.5",
+        "@surface/types": "0.0.1",
         "@types/reflect-metadata": "0.0.5"
     },
     "description": "Base class used to define custom elements.",

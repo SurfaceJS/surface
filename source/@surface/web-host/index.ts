@@ -53,6 +53,10 @@ export class WebHost
                 
                 if (request.url)
                 {
+                    let match = self.router.match(request.url)
+
+                    console.log(match);
+
                     let path = utils.resolveUrl(self.config.wwwroot, request.url, '/app');
 
                     //path = path || self.config.notFound || '';
