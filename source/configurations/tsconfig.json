@@ -13,6 +13,7 @@
         "noImplicitThis":                 true,
         "noUnusedLocals":                 true,
         "sourceMap":                      true,
+        "strictFunctionTypes":            true,
         "strictNullChecks":               true,
         "suppressImplicitAnyIndexErrors": true,
         "target":                         "es6"

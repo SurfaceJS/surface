@@ -1,7 +1,6 @@
 export interface Constructor<T> extends Function
 {
     new (...args: Array<any>): T;
-    Symbols:   any;
     prototype: T;
 }
 
@@ -21,3 +20,4 @@ export type ObjectLiteral<T = any>                   = { [key: string]: T };
 export type Omit<T, U extends keyof T>               = { [P in Diff<keyof T, U>]: T[P] };
 export type Overwrite<T, U>                          = { [P in Diff<keyof T, keyof U>]: T[P] } & U;
 export type Required<T>                              = { [P in KeysOf<T>]: T[P] };
+export type TypesOf<T>                               = { [P in keyof T]: T[P] }[keyof T];

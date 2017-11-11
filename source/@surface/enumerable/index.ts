@@ -15,14 +15,14 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         let hasAny = false;
 
-        let enumerable: Enumerable<TSource> = this;
+        let sequence: Enumerable<TSource> = this;
 
         if (predicate)
-            enumerable = enumerable.where(predicate);
+            sequence = sequence.where(predicate);
         
-        for (let item of enumerable)
+        for (let element of sequence)
         {
-            hasAny = item == item;
+            hasAny = element == element;
             break;
         }
 
@@ -44,6 +44,41 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return new DefaultIfEmptyIterator(this, value);
     }
 
+    /**
+     * Returns the element at a specified index in a sequence.
+     * @param index The zero-based index of the element to retrieve.
+     */
+    public elementAt(index: number): TSource
+    {
+        let element = this.elementAtOrDefault(index);
+
+        if (!element)
+            throw new Error('Index is less than 0 or greater than the number of elements in source.')
+
+        return element;
+    }
+
+    /**     
+     * Returns the element at a specified index in a sequence or or undefined|null value if the index is out of range.
+     * @param index The zero-based index of the element to retrieve.
+     */
+    public elementAtOrDefault(index: number): Nullable<TSource>
+    {
+        let currentIndex = 0;
+        let current: Nullable<TSource> = null;
+
+        for (const element of this)
+        {
+            current = element;
+            if (currentIndex == index)
+                break;
+
+            index++;
+        }
+
+        return current;
+    }
+
     /** Returns the first element of a sequence. */
     public first(): TSource;
     /**
@@ -53,14 +88,16 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public first(predicate: Func1<TSource, boolean>): TSource;
     public first(predicate?: Func1<TSource, boolean>): TSource
     {
-        let value: Nullable<TSource> = null;
+        let element: Nullable<TSource> = null;
 
-        value = predicate && this.firstOrDefault(predicate) || this.firstOrDefault();
+        element = predicate && this.firstOrDefault(predicate) || this.firstOrDefault();
 
-        if (!value)
-            throw new Error("Value can't be null");
+        if (!element && predicate)
+            throw new Error('No element satisfies the condition in predicate.');
+        else if (!element)
+            throw new Error('The source sequence is empty.');
 
-        return value;
+        return element;
     }
 
     /** Returns the first element of a sequence, or undefined|null if the sequence contains no elements. */
@@ -85,9 +122,9 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public forEach(action: Action2<TSource, number>)
     {
         let index = 0;
-        for (const item of this)
+        for (const element of this)
         {
-            action(item, index);
+            action(element, index);
             index++;
         }
     }
@@ -101,14 +138,16 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public last(predicate: Func1<TSource, boolean>): TSource;
     public last(predicate?: Func1<TSource, boolean>): TSource
     {
-        let value: Nullable<TSource> = null;
+        let element: Nullable<TSource> = null;
 
-        value = predicate && this.lastOrDefault(predicate) || this.lastOrDefault();
+        element = predicate && this.lastOrDefault(predicate) || this.lastOrDefault();
 
-        if (!value)
-            throw new Error("Value can't be null");
+        if (!element && predicate)
+            throw new Error('No element satisfies the condition in predicate.');
+        else if (!element)
+            throw new Error('The source sequence is empty.');
 
-        return value;
+        return element;
     }
 
     /** Returns the last element of a sequence, or undefined|null if the sequence contains no elements. */
@@ -123,12 +162,12 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         if (predicate)
             return this.where(predicate).lastOrDefault();
 
-        let value: Nullable<TSource> = null;
+        let current: Nullable<TSource> = null;
 
         for (let element of this)
-            value = element;
+            current = element;
         
-        return value;
+        return current;
     }
 
     /**
@@ -159,13 +198,50 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return new SelectManyIterator(this, collectionSelector, selector);
     }
 
+    /**
+     * Bypasses a specified number of elements in a sequence and then returns the remaining elements.
+     * @param count The number of elements to skip before returning the remaining elements.
+     */
+    public skip(count: number): Enumerable<TSource>
+    {
+        return new SkipIterator(this, count);
+    }
+
+    /**
+     * Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
+     * The element's index is used in the logic of the predicate function.
+     * @param predicate A function to test each source element for a condition; the second parameter of the function represents the index of the source element.
+     */
+    public skipWhile(predicate: Func2<TSource, number, boolean>): Enumerable<TSource>
+    {
+        return new SkipWhileIterator(this, predicate);
+    }
+
+    /**
+     * The sequence to return elements from.
+     * @param count The number of elements to return.
+     */
+    public take(count: number): Enumerable<TSource>
+    {
+        return new TakeIterator(this, count);
+    }
+
+    /**
+     * Returns elements from a sequence as long as a specified condition is true. The element's index is used in the logic of the predicate function.
+     * @param predicate A function to test each source element for a condition; the second parameter of the function represents the index of the source element.
+     */
+    public takeWhile(predicate: Func2<TSource, number, boolean>): Enumerable<TSource>
+    {
+        return new TakeWhileIterator(this, predicate);
+    }
+
     /** Creates an array from a Enumerable<T>. */
     public toArray(): Array<TSource>
     {
         let values: Array<TSource> = [];      
 
-        for (let item of this)
-            values.push(item);
+        for (let element of this)
+            values.push(element);
 
         return values;
     }
@@ -208,9 +284,9 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
         super();
         this[Symbol.iterator] = function*()
         {
-            for (const item of source)
+            for (const element of source)
             {
-                yield item;
+                yield element;
             }
         }
     }
@@ -225,10 +301,10 @@ class WhereIterator<TSource> extends Enumerable<TSource>
         super();
         this[Symbol.iterator] = function*()
         {
-            for (const item of source)
+            for (const element of source)
             {
-                if (predicate(item))
-                    yield item;
+                if (predicate(element))
+                    yield element;
             }
         }
     }
@@ -244,10 +320,10 @@ class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
         this[Symbol.iterator] = function*()
         {
             let index = 0;
-            for (const item of source)
+            for (const element of source)
             {
                 index++;
-                yield item;
+                yield element;
             }
 
             if (index == 0)
@@ -266,8 +342,8 @@ class SelectIterator<TSource, TResult> extends Enumerable<TResult>
         this[Symbol.iterator] = function* ()
         {
             let index = 0;
-            for (const item of source)
-                yield selector(item, index++);
+            for (const element of source)
+                yield selector(element, index++);
         }
     }
 }
@@ -282,13 +358,113 @@ class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResu
         this[Symbol.iterator] = function* ()
         {
             let index = 0;
-            for (const item of source)
+            for (const element of source)
             {
-                for (const iteration of iterableSelector(item))
+                for (const iteration of iterableSelector(element))
                 {
                     yield selector(iteration, index);
                     index++;
                 }
+            }
+        }
+    }
+}
+
+class SkipIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, count: number)
+    {
+        super();
+
+        let index = 1;
+
+        this[Symbol.iterator] = function* ()
+        {
+            for (const element of source)
+            {
+                if (index > count)
+                    yield element;
+
+                index++;
+            }
+        }
+    }
+}
+
+class SkipWhileIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, predicate: Func2<TSource, number, boolean>)
+    {
+        super();
+
+        let index = 0;
+        let skip  = true;
+
+        this[Symbol.iterator] = function* ()
+        {
+            for (const element of source)
+            {
+                if (skip)
+                    skip = predicate(element, index);
+                
+                if (!skip)
+                    yield element;
+
+                index++;
+            }
+        }
+    }
+}
+
+class TakeIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+    
+    public constructor(source: Iterable<TSource>, count: number)
+    {
+        super();
+
+        let index = 0;
+
+        this[Symbol.iterator] = function* ()
+        {
+            for (const element of source)
+            {
+                if (index < count)
+                    yield element;
+                else
+                    break;
+
+                index++;
+            }
+        }
+    }
+}
+
+class TakeWhileIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+    
+    public constructor(source: Iterable<TSource>, predicate: Func2<TSource, number, boolean>)
+    {
+        super();
+
+        let index = 0;
+
+        this[Symbol.iterator] = function* ()
+        {
+            for (const element of source)
+            {
+                if (predicate(element, index))
+                    yield element;
+                else
+                    break;
+
+                index++;
             }
         }
     }
@@ -304,9 +480,9 @@ class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
         this[Symbol.iterator] = function* ()
         {
             let index = 0;
-            for (const item of source)
+            for (const element of source)
             {
-                yield selector(item, collection[index], index);
+                yield selector(element, collection[index], index);
                 index++;
             }
         }

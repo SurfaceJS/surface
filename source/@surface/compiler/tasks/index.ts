@@ -141,7 +141,10 @@ function getConfig(filepath: string, Enviroment: enums.EnviromentType): webpack.
     primaryConfig.plugins = primaryConfig.plugins || [];
 
     if (Enviroment == enums.EnviromentType.release)
+    {
+        primaryConfig.devtool = false;
         primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true }));
+    }
         
     primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
     primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
