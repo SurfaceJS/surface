@@ -16,6 +16,6 @@
         "strictFunctionTypes":            true,
         "strictNullChecks":               true,
         "suppressImplicitAnyIndexErrors": true,
-        "target":                         "es6"
+        "target":                         "esnext"
     }
 }

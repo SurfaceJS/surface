@@ -1,8 +1,9 @@
-import './extensions';
+import '@surface/custom-element/extensions';
+import '@surface/collection/extensions';
 import '@surface/enumerable/extensions';
 
 import { ElementBinder } from './binder';
-import { List }          from '@surface/enumerable/list';
+import { List }          from '@surface/collection/list';
 import { Nullable }      from '@surface/types';
 
 export abstract class CustomElement extends HTMLElement

@@ -1,5 +1,5 @@
 import { Enumerable } from '@surface/enumerable';
-import { List }       from '@surface/enumerable/list';
+import { List }       from '@surface/collection/list';
 
 declare global
 {

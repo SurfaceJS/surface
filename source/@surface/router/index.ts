@@ -1,5 +1,5 @@
-import '@surface/enumerable/extensions';
-import { List }              from '@surface/enumerable/list';
+import '@surface/collection/extensions';
+import { List }              from '@surface/collection/list';
 import { Route }             from '@surface/router/route';
 import { Action1, Nullable } from '@surface/types';
 
