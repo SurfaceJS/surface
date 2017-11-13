@@ -57,4 +57,12 @@ typings/
 # dotenv environment variables file
 .env
 
+# project
 *.orig
+*.js
+*.js.map
+*.d.ts
+cache-loader
+!@types/**/*.d.ts
+!types.d.ts
+

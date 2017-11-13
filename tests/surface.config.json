@@ -1,0 +1,14 @@
+{
+    "context":  "source",
+    "entry":    "index.ts",
+    "filename": "index.js",
+    "output":   "build",
+    "webpackConfig":
+    {
+        "output":
+        {
+            "devtoolModuleFilenameTemplate": "webpack:///[resource-path]"
+        },
+        "target": "node",
+        "node": { "__dirname": false }}
+}

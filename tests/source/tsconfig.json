@@ -1,0 +1,38 @@
+{
+    "compilerOptions":
+    {        
+        "allowSyntheticDefaultImports": true,
+        "allowJs":                      true,
+        "alwaysStrict":                 true,
+        "baseUrl":                      "./",
+        "checkJs":                      true,
+        "emitDecoratorMetadata":        true,
+        "experimentalDecorators":       true,
+        "importHelpers":                true,
+        "lib":
+        [
+            "dom",
+            "es2015",
+            "es2016",
+            "es2017"
+        ],
+        "module":            "es2015",
+        "moduleResolution":  "node",
+        //"noEmit":            true,
+        "noEmitOnError":     true,
+        "noImplicitReturns": true,
+        "noImplicitThis":    true,
+        "noUnusedLocals":    true,
+        "paths":
+        {
+            "@surface/*": ["../node_modules/@surface/*"]
+        },
+        "sourceMap":                      true,
+        "strictNullChecks":               true,
+        "suppressImplicitAnyIndexErrors": true,
+        "target":                         "esnext",
+        "typeRoots":                      ["../node_modules/@types", "../node_modules/@surface/compiler/@types"]
+    },
+  "include": ["."],
+  "exclude": ["../node_modules"]
+}
