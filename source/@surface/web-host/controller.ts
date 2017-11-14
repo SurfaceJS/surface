@@ -1,24 +1,17 @@
-import { ActionResult } from '@surface/web-host/action-result';
-import * as http        from 'http';
+import { ActionResult } from './action-result';
+import { HttpContext }  from './http-context';
 
 export class Controller
 {
-    private _request : http.IncomingMessage
-    public get request(): http.IncomingMessage
+    private _httpContext: HttpContext
+    public get httpContext(): HttpContext
     {
-        return this._request;
+        return this._httpContext;
     }
 
-    private _response : http.ServerResponse
-    public get response(): http.ServerResponse
+    public constructor(httpContext: HttpContext)
     {
-        return this._response;
-    }
-
-    public constructor(request: http.IncomingMessage, response: http.ServerResponse)
-    {
-        this._request  = request;
-        this._response = response;
+        this._httpContext  = httpContext;
     }
 
     public view(): ActionResult

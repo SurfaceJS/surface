@@ -1,6 +1,6 @@
 import '@surface/collection/extensions';
+import { Route }             from './route';
 import { List }              from '@surface/collection/list';
-import { Route }             from '@surface/router/route';
 import { Action1, Nullable } from '@surface/types';
 
 export enum RoutingType
@@ -14,8 +14,13 @@ export abstract class Router
 {
     protected _routes: List<Route>;
 
-    public constructor(routes: List<Route>)
+    public constructor(routes: Array<Route>);
+    public constructor(routes: List<Route>);
+    public constructor(routes: Array<Route>|List<Route>)
     {
+        if (Array.isArray(routes))
+            routes = new List(routes);
+
         this._routes = routes;
     }
 
@@ -40,7 +45,7 @@ export abstract class Router
     }
 
     public abstract routeTo(path: string): void;
-    public abstract when(route: string, action: Action1<Route>): Router;
+    public abstract when(route: string, action: Action1<Route.Match>): Router;
 }
 
 class AbstractRouter extends Router
@@ -55,7 +60,7 @@ class AbstractRouter extends Router
         throw new Error("Method not implemented.");
     }
 
-    public when(route: string, action: Action1<Route>): Router
+    public when(route: string, action: Action1<Route.Match>): Router
     {
         throw new Error("Method not implemented.");
     }
@@ -72,7 +77,7 @@ class HashRouter extends Router
     {
         throw new Error("Method not implemented.");
     }
-    public when(route: string, action: Action1<Route>): Router {
+    public when(route: string, action: Action1<Route.Match>): Router {
         throw new Error("Method not implemented.");
     }    
 }
@@ -104,7 +109,7 @@ class HistoryRouter extends Router
         */
     }
 
-    public when(route: string, action: Action1<Route>): HistoryRouter
+    public when(route: string, action: Action1<Route.Match>): HistoryRouter
     {
         //this.routes[route] = action;
         return this;

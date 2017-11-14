@@ -5,7 +5,8 @@
     },
     "dependencies": {
         "@surface/enumerable": "0.0.5",
-        "@surface/types": "0.0.1"
+        "@surface/types": "0.0.1",
+        "tslib": "1.8.0"
     },
     "description": "Base class used to define custom elements.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",

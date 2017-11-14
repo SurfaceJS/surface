@@ -1,6 +1,10 @@
-import { Configuration }       from '@surface/web-host/configuration';
-import * as utils              from '@surface/web-host/utils';
+import { HttpContext }         from './http-context';
+import * as common             from './common';
+import { Configuration }       from './configuration';
+import { Controller }          from './controller';
 import { Router, RoutingType } from '@surface/router';
+import * as fs                 from 'fs';
+import * as path               from 'path';
 import * as http               from 'http';
 
 export class WebHost
@@ -18,7 +22,7 @@ export class WebHost
     private constructor(config: Configuration)
     {
         this.config = config;
-        this.router = Router.create(RoutingType.Abstract, config.routes.paths);
+        this.router = Router.create(RoutingType.Abstract, config.routes.asEnumerable().select(x => x.path).toArray());
     }
 
     public run(): void
@@ -26,7 +30,7 @@ export class WebHost
         if (this.startup && this.startup.onStart)
             this.startup.onStart();
 
-        http.createServer(this.listenerFactory()).listen(this.config.port);
+        http.createServer(this.listener.bind(this)).listen(this.config.port);
     }
 
     public useStartup<T extends WebHost.Startup>(startup: T): WebHost
@@ -41,41 +45,70 @@ export class WebHost
         return WebHost._instance;
     }
 
-    private listenerFactory(): (this: http.Server, request: http.IncomingMessage, response: http.ServerResponse) => void
+    private async listener(request: http.IncomingMessage, response: http.ServerResponse): Promise<void>
     {
-        const self = this;
-        return function (this: http.Server, request: http.IncomingMessage, response: http.ServerResponse): void
+        try
         {
-            try
+            if (this.startup && this.startup.onBeginRequest)
+                this.startup.onBeginRequest(request);
+            
+            if (request.url)
             {
-                if (self.startup && self.startup.onBeginRequest)
-                    self.startup.onBeginRequest(request);
-                
-                if (request.url)
+                let filepath = path.join(this.config.wwwroot, request.url);
+                if (request.url != '/' || path.extname(filepath) && fs.existsSync(filepath))
                 {
-                    let match = self.router.match(request.url)
-
-                    console.log(match);
-
-                    let path = utils.resolveUrl(self.config.wwwroot, request.url, '/app');
-
-                    //path = path || self.config.notFound || '';
-                    utils.loadFile(response, path || '');
+                    common.loadFile(response, filepath);
                 }
+                else
+                {
+                    let match = this.router.match(request.url);
 
-                /*
-                if (self.config.startup && self.config.startup.onEndRequest)
-                    self.config.startup.onEndRequest(request, response);
-                */
-            }
-            catch (error)
-            {
-                response.writeHead(404, { 'Content-Type': 'text/plain' });
-                response.end(error.message);
+                    if (match)
+                    {
+                        const { controller, action, id } = match.params;
+                        if (controller)
+                        {
+                            filepath = path.join(this.config.context, 'controllers', match.params.controller + '-controller');
+                            if (fs.existsSync(filepath + '.js'))
+                            {
+                                let ControllerConstructor = require(filepath) as typeof Controller;
+                                let targetController = new ControllerConstructor(new HttpContext(request, response));
 
-                if (self.startup && self.startup.onError)
-                    self.startup.onError(error, request, response);
+                                if (action && targetController[action])
+                                {
+                                    if (id)
+                                    {
+                                        targetController[action]({ id });
+                                    }
+                                    else
+                                    {
+                                        targetController[action]();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                throw new Error(`Conttroler ${controller} cannot be found.`);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        let fallback = this.config.routes.asEnumerable().firstOrDefault(x => !!x.fallback);
+                        
+                        if (fallback)
+                            common.loadFile(response, common.resolveFallback(fallback.path));
+                    }
+                }
             }
+        }
+        catch (error)
+        {
+            response.writeHead(404, { 'Content-Type': 'text/plain' });
+            response.end(error.message);
+
+            if (this.startup && this.startup.onError)
+                this.startup.onError(error, request, response);
         }
     }
 }

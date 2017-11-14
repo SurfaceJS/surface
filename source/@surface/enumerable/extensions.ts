@@ -1,4 +1,4 @@
-import { Enumerable } from '@surface/enumerable';
+import { Enumerable } from './index';
 
 declare global
 {

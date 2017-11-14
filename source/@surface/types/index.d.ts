@@ -2,6 +2,7 @@ export interface Constructor<T> extends Function
 {
     new (...args: Array<any>): T;
     prototype: T;
+    Symbols:   any;
 }
 
 export type Action                                   = () => void;

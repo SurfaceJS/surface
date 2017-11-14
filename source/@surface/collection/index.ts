@@ -1,2 +1,2 @@
-export * from '@surface/collection/dictionary';
-export * from '@surface/collection/list';
+export * from './dictionary';
+export * from './list';

@@ -230,7 +230,7 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
                                 }
                                 else
                                 {
-                                    setOrPush(result, key, `${source}/${$module}`);
+                                    result[`${source}/${path.parse($module).name}`] = `${source}/${$module}`;
                                 }
                             }
                             else

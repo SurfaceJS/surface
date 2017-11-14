@@ -4,8 +4,10 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
+        "@surface/collection": "0.0.0",
         "@surface/enumerable": "0.0.5",
-        "@surface/types": "0.0.1"
+        "@surface/types": "0.0.1",
+        "tslib": "1.8.0"
     },
     "description": "Enumerable module the provides many methods to iterate through of collections.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
