@@ -90,7 +90,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         let element: Nullable<TSource> = null;
 
-        element = predicate && this.firstOrDefault(predicate) || this.firstOrDefault();
+        if (predicate)
+            element = this.firstOrDefault(predicate)
+        else
+            element = this.firstOrDefault();
 
         if (!element && predicate)
             throw new Error('No element satisfies the condition in predicate.');
