@@ -39,7 +39,7 @@ export function resolveFallback(filepath: string): string
 
     try
     {
-        return targets.asEnumerable().first(x => fs.existsSync(x) && fs.lstatSync(x).isFile());        
+        return targets.asEnumerable().first(x => fs.existsSync(x) && fs.lstatSync(x).isFile());
     }
     catch (error)
     {

@@ -31,11 +31,22 @@ export class Route
         this._expression = this.toExpression(pattern);
     }
 
-    public match(route: string): Nullable<Route.Match>
+    public match(route: string): Nullable<Route.Data>
     {
-        let [path, search] = route.split('?');
+        let [path, queryString] = route.split('?');
 
-        let params: ObjectLiteral<string> = { };
+        let params: ObjectLiteral<string>           = { };
+        let search: Nullable<ObjectLiteral<string>> = null;
+
+        if (queryString)
+        {
+            search = { };
+            
+            decodeURI(queryString).split('&')
+                .asEnumerable()
+                .select(x => x.split('='))
+                .forEach(x => search && (search[x[0]] = x[1]))
+        }
 
         if (this._expression.test(route))
         {
@@ -86,11 +97,11 @@ export class Route
 
 export namespace Route
 {
-    export interface Match
+    export interface Data
     {
         match:  string;
         params: ObjectLiteral<string>;
         route:  string;
-        search: string;
+        search: Nullable<ObjectLiteral<string>>;
     }
 }

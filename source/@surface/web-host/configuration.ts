@@ -31,7 +31,7 @@ export class Configuration
         this._context = context;
         this._port    = config.port || 1337;
         this._routes  = config.routes || [{ path: '/{controller=home}/{action=index}/{id?}', default: true }];
-        this._wwwroot = config.wwwroot && path.resolve(context, config.wwwroot) || '/wwwroot';
+        this._wwwroot = config.wwwroot && path.resolve(context, config.wwwroot) || path.resolve(context, './wwwroot');
     }
 }
 

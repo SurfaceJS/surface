@@ -91,9 +91,9 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         let element: Nullable<TSource> = null;
 
         if (predicate)
-            element = this.firstOrDefault(predicate)
+            element = this.where(predicate).next();
         else
-            element = this.firstOrDefault();
+            element = this.next();
 
         if (!element && predicate)
             throw new Error('No element satisfies the condition in predicate.');
@@ -113,9 +113,9 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public firstOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
     {
         if (predicate)
-            return this.where(predicate).firstOrDefault();
+            return this.where(predicate).next();
 
-        return this[Symbol.iterator]().next().value;
+        return this.next();
     }
     
     /**
@@ -275,6 +275,11 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public static from<T>(source: Iterable<T>): Enumerable<T>
     {
         return new EnumerableIterator(source);
+    }
+
+    protected next(): Nullable<TSource>
+    {
+        return this[Symbol.iterator]().next().value;
     }
 }
 

@@ -39,13 +39,13 @@ export abstract class Router
         }
     }
 
-    public match(path: string): Nullable<Route.Match>
+    public match(path: string): Nullable<Route.Data>
     {
         return this._routes.select(x => x.match(path)).firstOrDefault(x => !!x);
     }
 
     public abstract routeTo(path: string): void;
-    public abstract when(route: string, action: Action1<Route.Match>): Router;
+    public abstract when(route: string, action: Action1<Route.Data>): Router;
 }
 
 class AbstractRouter extends Router
@@ -60,7 +60,7 @@ class AbstractRouter extends Router
         throw new Error("Method not implemented.");
     }
 
-    public when(route: string, action: Action1<Route.Match>): Router
+    public when(route: string, action: Action1<Route.Data>): Router
     {
         throw new Error("Method not implemented.");
     }
@@ -77,7 +77,7 @@ class HashRouter extends Router
     {
         throw new Error("Method not implemented.");
     }
-    public when(route: string, action: Action1<Route.Match>): Router {
+    public when(route: string, action: Action1<Route.Data>): Router {
         throw new Error("Method not implemented.");
     }    
 }
@@ -109,7 +109,7 @@ class HistoryRouter extends Router
         */
     }
 
-    public when(route: string, action: Action1<Route.Match>): HistoryRouter
+    public when(route: string, action: Action1<Route.Data>): HistoryRouter
     {
         //this.routes[route] = action;
         return this;

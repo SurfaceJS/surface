@@ -1,7 +1,10 @@
 import { ActionResult } from './action-result';
 import { HttpContext }  from './http-context';
+import { JsonResult }   from './json-result';
+import { ViewResult }   from './view-result';
+import { Nullable }     from '@surface/types';
 
-export class Controller
+export abstract class Controller
 {
     private _httpContext: HttpContext
     public get httpContext(): HttpContext
@@ -14,8 +17,20 @@ export class Controller
         this._httpContext  = httpContext;
     }
 
-    public view(): ActionResult
+    public json(data: Nullable<Object>): ActionResult
     {
-        return new ActionResult();
+        return new JsonResult(this._httpContext, data);
+    }
+
+    public view(): ActionResult;
+    public view(viewName:  string): ActionResult;
+    public view(viewName:  string, model: Nullable<Object>): ActionResult;
+    public view(viewName?: string, model?: Nullable<Object>): ActionResult
+    {
+        let controllerName = this['__proto__']['constructor']['name'] as string;
+
+        controllerName = controllerName.replace(/controller$/i, '')
+
+        return new ViewResult(this._httpContext, controllerName, viewName || 'index', model, 200);
     }
 }

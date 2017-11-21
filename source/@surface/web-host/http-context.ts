@@ -14,9 +14,16 @@ export class HttpContext
         return this._response;
     }
 
-    public constructor(request: http.IncomingMessage, response: http.ServerResponse)
+    private _serverRoot: string
+    public get serverRoot(): string
     {
-        this._request = request;
-        this._response = response;
+        return this._serverRoot;
+    }
+
+    public constructor(request: http.IncomingMessage, response: http.ServerResponse, serverRoot: string)
+    {
+        this._request    = request;
+        this._response   = response;
+        this._serverRoot = serverRoot;
     }
 }

@@ -1,7 +1,7 @@
 ﻿import { CustomElement }                 from '@surface/custom-element';
 import { ClassDecoratorOf, Constructor } from '@surface/types';
 
-export function component<T extends CustomElement>(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<T>
+export function define<T extends CustomElement>(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<T>
 {
     return (target: Constructor<T>) =>
     {
@@ -21,7 +21,7 @@ export function component<T extends CustomElement>(name: string, template?: stri
 
 export function view<T extends CustomElement>(name: string, template: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<T>
 {
-    return (target: Constructor<T>) => component<T>(name, template, style, options)(target);
+    return (target: Constructor<T>) => define<T>(name, template, style, options)(target);
 }
 
 export function observe<T extends CustomElement>(...attributes: Array<string>): ClassDecoratorOf<T>
