@@ -39,7 +39,7 @@ export class Route
 
         if (this._expression.test(route))
         {
-            let keys   = this._expression.exec(this._pattern);
+            let keys = this._expression.exec(this._pattern);
             
             this._expression.lastIndex = 0;
             
@@ -76,9 +76,11 @@ export class Route
             .toArray()
             .join('\\\/');
 
-        expression = expression.replace(/(\(\[\^\\\/\]\*\))(\\\/)/g, '$1\\\/?');
+        expression = expression
+            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, '$1?$2')
+            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, '$1$2?');
 
-        return new RegExp(`^\/?${expression}\/?$`);
+        return new RegExp(`^\/?${expression}\/?$`, "i");
     }
 }
 
