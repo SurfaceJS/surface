@@ -2,7 +2,7 @@ import '@surface/custom-element/extensions';
 import '@surface/collection/extensions';
 import '@surface/enumerable/extensions';
 
-import { ElementBinder } from './binder';
+import { ElementBinder } from './element-binder';
 import { List }          from '@surface/collection/list';
 import { Nullable }      from '@surface/types';
 

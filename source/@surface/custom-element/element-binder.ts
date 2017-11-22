@@ -1,4 +1,4 @@
-import { CustomElement } from '.';
+import { CustomElement } from './index';
 import { Action, Func }  from '@surface/types';
 
 enum BindType

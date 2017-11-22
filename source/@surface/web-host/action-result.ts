@@ -1,4 +1,4 @@
-import { HttpContext } from '@surface/web-host/http-context';
+import { HttpContext } from './http-context';
 import { Route }       from '@surface/router/route';
 import { Nullable }    from '@surface/types';
 

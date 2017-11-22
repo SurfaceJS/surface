@@ -26,7 +26,7 @@ export class ViewResult extends ActionResult
 
     public executeResult(): void
     {
-        let viewpath = path.join(this.httpContext.serverRoot, 'views', this._controllerName, `${this._viewName}.html`);
+        let viewpath = path.join(this.httpContext.host.root, 'views', this._controllerName, `${this._viewName}.html`);
 
         if (!fs.existsSync(viewpath))
             throw new Error(`View ${this._viewName} cannot be founded.`);

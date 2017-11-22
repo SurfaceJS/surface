@@ -1,11 +1,9 @@
-import * as path from 'path';
-
 export class Configuration
 {
-    private _context: string
-    public get context(): string
+    private _serverRoot: string
+    public get serverRoot(): string
     {
-        return this._context;
+        return this._serverRoot;
     }
 
     private _port : number;
@@ -26,12 +24,12 @@ export class Configuration
         return this._wwwroot
     }
 
-    public constructor(context: string, config: Partial<Configuration>)
+    public constructor(serverRoot: string, config: Partial<Configuration>)
     {
-        this._context = context;
-        this._port    = config.port || 1337;
-        this._routes  = config.routes || [{ path: '/{controller=home}/{action=index}/{id?}', default: true }];
-        this._wwwroot = config.wwwroot && path.resolve(context, config.wwwroot) || path.resolve(context, './wwwroot');
+        this._serverRoot = serverRoot;
+        this._port       = config.port    || 1337;
+        this._routes     = config.routes  || [{ path: '/{controller=home}/{action=index}/{id?}', default: true }];
+        this._wwwroot    = config.wwwroot || 'wwwroot';
     }
 }
 
@@ -39,8 +37,8 @@ export namespace Configuration
 {
     export interface Route
     {
+        path:      string;
         default?:  boolean;
         fallback?: string;
-        path:      string;
     }
 }

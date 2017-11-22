@@ -4,6 +4,21 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public abstract [Symbol.iterator]: () => Iterator<TSource>;
 
+    /**
+     * Determines whether all elements of a sequence satisfy a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public all(predicate: Func1<TSource, boolean>): boolean
+    {
+        for (const element of this)
+        {
+            if (!predicate(element))
+                return false;
+        }
+
+        return true;
+    }
+
     /** Determines whether a sequence contains any elements. */
     public any(): boolean;
     /**
@@ -283,41 +298,6 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 }
 
-class EnumerableIterator<TSource> extends Enumerable<TSource>
-{
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>)
-    {
-        super();
-        this[Symbol.iterator] = function*()
-        {
-            for (const element of source)
-            {
-                yield element;
-            }
-        }
-    }
-}
-
-class WhereIterator<TSource> extends Enumerable<TSource>
-{
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, predicate: Func1<TSource, boolean>)
-    {
-        super();
-        this[Symbol.iterator] = function*()
-        {
-            for (const element of source)
-            {
-                if (predicate(element))
-                    yield element;
-            }
-        }
-    }
-}
-
 class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
@@ -337,6 +317,23 @@ class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
             if (index == 0)
                 yield defaultValue;
         }        
+    }
+}
+
+class EnumerableIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>)
+    {
+        super();
+        this[Symbol.iterator] = function*()
+        {
+            for (const element of source)
+            {
+                yield element;
+            }
+        }
     }
 }
 
@@ -473,6 +470,24 @@ class TakeWhileIterator<TSource> extends Enumerable<TSource>
                     break;
 
                 index++;
+            }
+        }
+    }
+}
+
+class WhereIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, predicate: Func1<TSource, boolean>)
+    {
+        super();
+        this[Symbol.iterator] = function*()
+        {
+            for (const element of source)
+            {
+                if (predicate(element))
+                    yield element;
             }
         }
     }

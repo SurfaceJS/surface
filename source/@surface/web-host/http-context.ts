@@ -1,4 +1,5 @@
-import * as http from 'http';
+import * as http   from 'http';
+import { WebHost } from './index';
 
 export class HttpContext
 {
@@ -14,16 +15,16 @@ export class HttpContext
         return this._response;
     }
 
-    private _serverRoot: string
-    public get serverRoot(): string
+    private _host: WebHost
+    public get host(): WebHost
     {
-        return this._serverRoot;
+        return this._host;
     }
 
-    public constructor(request: http.IncomingMessage, response: http.ServerResponse, serverRoot: string)
+    public constructor(host: WebHost, request: http.IncomingMessage, response: http.ServerResponse)
     {
+        this._host       = host;
         this._request    = request;
         this._response   = response;
-        this._serverRoot = serverRoot;
     }
 }
