@@ -1,5 +1,5 @@
 {
-    "extends": "../../configurations/tsconfig.json",
+    "extends": "../configurations/tsconfig.json",
     "compilerOptions":
     {
         "lib":
@@ -13,5 +13,5 @@
         "typeRoots": ["node_modules/@types"]
     },
     "include": ["."],
-    "exclude": ["node_modules", "../../@surface/enumerable", "../../@surface/router"]
+    "exclude": ["node_modules"]
 }
