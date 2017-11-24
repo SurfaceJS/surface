@@ -1,25 +1,40 @@
+import '@surface/reflection/extensions';
+
 import { ActionResult } from './action-result';
 import { Controller }   from './controller';
 import { Handler }      from './handler';
 import { HttpContext }  from './http-context';
+import { Router }       from '@surface/router/index';
 import { Constructor }  from '@surface/types';
 import * as fs          from 'fs';
 import * as path        from 'path';
 
 export class MvcHandler extends Handler
 {
+    private _router: Router
+    protected get routes(): Router
+    {
+        return this._router;
+    }
+
+    public constructor(router: Router)
+    {
+        super();
+        this._router = router;
+    }
+
     public handle(httpContext: HttpContext): boolean
     {
         if (httpContext.request.url)
         {
-            let match = httpContext.host.router.match(httpContext.request.url);
+            let routeData = this._router.match(httpContext.request.url);
             
-            if (match)
+            if (routeData)
             {
-                const { controller, action, id } = match.params;
+                const { controller, action, id } = routeData.params;
                 if (controller)
                 {
-                    let filepath = path.join(httpContext.host.root, 'controllers', `${match.params.controller}-controller.js`);
+                    let filepath = path.join(httpContext.host.root, 'controllers', `${routeData.params.controller}-controller.js`);
                     if (fs.existsSync(filepath))
                     {
                         let ControllerConstructor = require(filepath).default as Constructor<Controller>;
@@ -34,33 +49,17 @@ export class MvcHandler extends Handler
                             if (id)
                                 actionResult = actionMethod.call(targetController, { id });
                             else
-                                actionResult = actionMethod.call(targetController, match.search);
+                                actionResult = actionMethod.call(targetController, routeData.search);
 
                             actionResult.executeResult();
+
+                            return true;
                         }
-                        else
-                        {
-                            httpContext.response.writeHead(500, { 'Content-Type': 'text/plain' });
-                            httpContext.response.end(`Action ${action} cannot be found.`);
-                        }
-                    }
-                    else
-                    {
-                        httpContext.response.writeHead(404, { 'Content-Type': 'text/plain' });
-                        httpContext.response.end(`Controller ${controller} cannot be found.`);
                     }
                 }
             }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            return false;
         }
 
-        return true;
+        return false;
     }
 }

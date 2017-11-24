@@ -1,4 +1,5 @@
 import { ActionResult } from './action-result';
+import { StatusCode }   from './enums';
 import { HttpContext }  from './http-context';
 import { JsonResult }   from './json-result';
 import { ViewResult }   from './view-result';
@@ -31,6 +32,6 @@ export abstract class Controller
 
         controllerName = controllerName.replace(/controller$/i, '')
 
-        return new ViewResult(this._httpContext, controllerName, viewName || 'index', model, 200);
+        return new ViewResult(this._httpContext, controllerName, viewName || 'index', model, StatusCode.ok);
     }
 }

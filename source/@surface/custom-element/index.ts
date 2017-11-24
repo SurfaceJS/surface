@@ -1,4 +1,4 @@
-import '@surface/custom-element/extensions';
+import './extensions';
 import '@surface/collection/extensions';
 import '@surface/enumerable/extensions';
 

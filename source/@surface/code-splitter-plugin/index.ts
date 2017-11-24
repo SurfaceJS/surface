@@ -134,7 +134,7 @@ class CodeSplitterPlugin
     {
         let result =
         [
-            'export default function(name)',
+            'export function load(name)',
             '{',
             '    switch (name)',
             '    {',

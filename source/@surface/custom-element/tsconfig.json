@@ -2,16 +2,8 @@
     "extends": "../configurations/tsconfig.json",
     "compilerOptions":
     {
-        "noEmit": true, /* true for dev */
-        "lib":
-        [
-            "dom",
-            "es2015",
-            "es2016",
-            "es2017"
-        ],
+        "noEmit":    true, /* true for dev */
+        "lib":       ["dom","esnext"],
         "typeRoots": ["node_modules/@types"]
-    },
-    "include": ["."],
-    "exclude": ["node_modules", "../../@surface/enumerable"]
+    }
 }

@@ -1,4 +1,5 @@
 import { ActionResult } from './action-result';
+import { StatusCode }   from './enums';
 import { HttpContext }  from './http-context';
 import { mymeType }     from './variables';
 import { Nullable }     from '@surface/types';
@@ -9,10 +10,10 @@ export class ViewResult extends ActionResult
 {
     private _controllerName: string;
     private _model:          Nullable<object>;
-    private _statusCode:     number;
+    private _statusCode:     StatusCode;
     private _viewName:       string;
 
-    public constructor(httpContext: HttpContext, controllerName: string,  viewName: string, model:  Nullable<object>, statusCode:  number)
+    public constructor(httpContext: HttpContext, controllerName: string,  viewName: string, model:  Nullable<object>, statusCode: StatusCode)
     {
         super(httpContext);
 

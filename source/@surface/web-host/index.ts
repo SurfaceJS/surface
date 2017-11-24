@@ -1,13 +1,13 @@
-import '@surface/reflection/extensions';
-
-import { Configuration }       from './configuration';
-import { Handler }             from './handler';
-import { HttpContext }         from './http-context';
-import { StaticHandler }       from './static-handler';
-import { MvcHandler }          from './mvc-handler';
-import { List }                from '@surface/collection/list';
-import { Router, RoutingType } from '@surface/router';
-import * as http               from 'http';
+import { Configuration }   from './configuration';
+import { StatusCode }      from './enums';
+import { FallbackHandler } from './fallback-handler';
+import { Handler }         from './handler';
+import { HttpContext }     from './http-context';
+import { StaticHandler }   from './static-handler';
+import { MvcHandler }      from './mvc-handler';
+import { List }            from '@surface/collection/list';
+import { Router }          from '@surface/router';
+import * as http           from 'http';
 
 export class WebHost
 {
@@ -32,18 +32,6 @@ export class WebHost
         return this._root;
     }
 
-    private _routes: Array<Configuration.Route>
-    public get routes(): Array<Configuration.Route>
-    {
-        return this._routes;
-    }
-
-    private _router: Router
-    public get router(): Router
-    {
-        return this._router;
-    }
-
     private _wwwroot: string
     public get wwwroot(): string
     {
@@ -53,13 +41,10 @@ export class WebHost
     private constructor(configuration: Configuration)
     {
         this._root    = configuration.serverRoot;
-        this._routes  = configuration.routes;
         this._port    = configuration.port;
         this._wwwroot = configuration.wwwroot;
 
         this._handlers = new List();
-
-        this._router = Router.create(RoutingType.Abstract, this._routes.asEnumerable().select(x => x.path).toArray());
     }
 
     public run(): void
@@ -70,20 +55,21 @@ export class WebHost
         http.createServer(this.listener.bind(this)).listen(this._port);
     }
 
-    public useFallBack(): WebHost
+    public useFallBack(fallbackRoute: string): WebHost
     {
+        this._handlers.add(new FallbackHandler(fallbackRoute));
+        return this;
+    }
+
+    public useMvc(router: Router): WebHost
+    {
+        this._handlers.add(new MvcHandler(router));
         return this;
     }
 
     public useStatic(): WebHost
     {
         this._handlers.add(new StaticHandler());
-        return this;
-    }    
-
-    public useMvc(): WebHost
-    {
-        this._handlers.add(new MvcHandler());
         return this;
     }
 
@@ -108,15 +94,18 @@ export class WebHost
             if (this._startup && this._startup.onBeginRequest)
                 this._startup.onBeginRequest(httpContext);
 
-            if (this._handlers.all(x => !x.handle(httpContext)))
-                throw new Error('No one request handler has accepted the request.');
+            if (this._handlers.any(x => x.handle(httpContext)))
+            {
+                response.writeHead(StatusCode.notFound, { 'Content-Type': 'text/plain' });
+                response.end('Resource not found.');
+            }
             
             if (this._startup && this._startup.onEndRequest)
                 this._startup.onEndRequest(httpContext);
         }
         catch (error)
         {
-            response.writeHead(500, { 'Content-Type': 'text/plain' });
+            response.writeHead(StatusCode.internalServerError, { 'Content-Type': 'text/plain' });
             response.end(error.message);
 
             if (this._startup && this._startup.onError)

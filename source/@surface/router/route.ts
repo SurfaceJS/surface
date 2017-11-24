@@ -1,7 +1,5 @@
 import { ObjectLiteral, Nullable } from '@surface/types';
 
-//import { ObjectLiteral } from '@surface/types';
-
 export class Route
 {
     private _expression: RegExp
@@ -15,6 +13,12 @@ export class Route
     {
         return this._isDefault;
     }
+
+    private _name: string
+    public get name(): string
+    {
+        return this._name;
+    }
     
     private _pattern: string
     public get pattern(): string
@@ -22,13 +26,14 @@ export class Route
         return this._pattern;
     }
 
-    public constructor(pattern: string);
-    public constructor(pattern: string, isDefault: boolean);
-    public constructor(pattern: string, isDefault?: boolean)
+    public constructor(name: string, pattern: string);
+    public constructor(name: string, pattern: string, isDefault: boolean);
+    public constructor(name: string, pattern: string, isDefault?: boolean)
     {
-        this._pattern = pattern;
-
         this._expression = this.toExpression(pattern);
+        this._isDefault  = !!isDefault;
+        this._name       = name;
+        this._pattern    = pattern;
     }
 
     public match(route: string): Nullable<Route.Data>

@@ -12,12 +12,6 @@ export class Configuration
         return this._port;
     }
 
-    private _routes : Array<Configuration.Route>
-    public get routes(): Array<Configuration.Route>
-    {
-        return this._routes;
-    }
-
     private _wwwroot: string;
     public get wwwroot(): string
     {
@@ -28,17 +22,6 @@ export class Configuration
     {
         this._serverRoot = serverRoot;
         this._port       = config.port    || 1337;
-        this._routes     = config.routes  || [{ path: '/{controller=home}/{action=index}/{id?}', default: true }];
         this._wwwroot    = config.wwwroot || 'wwwroot';
-    }
-}
-
-export namespace Configuration
-{
-    export interface Route
-    {
-        path:      string;
-        default?:  boolean;
-        fallback?: string;
     }
 }

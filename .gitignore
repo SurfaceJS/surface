@@ -64,5 +64,6 @@ typings/
 *.d.ts
 cache-loader
 !@types/**/*.d.ts
+!types/**/*.d.ts
 !types.d.ts
 

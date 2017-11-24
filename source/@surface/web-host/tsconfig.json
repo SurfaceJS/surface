@@ -2,16 +2,8 @@
     "extends": "../configurations/tsconfig.json",
     "compilerOptions":
     {
-        "lib":
-        [
-            "dom",
-            "es2015",
-            "es2016",
-            "es2017"
-        ],
-        "module": "commonjs",
+        "lib":       ["dom","esnext"],
+        "module":    "commonjs",
         "typeRoots": ["node_modules/@types"]
-    },
-    "include": ["."],
-    "exclude": ["node_modules"]
+    }
 }

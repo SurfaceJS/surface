@@ -23,8 +23,8 @@ export class HttpContext
 
     public constructor(host: WebHost, request: http.IncomingMessage, response: http.ServerResponse)
     {
-        this._host       = host;
-        this._request    = request;
-        this._response   = response;
+        this._host     = host;
+        this._request  = request;
+        this._response = response;
     }
 }

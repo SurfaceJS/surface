@@ -1,6 +1,7 @@
-import * as common     from './common';
+import { StatusCode }  from './enums';
 import { Handler }     from './handler';
 import { HttpContext } from './http-context';
+import { mymeType }    from './variables';
 import * as fs         from 'fs';
 import * as path       from 'path';
 
@@ -13,17 +14,17 @@ export class StaticHandler extends Handler
             let filepath = path.join(httpContext.host.root, httpContext.host.wwwroot, httpContext.request.url);
             if (path.extname(filepath) && fs.existsSync(filepath))
             {
-                common.loadFile(httpContext.response, filepath);
+                let extension = path.extname(filepath);
+                let data      = fs.readFileSync(filepath);
+        
+                httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] });
+                httpContext.response.write(data);
+                httpContext.response.end();
+
                 return true;
             }
-            else
-            {
-                return false;
-            }
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 }
