@@ -1,17 +1,17 @@
 import '@surface/reflection/extensions';
 
-import { ActionResult } from './action-result';
-import { Controller }   from './controller';
-import { Handler }      from './handler';
-import { HttpContext }  from './http-context';
-import { Router }       from '@surface/router/index';
-import { Constructor }  from '@surface/types';
-import * as fs          from 'fs';
-import * as path        from 'path';
+import { ActionResult }   from './action-result';
+import { Controller }     from './controller';
+import { RequestHandler } from './request-handler';
+import { HttpContext }    from './http-context';
+import { Router }         from '@surface/router/index';
+import { Constructor }    from '@surface/types';
+import * as fs            from 'fs';
+import * as path          from 'path';
 
-export class MvcHandler extends Handler
+export class MvcRequestHandler extends RequestHandler
 {
-    private _router: Router
+    private _router: Router;
     protected get routes(): Router
     {
         return this._router;
@@ -37,8 +37,8 @@ export class MvcHandler extends Handler
                     let filepath = path.join(httpContext.host.root, 'controllers', `${routeData.params.controller}-controller.js`);
                     if (fs.existsSync(filepath))
                     {
-                        let ControllerConstructor = require(filepath).default as Constructor<Controller>;
-                        let targetController = new ControllerConstructor(httpContext);
+                        let controllerConstructor = require(filepath).default as Constructor<Controller>;
+                        let targetController = new controllerConstructor(httpContext);
 
                         let actionMethod = targetController.reflect().getMethod(action, true);
 
@@ -47,9 +47,13 @@ export class MvcHandler extends Handler
                             let actionResult: ActionResult;
                             
                             if (id)
+                            {
                                 actionResult = actionMethod.call(targetController, { id });
+                            }
                             else
+                            {
                                 actionResult = actionMethod.call(targetController, routeData.search);
+                            }
 
                             actionResult.executeResult();
 

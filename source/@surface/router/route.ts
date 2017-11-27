@@ -2,25 +2,25 @@ import { ObjectLiteral, Nullable } from '@surface/types';
 
 export class Route
 {
-    private _expression: RegExp
+    private _expression: RegExp;
     public get expression(): RegExp
     {
         return this._expression;
     }
 
-    private _isDefault: boolean
+    private _isDefault: boolean;
     public get isDefault(): boolean
     {
         return this._isDefault;
     }
 
-    private _name: string
+    private _name: string;
     public get name(): string
     {
         return this._name;
     }
     
-    private _pattern: string
+    private _pattern: string;
     public get pattern(): string
     {
         return this._pattern;
@@ -36,7 +36,7 @@ export class Route
         this._pattern    = pattern;
     }
 
-    public match(route: string): Nullable<Route.Data>
+    public match(route: string): Nullable<Route.IData>
     {
         let [path, queryString] = route.split('?');
 
@@ -50,7 +50,7 @@ export class Route
             decodeURI(queryString).split('&')
                 .asEnumerable()
                 .select(x => x.split('='))
-                .forEach(x => search && (search[x[0]] = x[1]))
+                .forEach(x => search && (search[x[0]] = x[1]));
         }
 
         if (this._expression.test(route))
@@ -73,7 +73,8 @@ export class Route
                             let match = /{\s*([^=?]+)\??(?:=([^}]*))?\s*}/.exec(x.key);
                             if (match)
                             {
-                                params[match[1]] = x.value || match[2];
+                                const groups = { key: 1, value: 2 };
+                                params[match[groups.key]] = x.value || match[groups.value];
                             }
                         }
                     );
@@ -102,7 +103,7 @@ export class Route
 
 export namespace Route
 {
-    export interface Data
+    export interface IData
     {
         match:  string;
         params: ObjectLiteral<string>;

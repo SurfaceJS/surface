@@ -1,11 +1,11 @@
-import { StatusCode }  from './enums';
-import { Handler }     from './handler';
-import { HttpContext } from './http-context';
-import { mymeType }    from './variables';
-import * as fs         from 'fs';
-import * as path       from 'path';
+import { StatusCode }     from './enums';
+import { RequestHandler } from './request-handler';
+import { HttpContext }    from './http-context';
+import { mymeType }       from './variables';
+import * as fs            from 'fs';
+import * as path          from 'path';
 
-export class StaticHandler extends Handler
+export class StaticRequestHandler extends RequestHandler
 {
     public handle(httpContext: HttpContext): boolean
     {

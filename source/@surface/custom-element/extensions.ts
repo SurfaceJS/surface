@@ -3,6 +3,7 @@ import { List }       from '@surface/collection/list';
 
 declare global
 {
+    // tslint:disable-next-line:interface-name
     interface NodeList
     {
         /** Casts NodeList into Array<Node> */
@@ -13,6 +14,7 @@ declare global
         toList(): List<Node>;
     }
 
+    // tslint:disable-next-line:interface-name
     interface NamedNodeMap
     {
         asEnumerable(): Enumerable<Attr>;
@@ -22,19 +24,19 @@ declare global
 NodeList.prototype.toArray = function <T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this);
-}
+};
 
 NodeList.prototype.asEnumerable = function <T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this).asEnumerable();
-}
+};
 
 NodeList.prototype.toList = function <T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this).toList();
-}
+};
 
 NamedNodeMap.prototype.asEnumerable = function(this: NamedNodeMap)
 {
     return Array.from(this).asEnumerable();
-}
+};

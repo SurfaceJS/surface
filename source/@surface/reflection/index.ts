@@ -4,7 +4,7 @@ import { Nullable }   from '@surface/types';
 
 export class Reflection<T>
 {
-    private _target: T
+    private _target: T;
     public get target(): T
     {
         return this._target;
@@ -29,9 +29,11 @@ export class Reflection<T>
             do
             {
                 for (const key of Object.getOwnPropertyNames(proto))
-                    yield key
+                {
+                    yield key;
+                }
             } while (proto = Object.getPrototypeOf(proto));
-        }
+        };
 
         return Enumerable.from(keys());
     }

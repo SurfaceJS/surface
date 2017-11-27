@@ -2,11 +2,11 @@ import '@surface/enumerable/extensions';
 import { Enumerable }              from '@surface/enumerable';
 import { Nullable, ObjectLiteral } from '@surface/types';
 
-export class Dictionary<TKey = string, TValue = any> extends Enumerable<KeyValuePair<TKey, TValue>>
+export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
     private _source: Map<TKey, Nullable<TValue>>;
     
-    public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>
+    public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>;
 
     public get size(): number
     {
@@ -20,14 +20,18 @@ export class Dictionary<TKey = string, TValue = any> extends Enumerable<KeyValue
     {
         super();        
 
-        let keysValues: Array<KeyValuePair<TKey, TValue>> = []
+        let keysValues: Array<KeyValuePair<TKey, TValue>> = [];
 
         if (source)
         {
             if (Array.isArray(source))
-                keysValues = source;            
+            {
+                keysValues = source;
+            }            
             else
-                keysValues = Object.keys(source).asEnumerable().select(x => new KeyValuePair(x as any as TKey, source[x])).toArray();
+            {
+                keysValues = Object.keys(source).asEnumerable().select(x => new KeyValuePair(x as Object as TKey, source[x])).toArray();
+            }
         }
 
         this._source = new Map();
@@ -67,7 +71,7 @@ export class Dictionary<TKey = string, TValue = any> extends Enumerable<KeyValue
 
 export class KeyValuePair<TKey, TValue>
 {
-    private _key: TKey
+    private _key: TKey;
     public get key(): TKey
     {
         return this._key;
@@ -78,7 +82,7 @@ export class KeyValuePair<TKey, TValue>
         this._key = value;
     }
 
-    private _value: TValue
+    private _value: TValue;
     public get value(): TValue
     {
         return this._value;
@@ -93,10 +97,14 @@ export class KeyValuePair<TKey, TValue>
     public constructor(key: TKey, value: TValue);
     public constructor(key?: TKey, value?: TValue)
     {
-        if(key)
-            this._key = key
+        if (key)
+        {
+            this._key = key;
+        }
         
-        if(value)
+        if (value)
+        {
             this._value = value;
+        }
     }
 }

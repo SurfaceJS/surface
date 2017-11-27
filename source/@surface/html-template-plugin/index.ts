@@ -5,7 +5,7 @@ import * as webPack                from 'webpack';
 
 namespace HtmlTemplatePlugin
 {
-    export interface Options
+    export interface IOptions
     {
         filename: string; 
         template: string;
@@ -17,13 +17,17 @@ class HtmlTemplatePlugin implements webPack.Plugin
     private filename: Nullable<string>;
     private template: string;
 
-    public constructor(options?: Partial<HtmlTemplatePlugin.Options>)
+    public constructor(options?: Partial<HtmlTemplatePlugin.IOptions>)
     {
         if (!options)
+        {
             throw new Error('Parameter \'options\' can\'t be null.');
+        }
 
         if (!options.template)
+        {
             throw new Error('Property \'options.template\' can\'t be null.');
+        }
 
         this.template = options.template;
         this.filename = options.filename;
@@ -35,10 +39,13 @@ class HtmlTemplatePlugin implements webPack.Plugin
         compiler.plugin
         (
             "emit",
+            // tslint:disable-next-line:no-any
             function (this: webPack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
                 if (!this.options.entry)
+                {
                     throw new Error('Entry can\'t be null.');
+                }
 
                 self.filename = self.filename || '[name]/index.html';
 
@@ -87,15 +94,21 @@ class HtmlTemplatePlugin implements webPack.Plugin
     {
         let slices = filepath.split('/').reverse();
         if (slices.length > 1 && slices[0].match(/index.[tj]s/))
+        {
             return slices[1];
+        }
         else
+        {
             return slices[0];
+        }
     }
 
     private templateParse(template: string, keys: ObjectLiteral<string>): string
     {
         for (let key in keys)
+        {
             template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
+        }
     
         return template;
     }
@@ -103,7 +116,9 @@ class HtmlTemplatePlugin implements webPack.Plugin
     private filenameParse(filename: string, keys: ObjectLiteral<string>): string
     {
         for (let key in keys)
+        {
             filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);
+        }
 
         return filename;
     }

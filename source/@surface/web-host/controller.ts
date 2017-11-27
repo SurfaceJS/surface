@@ -7,7 +7,7 @@ import { Nullable }     from '@surface/types';
 
 export abstract class Controller
 {
-    private _httpContext: HttpContext
+    private _httpContext: HttpContext;
     public get httpContext(): HttpContext
     {
         return this._httpContext;
@@ -30,7 +30,7 @@ export abstract class Controller
     {
         let controllerName = this['__proto__']['constructor']['name'] as string;
 
-        controllerName = controllerName.replace(/controller$/i, '')
+        controllerName = controllerName.replace(/controller$/i, '');
 
         return new ViewResult(this._httpContext, controllerName, viewName || 'index', model, StatusCode.ok);
     }

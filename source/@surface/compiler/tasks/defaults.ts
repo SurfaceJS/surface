@@ -40,7 +40,8 @@ export let loaders =
             transpileOnly: true
         }
     },
-}
+};
+
 export let webpackConfig =
 {
     devtool: '#source-map',

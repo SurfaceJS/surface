@@ -17,7 +17,7 @@ export class ViewResult extends ActionResult
     {
         super(httpContext);
 
-        this._controllerName = controllerName
+        this._controllerName = controllerName;
         this._model          = model;
         this._statusCode     = statusCode;
         this._viewName       = viewName;
@@ -30,7 +30,9 @@ export class ViewResult extends ActionResult
         let viewpath = path.join(this.httpContext.host.root, 'views', this._controllerName, `${this._viewName}.html`);
 
         if (!fs.existsSync(viewpath))
+        {
             throw new Error(`View ${this._viewName} cannot be founded.`);
+        }
 
         let data = fs.readFileSync(viewpath);
         

@@ -5,6 +5,7 @@ import { Func1 }                    from '@surface/types';
 
 declare global
 {
+    // tslint:disable-next-line:interface-name
     interface Array<T>
     {        
         /** Cast Array<T> into Enumerable<T> */
@@ -16,6 +17,7 @@ declare global
 
 declare module '@surface/enumerable'
 {
+    // tslint:disable-next-line:interface-name
     interface Enumerable<TSource>
     {
         /** Creates an List from a Enumerable<T>. */
@@ -28,14 +30,14 @@ declare module '@surface/enumerable'
 Array.prototype.toList = function <T>(this: Array<T>)
 {
     return new List(this);
-}
+};
 
 Enumerable.prototype.toList = function<T>(this: Enumerable<T>)
 {
     return new List(this);
-}
+};
 
 Enumerable.prototype.toDictionary = function <TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>
 {
     return new Dictionary(this.select(x => new KeyValuePair(keySelector(x), valueSelector(x))).toArray());
-}
+};

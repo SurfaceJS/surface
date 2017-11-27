@@ -1,13 +1,13 @@
-import { StatusCode }  from './enums';
-import { Handler }     from './handler';
-import { HttpContext } from './http-context';
-import { mymeType }    from './variables';
-import * as fs         from 'fs';
-import * as path       from 'path';
+import { StatusCode }     from './enums';
+import { RequestHandler } from './request-handler';
+import { HttpContext }    from './http-context';
+import { mymeType }       from './variables';
+import * as fs            from 'fs';
+import * as path          from 'path';
 
-export class FallbackHandler extends Handler
+export class FallbackRequestHandler extends RequestHandler
 {
-    private _fallbackRoute: string
+    private _fallbackRoute: string;
     public get fallbackRoute(): string
     {
         return this._fallbackRoute;
@@ -21,7 +21,7 @@ export class FallbackHandler extends Handler
 
     public handle(httpContext: HttpContext): boolean
     {
-        let filepath = path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ''))
+        let filepath = path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ''));
         
         let targets =
         [

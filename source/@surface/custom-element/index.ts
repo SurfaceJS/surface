@@ -28,7 +28,9 @@ export abstract class CustomElement extends HTMLElement
     private applyTemplate(): void
     {
         if (window.ShadyCSS)
+        {
             window.ShadyCSS.styleElement(this);
+        }
             
         if (this._template)
         {
@@ -76,16 +78,22 @@ export abstract class CustomElement extends HTMLElement
                     .toList() as List<T>;
             }
             else if (selector instanceof RegExp)
+            {
                 return this.shadowRoot.querySelectorAll('*')
                     .asEnumerable()
                     .cast<HTMLElement>()
                     .where(element => !!element.tagName.toLowerCase().match(selector))
                     .toList() as List<T>;
+            }
             else
+            {
                 return this.shadowRoot.querySelectorAll(selector).toList() as List<T>;
+            }
         }
         else
+        {
             throw new Error("Element don't has shadowRoot");
+        }
     }
     /** Query shadow root use string selector and returns the first element */
     public attach<T extends HTMLElement>(selector: string, slotName?: string);
@@ -93,7 +101,7 @@ export abstract class CustomElement extends HTMLElement
     public attach<T extends HTMLElement>(selector: RegExp, slotName?: string);
     public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string)
     {
-        return this.attachAll<T>(selector as any, slotName).first();
+        return this.attachAll<T>(selector as string, slotName).first();
     }
 
     /** Called when the element is created or upgraded */
@@ -111,10 +119,14 @@ export abstract class CustomElement extends HTMLElement
     protected attributeChangedCallback(attributeName: string, oldValue: string, newValue: string, namespace: string): void
     {
         if (attributeName in this.style)
+        {
             this.style[attributeName] = newValue;
+        }
         
         if (this[CustomElement.Symbols.onAttributeChanged])
+        {
             this[CustomElement.Symbols.onAttributeChanged](attributeName, oldValue, newValue, namespace);
+        }
     }
 
     /** Called when the element is adopted into a new document */
@@ -130,7 +142,7 @@ export namespace CustomElement
         oldValue:      string,
         newValue:      string,
         namespace:     string
-    }
+    };
 
     export namespace Symbols
     {
@@ -139,6 +151,7 @@ export namespace CustomElement
     }
 }
 
+// tslint:disable-next-line:interface-name
 export interface CustomElement
 {
     /*

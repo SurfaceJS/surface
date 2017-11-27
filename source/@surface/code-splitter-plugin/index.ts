@@ -5,7 +5,7 @@ import * as webpack from 'webpack';
 
 namespace CodeSplitterPlugin
 {
-    export interface Options
+    export interface IOptions
     {
         entries: Array<string>;
     }
@@ -15,13 +15,17 @@ class CodeSplitterPlugin
 {
     private entries: Array<string>;
 
-    public constructor(options?: Partial<CodeSplitterPlugin.Options>)
+    public constructor(options?: Partial<CodeSplitterPlugin.IOptions>)
     {
         if (!options)
+        {
             throw new Error('Parameter \'options\' can\'t be null.');
+        }
 
         if (!options.entries)
+        {
             throw new Error('Entries not specified');
+        }
 
         this.entries = options.entries;
     }
@@ -32,10 +36,13 @@ class CodeSplitterPlugin
         compiler.plugin
         (
             'make',
+            // tslint:disable-next-line:no-any
             function (this: webpack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
                 if (!this.options.context)
+                {
                     throw new Error('Context can\'t be null');
+                }
 
                 let file = path.join(common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
 
@@ -48,17 +55,21 @@ class CodeSplitterPlugin
                     for (let parsedPath of parsedPaths)
                     {
                         if (parsedPath.name == 'index')
+                        {
                             content += self.writeEntry
                             (
                                 `${entry}/${parsedPath.dir.split(path.sep).pop()}`,
                                 path.format(parsedPath)
                             ) + '\n';
+                        }
                         else
+                        {
                             content += self.writeEntry
                             (
                                 `${entry}/${parsedPath.name}`,
                                 path.format(parsedPath)
                             ) + '\n';
+                        }
                     }
 
                     content += self.writeFooter();
@@ -76,10 +87,14 @@ class CodeSplitterPlugin
         let result: Array<path.ParsedPath> = [];
         
         if (!fs.existsSync(entry))
+        {
             throw new Error('Path not exists');
+        }
     
         if (!fs.lstatSync(entry).isDirectory())
+        {
             throw new Error('Path is not a directory');
+        }
     
         for (let source of fs.readdirSync(entry))
         {
@@ -91,15 +106,19 @@ class CodeSplitterPlugin
                 (
                     fileName =>
                     {
-                        let file = path.join(currentPath, fileName)
+                        let file = path.join(currentPath, fileName);
                         if (fs.existsSync(file))
+                        {
                             result.push(path.parse(file));
+                        }
 
                     }
-                )
+                );
             }
             else
+            {
                 result.push(path.parse(currentPath));
+            }
         }
     
         return result;
@@ -107,7 +126,7 @@ class CodeSplitterPlugin
 
     private writeEntry(name: string, filepath: string): string
     {
-        name = name.replace('./', '')
+        name = name.replace('./', '');
         let result =
         [
             `        case '${name}':`,

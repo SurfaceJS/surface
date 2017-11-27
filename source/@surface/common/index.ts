@@ -18,19 +18,25 @@ export function resolveFile(context: string, filepath: string, filenames: Array<
 export function resolveFile(context: string, filepath: string, filenames: string|Array<string>)
 {
     if (!path.isAbsolute(filepath))
+    {
         filepath = path.resolve(context, filepath);
+    }
 
     if (fs.existsSync(filepath))
     {
         if (fs.lstatSync(filepath).isDirectory())
         {
             if (!Array.isArray(filenames))
+            {
                 filenames = [filenames];
+            }
                 
             for (let filename of filenames)
             {
                 if (fs.existsSync(path.join(filepath, filename)))
+                {
                     return path.join(filepath, filename);
+                }
             }
                 
             throw new Error('Configuration file not found');
@@ -39,7 +45,9 @@ export function resolveFile(context: string, filepath: string, filenames: string
         return filepath;
     }
     else
-        throw new Error('Configuration file not found');    
+    {
+        throw new Error('Configuration file not found');
+    }    
 }
 
 /**
@@ -94,23 +102,21 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
 export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
 export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
-    if (!target)
-        throw new TypeError('target can\'t be null s');
-
-    if (!source)
-        throw new TypeError('source can\'t be null s');
-
     combineArrays = !!combineArrays;
     
     if (!Array.isArray(source))
+    {
         source = [source];
+    }
 
     for (let current of source)
     {
         for (let key of Object.keys(current))
         {
             if (!current[key])
+            {
                 continue;
+            }
                 
             if (target[key] && target[key] instanceof Object)
             {
@@ -127,7 +133,9 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
                     var descriptor = Object.getOwnPropertyDescriptor(current, key);
                     
                     if (descriptor && descriptor.enumerable)
+                    {
                         target[key] = current[key];
+                    }
                 }
             }
             else if (current[key])
@@ -135,7 +143,9 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
                 var descriptor = Object.getOwnPropertyDescriptor(current, key);
 
                 if (descriptor && descriptor.enumerable)
+                {
                     target[key] = current[key];
+                }
             }
         }
     }

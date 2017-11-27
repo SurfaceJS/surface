@@ -26,19 +26,27 @@ export class List<TSource> extends Enumerable<TSource>
     {
         super();
         if (source && Array.isArray(source))
+        {
             this.source = source;
+        }
         else if (source instanceof Enumerable)
+        {
             this.source = source.toArray();
+        }
         else
+        {
             this.source = [];
+        }
 
         let self = this;
 
         this[Symbol.iterator] = function* ()
         {
             for (const item of self.source)
+            {
                 yield item;
-        }
+            }
+        };
     }
 
     /**
@@ -70,7 +78,7 @@ export class List<TSource> extends Enumerable<TSource>
     public addAt(items: List<TSource>, index): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index): void
     {        
-        let left = this.source.splice(index + 1)
+        let left = this.source.splice(index + 1);
         if (Array.isArray(itemOrItems))
         {
             let items = itemOrItems;
@@ -112,13 +120,13 @@ export class List<TSource> extends Enumerable<TSource>
         if (typeof indexOritem == "number")
         {
             index = indexOritem;
-            this.source.splice(index, count || 1)
+            this.source.splice(index, count || 1);
         }
         else
         {
             item = indexOritem;
             index = this.source.findIndex(x => Object.is(x, item));
-            this.source.splice(index, 1)
+            this.source.splice(index, 1);
         }
     }
 

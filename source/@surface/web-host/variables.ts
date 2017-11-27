@@ -60,4 +60,4 @@ export const mymeType =
     '.3gp':    'video/3gpp|audio/3gpp',
     '.3g2':    'video/3gpp2|audio/3gpp2',
     '.7z':     'application/x-7z-compressed'
-}
+};
