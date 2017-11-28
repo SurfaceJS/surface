@@ -166,6 +166,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         
     primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
     primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    primaryConfig.plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
 
     let webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
 
