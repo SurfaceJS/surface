@@ -1,4 +1,5 @@
-import * as common  from '@surface/common';
+import * as common from '@surface/common';
+
 import * as fs      from 'fs';
 import * as path    from 'path';
 import * as webpack from 'webpack';
@@ -8,12 +9,14 @@ namespace CodeSplitterPlugin
     export interface IOptions
     {
         entries: Array<string>;
+        useRealPaths:   boolean;
     }
 }
 
 class CodeSplitterPlugin
 {
-    private entries: Array<string>;
+    private _entries:   Array<string>;
+    private _useRealPaths:     boolean;
 
     public constructor(options?: Partial<CodeSplitterPlugin.IOptions>)
     {
@@ -27,7 +30,8 @@ class CodeSplitterPlugin
             throw new Error('Entries not specified');
         }
 
-        this.entries = options.entries;
+        this._entries      = options.entries;
+        this._useRealPaths = !!options.useRealPaths;
     }
 
     public apply (compiler: webpack.Compiler)
@@ -44,9 +48,9 @@ class CodeSplitterPlugin
                     throw new Error('Context can\'t be null');
                 }
 
-                let file = path.join(common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
+                let sourceFile = path.join(common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
 
-                for (let entry of self.entries)
+                for (let entry of self._entries)
                 {
                     let parsedPaths = self.getPaths(path.resolve(this.options.context, entry));
 
@@ -59,6 +63,7 @@ class CodeSplitterPlugin
                             content += self.writeEntry
                             (
                                 `${entry}/${parsedPath.dir.split(path.sep).pop()}`,
+                                sourceFile,
                                 path.format(parsedPath)
                             ) + '\n';
                         }
@@ -67,6 +72,7 @@ class CodeSplitterPlugin
                             content += self.writeEntry
                             (
                                 `${entry}/${parsedPath.name}`,
+                                sourceFile,
                                 path.format(parsedPath)
                             ) + '\n';
                         }
@@ -74,7 +80,7 @@ class CodeSplitterPlugin
 
                     content += self.writeFooter();
 
-                    fs.writeFileSync(file, content);
+                    fs.writeFileSync(sourceFile, content);
                 }
 
                 callback();
@@ -124,13 +130,13 @@ class CodeSplitterPlugin
         return result;
     }
 
-    private writeEntry(name: string, filepath: string): string
+    private writeEntry(name: string, sourceFile: string, filepath: string): string
     {
         name = name.replace('./', '');
         let result =
         [
             `        case '${name}':`,
-            `            return import(/* webpackChunkName: '${name}' */ '${filepath.replace(/\\/g, '\\\\')}');`
+            `            return import(/* webpackChunkName: '${name}' */ '${(this._useRealPaths ? filepath : path.relative(path.parse(sourceFile).dir, filepath)).replace(/\\/g, '/')}');`
         ].join('\n');
     
         return result;
