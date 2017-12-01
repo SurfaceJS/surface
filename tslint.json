@@ -6,7 +6,21 @@
         "await-promise":                   true,
         "binary-expression-operand-order": true,
         "class-name":                      true,
-        "completed-docs":                  true,
+        "completed-docs":
+        [
+            true,
+            {
+                "classes":    {"visibilities": ["exported"]},
+                "enums":      {"visibilities": ["exported"]},
+                "functions":  {"visibilities": ["exported"]},
+                "interfaces": {"visibilities": ["exported"]},
+                "namespaces": {"visibilities": ["exported"]},
+                "types":      {"visibilities": ["exported"]},
+                "variables":  {"visibilities": ["exported"]},
+                "methods":    {"locations": ["all"], "privacies": ["public", "protected"]},
+                "properties": {"locations": ["all"], "privacies": ["public", "protected"]}
+            }
+        ],
         "curly":                           true,
         "cyclomatic-complexity":           true,
         "deprecation":                     true,

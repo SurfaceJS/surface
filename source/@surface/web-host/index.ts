@@ -82,10 +82,9 @@ export class WebHost
         return this;
     }
 
-    public static create(config: Configuration): WebHost
-    {
-        WebHost._instance = new WebHost(config);
-        return WebHost._instance;
+    public static configure(configuration: Configuration): WebHost
+    {        
+        return WebHost._instance = WebHost._instance || new WebHost(configuration);
     }
 
     private async listener(request: http.IncomingMessage, response: http.ServerResponse): Promise<void>

@@ -14,8 +14,8 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     }
 
     public constructor();
-    public constructor(source: ObjectLiteral<TValue>);
-    public constructor(source: Array<KeyValuePair<TKey, TValue>>);
+    public constructor(source:  ObjectLiteral<TValue>);
+    public constructor(source:  Array<KeyValuePair<TKey, TValue>>);
     public constructor(source?: ObjectLiteral<TValue>|Array<KeyValuePair<TKey, TValue>>)
     {
         super();        

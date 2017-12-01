@@ -1,8 +1,10 @@
-import * as defaults                   from './defaults';
-import * as enums                      from './enums';
-import { Compiler }                    from '../types';
-import { Constructor }                 from '@surface/types';
-import { lookUp, merge, resolveFile }  from '@surface/common';
+import * as defaults from './defaults';
+import * as enums    from './enums';
+import { Compiler }  from '../types';
+
+import { Constructor }                from '@surface/types';
+import { lookUp, merge, resolveFile } from '@surface/common';
+
 import * as fs                         from 'fs';
 import * as path                       from 'path';
 import * as rimraf                     from 'rimraf';
@@ -95,7 +97,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 {
     filepath = resolveFile(process.cwd(), filepath, 'surface.config.json');
 
-    let root = path.dirname(filepath);
+    let root   = path.dirname(filepath);
     let config = require(filepath) as Compiler.Config;
 
     if (!config.context)

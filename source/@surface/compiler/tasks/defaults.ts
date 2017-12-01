@@ -3,7 +3,7 @@ import * as webpack from 'webpack';
 
 export let loaders =
 {
-    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: path.resolve(__dirname, './cache-loader') }},
+    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: path.resolve(__dirname, 'cache-loader') }},
     cssLoader:   { loader: 'css-loader' },
     fileLoader:
     {

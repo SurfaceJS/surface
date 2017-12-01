@@ -1,8 +1,7 @@
-export interface Constructor<T> extends Function
+export interface Constructor<T = Object> extends Function
 {
     new (...args: Array<any>): T;
-    prototype: T;
-    Symbols:   any;
+    readonly prototype: T;
 }
 
 export type Action                                   = () => void;

@@ -1,5 +1,7 @@
 import { CustomElement } from './index';
-import { Action, Func }  from '@surface/types';
+import * as symbols      from './symbols';
+
+import { Action, Func } from '@surface/types';
 
 enum BindType
 {
@@ -115,7 +117,7 @@ export class ElementBinder<T extends CustomElement>
             }
         }
 
-        let observedAttributes = context[CustomElement.Symbols.observedAttributes] as Array<string>;
+        let observedAttributes = context[symbols.observedAttributes] as Array<string>;
         if (observedAttributes && context instanceof CustomElement && observedAttributes.filter(x => x == property).length > 0)
         {
             if (bindType == BindType.attribute)
@@ -123,8 +125,8 @@ export class ElementBinder<T extends CustomElement>
                 action = () => node[attribute] = context[property];
             }
             
-            let onAttributeChanged = context[CustomElement.Symbols.onAttributeChanged];
-            context[CustomElement.Symbols.onAttributeChanged] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
+            let onAttributeChanged = context[symbols.observedAttributes];
+            context[onAttributeChanged] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
                 if (attributeName == property)
                 {

@@ -2,9 +2,11 @@ import './extensions';
 import '@surface/collection/extensions';
 import '@surface/enumerable/extensions';
 
-import { ElementBinder } from './element-binder';
-import { List }          from '@surface/collection/list';
-import { Nullable }      from '@surface/types';
+import { ElementBinder }      from './element-binder';
+import { onAttributeChanged } from './symbols';
+
+import { List }     from '@surface/collection';
+import { Nullable } from '@surface/types';
 
 export abstract class CustomElement extends HTMLElement
 {
@@ -45,6 +47,35 @@ export abstract class CustomElement extends HTMLElement
         new ElementBinder(this, content).bind();
     }
 
+    /** Called when the element is created or upgraded */
+    protected connectedCallback(): void
+    { }
+
+    /** Called when the element is inserted into a document, including into a shadow tree */
+    protected disconnectedCallback(): void
+    { }
+
+    /**
+     * Called when an attribute is changed, appended, removed, or replaced on the element.
+     * Only called for observed attributes.
+     */
+    protected attributeChangedCallback(attributeName: string, oldValue: string, newValue: string, namespace: string): void
+    {
+        if (attributeName in this.style)
+        {
+            this.style[attributeName] = newValue;
+        }
+        
+        if (this[onAttributeChanged])
+        {
+            this[onAttributeChanged](attributeName, oldValue, newValue, namespace);
+        }
+    }
+
+    /** Called when the element is adopted into a new document */
+    protected adoptedCallback(oldDocument: Document, newDocument: Document): void
+    { }
+
     /** Query shadow root use string selector and returns all elements */
     public attachAll<T extends HTMLElement>(selector: string, slotName?: string): List<T>;
     /** Query shadow root using regex pattern and returns all elements */
@@ -70,12 +101,13 @@ export abstract class CustomElement extends HTMLElement
                             (
                                 x => selector instanceof RegExp ?
                                     !!x.tagName.toLowerCase().match(selector) :
-                                    x.tagName.toLowerCase() == selector
+                                    x.tagName.toLowerCase() == selector.toLowerCase()
                             )
                             .toArray()
                     )
                     .selectMany(x => x)
-                    .toList() as List<T>;
+                    .cast<T>()
+                    .toList();
             }
             else if (selector instanceof RegExp)
             {
@@ -83,7 +115,8 @@ export abstract class CustomElement extends HTMLElement
                     .asEnumerable()
                     .cast<HTMLElement>()
                     .where(element => !!element.tagName.toLowerCase().match(selector))
-                    .toList() as List<T>;
+                    .cast<T>()
+                    .toList();
             }
             else
             {
@@ -95,68 +128,17 @@ export abstract class CustomElement extends HTMLElement
             throw new Error("Element don't has shadowRoot");
         }
     }
-    /** Query shadow root use string selector and returns the first element */
+
+    /**
+     * Query shadow root use string selector and returns the first element
+     */
     public attach<T extends HTMLElement>(selector: string, slotName?: string);
-    /** Query shadow root using regex pattern and returns the first element */
+    /**
+     * Query shadow root using regex pattern and returns the first element
+     */
     public attach<T extends HTMLElement>(selector: RegExp, slotName?: string);
-    public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string)
+    public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
     {
         return this.attachAll<T>(selector as string, slotName).first();
     }
-
-    /** Called when the element is created or upgraded */
-    protected connectedCallback(): void
-    { }
-
-    /** Called when the element is inserted into a document, including into a shadow tree */
-    protected disconnectedCallback(): void
-    { }
-
-    /**
-     * Called when an attribute is changed, appended, removed, or replaced on the element.
-     * Only called for observed attributes.
-     */
-    protected attributeChangedCallback(attributeName: string, oldValue: string, newValue: string, namespace: string): void
-    {
-        if (attributeName in this.style)
-        {
-            this.style[attributeName] = newValue;
-        }
-        
-        if (this[CustomElement.Symbols.onAttributeChanged])
-        {
-            this[CustomElement.Symbols.onAttributeChanged](attributeName, oldValue, newValue, namespace);
-        }
-    }
-
-    /** Called when the element is adopted into a new document */
-    protected adoptedCallback(oldDocument: Document, newDocument: Document): void
-    { }
-}
-
-export namespace CustomElement
-{
-    export type AtributeChangedArgs =
-    {
-        attributeName: string,
-        oldValue:      string,
-        newValue:      string,
-        namespace:     string
-    };
-
-    export namespace Symbols
-    {
-        export const observedAttributes = Symbol.for('observedAttributes');
-        export const onAttributeChanged = Symbol.for('onAttributeChanged');
-    }
-}
-
-// tslint:disable-next-line:interface-name
-export interface CustomElement
-{
-    /*
-        Wainting support
-        [observedAttributes]: Array<string>;
-        [CustomElement.Symbols.onAttributeChanged]: (attributeName: string, oldValue: string, newValue: string, namespace: string) => void;
-    */
 }

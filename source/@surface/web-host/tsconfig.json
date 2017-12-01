@@ -2,8 +2,7 @@
     "extends": "../configurations/tsconfig.json",
     "compilerOptions":
     {
-        "lib":       ["dom","esnext"],
-        "module":    "commonjs",
-        "typeRoots": ["node_modules/@types"]
+        "lib":    ["dom","esnext"],
+        "module": "commonjs"
     }
 }

@@ -1,55 +1,63 @@
-import { CustomElement }                 from './index';
-import { ClassDecoratorOf, Constructor } from '@surface/types';
+import { CustomElement }      from './index';
+import { observedAttributes } from './symbols';
 
-export function define<T extends CustomElement>(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<T>
+export function element(name: string): ClassDecorator;
+export function element(name: string, template:  string): ClassDecorator;
+export function element(name: string, template:  string, style:  string): ClassDecorator;
+export function element(name: string, template:  string, style:  string, options:  ElementDefinitionOptions): ClassDecorator;
+export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecorator
 {
-    return (target: Constructor<T>) =>
+    return (target: Object) =>
     {
-        if (template)
+        if (isCustomElement(target))
         {
-            target.prototype.template = templateParse(template, style);
-            
-            if (window.ShadyCSS)
+            if (template)
             {
-                window.ShadyCSS.prepareTemplate(target.prototype.template, name, options && options.extends);
+                let templateElement = document.createElement('template') as HTMLTemplateElement;
+                
+                templateElement.innerHTML = template;
+            
+                if (style)
+                {
+                    let styleElement = document.createElement('style') as HTMLStyleElement;
+                    styleElement.innerHTML = style;
+                    templateElement.content.appendChild(styleElement);
+                }
+
+                target.prototype.template = templateElement;
+                
+                if (window.ShadyCSS)
+                {
+                    window.ShadyCSS.prepareTemplate(target.prototype.template, name, options && options.extends);
+                }
             }
-        }
         
-        window.customElements.define(name, target, options);
-    
-        return target;
+            window.customElements.define(name, target, options);
+        }
+        else
+        {
+            throw new TypeError('Constructor is not an valid subclass of @surface/custom-element.');
+        }
     };
 }
 
-export function view<T extends CustomElement>(name: string, template: string, style?: string, options?: ElementDefinitionOptions): ClassDecoratorOf<T>
+export function observe(...attributes: Array<string>): ClassDecorator
 {
-    return (target: Constructor<T>) => define<T>(name, template, style, options)(target);
-}
-
-export function observe<T extends CustomElement>(...attributes: Array<string>): ClassDecoratorOf<T>
-{
-    return (target: Constructor<CustomElement>) =>
+    return (target: Object) =>
     {
-        Object.defineProperty(target, 'observedAttributes', { get: () => attributes } );
-        target.prototype[CustomElement.Symbols.observedAttributes] = attributes;
+        if (isCustomElement(target))
+        {
+            Object.defineProperty(target, 'observedAttributes', { get: () => attributes } );
+            target.prototype[observedAttributes] = attributes;
+        }
+        else
+        {
+            throw new TypeError('Constructor is not an valid subclass of @surface/custom-element.');
+        }
     };
 }
 
-function templateParse(template?: string, style?: string): HTMLTemplateElement
-{    
-    let templateElement = document.createElement('template') as HTMLTemplateElement;
-
-    if (template)
-    {
-        templateElement.innerHTML = template;
-    }
-
-    if (style)
-    {
-        let styleElement = document.createElement('style') as HTMLStyleElement;
-        styleElement.innerHTML = style;
-        templateElement.content.appendChild(styleElement);
-    }
-
-    return templateElement;
+function isCustomElement(source: Object): source is typeof CustomElement
+{
+    return source['prototype'] instanceof CustomElement;
 }
