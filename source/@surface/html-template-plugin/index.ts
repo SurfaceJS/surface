@@ -7,7 +7,7 @@ namespace HtmlTemplatePlugin
 {
     export interface IOptions
     {
-        filename: string; 
+        filename: string;
         template: string;
     }
 }
@@ -31,6 +31,39 @@ class HtmlTemplatePlugin implements webPack.Plugin
 
         this.template = options.template;
         this.filename = options.filename;
+    }
+
+    private getModuleName(filepath: string): string
+    {
+        let slices = filepath.split('/').reverse();
+        if (slices.length > 1 && slices[0].match(/index.[tj]s/))
+        {
+            return slices[1];
+        }
+        else
+        {
+            return slices[0];
+        }
+    }
+
+    private templateParse(template: string, keys: ObjectLiteral<string>): string
+    {
+        for (let key in keys)
+        {
+            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
+        }
+
+        return template;
+    }
+
+    private filenameParse(filename: string, keys: ObjectLiteral<string>): string
+    {
+        for (let key in keys)
+        {
+            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);
+        }
+
+        return filename;
     }
 
     public apply (compiler: webPack.Compiler)
@@ -88,39 +121,6 @@ class HtmlTemplatePlugin implements webPack.Plugin
                 callback();
             }
         );
-    }
-
-    private getModuleName(filepath: string): string
-    {
-        let slices = filepath.split('/').reverse();
-        if (slices.length > 1 && slices[0].match(/index.[tj]s/))
-        {
-            return slices[1];
-        }
-        else
-        {
-            return slices[0];
-        }
-    }
-
-    private templateParse(template: string, keys: ObjectLiteral<string>): string
-    {
-        for (let key in keys)
-        {
-            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
-        }
-    
-        return template;
-    }
-
-    private filenameParse(filename: string, keys: ObjectLiteral<string>): string
-    {
-        for (let key in keys)
-        {
-            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);
-        }
-
-        return filename;
     }
 }
 

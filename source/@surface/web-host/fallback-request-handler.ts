@@ -22,7 +22,7 @@ export class FallbackRequestHandler extends RequestHandler
     public handle(httpContext: HttpContext): boolean
     {
         let filepath = path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ''));
-        
+
         let targets =
         [
             filepath,
@@ -33,7 +33,7 @@ export class FallbackRequestHandler extends RequestHandler
             path.join(filepath, 'default.html'),
             path.join(filepath, 'default.htm')
         ];
-    
+
         try
         {
             filepath = targets.asEnumerable().first(x => fs.existsSync(x) && fs.lstatSync(x).isFile());

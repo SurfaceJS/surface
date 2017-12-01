@@ -12,14 +12,14 @@ import * as http                  from 'http';
 
 export class WebHost
 {
-    private _startup: IStartup;
-    private _handlers: List<RequestHandler>;
-
     private static _instance: WebHost;
     public static get instance(): WebHost
     {
         return this._instance;
     }
+
+    private _startup: IStartup;
+    private _handlers: List<RequestHandler>;
 
     private _port: number;
     public get port(): number
@@ -46,6 +46,45 @@ export class WebHost
         this._wwwroot = configuration.wwwroot;
 
         this._handlers = new List();
+    }
+
+    public static configure(configuration: Configuration): WebHost
+    {
+        return WebHost._instance = WebHost._instance || new WebHost(configuration);
+    }
+
+    private async listener(request: http.IncomingMessage, response: http.ServerResponse): Promise<void>
+    {
+        const httpContext = new HttpContext(this, request, response);
+
+        try
+        {
+            if (this._startup && this._startup.onBeginRequest)
+            {
+                this._startup.onBeginRequest(httpContext);
+            }
+
+            if (this._handlers.any(x => x.handle(httpContext)))
+            {
+                response.writeHead(StatusCode.notFound, { 'Content-Type': 'text/plain' });
+                response.end('Resource not found.');
+            }
+
+            if (this._startup && this._startup.onEndRequest)
+            {
+                this._startup.onEndRequest(httpContext);
+            }
+        }
+        catch (error)
+        {
+            response.writeHead(StatusCode.internalServerError, { 'Content-Type': 'text/plain' });
+            response.end(error.message);
+
+            if (this._startup && this._startup.onError)
+            {
+                this._startup.onError(error, httpContext);
+            }
+        }
     }
 
     public run(): void
@@ -80,44 +119,5 @@ export class WebHost
     {
         this._startup = startup;
         return this;
-    }
-
-    public static configure(configuration: Configuration): WebHost
-    {        
-        return WebHost._instance = WebHost._instance || new WebHost(configuration);
-    }
-
-    private async listener(request: http.IncomingMessage, response: http.ServerResponse): Promise<void>
-    {
-        const httpContext = new HttpContext(this, request, response);
-
-        try
-        {
-            if (this._startup && this._startup.onBeginRequest)
-            {
-                this._startup.onBeginRequest(httpContext);
-            }
-
-            if (this._handlers.any(x => x.handle(httpContext)))
-            {
-                response.writeHead(StatusCode.notFound, { 'Content-Type': 'text/plain' });
-                response.end('Resource not found.');
-            }
-            
-            if (this._startup && this._startup.onEndRequest)
-            {
-                this._startup.onEndRequest(httpContext);
-            }
-        }
-        catch (error)
-        {
-            response.writeHead(StatusCode.internalServerError, { 'Content-Type': 'text/plain' });
-            response.end(error.message);
-
-            if (this._startup && this._startup.onError)
-            {
-                this._startup.onError(error, httpContext);
-            }
-        }
     }
 }

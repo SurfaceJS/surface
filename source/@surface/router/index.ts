@@ -35,7 +35,7 @@ export class Router
         let routeData = this._routes.select(x => x.match(path)).firstOrDefault(x => !!x);
 
         let action = this._routeAction[path] || this._routeAction['*'];
-        
+
         if (action)
         {
             action(routeData);

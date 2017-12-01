@@ -4,15 +4,15 @@ import { Nullable }   from '@surface/types';
 export class List<TSource> extends Enumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
-    
+
     private source: Array<TSource>;
-    
+
     /** Returns Length of the list. */
     public get length(): number
     {
         return this.source.length;
     }
-    
+
     public constructor();
     /**
      * @param source Array<TSource> used to create the list.
@@ -77,7 +77,7 @@ export class List<TSource> extends Enumerable<TSource>
      */
     public addAt(items: List<TSource>, index): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index): void
-    {        
+    {
         let left = this.source.splice(index + 1);
         if (Array.isArray(itemOrItems))
         {
@@ -116,7 +116,7 @@ export class List<TSource> extends Enumerable<TSource>
     {
         let index: number            = 0;
         let item:  Nullable<TSource> = null;
-        
+
         if (typeof indexOritem == "number")
         {
             index = indexOritem;

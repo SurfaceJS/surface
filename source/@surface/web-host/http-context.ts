@@ -8,7 +8,7 @@ export class HttpContext
     {
         return this._request;
     }
-    
+
     private _response: http.ServerResponse;
     public get response(): http.ServerResponse
     {

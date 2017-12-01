@@ -28,14 +28,14 @@ export class MvcRequestHandler extends RequestHandler
         if (httpContext.request.url)
         {
             let routeData = this._router.match(httpContext.request.url);
-            
+
             if (routeData)
             {
                 const { controller, action, id } = routeData.params;
                 if (controller)
                 {
                     let controllersPath = path.join(httpContext.host.root, 'controllers');
-                    
+
                     let filepath =
                     [
                         path.join(controllersPath, `${controller}.js`),
@@ -62,7 +62,7 @@ export class MvcRequestHandler extends RequestHandler
                             if (actionMethod)
                             {
                                 let actionResult: ActionResult;
-                                
+
                                 if (id)
                                 {
                                     actionResult = actionMethod.call(targetController, { id });

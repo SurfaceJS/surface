@@ -11,16 +11,16 @@ import { Nullable } from '@surface/types';
 export abstract class CustomElement extends HTMLElement
 {
     private _template: Nullable<HTMLTemplateElement>;
-	public get template(): Nullable<HTMLTemplateElement>
+    public get template(): Nullable<HTMLTemplateElement>
     {
 		return this._template;
 	}
 
-	public set template(value: Nullable<HTMLTemplateElement>)
+    public set template(value: Nullable<HTMLTemplateElement>)
     {
 		this._template = value;
 	}
-    
+
     public constructor()
     {
         super();
@@ -33,7 +33,7 @@ export abstract class CustomElement extends HTMLElement
         {
             window.ShadyCSS.styleElement(this);
         }
-            
+
         if (this._template)
         {
             let content = document.importNode(this._template.content, true);
@@ -65,7 +65,7 @@ export abstract class CustomElement extends HTMLElement
         {
             this.style[attributeName] = newValue;
         }
-        
+
         if (this[onAttributeChanged])
         {
             this[onAttributeChanged](attributeName, oldValue, newValue, namespace);
@@ -76,10 +76,28 @@ export abstract class CustomElement extends HTMLElement
     protected adoptedCallback(oldDocument: Document, newDocument: Document): void
     { }
 
-    /** Query shadow root use string selector and returns all elements */
-    public attachAll<T extends HTMLElement>(selector: string, slotName?: string): List<T>;
-    /** Query shadow root using regex pattern and returns all elements */
-    public attachAll<T extends HTMLElement>(selector: RegExp, slotName?: string): List<T>;
+    /**
+     * Returns the all elements that matches the specified name.
+     * @param selector Query selector.
+     */
+    public attachAll<T extends HTMLElement>(selector: string): List<T>;
+    /**
+     * Returns the all elements that matches the specified pattern.
+     * @param selector Query pattern.
+     */
+    public attachAll<T extends HTMLElement>(selector: RegExp): List<T>;
+    /**
+     * Returns the all elements that matches the specified name at the specified slot.
+     * @param selector Query selector.
+     * @param slotName Slot name.
+     */
+    public attachAll<T extends HTMLElement>(selector: string, slotName: string): List<T>;
+    /**
+     * Returns the all elements that matches the specified pattern at the specified slot.
+     * @param selector Query pattern.
+     * @param slotName Slot name.
+     */
+    public attachAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
     public attachAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
         if (this.shadowRoot)
@@ -114,31 +132,45 @@ export abstract class CustomElement extends HTMLElement
                 return this.shadowRoot.querySelectorAll('*')
                     .asEnumerable()
                     .cast<HTMLElement>()
-                    .where(element => !!element.tagName.toLowerCase().match(selector))
+                    .where(x => !!x.tagName.toLowerCase().match(selector))
                     .cast<T>()
                     .toList();
             }
             else
             {
-                return this.shadowRoot.querySelectorAll(selector).toList() as List<T>;
+                return this.shadowRoot.querySelectorAll(selector).asEnumerable().cast<T>().toList();
             }
         }
         else
         {
-            throw new Error("Element don't has shadowRoot");
+            throw new Error('Element don\'t has shadowRoot');
         }
     }
 
     /**
-     * Query shadow root use string selector and returns the first element
+     * Returns the first element that matches the specified selector.
+     * @param selector Query selector.
      */
-    public attach<T extends HTMLElement>(selector: string, slotName?: string);
+    public attach<T extends HTMLElement>(selector: string): T;
     /**
-     * Query shadow root using regex pattern and returns the first element
+     * Returns the first element that matches the specified pattern.
+     * @param selector Query pattern.
      */
-    public attach<T extends HTMLElement>(selector: RegExp, slotName?: string);
+    public attach<T extends HTMLElement>(selector: RegExp): T;
+    /**
+     * Returns the first element that matches the specified name at the specified slot.
+     * @param selector Query selector.
+     * @param slotName Slot name.
+     */
+    public attach<T extends HTMLElement>(selector: string, slotName: string): T;
+    /**
+     * Returns the first element that matches the specified pattern at the specified slot.
+     * @param selector Query pattern.
+     * @param slotName Slot name.
+     */
+    public attach<T extends HTMLElement>(selector: RegExp, slotName: string): T;
     public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
     {
-        return this.attachAll<T>(selector as string, slotName).first();
+        return this.attachAll.call(this, selector, slotName);
     }
 }

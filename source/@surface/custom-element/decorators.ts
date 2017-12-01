@@ -14,9 +14,9 @@ export function element(name: string, template?: string, style?: string, options
             if (template)
             {
                 let templateElement = document.createElement('template') as HTMLTemplateElement;
-                
+
                 templateElement.innerHTML = template;
-            
+
                 if (style)
                 {
                     let styleElement = document.createElement('style') as HTMLStyleElement;
@@ -25,13 +25,13 @@ export function element(name: string, template?: string, style?: string, options
                 }
 
                 target.prototype.template = templateElement;
-                
+
                 if (window.ShadyCSS)
                 {
                     window.ShadyCSS.prepareTemplate(target.prototype.template, name, options && options.extends);
                 }
             }
-        
+
             window.customElements.define(name, target, options);
         }
         else

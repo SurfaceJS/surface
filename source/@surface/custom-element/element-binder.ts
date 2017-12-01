@@ -16,13 +16,8 @@ export class ElementBinder<T extends CustomElement>
 
     public constructor(context: T, content: Node)
     {
-		this.context = context;
+        this.context = context;
         this.content = content;
-	}
-
-    public bind(): void
-    {
-        this.traverseElement(this.content, this.context);
     }
 
     private traverseElement(node: Node, context: object): void
@@ -59,7 +54,7 @@ export class ElementBinder<T extends CustomElement>
                     item =>
                     {
                         let [left, property, right, remaining] = item.slice(1);
-                        
+
                         if (property)
                         {
                             this.applyBind(context, node, property, '', BindType.text, onChange);
@@ -68,7 +63,7 @@ export class ElementBinder<T extends CustomElement>
                         binders.push(() => (left || '') + (context[property] || '') + (right || '') + (remaining || ''));
                     }
                 );
-                
+
                 onChange();
             }
         }
@@ -76,7 +71,7 @@ export class ElementBinder<T extends CustomElement>
 
     private bindAttribute(node: Node, context: object): void
     {
-        let binders: Array<Action> = []; 
+        let binders: Array<Action> = [];
         let onChange = () => binders.forEach(x => x());
 
         node.attributes.asEnumerable().forEach
@@ -95,7 +90,7 @@ export class ElementBinder<T extends CustomElement>
                 }
             }
         );
-        
+
         onChange();
     }
 
@@ -124,7 +119,7 @@ export class ElementBinder<T extends CustomElement>
             {
                 action = () => node[attribute] = context[property];
             }
-            
+
             let onAttributeChanged = context[symbols.observedAttributes];
             context[onAttributeChanged] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
@@ -151,7 +146,7 @@ export class ElementBinder<T extends CustomElement>
 
                 let getter = descriptor.get;
                 let setter = descriptor.set;
-                
+
                 Object.defineProperty
                 (
                     context,
@@ -169,5 +164,10 @@ export class ElementBinder<T extends CustomElement>
         }
 
         return action;
+    }
+
+    public bind(): void
+    {
+        this.traverseElement(this.content, this.context);
     }
 }

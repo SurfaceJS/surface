@@ -12,7 +12,13 @@ import { ViewHost }              from '@surface/view-host';
  */
 export class ViewManager
 {
-    private _views: Dictionary<string, View>;
+    private static _instance: Nullable<ViewManager>;
+    public static get instance(): Nullable<ViewManager>
+    {
+        return this._instance;
+    }
+
+    private _views:  Dictionary<string, View>;
     private _router: Router;
 
     private _viewHost: ViewHost;
@@ -21,18 +27,17 @@ export class ViewManager
         return this._viewHost;
     }
 
-    private static _instance: Nullable<ViewManager>;
-    public static get instance(): Nullable<ViewManager>
-    {
-        return this._instance;
-    }
-
     private constructor(viewHost: ViewHost, router: Router)
     {
         this._views    = new Dictionary<string, View>();
         this._viewHost = viewHost;
         this._router   = router;
         window.onpopstate = () => this.routeTo(window.location.pathname + window.location.search);
+    }
+
+    public static configure(viewHost: ViewHost, router: Router): ViewManager
+    {
+        return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router);
     }
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
@@ -50,7 +55,7 @@ export class ViewManager
 
         throw new TypeError('Constructor is not an valid subclass of @surface/view-handler/view.');
     }
-    
+
     public async routeTo(route: string): Promise<void>
     {
         let routeData = this._router.match(route);
@@ -59,9 +64,9 @@ export class ViewManager
         {
             window.history.pushState(null, routeData.params['view'], route);
             let { view, action } = routeData.params;
-            
+
             let path = `views/${view}`;
-    
+
             if (!action || action != 'index')
             {
                 path = `${path}/${action}`;
@@ -79,10 +84,5 @@ export class ViewManager
         {
             throw new Error('Invalid route path');
         }
-    }
-
-    public static configure(viewHost: ViewHost, router: Router): ViewManager
-    {
-        return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router);
     }
 }

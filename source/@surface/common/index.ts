@@ -30,7 +30,7 @@ export function resolveFile(context: string, filepath: string, filenames: string
             {
                 filenames = [filenames];
             }
-                
+
             for (let filename of filenames)
             {
                 if (fs.existsSync(path.join(filepath, filename)))
@@ -38,16 +38,16 @@ export function resolveFile(context: string, filepath: string, filenames: string
                     return path.join(filepath, filename);
                 }
             }
-                
+
             throw new Error('Configuration file not found');
         }
-        
+
         return filepath;
     }
     else
     {
         throw new Error('Configuration file not found');
-    }    
+    }
 }
 
 /**
@@ -97,13 +97,13 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
  * Deeply merges two objects, and optionally concatenate array values.
  * @param target Object to receive merge.
  * @param source Object to merge to the target.
- * @param combineArrays 
+ * @param combineArrays
  */
 export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
 export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
     combineArrays = !!combineArrays;
-    
+
     if (!Array.isArray(source))
     {
         source = [source];
@@ -117,7 +117,7 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
             {
                 continue;
             }
-                
+
             if (target[key] && target[key] instanceof Object)
             {
                 if (Array.isArray(target[key]) && Array.isArray(current[key]) && combineArrays)
@@ -131,7 +131,7 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
                 else if (current[key])
                 {
                     var descriptor = Object.getOwnPropertyDescriptor(current, key);
-                    
+
                     if (descriptor && descriptor.enumerable)
                     {
                         target[key] = current[key];

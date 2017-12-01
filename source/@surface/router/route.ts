@@ -19,7 +19,7 @@ export class Route
     {
         return this._name;
     }
-    
+
     private _pattern: string;
     public get pattern(): string
     {
@@ -36,6 +36,20 @@ export class Route
         this._pattern    = pattern;
     }
 
+    private toExpression(pattern: string): RegExp
+    {
+        let expression = pattern.replace(/^\/|\/$/g, '').split('/').asEnumerable()
+            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, '([^\\\/]+)').replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, '([^\\\/]*)'))
+            .toArray()
+            .join('\\\/');
+
+        expression = expression
+            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, '$1?$2')
+            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, '$1$2?');
+
+        return new RegExp(`^\/?${expression}\/?$`, "i");
+    }
+
     public match(route: string): Nullable<Route.IData>
     {
         let [path, queryString] = route.split('?');
@@ -46,7 +60,7 @@ export class Route
         if (queryString)
         {
             search = { };
-            
+
             decodeURI(queryString).split('&')
                 .asEnumerable()
                 .select(x => x.split('='))
@@ -56,9 +70,9 @@ export class Route
         if (this._expression.test(route))
         {
             let keys = this._expression.exec(this._pattern);
-            
+
             this._expression.lastIndex = 0;
-            
+
             let values = this._expression.exec(path);
 
             if (keys && values)
@@ -84,20 +98,6 @@ export class Route
         }
 
         return null;
-    }
-
-    private toExpression(pattern: string): RegExp
-    {        
-        let expression = pattern.replace(/^\/|\/$/g, '').split('/').asEnumerable()
-            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, '([^\\\/]+)').replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, '([^\\\/]*)'))
-            .toArray()
-            .join('\\\/');
-
-        expression = expression
-            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, '$1?$2')
-            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, '$1$2?');
-
-        return new RegExp(`^\/?${expression}\/?$`, "i");
     }
 }
 

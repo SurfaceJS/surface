@@ -5,7 +5,7 @@ import { Nullable, ObjectLiteral } from '@surface/types';
 export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
     private _source: Map<TKey, Nullable<TValue>>;
-    
+
     public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>;
 
     public get size(): number
@@ -18,7 +18,7 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     public constructor(source:  Array<KeyValuePair<TKey, TValue>>);
     public constructor(source?: ObjectLiteral<TValue>|Array<KeyValuePair<TKey, TValue>>)
     {
-        super();        
+        super();
 
         let keysValues: Array<KeyValuePair<TKey, TValue>> = [];
 
@@ -27,7 +27,7 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
             if (Array.isArray(source))
             {
                 keysValues = source;
-            }            
+            }
             else
             {
                 keysValues = Object.keys(source).asEnumerable().select(x => new KeyValuePair(x as Object as TKey, source[x])).toArray();
@@ -76,7 +76,7 @@ export class KeyValuePair<TKey, TValue>
     {
         return this._key;
     }
-    
+
     public set key(value: TKey)
     {
         this._key = value;
@@ -87,7 +87,7 @@ export class KeyValuePair<TKey, TValue>
     {
         return this._value;
     }
-    
+
     public set value(value: TValue)
     {
         this._value = value;
@@ -101,7 +101,7 @@ export class KeyValuePair<TKey, TValue>
         {
             this._key = key;
         }
-        
+
         if (value)
         {
             this._value = value;

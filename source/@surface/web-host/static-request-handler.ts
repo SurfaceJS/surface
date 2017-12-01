@@ -16,7 +16,7 @@ export class StaticRequestHandler extends RequestHandler
             {
                 let extension = path.extname(filepath);
                 let data      = fs.readFileSync(filepath);
-        
+
                 httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] });
                 httpContext.response.write(data);
                 httpContext.response.end();

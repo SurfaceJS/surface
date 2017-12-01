@@ -18,9 +18,9 @@ export async function execute(task?: enums.TasksType, config?: string, env?: str
     config = config || './';
 
     let enviroment = enums.EnviromentType[env || 'debug'];
-    
+
     watch = !!watch;
-    
+
     let wepackconfig = getConfig(config, enviroment);
 
     switch (task)
@@ -62,7 +62,7 @@ async function build(config: webpack.Configuration, enviroment: enums.Enviroment
         (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
     console.log(`Starting ${watch ? 'Watch' : 'build'} using ${enviroment} configuration.`);
-    
+
     if (watch)
     {
         compiler.watch({ aggregateTimeout: 500, poll: true, ignored: /node_modules/ }, callback);
@@ -74,18 +74,27 @@ async function build(config: webpack.Configuration, enviroment: enums.Enviroment
 }
 
 /**
- * Clean target output 
+ * Clean target output
  * @param config Webpack configuration
  */
 async function clean(config: webpack.Configuration): Promise<void>
 {
-    let promises =
-    [
-        new Promise(resolve => rimraf(config.output!.path!, resolve)),
-        new Promise(resolve => rimraf(path.resolve(__dirname, './cache-loader'), resolve))
-    ];
-    
-    await Promise.all(promises);
+    if (config.output && config.output.path)
+    {
+        let outputPath = config.output.path;
+
+        let promises =
+        [
+            new Promise(resolve => rimraf(outputPath, resolve)),
+            new Promise(resolve => rimraf(path.resolve(__dirname, 'cache-loader'), resolve))
+        ];
+
+        await Promise.all(promises);
+    }
+    else
+    {
+        throw new Error('Invalid output path.');
+    }
 }
 
 /**
@@ -117,9 +126,9 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     config.context = path.resolve(root, config.context);
     config.entry   = resolveEntries(config.entry, config.context);
-    config.runtime = config.runtime || Object.keys(config.entry)[0];    
+    config.runtime = config.runtime || Object.keys(config.entry)[0];
     config.output  = path.resolve(root, config.output);
-    
+
     let userWebpack: webpack.Configuration = { };
 
     if (config.webpackConfig)
@@ -144,7 +153,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     let primaryConfig =
     {
         context: config.context,
-        entry:   config.entry,        
+        entry:   config.entry,
         output:
         {
             path:       config.output,
@@ -165,7 +174,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         primaryConfig.devtool = false;
         primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true }));
     }
-        
+
     primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
     primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
     primaryConfig.plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
@@ -181,16 +190,16 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
  * @param nodeModulesPath Path to 'node_modules' folder.
  */
 function getSurfacePlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<webpack.Plugin>
-{    
+{
     let result: Array<webpack.Plugin> = [];
-    
+
     for (let plugin of plugins)
     {
         if (!plugin.name.endsWith("-plugin"))
         {
             plugin.name = `${plugin.name}-plugin`;
         }
-        
+
         let pluginConstructor = require(path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Constructor<webpack.Plugin>;
         result.push(new pluginConstructor(plugin.options));
     }
@@ -227,7 +236,7 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
     {
         let value   = entries[key];
         let sources = Array.isArray(value) ? value : [value];
-        
+
         for (let source of sources)
         {
             if (source.endsWith('/*'))

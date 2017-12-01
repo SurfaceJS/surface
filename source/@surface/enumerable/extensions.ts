@@ -4,9 +4,9 @@ declare global
 {
     // tslint:disable-next-line:interface-name
     interface Array<T>
-    {        
+    {
         /** Cast Array<T> into Enumerable<T> */
-        asEnumerable(): Enumerable<T>;        
+        asEnumerable(): Enumerable<T>;
     }
 }
 

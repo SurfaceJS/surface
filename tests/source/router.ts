@@ -1,16 +1,13 @@
-import { Router, RoutingType } from '@surface/router';
+import { Router } from '@surface/router';
 
 export function execute()
 {
-    let routes =
-    [
-        '/{controller}/{action}/{id?}',
-        '/{controller}/{language}-{country}/{action}/{id?}',
-        '/{controller=home}/{action=index}/{id?}',
-        '/adm/{controller=home}/{action=index}/{id?}',
-    ];
 
-    let router = Router.create(RoutingType.Abstract, routes);
+    let router = new Router()
+        .mapRoute('first',  '/{controller}/{action}/{id?}')
+        .mapRoute('second', '/{controller}/{language}-{country}/{action}/{id?}')
+        .mapRoute('third',  '/{controller=home}/{action=index}/{id?}')
+        .mapRoute('fourth', '/adm/{controller=home}/{action=index}/{id?}');
 
     console.log('case 1: ', router.match('/home'));
     console.log('case 2: ', router.match('/home/about'));

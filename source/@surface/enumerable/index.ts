@@ -5,6 +5,20 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public abstract [Symbol.iterator]: () => Iterator<TSource>;
 
     /**
+     * Create a enumerable object from a iterable source
+     * @param source Source used to create the iterable object
+     */
+    public static from<T>(source: Iterable<T>): Enumerable<T>
+    {
+        return new EnumerableIterator(source);
+    }
+
+    protected next(): Nullable<TSource>
+    {
+        return this[Symbol.iterator]().next().value;
+    }
+
+    /**
      * Determines whether all elements of a sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
      */
@@ -38,7 +52,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         {
             sequence = sequence.where(predicate);
         }
-        
+
         for (let element of sequence)
         {
             hasAny = element == element;
@@ -79,7 +93,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return element;
     }
 
-    /**     
+    /**
      * Returns the element at a specified index in a sequence or or undefined|null value if the index is out of range.
      * @param index The zero-based index of the element to retrieve.
      */
@@ -150,7 +164,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         return this.next();
     }
-    
+
     /**
      * Performs the specified action on each element of the sequence by incorporating the element's index.
      * @param action The Action2<TSource, number> delegate to perform on each element of the sequence.
@@ -210,7 +224,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         {
             current = element;
         }
-        
+
         return current;
     }
 
@@ -229,7 +243,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public selectMany<TResult>(collectionSelector: Func1<TSource, Iterable<TResult>>): Enumerable<TResult>;
     /**
-     * 
+     *
      * @param collectionSelector A transform function to apply to each element of the input sequence.
      * @param selector           A transform function to apply to each element of the intermediate sequence.
      */
@@ -284,7 +298,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /** Creates an array from a Enumerable<T>. */
     public toArray(): Array<TSource>
     {
-        let values: Array<TSource> = [];      
+        let values: Array<TSource> = [];
 
         for (let element of this)
         {
@@ -311,20 +325,6 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public zip<TSecond, TResult>(second: Iterable<TSecond>, selector: Func3<TSource, TSecond, number, TResult>): Enumerable<TResult>
     {
         return new ZipIterator(this, second, selector);
-    }
-
-    /**
-     * Create a enumerable object from a iterable source
-     * @param source Source used to create the iterable object
-     */
-    public static from<T>(source: Iterable<T>): Enumerable<T>
-    {
-        return new EnumerableIterator(source);
-    }
-
-    protected next(): Nullable<TSource>
-    {
-        return this[Symbol.iterator]().next().value;
     }
 }
 
@@ -453,7 +453,7 @@ class SkipWhileIterator<TSource> extends Enumerable<TSource>
                 {
                     skip = predicate(element, index);
                 }
-                
+
                 if (!skip)
                 {
                     yield element;
@@ -468,7 +468,7 @@ class SkipWhileIterator<TSource> extends Enumerable<TSource>
 class TakeIterator<TSource> extends Enumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
-    
+
     public constructor(source: Iterable<TSource>, count: number)
     {
         super();
@@ -497,7 +497,7 @@ class TakeIterator<TSource> extends Enumerable<TSource>
 class TakeWhileIterator<TSource> extends Enumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
-    
+
     public constructor(source: Iterable<TSource>, predicate: Func2<TSource, number, boolean>)
     {
         super();

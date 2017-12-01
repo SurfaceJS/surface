@@ -35,7 +35,7 @@ export class ViewResult extends ActionResult
         }
 
         let data = fs.readFileSync(viewpath);
-        
+
         this.httpContext.response.writeHead(this._statusCode, { "Content-Type": mymeType['.html'] });
         this.httpContext.response.write(data);
         this.httpContext.response.end();

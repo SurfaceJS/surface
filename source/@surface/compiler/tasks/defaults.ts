@@ -11,7 +11,7 @@ export let loaders =
         options: { name: '/resources/[hash].[ext]' }
     },
     htmlLoader:
-    {   
+    {
         loader: 'html-loader',
         options:
         {
@@ -65,7 +65,7 @@ export let webpackConfig =
             {
                 test: /\.s[ac]ss$/,
                 use:
-                [   
+                [
                     loaders.toStringLoader,
                     loaders.cssLoader,
                     loaders.sassLoader
@@ -85,5 +85,5 @@ export let webpackConfig =
                 ]
             },
         ],
-    }    
+    }
 } as webpack.Configuration;

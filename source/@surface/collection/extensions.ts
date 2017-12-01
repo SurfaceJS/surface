@@ -8,11 +8,11 @@ declare global
 {
     // tslint:disable-next-line:interface-name
     interface Array<T>
-    {        
+    {
         /** Cast Array<T> into Enumerable<T> */
         asEnumerable(): Enumerable<T>;
         /** Cast Array<T> into List<T> */
-        toList(): List<T>;     
+        toList(): List<T>;
     }
 }
 
