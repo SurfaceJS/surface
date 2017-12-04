@@ -1,0 +1,23 @@
+{
+  "author": "HitalloExiled",
+  "bugs": {
+    "url": "https://github.com/SurfaceJS/workbench/issues"
+  },
+  "dependencies": {
+    "@types/node": "8.0.51"
+  },
+  "description": "Testing setup.",
+  "homepage": "https://github.com/SurfaceJS/workbench#readme",
+  "license": "MIT",
+  "main": "./build/index.js",
+  "name": "surface-workbench-tests",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SurfaceJS/workbench.git"
+  },
+  "scripts": {
+    "build": "node ./node_modules/@surface/compiler",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.0.0"
+}

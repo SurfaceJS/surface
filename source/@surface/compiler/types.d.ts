@@ -1,16 +1,15 @@
-import { LiteralObject }   from '@surface/types';
-import { CompilerOptions } from 'typescript';
-import * as Webpack        from 'webpack';
+import { ObjectLiteral } from '@surface/types';
+import * as webpack      from 'webpack';
 
 export namespace Compiler
 {    
     export interface Plugin
     {
         name:    string;
-        options: LiteralObject;
+        options: ObjectLiteral;
     }
 
-    export type Entry = string|Array<string>|LiteralObject<string>|LiteralObject<Array<string>>;
+    export type Entry = string|Array<string>|ObjectLiteral<string>|ObjectLiteral<Array<string>>;
 
     export interface Config
     {
@@ -18,9 +17,9 @@ export namespace Compiler
         entry:          Entry;
         filename:       string;
         output:         string;
-        runtime?:       string;    
+        runtime?:       string;
         plugins?:       Array<Plugin>;
-        webpackConfig?: string|Webpack.Configuration;
+        webpackConfig?: string|webpack.Configuration;
         tsconfig?:      string;
     }
 }

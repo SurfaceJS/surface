@@ -1,116 +1,87 @@
-import Common  = require('@surface/common');
-import FS      = require('fs');
-import Path    = require('path');
-import WebPack = require('webpack');
+import * as common from '@surface/common';
 
-namespace CodeSplitterPlugin
+import * as fs      from 'fs';
+import * as path    from 'path';
+import * as webpack from 'webpack';
+
+interface IOptions
 {
-    export interface Options
-    {
-        entries: Array<string>;
-    }
+    entries:      Array<string>;
+    useRealPaths: boolean;
 }
 
 class CodeSplitterPlugin
 {
-    private _options: CodeSplitterPlugin.Options;
+    private _entries:      Array<string>;
+    private _useRealPaths: boolean;
 
-    public constructor(options: CodeSplitterPlugin.Options)
+    public constructor(options?: Partial<IOptions>)
     {
-        this._options = options;
-    }
-
-    public apply (compiler: WebPack.Compiler)
-    {
-        const self = this;
-        compiler.plugin
-        (
-            'make',
-            function (this: WebPack.Compiler, compilation: any, callback: (error?: Error) => void)
-            {
-                if (!self._options.entries)
-                    throw new Error('Entries not specified');
-
-                if (!this.options.context)
-                    throw new Error('Context can\'t be null');
-
-                let file = Path.join(Common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
-
-                for (let entry of self._options.entries)
-                {
-                    let paths = self.getPaths(Path.resolve(this.options.context, entry));
-
-                    let content = self.writeHeader() + '\n';
-
-                    for (let path of paths)
-                    {
-                        if (path.name == 'index')
-                            content += self.writeEntry
-                            (
-                                `${entry}/${path.dir.split(Path.sep).pop()}`,
-                                Path.format(path)
-                            ) + '\n';
-                        else
-                            content += self.writeEntry
-                            (
-                                `${entry}/${path.name}`,
-                                Path.format(path)
-                            ) + '\n';
-                    }
-
-                    content += self.writeFooter();
-
-                    FS.writeFileSync(file, content);
-                }
-
-                callback();
-            }
-        );
-    }
-
-    private getPaths(entry: string): Array<Path.ParsedPath>
-    {
-        let result: Array<Path.ParsedPath> = [];
-        
-        if (!FS.existsSync(entry))
-            throw new Error('Path not exists');
-    
-        if (!FS.lstatSync(entry).isDirectory())
-            throw new Error('Path is not a directory');
-    
-        for (let source of FS.readdirSync(entry))
+        if (!options)
         {
-            let currentPath = Path.join(entry, source);
-    
-            if (FS.lstatSync(currentPath).isDirectory())
+            throw new Error('Parameter \'options\' can\'t be null.');
+        }
+
+        if (!options.entries)
+        {
+            throw new Error('Entries not specified');
+        }
+
+        this._entries      = options.entries;
+        this._useRealPaths = !!options.useRealPaths;
+    }
+
+    private getPaths(entry: string): Array<path.ParsedPath>
+    {
+        let result: Array<path.ParsedPath> = [];
+
+        if (!fs.existsSync(entry))
+        {
+            throw new Error('Path not exists');
+        }
+
+        if (!fs.lstatSync(entry).isDirectory())
+        {
+            throw new Error('Path is not a directory');
+        }
+
+        for (let source of fs.readdirSync(entry))
+        {
+            let currentPath = path.join(entry, source);
+
+            if (fs.lstatSync(currentPath).isDirectory())
             {
                 ['index.ts', 'index.js'].forEach
                 (
                     fileName =>
                     {
-                        let file = Path.join(currentPath, fileName)
-                        if (FS.existsSync(file))
-                            result.push(Path.parse(file));
+                        let file = path.join(currentPath, fileName);
+                        if (fs.existsSync(file))
+                        {
+                            result.push(path.parse(file));
+                        }
 
                     }
-                )
+                );
             }
             else
-                result.push(Path.parse(currentPath));
+            {
+                result.push(path.parse(currentPath));
+            }
         }
-    
+
         return result;
     }
 
-    private writeEntry(name: string, path: string): string
+    private writeEntry(name: string, sourceFile: string, filepath: string): string
     {
-        name = name.replace('./', '')
+        name = name.replace('./', '');
         let result =
         [
             `        case '${name}':`,
-            `            return import(/* webpackChunkName: '${name}' */ '${path.replace(/\\/g, '\\\\')}');`
+            `            return import(/* webpackChunkName: '${name}' */ '${(this._useRealPaths ? filepath : path.relative(path.parse(sourceFile).dir, filepath)).replace(/\\/g, '/')}');`
         ].join('\n');
-    
+
         return result;
     }
 
@@ -131,7 +102,7 @@ class CodeSplitterPlugin
     {
         let result =
         [
-            'export default function(name)',
+            'export function load(name)',
             '{',
             '    switch (name)',
             '    {',
@@ -139,7 +110,60 @@ class CodeSplitterPlugin
 
         return result;
     }
-}
 
+    public apply (compiler: webpack.Compiler)
+    {
+        const self = this;
+        compiler.plugin
+        (
+            'make',
+            // tslint:disable-next-line:no-any
+            function (this: webpack.Compiler, compilation: any, callback: (error?: Error) => void)
+            {
+                if (!this.options.context)
+                {
+                    throw new Error('Context can\'t be null');
+                }
+
+                let sourceFile = path.join(common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
+
+                for (let entry of self._entries)
+                {
+                    let parsedPaths = self.getPaths(path.resolve(this.options.context, entry));
+
+                    let content = self.writeHeader() + '\n';
+
+                    for (let parsedPath of parsedPaths)
+                    {
+                        if (parsedPath.name == 'index')
+                        {
+                            content += self.writeEntry
+                            (
+                                `${entry}/${parsedPath.dir.split(path.sep).pop()}`,
+                                sourceFile,
+                                path.format(parsedPath)
+                            ) + '\n';
+                        }
+                        else
+                        {
+                            content += self.writeEntry
+                            (
+                                `${entry}/${parsedPath.name}`,
+                                sourceFile,
+                                path.format(parsedPath)
+                            ) + '\n';
+                        }
+                    }
+
+                    content += self.writeFooter();
+
+                    fs.writeFileSync(sourceFile, content);
+                }
+
+                callback();
+            }
+        );
+    }
+}
 
 export = CodeSplitterPlugin;

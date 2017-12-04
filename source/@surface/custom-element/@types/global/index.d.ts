@@ -8,5 +8,5 @@ declare interface ShadyCSS
 
 declare interface Window
 {
-    ShadyCSS: ShadyCSS;
+    ShadyCSS?: ShadyCSS;
 }

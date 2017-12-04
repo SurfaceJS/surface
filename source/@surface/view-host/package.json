@@ -1,0 +1,35 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/custom-element": "0.0.5",
+        "@surface/reflection": "0.0.0",
+        "@surface/types": "0.0.1",
+        "@surface/view": "0.0.0",
+        "@types/reflect-metadata": "0.0.5",
+        "tslib": "1.8.0"
+    },
+    "description": "Base class used to define custom elements.",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "host",
+        "surface",
+        "typescript",
+        "view",
+        "webcomponents"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/view-host",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "types": "index.d.ts",
+    "version": "0.0.0"
+}

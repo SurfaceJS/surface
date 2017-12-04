@@ -1,15 +1,15 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/HitalloExiled/Surface/issues"
+        "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/types": "0.0.0",
+        "@surface/types": "0.0.1",
         "@types/node": "8.0.33",
         "@types/webpack": "3.0.13"
     },
     "description": "Common modules used by @surface's projects.",
-    "homepage": "https://github.com/HitalloExiled/Surface#readme",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "common",
         "surface",
@@ -20,11 +20,11 @@
     "name": "@surface/common",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/HitalloExiled/Surface.git"
+        "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.7"
+    "version": "0.0.8"
 }

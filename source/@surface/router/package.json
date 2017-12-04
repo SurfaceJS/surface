@@ -1,0 +1,31 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/collection": "0.0.0",
+        "@surface/enumerable": "0.0.5",
+        "@surface/types": "0.0.1",
+        "tslib": "1.8.0"
+    },
+    "description": "Enumerable module the provides many methods to iterate through of collections.",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "router",
+        "surface",
+        "typescript"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/router",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "types": "index.d.ts",
+    "version": "0.0.0"
+}

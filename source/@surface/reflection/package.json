@@ -1,0 +1,28 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/enumerable": "0.0.5",
+        "@surface/types": "0.0.1",
+        "tslib": "1.8.0"
+    },
+    "description": "Module for reflection capability.",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "surface",
+        "type",
+        "typescrypt"
+    ],
+    "license": "MIT",
+    "name": "@surface/reflection",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "version": "0.0.0"
+}

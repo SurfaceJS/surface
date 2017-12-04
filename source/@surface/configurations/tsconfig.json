@@ -7,13 +7,17 @@
         "emitDecoratorMetadata":          true,
         "experimentalDecorators":         true,
         "importHelpers":                  true,
+        "lib":                            ["esnext"],
+        "module":                         "esnext",
         "moduleResolution":               "node",
         "noEmitOnError":                  true,
         "noImplicitReturns":              true,
         "noImplicitThis":                 true,
         "noUnusedLocals":                 true,
+        "sourceMap":                      true,
+        "strictFunctionTypes":            true,
         "strictNullChecks":               true,
         "suppressImplicitAnyIndexErrors": true,
-        "target":                         "es6"
+        "target":                         "esnext"
     }
 }

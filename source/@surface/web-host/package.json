@@ -1,0 +1,33 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/collection": "0.0.0",
+        "@surface/common": "0.0.8",
+        "@surface/enumerable": "0.0.5",
+        "@surface/reflection": "0.0.0",
+        "@surface/router": "0.0.0",
+        "@surface/types": "0.0.1",
+        "@types/node": "8.0.50",
+        "tslib": "1.8.0"
+    },
+    "description": "Simple web host for @surface projects.",
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "surface",
+        "typescrypt",
+        "web-host"
+    ],
+    "license": "MIT",
+    "name": "@surface/web-host",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "version": "0.0.0"
+}
