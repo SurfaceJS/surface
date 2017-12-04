@@ -19,6 +19,10 @@ export let loaders =
             minify: true
         }
     },
+    htmlRequireLoader:
+    {
+        loader: 'html-require-loader'
+    },
     sassLoader: { loader: 'sass-loader' },
     threadLoader:
     {
@@ -35,9 +39,10 @@ export let loaders =
         loader: 'ts-loader',
         options:
         {
-            configFile:    'tsconfig.json',
-            happyPackMode: true,
-            transpileOnly: true
+            configFile:              'tsconfig.json',
+            happyPackMode:           true,
+            onlyCompileBundledFiles: true,
+            transpileOnly:           true
         }
     },
 };
@@ -52,7 +57,12 @@ export let webpackConfig =
     },
     resolveLoader:
     {
-        modules: ['node_modules', path.resolve(__dirname, '../node_modules')]
+        modules:
+        [
+            'node_modules',
+            path.resolve(__dirname, '../node_modules'),
+            path.resolve(__dirname, '../node_modules', '@surface')
+        ]
     },
     module:
     {
@@ -73,7 +83,11 @@ export let webpackConfig =
             },
             {
                 test: /\.html$/,
-                use: [loaders.htmlLoader]
+                use:
+                [
+                    loaders.htmlRequireLoader,
+                    loaders.htmlLoader
+                ]
             },
             {
                 test: /\.ts$/,
