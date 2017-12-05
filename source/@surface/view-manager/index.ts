@@ -1,11 +1,11 @@
-import '@surface/reflection/extensions';
+import "@surface/reflection/extensions";
 
-import { Dictionary }            from '@surface/collection';
-import { load }                  from '@surface/lazy-loader';
-import { Router }                from '@surface/router';
-import { Nullable, Constructor } from '@surface/types';
-import { View }                  from '@surface/view';
-import { ViewHost }              from '@surface/view-host';
+import { Dictionary }            from "@surface/collection";
+import { load }                  from "@surface/lazy-loader";
+import { Router }                from "@surface/router";
+import { Nullable, Constructor } from "@surface/types";
+import { View }                  from "@surface/view";
+import { ViewHost }              from "@surface/view-host";
 
 /**
  * Handles web client navigation.
@@ -44,16 +44,16 @@ export class ViewManager
     {
         const esmodule = await load<View>(path);
 
-        let viewConstructor: Nullable<Constructor<View>> = esmodule['default'] || esmodule.reflect()
+        let viewConstructor: Nullable<Constructor<View>> = esmodule["default"] || esmodule.reflect()
             .getMethods()
-            .firstOrDefault(x => new RegExp(`^${view}(view)?$`, 'i').test(x.name));
+            .firstOrDefault(x => new RegExp(`^${view}(view)?$`, "i").test(x.name));
 
         if (viewConstructor && viewConstructor.prototype instanceof View)
         {
             return viewConstructor;
         }
 
-        throw new TypeError('Constructor is not an valid subclass of @surface/view-handler/view.');
+        throw new TypeError("Constructor is not an valid subclass of @surface/view-handler/view.");
     }
 
     public async routeTo(route: string): Promise<void>
@@ -62,12 +62,12 @@ export class ViewManager
 
         if (routeData)
         {
-            window.history.pushState(null, routeData.params['view'], route);
+            window.history.pushState(null, routeData.params["view"], route);
             let { view, action } = routeData.params;
 
             let path = `views/${view}`;
 
-            if (!action || action != 'index')
+            if (!action || action != "index")
             {
                 path = `${path}/${action}`;
             }
@@ -82,7 +82,7 @@ export class ViewManager
         }
         else
         {
-            throw new Error('Invalid route path');
+            throw new Error("Invalid route path");
         }
     }
 }

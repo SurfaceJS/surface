@@ -11,7 +11,7 @@
         "@types/reflect-metadata": "0.0.5",
         "tslib": "1.8.0"
     },
-    "description": "Base class used to define custom elements.",
+    "description": "Web component view host.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "host",

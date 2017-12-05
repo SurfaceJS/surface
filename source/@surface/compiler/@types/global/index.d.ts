@@ -1,34 +1,34 @@
-declare module '*.css'
+declare module "*.css"
 {
     var _: string;
     export default  _;
 }
 
-declare module '*.html'
+declare module "*.html"
 {
     var _: string;
     export default  _;
 }
 
-declare module '*.json'
+declare module "*.json"
 {
     var _: object;
     export default  _;
 }
 
-declare module '*.sass'
+declare module "*.sass"
 {
     var _: string;
     export default  _;
 }
 
-declare module '*.scss'
+declare module "*.scss"
 {
     var _: string;
     export default  _;
 }
 
-declare module '*.txt'
+declare module "*.txt"
 {
     var _: string;
     export default  _;

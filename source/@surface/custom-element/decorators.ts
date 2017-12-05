@@ -1,5 +1,5 @@
-import { CustomElement }      from './index';
-import { observedAttributes } from './symbols';
+import { CustomElement }      from "./index";
+import { observedAttributes } from "./symbols";
 
 export function element(name: string): ClassDecorator;
 export function element(name: string, template:  string): ClassDecorator;
@@ -13,13 +13,13 @@ export function element(name: string, template?: string, style?: string, options
         {
             if (template)
             {
-                let templateElement = document.createElement('template') as HTMLTemplateElement;
+                let templateElement = document.createElement("template") as HTMLTemplateElement;
 
                 templateElement.innerHTML = template;
 
                 if (style)
                 {
-                    let styleElement = document.createElement('style') as HTMLStyleElement;
+                    let styleElement = document.createElement("style") as HTMLStyleElement;
                     styleElement.innerHTML = style;
                     templateElement.content.appendChild(styleElement);
                 }
@@ -36,7 +36,7 @@ export function element(name: string, template?: string, style?: string, options
         }
         else
         {
-            throw new TypeError('Constructor is not an valid subclass of @surface/custom-element.');
+            throw new TypeError("Constructor is not an valid subclass of @surface/custom-element.");
         }
     };
 }
@@ -47,17 +47,17 @@ export function observe(...attributes: Array<string>): ClassDecorator
     {
         if (isCustomElement(target))
         {
-            Object.defineProperty(target, 'observedAttributes', { get: () => attributes } );
+            Object.defineProperty(target, "observedAttributes", { get: () => attributes } );
             target.prototype[observedAttributes] = attributes;
         }
         else
         {
-            throw new TypeError('Constructor is not an valid subclass of @surface/custom-element.');
+            throw new TypeError("Constructor is not an valid subclass of @surface/custom-element.");
         }
     };
 }
 
 function isCustomElement(source: Object): source is typeof CustomElement
 {
-    return source['prototype'] instanceof CustomElement;
+    return source["prototype"] instanceof CustomElement;
 }

@@ -1,15 +1,12 @@
-import { ObjectLiteral, Nullable } from '@surface/types';
-import * as fs                     from 'fs';
-import * as path                   from 'path';
-import * as webPack                from 'webpack';
+import { ObjectLiteral, Nullable } from "@surface/types";
+import * as fs                     from "fs";
+import * as path                   from "path";
+import * as webPack                from "webpack";
 
-namespace HtmlTemplatePlugin
+interface IOptions
 {
-    export interface IOptions
-    {
-        filename: string;
-        template: string;
-    }
+    filename: string;
+    template: string;
 }
 
 class HtmlTemplatePlugin implements webPack.Plugin
@@ -17,16 +14,16 @@ class HtmlTemplatePlugin implements webPack.Plugin
     private filename: Nullable<string>;
     private template: string;
 
-    public constructor(options?: Partial<HtmlTemplatePlugin.IOptions>)
+    public constructor(options?: Partial<IOptions>)
     {
         if (!options)
         {
-            throw new Error('Parameter \'options\' can\'t be null.');
+            throw new Error("Parameter \"options\" can't be null.");
         }
 
         if (!options.template)
         {
-            throw new Error('Property \'options.template\' can\'t be null.');
+            throw new Error("Property \"options.template\" can't be null.");
         }
 
         this.template = options.template;
@@ -35,7 +32,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
 
     private getModuleName(filepath: string): string
     {
-        let slices = filepath.split('/').reverse();
+        let slices = filepath.split("/").reverse();
         if (slices.length > 1 && slices[0].match(/index.[tj]s/))
         {
             return slices[1];
@@ -77,10 +74,10 @@ class HtmlTemplatePlugin implements webPack.Plugin
             {
                 if (!this.options.entry)
                 {
-                    throw new Error('Entry can\'t be null.');
+                    throw new Error("Entry can\"t be null.");
                 }
 
-                self.filename = self.filename || '[name]/index.html';
+                self.filename = self.filename || "[name]/index.html";
 
                 for (let key in compilation.entrypoints)
                 {
@@ -91,9 +88,9 @@ class HtmlTemplatePlugin implements webPack.Plugin
                         self.getModuleName(entry.name) :
                         self.getModuleName(this.options.entry[key]);
 
-                    let file = '/' + chunk.files.filter(x => path.extname(x) == '.js')[0] || '';
+                    let file = "/" + chunk.files.filter(x => path.extname(x) == ".js")[0] || "";
 
-                    file = file.replace('./', '');
+                    file = file.replace("./", "");
 
                     let keys =
                     {

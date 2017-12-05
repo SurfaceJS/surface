@@ -82,7 +82,7 @@
         "one-variable-per-declaration":    true,
         "prefer-for-of":                   true,
         "promise-function-async":          true,
-        "quotemark":                       [true, "single"],
+        "quotemark":                       [true, "double"],
         "restrict-plus-operands":          true,
         "semicolon":                       true,
         "switch-default":                  true,

@@ -4,5 +4,5 @@
  */
 export function load<T>(name: string): Promise<T>
 {
-    throw new Error('Run code splitter plugin');
+    throw new Error("Run code splitter plugin");
 }

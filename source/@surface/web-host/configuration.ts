@@ -22,6 +22,6 @@ export class Configuration
     {
         this._serverRoot = serverRoot;
         this._port       = config.port    || 0;
-        this._wwwroot    = config.wwwroot || 'wwwroot';
+        this._wwwroot    = config.wwwroot || "wwwroot";
     }
 }

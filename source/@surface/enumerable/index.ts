@@ -1,4 +1,4 @@
-import { Action2, Func1, Func2, Func3, Nullable } from '@surface/types';
+import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
@@ -87,7 +87,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         if (!element)
         {
-            throw new Error('Index is less than 0 or greater than the number of elements in source.');
+            throw new Error("Index is less than 0 or greater than the number of elements in source.");
         }
 
         return element;
@@ -138,11 +138,11 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         if (!element && predicate)
         {
-            throw new Error('No element satisfies the condition in predicate.');
+            throw new Error("No element satisfies the condition in predicate.");
         }
         else if (!element)
         {
-            throw new Error('The source sequence is empty.');
+            throw new Error("The source sequence is empty.");
         }
 
         return element;
@@ -166,7 +166,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Performs the specified action on each element of the sequence by incorporating the element's index.
+     * Performs the specified action on each element of the sequence by incorporating the element"s index.
      * @param action The Action2<TSource, number> delegate to perform on each element of the sequence.
      */
     public forEach(action: Action2<TSource, number>)
@@ -194,11 +194,11 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         if (!element && predicate)
         {
-            throw new Error('No element satisfies the condition in predicate.');
+            throw new Error("No element satisfies the condition in predicate.");
         }
         else if (!element)
         {
-            throw new Error('The source sequence is empty.');
+            throw new Error("The source sequence is empty.");
         }
 
         return element;
@@ -229,7 +229,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Projects each element of a sequence into a new form by incorporating the element's index.
+     * Projects each element of a sequence into a new form by incorporating the element"s index.
      * @param selector A transform function to apply to each source element; the second parameter of the function represents the index of the source element.
      */
     public select<TResult>(selector: Func2<TSource, number, TResult>): Enumerable<TResult>
@@ -269,7 +269,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /**
      * Bypasses elements in a sequence as long as a specified condition is true and then returns the remaining elements.
-     * The element's index is used in the logic of the predicate function.
+     * The element"s index is used in the logic of the predicate function.
      * @param predicate A function to test each source element for a condition; the second parameter of the function represents the index of the source element.
      */
     public skipWhile(predicate: Func2<TSource, number, boolean>): Enumerable<TSource>
@@ -287,7 +287,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Returns elements from a sequence as long as a specified condition is true. The element's index is used in the logic of the predicate function.
+     * Returns elements from a sequence as long as a specified condition is true. The element"s index is used in the logic of the predicate function.
      * @param predicate A function to test each source element for a condition; the second parameter of the function represents the index of the source element.
      */
     public takeWhile(predicate: Func2<TSource, number, boolean>): Enumerable<TSource>

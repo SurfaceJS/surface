@@ -1,7 +1,7 @@
-import { CustomElement } from './index';
-import * as symbols      from './symbols';
+import { CustomElement } from "./index";
+import * as symbols      from "./symbols";
 
-import { Action, Func } from '@surface/types';
+import { Action, Func } from "@surface/types";
 
 enum BindType
 {
@@ -41,14 +41,14 @@ export class ElementBinder<T extends CustomElement>
     private bindTextNode(node: Node, context: object): void
     {
         let binders: Array<Func<string>> = [];
-        let onChange = () => node.nodeValue = binders.map(x => x()).join('');
+        let onChange = () => node.nodeValue = binders.map(x => x()).join("");
 
-        if (node.nodeValue && node.nodeValue.indexOf('{{') > -1)
+        if (node.nodeValue && node.nodeValue.indexOf("{{") > -1)
         {
             let groups = node.nodeValue.match(/(.*?)(?:{{ *(?:(\w+|\.)) *}})(.*?)|(.*)/g);
             if (groups && groups.length > 0)
             {
-                let matches = groups.map(x => x && /(.*?)(?:{{ *((?:\w|\.)+) *}})(.*?)|(.*)/g.exec(x) || ['']);
+                let matches = groups.map(x => x && /(.*?)(?:{{ *((?:\w|\.)+) *}})(.*?)|(.*)/g.exec(x) || [""]);
                 matches.forEach
                 (
                     item =>
@@ -57,10 +57,10 @@ export class ElementBinder<T extends CustomElement>
 
                         if (property)
                         {
-                            this.applyBind(context, node, property, '', BindType.text, onChange);
+                            this.applyBind(context, node, property, "", BindType.text, onChange);
                         }
 
-                        binders.push(() => (left || '') + (context[property] || '') + (right || '') + (remaining || ''));
+                        binders.push(() => (left || "") + (context[property] || "") + (right || "") + (remaining || ""));
                     }
                 );
 
@@ -78,10 +78,10 @@ export class ElementBinder<T extends CustomElement>
         (
             attribute =>
             {
-                if (attribute.value.indexOf('{{') > -1)
+                if (attribute.value.indexOf("{{") > -1)
                 {
                     let match    = /{{ *((?:\w+|\.)) *}}/.exec(attribute.value);
-                    let property = match && match[1] || '';
+                    let property = match && match[1] || "";
 
                     if (property)
                     {
@@ -98,10 +98,10 @@ export class ElementBinder<T extends CustomElement>
     {
         let action: Action = () => ({});
 
-        if (property.indexOf('.') > -1)
+        if (property.indexOf(".") > -1)
         {
-            let childrens = property.split('.');
-            property = childrens.pop() || '';
+            let childrens = property.split(".");
+            property = childrens.pop() || "";
             for (let child of childrens)
             {
                 context = context[child];

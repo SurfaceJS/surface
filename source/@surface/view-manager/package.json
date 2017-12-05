@@ -14,7 +14,7 @@
         "@surface/view-host": "0.0.0",
         "@types/reflect-metadata": "0.0.5"
     },
-    "description": "Base class used to define custom elements.",
+    "description": "Web component view manager.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "manager",

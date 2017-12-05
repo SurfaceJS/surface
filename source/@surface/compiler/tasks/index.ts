@@ -1,23 +1,23 @@
-import * as defaults from './defaults';
-import * as enums    from './enums';
-import { Compiler }  from '../types';
+import * as defaults from "./defaults";
+import * as enums    from "./enums";
+import { Compiler }  from "../types";
 
-import { Constructor }                from '@surface/types';
-import { lookUp, merge, resolveFile } from '@surface/common';
+import { Constructor }                from "@surface/types";
+import { lookUp, merge, resolveFile } from "@surface/common";
 
-import * as fs                         from 'fs';
-import * as path                       from 'path';
-import * as rimraf                     from 'rimraf';
-import * as webpack                    from 'webpack';
-import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-import * as UglifyJsPlugin             from 'uglifyjs-webpack-plugin';
+import * as fs                         from "fs";
+import * as path                       from "path";
+import * as rimraf                     from "rimraf";
+import * as webpack                    from "webpack";
+import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import * as UglifyJsPlugin             from "uglifyjs-webpack-plugin";
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean): Promise<void>
 {
     task   = task || enums.TasksType.build;
-    config = config || './';
+    config = config || "./";
 
-    let enviroment = enums.EnviromentType[env || 'debug'];
+    let enviroment = enums.EnviromentType[env || "debug"];
 
     watch = !!watch;
 
@@ -61,7 +61,7 @@ async function build(config: webpack.Configuration, enviroment: enums.Enviroment
     let callback: webpack.Compiler.Handler =
         (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
-    console.log(`Starting ${watch ? 'Watch' : 'build'} using ${enviroment} configuration.`);
+    console.log(`Starting ${watch ? "Watch" : "build"} using ${enviroment} configuration.`);
 
     if (watch)
     {
@@ -86,14 +86,14 @@ async function clean(config: webpack.Configuration): Promise<void>
         let promises =
         [
             new Promise(resolve => rimraf(outputPath, resolve)),
-            new Promise(resolve => rimraf(path.resolve(__dirname, 'cache-loader'), resolve))
+            new Promise(resolve => rimraf(path.resolve(__dirname, "cache-loader"), resolve))
         ];
 
         await Promise.all(promises);
     }
     else
     {
-        throw new Error('Invalid output path.');
+        throw new Error("Invalid output path.");
     }
 }
 
@@ -104,24 +104,24 @@ async function clean(config: webpack.Configuration): Promise<void>
  */
 function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.Configuration
 {
-    filepath = resolveFile(process.cwd(), filepath, 'surface.config.json');
+    filepath = resolveFile(process.cwd(), filepath, "surface.config.json");
 
     let root   = path.dirname(filepath);
     let config = require(filepath) as Compiler.Config;
 
     if (!config.context)
     {
-        throw new TypeError('Property \'context\' can\'t be null');
+        throw new TypeError("Property \"context\" can\"t be null");
     }
 
     if (!config.entry)
     {
-        throw new TypeError('Property \'entry\' can\'t be null');
+        throw new TypeError("Property \"entry\" can\"t be null");
     }
 
     if (!config.output)
     {
-        throw new TypeError('Property \'output\' can\'t be null');
+        throw new TypeError("Property \"output\" can\"t be null");
     }
 
     config.context = path.resolve(root, config.context);
@@ -133,7 +133,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     if (config.webpackConfig)
     {
-        if(typeof config.webpackConfig == 'string' && fs.existsSync(config.webpackConfig))
+        if(typeof config.webpackConfig == "string" && fs.existsSync(config.webpackConfig))
         {
             userWebpack = require(path.resolve(path.dirname(filepath), config.webpackConfig)) as webpack.Configuration;
         }
@@ -148,7 +148,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         defaults.loaders.tsLoader.options.configFile = path.resolve(path.dirname(filepath), config.tsconfig);
     }
 
-    let nodeModules = lookUp(config.context, 'node_modules');
+    let nodeModules = lookUp(config.context, "node_modules");
 
     let primaryConfig =
     {
@@ -158,7 +158,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         {
             path:       config.output,
             filename:   config.filename,
-            publicPath: '/'
+            publicPath: "/"
         },
         resolve:
         {
@@ -185,9 +185,9 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 }
 
 /**
- * Require Surface's plugins.
+ * Require Surface"s plugins.
  * @param plugins         Plugins to be required.
- * @param nodeModulesPath Path to 'node_modules' folder.
+ * @param nodeModulesPath Path to "node_modules" folder.
  */
 function getSurfacePlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<webpack.Plugin>
 {
@@ -216,7 +216,7 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
 {
     let result: Compiler.Entry = { };
 
-    if (typeof entries == 'string')
+    if (typeof entries == "string")
     {
         entries = [entries];
     }
@@ -239,9 +239,9 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
 
         for (let source of sources)
         {
-            if (source.endsWith('/*'))
+            if (source.endsWith("/*"))
             {
-                source = source.replace(/\/\*$/, '');
+                source = source.replace(/\/\*$/, "");
             }
 
             let sourcePath = path.resolve(context, source);
@@ -271,7 +271,7 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
                             }
                             else
                             {
-                                throw new Error('Invalid path');
+                                throw new Error("Invalid path");
                             }
                         }
                     );

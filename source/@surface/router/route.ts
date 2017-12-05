@@ -1,4 +1,4 @@
-import { ObjectLiteral, Nullable } from '@surface/types';
+import { ObjectLiteral, Nullable } from "@surface/types";
 
 export class Route
 {
@@ -38,21 +38,21 @@ export class Route
 
     private toExpression(pattern: string): RegExp
     {
-        let expression = pattern.replace(/^\/|\/$/g, '').split('/').asEnumerable()
-            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, '([^\\\/]+)').replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, '([^\\\/]*)'))
+        let expression = pattern.replace(/^\/|\/$/g, "").split("/").asEnumerable()
+            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, "([^\\\/]+)").replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, "([^\\\/]*)"))
             .toArray()
-            .join('\\\/');
+            .join("\\\/");
 
         expression = expression
-            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, '$1?$2')
-            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, '$1$2?');
+            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, "$1?$2")
+            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, "$1$2?");
 
         return new RegExp(`^\/?${expression}\/?$`, "i");
     }
 
     public match(route: string): Nullable<Route.IData>
     {
-        let [path, queryString] = route.split('?');
+        let [path, queryString] = route.split("?");
 
         let params: ObjectLiteral<string>           = { };
         let search: Nullable<ObjectLiteral<string>> = null;
@@ -61,9 +61,9 @@ export class Route
         {
             search = { };
 
-            decodeURI(queryString).split('&')
+            decodeURI(queryString).split("&")
                 .asEnumerable()
-                .select(x => x.split('='))
+                .select(x => x.split("="))
                 .forEach(x => search && (search[x[0]] = x[1]));
         }
 

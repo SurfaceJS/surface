@@ -3,7 +3,7 @@
     "compilerOptions":
     {
         "noEmit":    true, /* true for dev */
-        "lib":       ["dom","esnext"],
+        "lib":       ["dom", "esnext"],
         "typeRoots": ["../../@surface/custom-element/@types"]
     }
 }

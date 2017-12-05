@@ -1,5 +1,5 @@
-import * as http   from 'http';
-import { WebHost } from './index';
+import * as http   from "http";
+import { WebHost } from "./index";
 
 export class HttpContext
 {

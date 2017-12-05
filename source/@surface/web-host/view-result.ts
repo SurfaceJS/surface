@@ -1,10 +1,10 @@
-import { ActionResult } from './action-result';
-import { StatusCode }   from './enums';
-import { HttpContext }  from './http-context';
-import { mymeType }     from './variables';
-import { Nullable }     from '@surface/types';
-import * as fs          from 'fs';
-import * as path        from 'path';
+import { ActionResult } from "./action-result";
+import { StatusCode }   from "./enums";
+import { HttpContext }  from "./http-context";
+import { mymeType }     from "./variables";
+import { Nullable }     from "@surface/types";
+import * as fs          from "fs";
+import * as path        from "path";
 
 export class ViewResult extends ActionResult
 {
@@ -27,7 +27,7 @@ export class ViewResult extends ActionResult
 
     public executeResult(): void
     {
-        let viewpath = path.join(this.httpContext.host.root, 'views', this._controllerName, `${this._viewName}.html`);
+        let viewpath = path.join(this.httpContext.host.root, "views", this._controllerName, `${this._viewName}.html`);
 
         if (!fs.existsSync(viewpath))
         {
@@ -36,7 +36,7 @@ export class ViewResult extends ActionResult
 
         let data = fs.readFileSync(viewpath);
 
-        this.httpContext.response.writeHead(this._statusCode, { "Content-Type": mymeType['.html'] });
+        this.httpContext.response.writeHead(this._statusCode, { "Content-Type": mymeType[".html"] });
         this.httpContext.response.write(data);
         this.httpContext.response.end();
     }

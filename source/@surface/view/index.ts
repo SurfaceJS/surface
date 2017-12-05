@@ -1,4 +1,4 @@
-import { CustomElement } from '@surface/custom-element';
+import { CustomElement } from "@surface/custom-element";
 
 export abstract class View extends CustomElement
 {

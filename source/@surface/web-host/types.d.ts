@@ -8,4 +8,4 @@ export interface IStartup
     onError?(error: Error, httpContext: HttpContext): void;
 }
 
-export type HttpVerbs = 'POST'|'GET'|'PUT'|'DELETE';
+export type HttpVerbs = "POST"|"GET"|"PUT"|"DELETE";

@@ -1,45 +1,45 @@
-import * as path    from 'path';
-import * as webpack from 'webpack';
+import * as path    from "path";
+import * as webpack from "webpack";
 
 export let loaders =
 {
-    cacheLoader: { loader: 'cache-loader', options: { cacheDirectory: path.resolve(__dirname, 'cache-loader') }},
-    cssLoader:   { loader: 'css-loader' },
+    cacheLoader: { loader: "cache-loader", options: { cacheDirectory: path.resolve(__dirname, "cache-loader") }},
+    cssLoader:   { loader: "css-loader" },
     fileLoader:
     {
-        loader: 'file-loader',
-        options: { name: '/resources/[hash].[ext]' }
+        loader: "file-loader",
+        options: { name: "/resources/[hash].[ext]" }
     },
     htmlLoader:
     {
-        loader: 'html-loader',
+        loader: "html-loader",
         options:
         {
-            attrs: ['img:src', 'link:href', 'script:src'],
+            attrs: ["img:src", "link:href", "script:src"],
             minify: true
         }
     },
     htmlRequireLoader:
     {
-        loader: 'html-require-loader'
+        loader: "html-require-loader"
     },
-    sassLoader: { loader: 'sass-loader' },
+    sassLoader: { loader: "sass-loader" },
     threadLoader:
     {
-        loader: 'thread-loader',
+        loader: "thread-loader",
         options:
         {
           // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-          workers: require('os').cpus().length - 1,
+          workers: require("os").cpus().length - 1,
         },
     },
-    toStringLoader: { loader: 'to-string-loader' },
+    toStringLoader: { loader: "to-string-loader" },
     tsLoader:
     {
-        loader: 'ts-loader',
+        loader: "ts-loader",
         options:
         {
-            configFile:              'tsconfig.json',
+            configFile:              "tsconfig.json",
             happyPackMode:           true,
             onlyCompileBundledFiles: true,
             transpileOnly:           true
@@ -49,19 +49,19 @@ export let loaders =
 
 export let webpackConfig =
 {
-    devtool: '#source-map',
+    devtool: "#source-map",
     resolve:
     {
-        extensions: ['.ts', '.js'],
-        modules:    ['.', 'node_modules']
+        extensions: [".ts", ".js"],
+        modules:    [".", "node_modules"]
     },
     resolveLoader:
     {
         modules:
         [
-            'node_modules',
-            path.resolve(__dirname, '../node_modules'),
-            path.resolve(__dirname, '../node_modules', '@surface')
+            "node_modules",
+            path.resolve(__dirname, "../node_modules"),
+            path.resolve(__dirname, "../node_modules", "@surface")
         ]
     },
     module:

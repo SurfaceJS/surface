@@ -8,7 +8,7 @@
         "@surface/types": "0.0.1",
         "tslib": "1.8.0"
     },
-    "description": "Base class used to define custom elements.",
+    "description": "Collection modules.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",

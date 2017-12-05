@@ -1,1 +1,1 @@
-## Core module of @surface projects. ##
+## Types module of @surface projects.
