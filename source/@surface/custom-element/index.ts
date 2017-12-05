@@ -1,12 +1,12 @@
-import './extensions';
-import '@surface/collection/extensions';
-import '@surface/enumerable/extensions';
+import "./extensions";
+import "@surface/collection/extensions";
+import "@surface/enumerable/extensions";
 
-import { ElementBinder }      from './element-binder';
-import { onAttributeChanged } from './symbols';
+import { ElementBinder }      from "./element-binder";
+import { onAttributeChanged } from "./symbols";
 
-import { List }     from '@surface/collection';
-import { Nullable } from '@surface/types';
+import { List }     from "@surface/collection";
+import { Nullable } from "@surface/types";
 
 export abstract class CustomElement extends HTMLElement
 {
@@ -38,7 +38,7 @@ export abstract class CustomElement extends HTMLElement
         {
             let content = document.importNode(this._template.content, true);
             this.applyDateBind(content);
-            this.attachShadow({ mode: 'open' }).appendChild(content);
+            this.attachShadow({ mode: "open" }).appendChild(content);
         }
     }
 
@@ -103,7 +103,7 @@ export abstract class CustomElement extends HTMLElement
         if (this.shadowRoot)
         {
             let slots = this.shadowRoot
-                .querySelectorAll(slotName ? `slot[name='${slotName}']` : 'slot');
+                .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");
 
             if (slots.length > 0)
             {
@@ -129,7 +129,7 @@ export abstract class CustomElement extends HTMLElement
             }
             else if (selector instanceof RegExp)
             {
-                return this.shadowRoot.querySelectorAll('*')
+                return this.shadowRoot.querySelectorAll("*")
                     .asEnumerable()
                     .cast<HTMLElement>()
                     .where(x => !!x.tagName.toLowerCase().match(selector))
@@ -143,7 +143,7 @@ export abstract class CustomElement extends HTMLElement
         }
         else
         {
-            throw new Error('Element don\'t has shadowRoot');
+            throw new Error("Element don\"t has shadowRoot");
         }
     }
 

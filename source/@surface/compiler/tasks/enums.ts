@@ -1,12 +1,12 @@
 export enum EnviromentType
 {
-    debug   = 'debug',
-    release = 'release',
+    debug   = "debug",
+    release = "release",
 }
 
 export enum TasksType
 {
-    build   = 'build',
-    clean   = 'clean',
-    rebuild = 'rebuild'
+    build   = "build",
+    clean   = "clean",
+    rebuild = "rebuild"
 }

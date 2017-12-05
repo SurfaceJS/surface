@@ -1,11 +1,11 @@
-import template from './index.html';
+import template from "./index.html";
 
-import { CustomElement } from '@surface/custom-element';
-import { element }       from '@surface/custom-element/decorators';
-import { Nullable }      from '@surface/types';
-import { View }          from '@surface/view';
+import { CustomElement } from "@surface/custom-element";
+import { element }       from "@surface/custom-element/decorators";
+import { Nullable }      from "@surface/types";
+import { View }          from "@surface/view";
 
-@element('surface-view-host', template)
+@element("surface-view-host", template)
 export class ViewHost extends CustomElement
 {
     private _title: string;

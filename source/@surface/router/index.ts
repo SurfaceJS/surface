@@ -1,8 +1,8 @@
-import '@surface/collection/extensions';
-import { Route }             from './route';
-import { List }              from '@surface/collection/list';
-import { Enumerable }        from '@surface/enumerable/index';
-import { Action1, Nullable, ObjectLiteral } from '@surface/types';
+import "@surface/collection/extensions";
+import { Route }                            from "./route";
+import { List }                             from "@surface/collection/list";
+import { Enumerable }                       from "@surface/enumerable/index";
+import { Action1, Nullable, ObjectLiteral } from "@surface/types";
 
 export class Router
 {
@@ -27,14 +27,14 @@ export class Router
     {
         let routes = this._routes as Enumerable<Route>;
 
-        if (path == '/')
+        if (path == "/")
         {
             routes = routes.where(x => x.isDefault);
         }
 
         let routeData = this._routes.select(x => x.match(path)).firstOrDefault(x => !!x);
 
-        let action = this._routeAction[path] || this._routeAction['*'];
+        let action = this._routeAction[path] || this._routeAction["*"];
 
         if (action)
         {

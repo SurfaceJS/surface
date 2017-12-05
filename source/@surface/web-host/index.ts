@@ -1,14 +1,14 @@
-import { Configuration }          from './configuration';
-import { StatusCode }             from './enums';
-import { FallbackRequestHandler } from './fallback-request-handler';
-import { RequestHandler }         from './request-handler';
-import { HttpContext }            from './http-context';
-import { StaticRequestHandler }   from './static-request-handler';
-import { MvcRequestHandler }      from './mvc-request-handler';
-import { IStartup }               from './types';
-import { List }                   from '@surface/collection/list';
-import { Router }                 from '@surface/router';
-import * as http                  from 'http';
+import { Configuration }          from "./configuration";
+import { StatusCode }             from "./enums";
+import { FallbackRequestHandler } from "./fallback-request-handler";
+import { RequestHandler }         from "./request-handler";
+import { HttpContext }            from "./http-context";
+import { StaticRequestHandler }   from "./static-request-handler";
+import { MvcRequestHandler }      from "./mvc-request-handler";
+import { IStartup }               from "./types";
+import { List }                   from "@surface/collection/list";
+import { Router }                 from "@surface/router";
+import * as http                  from "http";
 
 export class WebHost
 {
@@ -66,8 +66,8 @@ export class WebHost
 
             if (this._handlers.any(x => x.handle(httpContext)))
             {
-                response.writeHead(StatusCode.notFound, { 'Content-Type': 'text/plain' });
-                response.end('Resource not found.');
+                response.writeHead(StatusCode.notFound, { "Content-Type": "text/plain" });
+                response.end("Resource not found.");
             }
 
             if (this._startup && this._startup.onEndRequest)
@@ -77,7 +77,7 @@ export class WebHost
         }
         catch (error)
         {
-            response.writeHead(StatusCode.internalServerError, { 'Content-Type': 'text/plain' });
+            response.writeHead(StatusCode.internalServerError, { "Content-Type": "text/plain" });
             response.end(error.message);
 
             if (this._startup && this._startup.onError)

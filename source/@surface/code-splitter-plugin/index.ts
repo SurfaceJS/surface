@@ -1,8 +1,8 @@
-import * as common from '@surface/common';
+import * as common from "@surface/common";
 
-import * as fs      from 'fs';
-import * as path    from 'path';
-import * as webpack from 'webpack';
+import * as fs      from "fs";
+import * as path    from "path";
+import * as webpack from "webpack";
 
 interface IOptions
 {
@@ -19,12 +19,12 @@ class CodeSplitterPlugin
     {
         if (!options)
         {
-            throw new Error('Parameter \'options\' can\'t be null.');
+            throw new Error("Parameter \"options\" can't be null.");
         }
 
         if (!options.entries)
         {
-            throw new Error('Entries not specified');
+            throw new Error("Entries not specified");
         }
 
         this._entries      = options.entries;
@@ -37,12 +37,12 @@ class CodeSplitterPlugin
 
         if (!fs.existsSync(entry))
         {
-            throw new Error('Path not exists');
+            throw new Error("Path not exists");
         }
 
         if (!fs.lstatSync(entry).isDirectory())
         {
-            throw new Error('Path is not a directory');
+            throw new Error("Path is not a directory");
         }
 
         for (let source of fs.readdirSync(entry))
@@ -51,7 +51,7 @@ class CodeSplitterPlugin
 
             if (fs.lstatSync(currentPath).isDirectory())
             {
-                ['index.ts', 'index.js'].forEach
+                ["index.ts", "index.js"].forEach
                 (
                     fileName =>
                     {
@@ -75,12 +75,12 @@ class CodeSplitterPlugin
 
     private writeEntry(name: string, sourceFile: string, filepath: string): string
     {
-        name = name.replace('./', '');
+        name = name.replace("./", "");
         let result =
         [
-            `        case '${name}':`,
-            `            return import(/* webpackChunkName: '${name}' */ '${(this._useRealPaths ? filepath : path.relative(path.parse(sourceFile).dir, filepath)).replace(/\\/g, '/')}');`
-        ].join('\n');
+            `        case "${name}":`,
+            `            return import(/* webpackChunkName: "${name}" */ "${(this._useRealPaths ? filepath : path.relative(path.parse(sourceFile).dir, filepath)).replace(/\\/g, "/")}");`
+        ].join("\n");
 
         return result;
     }
@@ -89,11 +89,11 @@ class CodeSplitterPlugin
     {
         let result =
         [
-            '        default:',
-            '            return Promise.reject("path not found");',
-            '    }',
-            '}',
-        ].join('\n');
+            "        default:",
+            "            return Promise.reject(\"path not found\");",
+            "    }",
+            "}",
+        ].join("\n");
 
         return result;
     }
@@ -102,11 +102,11 @@ class CodeSplitterPlugin
     {
         let result =
         [
-            'export function load(name)',
-            '{',
-            '    switch (name)',
-            '    {',
-        ].join('\n');
+            "export function load(name)",
+            "{",
+            "    switch (name)",
+            "    {",
+        ].join("\n");
 
         return result;
     }
@@ -116,33 +116,33 @@ class CodeSplitterPlugin
         const self = this;
         compiler.plugin
         (
-            'make',
+            "make",
             // tslint:disable-next-line:no-any
             function (this: webpack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
                 if (!this.options.context)
                 {
-                    throw new Error('Context can\'t be null');
+                    throw new Error("Context can\"t be null");
                 }
 
-                let sourceFile = path.join(common.lookUp(this.options.context, 'node_modules'), '@surface', 'lazy-loader', 'index.js');
+                let sourceFile = path.join(common.lookUp(this.options.context, "node_modules"), "@surface", "lazy-loader", "index.js");
 
                 for (let entry of self._entries)
                 {
                     let parsedPaths = self.getPaths(path.resolve(this.options.context, entry));
 
-                    let content = self.writeHeader() + '\n';
+                    let content = self.writeHeader() + "\n";
 
                     for (let parsedPath of parsedPaths)
                     {
-                        if (parsedPath.name == 'index')
+                        if (parsedPath.name == "index")
                         {
                             content += self.writeEntry
                             (
                                 `${entry}/${parsedPath.dir.split(path.sep).pop()}`,
                                 sourceFile,
                                 path.format(parsedPath)
-                            ) + '\n';
+                            ) + "\n";
                         }
                         else
                         {
@@ -151,7 +151,7 @@ class CodeSplitterPlugin
                                 `${entry}/${parsedPath.name}`,
                                 sourceFile,
                                 path.format(parsedPath)
-                            ) + '\n';
+                            ) + "\n";
                         }
                     }
 

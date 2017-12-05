@@ -1,13 +1,13 @@
-import '@surface/reflection/extensions';
+import "@surface/reflection/extensions";
 
-import { ActionResult }          from './action-result';
-import { Controller }            from './controller';
-import { RequestHandler }        from './request-handler';
-import { HttpContext }           from './http-context';
-import { Router }                from '@surface/router/index';
-import { Constructor, Nullable } from '@surface/types';
-import * as fs                   from 'fs';
-import * as path                 from 'path';
+import { ActionResult }          from "./action-result";
+import { Controller }            from "./controller";
+import { RequestHandler }        from "./request-handler";
+import { HttpContext }           from "./http-context";
+import { Router }                from "@surface/router/index";
+import { Constructor, Nullable } from "@surface/types";
+import * as fs                   from "fs";
+import * as path                 from "path";
 
 export class MvcRequestHandler extends RequestHandler
 {
@@ -34,7 +34,7 @@ export class MvcRequestHandler extends RequestHandler
                 const { controller, action, id } = routeData.params;
                 if (controller)
                 {
-                    let controllersPath = path.join(httpContext.host.root, 'controllers');
+                    let controllersPath = path.join(httpContext.host.root, "controllers");
 
                     let filepath =
                     [
@@ -49,9 +49,9 @@ export class MvcRequestHandler extends RequestHandler
                     {
                         let esmodule = require(filepath) as object;
 
-                        let controllerConstructor: Nullable<Constructor> = esmodule['default'] || esmodule.reflect()
+                        let controllerConstructor: Nullable<Constructor> = esmodule["default"] || esmodule.reflect()
                             .getMethods()
-                            .firstOrDefault(x => new RegExp(`^${controller}(controller)?$`, 'i').test(x.name));
+                            .firstOrDefault(x => new RegExp(`^${controller}(controller)?$`, "i").test(x.name));
 
                         if (controllerConstructor && controllerConstructor.prototype instanceof Controller)
                         {
@@ -79,7 +79,7 @@ export class MvcRequestHandler extends RequestHandler
                         }
                         else
                         {
-                            throw new TypeError('Constructor is not an valid subclass of @surface/web-host/controller.');
+                            throw new TypeError("Constructor is not an valid subclass of @surface/web-host/controller.");
                         }
                     }
                 }

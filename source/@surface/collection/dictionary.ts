@@ -1,10 +1,11 @@
-import '@surface/enumerable/extensions';
-import { Enumerable }              from '@surface/enumerable';
-import { Nullable, ObjectLiteral } from '@surface/types';
+import "@surface/enumerable/extensions";
+
+import { Enumerable }              from "@surface/enumerable";
+import { Nullable, ObjectLiteral } from "@surface/types";
 
 export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
-    private _source: Map<TKey, Nullable<TValue>>;
+    private _source: Map<TKey, TValue>;
 
     public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>;
 

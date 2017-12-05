@@ -1,15 +1,15 @@
-import * as fs   from 'fs';
-import * as path from 'path';
+import * as fs   from "fs";
+import * as path from "path";
 
 /**
- * Resolve surface's config file location
+ * Resolve surface"s config file location
  * @param context  Cotext used to resolve.
  * @param filepath Relative or absolute path to folder or file.
  * @param filename Filename to resolve.
  */
 export function resolveFile(context: string, filepath: string, filename: string);
 /**
- * Resolve surface's config file location
+ * Resolve surface"s config file location
  * @param context   Cotext used to resolve.
  * @param filepath  Relative or absolute path to folder or file.
  * @param filenames Possible filenames to resolve.
@@ -39,14 +39,14 @@ export function resolveFile(context: string, filepath: string, filenames: string
                 }
             }
 
-            throw new Error('Configuration file not found');
+            throw new Error("Configuration file not found");
         }
 
         return filepath;
     }
     else
     {
-        throw new Error('Configuration file not found');
+        throw new Error("Configuration file not found");
     }
 }
 
@@ -61,7 +61,7 @@ export function lookUp(startPath: string, target: string): string
 
     while (slices.length > 0)
     {
-        let filepath = path.join(slices.join('/'), target);
+        let filepath = path.join(slices.join("/"), target);
 
         if (fs.existsSync(filepath))
         {
@@ -71,7 +71,7 @@ export function lookUp(startPath: string, target: string): string
         slices.pop();
     }
 
-    throw new Error('Can\'t find node_modules on provided root path');
+    throw new Error("Can\"t find node_modules on provided root path");
 }
 
 /**
@@ -124,13 +124,13 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
                 {
                     target[key] = target[key].concat(current[key]);
                 }
-                else if (target[key] instanceof Object && current[key] instanceof Object && target[key].constructor.name == 'Object' && current[key].constructor.name == 'Object')
+                else if (target[key] instanceof Object && current[key] instanceof Object && target[key].constructor.name == "Object" && current[key].constructor.name == "Object")
                 {
                     target[key] = merge(target[key], current[key], combineArrays);
                 }
                 else if (current[key])
                 {
-                    var descriptor = Object.getOwnPropertyDescriptor(current, key);
+                    let descriptor = Object.getOwnPropertyDescriptor(current, key);
 
                     if (descriptor && descriptor.enumerable)
                     {
@@ -140,7 +140,7 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
             }
             else if (current[key])
             {
-                var descriptor = Object.getOwnPropertyDescriptor(current, key);
+                let descriptor = Object.getOwnPropertyDescriptor(current, key);
 
                 if (descriptor && descriptor.enumerable)
                 {

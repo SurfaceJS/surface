@@ -1,0 +1,1 @@
+## Webpack loader for side effects require inside html.

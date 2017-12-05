@@ -1,4 +1,4 @@
-import { Reflection } from './index';
+import { Reflection } from "./index";
 
 declare global
 {
