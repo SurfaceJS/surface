@@ -2,6 +2,6 @@
     "extends": "../configurations/tsconfig.json",
     "compilerOptions":
     {
-        "lib": ["dom", "esnext"]
+        "module": "commonjs"
     }
 }

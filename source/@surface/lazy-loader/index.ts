@@ -1,8 +1,10 @@
+// File generated automatically. Don't change.
+
 /**
- * Load code splitted modules
- * @param name Module to load
+ * Requires the specified path module.
+ * @param path Path to the module.
  */
-export function load<T>(name: string): Promise<T>
+export function load(path: string): Promise<Object>
 {
-    throw new Error("Run code splitter plugin");
+    throw new Error("Code splitter plugin not running.");
 }

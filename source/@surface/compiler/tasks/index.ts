@@ -2,8 +2,10 @@ import * as defaults from "./defaults";
 import * as enums    from "./enums";
 import { Compiler }  from "../types";
 
-import { Constructor }                from "@surface/types";
-import { lookUp, merge, resolveFile } from "@surface/common";
+import { merge, resolveFile }      from "@surface/common";
+import * as CodeSplitterPlugin     from "@surface/code-splitter-plugin";
+import * as HtmlTemplatePlugin     from "@surface/html-template-plugin";
+import * as SimblingPriorityPlugin from "@surface/simbling-priority-plugin";
 
 import * as fs                         from "fs";
 import * as path                       from "path";
@@ -14,7 +16,7 @@ import * as UglifyJsPlugin             from "uglifyjs-webpack-plugin";
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean): Promise<void>
 {
-    task   = task || enums.TasksType.build;
+    task   = task   || enums.TasksType.build;
     config = config || "./";
 
     let enviroment = enums.EnviromentType[env || "debug"];
@@ -106,7 +108,6 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 {
     filepath = resolveFile(process.cwd(), filepath, "surface.config.json");
 
-    let root   = path.dirname(filepath);
     let config = require(filepath) as Compiler.Config;
 
     if (!config.context)
@@ -124,10 +125,10 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         throw new TypeError("Property \"output\" can\"t be null");
     }
 
-    config.context = path.resolve(root, config.context);
+    config.context = path.resolve(path.dirname(filepath), config.context);
     config.entry   = resolveEntries(config.entry, config.context);
     config.runtime = config.runtime || Object.keys(config.entry)[0];
-    config.output  = path.resolve(root, config.output);
+    config.output  = path.resolve(config.context, config.output);
 
     let userWebpack: webpack.Configuration = { };
 
@@ -135,7 +136,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         if(typeof config.webpackConfig == "string" && fs.existsSync(config.webpackConfig))
         {
-            userWebpack = require(path.resolve(path.dirname(filepath), config.webpackConfig)) as webpack.Configuration;
+            userWebpack = require(path.resolve(config.context, config.webpackConfig)) as webpack.Configuration;
         }
         else
         {
@@ -145,10 +146,48 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     if (config.tsconfig)
     {
-        defaults.loaders.tsLoader.options.configFile = path.resolve(path.dirname(filepath), config.tsconfig);
+        defaults.loaders.tsLoader.options.configFile = path.resolve(config.context, config.tsconfig);
     }
 
-    let nodeModules = lookUp(config.context, "node_modules");
+    let resolvePlugins: Array<webpack.ResolvePlugin> = [];
+    let plugins: Array<webpack.Plugin> = [];
+
+    if (config.simblingPriority)
+    {
+        if (!Array.isArray(config.simblingPriority))
+        {
+            config.simblingPriority = [config.simblingPriority];
+        }
+
+        for (let option of config.simblingPriority)
+        {
+            if (option.include)
+            {
+                option.include = option.include.map(x => path.resolve(config.context, x));
+            }
+
+            if (option.exclude)
+            {
+                option.exclude = option.exclude.map(x => path.resolve(config.context, x));
+            }
+
+            resolvePlugins.push(new SimblingPriorityPlugin(option));
+        }
+    }
+
+    if (config.codeSplitter)
+    {
+        plugins.push(new CodeSplitterPlugin(config.codeSplitter));
+    }
+
+    if (config.htmlTemplate)
+    {
+        plugins.push(new HtmlTemplatePlugin(config.htmlTemplate));
+    }
+
+    plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
+    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: config.context }));
 
     let primaryConfig =
     {
@@ -162,49 +201,21 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         },
         resolve:
         {
-            modules: [config.context]
+            modules: [config.context],
+            plugins: resolvePlugins
         },
-        plugins: getSurfacePlugins(config.plugins || [], nodeModules)
+        plugins: plugins
     } as webpack.Configuration;
 
-    primaryConfig.plugins = primaryConfig.plugins || [];
-
-    if (enviroment == enums.EnviromentType.release)
+    if (primaryConfig.plugins && enviroment == enums.EnviromentType.release)
     {
         primaryConfig.devtool = false;
         primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true }));
     }
 
-    primaryConfig.plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: primaryConfig.context }));
-    primaryConfig.plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
-    primaryConfig.plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-
     let webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
 
     return webpackConfig;
-}
-
-/**
- * Require Surface"s plugins.
- * @param plugins         Plugins to be required.
- * @param nodeModulesPath Path to "node_modules" folder.
- */
-function getSurfacePlugins(plugins: Array<Compiler.Plugin>, nodeModulesPath: string): Array<webpack.Plugin>
-{
-    let result: Array<webpack.Plugin> = [];
-
-    for (let plugin of plugins)
-    {
-        if (!plugin.name.endsWith("-plugin"))
-        {
-            plugin.name = `${plugin.name}-plugin`;
-        }
-
-        let pluginConstructor = require(path.resolve(nodeModulesPath, `@surface/${plugin.name}`)) as Constructor<webpack.Plugin>;
-        result.push(new pluginConstructor(plugin.options));
-    }
-
-    return result;
 }
 
 /**

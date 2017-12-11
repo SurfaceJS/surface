@@ -171,6 +171,7 @@ export abstract class CustomElement extends HTMLElement
     public attach<T extends HTMLElement>(selector: RegExp, slotName: string): T;
     public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
     {
-        return this.attachAll.call(this, selector, slotName);
+        // tslint:disable-next-line:no-any
+        return this.attachAll<T>(selector as any, slotName as any).first();
     }
 }
