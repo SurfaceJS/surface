@@ -1,1 +1,1 @@
-## @surface's plugin for html templating. ##
+## @surface's plugin for html templating.

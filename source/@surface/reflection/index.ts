@@ -36,16 +36,7 @@ export class Reflection<T>
 
     public getKeys(): Enumerable<string>
     {
-        let keys = function* (this: Reflection<T>)
-        {
-            for (const key of Object.getOwnPropertyNames(this._instace).concat(Object.getOwnPropertyNames(this._type.prototype)))
-            {
-                yield key;
-            }
-        }
-        .bind(this);
-
-        return Enumerable.from(keys());
+        return Enumerable.from(Object.getOwnPropertyNames(this._instace).concat(Object.getOwnPropertyNames(this._type.prototype)));
     }
 
     public getMethod(name: string): Nullable<Function>;
@@ -57,6 +48,24 @@ export class Reflection<T>
 
     public getMethods(): Enumerable<Function>
     {
-        return this.getKeys().where(x => this._instace[x] instanceof Function).select(x => this._instace[x]).cast<Function>();
+        return this.getKeys()
+            .select(x => this._type.prototype[x] || this._instace[x])
+            .where(x => x instanceof Function && !x.prototype)
+            .cast<Function>();
+    }
+
+    public getConstructor(name: string): Nullable<Constructor>;
+    public getConstructor(name: string, caseSensitive: boolean): Nullable<Constructor>;
+    public getConstructor(name: string, caseSensitive?: boolean): Nullable<Constructor>
+    {
+        return this.getConstructors().firstOrDefault(x => (!!caseSensitive && x.name == name || new RegExp(name, "i").test(x.name)));
+    }
+
+    public getConstructors(): Enumerable<Constructor>
+    {
+        return this.getKeys()
+            .select(x => this._type.prototype[x] || this._instace[x])
+            .where(x => x instanceof Function && !!x.prototype)
+            .cast<Constructor>();
     }
 }

@@ -3,10 +3,13 @@ import * as fs                     from "fs";
 import * as path                   from "path";
 import * as webPack                from "webpack";
 
-interface IOptions
+namespace HtmlTemplatePlugin
 {
-    filename: string;
-    template: string;
+    export interface IOptions
+    {
+        filename: string;
+        template: string;
+    }
 }
 
 class HtmlTemplatePlugin implements webPack.Plugin
@@ -14,7 +17,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
     private filename: Nullable<string>;
     private template: string;
 
-    public constructor(options?: Partial<IOptions>)
+    public constructor(options?: Partial<HtmlTemplatePlugin.IOptions>)
     {
         if (!options)
         {

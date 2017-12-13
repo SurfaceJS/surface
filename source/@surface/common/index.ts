@@ -1,5 +1,8 @@
+import { Nullable } from "@surface/types";
+
 import * as fs   from "fs";
 import * as path from "path";
+import * as util from "util";
 
 /**
  * Resolve surface"s config file location
@@ -55,7 +58,7 @@ export function resolveFile(context: string, filepath: string, filenames: string
  * @param startPath Path to start resolution.
  * @param target    Target file/directory.
  */
-export function lookUp(startPath: string, target: string): string
+export function lookUp(startPath: string, target: string): Nullable<string>
 {
     let slices = startPath.split(path.sep);
 
@@ -71,7 +74,85 @@ export function lookUp(startPath: string, target: string): string
         slices.pop();
     }
 
-    throw new Error("Can\"t find node_modules on provided root path");
+    return;
+}
+
+/**
+ * Create a directory.
+ * @param path A path to a file. If a URL is provided, it must use the `file:` protocol.
+ */
+export function makePath(path: string): void;
+/**
+ * Create a directory.
+ * @param path A path to a file. If a URL is provided, it must use the `file:` protocol.
+ * @param mode A file mode.
+ */
+export function makePath(path: string, mode:  number): void;
+export function makePath(targetPath: string, mode?: number): void
+{
+    if (fs.existsSync(targetPath))
+    {
+        if (!fs.lstatSync(targetPath).isDirectory())
+        {
+            throw new Error(`${targetPath} exist and isn't an directory.`);
+        }
+
+        return;
+    }
+
+    const parentDir = path.dirname(targetPath.toString());
+    // tslint:disable-next-line:no-magic-numbers
+    mode = parseInt("0777", 8) & (~process.umask());
+
+    if(fs.existsSync(parentDir))
+    {
+        return makePath(parentDir, mode);
+    }
+    else
+    {
+        return fs.mkdirSync(targetPath, mode);
+    }
+}
+
+/**
+ * Asynchronous create a directory.
+ * @param path A path to a file. If a URL is provided, it must use the `file:` protocol.
+ */
+export async function makePathAsync(path: string): Promise<void>;
+/**
+ * Asynchronous create a directory.
+ * @param path A path to a file. If a URL is provided, it must use the `file:` protocol.
+ * @param mode A file mode.
+ */
+export async function makePathAsync(path: string, mode:  number): Promise<void>;
+export async function makePathAsync(targetPath: string, mode?: number): Promise<void>
+{
+    const exists = util.promisify(fs.exists);
+    const mkdir  = util.promisify(fs.mkdir);
+    const stat   = util.promisify(fs.lstat);
+
+    if (await exists(targetPath))
+    {
+        if (!(await stat(targetPath)).isDirectory())
+        {
+            throw new Error(`${targetPath} exist and isn't an directory.`);
+        }
+
+        return Promise.resolve();
+    }
+
+    const parentDir = path.dirname(targetPath.toString());
+    // tslint:disable-next-line:no-magic-numbers
+    mode = parseInt("0777", 8) & (~process.umask());
+
+    if(await !exists(parentDir))
+    {
+        return makePathAsync(parentDir, mode);
+    }
+    else
+    {
+        return mkdir(targetPath, mode);
+    }
 }
 
 /**
@@ -152,3 +233,4 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
 
     return target as TTarget & TSource;
 }
+

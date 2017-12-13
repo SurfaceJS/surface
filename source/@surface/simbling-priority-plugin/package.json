@@ -4,28 +4,23 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/custom-element": "0.0.5",
-        "@surface/lazy-loader": "0.0.3",
-        "@surface/reflection": "0.0.0",
-        "@surface/router": "0.0.0",
         "@surface/types": "0.0.1",
-        "@surface/view": "0.0.0",
-        "@surface/view-host": "0.0.0",
-        "tslib": "1.8.1"
+        "@types/node": "8.0.33",
+        "@types/webpack": "3.0.13"
     },
-    "description": "Web component view manager.",
+    "description": "Webpack resolve plugin for handling simbling priority.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "manager",
+        "extension",
+        "html",
         "surface",
-        "typescript",
-        "view",
-        "webcomponents"
+        "priority",
+        "template",
+        "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/view-manager",
+    "name": "@surface/simbling-priority-plugin",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

@@ -4,18 +4,24 @@ import * as fs      from "fs";
 import * as path    from "path";
 import * as webpack from "webpack";
 
-interface IOptions
+namespace CodeSplitterPlugin
 {
-    entries:      Array<string>;
-    useRealPaths: boolean;
+    export interface IOptions
+    {
+        entries: Array<string>;
+        output:  string;
+    }
 }
+
+const LAZY_LOADER = "@surface/lazy-loader";
 
 class CodeSplitterPlugin
 {
-    private _entries:      Array<string>;
-    private _useRealPaths: boolean;
+    private _entries:  Array<string>;
+    private _fileType: string;
+    private _output:   string;
 
-    public constructor(options?: Partial<IOptions>)
+    public constructor(options?: Partial<CodeSplitterPlugin.IOptions>)
     {
         if (!options)
         {
@@ -24,25 +30,49 @@ class CodeSplitterPlugin
 
         if (!options.entries)
         {
-            throw new Error("Entries not specified");
+            throw new Error("Parameter \"options.entries\" not specified.");
         }
 
-        this._entries      = options.entries;
-        this._useRealPaths = !!options.useRealPaths;
+        if (!options.output)
+        {
+            throw new Error("Parameter \"options.output\" not specified.");
+        }
+
+        this._entries = options.entries;
+        this._output  = options.output;
+
+        if (this._output == LAZY_LOADER)
+        {
+            this._fileType = ".js";
+        }
+        else
+        {
+            let match = /\.[tj]s/.exec(this._output);
+
+            if (match)
+            {
+                this._fileType = match[0];
+            }
+            else
+            {
+                this._output   = this._output + ".js";
+                this._fileType = ".js";
+            }
+        }
     }
 
-    private getPaths(entry: string): Array<path.ParsedPath>
+    private getModulesPath(entry: string): Array<string>
     {
-        let result: Array<path.ParsedPath> = [];
+        let result: Array<string> = [];
 
         if (!fs.existsSync(entry))
         {
-            throw new Error("Path not exists");
+            Promise.reject(new Error("Path not exists"));
         }
 
-        if (!fs.lstatSync(entry).isDirectory())
+        if (!fs.lstatSync(entry).isFile())
         {
-            throw new Error("Path is not a directory");
+            Promise.resolve([entry]);
         }
 
         for (let source of fs.readdirSync(entry))
@@ -51,35 +81,33 @@ class CodeSplitterPlugin
 
             if (fs.lstatSync(currentPath).isDirectory())
             {
-                ["index.ts", "index.js"].forEach
-                (
-                    fileName =>
+                for (let extension of [".ts", ".js"])
+                {
+                    let file = path.join(currentPath, "index" + extension);
+                    if (fs.existsSync(file))
                     {
-                        let file = path.join(currentPath, fileName);
-                        if (fs.existsSync(file))
-                        {
-                            result.push(path.parse(file));
-                        }
-
+                        result.push(file);
                     }
-                );
+                }
             }
             else
             {
-                result.push(path.parse(currentPath));
+                result.push(currentPath);
             }
         }
 
         return result;
     }
 
-    private writeEntry(name: string, sourceFile: string, filepath: string): string
+    private writeEntry(context: string, filePath: string, modulePath: string): string
     {
-        name = name.replace("./", "");
+        let key          = path.relative(context, modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
+        let relativePath = path.relative(path.dirname(filePath), modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
+
         let result =
         [
-            `        case "${name}":`,
-            `            return import(/* webpackChunkName: "${name}" */ "${(this._useRealPaths ? filepath : path.relative(path.parse(sourceFile).dir, filepath)).replace(/\\/g, "/")}");`
+            `        case "${key}":`,
+            `            return import(/* webpackChunkName: "${key}" */ "${relativePath}");`
         ].join("\n");
 
         return result;
@@ -102,9 +130,15 @@ class CodeSplitterPlugin
     {
         let result =
         [
-            "export function load(name)",
+            "// File generated automatically. Don't change.",
+            "",
+            "/**",
+            " * Requires the specified path module.",
+            ` * @param ${this._fileType == ".ts" ? "" : "{string} "}path Path to the module.${this._fileType == ".ts" ? "" : "\n * @returns {Promise}"}`,
+            " */",
+            this._fileType == ".ts" ? "export function load(path: string): Promise<Object>" : "export function load(path)",
             "{",
-            "    switch (name)",
+            "    switch (path)",
             "    {",
         ].join("\n");
 
@@ -120,47 +154,57 @@ class CodeSplitterPlugin
             // tslint:disable-next-line:no-any
             function (this: webpack.Compiler, compilation: any, callback: (error?: Error) => void)
             {
-                if (!this.options.context)
+                try
                 {
-                    throw new Error("Context can\"t be null");
-                }
-
-                let sourceFile = path.join(common.lookUp(this.options.context, "node_modules"), "@surface", "lazy-loader", "index.js");
-
-                for (let entry of self._entries)
-                {
-                    let parsedPaths = self.getPaths(path.resolve(this.options.context, entry));
-
-                    let content = self.writeHeader() + "\n";
-
-                    for (let parsedPath of parsedPaths)
+                    if (!this.options.context)
                     {
-                        if (parsedPath.name == "index")
+                        throw new Error("Context can\"t be null");
+                    }
+
+                    if (self._output == LAZY_LOADER)
+                    {
+                        let lazyLoader = common.lookUp(this.options.context, "node_modules/@surface/view-manager/node_modules/@surface/lazy-loader/index.js")
+                            || common.lookUp(this.options.context, "node_modules/@surface/lazy-loader/index.js");
+
+                        if (lazyLoader)
                         {
-                            content += self.writeEntry
-                            (
-                                `${entry}/${parsedPath.dir.split(path.sep).pop()}`,
-                                sourceFile,
-                                path.format(parsedPath)
-                            ) + "\n";
+                            self._output = lazyLoader;
                         }
                         else
                         {
-                            content += self.writeEntry
-                            (
-                                `${entry}/${parsedPath.name}`,
-                                sourceFile,
-                                path.format(parsedPath)
-                            ) + "\n";
+                            throw new Error("@surface/lazy-loader isn't installed.");
                         }
                     }
+                    else
+                    {
+                        self._output = path.isAbsolute(self._output) ? self._output : path.resolve(this.options.context, self._output);
+                    }
 
-                    content += self.writeFooter();
+                    let content = "";
 
-                    fs.writeFileSync(sourceFile, content);
+                    for (let entry of self._entries)
+                    {
+                        let modulesPath = self.getModulesPath(path.resolve(this.options.context, entry));
+
+                        content = self.writeHeader() + "\n";
+
+                        for (let modulePath of modulesPath)
+                        {
+                            content += self.writeEntry(this.options.context, self._output, modulePath) + "\n";
+                        }
+
+                        content += self.writeFooter();
+                    }
+
+                    common.makePath(path.dirname(self._output));
+                    fs.writeFileSync(self._output, content);
+
+                    callback();
                 }
-
-                callback();
+                catch (error)
+                {
+                    callback(error);
+                }
             }
         );
     }

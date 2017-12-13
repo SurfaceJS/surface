@@ -1,23 +1,30 @@
-import { Nullable, ObjectLiteral } from "@surface/types";
+import { Nullable } from "@surface/types";
 
-export = function (this: ObjectLiteral, content: string): string
+// tslint:disable-next-line:no-any
+export = function (this: any, content: string): string
 {
     this.cacheable && this.cacheable();
 
-    let expression = /<require\s+path\s*=\s*(\\?[""])((?:(?!\1).|\\\1)+?)\1\s*\/>(?:\s|\\[rn])*/g;
+    let expression = /<!--(?:(?!<!--).)*?-->|(?:<require\s+path\s*=\s*(\\?[""])((?:(?!\1).|\\\1)+?)\1\s*\/>((?:\s|\\[rn])*))/g;
 
     let match:    Nullable<RegExpExecArray>;
     let requires: Array<string> = [];
 
     let cleanContent = content;
 
+    const groups =
+    {
+        full:         0,
+        path:         2,
+        leadingSpace: 3
+    };
+
     while (match = expression.exec(content))
     {
-        const groups =
+        if (!match[groups.path])
         {
-            full: 0,
-            path: 2
-        };
+            continue;
+        }
 
         let requireExpression = `require("${match[groups.path]}");`;
 
