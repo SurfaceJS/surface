@@ -8,8 +8,8 @@ namespace CodeSplitterPlugin
 {
     export interface IOptions
     {
-        entries: Array<string>;
-        output:  string;
+        entries:          Array<string>;
+        output:           string;
     }
 }
 
@@ -17,9 +17,9 @@ const LAZY_LOADER = "@surface/lazy-loader";
 
 class CodeSplitterPlugin
 {
-    private _entries:  Array<string>;
-    private _fileType: string;
-    private _output:   string;
+    private _entries:          Array<string>;
+    private _fileType:         string;
+    private _output:           string;
 
     public constructor(options?: Partial<CodeSplitterPlugin.IOptions>)
     {
@@ -38,8 +38,8 @@ class CodeSplitterPlugin
             throw new Error("Parameter \"options.output\" not specified.");
         }
 
-        this._entries = options.entries;
-        this._output  = options.output;
+        this._entries          = options.entries;
+        this._output           = options.output;
 
         if (this._output == LAZY_LOADER)
         {
@@ -102,12 +102,12 @@ class CodeSplitterPlugin
     private writeEntry(context: string, filePath: string, modulePath: string): string
     {
         let key          = path.relative(context, modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
-        let relativePath = path.relative(path.dirname(filePath), modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
+        let resolvedPath = path.relative(path.dirname(filePath), modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
 
         let result =
         [
             `        case "${key}":`,
-            `            return import(/* webpackChunkName: "${key}" */ "${relativePath}");`
+            `            return import(/* webpackChunkName: "${key}" */ "${resolvedPath}");`
         ].join("\n");
 
         return result;
@@ -147,7 +147,9 @@ class CodeSplitterPlugin
 
     public apply (compiler: webpack.Compiler)
     {
+        let output = this._output;
         const self = this;
+
         compiler.plugin
         (
             "make",
@@ -161,14 +163,14 @@ class CodeSplitterPlugin
                         throw new Error("Context can\"t be null");
                     }
 
-                    if (self._output == LAZY_LOADER)
+                    if (output == LAZY_LOADER)
                     {
                         let lazyLoader = common.lookUp(this.options.context, "node_modules/@surface/view-manager/node_modules/@surface/lazy-loader/index.js")
                             || common.lookUp(this.options.context, "node_modules/@surface/lazy-loader/index.js");
 
                         if (lazyLoader)
                         {
-                            self._output = lazyLoader;
+                            output = lazyLoader;
                         }
                         else
                         {
@@ -177,8 +179,13 @@ class CodeSplitterPlugin
                     }
                     else
                     {
-                        self._output = path.isAbsolute(self._output) ? self._output : path.resolve(this.options.context, self._output);
+                        output = path.isAbsolute(output) ? output : path.resolve(this.options.context, output);
                     }
+
+                    let parsedPath = path.parse(output);
+
+                    output = fs.lstatSync(parsedPath.dir).isSymbolicLink() ?
+                        path.join(fs.readlinkSync(parsedPath.dir), parsedPath.name + parsedPath.ext) : output;
 
                     let content = "";
 
@@ -190,14 +197,14 @@ class CodeSplitterPlugin
 
                         for (let modulePath of modulesPath)
                         {
-                            content += self.writeEntry(this.options.context, self._output, modulePath) + "\n";
+                            content += self.writeEntry(this.options.context, output, modulePath) + "\n";
                         }
 
                         content += self.writeFooter();
                     }
 
-                    common.makePath(path.dirname(self._output));
-                    fs.writeFileSync(self._output, content);
+                    common.makePath(path.dirname(output));
+                    fs.writeFileSync(output, content);
 
                     callback();
                 }

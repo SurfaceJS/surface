@@ -2,10 +2,10 @@ import * as defaults from "./defaults";
 import * as enums    from "./enums";
 import { Compiler }  from "../types";
 
-import { merge, resolveFile }      from "@surface/common";
-import * as CodeSplitterPlugin     from "@surface/code-splitter-plugin";
-import * as HtmlTemplatePlugin     from "@surface/html-template-plugin";
-import * as SimblingPriorityPlugin from "@surface/simbling-priority-plugin";
+import { merge, resolveFile }     from "@surface/common";
+import * as CodeSplitterPlugin    from "@surface/code-splitter-plugin";
+import * as HtmlTemplatePlugin    from "@surface/html-template-plugin";
+import * as SimblingResolvePlugin from "@surface/simbling-resolve-plugin";
 
 import * as fs                         from "fs";
 import * as path                       from "path";
@@ -152,14 +152,14 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     let resolvePlugins: Array<webpack.ResolvePlugin> = [];
     let plugins: Array<webpack.Plugin> = [];
 
-    if (config.simblingPriority)
+    if (config.simblingResolve)
     {
-        if (!Array.isArray(config.simblingPriority))
+        if (!Array.isArray(config.simblingResolve))
         {
-            config.simblingPriority = [config.simblingPriority];
+            config.simblingResolve = [config.simblingResolve];
         }
 
-        for (let option of config.simblingPriority)
+        for (let option of config.simblingResolve)
         {
             if (option.include)
             {
@@ -171,9 +171,13 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
                 option.exclude = option.exclude.map(x => path.resolve(config.context, x));
             }
 
-            resolvePlugins.push(new SimblingPriorityPlugin(option));
+            resolvePlugins.push(new SimblingResolvePlugin(option));
         }
     }
+
+    plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
+    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: config.context }));
 
     if (config.codeSplitter)
     {
@@ -184,10 +188,6 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         plugins.push(new HtmlTemplatePlugin(config.htmlTemplate));
     }
-
-    plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
-    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: config.context }));
 
     let primaryConfig =
     {

@@ -57,6 +57,8 @@ export class Route
         let params: ObjectLiteral<string>           = { };
         let search: Nullable<ObjectLiteral<string>> = null;
 
+        let root = "/";
+
         if (queryString)
         {
             search = { };
@@ -92,9 +94,16 @@ export class Route
                             }
                         }
                     );
+
+                let match = /^(\/?(?:[\w-_]+\/?)+)(?:$|\/[^\w-_]*)/.exec(this._pattern);
+
+                if (match)
+                {
+                    root = match[1];
+                }
             }
 
-            return { match: this.pattern, route, params, search };
+            return { match: this.pattern, root, route, params, search };
         }
 
         return null;
@@ -107,6 +116,7 @@ export namespace Route
     {
         match:  string;
         params: ObjectLiteral<string>;
+        root:   string;
         route:  string;
         search: Nullable<ObjectLiteral<string>>;
     }

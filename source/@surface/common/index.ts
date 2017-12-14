@@ -92,6 +92,8 @@ export function makePath(targetPath: string, mode?: number): void
 {
     if (fs.existsSync(targetPath))
     {
+        targetPath = fs.lstatSync(targetPath).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
+
         if (!fs.lstatSync(targetPath).isDirectory())
         {
             throw new Error(`${targetPath} exist and isn't an directory.`);
@@ -106,7 +108,8 @@ export function makePath(targetPath: string, mode?: number): void
 
     if(fs.existsSync(parentDir))
     {
-        return makePath(parentDir, mode);
+        makePath(parentDir, mode);
+        return fs.mkdirSync(targetPath, mode);
     }
     else
     {
@@ -133,6 +136,8 @@ export async function makePathAsync(targetPath: string, mode?: number): Promise<
 
     if (await exists(targetPath))
     {
+        targetPath = (await stat(targetPath)).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
+
         if (!(await stat(targetPath)).isDirectory())
         {
             throw new Error(`${targetPath} exist and isn't an directory.`);
@@ -147,7 +152,8 @@ export async function makePathAsync(targetPath: string, mode?: number): Promise<
 
     if(await !exists(parentDir))
     {
-        return makePathAsync(parentDir, mode);
+        await makePathAsync(parentDir, mode);
+        return mkdir(targetPath, mode);
     }
     else
     {
