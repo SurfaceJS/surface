@@ -20,7 +20,7 @@
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/simbling-priority-plugin",
+    "name": "@surface/simbling-resolve-plugin",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

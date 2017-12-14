@@ -50,7 +50,7 @@ export class MvcRequestHandler extends RequestHandler
                         let esmodule = require(filepath) as object;
 
                         let controllerConstructor: Nullable<Constructor> = esmodule["default"] || esmodule.reflect()
-                            .getMethods()
+                            .getConstructors()
                             .firstOrDefault(x => new RegExp(`^${controller}(controller)?$`, "i").test(x.name));
 
                         if (controllerConstructor && controllerConstructor.prototype instanceof Controller)
