@@ -106,7 +106,7 @@ export function makePath(targetPath: string, mode?: number): void
     // tslint:disable-next-line:no-magic-numbers
     mode = parseInt("0777", 8) & (~process.umask());
 
-    if(fs.existsSync(parentDir))
+    if(!fs.existsSync(parentDir))
     {
         makePath(parentDir, mode);
         return fs.mkdirSync(targetPath, mode);
@@ -150,7 +150,7 @@ export async function makePathAsync(targetPath: string, mode?: number): Promise<
     // tslint:disable-next-line:no-magic-numbers
     mode = parseInt("0777", 8) & (~process.umask());
 
-    if(await !exists(parentDir))
+    if(!(await exists(parentDir)))
     {
         await makePathAsync(parentDir, mode);
         return mkdir(targetPath, mode);
