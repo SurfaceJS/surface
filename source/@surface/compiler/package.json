@@ -1,14 +1,13 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "surface": "index.js"
+        "surface-compiler": "index.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
         "@surface/common": "0.0.8",
-        "@surface/code-splitter-plugin": "0.0.8",
         "@surface/html-require-loader": "0.0.0",
         "@surface/html-template-plugin": "0.0.6",
         "@surface/simbling-resolve-plugin": "0.0.0",

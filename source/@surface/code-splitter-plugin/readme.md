@@ -1,1 +1,0 @@
-## Generate webpack code splits, used in combination with the @surface/lazy-loader module.

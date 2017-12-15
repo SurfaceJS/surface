@@ -6,7 +6,6 @@
     "dependencies": {
         "@surface/collection": "0.0.0",
         "@surface/custom-element": "0.0.5",
-        "@surface/lazy-loader": "0.0.3",
         "@surface/reflection": "0.0.0",
         "@surface/router": "0.0.0",
         "@surface/types": "0.0.1",

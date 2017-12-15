@@ -3,7 +3,6 @@ import * as enums    from "./enums";
 import { Compiler }  from "../types";
 
 import { merge, resolveFile }     from "@surface/common";
-import * as CodeSplitterPlugin    from "@surface/code-splitter-plugin";
 import * as HtmlTemplatePlugin    from "@surface/html-template-plugin";
 import * as SimblingResolvePlugin from "@surface/simbling-resolve-plugin";
 
@@ -178,11 +177,6 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
     plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: config.context }));
-
-    if (config.codeSplitter)
-    {
-        plugins.push(new CodeSplitterPlugin(config.codeSplitter));
-    }
 
     if (config.htmlTemplate)
     {
