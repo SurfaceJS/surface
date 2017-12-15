@@ -1,7 +1,6 @@
 import "@surface/reflection/extensions";
 
 import { Dictionary }                   from "@surface/collection";
-import { load }                         from "@surface/lazy-loader";
 import { Router }                       from "@surface/router";
 import { Nullable, Constructor, Func1 } from "@surface/types";
 import { View }                         from "@surface/view";
@@ -27,28 +26,26 @@ export class ViewManager
         return this._viewHost;
     }
 
-    private _moduleResolver?: Func1<string, Promise<Object>>;
+    private _moduleResolver: Func1<string, Promise<Object>>;
 
-    private constructor(viewHost: ViewHost, router: Router, moduleResolver?: Func1<string, Promise<Object>>)
+    private constructor(viewHost: ViewHost, router: Router, moduleResolver: Func1<string, Promise<Object>>)
     {
-        this._views        = new Dictionary<string, View>();
-        this._viewHost     = viewHost;
-        this._router       = router;
+        this._views          = new Dictionary<string, View>();
+        this._viewHost       = viewHost;
+        this._router         = router;
         this._moduleResolver = moduleResolver;
 
         window.onpopstate = () => this.routeTo(window.location.pathname + window.location.search);
     }
 
-    public static configure(viewHost: ViewHost, router: Router): ViewManager;
-    public static configure(viewHost: ViewHost, router: Router, moduleResolver: Func1<string, Promise<Object>>): ViewManager;
-    public static configure(viewHost: ViewHost, router: Router, moduleResolver?: Func1<string, Promise<Object>>): ViewManager
+    public static configure(viewHost: ViewHost, router: Router, moduleResolver: Func1<string, Promise<Object>>): ViewManager
     {
         return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router, moduleResolver);
     }
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        let esmodule = await (this._moduleResolver && this._moduleResolver(path) || load(path));
+        let esmodule = await this._moduleResolver(path);
 
         let viewConstructor = esmodule["default"] as Nullable<Constructor> || esmodule.reflect()
             .getConstructors()

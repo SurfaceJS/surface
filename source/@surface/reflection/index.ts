@@ -2,6 +2,8 @@ import "@surface/enumerable/extensions";
 import { Enumerable }            from "@surface/enumerable";
 import { Nullable, Constructor } from "@surface/types";
 
+export type KeyPropertyDescriptor = { key: string, descriptor: PropertyDescriptor };
+
 export class Reflection<T>
 {
     private _baseType: Constructor;
@@ -39,11 +41,47 @@ export class Reflection<T>
         return Enumerable.from(Object.getOwnPropertyNames(this._instace).concat(Object.getOwnPropertyNames(this._type.prototype)));
     }
 
-    public getMethod(name: string): Nullable<Function>;
-    public getMethod(name: string, caseSensitive: boolean): Nullable<Function>;
-    public getMethod(name: string, caseSensitive?: boolean): Nullable<Function>
+    public getProperty(property: string): Nullable<Object>
     {
-        return this.getMethods().firstOrDefault(x => (!!caseSensitive && x.name == name || new RegExp(name, "i").test(x.name)));
+        let context = this._instace;
+
+        if (property.indexOf(".") > -1)
+        {
+            let childrens = property.split(".");
+            property = childrens.pop() || "";
+            for (let child of childrens)
+            {
+                context = context[child];
+                if (!context)
+                {
+                    break;
+                }
+            }
+
+            return context;
+        }
+        else
+        {
+            return context[property];
+        }
+    }
+
+    public getPropertyDescriptor(property: string): Nullable<KeyPropertyDescriptor>
+    {
+        return this.getPropertyDescriptors().firstOrDefault(x => x.key == property);
+    }
+
+    public getPropertyDescriptors(): Enumerable<KeyPropertyDescriptor>
+    {
+        return this.getKeys()
+            .select(x => ({ key: x, descriptor: Object.getOwnPropertyDescriptor(this._instace, x) }))
+            .where(x => !!x.descriptor)
+            .cast<KeyPropertyDescriptor>();
+    }
+
+    public getMethod(name: string): Nullable<Function>
+    {
+        return this.getMethods().firstOrDefault(x => x.name == name);
     }
 
     public getMethods(): Enumerable<Function>
@@ -54,11 +92,9 @@ export class Reflection<T>
             .cast<Function>();
     }
 
-    public getConstructor(name: string): Nullable<Constructor>;
-    public getConstructor(name: string, caseSensitive: boolean): Nullable<Constructor>;
-    public getConstructor(name: string, caseSensitive?: boolean): Nullable<Constructor>
+    public getConstructor(name: string): Nullable<Constructor>
     {
-        return this.getConstructors().firstOrDefault(x => (!!caseSensitive && x.name == name || new RegExp(name, "i").test(x.name)));
+        return this.getConstructors().firstOrDefault(x => x.name == name);
     }
 
     public getConstructors(): Enumerable<Constructor>

@@ -1,6 +1,6 @@
-import * as fs                     from "fs";
-import * as path                   from "path";
-import * as webPack                from "webpack";
+import * as fs      from "fs";
+import * as path    from "path";
+import * as webPack from "webpack";
 
 namespace SimblingPriorityPlugin
 {
