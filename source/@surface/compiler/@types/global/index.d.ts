@@ -1,35 +1,35 @@
 declare module "*.css"
 {
-    var _: string;
-    export default  _;
+    const value: string;
+    export default value;
 }
 
 declare module "*.html"
 {
-    var _: string;
-    export default  _;
+    const value: string;
+    export default value;
 }
 
 declare module "*.json"
 {
-    var _: object;
-    export default  _;
+    var value: object;
+    export default value;
 }
 
 declare module "*.sass"
 {
-    var _: string;
-    export default  _;
+    const value: string;
+    export default value;
 }
 
 declare module "*.scss"
 {
-    var _: string;
-    export default  _;
+    const value: string;
+    export default value;
 }
 
 declare module "*.txt"
 {
-    var _: string;
-    export default  _;
+    const value: string;
+    export default value;
 }

@@ -13,7 +13,7 @@ import * as webpack                    from "webpack";
 import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import * as UglifyJsPlugin             from "uglifyjs-webpack-plugin";
 
-export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean): Promise<void>
+export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
     task   = task   || enums.TasksType.build;
     config = config || "./";
@@ -28,14 +28,14 @@ export async function execute(task?: enums.TasksType, config?: string, env?: str
     {
         case enums.TasksType.build:
         default:
-            await build(wepackconfig, enviroment, watch);
+            await build(wepackconfig, enviroment, watch, statsLevel);
             break;
         case enums.TasksType.clean:
             await clean(wepackconfig);
             break;
         case enums.TasksType.rebuild:
             await clean(wepackconfig);
-            await build(wepackconfig, enviroment, watch);
+            await build(wepackconfig, enviroment, watch, statsLevel);
             break;
     }
 }
@@ -46,17 +46,18 @@ export async function execute(task?: enums.TasksType, config?: string, env?: str
  * @param enviroment Enviroment variable.
  * @param watch      Enable watch mode.
  */
-async function build(config: webpack.Configuration, enviroment: enums.EnviromentType, watch: boolean): Promise<void>
+async function build(config: webpack.Configuration, enviroment: enums.EnviromentType, watch: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
     let compiler = webpack(config);
 
-    let statOptions: webpack.Stats.ToStringOptions =
+    let statOptions: webpack.Stats.ToStringOptions = statsLevel ||
     {
         assets:   true,
-        version:  true,
+        errors:   true,
         colors:   true,
-        warnings: true,
-        errors:   true
+        modules:  true,
+        version:  true,
+        warnings: true
     };
 
     let callback: webpack.Compiler.Handler =
@@ -109,6 +110,8 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     let config = require(filepath) as Compiler.Config;
 
+    const root = path.dirname(filepath);
+
     if (!config.context)
     {
         throw new TypeError("Property \"context\" can\"t be null");
@@ -124,10 +127,10 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         throw new TypeError("Property \"output\" can\"t be null");
     }
 
-    config.context = path.resolve(path.dirname(filepath), config.context);
-    config.entry   = resolveEntries(config.entry, config.context);
+    config.context = path.resolve(root, config.context);
+    config.entry   = resolveEntries(config.context, config.entry);
     config.runtime = config.runtime || Object.keys(config.entry)[0];
-    config.output  = path.resolve(config.context, config.output);
+    config.output  = path.resolve(root, config.output);
 
     let userWebpack: webpack.Configuration = { };
 
@@ -135,7 +138,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         if(typeof config.webpackConfig == "string" && fs.existsSync(config.webpackConfig))
         {
-            userWebpack = require(path.resolve(config.context, config.webpackConfig)) as webpack.Configuration;
+            userWebpack = require(path.resolve(root, config.webpackConfig)) as webpack.Configuration;
         }
         else
         {
@@ -143,10 +146,10 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         }
     }
 
-    if (config.tsconfig)
-    {
-        defaults.loaders.tsLoader.options.configFile = path.resolve(config.context, config.tsconfig);
-    }
+    config.tsconfig = config.tsconfig && path.resolve(root, config.tsconfig) || "tsconfig.json";
+    config.tslint   = config.tslint   && path.resolve(root, config.tslint);
+
+    defaults.loaders.tsLoader.options.configFile = config.tsconfig;
 
     let resolvePlugins: Array<webpack.ResolvePlugin> = [];
     let plugins: Array<webpack.Plugin> = [];
@@ -162,12 +165,12 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         {
             if (option.include)
             {
-                option.include = option.include.map(x => path.resolve(config.context, x));
+                option.include = option.include.map(x => path.resolve(root, x));
             }
 
             if (option.exclude)
             {
-                option.exclude = option.exclude.map(x => path.resolve(config.context, x));
+                option.exclude = option.exclude.map(x => path.resolve(root, x));
             }
 
             resolvePlugins.push(new SimblingResolvePlugin(option));
@@ -176,10 +179,11 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, watch: config.context }));
+    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: config.tsconfig, tslint: config.tslint, watch: config.context }));
 
     if (config.htmlTemplate)
     {
+        config.htmlTemplate.template = path.resolve(root, config.htmlTemplate.template);
         plugins.push(new HtmlTemplatePlugin(config.htmlTemplate));
     }
 
@@ -204,7 +208,14 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     if (primaryConfig.plugins && enviroment == enums.EnviromentType.release)
     {
         primaryConfig.devtool = false;
-        primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true }));
+
+        const uglifyOptions =
+        {
+            compress: { keep_classnames: true },
+            mangle:   { keep_classnames: true }
+        };
+
+        primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions }));
     }
 
     let webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
@@ -217,7 +228,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
  * @param entries Entries to be resolved.
  * @param context Context used to resolve entries.
  */
-function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entry
+function resolveEntries(context: string, entries: Compiler.Entry): Compiler.Entry
 {
     let result: Compiler.Entry = { };
 
@@ -253,33 +264,29 @@ function resolveEntries(entries: Compiler.Entry, context: string): Compiler.Entr
 
             if (fs.lstatSync(sourcePath).isDirectory())
             {
-                fs.readdirSync(sourcePath)
-                    .forEach
-                    (
-                        $module =>
+                for (let $module of fs.readdirSync(sourcePath))
+                {
+                    let modulePath = path.resolve(sourcePath, $module);
+                    if (fs.existsSync(modulePath))
+                    {
+                        if(fs.lstatSync(modulePath).isDirectory())
                         {
-                            let modulePath = path.resolve(sourcePath, $module);
-                            if (fs.existsSync(modulePath))
+                            let index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
+                            if (index)
                             {
-                                if(fs.lstatSync(modulePath).isDirectory())
-                                {
-                                    let index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
-                                    if (index)
-                                    {
-                                        result[`${key}/${$module}`] = `${source}/${$module}/${index}`;
-                                    }
-                                }
-                                else
-                                {
-                                    result[`${source}/${path.parse($module).name}`] = `${source}/${$module}`;
-                                }
-                            }
-                            else
-                            {
-                                throw new Error("Invalid path");
+                                result[`${key}/${$module}`] = `${source}/${$module}/${index}`;
                             }
                         }
-                    );
+                        else
+                        {
+                            result[`${source}/${path.parse($module).name}`] = `${source}/${$module}`;
+                        }
+                    }
+                    else
+                    {
+                        throw new Error("Invalid path");
+                    }
+                }
             }
             else
             {

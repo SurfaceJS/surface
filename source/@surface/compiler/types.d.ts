@@ -13,10 +13,12 @@ export namespace Compiler
         entry:            Entry;
         filename:         string;
         output:           string;
-        runtime?:         string;
         htmlTemplate?:    HtmlTemplatePlugin.IOptions;
+        runtime?:         string;
         simblingResolve?: SimblingResolvePlugin.IOptions|Array<SimblingResolvePlugin.IOptions>;
-        webpackConfig?:   string|webpack.Configuration;
         tsconfig?:        string;
+        tslint?:          string;
+        webpackConfig?:   string|webpack.Configuration;
+        statsLevel?:      webpack.Stats.ToStringOptions;
     }
 }
