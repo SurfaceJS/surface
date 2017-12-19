@@ -52,6 +52,7 @@ export let webpackConfig =
     devtool: "#source-map",
     resolve:
     {
+        alias:      { "tslib": path.resolve(__dirname, "../node_modules", "tslib") },
         extensions: [".ts", ".js"],
         modules:    [".", "node_modules"]
     },
