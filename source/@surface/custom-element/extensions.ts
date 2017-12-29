@@ -21,22 +21,22 @@ declare global
     }
 }
 
-NodeList.prototype.toArray = function <T extends Node>(this: NodeListOf<T>)
+NodeList.prototype.toArray = function toArray<T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this);
 };
 
-NodeList.prototype.asEnumerable = function <T extends Node>(this: NodeListOf<T>)
+NodeList.prototype.asEnumerable = function asEnumerable<T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this).asEnumerable();
 };
 
-NodeList.prototype.toList = function <T extends Node>(this: NodeListOf<T>)
+NodeList.prototype.toList = function toList<T extends Node>(this: NodeListOf<T>)
 {
     return Array.from(this).toList();
 };
 
-NamedNodeMap.prototype.asEnumerable = function(this: NamedNodeMap)
+NamedNodeMap.prototype.asEnumerable = function asEnumerable(this: NamedNodeMap)
 {
     return Array.from(this).asEnumerable();
 };

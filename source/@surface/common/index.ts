@@ -10,15 +10,15 @@ import * as util from "util";
  * @param filepath Relative or absolute path to folder or file.
  * @param filename Filename to resolve.
  */
-export function resolveFile(context: string, filepath: string, filename: string);
+export function resolveFile(context: string, filepath: string, filename: string): string;
 /**
  * Resolve surface"s config file location
  * @param context   Cotext used to resolve.
  * @param filepath  Relative or absolute path to folder or file.
  * @param filenames Possible filenames to resolve.
  */
-export function resolveFile(context: string, filepath: string, filenames: Array<string>);
-export function resolveFile(context: string, filepath: string, filenames: string|Array<string>)
+export function resolveFile(context: string, filepath: string, filenames: Array<string>): string;
+export function resolveFile(context: string, filepath: string, filenames: string|Array<string>): string
 {
     if (!path.isAbsolute(filepath))
     {

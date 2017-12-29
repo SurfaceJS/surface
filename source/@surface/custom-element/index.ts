@@ -2,25 +2,14 @@ import "./extensions";
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
 
-import { ElementBinder }      from "./element-binder";
-import { onAttributeChanged } from "./symbols";
+import { DataBind } from "./data-bind";
+import * as symbols from "./symbols";
 
 import { List }     from "@surface/collection";
 import { Nullable } from "@surface/types";
 
 export abstract class CustomElement extends HTMLElement
 {
-    private _template: Nullable<HTMLTemplateElement>;
-    public get template(): Nullable<HTMLTemplateElement>
-    {
-		return this._template;
-	}
-
-    public set template(value: Nullable<HTMLTemplateElement>)
-    {
-		this._template = value;
-	}
-
     public constructor()
     {
         super();
@@ -34,17 +23,16 @@ export abstract class CustomElement extends HTMLElement
             window.ShadyCSS.styleElement(this);
         }
 
-        if (this._template)
+        let template = this.constructor[symbols.template] as Nullable<HTMLTemplateElement>;
+
+        if (template)
         {
-            let content = document.importNode(this._template.content, true);
-            this.applyDateBind(content);
+            let content = document.importNode(template.content, true);
+
+            DataBind.for(this, content);
+
             this.attachShadow({ mode: "open" }).appendChild(content);
         }
-    }
-
-    private applyDateBind(content: Node): void
-    {
-        new ElementBinder(this, content).bind();
     }
 
     /** Called when the element is created or upgraded */
@@ -66,9 +54,9 @@ export abstract class CustomElement extends HTMLElement
             this.style[attributeName] = newValue;
         }
 
-        if (this[onAttributeChanged])
+        if (this[symbols.onAttributeChanged])
         {
-            this[onAttributeChanged](attributeName, oldValue, newValue, namespace);
+            this[symbols.onAttributeChanged](attributeName, oldValue, newValue, namespace);
         }
     }
 

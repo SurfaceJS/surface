@@ -70,7 +70,7 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     }
 }
 
-export class KeyValuePair<TKey, TValue>
+export class KeyValuePair<TKey = string, TValue = Object>
 {
     private _key: TKey;
     public get key(): TKey

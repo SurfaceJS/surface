@@ -2,8 +2,6 @@ import { StatusCode }     from "./enums";
 import { RequestHandler } from "./request-handler";
 import { HttpContext }    from "./http-context";
 import { mymeType }       from "./variables";
-import * as fs            from "fs";
-import * as path          from "path";
 
 export class FallbackRequestHandler extends RequestHandler
 {
@@ -21,30 +19,30 @@ export class FallbackRequestHandler extends RequestHandler
 
     public handle(httpContext: HttpContext): boolean
     {
-        let filepath = path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ""));
+        let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ""));
 
         let targets =
         [
             filepath,
             filepath + ".html",
             filepath + ".htm",
-            path.join(filepath, "index.html"),
-            path.join(filepath, "index.htm"),
-            path.join(filepath, "default.html"),
-            path.join(filepath, "default.htm")
+            this.path.join(filepath, "index.html"),
+            this.path.join(filepath, "index.htm"),
+            this.path.join(filepath, "default.html"),
+            this.path.join(filepath, "default.htm")
         ];
 
         try
         {
-            filepath = targets.asEnumerable().first(x => fs.existsSync(x) && fs.lstatSync(x).isFile());
+            filepath = targets.asEnumerable().first(x => this.fs.existsSync(x) && this.fs.lstatSync(x).isFile());
         }
         catch (error)
         {
             throw new Error("The provided fallback path is invalid.");
         }
 
-        let extension = path.extname(filepath);
-        let data      = fs.readFileSync(filepath);
+        let extension = this.path.extname(filepath);
+        let data      = this.fs.readFileSync(filepath);
 
         httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] });
         httpContext.response.write(data);

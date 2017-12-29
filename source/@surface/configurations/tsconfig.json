@@ -1,23 +1,27 @@
 {
     "compilerOptions":
-    {        
-        "allowSyntheticDefaultImports":   true,
-        "alwaysStrict":                   true,
-        "declaration":                    false, /* false for dev */
-        "emitDecoratorMetadata":          true,
-        "experimentalDecorators":         true,
-        "importHelpers":                  true,
-        "lib":                            ["esnext"],
-        "module":                         "esnext",
-        "moduleResolution":               "node",
-        "noEmitOnError":                  true,
-        "noImplicitReturns":              true,
-        "noImplicitThis":                 true,
-        "noUnusedLocals":                 true,
-        "sourceMap":                      true,
-        "strictFunctionTypes":            true,
-        "strictNullChecks":               true,
-        "suppressImplicitAnyIndexErrors": true,
-        "target":                         "esnext"
-    }
+    {
+        "allowSyntheticDefaultImports":     true,
+        "alwaysStrict":                     true,
+        "declaration":                      false, /* false for dev */
+        "emitDecoratorMetadata":            true,
+        "experimentalDecorators":           true,
+        "forceConsistentCasingInFileNames": false, /* Conflicting with symlink */
+        "importHelpers":                    true,
+        "lib":                              ["esnext"],
+        "module":                           "esnext",
+        "moduleResolution":                 "node",
+        "noEmitHelpers":                    true,
+        "noEmitOnError":                    true,
+        "noImplicitAny":                    true,
+        "noImplicitReturns":                true,
+        "noImplicitThis":                   true,
+        "noUnusedLocals":                   true,
+        "sourceMap":                        true,
+        "strictFunctionTypes":              true,
+        "strictNullChecks":                 true,
+        "suppressImplicitAnyIndexErrors":   true,
+        "target":                           "esnext"
+    },
+    "exclude": ["../**/node_modules"]
 }

@@ -10,7 +10,7 @@ declare global
     }
 }
 
-Array.prototype.asEnumerable = function <T>(this: Array<T>)
+Array.prototype.asEnumerable = function asEnumerable<T>(this: Array<T>)
 {
     return Enumerable.from(this);
 };

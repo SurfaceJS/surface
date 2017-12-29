@@ -24,21 +24,21 @@ declare module "@surface/enumerable"
         /** Creates an List from a Enumerable<T>. */
         toList(): List<TSource>;
         /** Creates an Dictionary from a Enumerable<T>. */
-        toDictionary<TSource, TKey, TValue>(keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
+        toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
     }
 }
 
-Array.prototype.toList = function <T>(this: Array<T>)
+Array.prototype.toList = function toList<T>(this: Array<T>)
 {
     return new List(this);
 };
 
-Enumerable.prototype.toList = function<T>(this: Enumerable<T>)
+Enumerable.prototype.toList = function toList<T>(this: Enumerable<T>)
 {
     return new List(this);
 };
 
-Enumerable.prototype.toDictionary = function <TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>
+Enumerable.prototype.toDictionary = function toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>
 {
     return new Dictionary(this.select(x => new KeyValuePair(keySelector(x), valueSelector(x))).toArray());
 };

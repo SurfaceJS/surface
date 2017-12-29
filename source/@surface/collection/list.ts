@@ -63,20 +63,20 @@ export class List<TSource> extends Enumerable<TSource>
      * @param item Item to insert.
      * @param index Position from item to insert.
      */
-    public addAt(item: TSource, index): void;
+    public addAt(item: TSource, index: number): void;
     /**
      * Adds to the list the provided Array<TSource> object at specified index.
      * @param items Items to insert.
      * @param index Position from items to insert.
      */
-    public addAt(items: Array<TSource>, index): void;
+    public addAt(items: Array<TSource>, index: number): void;
     /**
      * Adds to the list the provided List<TSource> object at specified index.
      * @param items Items to insert.
      * @param index Position from items to insert.
      */
-    public addAt(items: List<TSource>, index): void;
-    public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index): void
+    public addAt(items: List<TSource>, index: number): void;
+    public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index: number): void
     {
         let left = this._source.splice(index + 1);
         if (Array.isArray(itemOrItems))

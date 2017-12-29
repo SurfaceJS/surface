@@ -2,8 +2,8 @@
 
 declare interface ShadyCSS
 {
-    prepareTemplate(template: HTMLTemplateElement, name: string, element?: string);
-    styleElement(element: HTMLElement);
+    prepareTemplate(template: HTMLTemplateElement, name: string, element?: string): void;
+    styleElement(element: HTMLElement): void;
 }
 
 declare interface Window

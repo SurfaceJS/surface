@@ -1,13 +1,12 @@
 import "@surface/reflection/extensions";
 
-import { ActionResult }          from "./action-result";
-import { Controller }            from "./controller";
-import { RequestHandler }        from "./request-handler";
-import { HttpContext }           from "./http-context";
-import { Router }                from "@surface/router/index";
+import { ActionResult }   from "./action-result";
+import { Controller }     from "./controller";
+import { RequestHandler } from "./request-handler";
+import { HttpContext }    from "./http-context";
+
+import { Router }                from "@surface/router";
 import { Constructor, Nullable } from "@surface/types";
-import * as fs                   from "fs";
-import * as path                 from "path";
 
 export class MvcRequestHandler extends RequestHandler
 {
@@ -23,6 +22,26 @@ export class MvcRequestHandler extends RequestHandler
         this._router = router;
     }
 
+    private getController(controller: string, filepath: string): Constructor<Controller>
+    {
+        let esmodule = require(filepath) as object;
+
+        let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
+            || esmodule.getType().extends(Controller) && esmodule
+            || esmodule.getType().equals(Object) && Object.keys(esmodule)
+                .asEnumerable()
+                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(Controller))
+                .select(x => esmodule[x])
+                .firstOrDefault();
+
+        if (constructor)
+        {
+            return constructor;
+        }
+
+        throw new TypeError("Can't find an valid subclass of Controller.");
+    }
+
     public handle(httpContext: HttpContext): boolean
     {
         if (httpContext.request.url)
@@ -34,52 +53,43 @@ export class MvcRequestHandler extends RequestHandler
                 const { controller, action, id } = routeData.params;
                 if (controller)
                 {
-                    let controllersPath = path.join(httpContext.host.root, "controllers");
+                    let controllersPath = this.path.join(httpContext.host.root, "controllers");
 
                     let filepath =
                     [
-                        path.join(controllersPath, `${controller}.js`),
-                        path.join(controllersPath, `${controller}controller.js`),
-                        path.join(controllersPath, `${controller}-controller.js`),
+                        this.path.join(controllersPath, `${controller}.js`),
+                        this.path.join(controllersPath, `${controller}controller.js`),
+                        this.path.join(controllersPath, `${controller}-controller.js`),
                     ]
                     .asEnumerable()
-                    .firstOrDefault(x => fs.existsSync(x));
+                    .firstOrDefault(x => this.fs.existsSync(x));
 
                     if (filepath)
                     {
-                        let esmodule = require(filepath) as object;
+                        let constructor = this.getController(controller, filepath);
 
-                        let controllerConstructor: Nullable<Constructor> = esmodule["default"] || esmodule.reflect()
-                            .getConstructors()
-                            .firstOrDefault(x => new RegExp(`^${controller}(controller)?$`, "i").test(x.name));
+                        let targetController = new constructor(httpContext);
 
-                        if (controllerConstructor && controllerConstructor.prototype instanceof Controller)
+                        let actionMethod = targetController.getType()
+                            .getMethods()
+                            .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
+
+                        if (actionMethod)
                         {
-                            let targetController = new controllerConstructor(httpContext);
+                            let actionResult: ActionResult;
 
-                            let actionMethod = targetController.reflect().getMethod(action);
-
-                            if (actionMethod)
+                            if (id)
                             {
-                                let actionResult: ActionResult;
-
-                                if (id)
-                                {
-                                    actionResult = actionMethod.call(targetController, { id });
-                                }
-                                else
-                                {
-                                    actionResult = actionMethod.call(targetController, routeData.search);
-                                }
-
-                                actionResult.executeResult();
-
-                                return true;
+                                actionResult = actionMethod.invoke.call(targetController, { id });
                             }
-                        }
-                        else
-                        {
-                            throw new TypeError("Constructor is not an valid subclass of @surface/web-host/controller.");
+                            else
+                            {
+                                actionResult = actionMethod.invoke.call(targetController, routeData.search);
+                            }
+
+                            actionResult.executeResult();
+
+                            return true;
                         }
                     }
                 }

@@ -85,7 +85,9 @@ class HtmlTemplatePlugin implements webPack.Plugin
                 for (let key in compilation.entrypoints)
                 {
                     let entry = compilation.entrypoints[key];
-                    let chunk = entry.chunks.filter(x => x.name == key)[0] || entry.chunks[0];
+                    let chunk = (entry.chunks as Array<{ id: string, name: string, files: Array<string> }>)
+                        .filter(x => x.name == key)[0]
+                        || entry.chunks[0];
 
                     let $module = Array.isArray(this.options.entry[key]) ?
                         self.getModuleName(entry.name) :
