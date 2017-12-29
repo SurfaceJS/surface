@@ -5,7 +5,7 @@ import { mymeType }       from "./variables";
 
 export class FallbackRequestHandler extends RequestHandler
 {
-    private _fallbackRoute: string;
+    private readonly _fallbackRoute: string;
     public get fallbackRoute(): string
     {
         return this._fallbackRoute;
@@ -19,7 +19,7 @@ export class FallbackRequestHandler extends RequestHandler
 
     public handle(httpContext: HttpContext): boolean
     {
-        let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this._fallbackRoute.replace(/^\/|\/$/g, ""));
+        let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this.fallbackRoute.replace(/^\/|\/$/g, ""));
 
         let targets =
         [

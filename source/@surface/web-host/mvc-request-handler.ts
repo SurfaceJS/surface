@@ -10,8 +10,8 @@ import { Constructor, Nullable } from "@surface/types";
 
 export class MvcRequestHandler extends RequestHandler
 {
-    private _router: Router;
-    protected get routes(): Router
+    private readonly _router: Router;
+    protected get router(): Router
     {
         return this._router;
     }
@@ -46,7 +46,7 @@ export class MvcRequestHandler extends RequestHandler
     {
         if (httpContext.request.url)
         {
-            let routeData = this._router.match(httpContext.request.url);
+            let routeData = this.router.match(httpContext.request.url);
 
             if (routeData)
             {

@@ -10,8 +10,8 @@ type Path = typeof internal.path;
 
 export abstract class RequestHandler
 {
-    protected fs:   FS;
-    protected path: Path;
+    protected readonly fs:   FS;
+    protected readonly path: Path;
 
     protected constructor();
     protected constructor(fs:  FS, path:  Path);

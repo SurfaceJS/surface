@@ -2,9 +2,14 @@ import { CustomElement } from "@surface/custom-element";
 
 export abstract class View extends CustomElement
 {
-    protected $name: string;
+    private _name: string = "";
     public get name(): string
     {
-        return this.$name;
+        return this._name;
+    }
+
+    public set name(value: string)
+    {
+        this._name = value;
     }
 }

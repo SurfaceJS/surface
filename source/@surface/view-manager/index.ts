@@ -17,23 +17,23 @@ export class ViewManager
         return this._instance;
     }
 
-    private _views:  Dictionary<string, View>;
-    private _router: Router;
+    private readonly moduleLoader: Func1<string, Promise<Object>>;
+    private readonly router:       Router;
+    private readonly views:        Dictionary<string, View>;
 
-    private _viewHost: ViewHost;
+    private readonly _viewHost: ViewHost;
     public get viewHost(): ViewHost
     {
         return this._viewHost;
     }
 
-    private _moduleLoader: Func1<string, Promise<Object>>;
-
     private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>)
     {
-        this._views        = new Dictionary<string, View>();
         this._viewHost     = viewHost;
-        this._router       = router;
-        this._moduleLoader = moduleLoader;
+        this.moduleLoader = moduleLoader;
+
+        this.views  = new Dictionary<string, View>();
+        this.router = router;
 
         window.onpopstate = async () => await this.routeTo(window.location.pathname + window.location.search);
     }
@@ -45,7 +45,7 @@ export class ViewManager
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        let esmodule = await this._moduleLoader(path);
+        let esmodule = await this.moduleLoader(path);
 
         let constructor: Nullable<Constructor<View>> = esmodule["default"]
             || esmodule.getType().extends(View) && esmodule
@@ -65,7 +65,7 @@ export class ViewManager
 
     public async routeTo(route: string): Promise<void>
     {
-        let routeData = this._router.match(route);
+        let routeData = this.router.match(route);
 
         if (routeData)
         {
@@ -79,13 +79,13 @@ export class ViewManager
                 path = `${path}/${action}`;
             }
 
-            if (!this._views.has(view))
+            if (!this.views.has(view))
             {
                 let viewConstructor = await this.getView(view, path);
-                this._views.set(view, new viewConstructor());
+                this.views.set(view, new viewConstructor());
             }
 
-            this._viewHost.view = this._views.get(view);
+            this._viewHost.view = this.views.get(view);
         }
         else
         {

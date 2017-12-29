@@ -8,7 +8,7 @@ import { Nullable }                 from "@surface/types";
 
 export abstract class MemberInfo
 {
-    protected _metadata: Dictionary;
+    protected _metadata: Nullable<Dictionary>;
     public get metadata(): Dictionary
     {
         return this._metadata = this._metadata ||
@@ -51,7 +51,7 @@ export class MethodInfo extends MemberInfo
         return this._isConstructor;
     }
 
-    private _parameters: Enumerable<ParameterInfo>;
+    private _parameters: Nullable<Enumerable<ParameterInfo>>;
     public get parameters(): Enumerable<ParameterInfo>
     {
         if (!this._parameters)
@@ -67,7 +67,12 @@ export class MethodInfo extends MemberInfo
                     .zip(paramTypes as Array<Object>, (a, b) => ({ key: a, paramType: b }) )
                     .select(x => new ParameterInfo(x.key, this.invoke, this.declaringType, x.paramType));
             }
+            else
+            {
+                this._parameters = Enumerable.empty()
+            }
         }
+
         return this._parameters;
     }
 
@@ -103,70 +108,55 @@ export class ParameterInfo extends MemberInfo
 
 export class PropertyInfo extends MemberInfo
 {
-    private _descriptor: PropertyDescriptor;
+    private descriptor: PropertyDescriptor;
 
     public get configurable(): boolean
     {
-        return !!this._descriptor.configurable;
+        return !!this.descriptor.configurable;
     }
 
     public get enumerable(): boolean
     {
-        return !!this._descriptor.enumerable;
+        return !!this.descriptor.enumerable;
     }
 
     public get getter(): Nullable<Function>
     {
-        return this._descriptor.get;
+        return this.descriptor.get;
     }
 
     public get readonly(): boolean
     {
-        return !this._descriptor.writable || (!!this._descriptor.get && !this._descriptor.set);
+        return !this.descriptor.writable || (!!this.descriptor.get && !this.descriptor.set);
     }
 
     public get setter(): Nullable<Function>
     {
-        return this._descriptor.set;
+        return this.descriptor.set;
     }
 
     public get value(): Nullable<Object>
     {
-        return this._descriptor.value;
+        return this.descriptor.value;
     }
 
     public constructor(key: string, proto: Object)
     {
         super(key, Type.from(proto));
-        this._descriptor = Object.getOwnPropertyDescriptor(proto, key) || { };
-    }
-}
-
-export class FieldInfo extends MemberInfo
-{
-    private _value: Nullable<Object>
-    public get value(): Nullable<Object>
-    {
-        return this._value;
-    }
-
-    public constructor(key: string, proto: Object)
-    {
-        super(key, Type.from(proto));
-        this._value = proto[key];
+        this.descriptor = Object.getOwnPropertyDescriptor(proto, key) || { };
     }
 }
 
 export class Type
 {
-    private _constructor: Function;
+    private readonly targetConstructor: Function;
 
     private _baseType: Nullable<Type>;
     public get baseType(): Nullable<Type>
     {
-        if (!this._baseType && (this._constructor as Object) != Object)
+        if (!this._baseType && (this.targetConstructor as Object) != Object)
         {
-            this._baseType = new Type(Reflect.getPrototypeOf(this._constructor.prototype)) as Nullable<Type>;
+            this._baseType = new Type(Reflect.getPrototypeOf(this.targetConstructor.prototype)) as Nullable<Type>;
         }
 
         return this._baseType;
@@ -174,37 +164,37 @@ export class Type
 
     public get extensible(): boolean
     {
-        return Object.isExtensible(this._constructor.prototype);
+        return Object.isExtensible(this.targetConstructor.prototype);
     }
 
     public get frozen(): boolean
     {
-        return Object.isFrozen(this._constructor.prototype);
+        return Object.isFrozen(this.targetConstructor.prototype);
     }
 
     public get sealed(): boolean
     {
-        return Object.isSealed(this._constructor.prototype);
+        return Object.isSealed(this.targetConstructor.prototype);
     }
 
-    protected _metadata: Dictionary;
+    protected _metadata: Nullable<Dictionary>;
     public get metadata(): Dictionary
     {
         return this._metadata = this._metadata ||
-            Reflect.getMetadataKeys(this._constructor)
+            Reflect.getMetadataKeys(this.targetConstructor)
                 .asEnumerable()
                 .cast<string>()
-                .toDictionary(x => x, x => Reflect.getMetadata(x, this._constructor));
+                .toDictionary(x => x, x => Reflect.getMetadata(x, this.targetConstructor));
     }
 
     public get name(): string
     {
-        return this._constructor.name;
+        return this.targetConstructor.name;
     }
 
     private constructor(target: Object)
     {
-        this._constructor = target.constructor;
+        this.targetConstructor = target.constructor;
     }
 
     public static from(target: Object)
@@ -219,7 +209,7 @@ export class Type
 
     private enumerateProtoChain(): Enumerable<KeyValuePair>
     {
-        let proto = this._constructor.prototype;
+        let proto = this.targetConstructor.prototype;
 
         let iterator = function*()
         {
@@ -249,10 +239,10 @@ export class Type
     {
         if (target instanceof Type)
         {
-            return this._constructor == target.getConstructor();
+            return this.targetConstructor == target.getConstructor();
         }
 
-        return this._constructor == target;
+        return this.targetConstructor == target;
     }
 
     public extends(target: Function): boolean;
@@ -274,7 +264,7 @@ export class Type
 
     public getConstructor(): Function
     {
-        return this._constructor;
+        return this.targetConstructor;
     }
 
     public getProperty(property: string): Nullable<PropertyInfo>
@@ -284,7 +274,7 @@ export class Type
 
     public getPrototype(): Object
     {
-        return this._constructor.prototype;
+        return this.targetConstructor.prototype;
     }
 
     public getMethod(key: string): Nullable<MethodInfo>
@@ -305,25 +295,5 @@ export class Type
         return this.enumerateProtoChain()
             .where(x => !(x.value[x.key] instanceof Function))
             .select(x => new PropertyInfo(x.key, x.value));
-    }
-
-    public getValue(property: string): Nullable<Object>
-    {
-        let context = this._constructor.prototype;
-
-        if (property.indexOf(".") > -1)
-        {
-            let childrens = property.split(".");
-            for (let child of childrens)
-            {
-                context = context[child];
-                if (!context)
-                {
-                    break;
-                }
-            }
-        }
-
-        return context;
     }
 }

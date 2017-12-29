@@ -17,10 +17,10 @@ export namespace CodeSplitter
 
 export class CodeSplitter
 {
-    private _context:  string;
-    private _entries:  Array<string>;
-    private _fileType: string;
-    private _output:   string;
+    private readonly context:  string;
+    private readonly entries:  Array<string>;
+    private readonly fileType: string;
+    private readonly output:   string;
 
     private constructor(options?: Partial<CodeSplitter.IOptions>)
     {
@@ -44,20 +44,20 @@ export class CodeSplitter
             throw new Error("Parameter \"options.output\" not specified.");
         }
 
-        this._context = path.isAbsolute(options.context) ? options.context : path.resolve(process.cwd(), options.context);
-        this._entries = options.entries;
-        this._output  = options.output;
+        this.context = path.isAbsolute(options.context) ? options.context : path.resolve(process.cwd(), options.context);
+        this.entries = options.entries;
+        this.output  = options.output;
 
-        let match = /\.[tj]s/.exec(this._output);
+        let match = /\.[tj]s/.exec(this.output);
 
         if (match)
         {
-            this._fileType = match[0];
+            this.fileType = match[0];
         }
         else
         {
-            this._output   = this._output + ".js";
-            this._fileType = ".js";
+            this.output   = this.output + ".js";
+            this.fileType = ".js";
         }
     }
 
@@ -139,9 +139,9 @@ export class CodeSplitter
             "",
             "/**",
             " * Requires the module of the specified path.",
-            ` * @param ${this._fileType == ".ts" ? "" : "{string} "}path Path to the module.${this._fileType == ".ts" ? "" : "\n * @returns {Promise}"}`,
+            ` * @param ${this.fileType == ".ts" ? "" : "{string} "}path Path to the module.${this.fileType == ".ts" ? "" : "\n * @returns {Promise}"}`,
             " */",
-            this._fileType == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
+            this.fileType == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
             "{",
             "    switch (path)",
             "    {",
@@ -152,26 +152,26 @@ export class CodeSplitter
 
     private execute()
     {
-        let output = this._output;
+        let output = this.output;
 
-        if (!this._context)
+        if (!this.context)
         {
             throw new Error("Context can\"t be null");
         }
 
-        output = path.resolve(this._context, output);
+        output = path.resolve(this.context, output);
 
         let content = "";
 
-        for (let entry of this._entries)
+        for (let entry of this.entries)
         {
-            let modulesPath = this.getModulesPath(path.resolve(this._context, entry));
+            let modulesPath = this.getModulesPath(path.resolve(this.context, entry));
 
             content = this.writeHeader() + "\n";
 
             for (let modulePath of modulesPath)
             {
-                content += this.writeEntry(this._context, output, modulePath) + "\n";
+                content += this.writeEntry(this.context, output, modulePath) + "\n";
             }
 
             content += this.writeFooter();
@@ -180,7 +180,7 @@ export class CodeSplitter
         common.makePath(path.dirname(output));
         fs.writeFileSync(output, content);
 
-        console.log(`Code split for the entries [${this._entries.reduce((a, b) => a + ", " + b)}] generated at ${output}`);
+        console.log(`Code split for the entries [${this.entries.reduce((a, b) => a + ", " + b)}] generated at ${output}`);
     }
 }
 

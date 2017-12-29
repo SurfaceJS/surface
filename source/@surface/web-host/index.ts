@@ -6,9 +6,12 @@ import { HttpContext }            from "./http-context";
 import { StaticRequestHandler }   from "./static-request-handler";
 import { MvcRequestHandler }      from "./mvc-request-handler";
 import { IStartup }               from "./types";
-import { List }                   from "@surface/collection/list";
-import { Router }                 from "@surface/router";
-import * as http                  from "http";
+
+import { List }     from "@surface/collection/list";
+import { Router }   from "@surface/router";
+import { Nullable } from "@surface/types";
+
+import * as http from "http";
 
 export class WebHost
 {
@@ -18,22 +21,22 @@ export class WebHost
         return this._instance;
     }
 
-    private _startup: IStartup;
-    private _handlers: List<RequestHandler>;
+    private readonly handlers: List<RequestHandler>;
+    private startup: Nullable<IStartup>;
 
-    private _port: number;
+    private readonly _port: number;
     public get port(): number
     {
         return this._port;
     }
 
-    private _root: string;
+    private readonly _root: string;
     public get root(): string
     {
         return this._root;
     }
 
-    private _wwwroot: string;
+    private readonly _wwwroot: string;
     public get wwwroot(): string
     {
         return this._wwwroot;
@@ -45,7 +48,7 @@ export class WebHost
         this._port    = configuration.port;
         this._wwwroot = configuration.wwwroot;
 
-        this._handlers = new List();
+        this.handlers = new List();
     }
 
     public static configure(configuration: Configuration): WebHost
@@ -59,20 +62,20 @@ export class WebHost
 
         try
         {
-            if (this._startup && this._startup.onBeginRequest)
+            if (this.startup && this.startup.onBeginRequest)
             {
-                this._startup.onBeginRequest(httpContext);
+                this.startup.onBeginRequest(httpContext);
             }
 
-            if (this._handlers.any(x => x.handle(httpContext)))
+            if (this.handlers.any(x => x.handle(httpContext)))
             {
                 response.writeHead(StatusCode.notFound, { "Content-Type": "text/plain" });
                 response.end("Resource not found.");
             }
 
-            if (this._startup && this._startup.onEndRequest)
+            if (this.startup && this.startup.onEndRequest)
             {
-                this._startup.onEndRequest(httpContext);
+                this.startup.onEndRequest(httpContext);
             }
         }
         catch (error)
@@ -80,44 +83,44 @@ export class WebHost
             response.writeHead(StatusCode.internalServerError, { "Content-Type": "text/plain" });
             response.end(error.message);
 
-            if (this._startup && this._startup.onError)
+            if (this.startup && this.startup.onError)
             {
-                this._startup.onError(error, httpContext);
+                this.startup.onError(error, httpContext);
             }
         }
     }
 
     public run(): void
     {
-        if (this._startup && this._startup.onStart)
+        if (this.startup && this.startup.onStart)
         {
-            this._startup.onStart();
+            this.startup.onStart();
         }
 
-        http.createServer(this.listener.bind(this)).listen(this._port);
+        http.createServer(this.listener.bind(this)).listen(this.port);
     }
 
     public useFallBack(fallbackRoute: string): WebHost
     {
-        this._handlers.add(new FallbackRequestHandler(fallbackRoute));
+        this.handlers.add(new FallbackRequestHandler(fallbackRoute));
         return this;
     }
 
     public useMvc(router: Router): WebHost
     {
-        this._handlers.add(new MvcRequestHandler(router));
+        this.handlers.add(new MvcRequestHandler(router));
         return this;
     }
 
     public useStatic(): WebHost
     {
-        this._handlers.add(new StaticRequestHandler());
+        this.handlers.add(new StaticRequestHandler());
         return this;
     }
 
     public useStartup<T extends IStartup>(startup: T): WebHost
     {
-        this._startup = startup;
+        this.startup = startup;
         return this;
     }
 }

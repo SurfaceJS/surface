@@ -25,7 +25,7 @@ export function element(name: string, template:  string, style:  string): ClassD
 export function element(name: string, template:  string, style:  string, options:  ElementDefinitionOptions): ClassDecorator;
 export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecorator
 {
-    return (target: Object) =>
+    return (target: Function) =>
     {
         if (isHTMLElement(target))
         {
@@ -49,7 +49,6 @@ export function element(name: string, template?: string, style?: string, options
                         window.ShadyCSS.prepareTemplate(templateElement, name, options && options.extends);
                     }
 
-                    Object.defineProperty(target.prototype, symbols.template, { get: () => templateElement } );
                     Object.defineProperty(target, symbols.template, { get: () => templateElement } );
                 }
                 else
@@ -67,12 +66,12 @@ export function element(name: string, template?: string, style?: string, options
     };
 }
 
-function isCustomElement(source: Object): source is typeof CustomElement
+function isCustomElement(source: Function): source is typeof CustomElement
 {
-    return source["prototype"] instanceof CustomElement;
+    return source.prototype instanceof CustomElement;
 }
 
-function isHTMLElement(source: Object): source is typeof HTMLElement
+function isHTMLElement(source: Function): source is typeof HTMLElement
 {
-    return source["prototype"] instanceof CustomElement;
+    return source.prototype instanceof CustomElement;
 }

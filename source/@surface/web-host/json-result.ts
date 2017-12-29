@@ -6,17 +6,18 @@ import { StatusCode }   from "./enums";
 
 export class JsonResult extends ActionResult
 {
-    private _data: Nullable<object>;
+    private readonly data: Nullable<object>;
+
     public constructor(httpContext: HttpContext, data: Nullable<object>)
     {
         super(httpContext);
-        this._data = data;
+        this.data = data;
     }
 
     public executeResult(): void
     {
         this.httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[".json"] });
-        this.httpContext.response.write(JSON.stringify(this._data));
+        this.httpContext.response.write(JSON.stringify(this.data));
         this.httpContext.response.end();
     }
 }

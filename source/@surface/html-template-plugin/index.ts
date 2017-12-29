@@ -14,8 +14,8 @@ namespace HtmlTemplatePlugin
 
 class HtmlTemplatePlugin implements webPack.Plugin
 {
-    private filename: Nullable<string>;
-    private template: string;
+    private readonly filename: Nullable<string>;
+    private readonly template: string;
 
     public constructor(options?: Partial<HtmlTemplatePlugin.IOptions>)
     {
@@ -69,6 +69,8 @@ class HtmlTemplatePlugin implements webPack.Plugin
     public apply (compiler: webPack.Compiler)
     {
         const self = this;
+        const filename = self.filename || "[name]/index.html";
+
         compiler.plugin
         (
             "emit",
@@ -79,8 +81,6 @@ class HtmlTemplatePlugin implements webPack.Plugin
                 {
                     throw new Error("Entry can\"t be null.");
                 }
-
-                self.filename = self.filename || "[name]/index.html";
 
                 for (let key in compilation.entrypoints)
                 {
@@ -111,7 +111,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
 
                     let html = self.templateParse(template, keys);
 
-                    let asset = self.filenameParse(self.filename, keys);
+                    let asset = self.filenameParse(filename, keys);
 
                     compilation.assets[asset] =
                     {
