@@ -8,8 +8,7 @@ import { View }          from "@surface/view";
 @element("surface-view-host", template)
 export class ViewHost extends CustomElement
 {
-    private _title: string;
-
+    private _title: string = "";
     public get title(): string
     {
         return this._title;
@@ -23,7 +22,7 @@ export class ViewHost extends CustomElement
     private _view:  Nullable<View>;
     public get view(): Nullable<View>
     {
-        if (this.shadowRoot && !this._view)
+        if (!this._view)
         {
             this._view = super.attach<View>(/^view-/);
         }
@@ -33,7 +32,7 @@ export class ViewHost extends CustomElement
 
     public set view(value: Nullable<View>)
     {
-        if (this.shadowRoot && value)
+        if (value)
         {
             if (this._view)
             {
@@ -46,6 +45,11 @@ export class ViewHost extends CustomElement
 
             this.title = value.name;
         }
+        else if (this._view)
+        {
+            this.removeChild(this._view);
+        }
+
         this._view = value;
     }
 }

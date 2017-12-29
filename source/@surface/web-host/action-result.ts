@@ -4,13 +4,13 @@ import { Nullable }    from "@surface/types";
 
 export abstract class ActionResult
 {
-    private _httpContext: HttpContext;
+    private readonly _httpContext: HttpContext;
     public get httpContext(): HttpContext
     {
         return this._httpContext;
     }
 
-    private _routeData: Nullable<Route.IData>;
+    private readonly _routeData: Nullable<Route.IData>;
     public get routeData(): Nullable<Route.IData>
     {
         return this._routeData;

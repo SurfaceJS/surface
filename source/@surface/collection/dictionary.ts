@@ -5,13 +5,13 @@ import { Nullable, ObjectLiteral } from "@surface/types";
 
 export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
-    private _source: Map<TKey, TValue>;
+    private source: Map<TKey, TValue>;
 
     public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>;
 
     public get size(): number
     {
-        return this._source.size;
+        return this.source.size;
     }
 
     public constructor();
@@ -35,12 +35,12 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
             }
         }
 
-        this._source = new Map();
-        keysValues.forEach(x => this._source.set(x.key, x.value));
+        this.source = new Map();
+        keysValues.forEach(x => this.source.set(x.key, x.value));
 
         this[Symbol.iterator] = function* getIterable(this: Dictionary<TKey, TValue>)
         {
-            for (const element of this._source)
+            for (const element of this.source)
             {
                 let [ key, value ] = element;
                 yield new KeyValuePair(key, value);
@@ -51,61 +51,42 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
 
     public delete(key: TKey): void
     {
-        this._source.delete(key);
+        this.source.delete(key);
     }
 
     public has(key: TKey): boolean
     {
-        return this._source.has(key);
+        return this.source.has(key);
     }
 
     public get(key: TKey): Nullable<TValue>
     {
-        return this._source.get(key);
+        return this.source.get(key);
     }
 
     public set(key: TKey, value: TValue): void
     {
-        this._source.set(key, value);
+        this.source.set(key, value);
     }
 }
 
-export class KeyValuePair<TKey, TValue>
+export class KeyValuePair<TKey = string, TValue = Object>
 {
-    private _key: TKey;
+    private readonly _key: TKey;
     public get key(): TKey
     {
         return this._key;
     }
 
-    public set key(value: TKey)
-    {
-        this._key = value;
-    }
-
-    private _value: TValue;
+    private readonly _value: TValue;
     public get value(): TValue
     {
         return this._value;
     }
 
-    public set value(value: TValue)
+    public constructor(key: TKey, value: TValue)
     {
+        this._key   = key;
         this._value = value;
-    }
-
-    public constructor();
-    public constructor(key: TKey, value: TValue);
-    public constructor(key?: TKey, value?: TValue)
-    {
-        if (key)
-        {
-            this._key = key;
-        }
-
-        if (value)
-        {
-            this._value = value;
-        }
     }
 }

@@ -7,7 +7,7 @@ import { Nullable }     from "@surface/types";
 
 export abstract class Controller
 {
-    private _httpContext: HttpContext;
+    private readonly _httpContext: HttpContext;
     public get httpContext(): HttpContext
     {
         return this._httpContext;
@@ -20,7 +20,7 @@ export abstract class Controller
 
     public json(data: Nullable<Object>): ActionResult
     {
-        return new JsonResult(this._httpContext, data);
+        return new JsonResult(this.httpContext, data);
     }
 
     public view(): ActionResult;
@@ -32,6 +32,6 @@ export abstract class Controller
 
         controllerName = controllerName.replace(/controller$/i, "");
 
-        return new ViewResult(this._httpContext, controllerName, viewName || "index", model, StatusCode.ok);
+        return new ViewResult(this.httpContext, controllerName, viewName || "index", model, StatusCode.ok);
     }
 }

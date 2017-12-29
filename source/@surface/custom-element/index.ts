@@ -2,49 +2,45 @@ import "./extensions";
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
 
-import { ElementBinder }      from "./element-binder";
-import { onAttributeChanged } from "./symbols";
+import { DataBind } from "./data-bind";
+import * as symbols from "./symbols";
 
 import { List }     from "@surface/collection";
 import { Nullable } from "@surface/types";
 
+const shadowRoot = Symbol.for("shadowRoot");
+
 export abstract class CustomElement extends HTMLElement
 {
-    private _template: Nullable<HTMLTemplateElement>;
-    public get template(): Nullable<HTMLTemplateElement>
-    {
-		return this._template;
-	}
+    public static readonly [symbols.observedAttributes]: Nullable<Array<string>>;
+    public static readonly [symbols.template]:           Nullable<HTMLTemplateElement>;
 
-    public set template(value: Nullable<HTMLTemplateElement>)
-    {
-		this._template = value;
-	}
+    protected readonly [shadowRoot]: ShadowRoot;
 
-    public constructor()
+    public [symbols.onAttributeChanged]: (attributeName: string, oldValue: string, newValue: string, namespace: string) => void;
+
+    protected constructor();
+    protected constructor(shadowRootInit: ShadowRootInit);
+    protected constructor(shadowRootInit?: ShadowRootInit)
     {
         super();
-        this.applyTemplate();
-    }
+        this[shadowRoot] = this.attachShadow(shadowRootInit || { mode: "closed" });
 
-    private applyTemplate(): void
-    {
         if (window.ShadyCSS)
         {
             window.ShadyCSS.styleElement(this);
         }
 
-        if (this._template)
-        {
-            let content = document.importNode(this._template.content, true);
-            this.applyDateBind(content);
-            this.attachShadow({ mode: "open" }).appendChild(content);
-        }
+        this.applyTemplate(this.constructor[symbols.template]);
     }
 
-    private applyDateBind(content: Node): void
+    private applyTemplate(template: HTMLTemplateElement): void
     {
-        new ElementBinder(this, content).bind();
+        let content = document.importNode(template.content, true);
+
+        DataBind.for(this, content);
+
+        this[shadowRoot].appendChild(content);
     }
 
     /** Called when the element is created or upgraded */
@@ -66,9 +62,9 @@ export abstract class CustomElement extends HTMLElement
             this.style[attributeName] = newValue;
         }
 
-        if (this[onAttributeChanged])
+        if (this[symbols.onAttributeChanged])
         {
-            this[onAttributeChanged](attributeName, oldValue, newValue, namespace);
+            this[symbols.onAttributeChanged](attributeName, oldValue, newValue, namespace);
         }
     }
 
@@ -100,50 +96,43 @@ export abstract class CustomElement extends HTMLElement
     public attachAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
     public attachAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
-        if (this.shadowRoot)
-        {
-            let slots = this.shadowRoot
-                .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");
+        let slots = this[shadowRoot]
+            .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");
 
-            if (slots.length > 0)
-            {
-                return slots.asEnumerable()
-                    .cast<HTMLSlotElement>()
-                    .select
-                    (
-                        slot => slot.assignedNodes()
-                            .asEnumerable()
-                            .cast<HTMLElement>()
-                            .where(x => x.nodeType != Node.TEXT_NODE)
-                            .where
-                            (
-                                x => selector instanceof RegExp ?
-                                    !!x.tagName.toLowerCase().match(selector) :
-                                    x.tagName.toLowerCase() == selector.toLowerCase()
-                            )
-                            .toArray()
-                    )
-                    .selectMany(x => x)
-                    .cast<T>()
-                    .toList();
-            }
-            else if (selector instanceof RegExp)
-            {
-                return this.shadowRoot.querySelectorAll("*")
-                    .asEnumerable()
-                    .cast<HTMLElement>()
-                    .where(x => !!x.tagName.toLowerCase().match(selector))
-                    .cast<T>()
-                    .toList();
-            }
-            else
-            {
-                return this.shadowRoot.querySelectorAll(selector).asEnumerable().cast<T>().toList();
-            }
+        if (slots.length > 0)
+        {
+            return slots.asEnumerable()
+                .cast<HTMLSlotElement>()
+                .select
+                (
+                    slot => slot.assignedNodes()
+                        .asEnumerable()
+                        .cast<HTMLElement>()
+                        .where(x => x.nodeType != Node.TEXT_NODE)
+                        .where
+                        (
+                            x => selector instanceof RegExp ?
+                                !!x.tagName.toLowerCase().match(selector) :
+                                x.tagName.toLowerCase() == selector.toLowerCase()
+                        )
+                        .toArray()
+                )
+                .selectMany(x => x)
+                .cast<T>()
+                .toList();
+        }
+        else if (selector instanceof RegExp)
+        {
+            return this[shadowRoot].querySelectorAll("*")
+                .asEnumerable()
+                .cast<HTMLElement>()
+                .where(x => !!x.tagName.toLowerCase().match(selector))
+                .cast<T>()
+                .toList();
         }
         else
         {
-            throw new Error("Element don\"t has shadowRoot");
+            return this[shadowRoot].querySelectorAll(selector).asEnumerable().cast<T>().toList();
         }
     }
 

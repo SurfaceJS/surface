@@ -1,15 +1,15 @@
-import { Reflection } from "./index";
+import { Type } from "./index";
 
 declare global
 {
     // tslint:disable-next-line:interface-name
     interface Object
     {
-        reflect<T>(this: T): Reflection<T>;
+        getType(this: Object): Type;
     }
 }
 
-Object.prototype.reflect = function <T>(this: T)
+Object.prototype.getType = function getType(this: Object): Type
 {
-    return Reflection.of(this);
+    return Type.from(this);
 };

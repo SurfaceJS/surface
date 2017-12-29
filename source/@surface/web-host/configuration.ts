@@ -1,18 +1,18 @@
 export class Configuration
 {
-    private _serverRoot: string;
+    private readonly _serverRoot: string;
     public get serverRoot(): string
     {
         return this._serverRoot;
     }
 
-    private _port : number;
+    private readonly _port : number;
     public get port() : number
     {
         return this._port;
     }
 
-    private _wwwroot: string;
+    private readonly _wwwroot: string;
     public get wwwroot(): string
     {
         return this._wwwroot;

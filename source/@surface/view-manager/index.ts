@@ -17,51 +17,55 @@ export class ViewManager
         return this._instance;
     }
 
-    private _views:  Dictionary<string, View>;
-    private _router: Router;
+    private readonly moduleLoader: Func1<string, Promise<Object>>;
+    private readonly router:       Router;
+    private readonly views:        Dictionary<string, View>;
 
-    private _viewHost: ViewHost;
+    private readonly _viewHost: ViewHost;
     public get viewHost(): ViewHost
     {
         return this._viewHost;
     }
 
-    private _moduleResolver: Func1<string, Promise<Object>>;
-
-    private constructor(viewHost: ViewHost, router: Router, moduleResolver: Func1<string, Promise<Object>>)
+    private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>)
     {
-        this._views          = new Dictionary<string, View>();
-        this._viewHost       = viewHost;
-        this._router         = router;
-        this._moduleResolver = moduleResolver;
+        this._viewHost     = viewHost;
+        this.moduleLoader = moduleLoader;
 
-        window.onpopstate = () => this.routeTo(window.location.pathname + window.location.search);
+        this.views  = new Dictionary<string, View>();
+        this.router = router;
+
+        window.onpopstate = async () => await this.routeTo(window.location.pathname + window.location.search);
     }
 
-    public static configure(viewHost: ViewHost, router: Router, moduleResolver: Func1<string, Promise<Object>>): ViewManager
+    public static configure(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>): ViewManager
     {
-        return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router, moduleResolver);
+        return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router, moduleLoader);
     }
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        let esmodule = await this._moduleResolver(path);
+        let esmodule = await this.moduleLoader(path);
 
-        let viewConstructor = esmodule["default"] as Nullable<Constructor> || esmodule.reflect()
-            .getConstructors()
-            .firstOrDefault(x => new RegExp(`^${view}(view)?$`, "i").test(x.name));
+        let constructor: Nullable<Constructor<View>> = esmodule["default"]
+            || esmodule.getType().extends(View) && esmodule
+            || esmodule.getType().equals(Object) && Object.keys(esmodule)
+                .asEnumerable()
+                .where(x => new RegExp(`^${view}(view)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(View))
+                .select(x => esmodule[x])
+                .firstOrDefault();
 
-        if (viewConstructor && viewConstructor.prototype instanceof View)
+        if (constructor)
         {
-            return viewConstructor as Constructor<View>;
+            return constructor;
         }
 
-        throw new TypeError("Constructor is not an valid subclass of @surface/view-handler/view.");
+        throw new TypeError("Can't find an valid subclass of View.");
     }
 
     public async routeTo(route: string): Promise<void>
     {
-        let routeData = this._router.match(route);
+        let routeData = this.router.match(route);
 
         if (routeData)
         {
@@ -75,13 +79,13 @@ export class ViewManager
                 path = `${path}/${action}`;
             }
 
-            if (!this._views.has(view))
+            if (!this.views.has(view))
             {
                 let viewConstructor = await this.getView(view, path);
-                this._views.set(view, new viewConstructor());
+                this.views.set(view, new viewConstructor());
             }
 
-            this._viewHost.view = this._views.get(view);
+            this._viewHost.view = this.views.get(view);
         }
         else
         {

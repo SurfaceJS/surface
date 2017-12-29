@@ -76,7 +76,8 @@ class SimblingPriorityPlugin implements webPack.Plugin
         resolver.plugin
         (
             "resolved",
-            function(request, callback)
+            // tslint:disable-next-line:no-any
+            function(request: any, callback: any)
             {
                 let target    = request.path;
                 let extension = path.parse(target).ext;
