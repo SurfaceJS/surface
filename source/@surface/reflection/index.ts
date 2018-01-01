@@ -2,9 +2,9 @@ import "reflect-metadata";
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
 
-import { KeyValuePair, Dictionary } from "@surface/collection";
-import { Enumerable }               from "@surface/enumerable";
-import { Nullable }                 from "@surface/types";
+import { Dictionary } from "@surface/collection";
+import { Enumerable } from "@surface/enumerable";
+import { Nullable }   from "@surface/types";
 
 export abstract class MemberInfo
 {
@@ -69,19 +69,19 @@ export class MethodInfo extends MemberInfo
             }
             else
             {
-                this._parameters = Enumerable.empty()
+                this._parameters = Enumerable.empty();
             }
         }
 
         return this._parameters;
     }
 
-    public constructor(key: string, proto: Object)
+    public constructor(key: string, invoke: Function, prototype: Object)
     {
-        super(key, Type.from(proto));
+        super(key, Type.from(prototype));
 
-        this._invoke        = proto[key];
-        this._isConstructor = !!this.invoke.prototype;
+        this._invoke        = invoke;
+        this._isConstructor = !!invoke.prototype;
     }
 }
 
@@ -106,9 +106,9 @@ export class ParameterInfo extends MemberInfo
     }
 }
 
-export class PropertyInfo extends MemberInfo
+export class FieldInfo extends MemberInfo
 {
-    private descriptor: PropertyDescriptor;
+    protected descriptor: PropertyDescriptor;
 
     public get configurable(): boolean
     {
@@ -120,19 +120,9 @@ export class PropertyInfo extends MemberInfo
         return !!this.descriptor.enumerable;
     }
 
-    public get getter(): Nullable<Function>
-    {
-        return this.descriptor.get;
-    }
-
     public get readonly(): boolean
     {
-        return !this.descriptor.writable || (!!this.descriptor.get && !this.descriptor.set);
-    }
-
-    public get setter(): Nullable<Function>
-    {
-        return this.descriptor.set;
+        return this.descriptor.writable == false;
     }
 
     public get value(): Nullable<Object>
@@ -140,10 +130,33 @@ export class PropertyInfo extends MemberInfo
         return this.descriptor.value;
     }
 
-    public constructor(key: string, proto: Object)
+    public constructor(key: string, descriptor: PropertyDescriptor, prototype: Object)
     {
-        super(key, Type.from(proto));
-        this.descriptor = Object.getOwnPropertyDescriptor(proto, key) || { };
+        super(key, Type.from(prototype));
+        this.descriptor = descriptor;
+    }
+}
+
+export class PropertyInfo extends FieldInfo
+{
+    public get getter(): Nullable<Function>
+    {
+        return this.descriptor.get;
+    }
+
+    public get readonly(): boolean
+    {
+        return super.readonly || (!!this.descriptor.get && !this.descriptor.set);
+    }
+
+    public get setter(): Nullable<Function>
+    {
+        return this.descriptor.set;
+    }
+    public constructor(key: string, descriptor: PropertyDescriptor, prototype: Object)
+    {
+        super(key, descriptor, prototype);
+        this.descriptor = descriptor;
     }
 }
 
@@ -207,28 +220,20 @@ export class Type
         return new Type(target.prototype);
     }
 
-    private enumerateProtoChain(): Enumerable<KeyValuePair>
+    private enumerateProtoChain(): Enumerable<{ key: string, descriptor: PropertyDescriptor, prototype: Object }>
     {
-        let proto = this.targetConstructor.prototype;
+        let prototype = this.targetConstructor.prototype;
 
         let iterator = function*()
         {
             do
             {
-                for (const key of Object.getOwnPropertyNames(proto))
+                for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(prototype)))
                 {
-                    try
-                    {
-                        proto[key];
-                        yield new KeyValuePair(key, proto);
-                    }
-                    catch (error)
-                    {
-                        continue;
-                    }
+                    yield { key, descriptor, prototype };
                 }
-            } while (proto = Object.getPrototypeOf(proto));
-        }
+            } while (prototype = Object.getPrototypeOf(prototype));
+        };
 
         return Enumerable.from(iterator());
     }
@@ -267,6 +272,13 @@ export class Type
         return this.targetConstructor;
     }
 
+    public getFields(): Enumerable<FieldInfo>
+    {
+        return this.enumerateProtoChain()
+            .where(x => !(x.descriptor.value instanceof Function) && !x.descriptor.get && !x.descriptor.set)
+            .select(x => new FieldInfo(x.key, x.descriptor, x.prototype));
+    }
+
     public getProperty(property: string): Nullable<PropertyInfo>
     {
         return this.getProperties().firstOrDefault(x => x.key == property);
@@ -286,14 +298,14 @@ export class Type
     public getMethods(): Enumerable<MethodInfo>
     {
         return this.enumerateProtoChain()
-            .where(x => x.value[x.key] instanceof Function)
-            .select(x => new MethodInfo(x.key, x.value));
+            .where(x => x.descriptor.value instanceof Function)
+            .select(x => new MethodInfo(x.key, x.descriptor.value, x.prototype));
     }
 
     public getProperties(): Enumerable<PropertyInfo>
     {
         return this.enumerateProtoChain()
-            .where(x => !(x.value[x.key] instanceof Function))
-            .select(x => new PropertyInfo(x.key, x.value));
+            .where(x => !(x.descriptor.value instanceof Function) && (!!x.descriptor.get || !!x.descriptor.set))
+            .select(x => new PropertyInfo(x.key, x.descriptor, x.prototype));
     }
 }

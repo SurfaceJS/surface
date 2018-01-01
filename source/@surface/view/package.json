@@ -4,7 +4,7 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/custom-element": "0.0.5",
+        "@surface/custom-element": "0.0.6",
         "@surface/reflection": "0.0.0",
         "@surface/types": "0.0.1",
         "@types/reflect-metadata": "0.0.5",
