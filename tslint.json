@@ -1,4 +1,5 @@
-{    
+{
+    "defaultSeverity": "warning",
     "rules":
     {
         "adjacent-overload-signatures":    true,
@@ -16,7 +17,7 @@
         "class-name":                      true,
         "completed-docs":
         [
-            true,
+            false, // For now
             {
                 "classes":    {"visibilities": ["exported"]},
                 "enums":      {"visibilities": ["exported"]},
@@ -71,7 +72,7 @@
         "no-angle-bracket-type-assertion": true,
         "no-any":                          true,
         "no-arg":                          true,
-        //"no-duplicate-imports":            true,
+        "no-duplicate-imports":            true,
         "no-duplicate-super":              true,
         "no-magic-numbers":                true,
         "no-mergeable-namespace":          true,

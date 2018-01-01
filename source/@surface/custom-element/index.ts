@@ -5,19 +5,20 @@ import "@surface/enumerable/extensions";
 import { DataBind } from "./data-bind";
 import * as symbols from "./symbols";
 
-import { List }     from "@surface/collection";
-import { Nullable } from "@surface/types";
+import { List } from "@surface/collection";
 
 const shadowRoot = Symbol.for("shadowRoot");
 
 export abstract class CustomElement extends HTMLElement
 {
+    /* Todo: Waiting support
     public static readonly [symbols.observedAttributes]: Nullable<Array<string>>;
     public static readonly [symbols.template]:           Nullable<HTMLTemplateElement>;
 
     protected readonly [shadowRoot]: ShadowRoot;
 
     public [symbols.onAttributeChanged]: (attributeName: string, oldValue: string, newValue: string, namespace: string) => void;
+    */
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);
@@ -96,7 +97,8 @@ export abstract class CustomElement extends HTMLElement
     public attachAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
     public attachAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
-        let slots = this[shadowRoot]
+        const root: ShadowRoot = this[shadowRoot];
+        let slots = root
             .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");
 
         if (slots.length > 0)
@@ -123,7 +125,7 @@ export abstract class CustomElement extends HTMLElement
         }
         else if (selector instanceof RegExp)
         {
-            return this[shadowRoot].querySelectorAll("*")
+            return root.querySelectorAll("*")
                 .asEnumerable()
                 .cast<HTMLElement>()
                 .where(x => !!x.tagName.toLowerCase().match(selector))
@@ -132,7 +134,7 @@ export abstract class CustomElement extends HTMLElement
         }
         else
         {
-            return this[shadowRoot].querySelectorAll(selector).asEnumerable().cast<T>().toList();
+            return root.querySelectorAll(selector).asEnumerable().cast<T>().toList();
         }
     }
 

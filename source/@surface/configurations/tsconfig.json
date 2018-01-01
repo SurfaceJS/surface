@@ -3,6 +3,7 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
+        "baseUrl":                          "../../",
         "declaration":                      false, /* false for dev */
         "emitDecoratorMetadata":            true,
         "experimentalDecorators":           true,
@@ -20,7 +21,7 @@
         "sourceMap":                        true,
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
-        "strictPropertyInitialization":     true,
+        //"strictPropertyInitialization":     true, Todo: Waiting support
         "suppressImplicitAnyIndexErrors":   true,
         "target":                           "esnext"
     },
