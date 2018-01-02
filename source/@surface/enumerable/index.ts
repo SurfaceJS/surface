@@ -234,6 +234,38 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
+     * Sorts the elements of a sequence in ascending order by using a specified comparer.
+     * @param keySelector A function to extract a key from an element.
+     */
+    public orderBy<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+    /**
+     * Sorts the elements of a sequence in ascending order by using a specified comparer.
+     * @param keySelector A function to extract a key from an element.
+     * @param comparer    A function to compare keys.
+     */
+    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>;
+    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>
+    {
+        return new OrderByIterator(this, keySelector, false, comparer || Comparer.default);
+    }
+
+    /**
+     * Sorts the elements of a sequence in descending order by using a specified comparer.
+     * @param keySelector A function to extract a key from an element.
+     */
+    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+    /**
+     * Sorts the elements of a sequence in descending order by using a specified comparer.
+     * @param keySelector A function to extract a key from an element.
+     * @param comparer    A function to compare keys.
+     */
+    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>;
+    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>
+    {
+        return new OrderByIterator(this, keySelector, true, comparer || Comparer.default);
+    }
+
+    /**
      * Projects each element of a sequence into a new form by incorporating the element"s index.
      * @param selector A transform function to apply to each source element; the second parameter of the function represents the index of the source element.
      */
@@ -333,6 +365,60 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 }
 
+abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
+{
+    /**
+     * Performs a subsequent ordering of the elements in a sequence in ascending order.
+     * @param keySelector A function to extract a key from an element.
+     */
+    public thenBy<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<TSource>;
+    /**
+     * Performs a subsequent ordering of the elements in a sequence in ascending order.
+     * @param keySelector A function to extract a key from an element.
+     * @param comparer    A function to compare keys.
+     */
+    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): Enumerable<TSource>;
+    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): Enumerable<TSource>
+    {
+        comparer = comparer || Comparer.default;
+        return new ThenByIterator(this, keySelector, false, comparer);
+    }
+
+    /**
+     * Performs a subsequent ordering of the elements in a sequence in descending order.
+     * @param keySelector A function to extract a key from an element.
+     */
+    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<TSource>;
+    /**
+     * Performs a subsequent ordering of the elements in a sequence in descending order.
+     * @param keySelector A function to extract a key from an element.
+     * @param comparer    A function to compare keys.
+     */
+    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): Enumerable<TSource>;
+    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): Enumerable<TSource>
+    {
+        comparer = comparer || Comparer.default;
+        return new ThenByIterator(this, keySelector, true, comparer);
+    }
+}
+
+class Comparer
+{
+    public static default<TKey>(left: TKey, right: TKey): number
+    {
+        if (left > right)
+        {
+            return 1;
+        }
+        else if (left < right)
+        {
+            return -1;
+        }
+
+        return 0;
+    }
+}
+
 class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
@@ -369,6 +455,150 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
             for (const element of source)
             {
                 yield element;
+            }
+        };
+    }
+}
+
+class EnumerableSorter<TElement, TKey>
+{
+    private comparer:    Func2<TKey, TKey, number>;
+    private descending:  boolean;
+    private keys:        Array<TKey>;
+    private keySelector: Func1<TElement, TKey>;
+    private next:        Nullable<EnumerableSorter<TElement, TKey>>;
+
+    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>, next: Nullable<EnumerableSorter<TElement, TKey>>)
+    {
+        this.comparer    = comparer;
+        this.descending  = descending;
+        this.keySelector = keySelector;
+        this.next        = next;
+
+        this.keys = [];
+    }
+
+    private compareKeys(left: number, right: number): number
+    {
+        let order = this.comparer(this.keys[left], this.keys[right]);
+
+        if (order == 0)
+        {
+            if (this.next)
+            {
+                return this.next.compareKeys(left, right);
+            }
+
+            return order;
+        }
+
+        if (this.descending)
+        {
+            return -order;
+        }
+
+        return order;
+    }
+
+    private computeKeys(elements: Array<TElement>): void
+    {
+        this.keys = elements.map(x => this.keySelector(x));
+
+        if (this.next)
+        {
+            this.next.computeKeys(elements);
+        }
+    }
+
+    private merge(left: Array<number>, right: Array<number>): Array<number>
+    {
+        let buffer: Array<number> = [];
+
+        let leftIndex  = 0;
+        let rightIndex = 0;
+
+        while (leftIndex < left.length && rightIndex < right.length)
+        {
+            if (this.compareKeys(left[leftIndex], right[rightIndex]) < 0)
+            {
+                buffer.push(left[leftIndex]);
+                leftIndex++;
+            }
+            else
+            {
+                buffer.push(right[rightIndex]);
+                rightIndex++;
+            }
+        }
+
+        while (leftIndex < left.length)
+        {
+            buffer.push(left[leftIndex]);
+            leftIndex++;
+        }
+
+        while (rightIndex < right.length)
+        {
+            buffer.push(right[rightIndex]);
+            rightIndex++;
+        }
+
+        return buffer;
+    }
+
+    private mergeSort(source: Array<number>): Array<number>
+    {
+        if (source.length > 1)
+        {
+            let middle = Math.floor(source.length / 2);
+
+            let left  = source.slice(0, middle);
+            let right = source.slice(middle);
+
+            left  = this.mergeSort(left);
+            right = this.mergeSort(right);
+
+            return this.merge(left, right);
+        }
+
+        return source;
+    }
+
+    public sort(elements: Array<TElement>): Array<number>
+    {
+        this.computeKeys(elements);
+        return this.mergeSort(this.keys.map((value, index) => index));
+    }
+}
+
+class OrderByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
+{
+    private _parentSorter: Nullable<EnumerableSorter<TSource, TKey>>;
+    public get parentSorter(): Nullable<EnumerableSorter<TSource, TKey>>
+    {
+        return this._parentSorter;
+    }
+
+    public set parentSorter(value: Nullable<EnumerableSorter<TSource, TKey>>)
+    {
+        this._parentSorter = value;
+    }
+
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>)
+    {
+        super();
+
+        this[Symbol.iterator] = function* ()
+        {
+            let buffer = Array.from(source);
+
+            let indexes = new EnumerableSorter(keySelector, descending, comparer, this.parentSorter).sort(buffer);
+
+            for (let index of indexes)
+            {
+                yield buffer[index];
             }
         };
     }
@@ -525,6 +755,32 @@ class TakeWhileIterator<TSource> extends Enumerable<TSource>
                 index++;
             }
         };
+    }
+}
+
+class ThenByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>)
+    {
+        super();
+
+        if (source instanceof OrderByIterator)
+        {
+            source.parentSorter = new EnumerableSorter(keySelector, descending, comparer, null);
+            this[Symbol.iterator] = function* ()
+            {
+                for (let element of source)
+                {
+                    yield element;
+                }
+            };
+        }
+        else
+        {
+            throw new TypeError("Iterable is not an valid instance of OrderByIterator");
+        }
     }
 }
 
