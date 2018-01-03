@@ -1,3 +1,7 @@
+import Comparer       from "./comparer";
+import ConcatIterator from "./internal/concat-iterator";
+import JoinIterator   from "./internal/join-iterator";
+
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
@@ -40,6 +44,36 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return true;
     }
 
+    /**
+     * Applies an accumulator function over a sequence.
+     * @param acumulator An accumulator function to be invoked on each element.
+     */
+    public aggregate(acumulator: Func2<TSource, TSource, TSource>): TSource;
+    /**
+     * Applies an accumulator function over a sequence.
+     * @param acumulator An accumulator function to be invoked on each element.
+     * @param seed       The initial accumulator value.
+     */
+    public aggregate(acumulator: Func2<TSource, TSource, TSource>, seed: TSource): TSource;
+    public aggregate(acumulator: Func2<TSource, TSource, TSource>, seed?: TSource): TSource
+    {
+        let acumulatted = seed;
+
+        for (const element of this)
+        {
+            if (acumulatted)
+            {
+                acumulatted = acumulator(acumulatted, element);
+            }
+            else
+            {
+                acumulatted = element;
+            }
+        }
+
+        return acumulatted as TSource;
+    }
+
     /** Determines whether a sequence contains any elements. */
     public any(): boolean;
     /**
@@ -71,6 +105,15 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public cast<T extends TSource>(): Enumerable<T>
     {
         return (this as Enumerable<TSource>) as Enumerable<T>;
+    }
+
+    /**
+     * Concatenate two sequences.
+     * @param sequence The sequence to concatenate to the first sequence.
+     */
+    public concat(sequence: Iterable<TSource>): Enumerable<TSource>
+    {
+        return Enumerable.from(new ConcatIterator(this, sequence));
     }
 
     /**
@@ -184,6 +227,28 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         }
     }
 
+    /**
+     * Correlates the elements of two sequences based on matching keys.
+     * @param inner             The sequence to join to the source sequence.
+     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
+     * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
+     * @param resultSelector    A function to create a result element from two matching elements.
+     */
+    public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>): Enumerable<TResult>;
+    /**
+     * Correlates the elements of two sequences based on matching keys. A specified IEqualityComparer<T> is used to compare keys.
+     * @param inner             The sequence to join to the source sequence.
+     * @param outterKeySelector A function to extract the join key from each element of the source sequence.
+     * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
+     * @param resultSelector    A function to create a result element from two matching elements.
+     * @param comparer          An Comparer<T> to hash and compare keys.
+     */
+    public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>, comparer: Comparer<TKey>): Enumerable<TResult>;
+    public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>, comparer?: Comparer<TKey>): Enumerable<TResult>
+    {
+        return Enumerable.from(new JoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer()));
+    }
+
     /** Returns the last element of a sequence. */
     public last(): TSource;
     /**
@@ -243,10 +308,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>;
-    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>
+    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Comparer<TKey>): OrderedEnumerable<TSource>;
+    public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Comparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new OrderByIterator(this, keySelector, false, comparer || Comparer.default);
+        return new OrderByIterator(this, keySelector, false, comparer || new Comparer());
     }
 
     /**
@@ -259,10 +324,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>;
-    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): OrderedEnumerable<TSource>
+    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Comparer<TKey>): OrderedEnumerable<TSource>;
+    public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Comparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new OrderByIterator(this, keySelector, true, comparer || Comparer.default);
+        return new OrderByIterator(this, keySelector, true, comparer || new Comparer());
     }
 
     /**
@@ -284,12 +349,12 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param collectionSelector A transform function to apply to each element of the input sequence.
      * @param selector           A transform function to apply to each element of the intermediate sequence.
      */
-    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector:  Func2<TCollection, number, TResult>): Enumerable<TResult>;
-    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector?: Func2<TCollection, number, TResult>): Enumerable<TResult>
+    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector:  Func3<TSource, TCollection, number, TResult>): Enumerable<TResult>;
+    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, selector?: Func3<TSource, TCollection, number, TResult>): Enumerable<TResult>
     {
         if (!selector)
         {
-            selector = x => x as Object as TResult;
+            selector = (x, y) => y as Object as TResult;
         }
 
         return new SelectManyIterator(this, collectionSelector, selector);
@@ -377,11 +442,10 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): Enumerable<TSource>;
-    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): Enumerable<TSource>
+    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: Comparer<TKey>): Enumerable<TSource>;
+    public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Comparer<TKey>): Enumerable<TSource>
     {
-        comparer = comparer || Comparer.default;
-        return new ThenByIterator(this, keySelector, false, comparer);
+        return new ThenByIterator(this, keySelector, false, comparer || new Comparer());
     }
 
     /**
@@ -394,28 +458,10 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      * @param comparer    A function to compare keys.
      */
-    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Func2<TKey, TKey, number>): Enumerable<TSource>;
-    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Func2<TKey, TKey, number>): Enumerable<TSource>
+    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: Comparer<TKey>): Enumerable<TSource>;
+    public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Comparer<TKey>): Enumerable<TSource>
     {
-        comparer = comparer || Comparer.default;
-        return new ThenByIterator(this, keySelector, true, comparer);
-    }
-}
-
-class Comparer
-{
-    public static default<TKey>(left: TKey, right: TKey): number
-    {
-        if (left > right)
-        {
-            return 1;
-        }
-        else if (left < right)
-        {
-            return -1;
-        }
-
-        return 0;
+        return new ThenByIterator(this, keySelector, true, comparer || new Comparer());
     }
 }
 
@@ -450,7 +496,7 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
     public constructor(source: Iterable<TSource>)
     {
         super();
-        this[Symbol.iterator] = function*()
+        this[Symbol.iterator] = function* ()
         {
             for (const element of source)
             {
@@ -462,13 +508,13 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
 
 class EnumerableSorter<TElement, TKey>
 {
-    private comparer:    Func2<TKey, TKey, number>;
+    private comparer:    Comparer<TKey>;
     private descending:  boolean;
     private keys:        Array<TKey>;
     private keySelector: Func1<TElement, TKey>;
     private next:        Nullable<EnumerableSorter<TElement, TKey>>;
 
-    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>, next: Nullable<EnumerableSorter<TElement, TKey>>)
+    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Comparer<TKey>, next: Nullable<EnumerableSorter<TElement, TKey>>)
     {
         this.comparer    = comparer;
         this.descending  = descending;
@@ -480,7 +526,7 @@ class EnumerableSorter<TElement, TKey>
 
     private compareKeys(left: number, right: number): number
     {
-        let order = this.comparer(this.keys[left], this.keys[right]);
+        let order = this.comparer.compare(this.keys[left], this.keys[right]);
 
         if (order == 0)
         {
@@ -550,7 +596,8 @@ class EnumerableSorter<TElement, TKey>
     {
         if (source.length > 1)
         {
-            let middle = Math.floor(source.length / 2);
+            const two = 2;
+            let middle = Math.floor(source.length / two);
 
             let left  = source.slice(0, middle);
             let right = source.slice(middle);
@@ -586,7 +633,7 @@ class OrderByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
 
     public [Symbol.iterator]: () => Iterator<TSource>;
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
         super();
 
@@ -626,7 +673,7 @@ class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResu
 {
     public [Symbol.iterator]: () => Iterator<TResult>;
 
-    public constructor(source: Iterable<TSource>, iterableSelector: Func1<TSource, Iterable<TCollection>>, selector: Func2<TCollection, number, TResult>)
+    public constructor(source: Iterable<TSource>, iterableSelector: Func1<TSource, Iterable<TCollection>>, selector: Func3<TSource, TCollection, number, TResult>)
     {
         super();
         this[Symbol.iterator] = function* ()
@@ -636,7 +683,7 @@ class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResu
             {
                 for (const iteration of iterableSelector(element))
                 {
-                    yield selector(iteration, index);
+                    yield selector(element, iteration, index);
                     index++;
                 }
             }
@@ -762,7 +809,7 @@ class ThenByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
 {
     public [Symbol.iterator]: () => Iterator<TSource>;
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Func2<TKey, TKey, number>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
         super();
 
@@ -822,3 +869,5 @@ class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
         };
     }
 }
+
+export default Enumerable;

@@ -1,4 +1,4 @@
-import { Enumerable } from "./index";
+import { Enumerable } from ".";
 
 declare global
 {
