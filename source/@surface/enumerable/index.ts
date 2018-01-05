@@ -1,6 +1,5 @@
-import Comparer       from "./comparer";
-import ConcatIterator from "./internal/concat-iterator";
-import JoinIterator   from "./internal/join-iterator";
+import Comparer from "./comparer";
+import Lookup   from "./internal/lookup";
 
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
 
@@ -113,7 +112,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public concat(sequence: Iterable<TSource>): Enumerable<TSource>
     {
-        return Enumerable.from(new ConcatIterator(this, sequence));
+        return Object.assign(new ConcatIterator(this, sequence), Enumerable.prototype);
     }
 
     /**
@@ -217,7 +216,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Performs the specified action on each element of the sequence by incorporating the element"s index.
      * @param action The Action2<TSource, number> delegate to perform on each element of the sequence.
      */
-    public forEach(action: Action2<TSource, number>)
+    public forEach(action: Action2<TSource, number>): void
     {
         let index = 0;
         for (const element of this)
@@ -225,6 +224,40 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
             action(element, index);
             index++;
         }
+    }
+
+    /**
+     * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group and its key.
+     * @param keySelector     A function to extract the key for each element.
+     */
+    public groupBy<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<{ key: TKey, elements: Iterable<TSource> }>;
+    /**
+     * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group and its key and the elements of each group are projected by using a specified element selector function.
+     * @param keySelector     A function to extract the key for each element.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     */
+    public groupBy<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>): Enumerable<{ key: TKey, elements: Iterable<TElement> }>;
+    /**
+     * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. The elements of each group are projected by using a specified element selector function.
+     * @param keySelector     A function to extract the key for each element.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     * @param resultSelector  A function to create a result value from each group.
+     */
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>): Enumerable<TResult>;
+    /**
+     * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. Key values are compared by using a specified comparer and the elements of each group are projected by using a specified element selector function.
+     * @param keySelector     A function to extract the key for each element.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     * @param resultSelector  A function to create a result value from each group.
+     * @param comparer        An Comparer<T> to hash and compare keys.
+     */
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: Comparer<TKey>): Enumerable<TResult>;
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector?: Func1<TSource, TElement>, resultSelector?: Func2<TKey, Iterable<TElement>, TResult>, comparer?: Comparer<TKey>): Enumerable<TResult>
+    {
+        elementSelector = elementSelector || (x => x as Object as TElement);
+        resultSelector  = resultSelector  || ((key, elements) => ({ key, elements }) as Object as TResult);
+
+        return new GroupByIterator(this, keySelector, elementSelector, resultSelector, comparer || new Comparer());
     }
 
     /**
@@ -430,6 +463,8 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 }
 
+export default Enumerable;
+
 abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
 {
     /**
@@ -462,6 +497,28 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
     public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: Comparer<TKey>): Enumerable<TSource>
     {
         return new ThenByIterator(this, keySelector, true, comparer || new Comparer());
+    }
+}
+
+class ConcatIterator<TSource> extends Enumerable<TSource>
+{
+    public [Symbol.iterator]: () => Iterator<TSource>;
+
+    public constructor(source: Iterable<TSource>, sequence: Iterable<TSource>)
+    {
+        super();
+        this[Symbol.iterator] = function* ()
+        {
+            for (const element of source)
+            {
+                yield element;
+            }
+
+            for (const element of sequence)
+            {
+                yield element;
+            }
+        };
     }
 }
 
@@ -615,6 +672,49 @@ class EnumerableSorter<TElement, TKey>
     {
         this.computeKeys(elements);
         return this.mergeSort(this.keys.map((value, index) => index));
+    }
+}
+
+class GroupByIterator<TSource, TKey, TElement, TResult> extends Enumerable<TResult>
+{
+    public [Symbol.iterator]: () => Iterator<TResult>;
+
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: Comparer<TKey>)
+    {
+        super();
+        this[Symbol.iterator] = function* ()
+        {
+            const lookup = new Lookup(source, keySelector, x => x as Object as TElement, resultSelector, comparer);
+            for (const element of lookup)
+            {
+                yield element;
+            }
+        };
+    }
+}
+
+class JoinIterator<TOutter, TInner, TKey, TResult> implements Iterable<TResult>
+{
+    public [Symbol.iterator]: () => Iterator<TResult>;
+
+    public constructor(outter: Iterable<TOutter>, inner: Iterable<TInner>, outterKeySelector: Func1<TOutter, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TOutter, TInner, TResult>, comparer: Comparer<TKey>)
+    {
+        this[Symbol.iterator] = function* ()
+        {
+            const lookup = new Lookup(inner, innerKeySelector, x => x, x => x, comparer);
+            for (const element of outter)
+            {
+                const group = lookup.get(outterKeySelector(element));
+
+                if (group)
+                {
+                    for (const iterator of group)
+                    {
+                        yield resultSelector(element, iterator);
+                    }
+                }
+            }
+        };
     }
 }
 
@@ -869,5 +969,3 @@ class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
         };
     }
 }
-
-export default Enumerable;

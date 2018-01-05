@@ -14,12 +14,12 @@ export default class HashEncode
     {
         const initialValue = 7;
         const max          = 0x7FFFFFFF;
-        const bits         = 31;
+        const shift        = 5;
 
         source = typeof source == "object" ? source : { value: source };
 
         let signature = HashEncode.getSignature(source);
 
-        return (signature + "").split("").reduce((memo, item) => (memo * bits * item.charCodeAt(0)) % max, initialValue);
+        return (signature + "").split("").reduce((previous, current) => (previous * current.charCodeAt(0) << shift) % max, initialValue);
     }
 }
