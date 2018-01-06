@@ -28,17 +28,17 @@ declare module "@surface/enumerable"
     }
 }
 
-Array.prototype.toList = function toList<T>(this: Array<T>)
+Array.prototype.toList = Array.prototype.toList || function toList<T>(this: Array<T>)
 {
     return new List(this);
 };
 
-Enumerable.prototype.toList = function toList<T>(this: Enumerable<T>)
+Enumerable.prototype.toList = Enumerable.prototype.toList || function toList<T>(this: Enumerable<T>)
 {
     return new List(this);
 };
 
-Enumerable.prototype.toDictionary = function toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>
+Enumerable.prototype.toDictionary = Enumerable.prototype.toDictionary || function toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>
 {
     return new Dictionary(this.select(x => new KeyValuePair(keySelector(x), valueSelector(x))).toArray());
 };

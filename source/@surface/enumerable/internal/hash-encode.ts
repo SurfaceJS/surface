@@ -16,9 +16,7 @@ export default class HashEncode
         const max          = 0x7FFFFFFF;
         const shift        = 5;
 
-        source = typeof source == "object" ? source : { value: source };
-
-        let signature = HashEncode.getSignature(source);
+        let signature = source == "object" ? HashEncode.getSignature(source) : source.toString();
 
         return (signature + "").split("").reduce((previous, current) => (previous * current.charCodeAt(0) << shift) % max, initialValue);
     }

@@ -91,13 +91,51 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
             sequence = sequence.where(predicate);
         }
 
-        for (let element of sequence)
+        for (const element of sequence)
         {
             hasAny = element == element;
             break;
         }
 
         return hasAny;
+    }
+
+    /**
+     * Computes the average of a sequence of numeric values.
+     */
+    public average(): number;
+    /**
+     * Computes the average of a sequence of numeric values.
+     * @param selector A transform function to apply to each element.
+     */
+    public average(selector: Func1<TSource, number>): number;
+    public average(selector?: Func1<TSource, number>): number
+    {
+        if (selector)
+        {
+            return this.select(selector).average();
+        }
+
+        let current = 0;
+        let count   = 0;
+
+        for (const element of this)
+        {
+            if (!(typeof element == "number"))
+            {
+                throw new TypeError("Element isn't not a number.");
+            }
+
+            current += element;
+            count++;
+        }
+
+        if (count > 0)
+        {
+            return current / count;
+        }
+
+        return 0;
     }
 
     /** Casts the elements of an IEnumerable to the specified type. Note that no type checking is performed at runtime. */
@@ -112,7 +150,30 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public concat(sequence: Iterable<TSource>): Enumerable<TSource>
     {
-        return Object.assign(new ConcatIterator(this, sequence), Enumerable.prototype);
+        return new ConcatIterator(this, sequence);
+    }
+
+    /**
+     * Returns the number of elements in a sequence.
+     */
+    public count(): number;
+    /**
+     * Returns a number that represents how many elements in the specified sequence satisfy a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public count(predicate: Func1<TSource, boolean>): number;
+    public count(predicate?: Func1<TSource, boolean>): number
+    {
+        if (predicate)
+        {
+            return this.where(predicate).count();
+        }
+
+        let count = 0;
+
+        this.forEach(() => count++);
+
+        return count;
     }
 
     /**
@@ -230,20 +291,20 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group and its key.
      * @param keySelector     A function to extract the key for each element.
      */
-    public groupBy<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<{ key: TKey, elements: Iterable<TSource> }>;
+    public groupBy<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<{ key: TKey, elements: Enumerable<TSource> }>;
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group and its key and the elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
      * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
      */
-    public groupBy<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>): Enumerable<{ key: TKey, elements: Iterable<TElement> }>;
+    public groupBy<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>): Enumerable<{ key: TKey, elements: Enumerable<TElement> }>;
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. The elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
      * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
      * @param resultSelector  A function to create a result value from each group.
      */
-    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>): Enumerable<TResult>;
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>): Enumerable<TResult>;
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. Key values are compared by using a specified comparer and the elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
@@ -251,8 +312,8 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param resultSelector  A function to create a result value from each group.
      * @param comparer        An Comparer<T> to hash and compare keys.
      */
-    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: Comparer<TKey>): Enumerable<TResult>;
-    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector?: Func1<TSource, TElement>, resultSelector?: Func2<TKey, Iterable<TElement>, TResult>, comparer?: Comparer<TKey>): Enumerable<TResult>
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>): Enumerable<TResult>;
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector?: Func1<TSource, TElement>, resultSelector?: Func2<TKey, Enumerable<TElement>, TResult>, comparer?: Comparer<TKey>): Enumerable<TResult>
     {
         elementSelector = elementSelector || (x => x as Object as TElement);
         resultSelector  = resultSelector  || ((key, elements) => ({ key, elements }) as Object as TResult);
@@ -323,12 +384,88 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         let current: Nullable<TSource> = null;
 
-        for (let element of this)
+        for (const element of this)
         {
             current = element;
         }
 
         return current;
+    }
+
+    /**
+     * Computes the max of a sequence of numeric values.
+     */
+    public max(): number;
+    /**
+     * Computes the max of a sequence of numeric values.
+     * @param selector A transform function to apply to each element.
+     */
+    public max(selector: Func1<TSource, number>): number;
+    public max(selector?: Func1<TSource, number>): number
+    {
+        if (selector)
+        {
+            return this.select(selector).max();
+        }
+
+        let max: Nullable<number> = null;
+
+        for (const element of this)
+        {
+            if (!(typeof element == "number"))
+            {
+                throw new TypeError("Element isn't a number.");
+            }
+
+            if (!max)
+            {
+                max = element;
+            }
+            else if (element > max)
+            {
+                max = element;
+            }
+        }
+
+        return max || 0;
+    }
+
+    /**
+     * Computes the min of a sequence of numeric values.
+     */
+    public min(): number;
+    /**
+     * Computes the min of a sequence of numeric values.
+     * @param selector A transform function to apply to each element.
+     */
+    public min(selector: Func1<TSource, number>): number;
+    public min(selector?: Func1<TSource, number>): number
+    {
+        if (selector)
+        {
+            return this.select(selector).max();
+        }
+
+        let min: Nullable<number> = null;
+
+        for (const element of this)
+        {
+            if (!(typeof element == "number"))
+            {
+                throw new TypeError("Element isn't a number.");
+            }
+
+            if (!min)
+            {
+                min = element;
+            }
+            else if (element < min)
+            {
+                min = element;
+            }
+        }
+
+        return min || 0;
     }
 
     /**
@@ -435,7 +572,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         let values: Array<TSource> = [];
 
-        for (let element of this)
+        for (const element of this)
         {
             values.push(element);
         }
@@ -679,12 +816,12 @@ class GroupByIterator<TSource, TKey, TElement, TResult> extends Enumerable<TResu
 {
     public [Symbol.iterator]: () => Iterator<TResult>;
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: Comparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>)
     {
         super();
         this[Symbol.iterator] = function* ()
         {
-            const lookup = new Lookup(source, keySelector, x => x as Object as TElement, resultSelector, comparer);
+            const lookup = new Lookup(source, keySelector, elementSelector, resultSelector, comparer);
             for (const element of lookup)
             {
                 yield element;
@@ -743,7 +880,7 @@ class OrderByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
 
             let indexes = new EnumerableSorter(keySelector, descending, comparer, this.parentSorter).sort(buffer);
 
-            for (let index of indexes)
+            for (const index of indexes)
             {
                 yield buffer[index];
             }
@@ -918,7 +1055,7 @@ class ThenByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
             source.parentSorter = new EnumerableSorter(keySelector, descending, comparer, null);
             this[Symbol.iterator] = function* ()
             {
-                for (let element of source)
+                for (const element of source)
                 {
                     yield element;
                 }

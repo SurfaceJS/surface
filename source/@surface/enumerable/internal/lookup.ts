@@ -20,7 +20,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
 
     public [Symbol.iterator]: () => Iterator<TResult>;
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: Comparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>)
     {
         const initialSize = 7;
 
@@ -36,7 +36,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
             {
                 if (current = current && current.next)
                 {
-                    yield resultSelector(current.key, current.elements);
+                    yield resultSelector(current.key, Enumerable.from(current.elements));
                 }
             }
             while(current != this.lastGroup);
@@ -125,10 +125,14 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         this.groups = buffer;
     }
 
+    public contains(key: TKey): boolean
+    {
+        return !!this.getGroup(key, HashEncode.getHashCode(key));
+    }
+
     public get(key: TKey): Enumerable<TElement>
     {
-        const hash  = HashEncode.getHashCode(key);
-        const group = this.getGroup(key, hash);
+        const group = this.getGroup(key, HashEncode.getHashCode(key));
 
         if (group)
         {
