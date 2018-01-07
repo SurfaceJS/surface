@@ -69,7 +69,7 @@ export class Route
                 .forEach(x => search && (search[x[0]] = x[1]));
         }
 
-        if (this._expression.test(route))
+        if (this._expression.test(path))
         {
             let keys = this._expression.exec(this._pattern);
 
@@ -80,7 +80,7 @@ export class Route
             if (keys && values)
             {
                 Array.from(keys).asEnumerable()
-                    .zip(Array.from(values), (key, value) => ({ key, value }))
+                    .zip(values, (key, value) => ({ key, value }))
                     .skip(1)
                     .forEach
                     (

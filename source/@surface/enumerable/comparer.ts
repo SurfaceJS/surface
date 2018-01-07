@@ -31,6 +31,6 @@ export default class Comparer<TKey>
             return Object.is(left, right);
         }
 
-        return left == right;
+        return left === right;
     }
 }
