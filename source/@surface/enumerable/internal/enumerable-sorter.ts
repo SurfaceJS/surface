@@ -20,7 +20,7 @@ export default class EnumerableSorter<TElement, TKey>
         this._next = value;
     }
 
-    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Comparer<TKey>, next: Nullable<EnumerableSorter<TElement, TKey>>)
+    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Comparer<TKey>, next?: Nullable<EnumerableSorter<TElement, TKey>>)
     {
         this.comparer    = comparer;
         this.descending  = descending;
@@ -40,8 +40,6 @@ export default class EnumerableSorter<TElement, TKey>
             {
                 return this.next.compareKeys(left, right);
             }
-
-            return order;
         }
 
         if (this.descending)

@@ -1,11 +1,8 @@
 import { Enumerable } from "@surface/enumerable";
-import { Nullable }   from "@surface/types";
 
 export class List<TSource> extends Enumerable<TSource>
 {
     private source: Array<TSource>;
-
-    public [Symbol.iterator]: () => Iterator<TSource>;
 
     /** Returns Length of the list. */
     public get length(): number
@@ -37,16 +34,14 @@ export class List<TSource> extends Enumerable<TSource>
         {
             this.source = [];
         }
+    }
 
-        let self = this;
-
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        for (const element of this.source)
         {
-            for (const item of self.source)
-            {
-                yield item;
-            }
-        };
+            yield element;
+        }
     }
 
     /**
@@ -78,21 +73,19 @@ export class List<TSource> extends Enumerable<TSource>
     public addAt(items: List<TSource>, index: number): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index: number): void
     {
-        let left = this.source.splice(index + 1);
+        const remaining = this.source.splice(index + 1);
+
         if (Array.isArray(itemOrItems))
         {
-            let items = itemOrItems;
-            this.source = this.source.concat(items).concat(left);
+            this.source = this.source.concat(itemOrItems).concat(remaining);
         }
         else if (itemOrItems instanceof List)
         {
-            let items = Array.from(itemOrItems);
-            this.source = this.source.concat(items).concat(left);
+            this.source = this.source.concat(itemOrItems.toArray()).concat(remaining);
         }
         else
         {
-            let item = itemOrItems;
-            this.source = this.source.concat([item]).concat(left);
+            this.source = this.source.concat([itemOrItems]).concat(remaining);
         }
     }
 
@@ -114,19 +107,13 @@ export class List<TSource> extends Enumerable<TSource>
     public remove(index: number, count: number): void;
     public remove(indexOritem: number|TSource, count?: number): void
     {
-        let index: number            = 0;
-        let item:  Nullable<TSource> = null;
-
         if (typeof indexOritem == "number")
         {
-            index = indexOritem;
-            this.source.splice(index, count || 1);
+            this.source.splice(indexOritem, count || 1);
         }
         else
         {
-            item = indexOritem;
-            index = this.source.findIndex(x => Object.is(x, item));
-            this.source.splice(index, 1);
+            this.source.splice(this.source.findIndex(x => Object.is(x, indexOritem)), 1);
         }
     }
 

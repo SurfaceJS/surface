@@ -13,8 +13,6 @@ export interface IGroup<TElement, TKey>
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
-    public abstract [Symbol.iterator]: () => Iterator<TSource>;
-
     public static empty<T>(): Enumerable<T>
     {
         return new EnumerableIterator(new Array());
@@ -33,6 +31,8 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         return this[Symbol.iterator]().next().value;
     }
+
+    public abstract [Symbol.iterator](): Iterator<TSource>;
 
     /**
      * Determines whether all elements of a sequence satisfy a condition.
@@ -608,14 +608,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /** Creates an array from a Enumerable<T>. */
     public toArray(): Array<TSource>
     {
-        let values: Array<TSource> = [];
-
-        for (const element of this)
-        {
-            values.push(element);
-        }
-
-        return values;
+        return Array.from(this);
     }
 
     /**
@@ -642,8 +635,7 @@ export default Enumerable;
 
 abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
 {
-    private readonly enumerableSorter: EnumerableSorter<TSource, Object>;
-
+    private enumerableSorter: EnumerableSorter<TSource, Object>;
     private _parent: Nullable<OrderedEnumerable<TSource>>;
     public get parent(): Nullable<OrderedEnumerable<TSource>>
     {
@@ -655,12 +647,10 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
         this._parent = value;
     }
 
-    // tslint:disable-next-line:no-any
-    public constructor(enumerableSorter: EnumerableSorter<TSource, Object>)
+    public constructor(keySelector: Func1<TSource, Object>, descending: boolean, comparer: Comparer<Object>)
     {
         super();
-
-        this.enumerableSorter = enumerableSorter;
+        this.enumerableSorter = new EnumerableSorter(keySelector, descending, comparer);
     }
 
     public getSorter<TKey>(): EnumerableSorter<TSource, TKey>
@@ -708,70 +698,64 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
 
 class ConcatIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, sequence: Iterable<TSource>)
+    public constructor(private source: Iterable<TSource>, private sequence: Iterable<TSource>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        for (const element of this.source)
         {
-            for (const element of source)
-            {
-                yield element;
-            }
+            yield element;
+        }
 
-            for (const element of sequence)
-            {
-                yield element;
-            }
-        };
+        for (const element of this.sequence)
+        {
+            yield element;
+        }
     }
 }
 
 class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, defaultValue: TSource)
+    public constructor(private source: Iterable<TSource>, private defaultValue: TSource)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function*()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        let index = 0;
+        for (const element of this.source)
         {
-            let index = 0;
-            for (const element of source)
-            {
-                index++;
-                yield element;
-            }
+            index++;
+            yield element;
+        }
 
-            if (index == 0)
-            {
-                yield defaultValue;
-            }
-        };
+        if (index == 0)
+        {
+            yield this.defaultValue;
+        }
     }
 }
 
 class DistinctIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, comparer: Comparer<TSource>)
+    public constructor(private source: Iterable<TSource>, private comparer: Comparer<TSource>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        const set = new Set(this.comparer);
+
+        for (const element of this.source)
         {
-            const set = new Set(comparer);
-
-            for (const element of source)
+            if (set.add(element))
             {
-                if (set.add(element))
-                {
-                    yield element;
-                }
+                yield element;
             }
         }
     }
@@ -779,334 +763,304 @@ class DistinctIterator<TSource> extends Enumerable<TSource>
 
 class EnumerableIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>)
+    public constructor(private source: Iterable<TSource>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        for (const element of this.source)
         {
-            for (const element of source)
-            {
-                yield element;
-            }
-        };
+            yield element;
+        }
     }
 }
 
 class ExceptIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, second: Iterable<TSource>, comparer: Comparer<TSource>)
+    public constructor(private source: Iterable<TSource>, private second: Iterable<TSource>, private comparer: Comparer<TSource>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        const set = Set.from(this.second, this.comparer);
+
+        for (const element of this.source)
         {
-            const set = Set.from(second, comparer);
-
-            for (const element of source)
+            if (set.add(element))
             {
-                if (set.add(element))
-                {
-                    yield element;
-                }
+                yield element;
             }
-        };
+        }
     }
 }
 
 class GroupByIterator<TSource, TKey, TElement, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>)
+    public constructor(private source: Iterable<TSource>, private keySelector: Func1<TSource, TKey>, private elementSelector: Func1<TSource, TElement>, private resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, private comparer: Comparer<TKey>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        const lookup = new Lookup(this.source, this.keySelector, this.elementSelector, this.resultSelector, this.comparer);
+        for (const element of lookup)
         {
-            const lookup = new Lookup(source, keySelector, elementSelector, resultSelector, comparer);
-            for (const element of lookup)
-            {
-                yield element;
-            }
-        };
+            yield element;
+        }
     }
 }
 
 class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
-    public constructor(outter: Iterable<TOutter>, inner: Iterable<TInner>, outterKeySelector: Func1<TOutter, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TOutter, TInner, TResult>, comparer: Comparer<TKey>)
+    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<TOutter, TInner, TResult>, private comparer: Comparer<TKey>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, x => x, this.comparer);
+
+        for (const element of this.outter)
         {
-            const lookup = new Lookup(inner, innerKeySelector, x => x, x => x, comparer);
+            const group = lookup.get(this.outterKeySelector(element));
 
-            for (const element of outter)
+            if (group)
             {
-                const group = lookup.get(outterKeySelector(element));
-
-                if (group)
+                for (const iterator of group)
                 {
-                    for (const iterator of group)
-                    {
-                        yield resultSelector(element, iterator);
-                    }
+                    yield this.resultSelector(element, iterator);
                 }
             }
-        };
+        }
     }
 }
 
 class OrderByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
+    public constructor(private source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
-        super(new EnumerableSorter(keySelector, descending, comparer, null));
+        super(keySelector, descending, comparer);
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        let buffer = Array.from(this.source);
+
+        let indexes = this.getSorter().sort(buffer);
+
+        for (const index of indexes)
         {
-            let buffer = Array.from(source);
-
-            let indexes = this.getSorter().sort(buffer);
-
-            for (const index of indexes)
-            {
-                yield buffer[index];
-            }
-        };
+            yield buffer[index];
+        }
     }
 }
 
 class SelectIterator<TSource, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
-    public constructor(source: Iterable<TSource>, selector: Func2<TSource, number, TResult>)
+    public constructor(private source: Iterable<TSource>, private selector: Func2<TSource, number, TResult>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        let index = 0;
+        for (const element of this.source)
         {
-            let index = 0;
-            for (const element of source)
-            {
-                yield selector(element, index++);
-            }
-        };
+            yield this.selector(element, index++);
+        }
     }
 }
 
 class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
-    public constructor(source: Iterable<TSource>, iterableSelector: Func1<TSource, Iterable<TCollection>>, selector: Func3<TSource, TCollection, number, TResult>)
+    public constructor(private source: Iterable<TSource>, private iterableSelector: Func1<TSource, Iterable<TCollection>>, private selector: Func3<TSource, TCollection, number, TResult>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        let index = 0;
+        for (const element of this.source)
         {
-            let index = 0;
-            for (const element of source)
+            for (const iteration of this.iterableSelector(element))
             {
-                for (const iteration of iterableSelector(element))
-                {
-                    yield selector(element, iteration, index);
-                    index++;
-                }
+                yield this.selector(element, iteration, index);
+                index++;
             }
-        };
+        }
     }
 }
 
 class SkipIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, count: number)
+    public constructor(private source: Iterable<TSource>, private skipCount: number)
     {
         super();
+    }
 
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
         let index = 1;
-
-        this[Symbol.iterator] = function* ()
+        for (const element of this.source)
         {
-            for (const element of source)
+            if (index > this.skipCount)
             {
-                if (index > count)
-                {
-                    yield element;
-                }
-
-                index++;
+                yield element;
             }
-        };
+
+            index++;
+        }
     }
 }
 
 class SkipWhileIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, predicate: Func2<TSource, number, boolean>)
+    public constructor(private source: Iterable<TSource>, private predicate: Func2<TSource, number, boolean>)
     {
         super();
+    }
 
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
         let index = 0;
         let skip  = true;
 
-        this[Symbol.iterator] = function* ()
+        for (const element of this.source)
         {
-            for (const element of source)
+            if (skip)
             {
-                if (skip)
-                {
-                    skip = predicate(element, index);
-                }
-
-                if (!skip)
-                {
-                    yield element;
-                }
-
-                index++;
+                skip = this.predicate(element, index);
             }
-        };
+
+            if (!skip)
+            {
+                yield element;
+            }
+
+            index++;
+        }
     }
 }
 
 class TakeIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, count: number)
+    public constructor(private source: Iterable<TSource>, private takeCount: number)
     {
         super();
+    }
 
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
         let index = 0;
-
-        this[Symbol.iterator] = function* ()
+        for (const element of this.source)
         {
-            for (const element of source)
+            if (index < this.takeCount)
             {
-                if (index < count)
-                {
-                    yield element;
-                }
-                else
-                {
-                    break;
-                }
-
-                index++;
+                yield element;
             }
-        };
+            else
+            {
+                break;
+            }
+
+            index++;
+        }
     }
 }
 
 class TakeWhileIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, predicate: Func2<TSource, number, boolean>)
+    public constructor(private source: Iterable<TSource>, private predicate: Func2<TSource, number, boolean>)
     {
         super();
+    }
 
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
         let index = 0;
 
-        this[Symbol.iterator] = function* ()
+        for (const element of this.source)
         {
-            for (const element of source)
+            if (this.predicate(element, index))
             {
-                if (predicate(element, index))
-                {
-                    yield element;
-                }
-                else
-                {
-                    break;
-                }
-
-                index++;
+                yield element;
             }
-        };
+            else
+            {
+                break;
+            }
+
+            index++;
+        }
     }
 }
 
 class ThenByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: OrderedEnumerable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
+    public constructor(private source: OrderedEnumerable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
-        super(new EnumerableSorter(keySelector, descending, comparer, null));
+        super(keySelector, descending, comparer);
 
         source.parent = this;
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        for (const element of this.source)
         {
-            for (const element of source)
-            {
-                yield element;
-            }
-        };
+            yield element;
+        }
     }
 }
 
 class WhereIterator<TSource> extends Enumerable<TSource>
 {
-    public [Symbol.iterator]: () => Iterator<TSource>;
-
-    public constructor(source: Iterable<TSource>, predicate: Func1<TSource, boolean>)
+    public constructor(private source: Iterable<TSource>, private predicate: Func1<TSource, boolean>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function*()
+    public *[Symbol.iterator](): Iterator<TSource>
+    {
+        for (const element of this.source)
         {
-            for (const element of source)
+            if (this.predicate(element))
             {
-                if (predicate(element))
-                {
-                    yield element;
-                }
+                yield element;
             }
-        };
+        }
     }
 }
 
 class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
 {
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
-    public constructor(source: Iterable<TSource>, second: Iterable<TSecond>, resultSelector: Func3<TSource, TSecond, number, TResult>)
+    public constructor(private source: Iterable<TSource>, private second: Iterable<TSecond>, private resultSelector: Func3<TSource, TSecond, number, TResult>)
     {
         super();
+    }
 
-        this[Symbol.iterator] = function* ()
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        const sourceIterator     = this.source[Symbol.iterator]();
+        const collectionIterator = this.second[Symbol.iterator]();
+
+        let nextSource: IteratorResult<TSource>;
+        let nextSecond: IteratorResult<TSecond>;
+
+        let index = 0;
+
+        while(!(nextSource = sourceIterator.next()).done && !(nextSecond = collectionIterator.next()).done)
         {
-            const sourceIterator     = source[Symbol.iterator]();
-            const collectionIterator = second[Symbol.iterator]();
-
-            let nextSource: IteratorResult<TSource>;
-            let nextSecond: IteratorResult<TSecond>;
-
-            let index = 0;
-
-            while(!(nextSource = sourceIterator.next()).done && !(nextSecond = collectionIterator.next()).done)
-            {
-                yield resultSelector(nextSource.value, nextSecond.value, index);
-                index++;
-            }
-        };
+            yield this.resultSelector(nextSource.value, nextSecond.value, index);
+            index++;
+        }
     }
 }

@@ -6,7 +6,7 @@ import { Nullable } from "@surface/types";
 type Slot<TElement> =
 {
     hash:  number;
-    value: TElement;
+    value: Nullable<TElement>;
     next:  number;
 };
 
@@ -15,27 +15,14 @@ export default class Set<TElement> implements Iterable<TElement>
 {
     private readonly comparer: Comparer<Nullable<TElement>>;
 
-    private buckets:  Array<number>                   = new Array(INITIAL_SIZE).fill(0);
-    private count:    number                          = 0;
-    private freeList: number                          = -1;
-    private slots:    Array<Slot<Nullable<TElement>>> = new Array(INITIAL_SIZE);
-
-    public [Symbol.iterator]: () => Iterator<TElement>;
+    private buckets:  Array<number>         = new Array(INITIAL_SIZE).fill(0);
+    private count:    number                = 0;
+    private freeList: number                = -1;
+    private slots:    Array<Slot<TElement>> = new Array(INITIAL_SIZE);
 
     public constructor(comparer: Comparer<TElement>)
     {
         this.comparer = comparer;
-
-        this[Symbol.iterator] = function* ()
-        {
-            for (const element of this.slots)
-            {
-                if (element && element.hash != -1)
-                {
-                    yield element.value as Object as TElement;
-                }
-            }
-        };
     }
 
     public static from<T>(source: Iterable<T>, comparer: Comparer<T>): Set<T>
@@ -66,8 +53,8 @@ export default class Set<TElement> implements Iterable<TElement>
     private resize(): void
     {
         const multiple = 2;
-        const newSize = this.count * multiple + 1;
-        const buckets = new Array<number>(newSize).fill(0);
+        const newSize  = this.count * multiple + 1;
+        const buckets  = new Array<number>(newSize).fill(0);
 
         for (let i = 0; i < this.count; i++)
         {
@@ -79,6 +66,17 @@ export default class Set<TElement> implements Iterable<TElement>
         }
 
         this.buckets = buckets;
+    }
+
+    public *[Symbol.iterator](): Iterator<TElement>
+    {
+        for (const element of this.slots)
+        {
+            if (element && element.hash != -1)
+            {
+                yield element.value as Object as TElement;
+            }
+        }
     }
 
     public add(element: TElement): boolean

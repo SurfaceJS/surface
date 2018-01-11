@@ -8,9 +8,10 @@ import { Func1, Func2, Nullable } from "@surface/types";
 
 export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>
 {
-    private comparer:  Comparer<TKey>;
-    private groups:    Array<Group<TElement, TKey>>;
-    private lastGroup: Nullable<Group<TElement, TKey>>;
+    private comparer:       Comparer<TKey>;
+    private groups:         Array<Group<TElement, TKey>>;
+    private lastGroup:      Nullable<Group<TElement, TKey>>;
+    private resultSelector: Func2<TKey, Enumerable<TElement>, TResult>;
 
     private _count: number;
     public get count(): number
@@ -18,29 +19,14 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         return this._count;
     }
 
-    public [Symbol.iterator]: () => Iterator<TResult>;
-
     public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>)
     {
         const initialSize = 7;
 
-        this._count   = 0;
-        this.comparer = comparer;
-        this.groups   = new Array(initialSize);
-
-        this[Symbol.iterator] = function* ()
-        {
-            let current = this.lastGroup;
-
-            do
-            {
-                if (current = current && current.next)
-                {
-                    yield resultSelector(current.key, Enumerable.from(current.elements));
-                }
-            }
-            while(current != this.lastGroup);
-        };
+        this._count         = 0;
+        this.comparer       = comparer;
+        this.groups         = new Array(initialSize);
+        this.resultSelector = resultSelector;
 
         for (const element of source)
         {
@@ -123,6 +109,20 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         while (current != this.lastGroup);
 
         this.groups = buffer;
+    }
+
+    public *[Symbol.iterator](): Iterator<TResult>
+    {
+        let current = this.lastGroup;
+
+        do
+        {
+            if (current = current && current.next)
+            {
+                yield this.resultSelector(current.key, Enumerable.from(current.elements));
+            }
+        }
+        while(current != this.lastGroup);
     }
 
     public contains(key: TKey): boolean
