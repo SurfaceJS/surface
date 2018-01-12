@@ -9,8 +9,8 @@ import { Func1, Func2, Nullable } from "@surface/types";
 export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>
 {
     private comparer:       Comparer<TKey>;
-    private groups:         Array<Group<TElement, TKey>>;
-    private lastGroup:      Nullable<Group<TElement, TKey>>;
+    private groups:         Array<Group<TKey, TElement>>;
+    private lastGroup:      Nullable<Group<TKey, TElement>>;
     private resultSelector: Func2<TKey, Enumerable<TElement>, TResult>;
 
     private _count: number;
@@ -44,7 +44,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         }
     }
 
-    private createGroup(key: TKey, hash: number): Group<TElement, TKey>
+    private createGroup(key: TKey, hash: number): Group<TKey, TElement>
     {
         if (this.count == this.groups.length)
         {
@@ -53,7 +53,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
 
         const index = hash % this.groups.length;
 
-        let group = new Group<TElement, TKey>(hash, key);
+        let group = new Group<TKey, TElement>(hash, key);
 
         group.hashNext = this.groups[index];
         this.groups[index] = group;
@@ -74,9 +74,9 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         return group;
     }
 
-    private getGroup(key: TKey, hash: number): Nullable<Group<TElement, TKey>>
+    private getGroup(key: TKey, hash: number): Nullable<Group<TKey, TElement>>
     {
-        for (let group: Nullable<Group<TElement, TKey>> = this.groups[hash % this.groups.length]; !!group; group = group.hashNext)
+        for (let group: Nullable<Group<TKey, TElement>> = this.groups[hash % this.groups.length]; !!group; group = group.hashNext)
         {
             if (group.hash == hash && this.comparer.equals(group.key, key))
             {
@@ -91,7 +91,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
     {
         const two     = 2;
         const newSize = this._count * two + 1;
-        const buffer  = new Array<Group<TElement, TKey>>(newSize);
+        const buffer  = new Array<Group<TKey, TElement>>(newSize);
 
         let current = this.lastGroup;
 

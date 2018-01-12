@@ -1,6 +1,6 @@
 import { Nullable } from "@surface/types";
 
-export default class Group<TElement, TKey>
+export default class Group<TKey, TElement>
 {
     private readonly _elements: Array<TElement> = [];
     public get elements(): Array<TElement>
@@ -30,24 +30,24 @@ export default class Group<TElement, TKey>
         this._hash = value;
     }
 
-    private _hashNext: Nullable<Group<TElement, TKey>>;
-    public get hashNext(): Nullable<Group<TElement, TKey>>
+    private _hashNext: Nullable<Group<TKey, TElement>>;
+    public get hashNext(): Nullable<Group<TKey, TElement>>
     {
         return this._hashNext;
     }
 
-    public set hashNext(value: Nullable<Group<TElement, TKey>>)
+    public set hashNext(value: Nullable<Group<TKey, TElement>>)
     {
         this._hashNext = value;
     }
 
-    private _next: Nullable<Group<TElement, TKey>>;
-    public get next(): Nullable<Group<TElement, TKey>>
+    private _next: Nullable<Group<TKey, TElement>>;
+    public get next(): Nullable<Group<TKey, TElement>>
     {
         return this._next;
     }
 
-    public set next(value: Nullable<Group<TElement, TKey>>)
+    public set next(value: Nullable<Group<TKey, TElement>>)
     {
         this._next = value;
     }

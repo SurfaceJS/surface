@@ -635,7 +635,7 @@ export default Enumerable;
 
 abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
 {
-    private enumerableSorter: EnumerableSorter<TSource, Object>;
+    private enumerableSorter: EnumerableSorter<Object, TSource>;
     private _parent: Nullable<OrderedEnumerable<TSource>>;
     public get parent(): Nullable<OrderedEnumerable<TSource>>
     {
@@ -653,14 +653,14 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
         this.enumerableSorter = new EnumerableSorter(keySelector, descending, comparer);
     }
 
-    public getSorter<TKey>(): EnumerableSorter<TSource, TKey>
+    public getSorter<TKey>(): EnumerableSorter<TKey, TSource>
     {
         if (this.parent)
         {
             this.enumerableSorter.next = this.parent.getSorter();
         }
 
-        return this.enumerableSorter as EnumerableSorter<TSource, TKey>;
+        return this.enumerableSorter as EnumerableSorter<TKey, TSource>;
     }
 
     /**
@@ -841,7 +841,7 @@ class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
     }
 }
 
-class OrderByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
+class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 {
     public constructor(private source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
@@ -1003,7 +1003,7 @@ class TakeWhileIterator<TSource> extends Enumerable<TSource>
     }
 }
 
-class ThenByIterator<TSource, TKey> extends OrderedEnumerable<TSource>
+class ThenByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 {
     public constructor(private source: OrderedEnumerable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: Comparer<TKey>)
     {
