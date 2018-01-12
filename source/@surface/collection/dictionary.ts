@@ -3,7 +3,7 @@ import "@surface/enumerable/extensions";
 import { Enumerable }              from "@surface/enumerable";
 import { Nullable, ObjectLiteral } from "@surface/types";
 
-export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
+export class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
     private source: Map<TKey, TValue>;
 
@@ -63,7 +63,7 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     }
 }
 
-export class KeyValuePair<TKey = string, TValue = Object>
+export class KeyValuePair<TKey, TValue>
 {
     private readonly _key: TKey;
     public get key(): TKey
