@@ -24,7 +24,7 @@ declare module "@surface/enumerable"
         /** Creates an List from a Enumerable<T>. */
         toList(): List<TSource>;
         /** Creates an Dictionary from a Enumerable<T>. */
-        toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
+        toDictionary<TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
     }
 }
 

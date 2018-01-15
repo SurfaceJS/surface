@@ -46,10 +46,12 @@ export abstract class CustomElement extends HTMLElement
 
     /** Called when the element is created or upgraded */
     protected connectedCallback(): void
+    // tslint:disable-next-line:no-empty
     { }
 
     /** Called when the element is inserted into a document, including into a shadow tree */
     protected disconnectedCallback(): void
+    // tslint:disable-next-line:no-empty
     { }
 
     /**
@@ -71,6 +73,7 @@ export abstract class CustomElement extends HTMLElement
 
     /** Called when the element is adopted into a new document */
     protected adoptedCallback(oldDocument: Document, newDocument: Document): void
+    // tslint:disable-next-line:no-empty
     { }
 
     /**
