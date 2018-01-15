@@ -33,13 +33,13 @@ export function element(name: string, template?: string, style?: string, options
             {
                 if (isCustomElement(target))
                 {
-                    let templateElement = document.createElement("template") as HTMLTemplateElement;
+                    let templateElement = document.createElement("template");
 
                     templateElement.innerHTML = template;
 
                     if (style)
                     {
-                        let styleElement = document.createElement("style") as HTMLStyleElement;
+                        let styleElement = document.createElement("style");
                         styleElement.innerHTML = style;
                         templateElement.content.appendChild(styleElement);
                     }

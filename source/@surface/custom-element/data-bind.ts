@@ -13,7 +13,7 @@ export class DataBind
 {
     private static applyBind(context: object, node: Node, property: string, attribute: string, bindType: BindType, onChange: Action): Action
     {
-        let action: Action = () => { };
+        let action: Action = () => { return; };
 
         if (property.indexOf(".") > -1)
         {
@@ -72,7 +72,11 @@ export class DataBind
                         get: () => getter && getter.call(context),
                         set: (value: Object) =>
                         {
-                            setter && setter.call(context, value);
+                            if (setter)
+                            {
+                                setter.call(context, value);
+                            }
+
                             onChange();
                         }
                     }

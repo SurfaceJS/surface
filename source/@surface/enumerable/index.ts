@@ -51,14 +51,12 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         let hasAny = false;
 
-        let sequence: Enumerable<TSource> = this;
-
         if (predicate)
         {
-            sequence = sequence.where(predicate);
+            return this.where(predicate).any();
         }
 
-        for (let element of sequence)
+        for (let element of this)
         {
             hasAny = element == element;
             break;

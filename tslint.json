@@ -2,7 +2,7 @@
     "defaultSeverity": "warning",
     "rules":
     {
-        "adjacent-overload-signatures":    true,
+        "adjacent-overload-signatures": true,
         "align":                           
         [
             true,
@@ -72,14 +72,30 @@
         "no-angle-bracket-type-assertion": true,
         "no-any":                          true,
         "no-arg":                          true,
+        "no-boolean-literal-compare":      true,
+        "no-construct":                    true,
         "no-duplicate-imports":            true,
         "no-duplicate-super":              true,
+        "no-duplicate-variable":           true,
+        "no-empty":                        true,
+        "no-internal-module":              true,
         "no-magic-numbers":                true,
         "no-mergeable-namespace":          true,
+        "no-misused-new":                  true,
         "no-non-null-assertion":           true,
         "no-reference":                    true,
-        "no-var-keyword":                  true,
+        "no-reference-import":             true,
+        "no-shadowed-variable":            false,
+        "no-string-literal":               false,
+        "no-this-assignment":              true,
         "no-trailing-whitespace":          true,
+        "no-unnecessary-callback-wrapper": true,
+        "no-unnecessary-initializer":      true,
+        "no-unnecessary-qualifier":        true,
+        "no-unnecessary-type-assertion":   true,
+        "no-unused-expression":            true,
+        "no-var-keyword":                  true,
+        "no-unsafe-any":                   false,
         "one-variable-per-declaration":    true,
         "prefer-for-of":                   true,
         "promise-function-async":          true,
@@ -92,9 +108,9 @@
         "variable-name":                   
         [
             true,
+            "allow-leading-underscore",
             "ban-keywords",
-            "check-format",
-            "allow-leading-underscore"
+            "check-format"
         ],
         "whitespace": true        
     }
