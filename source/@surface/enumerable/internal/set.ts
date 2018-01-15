@@ -1,7 +1,7 @@
-import Comparer   from "../comparer";
 import HashEncode from "./hash-encode";
 
-import { Nullable } from "@surface/types";
+import { IComparer } from "../types";
+import { Nullable }  from "@surface/types";
 
 type Slot<TElement> =
 {
@@ -13,19 +13,19 @@ type Slot<TElement> =
 const INITIAL_SIZE = 7;
 export default class Set<TElement> implements Iterable<TElement>
 {
-    private readonly comparer: Comparer<Nullable<TElement>>;
+    private readonly comparer: IComparer<Nullable<TElement>>;
 
     private buckets:  Array<number>         = new Array(INITIAL_SIZE).fill(0);
     private count:    number                = 0;
     private freeList: number                = -1;
     private slots:    Array<Slot<TElement>> = new Array(INITIAL_SIZE);
 
-    public constructor(comparer: Comparer<TElement>)
+    public constructor(comparer: IComparer<TElement>)
     {
         this.comparer = comparer;
     }
 
-    public static from<T>(source: Iterable<T>, comparer: Comparer<T>): Set<T>
+    public static from<T>(source: Iterable<T>, comparer: IComparer<T>): Set<T>
     {
         const set = new Set(comparer);
 
@@ -85,7 +85,7 @@ export default class Set<TElement> implements Iterable<TElement>
 
         if (!this.find(element, hash))
         {
-            let index;
+            let index: number;
 
             if (this.freeList >= 0)
             {

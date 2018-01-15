@@ -1,11 +1,14 @@
+import Enumerable from "..";
+
+import { IGroup }   from "../types";
 import { Nullable } from "@surface/types";
 
-export default class Group<TKey, TElement>
+export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
 {
-    private readonly _elements: Array<TElement> = [];
-    public get elements(): Array<TElement>
+    private readonly source: Array<TElement> = [];
+    public get elements(): Enumerable<TElement>
     {
-        return this._elements;
+        return Enumerable.from(this.source);
     }
 
     private readonly _key: TKey;
@@ -16,7 +19,7 @@ export default class Group<TKey, TElement>
 
     public get count(): number
     {
-        return this._elements.length;
+        return this.source.length;
     }
 
     private _hash: number;
@@ -60,6 +63,6 @@ export default class Group<TKey, TElement>
 
     public add(element: TElement): void
     {
-        this.elements.push(element);
+        this.source.push(element);
     }
 }

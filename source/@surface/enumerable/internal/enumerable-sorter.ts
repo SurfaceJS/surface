@@ -1,10 +1,9 @@
-import Comparer from "../comparer";
-
+import { IComparer }       from "../types";
 import { Func1, Nullable } from "@surface/types";
 
 export default class EnumerableSorter<TKey, TElement>
 {
-    private comparer:    Comparer<TKey>;
+    private comparer:    IComparer<TKey>;
     private descending:  boolean;
     private keys:        Array<TKey>;
     private keySelector: Func1<TElement, TKey>;
@@ -20,7 +19,7 @@ export default class EnumerableSorter<TKey, TElement>
         this._next = value;
     }
 
-    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: Comparer<TKey>, next?: Nullable<EnumerableSorter<TKey, TElement>>)
+    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: IComparer<TKey>, next?: Nullable<EnumerableSorter<TKey, TElement>>)
     {
         this.comparer    = comparer;
         this.descending  = descending;

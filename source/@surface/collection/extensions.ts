@@ -1,8 +1,9 @@
 import { Dictionary, KeyValuePair } from "./dictionary";
 import { List }                     from "./list";
 
-import { Enumerable } from "@surface/enumerable";
-import { Func1 }      from "@surface/types";
+import Enumerable from "@surface/enumerable";
+
+import { Func1 } from "@surface/types";
 
 declare global
 {
@@ -22,7 +23,7 @@ declare module "@surface/enumerable"
         /** Creates an List from a Enumerable<T>. */
         toList(): List<TSource>;
         /** Creates an Dictionary from a Enumerable<T>. */
-        toDictionary<TSource, TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
+        toDictionary<TKey, TValue>(this: Enumerable<TSource>, keySelector: Func1<TSource, TKey>, valueSelector: Func1<TSource, TValue>): Dictionary<TKey, TValue>;
     }
 }
 

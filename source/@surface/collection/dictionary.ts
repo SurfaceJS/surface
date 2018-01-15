@@ -1,6 +1,7 @@
 import "@surface/enumerable/extensions";
 
-import { Enumerable }              from "@surface/enumerable";
+import Enumerable from "@surface/enumerable";
+
 import { Nullable, ObjectLiteral } from "@surface/types";
 
 export class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>

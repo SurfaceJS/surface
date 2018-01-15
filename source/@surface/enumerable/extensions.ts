@@ -1,4 +1,4 @@
-import { Enumerable } from ".";
+import Enumerable from ".";
 
 declare global
 {

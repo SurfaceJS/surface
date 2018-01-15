@@ -2,13 +2,12 @@ import Enumerable from "..";
 import HashEncode from "./hash-encode";
 import Group      from "./group";
 
-import Comparer from "../comparer";
-
+import { IComparer, ILookup }     from "../types";
 import { Func1, Func2, Nullable } from "@surface/types";
 
-export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>
+export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>, ILookup<TKey, TElement>
 {
-    private comparer:       Comparer<TKey>;
+    private comparer:       IComparer<TKey>;
     private groups:         Array<Group<TKey, TElement>>;
     private lastGroup:      Nullable<Group<TKey, TElement>>;
     private resultSelector: Func2<TKey, Enumerable<TElement>, TResult>;
@@ -19,7 +18,7 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         return this._count;
     }
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: Comparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: IComparer<TKey>)
     {
         const initialSize = 7;
 
