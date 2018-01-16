@@ -3,7 +3,7 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
-        "baseUrl":                          "../../",
+        //"baseUrl":                          "../../", /* Generating messy output */
         "declaration":                      false, /* false for dev */
         "emitDecoratorMetadata":            true,
         "experimentalDecorators":           true,

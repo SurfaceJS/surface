@@ -1,13 +1,12 @@
 import "@surface/enumerable/extensions";
 
-import { Enumerable }              from "@surface/enumerable";
+import Enumerable from "@surface/enumerable";
+
 import { Nullable, ObjectLiteral } from "@surface/types";
 
-export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyValuePair<TKey, TValue>>
+export class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
     private source: Map<TKey, TValue>;
-
-    public [Symbol.iterator]: () => Iterator<KeyValuePair<TKey, TValue>>;
 
     public get size(): number
     {
@@ -15,38 +14,33 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     }
 
     public constructor();
-    public constructor(source:  ObjectLiteral<TValue>);
-    public constructor(source:  Array<KeyValuePair<TKey, TValue>>);
-    public constructor(source?: ObjectLiteral<TValue>|Array<KeyValuePair<TKey, TValue>>)
+    public constructor(source: Iterable<KeyValuePair<TKey, TValue>>);
+    public constructor(source?: Iterable<KeyValuePair<TKey, TValue>>)
     {
         super();
-
-        let keysValues: Array<KeyValuePair<TKey, TValue>> = [];
+        this.source = new Map();
 
         if (source)
         {
-            if (Array.isArray(source))
+            for (const element of source)
             {
-                keysValues = source;
-            }
-            else
-            {
-                keysValues = Object.keys(source).asEnumerable().select(x => new KeyValuePair(x as Object as TKey, source[x])).toArray();
+                this.source.set(element.key, element.value);
             }
         }
+    }
 
-        this.source = new Map();
-        keysValues.forEach(x => this.source.set(x.key, x.value));
+    public static of<TValue>(source: ObjectLiteral<TValue>): Dictionary<string, TValue>
+    {
+        return new Dictionary(Object.keys(source).asEnumerable().select(x => new KeyValuePair(x, source[x])).toArray());
+    }
 
-        this[Symbol.iterator] = function* getIterable(this: Dictionary<TKey, TValue>)
+    public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>
+    {
+        for (const element of this.source)
         {
-            for (const element of this.source)
-            {
-                let [ key, value ] = element;
-                yield new KeyValuePair(key, value);
-            }
+            let [ key, value ] = element;
+            yield new KeyValuePair(key, value);
         }
-        .bind(this);
     }
 
     public delete(key: TKey): void
@@ -70,7 +64,7 @@ export class Dictionary<TKey = string, TValue = Object> extends Enumerable<KeyVa
     }
 }
 
-export class KeyValuePair<TKey = string, TValue = Object>
+export class KeyValuePair<TKey, TValue>
 {
     private readonly _key: TKey;
     public get key(): TKey

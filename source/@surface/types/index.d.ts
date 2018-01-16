@@ -1,6 +1,6 @@
 export interface Constructor<T = Object> extends Function
 {
-    new (...args: Array<Nullable<Object>>): T;
+    new (...args: Array<any>): T;
     readonly prototype: T;
 }
 

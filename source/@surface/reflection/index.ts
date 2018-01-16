@@ -8,8 +8,8 @@ import { Nullable }   from "@surface/types";
 
 export abstract class MemberInfo
 {
-    protected _metadata: Nullable<Dictionary>;
-    public get metadata(): Dictionary
+    protected _metadata: Nullable<Dictionary<string, Object>>;
+    public get metadata(): Dictionary<string, Object>
     {
         return this._metadata = this._metadata ||
             Reflect.getMetadataKeys(this._declaringType.getPrototype(), this.key)
@@ -101,7 +101,7 @@ export class ParameterInfo extends MemberInfo
 
         if (paramType)
         {
-            this._metadata = new Dictionary({ "design:type": paramType });
+            this._metadata = Dictionary.of({ "design:type": paramType });
         }
     }
 }
@@ -190,8 +190,8 @@ export class Type
         return Object.isSealed(this.targetConstructor.prototype);
     }
 
-    protected _metadata: Nullable<Dictionary>;
-    public get metadata(): Dictionary
+    protected _metadata: Nullable<Dictionary<string, Object>>;
+    public get metadata(): Dictionary<string, Object>
     {
         return this._metadata = this._metadata ||
             Reflect.getMetadataKeys(this.targetConstructor)
