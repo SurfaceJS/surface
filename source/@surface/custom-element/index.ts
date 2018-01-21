@@ -2,14 +2,14 @@ import "./extensions";
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
 
-import { DataBind } from "./data-bind";
 import * as symbols from "./symbols";
+import DataBind     from "./internal/data-bind";
 
 import { List } from "@surface/collection";
 
 const shadowRoot = Symbol.for("shadowRoot");
 
-export abstract class CustomElement extends HTMLElement
+export default abstract class CustomElement extends HTMLElement
 {
     /* Todo: Waiting support
     public static readonly [symbols.observedAttributes]: Nullable<Array<string>>;
@@ -60,53 +60,53 @@ export abstract class CustomElement extends HTMLElement
      * Returns the first element that matches the specified selector.
      * @param selector Query selector.
      */
-    public attach<T extends HTMLElement>(selector: string): T;
+    public get<T extends HTMLElement>(selector: string): T;
     /**
      * Returns the first element that matches the specified pattern.
      * @param selector Query pattern.
      */
-    public attach<T extends HTMLElement>(selector: RegExp): T;
+    public get<T extends HTMLElement>(selector: RegExp): T;
     /**
      * Returns the first element that matches the specified name at the specified slot.
      * @param selector Query selector.
      * @param slotName Slot name.
      */
-    public attach<T extends HTMLElement>(selector: string, slotName: string): T;
+    public get<T extends HTMLElement>(selector: string, slotName: string): T;
     /**
      * Returns the first element that matches the specified pattern at the specified slot.
      * @param selector Query pattern.
      * @param slotName Slot name.
      */
-    public attach<T extends HTMLElement>(selector: RegExp, slotName: string): T;
-    public attach<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
+    public get<T extends HTMLElement>(selector: RegExp, slotName: string): T;
+    public get<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
     {
         // tslint:disable-next-line:no-any
-        return this.attachAll<T>(selector as any, slotName as any).first();
+        return this.getAll<T>(selector as any, slotName as any).first();
     }
 
     /**
      * Returns the all elements that matches the specified name.
      * @param selector Query selector.
      */
-    public attachAll<T extends HTMLElement>(selector: string): List<T>;
+    public getAll<T extends HTMLElement>(selector: string): List<T>;
     /**
      * Returns the all elements that matches the specified pattern.
      * @param selector Query pattern.
      */
-    public attachAll<T extends HTMLElement>(selector: RegExp): List<T>;
+    public getAll<T extends HTMLElement>(selector: RegExp): List<T>;
     /**
      * Returns the all elements that matches the specified name at the specified slot.
      * @param selector Query selector.
      * @param slotName Slot name.
      */
-    public attachAll<T extends HTMLElement>(selector: string, slotName: string): List<T>;
+    public getAll<T extends HTMLElement>(selector: string, slotName: string): List<T>;
     /**
      * Returns the all elements that matches the specified pattern at the specified slot.
      * @param selector Query pattern.
      * @param slotName Slot name.
      */
-    public attachAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
-    public attachAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
+    public getAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
+    public getAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
         const root: ShadowRoot = this[shadowRoot];
         let slots = root

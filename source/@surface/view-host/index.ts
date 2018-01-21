@@ -1,12 +1,13 @@
 import template from "./index.html";
 
-import { CustomElement } from "@surface/custom-element";
-import { element }       from "@surface/custom-element/decorators";
-import { Nullable }      from "@surface/types";
-import { View }          from "@surface/view";
+import CustomElement from "@surface/custom-element";
+import { element }   from "@surface/custom-element/decorators";
+import View          from "@surface/view";
+
+import { Nullable } from "@surface/types";
 
 @element("surface-view-host", template)
-export class ViewHost extends CustomElement
+export default class ViewHost extends CustomElement
 {
     private _title: string = "";
     public get title(): string
@@ -24,7 +25,7 @@ export class ViewHost extends CustomElement
     {
         if (!this._view)
         {
-            this._view = super.attach<View>(/^view-/);
+            this._view = super.get<View>(/^view-/);
         }
 
         return this._view;
