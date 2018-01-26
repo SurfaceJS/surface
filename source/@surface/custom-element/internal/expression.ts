@@ -55,33 +55,35 @@ export default abstract class Expression
 
         if (rawExpression.indexOf(",") > -1)
         {
-            const brackets =
+            const strings =
             [
-                { pattern: /(\(.*)\(([^\(\)]*)\)(.*\))/g, comma: /(\([^\(\)]*),([^\(\)]*\))/g, open: 40,  close: 41 },
-                { pattern: /(\[.*)\[([^\[\]]*)\](.*\])/g, comma: /(\[[^\[\]]*),([^\[\]]*\])/g, open: 91,  close: 93 },
-                { pattern: /(\{.*)\{([^\{\}]*)\}(.*\})/g, comma: /(\{[^\{\}]*),([^\{\}]*\})/g, open: 123, close: 125 },
+                /(\")([^"]*)(\")/g,
+                /(\')([^']*)(\')/g
             ];
 
-            const stringComma = /((["'])(?:(?!\2).)*),((?:(?!\2).)*\2)/g;
+            const brackets =
+            [
+                /(\(.*?)(\([^\(\)]*\))(.*?\))/g,
+                /(\[.*?)(\[[^\[\]]*\])(.*?\])/g,
+                /(\{.*?)(\{[^\{\}]*\})(.*?\})/g,
+                /(\([^\(\)]*)(,)([^\(\)]*\))/g,
+                /(\[[^\[\]]*)(,)([^\[\]]*\])/g,
+                /(\{[^\{\}]*)(,)([^\{\}]*\})/g
+            ];
 
-            expression = expression.replace(/"([^",]*)"/g, "%34$1%34").replace(/'([^',]*)'/g, "%39$1%39");
+            const tokens = /[=!,<>()\[\]{}&|"']/g;
 
-            for (const bracket of brackets)
+            for (const pattern of strings)
             {
-                while (bracket.pattern.test(expression))
-                {
-                    expression = expression.replace(bracket.pattern, `$1%${bracket.open}$2%${bracket.close}$3`);
-                }
-
-                while (bracket.comma.test(expression))
-                {
-                    expression = expression.replace(bracket.comma, "$1%44$2");
-                }
+                expression = expression.replace(pattern, (match, g1: string, g2: string, g3: string) => g1 + g2.replace(tokens, x => `%${x.charCodeAt(0)}`) + g3);
             }
 
-            while (stringComma.test(expression))
+            for (const pattern of brackets)
             {
-                expression = expression.replace(stringComma, "$1%44$3");
+                while (pattern.test(expression))
+                {
+                    expression = expression.replace(pattern, (match, g1: string, g2: string, g3: string) => g1 + g2.replace(tokens, x => `%${x.charCodeAt(0)}`) + g3);
+                }
             }
         }
 
@@ -90,23 +92,17 @@ export default abstract class Expression
 
     protected unscapeBrackets(rawExpression: string): string
     {
+        let expression = rawExpression;
+
         if (/%\d+/.test(rawExpression))
         {
-            return rawExpression
-                .replace(/%34/g,  "\"")
-                .replace(/%39/g,  "'")
-                .replace(/%40/g,  "(")
-                .replace(/%41/g,  ")")
-                .replace(/%44/g,  ",")
-                .replace(/%91/g,  "[")
-                .replace(/%93/g,  "]")
-                .replace(/%123/g, "{")
-                .replace(/%125/g, "}");
+            for (const char of "=!,<>()\[\]{}&|\"'".split(""))
+            {
+                expression = expression.replace(new RegExp(`%${char.charCodeAt(0)}`, "g"), char);
+            }
         }
-        else
-        {
-            return rawExpression;
-        }
+
+        return expression;
     }
 
     public abstract execute(): Nullable<Object>;
