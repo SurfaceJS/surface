@@ -27,7 +27,7 @@ export default class DataBind<T extends CustomElement>
             {
                 console.log(attribute.value);
                 console.time();
-                const match = /{{\s*((?:\w|\.)+(?:\(.*\))?)\s*}}/.exec(attribute.value);
+                const match = /{{\s*((?:(?!{{|}}).)+?)\s*}}/.exec(attribute.value);
 
                 if (match)
                 {
@@ -38,7 +38,10 @@ export default class DataBind<T extends CustomElement>
                     }
                     else
                     {
-                        binders.push(() => node[attribute.name] = expression.execute());
+                        if (attribute.name in node)
+                        {
+                            binders.push(() => node[attribute.name] = expression.execute());
+                        }
                     }
                 }
                 else
