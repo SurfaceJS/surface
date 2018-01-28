@@ -49,7 +49,60 @@ export default abstract class Expression
         }
     }
 
-    protected scapeBrackets(rawExpression: string): string
+    public abstract execute(): Nullable<Object>;
+}
+
+export class CallExpression extends Expression
+{
+    private readonly context:     Object;
+    private readonly expressions: Array<Expression>;
+
+    private readonly _invoker: Function;
+    public get invoker(): Function
+    {
+        return this._invoker;
+    }
+
+    public constructor(rawExpression: string, context: Object, onchange?: Action)
+    {
+        super();
+
+        const breaked = this.break(rawExpression);
+
+        const contextualized = super.contextualize(breaked.name, context);
+
+        this.context     = contextualized.context;
+        this.expressions = this.parseArgs(breaked.args, context, onchange);
+        this._invoker    = contextualized.context[contextualized.key];
+    }
+
+    private break(rawExpression: string): { name: string; args: string }
+    {
+        const match = Expression.functionPattern.exec(rawExpression);
+
+        if (match)
+        {
+            const groups = { name: 1, args: 2 };
+
+            return { name: match[groups.name], args: match[groups.args] };
+        }
+
+        throw new Error("Invalid function expression.");
+    }
+
+    private parseArgs(args: string, context: Object, onchange?: Action): Array<Expression>
+    {
+        const expressions: Array<Expression> = [];
+
+        for (const arg of this.scapeTokens(args.replace(/^\(|\)$/g, "")).split(",").map(x => x.trim()))
+        {
+            expressions.push(Expression.from(this.unscapeTokens(arg), context, onchange));
+        }
+
+        return expressions;
+    }
+
+    private scapeTokens(rawExpression: string): string
     {
         let expression = rawExpression;
 
@@ -90,7 +143,7 @@ export default abstract class Expression
         return expression;
     }
 
-    protected unscapeBrackets(rawExpression: string): string
+    private unscapeTokens(rawExpression: string): string
     {
         let expression = rawExpression;
 
@@ -103,59 +156,6 @@ export default abstract class Expression
         }
 
         return expression;
-    }
-
-    public abstract execute(): Nullable<Object>;
-}
-
-export class CallExpression extends Expression
-{
-    private readonly context:     Object;
-    private readonly expressions: Array<Expression>;
-
-    private readonly _invoker: Function;
-    public get invoker(): Function
-    {
-        return this._invoker;
-    }
-
-    public constructor(rawExpression: string, context: Object, onchange?: Action)
-    {
-        super();
-
-        const breaked = this.break(rawExpression);
-
-        const contextualized = this.contextualize(breaked.name, context);
-
-        this.context     = contextualized.context;
-        this.expressions = this.parseArgs(breaked.args, context, onchange);
-        this._invoker    = contextualized.context[contextualized.key];
-    }
-
-    private break(rawExpression: string): { name: string; args: string }
-    {
-        const match = Expression.functionPattern.exec(rawExpression);
-
-        if (match)
-        {
-            const groups = { name: 1, args: 2 };
-
-            return { name: match[groups.name], args: match[groups.args] };
-        }
-
-        throw new Error("Invalid function expression.");
-    }
-
-    private parseArgs(args: string, context: Object, onchange?: Action): Array<Expression>
-    {
-        const expressions: Array<Expression> = [];
-
-        for (const arg of super.scapeBrackets(args.replace(/^\(|\)$/g, "")).split(",").map(x => x.trim()))
-        {
-            expressions.push(Expression.from(super.unscapeBrackets(arg), context, onchange));
-        }
-
-        return expressions;
     }
 
     public execute(): Nullable<Object>
@@ -188,7 +188,7 @@ export class ConstantExpression extends Expression
         {
             return value == "true";
         }
-        else if (/^{.*}$/.test(value))
+        else if (/^({.*}|\[.*\])$/.test(value))
         {
             return JSON.parse(value.replace(/([{,]\s*)([a-zA-Z_]\w+)(\s*:)/g, "$1\"$2\"$3").replace(/'/g, "\""));
         }
