@@ -79,7 +79,6 @@
         "no-duplicate-variable":           true,
         "no-empty":                        true,
         "no-internal-module":              true,
-        "no-magic-numbers":                true,
         "no-mergeable-namespace":          true,
         "no-misused-new":                  true,
         "no-non-null-assertion":           true,

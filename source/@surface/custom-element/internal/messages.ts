@@ -27,7 +27,7 @@ export default class Messages
     public static readonly invalidLHSInForLoop           = "Invalid left-hand side in for-loop";
     public static readonly invalidModuleSpecifier        = "Unexpected token";
     public static readonly invalidRegExp                 = "Invalid regular expression";
-    public static readonly LetInLexicalBinding           = "let is disallowed as a lexically bound name";
+    public static readonly letInLexicalBinding           = "let is disallowed as a lexically bound name";
     public static readonly missingFromClause             = "Unexpected token";
     public static readonly multipleDefaultsInSwitch      = "More than one default clause in switch statement";
     public static readonly newlineAfterThrow             = "Illegal newline after throw";
@@ -60,5 +60,5 @@ export default class Messages
     public static readonly unexpectedToken               = "Unexpected token %0";
     public static readonly unexpectedTokenIllegal        = "Unexpected token ILLEGAL";
     public static readonly unknownLabel                  = "Undefined label '%0'";
-    public static readonly unterminatedRegExp            = "Invalid regular expression missing /"
-};
+    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";
+}

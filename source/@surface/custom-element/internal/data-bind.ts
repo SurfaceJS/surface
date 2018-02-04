@@ -1,6 +1,6 @@
 import CustomElement from "..";
 
-import Expression from "./expression";
+import Parser from "./parser";
 
 import { Action, Func } from "@surface/types";
 
@@ -25,13 +25,20 @@ export default class DataBind<T extends CustomElement>
         {
             if (attribute.value.indexOf("{{") > -1)
             {
-                console.log(attribute.value);
-                console.time();
-                const match = /{{\s*((?:(?!{{|}}).)+?)\s*}}/.exec(attribute.value);
+                const match = /{{(.+)}}/.exec(attribute.value);
 
                 if (match)
                 {
-                    const expression = Expression.from(match[1], context, notify);
+                    console.log(attribute.value);
+                    console.time();
+                    // tslint:disable-next-line:no-unused-expression
+                    const parser = new Parser({ global: window, model: context, self: node },  match[1]);
+                    console.timeEnd();
+
+                    console.time();
+                    const expression = parser.parse();
+                    console.timeEnd();
+                    console.log(expression);
                     if (attribute.name.startsWith("on-"))
                     {
                         node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.execute());
@@ -48,7 +55,6 @@ export default class DataBind<T extends CustomElement>
                 {
                     throw new Error(`Expression bind not supported: ${attribute.value}`);
                 }
-                console.timeEnd();
             }
         }
 
@@ -78,7 +84,9 @@ export default class DataBind<T extends CustomElement>
 
                         if (rawExpression)
                         {
-                            const expression = Expression.from(rawExpression, context, notify);
+                            const parser = new Parser({ global: window, model: context, self: node },  rawExpression);
+                            const expression = parser.parse();
+
                             binders.push(() => `${left || ""}${expression.execute() || ""}${right || ""}${remaining || ""}`);
                         }
                         else

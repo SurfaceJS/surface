@@ -1,20 +1,7 @@
 import Character    from "./character";
 import ErrorHandler from "./error-handler";
 import Messages     from "./messages";
-
-export enum Token
-{
-    BooleanLiteral,
-    EOF,
-    Identifier,
-    Keyword,
-    NullLiteral,
-    NumericLiteral,
-    Punctuator,
-    RegularExpression,
-    StringLiteral,
-    Template
-}
+import Token        from "./token";
 
 export type RawToken =
 {
@@ -31,14 +18,14 @@ export type RawToken =
     cooked?:    string;
     head?:      boolean;
     tail?:      boolean;
-}
+};
 
 export default class Scanner
 {
     private readonly curlyStack:   Array<string>;
     private readonly length:       number;
-    private readonly source:       string;
     private readonly errorHandler: ErrorHandler;
+    private readonly source:       string;
 
     private _index: number;
     public get index(): number
@@ -61,18 +48,19 @@ export default class Scanner
     public constructor(source: string)
     {
         this.source = source;
-        this.length = source.length;
 
-        this._index      = 0;
-        this._lineNumber = 0;
-        this._lineStart  = 0;
+        this.curlyStack   = [];
+        this.length       = source.length;
+        this.errorHandler = new ErrorHandler();
+        this._index       = 0;
+        this._lineNumber  = 0;
+        this._lineStart   = 0;
     }
 
     private codePointAt(index: number): number
     {
         let codePoint = this.source.charCodeAt(index);
 
-        // tslint:disable:no-magic-numbers
         if (codePoint >= 0xD800 && codePoint <= 0xDBFF)
         {
             const second = this.source.charCodeAt(index + 1);
@@ -82,7 +70,6 @@ export default class Scanner
                 codePoint = (first - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
             }
         }
-        // tslint:enable:no-magic-numbers
 
         return codePoint;
     }
@@ -95,7 +82,6 @@ export default class Scanner
     // tslint:disable-next-line:cyclomatic-complexity
     private isKeyword(id: string): boolean
     {
-        // tslint:disable:no-magic-numbers
         switch (id.length)
         {
             case 2:
@@ -144,8 +130,7 @@ export default class Scanner
             default:
                 return false;
         }
-        // tslint:enable:no-magic-numbers
-    }
+            }
 
     private isImplicitOctalLiteral(): boolean
     {
@@ -211,8 +196,7 @@ export default class Scanner
 
         this._index += id.length;
 
-        // tslint:disable:no-magic-numbers
-        // '\u' (U+005C, U+0075) denotes an escaped character.
+                // '\u' (U+005C, U+0075) denotes an escaped character.
         if (codePoint == 0x5C)
         {
             if (this.source.charCodeAt(this._index) != 0x75)
@@ -290,7 +274,6 @@ export default class Scanner
                 id += char;
             }
         }
-        // tslint:enable:no-magic-numbers
 
         return id;
     }
@@ -307,8 +290,7 @@ export default class Scanner
 
     private octalToDecimal(ch: string): { code: number, octal: boolean }
     {
-        // tslint:disable:no-magic-numbers
-        // \0 is not octal escape sequence
+                // \0 is not octal escape sequence
         let octal = (ch !== "0");
         let code = this.octalValue(ch);
 
@@ -329,13 +311,12 @@ export default class Scanner
         }
 
         return { code, octal };
-        // tslint:enable:no-magic-numbers
-    }
+            }
 
     private scanBinaryLiteral(start: number): RawToken
     {
-        let num = "";
-        let char;
+        let $number = "";
+        let char    = "";
 
         while (!this.eof())
         {
@@ -346,11 +327,11 @@ export default class Scanner
                 break;
             }
 
-            num += this.source[this._index];
+            $number += this.source[this._index];
             this._index++;
         }
 
-        if (num.length == 0)
+        if ($number.length == 0)
         {
             // only 0b or 0B
             this.throwUnexpectedToken();
@@ -358,9 +339,9 @@ export default class Scanner
 
         if (!this.eof())
         {
-            char = this.source.charCodeAt(this._index);
+            const codePoint = this.source.charCodeAt(this._index);
 
-            if (Character.isIdentifierStart(char) || Character.isDecimalDigit(char))
+            if (Character.isIdentifierStart(codePoint) || Character.isDecimalDigit(codePoint))
             {
                 this.throwUnexpectedToken();
             }
@@ -369,7 +350,7 @@ export default class Scanner
         const token =
         {
             type:       Token.NumericLiteral,
-            value:      Number.parseInt(num, 2),
+            value:      Number.parseInt($number, 2),
             lineNumber: this.lineNumber,
             lineStart:  this.lineStart,
             start:      start,
@@ -377,7 +358,7 @@ export default class Scanner
         };
 
         return token;
-    }
+            }
 
     private scanHexEscape(prefix: string): string|null
     {
@@ -399,11 +380,11 @@ export default class Scanner
         }
 
         return String.fromCharCode(code);
-    }
+            }
 
     private scanHexLiteral(start: number): RawToken
     {
-        let num = "";
+        let $number = "";
 
         while (!this.eof())
         {
@@ -412,11 +393,11 @@ export default class Scanner
                 break;
             }
 
-            num += this.source[this._index];
+            $number += this.source[this._index];
             this._index++;
         }
 
-        if (num.length == 0)
+        if ($number.length == 0)
         {
             this.throwUnexpectedToken();
         }
@@ -429,7 +410,7 @@ export default class Scanner
         const token =
         {
             type:       Token.NumericLiteral,
-            value:      Number.parseInt("0x" + num, 16),
+            value:      Number.parseInt("0x" + $number, 16),
             lineNumber: this.lineNumber,
             lineStart:  this.lineStart,
             start:      start,
@@ -612,7 +593,7 @@ export default class Scanner
         {
             octal = true;
             $number = "0" + this.source[this._index++];
-            this._index++
+            this._index++;
         }
         else
         {
@@ -627,7 +608,7 @@ export default class Scanner
             }
 
             $number += this.source[this._index];
-            this._index++
+            this._index++;
         }
 
         if (!octal && $number.length == 0)
@@ -797,8 +778,7 @@ export default class Scanner
     {
         const start = this.index;
 
-        // tslint:disable:no-magic-numbers
-        // Check for most common single-character punctuators.
+                // Check for most common single-character punctuators.
         let $string = this.source[this.index];
         switch ($string)
         {
@@ -897,7 +877,6 @@ export default class Scanner
                     }
                 }
         }
-        // tslint:enable:no-magic-numbers
 
         if (this.index == start)
         {
@@ -934,7 +913,7 @@ export default class Scanner
         while (!this.eof())
         {
             let char = this.source[this._index];
-            this._index++
+            this._index++;
 
             if (char == "`")
             {
@@ -957,7 +936,7 @@ export default class Scanner
             else if (char == "\\")
             {
                 char = this.source[this._index];
-                this._index++
+                this._index++;
 
                 if (!Character.isLineTerminator(char.charCodeAt(0)))
                 {
@@ -1088,30 +1067,30 @@ export default class Scanner
 
     private scanUnicodeCodePointEscape(): string
     {
-        let ch = this.source[this._index];
+        let char = this.source[this._index];
         let code = 0;
 
         // At least, one hex digit is required.
-        if (ch == "}")
+        if (char == "}")
         {
             this.throwUnexpectedToken();
         }
 
         while (!this.eof())
         {
-            ch = this.source[this._index];
+            char = this.source[this._index];
 
             this._index++;
 
-            if (!Character.isHexDigit(ch.charCodeAt(0)))
+            if (!Character.isHexDigit(char.charCodeAt(0)))
             {
                 break;
             }
-            code = code * 16 + this.hexValue(ch);
+
+            code = code * 16 + this.hexValue(char);
         }
 
-        // tslint:disable-next-line:no-magic-numbers
-        if (code > 0x10FFFF || ch != "}")
+        if (code > 0x10FFFF || char != "}")
         {
             this.throwUnexpectedToken();
         }
@@ -1129,15 +1108,20 @@ export default class Scanner
         this.errorHandler.tolerateError(this._index, this._lineNumber, this._index - this._lineStart + 1, message || Messages.unexpectedTokenIllegal);
     }
 
-    public lexical(): RawToken
+    public nextToken(): RawToken
     {
-        // tslint:disable:no-magic-numbers
         if (this.eof())
         {
             return { type: Token.EOF, value: "", lineNumber: 0, lineStart: 0, start: 0, end: 0 };
         }
 
         const charCode = this.source.charCodeAt(this._index);
+
+        if (Character.isWhiteSpace(charCode))
+        {
+            this._index++;
+            return this.nextToken();
+        }
 
         if (Character.isIdentifierStart(charCode))
         {
@@ -1189,6 +1173,5 @@ export default class Scanner
         }
 
         return this.scanPunctuator();
-        /// tslint:enable:no-magic-numbers
     }
 }
