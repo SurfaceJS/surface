@@ -22,7 +22,7 @@
         "sourceMap":                        true,
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
-        //"strictPropertyInitialization":     true, Todo: Waiting support
+        "strictPropertyInitialization":     true,
         "suppressImplicitAnyIndexErrors":   true,
         "target":                           "esnext"
     },

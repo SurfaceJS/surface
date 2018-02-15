@@ -1,16 +1,18 @@
-
-import { Nullable } from "@surface/types";
+import CustomElement from "..";
+import * as symbols  from "../symbols";
+import { Action, Nullable, Func1, Func2 } from "@surface/types";
 
 export type Context =
 {
     global: Object;
-    model:  Object;
-    self:   Object;
+    host:   Object;
+    this:   Object;
 };
 
+// tslint:disable:no-any
 export default interface IExpression
 {
-    execute(): Nullable<Object>;
+    evaluate(): any;
 }
 
 export class ArrayExpression implements IExpression
@@ -18,98 +20,88 @@ export class ArrayExpression implements IExpression
     public constructor(private readonly elements: Array<IExpression>)
     { }
 
-    public execute(): Array<Nullable<Object>>
+    public evaluate(): Array<any>
     {
-        return this.elements.map(x => x.execute());
+        return this.elements.map(x => x.evaluate());
     }
 }
 
+const binaryFunctions: { [key: string]: Func2<any, any, any> } =
+{
+    "+":          (left, right) => left + right,
+    "-":          (left, right) => left - right,
+    "*":          (left, right) => left * right,
+    "/":          (left, right) => left / right,
+    "&&":         (left, right) => left && right,
+    "||":         (left, right) => left || right,
+    "==":         (left, right) => left == right,
+    "===":        (left, right) => left === right,
+    "!=":         (left, right) => left != right,
+    "!==":        (left, right) => left !== right,
+    "instanceof": (left, right) => left instanceof right,
+    "<=":         (left, right) => left <= right,
+    ">=":         (left, right) => left >= right,
+    "<":          (left, right) => left <  right,
+    ">":          (left, right) => left >  right,
+    "&":          (left, right) => left & right,
+    "|":          (left, right) => left | right,
+    "^":          (left, right) => left ^ right,
+    "<<":         (left, right) => left << right,
+    ">>":         (left, right) => left >> right,
+    ">>>":        (left, right) => left >>> right,
+};
+
+const unaryFunctions: { [key: string]: Func1<any, any> } =
+{
+    "+":      value => +value,
+    "-":      value => -value,
+    "~":      value => ~value,
+    "!":      value => !value,
+    "typeof": value => typeof value,
+};
+
+const updateFunctions: { [key: string]: Func1<any, any> } =
+{
+    "++*": value => ++value,
+    "--*": value => --value,
+    "*++": value => value++,
+    "*--": value => value--,
+};
+
 export class BinaryExpression implements IExpression
 {
-    public constructor(private readonly operator: string, private readonly left: IExpression, private readonly right: IExpression)
-    { }
-
-    // tslint:disable-next-line:cyclomatic-complexity
-    public execute(): Nullable<Object>
+    private operation: Func2<any, any, any>;
+    public constructor(private readonly left: IExpression, private readonly right: IExpression, operator: string)
     {
-        const left  = this.left.execute();
-        const right = this.right.execute();
+        this.operation = binaryFunctions[operator];
+    }
 
-        switch (this.operator)
-        {
-            case "&&":
-                return left && right;
-            case "||":
-                return left || right;
-            case "==":
-                return left == right;
-            case "===":
-                return left === right;
-            case "!=":
-                return left != right;
-            case "!==":
-                return left !== right;
-            case "instanceof":
-                if (right instanceof Function)
-                {
-                    return left instanceof right;
-                }
-                else
-                {
-                    throw new TypeError("Right-hand side of 'instanceof' is not callable");
-                }
-            default:
-                if (left && right)
-                {
-                    switch (this.operator)
-                    {
-                        case "<=":
-                            return left <= right;
-                        case ">=":
-                            return left >= right;
-                        case ">":
-                            return left > right;
-                        case "<":
-                            return left < right;
-                        default:
-                            if (typeof left == "number" && typeof right == "number")
-                            {
-                                switch (this.operator)
-                                {
-                                    case "&":
-                                        return left & right;
-                                    case "|":
-                                        return left | right;
-                                    case "^":
-                                        return left ^ right;
-                                    case "<<":
-                                        return left << right;
-                                    case ">>":
-                                        return left >> right;
-                                    case ">>>":
-                                        return left >>> right;
-                                    default:
-                                        return;
-                                }
-                            }
-
-                            return 0;
-                    }
-                }
-
-                return;
-        }
+    public evaluate(): any
+    {
+        return this.operation(this.left.evaluate(), this.right.evaluate());
     }
 }
 
 export class CallExpression implements IExpression
 {
-    public constructor(private readonly context: IExpression, private readonly invoker: IExpression, private readonly args: Array<IExpression>)
+    public constructor(private readonly context: IExpression, private readonly name: string, private readonly args: Array<IExpression>)
     { }
 
-    public execute(): Nullable<Object>
+    public evaluate(): any
     {
-        return (this.invoker.execute() as Function).apply(this.context.execute(), this.args.map(x => x.execute()));
+        const context = this.context.evaluate() as object;
+        return context[this.name].apply(context, this.args.map(x => x.evaluate()));
+    }
+}
+
+export class ConditionalExpression implements IExpression
+{
+    public constructor(private readonly conditionExpression: IExpression, private readonly truthyExpression: IExpression, private readonly falsy: IExpression)
+    {}
+
+    public evaluate(): any
+    {
+        return this.conditionExpression.evaluate() ? this.truthyExpression.evaluate() : this.falsy.evaluate();
     }
 }
 
@@ -118,7 +110,7 @@ export class ConstantExpression implements IExpression
     public constructor(private readonly value: Nullable<Object>)
     { }
 
-    public execute(): Nullable<Object>
+    public evaluate(): any
     {
         return this.value;
     }
@@ -134,7 +126,7 @@ export class IdentifierExpression implements IExpression
         }
     }
 
-    public execute(): Object
+    public evaluate(): Object
     {
         return this.context[this.name];
     }
@@ -142,46 +134,191 @@ export class IdentifierExpression implements IExpression
 
 export class MemberExpression implements IExpression
 {
-    public constructor(private readonly target: IExpression, private readonly property: string)
-    { }
-
-    public execute(): Nullable<Object>
+    private readonly _property: IExpression;
+    public get property(): string
     {
-        const target = this.target.execute();
-        if (target)
+        return `${this._property.evaluate()}`;
+    }
+
+    private readonly _target: IExpression;
+    public get target(): Nullable<Object>
+    {
+        return this._target.evaluate();
+    }
+
+    public constructor(target: IExpression, property: IExpression, notify?: Action)
+    {
+        this._property = property;
+        this._target   = target;
+
+        if (notify)
         {
-            return target[this.property];
+            this.listen(notify);
+        }
+    }
+
+    private listen(notify: Action): void
+    {
+        const context  = this.target;
+        const property = this.property;
+
+        if (!context)
+        {
+            throw new TypeError("Can't bind to non initialized object.");
         }
 
-        throw new TypeError(`Cannot read property '${this.property}' of undefined`);
+        const observedAttributes = context.constructor[symbols.observedAttributes] as Array<string>;
+        if (observedAttributes && context instanceof CustomElement && observedAttributes.some(x => x == property))
+        {
+            const onAttributeChanged = context[symbols.onAttributeChanged];
+            context[symbols.onAttributeChanged] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
+            {
+                if (attributeName == property)
+                {
+                    notify();
+                }
+
+                if (onAttributeChanged)
+                {
+                    onAttributeChanged.call(context, attributeName, oldValue, newValue, namespace);
+                }
+            };
+        }
+        else
+        {
+            let descriptor = Object.getOwnPropertyDescriptor(context.constructor.prototype, property);
+            if (descriptor && descriptor.get)
+            {
+                let getter = descriptor.get;
+                let setter = descriptor.set;
+
+                Object.defineProperty
+                (
+                    context,
+                    property,
+                    {
+                        get: () => getter && getter.call(context),
+                        set: (value: Object) =>
+                        {
+                            if (setter)
+                            {
+                                setter.call(context, value);
+                            }
+
+                            notify();
+                        }
+                    }
+                );
+            }
+        }
+    }
+
+    public evaluate(): any
+    {
+        const target = this.target as Object;
+        return target[this.property];
     }
 }
 
 export class ObjectExpression implements IExpression
 {
-    //private readonly $object: Object;
+    public constructor(private readonly properties: Array<PropertyExpression>)
+    { }
 
-    public constructor(private readonly properties: Array<IExpression>)
+    public evaluate(): Object
     {
-        console.log(this.properties);
-        //this.$object = { };
-    }
+        const $object = { };
 
-    public execute(): Object
-    {
-        throw new Error("Method not implemented.");
+        for (const property of this.properties)
+        {
+            $object[property.key as string|number] = property.evaluate();
+        }
+
+        return $object;
     }
 }
 
 export class PropertyExpression implements IExpression
 {
-    public constructor(private readonly key: IExpression, private readonly value: IExpression)
+    private readonly _key: IExpression;
+    public get key(): string
     {
-        console.log(this.key.execute());
+        return `${this._key.evaluate()}`;
     }
 
-    public execute(): Nullable<Object>
+    private readonly _value: IExpression;
+    public get value(): Nullable<string|number>
     {
-        return this.value.execute();
+        return this._value.evaluate();
+    }
+
+    public constructor(key: IExpression, value: IExpression)
+    {
+        this._key   = key;
+        this._value = value;
+    }
+
+    public evaluate(): any
+    {
+        return this.value;
     }
 }
+
+export class RegexExpression implements IExpression
+{
+    public constructor(private readonly pattern: string, private readonly flags: string)
+    { }
+
+    public evaluate(): any
+    {
+        return new RegExp(this.pattern, this.flags);
+    }
+}
+
+export class TemplateLiteralExpression implements IExpression
+{
+    public constructor(private readonly quasis: Array<string>, private readonly expressions: Array<IExpression>)
+    { }
+
+    public evaluate(): any
+    {
+        let result = "";
+
+        for (let i = 0; i < this.expressions.length; i++)
+        {
+            result = this.quasis[i] + this.expressions[i].evaluate();
+        }
+
+        return result + this.quasis[this.quasis.length - 1];
+    }
+}
+
+export class UnaryExpression implements IExpression
+{
+    private readonly operation: Func1<any, any>;
+    public constructor(private readonly value: IExpression, operator: string)
+    {
+        this.operation = unaryFunctions[operator];
+    }
+
+    public evaluate(): any
+    {
+        return this.operation(this.value.evaluate());
+    }
+}
+
+export class UpdateExpression implements IExpression
+{
+    private readonly operation: Func1<any, any>;
+
+    public constructor(private readonly value: IExpression, operator: string, prefix: boolean)
+    {
+        this.operation = prefix ? updateFunctions[`*${operator}`] : updateFunctions[`${operator}*`];
+    }
+
+    public evaluate(): any
+    {
+        return this.operation(this.value.evaluate());
+    }
+}
+// tslint:enable:no-any

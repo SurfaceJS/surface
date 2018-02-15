@@ -7,18 +7,18 @@ import DataBind     from "./internal/data-bind";
 
 import { List } from "@surface/collection";
 
+import { Nullable } from "@surface/types";
+
 const shadowRoot = Symbol.for("shadowRoot");
 
 export default abstract class CustomElement extends HTMLElement
 {
-    /* Todo: Waiting support
     public static readonly [symbols.observedAttributes]: Nullable<Array<string>>;
     public static readonly [symbols.template]:           Nullable<HTMLTemplateElement>;
 
     private readonly [shadowRoot]: ShadowRoot;
 
     public [symbols.onAttributeChanged]: (attributeName: string, oldValue: string, newValue: string, namespace: string) => void;
-    */
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);
@@ -108,8 +108,7 @@ export default abstract class CustomElement extends HTMLElement
     public getAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
     public getAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
-        const root: ShadowRoot = this[shadowRoot];
-        let slots = root
+        let slots = this[shadowRoot]
             .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");
 
         if (slots.length > 0)
@@ -136,7 +135,7 @@ export default abstract class CustomElement extends HTMLElement
         }
         else if (selector instanceof RegExp)
         {
-            return root.querySelectorAll("*")
+            return this[shadowRoot].querySelectorAll("*")
                 .asEnumerable()
                 .cast<HTMLElement>()
                 .where(x => !!x.tagName.toLowerCase().match(selector))
@@ -145,7 +144,7 @@ export default abstract class CustomElement extends HTMLElement
         }
         else
         {
-            return root.querySelectorAll(selector).asEnumerable().cast<T>().toList();
+            return this[shadowRoot].querySelectorAll(selector).asEnumerable().cast<T>().toList();
         }
     }
 }

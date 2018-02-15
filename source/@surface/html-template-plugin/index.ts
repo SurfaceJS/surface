@@ -68,6 +68,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
 
     public apply (compiler: webPack.Compiler)
     {
+        // tslint:disable-next-line:no-this-assignment
         const self = this;
         const filename = self.filename || "[name]/index.html";
 
@@ -80,6 +81,11 @@ class HtmlTemplatePlugin implements webPack.Plugin
                 if (!this.options.entry)
                 {
                     throw new Error("Entry can\"t be null.");
+                }
+
+                if (!this.options.context)
+                {
+                    throw new Error("Context can\"t be null.");
                 }
 
                 for (let key in compilation.entrypoints)
