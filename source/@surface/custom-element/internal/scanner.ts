@@ -313,23 +313,39 @@ export default class Scanner
         let $number = "";
         let char    = "";
 
-        while (!this.eof())
+        if (!this.eof())
         {
-            char = this.source[this.index];
-
-            if (char != "0" && char != "1")
+            if (this.source[this.index] == "_")
             {
-                break;
+                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
             }
 
             $number += this.source[this.index];
             this.advance();
+
+            while (!this.eof())
+            {
+                char = this.source[this.index];
+
+                if (char != "0" && char != "1" && char != "_")
+                {
+                    break;
+                }
+
+                $number += this.source[this.index];
+                this.advance();
+            }
         }
 
         if ($number.length == 0)
         {
             // only 0b or 0B
             this.throwUnexpectedToken();
+        }
+
+        if ($number.endsWith("_"))
+        {
+            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
         }
 
         if (!this.eof())
@@ -345,7 +361,7 @@ export default class Scanner
         const token =
         {
             type:  Token.NumericLiteral,
-            value: Number.parseInt($number, 2)
+            value: Number.parseInt($number.replace(/_/g, ""), 2)
         };
 
         return token;
@@ -376,21 +392,39 @@ export default class Scanner
     private scanHexLiteral(start: number): RawToken
     {
         let $number = "";
+        let char    = "";
 
-        while (!this.eof())
+        if (!this.eof())
         {
-            if (!Character.isHexDigit(this.source.charCodeAt(this.index)))
+            if (this.source[this.index] == "_")
             {
-                break;
+                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
             }
 
             $number += this.source[this.index];
             this.advance();
+
+            while (!this.eof())
+            {
+                char = this.source[this.index];
+                if (!Character.isHexDigit(this.source.charCodeAt(this.index)) && char != "_")
+                {
+                    break;
+                }
+
+                $number += this.source[this.index];
+                this.advance();
+            }
         }
 
         if ($number.length == 0)
         {
             this.throwUnexpectedToken();
+        }
+
+        if ($number.endsWith("_"))
+        {
+            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -401,7 +435,7 @@ export default class Scanner
         const token =
         {
             type:  Token.NumericLiteral,
-            value: Number.parseInt("0x" + $number, 16)
+            value: Number.parseInt("0x" + $number.replace(/_/g, ""), 16)
         };
 
         return token;
@@ -465,61 +499,88 @@ export default class Scanner
         if (char != ".")
         {
             $number = this.source[this.index];
-
             this.advance();
 
-            char = this.source[this.index];
-
-            // Hex number starts with '0x'.
-            // Octal number starts with '0'.
-            // Octal number in ES6 starts with '0o'.
-            // Binary number in ES6 starts with '0b'.
-            if ($number == "0")
+            if (!this.eof())
             {
-                if (char == "x" || char == "X")
+                char = this.source[this.index];
+                // Hex number starts with '0x'.
+                // Octal number starts with '0'.
+                // Octal number in ES6 starts with '0o'.
+                // Binary number in ES6 starts with '0b'.
+                if ($number == "0")
                 {
-                    this.advance();
-                    return this.scanHexLiteral(start);
-                }
-                if (char == "b" || char == "B")
-                {
-                    this.advance();
-                    return this.scanBinaryLiteral(start);
-                }
-                if (char == "o" || char == "O")
-                {
-                    return this.scanOctalLiteral(char, start);
-                }
-
-                if (char && Character.isOctalDigit(char.charCodeAt(0)))
-                {
-                    if (this.isImplicitOctalLiteral())
+                    if (char == "x" || char == "X")
+                    {
+                        this.advance();
+                        return this.scanHexLiteral(start);
+                    }
+                    if (char == "b" || char == "B")
+                    {
+                        this.advance();
+                        return this.scanBinaryLiteral(start);
+                    }
+                    if (char == "o" || char == "O")
                     {
                         return this.scanOctalLiteral(char, start);
                     }
-                }
-            }
 
-            while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
-            {
+                    if (char && Character.isOctalDigit(char.charCodeAt(0)))
+                    {
+                        if (this.isImplicitOctalLiteral())
+                        {
+                            return this.scanOctalLiteral(char, start);
+                        }
+                    }
+                }
+
                 $number += this.source[this.index];
                 this.advance();
+
+                char = this.source[this.index];
+
+                while (!this.eof() && Character.isDecimalDigit(this.source.charCodeAt(this.index)) || char == "_")
+                {
+                    $number += this.source[this.index];
+                    this.advance();
+
+                    char = this.source[this.index];
+                }
             }
-            char = this.source[this.index];
         }
 
         if (char == ".")
         {
+            if ($number.endsWith("_"))
+            {
+                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            }
+
             $number += this.source[this.index];
             this.advance();
 
-            while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
+            char = this.source[this.index];
+
+            if (char == "_")
+            {
+                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            }
+
+            if (!this.eof())
             {
                 $number += this.source[this.index];
                 this.advance();
+
+                char = this.source[this.index];
+
+                while (!this.eof() && Character.isDecimalDigit(this.source.charCodeAt(this.index)) || char == "_")
+                {
+                    $number += this.source[this.index];
+                    this.advance();
+                    char = this.source[this.index];
+                }
             }
 
-            char = this.source[this.index];
         }
 
         if (char == "e" || char == "E")
@@ -549,6 +610,11 @@ export default class Scanner
             }
         }
 
+        if ($number.endsWith("_"))
+        {
+            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+        }
+
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
         {
             this.throwUnexpectedToken();
@@ -557,7 +623,7 @@ export default class Scanner
         const token =
         {
             type:  Token.NumericLiteral,
-            value: Number.parseFloat($number)
+            value: Number.parseFloat($number.replace(/_/g, ""))
         };
 
         return token;

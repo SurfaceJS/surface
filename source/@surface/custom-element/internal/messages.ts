@@ -33,6 +33,7 @@ export default class Messages
     // public static readonly newlineAfterThrow             = "Illegal newline after throw";
     // public static readonly noAsAfterImportNamespace      = "Unexpected token";
     // public static readonly noCatchOrFinally              = "Missing catch or finally after try";
+    public static readonly numericSepatorNotAllowed      = "Numeric serapators are not allowed here.";
     // public static readonly parameterAfterRestParameter   = "Rest parameter must be last formal parameter";
     // public static readonly propertyAfterRestProperty     = "Unexpected token";
     // public static readonly redeclaration                 = "%0 '%1' has already been declared";
@@ -60,5 +61,5 @@ export default class Messages
     //public static readonly unexpectedToken               = "Unexpected token %0";
     public static readonly unexpectedTokenIllegal        = "Unexpected token ILLEGAL"; // used
     //public static readonly unknownLabel                  = "Undefined label '%0'";
-    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";
+    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";    
 }
