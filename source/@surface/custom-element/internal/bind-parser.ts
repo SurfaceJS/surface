@@ -1,5 +1,5 @@
-import IExpression, { Context, ConstantExpression } from "./expression";
-import Parser from "./parser";
+import IExpression, { ConstantExpression, Context } from "./expression";
+import Parser                                       from "./parser";
 
 import { Action } from "@surface/types";
 

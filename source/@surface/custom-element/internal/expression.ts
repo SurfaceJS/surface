@@ -1,6 +1,7 @@
-import CustomElement from "..";
 import * as symbols  from "../symbols";
-import { Action, Nullable, Func1, Func2 } from "@surface/types";
+import CustomElement from "..";
+
+import { Action, Func1, Func2, Nullable } from "@surface/types";
 
 export type Context =
 {
@@ -10,6 +11,7 @@ export type Context =
 };
 
 // tslint:disable:no-any
+//tslint:disable:restrict-plus-operands
 export default interface IExpression
 {
     evaluate(): any;
@@ -32,6 +34,7 @@ const binaryFunctions: { [key: string]: Func2<any, any, any> } =
     "-":          (left, right) => left - right,
     "*":          (left, right) => left * right,
     "/":          (left, right) => left / right,
+    "%":          (left, right) => left % right,
     "&&":         (left, right) => left && right,
     "||":         (left, right) => left || right,
     "==":         (left, right) => left == right,
@@ -120,7 +123,11 @@ export class IdentifierExpression implements IExpression
 {
     public constructor(private readonly context: Object, private readonly name: string)
     {
-        if (!(this.name in this.context))
+        if (this.name in this.context["global"])
+        {
+            this.context = this.context["global"];
+        }
+        else if (!(this.name in this.context))
         {
             throw new Error(`The identifier ${name} does not exist in this context.`);
         }
@@ -321,4 +328,3 @@ export class UpdateExpression implements IExpression
         return this.operation(this.value.evaluate());
     }
 }
-// tslint:enable:no-any

@@ -1,7 +1,7 @@
 import { ObjectLiteral, Nullable } from "@surface/types";
-import * as fs                     from "fs";
-import * as path                   from "path";
-import * as webPack                from "webpack";
+import fs                          from "fs";
+import path                        from "path";
+import { Plugin, Compiler }        from "webpack";
 
 namespace HtmlTemplatePlugin
 {
@@ -12,7 +12,7 @@ namespace HtmlTemplatePlugin
     }
 }
 
-class HtmlTemplatePlugin implements webPack.Plugin
+class HtmlTemplatePlugin implements Plugin
 {
     private readonly filename: Nullable<string>;
     private readonly template: string;
@@ -66,7 +66,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
         return filename;
     }
 
-    public apply (compiler: webPack.Compiler)
+    public apply (compiler: Compiler)
     {
         // tslint:disable-next-line:no-this-assignment
         const self = this;
@@ -76,7 +76,7 @@ class HtmlTemplatePlugin implements webPack.Plugin
         (
             "emit",
             // tslint:disable-next-line:no-any
-            function (this: webPack.Compiler, compilation: any, callback: (error?: Error) => void)
+            function (this: Compiler, compilation: any, callback: (error?: Error) => void)
             {
                 if (!this.options.entry)
                 {

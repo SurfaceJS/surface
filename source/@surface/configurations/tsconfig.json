@@ -5,6 +5,7 @@
         "alwaysStrict":                     true,
         //"baseUrl":                          "../../", /* Generating messy output */
         "declaration":                      false, /* false for dev */
+        "esModuleInterop":                  true,
         "emitDecoratorMetadata":            true,
         "experimentalDecorators":           true,
         "forceConsistentCasingInFileNames": false, /* Conflicting with symlink */

@@ -1,9 +1,10 @@
 import "./extensions";
+
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
 
-import * as symbols from "./symbols";
 import DataBind     from "./internal/data-bind";
+import * as symbols from "./symbols";
 
 import { List } from "@surface/collection";
 

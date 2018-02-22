@@ -25,36 +25,25 @@ export default class DataBind<T extends CustomElement>
         {
             if (attribute.value.indexOf("{{") > -1)
             {
-                //const match = /{{(.+)}}/.exec(attribute.value);
-
-                //if (match)
-                //{
-                    console.log(attribute.value);
-                    console.time();
-                    // tslint:disable-next-line:no-unused-expression
-                    //const parser = new Parser({ global: window, host: context, self: node },  match[1]);
-                    const expression = BindParser.scan({ global: window, host: context, this: node }, attribute.value, notify);
-                    console.timeEnd();
-                    console.log(expression);
-                    if (attribute.name.startsWith("on-"))
+                console.log(attribute.value);
+                console.time();
+                const expression = BindParser.scan({ global: window, host: context, this: node }, attribute.value, notify);
+                console.timeEnd();
+                console.log(expression);
+                if (attribute.name.startsWith("on-"))
+                {
+                    node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
+                    attribute.value = "[binding]";
+                }
+                else
+                {
+                    if (attribute.name in node)
                     {
-                        node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
-                        attribute.value = "[binding]";
+                        binders.push(() => node[attribute.name] = expression.evaluate());
                     }
-                    else
-                    {
-                        if (attribute.name in node)
-                        {
-                            binders.push(() => node[attribute.name] = expression.evaluate());
-                        }
 
-                        binders.push(() => attribute.value = `${expression.evaluate()}`);
-                    }
-                //}
-                //else
-                //{
-                //    throw new Error(`Expression bind not supported: ${attribute.value}`);
-                //}
+                    binders.push(() => attribute.value = `${expression.evaluate()}`);
+                }
             }
         }
 
@@ -74,10 +63,11 @@ export default class DataBind<T extends CustomElement>
             console.time();
 
             const expression = BindParser.scan({ global: window, host: context, this: node }, node.nodeValue, notify);
+            console.timeEnd();
+            console.log(expression);
 
             binders.push(() => `${expression.evaluate()}`);
             notify();
-            console.timeEnd();
         }
 
         await Promise.resolve();

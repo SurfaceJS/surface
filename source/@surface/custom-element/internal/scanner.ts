@@ -400,8 +400,8 @@ export default class Scanner
 
         const token =
         {
-            type:       Token.NumericLiteral,
-            value:      Number.parseInt("0x" + $number, 16)
+            type:  Token.NumericLiteral,
+            value: Number.parseInt("0x" + $number, 16)
         };
 
         return token;
@@ -448,8 +448,8 @@ export default class Scanner
 
         const token =
         {
-            type:       type,
-            value:      id
+            type:  type,
+            value: id
         };
 
         return token;
@@ -502,21 +502,21 @@ export default class Scanner
 
             while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
             {
-                this.advance();
                 $number += this.source[this.index];
+                this.advance();
             }
             char = this.source[this.index];
         }
 
         if (char == ".")
         {
-            this.advance();
             $number += this.source[this.index];
+            this.advance();
 
             while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
             {
-                this.advance();
                 $number += this.source[this.index];
+                this.advance();
             }
 
             char = this.source[this.index];
@@ -524,23 +524,23 @@ export default class Scanner
 
         if (char == "e" || char == "E")
         {
-            this.advance();
             $number += this.source[this.index];
+            this.advance();
 
             char = this.source[this.index];
 
             if (char == "+" || char == "-")
             {
-                this.advance();
                 $number += this.source[this.index];
+                this.advance();
             }
 
             if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
             {
                 while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                 {
-                    this.advance();
                     $number += this.source[this.index];
+                    this.advance();
                 }
             }
             else

@@ -3,6 +3,7 @@ import { Nullable } from "@surface/types";
 // tslint:disable-next-line:no-any
 export = function (this: any, content: string): string
 {
+    // tslint:disable-next-line:no-unused-expression
     this.cacheable && this.cacheable();
 
     let expression = /<!--(?:(?!<!--).)*?-->|(?:<require\s+path\s*=\s*(\\?[""])((?:(?!\1).|\\\1)+?)\1\s*\/>((?:\s|\\[rn])*))/g;

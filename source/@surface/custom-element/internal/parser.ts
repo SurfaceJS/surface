@@ -10,13 +10,12 @@ import IExpression,
     MemberExpression,
     ObjectExpression,
     PropertyExpression,
+    RegexExpression,
+    TemplateLiteralExpression,
     UnaryExpression,
     UpdateExpression,
-    TemplateLiteralExpression,
-    RegexExpression,
 }
 from "./expression";
-
 import Scanner, { RawToken } from "./scanner";
 import Token                 from "./token";
 
@@ -300,7 +299,7 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).property as string, this.argumentsExpression());
+                expression = new CallExpression(parentExpression, (expression as MemberExpression).property, this.argumentsExpression());
             }
             else if (this.match("["))
             {
@@ -564,7 +563,19 @@ export default class Parser
             case Token.Identifier:
                 return this.assignmentExpression();
             case Token.Punctuator:
-                if (this.lookahead.value == "(" || this.lookahead.value == "{"  || this.lookahead.value == "[" || this.lookahead.value == "/")
+                if
+                (
+                    this.lookahead.value == "("
+                    || this.lookahead.value == "{"
+                    || this.lookahead.value == "["
+                    || this.lookahead.value == "/"
+                    || this.lookahead.value == "!"
+                    || this.lookahead.value == "-"
+                    || this.lookahead.value == "^"
+                    || this.lookahead.value == "~"
+                    || this.lookahead.value == "++"
+                    || this.lookahead.value == "!!"
+                )
                 {
                     return this.assignmentExpression();
                 }

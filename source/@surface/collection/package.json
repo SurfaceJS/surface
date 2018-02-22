@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/enumerable": "0.0.5",
         "@surface/types": "0.0.1",
-        "tslib": "1.8.0"
+        "tslib": "1.9.0"
     },
     "description": "Collection modules.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
