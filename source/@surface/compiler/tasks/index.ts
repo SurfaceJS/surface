@@ -6,12 +6,12 @@ import { merge, resolveFile } from "@surface/common";
 import HtmlTemplatePlugin     from "@surface/html-template-plugin";
 import SimblingResolvePlugin  from "@surface/simbling-resolve-plugin";
 
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import fs                         from "fs";
 import path                       from "path";
 import rimraf                     from "rimraf";
-import webpack                    from "webpack";
-import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import UglifyJsPlugin             from "uglifyjs-webpack-plugin";
+import webpack                    from "webpack";
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {

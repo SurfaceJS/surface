@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import * as tasks     from "./tasks";
-import * as commander from "commander";
+import * as tasks from "./tasks";
+
+import commander from "commander";
 
 commander
     .version("0.0.1")

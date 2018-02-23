@@ -61,5 +61,5 @@ export default class Messages
     //public static readonly unexpectedToken               = "Unexpected token %0";
     public static readonly unexpectedTokenIllegal        = "Unexpected token ILLEGAL"; // used
     //public static readonly unknownLabel                  = "Undefined label '%0'";
-    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";    
+    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";
 }

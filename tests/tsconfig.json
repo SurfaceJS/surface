@@ -1,0 +1,5 @@
+{
+    "extends": "../source/@surface/configurations/tsconfig.json",
+    "include": ["source"],
+    "exclude": ["node_modules/@surface", "node_modules/@surface/**/node_modules/@surface"]
+}

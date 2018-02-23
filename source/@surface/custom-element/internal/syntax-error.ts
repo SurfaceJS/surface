@@ -1,8 +1,8 @@
 export default class SyntaxError extends Error
 {
-    public column:      number;
-    public index:       number;
-    public lineNumber:  number;
+    public column:     number;
+    public index:      number;
+    public lineNumber: number;
 
     public constructor(message: string, index: number, lineNumber: number, column: number)
     {

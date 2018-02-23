@@ -3,12 +3,15 @@
     "entry":    "index.ts",
     "filename": "index.js",
     "output":   "build",
+    "tsconfig": "tsconfig.json",
+    "tslint":   "../tslint.json",
     "webpackConfig":
     {
         "output":
         {
-            "devtoolModuleFilenameTemplate": "webpack:///[resource-path]"
+            "devtoolModuleFilenameTemplate": "[absolute-resource-path]"
         },
         "target": "node",
-        "node": { "__dirname": false }}
+        "node": { "__dirname": false }
+    }
 }

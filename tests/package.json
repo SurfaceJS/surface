@@ -4,7 +4,11 @@
     "url": "https://github.com/SurfaceJS/workbench/issues"
   },
   "dependencies": {
-    "@types/node": "8.0.51"
+    "@types/chai": "4.1.2",
+    "@types/mocha": "2.2.48",
+    "@types/node": "8.0.51",
+    "chai": "4.1.2",
+    "mocha": "5.0.1"
   },
   "description": "Testing setup.",
   "homepage": "https://github.com/SurfaceJS/workbench#readme",
@@ -17,7 +21,7 @@
   },
   "scripts": {
     "build": "node ./node_modules/@surface/compiler",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha build/index.js"
   },
   "version": "0.0.0"
 }

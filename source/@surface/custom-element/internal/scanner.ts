@@ -3,10 +3,13 @@ import Messages    from "./messages";
 import SyntaxError from "./syntax-error";
 import Token       from "./token";
 
+import { Nullable } from "@surface/types";
+
 export type RawToken =
 {
+    raw:      string;
+    value:    Nullable<Object>;
     type:     Token;
-    value:    Object;
     pattern?: string;
     flags?:   string;
     regex?:   RegExp|null;
@@ -43,7 +46,7 @@ export default class Scanner
         this.curlyStack = [];
         this.length     = source.length;
         this._index     = 0;
-        this.lineNumber = 0;
+        this.lineNumber = 1;
         this.lineStart  = 0;
     }
 
@@ -308,7 +311,7 @@ export default class Scanner
         return { code, octal };
     }
 
-    private scanBinaryLiteral(start: number): RawToken
+    private scanBinaryLiteral(prefix: string, start: number): RawToken
     {
         let $number = "";
         let char    = "";
@@ -360,8 +363,9 @@ export default class Scanner
 
         const token =
         {
+            raw:   this.source.substring(start, this.index),
+            value: Number.parseInt($number.replace(/_/g, ""), 2),
             type:  Token.NumericLiteral,
-            value: Number.parseInt($number.replace(/_/g, ""), 2)
         };
 
         return token;
@@ -401,9 +405,6 @@ export default class Scanner
                 this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
             }
 
-            $number += this.source[this.index];
-            this.advance();
-
             while (!this.eof())
             {
                 char = this.source[this.index];
@@ -434,8 +435,9 @@ export default class Scanner
 
         const token =
         {
+            raw:   this.source.substring(start, this.index),
+            value: Number.parseInt("0x" + $number.replace(/_/g, ""), 16),
             type:  Token.NumericLiteral,
-            value: Number.parseInt("0x" + $number.replace(/_/g, ""), 16)
         };
 
         return token;
@@ -461,11 +463,11 @@ export default class Scanner
         }
         else if (id == "null")
         {
-            type = Token.NullLiteral;
+            return { raw: id, value: null, type: Token.NullLiteral };
         }
         else if (id == "true" || id == "false")
         {
-            type = Token.BooleanLiteral;
+            return { raw: id, value: id == "true", type: Token.BooleanLiteral };
         }
         else
         {
@@ -480,13 +482,7 @@ export default class Scanner
             this.setCursorAt(restore);
         }
 
-        const token =
-        {
-            type:  type,
-            value: id
-        };
-
-        return token;
+        return { raw: id, value: id, type };
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -515,14 +511,22 @@ export default class Scanner
                         this.advance();
                         return this.scanHexLiteral(start);
                     }
+
                     if (char == "b" || char == "B")
                     {
                         this.advance();
-                        return this.scanBinaryLiteral(start);
+                        return this.scanBinaryLiteral(char, start);
                     }
+
                     if (char == "o" || char == "O")
                     {
                         return this.scanOctalLiteral(char, start);
+                    }
+
+                    if (char == "_")
+                    {
+                        this.advance();
+                        char = this.source[this.index];
                     }
 
                     if (char && Character.isOctalDigit(char.charCodeAt(0)))
@@ -533,9 +537,6 @@ export default class Scanner
                         }
                     }
                 }
-
-                $number += this.source[this.index];
-                this.advance();
 
                 char = this.source[this.index];
 
@@ -622,8 +623,9 @@ export default class Scanner
 
         const token =
         {
+            raw:   $number,
+            value: Number.parseFloat($number.replace(/_/g, "")),
             type:  Token.NumericLiteral,
-            value: Number.parseFloat($number.replace(/_/g, ""))
         };
 
         return token;
@@ -640,18 +642,23 @@ export default class Scanner
 
             this.advance();
 
-            $number = "0" + this.source[this.index];
+            $number = prefix + this.source[this.index];
 
             this.advance();
         }
         else
         {
             this.advance();
+
+            if (this.source[this.index] == "_")
+            {
+                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            }
         }
 
         while (!this.eof())
         {
-            if (!Character.isOctalDigit(this.source.charCodeAt(this.index)))
+            if (!Character.isOctalDigit(this.source.charCodeAt(this.index)) && this.source[this.index] != "_")
             {
                 break;
             }
@@ -666,6 +673,11 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
+        if ($number.endsWith("_"))
+        {
+            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+        }
+
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)) || Character.isDecimalDigit(this.source.charCodeAt(this.index)))
         {
             this.throwUnexpectedToken();
@@ -673,8 +685,9 @@ export default class Scanner
 
         const token =
         {
+            raw:   this.source.substring(start, this.index),
+            value: Number.parseInt($number.replace(/_/g, ""), 8),
             type:  Token.NumericLiteral,
-            value: Number.parseInt($number, 8)
         };
 
         return token;
@@ -684,7 +697,9 @@ export default class Scanner
     private scanStringLiteral(): RawToken
     {
         const start = this.index;
-        let quote = this.source[start];
+
+        let quote      = this.source[start];
+        let terminated = false;
 
         this.advance();
 
@@ -698,7 +713,7 @@ export default class Scanner
 
             if (char == quote)
             {
-                quote = "";
+                terminated = true;
                 break;
             }
             else if (char == "\\")
@@ -798,7 +813,7 @@ export default class Scanner
             }
         }
 
-        if (!Object.is(quote, ""))
+        if (!terminated)
         {
             this.setCursorAt(start);
             this.throwUnexpectedToken();
@@ -806,8 +821,9 @@ export default class Scanner
 
         const token =
         {
-            type:  Token.StringLiteral,
+            raw:   quote + $string + quote,
             value: $string,
+            type:  Token.StringLiteral,
             octal: octal
         };
 
@@ -871,8 +887,8 @@ export default class Scanner
                     $string = $string.substr(0, 3);
                     switch ($string)
                     {
-                        case "==":
-                        case "!=":
+                        case "===":
+                        case "!==":
                         case ">>>":
                         case "<<=":
                         case ">>=":
@@ -926,8 +942,9 @@ export default class Scanner
 
         const token =
         {
+            raw:   $string,
+            value: $string,
             type:  Token.Punctuator,
-            value: $string
         };
 
         return token;
@@ -1087,10 +1104,13 @@ export default class Scanner
             this.curlyStack.pop();
         }
 
+        const $string = this.source.slice(start + 1, this.index - rawOffset);
+
         const token =
         {
+            raw:    "`" + $string + "`",
+            value:  $string,
             type:   Token.Template,
-            value:  this.source.slice(start + 1, this.index - rawOffset),
             cooked: cooked,
             head:   head,
             tail:   tail
@@ -1146,7 +1166,7 @@ export default class Scanner
     {
         if (this.eof())
         {
-            return { type: Token.EOF, value: "" };
+            return { raw: "", type: Token.EOF, value: "" };
         }
 
         const charCode = this.source.charCodeAt(this.index);
@@ -1212,51 +1232,58 @@ export default class Scanner
     public scanRegex(): RawToken
     {
         let char        = "";
-        let pattern  = char;
+        let pattern     = "";
         let classMarker = false;
         let terminated  = false;
 
-        while (!this.eof())
+        if (!this.eof() && this.source[this.index] == "/")
         {
-            char = this.source[this.index];
+            pattern = this.source[this.index];
 
-            this.advance();
-
-            pattern += char;
-
-            if (char == "\\")
+            while (!this.eof())
             {
                 this.advance();
-                char += this.source[this.index];
+                char = this.source[this.index];
+                pattern += char;
 
-                if (Character.isLineTerminator(char.charCodeAt(0)))
+                if (char == "\\")
+                {
+                    this.advance();
+                    char = this.source[this.index];
+
+                    if (Character.isLineTerminator(char.charCodeAt(0)))
+                    {
+                        this.throwUnexpectedToken(Messages.unterminatedRegExp);
+                    }
+
+                    pattern += char;
+                }
+                else if (Character.isLineTerminator(char.charCodeAt(0)))
                 {
                     this.throwUnexpectedToken(Messages.unterminatedRegExp);
                 }
-
-                pattern += char;
-            }
-            else if (Character.isLineTerminator(char.charCodeAt(0)))
-            {
-                this.throwUnexpectedToken(Messages.unterminatedRegExp);
-            }
-            else if (classMarker && char == "]")
-            {
-                classMarker = false;
-            }
-            else
-            {
-                if (char == "/")
+                else if (classMarker && char == "]")
                 {
-                    pattern = pattern.substring(0, pattern.length - 1);
-                    terminated = true;
-                    break;
+                    classMarker = false;
                 }
-                else if (char == "[")
+                else
                 {
-                    classMarker = true;
+                    if (char == "/")
+                    {
+                        terminated = true;
+                        this.advance();
+                        break;
+                    }
+                    else if (char == "[")
+                    {
+                        classMarker = true;
+                    }
                 }
             }
+        }
+        else
+        {
+            this.throwUnexpectedToken();
         }
 
         if (!terminated)
@@ -1279,6 +1306,6 @@ export default class Scanner
             this.advance();
         }
 
-        return { value: "", pattern, type: Token.RegularExpression, flags };
+        return { raw: pattern + flags, value: "", pattern: pattern.substring(1, pattern.length - 1), type: Token.RegularExpression, flags };
     }
 }
