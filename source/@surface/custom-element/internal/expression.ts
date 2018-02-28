@@ -35,6 +35,7 @@ const binaryFunctions: { [key: string]: Func2<any, any, any> } =
     "*":          (left, right) => left * right,
     "/":          (left, right) => left / right,
     "%":          (left, right) => left % right,
+    "**":         (left, right) => left ** right,
     "&&":         (left, right) => left && right,
     "||":         (left, right) => left || right,
     "==":         (left, right) => left == right,
@@ -63,12 +64,12 @@ const unaryFunctions: { [key: string]: Func1<any, any> } =
     "typeof": value => typeof value,
 };
 
-const updateFunctions: { [key: string]: Func1<any, any> } =
+const updateFunctions: { [key: string]: Func2<Object, string, any> } =
 {
-    "++*": value => ++value,
-    "--*": value => --value,
-    "*++": value => value++,
-    "*--": value => value--,
+    "++*": (target, key) => ++target[key],
+    "--*": (target, key) => --target[key],
+    "*++": (target, key) => target[key]++,
+    "*--": (target, key) => target[key]--,
 };
 
 export class BinaryExpression implements IExpression
@@ -121,16 +122,27 @@ export class ConstantExpression implements IExpression
 
 export class IdentifierExpression implements IExpression
 {
-    public constructor(private readonly context: Object, private readonly name: string)
+    private readonly _context: Object;
+    public get context(): Object
     {
-        if (this.name in this.context["global"])
-        {
-            this.context = this.context["global"];
-        }
-        else if (!(this.name in this.context))
+        return this._context;
+    }
+
+    private _name: string;
+    public get name(): string
+    {
+        return this._name;
+    }
+
+    public constructor(context: Object, name: string)
+    {
+        if (!(name in context))
         {
             throw new Error(`The identifier ${name} does not exist in this context.`);
         }
+
+        this._context = context;
+        this._name    = name;
     }
 
     public evaluate(): Object
@@ -148,7 +160,7 @@ export class MemberExpression implements IExpression
     }
 
     private readonly _target: IExpression;
-    public get target(): Nullable<Object>
+    public get target(): any
     {
         return this._target.evaluate();
     }
@@ -316,15 +328,40 @@ export class UnaryExpression implements IExpression
 
 export class UpdateExpression implements IExpression
 {
-    private readonly operation: Func1<any, any>;
-
-    public constructor(private readonly value: IExpression, operator: string, prefix: boolean)
+    private readonly _operation: Func2<Object, string, any>;
+    public get operation(): Func2<Object, string, any>
     {
-        this.operation = prefix ? updateFunctions[`*${operator}`] : updateFunctions[`${operator}*`];
+        return this._operation;
+    }
+
+    private readonly _prefix: boolean;
+    public get prefix(): boolean
+    {
+        return this._prefix;
+    }
+
+    private readonly _target: IdentifierExpression|MemberExpression;
+    public get target(): IdentifierExpression|MemberExpression
+    {
+        return this._target;
+    }
+
+    public constructor(target: IExpression, operator: string, prefix: boolean)
+    {
+        this._operation = prefix ? updateFunctions[`${operator}*`] : updateFunctions[`*${operator}`];
+        this._prefix    = prefix;
+        this._target    = target as IdentifierExpression|MemberExpression;
     }
 
     public evaluate(): any
     {
-        return this.operation(this.value.evaluate());
+        if ("context" in this.target)
+        {
+            return this.operation(this.target.context, this.target.name);
+        }
+        else
+        {
+            return this.operation(this.target.target, this.target.property);
+        }
     }
 }

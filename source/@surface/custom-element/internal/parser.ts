@@ -5,7 +5,6 @@ import IExpression,
     CallExpression,
     ConditionalExpression,
     ConstantExpression,
-    Context,
     IdentifierExpression,
     MemberExpression,
     ObjectExpression,
@@ -23,17 +22,22 @@ import { Action } from "@surface/types";
 
 export default class Parser
 {
-    private readonly context: Context;
+    private readonly context: Object;
     private readonly notify?: Action;
     private readonly scanner: Scanner;
     private lookahead: RawToken;
 
-    public constructor(context: Context, source: string, notify?: Action)
+    public constructor(context: Object, source: string, notify?: Action)
     {
         this.context   = context;
         this.notify    = notify;
         this.scanner   = new Scanner(source);
         this.lookahead = this.scanner.nextToken();
+    }
+
+    public static parse(context: Object, source: string, notify?: Action): IExpression
+    {
+        return new Parser(context, source).parseExpression();
     }
 
     private argumentsExpression(): Array<IExpression>
@@ -83,7 +87,10 @@ export default class Parser
             }
             else if (this.match("..."))
             {
-                elements.push(this.spreadExpression());
+                for (const value of this.spreadExpression().evaluate())
+                {
+                    elements.push(new ConstantExpression(value));
+                }
             }
             else
             {
@@ -258,7 +265,8 @@ export default class Parser
 
         if (this.match("**"))
         {
-            return new BinaryExpression(expression, this.assignmentExpression(), this.nextToken().value as string);
+            const operator = this.nextToken().raw;
+            return new BinaryExpression(expression, this.assignmentExpression(), operator as string);
         }
 
         return expression;
@@ -379,7 +387,7 @@ export default class Parser
                 case Token.BooleanLiteral:
                 case Token.NullLiteral:
                     key = new ConstantExpression(this.nextToken().value);
-
+                    break;
                 case Token.Punctuator:
                     if (token.value == "[")
                     {
@@ -393,7 +401,7 @@ export default class Parser
                     {
                         throw this.unexpectedTokenError(token);
                     }
-
+                    break;
                 default:
                     throw this.unexpectedTokenError(token);
             }
@@ -431,6 +439,51 @@ export default class Parser
         return token;
     }
 
+    private parseExpression(): IExpression
+    {
+        switch (this.lookahead.type)
+        {
+            case Token.StringLiteral:
+            case Token.NumericLiteral:
+            case Token.BooleanLiteral:
+            case Token.NullLiteral:
+            case Token.RegularExpression:
+            case Token.Template:
+            case Token.Identifier:
+                return this.assignmentExpression();
+            case Token.Punctuator:
+                if
+                (
+                    this.lookahead.value == "("
+                    || this.lookahead.value == "{"
+                    || this.lookahead.value == "["
+                    || this.lookahead.value == "/"
+                    || this.lookahead.value == "!"
+                    || this.lookahead.value == "+"
+                    || this.lookahead.value == "-"
+                    || this.lookahead.value == "^"
+                    || this.lookahead.value == "~"
+                    || this.lookahead.value == "++"
+                    || this.lookahead.value == "--"
+                    || this.lookahead.value == "!!"
+                )
+                {
+                    return this.assignmentExpression();
+                }
+                break;
+            case Token.Keyword:
+                if (this.lookahead.value == "this" || this.lookahead.value == "typeof")
+                {
+                    return this.assignmentExpression();
+                }
+                break;
+            default:
+                break;
+        }
+
+        throw new Error("Expression not supported");
+    }
+
     private primaryExpression(): IExpression
     {
         switch (this.lookahead.type)
@@ -450,7 +503,7 @@ export default class Parser
                 return new IdentifierExpression(this.context, this.nextToken().value as string);
 
             case Token.BooleanLiteral:
-                return new ConstantExpression(this.nextToken().value == "true");
+                return new ConstantExpression(this.nextToken().value);
 
             case Token.NumericLiteral:
             case Token.NullLiteral:
@@ -468,6 +521,7 @@ export default class Parser
                     case "{":
                         return this.objectExpression();
                     case "/":
+                        this.scanner.backtrack(1);
                         return this.regexExpression();
                     default:
                         throw this.unexpectedTokenError(this.nextToken());
@@ -530,7 +584,8 @@ export default class Parser
     {
         if (this.match("++") || this.match("--"))
         {
-            return new UpdateExpression(this.leftHandSideExpression(), this.nextToken().value as string, true);
+            const operator = this.nextToken().raw;
+            return new UpdateExpression(this.leftHandSideExpression(), operator, true);
         }
         else
         {
@@ -538,7 +593,8 @@ export default class Parser
 
             if (this.match("++") || this.match("--"))
             {
-                return new UpdateExpression(expression, this.nextToken().value as string, false);
+                const operator = this.nextToken().raw;
+                return new UpdateExpression(expression, operator, false);
             }
 
             return expression;
@@ -548,48 +604,5 @@ export default class Parser
     private unexpectedTokenError(token: Object, message?: string): Error
     {
         return new Error(message);
-    }
-
-    public parse(): IExpression
-    {
-        switch (this.lookahead.type)
-        {
-            case Token.StringLiteral:
-            case Token.NumericLiteral:
-            case Token.BooleanLiteral:
-            case Token.NullLiteral:
-            case Token.RegularExpression:
-            case Token.Template:
-            case Token.Identifier:
-                return this.assignmentExpression();
-            case Token.Punctuator:
-                if
-                (
-                    this.lookahead.value == "("
-                    || this.lookahead.value == "{"
-                    || this.lookahead.value == "["
-                    || this.lookahead.value == "/"
-                    || this.lookahead.value == "!"
-                    || this.lookahead.value == "-"
-                    || this.lookahead.value == "^"
-                    || this.lookahead.value == "~"
-                    || this.lookahead.value == "++"
-                    || this.lookahead.value == "!!"
-                )
-                {
-                    return this.assignmentExpression();
-                }
-                break;
-            case Token.Keyword:
-                if (this.lookahead.value == "this" || this.lookahead.value == "typeof")
-                {
-                    return this.assignmentExpression();
-                }
-                break;
-            default:
-                break;
-        }
-
-        throw new Error("Expression not supported");
     }
 }

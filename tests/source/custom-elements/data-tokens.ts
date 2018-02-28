@@ -1,18 +1,13 @@
-import { expect } from "chai";
+import Messages from "@surface/custom-element/internal/messages";
+import Token    from "@surface/custom-element/internal/token";
 
-import Messages    from "@surface/custom-element/internal/messages";
-import Scanner     from "@surface/custom-element/internal/scanner";
-import SyntaxError from "@surface/custom-element/internal/syntax-error";
-import Token       from "@surface/custom-element/internal/token";
-
-debugger;
-const validTokens =
+export const validTokens =
 [
     { raw: "_identifier",           value: "_identifier",         type: Token.Identifier },
     { raw: "identifier",            value: "identifier",          type: Token.Identifier },
     { raw: "identifier\u{123}",     value: "identifier\u{123}",   type: Token.Identifier },
-    { raw: "\"string\"",            value: "string",              type: Token.StringLiteral },
-    { raw: "'string'",              value: "string",              type: Token.StringLiteral },
+    { raw: "\"double quotes\"",     value: "double quotes",       type: Token.StringLiteral },
+    { raw: "'single quotes'",       value: "single quotes",       type: Token.StringLiteral },
     { raw: "\"quotes '`\"",         value: "quotes '`",           type: Token.StringLiteral },
     { raw: "'quotes \"`'",          value: "quotes \"`",          type: Token.StringLiteral },
     { raw: "`string`",              value: "string",              type: Token.Template },
@@ -134,7 +129,7 @@ const validTokens =
     { raw: "/",                     value: "/",                   type: Token.Punctuator },
 ];
 
-const invalidTokens =
+export const invalidTokens =
 [
     { value: "1i",     message: Messages.unexpectedTokenIllegal },
     { value: "1_.123", message: Messages.numericSepatorNotAllowed },
@@ -152,77 +147,3 @@ const invalidTokens =
     { value: "0O10_",  message: Messages.numericSepatorNotAllowed },
     { value: "010_",   message: Messages.numericSepatorNotAllowed },
 ];
-
-describe
-(
-    "Tokenizer",
-    () =>
-    {
-        describe
-        (
-            "Valid tokens",
-            () =>
-            {
-                for (const token of validTokens)
-                {
-                    it
-                    (
-                        `Token ${token.raw} should be ${Token[token.type]}`,
-                        () => expect(new Scanner(token.raw).nextToken())
-                            .include({ raw: token.raw, value: token.value, type: token.type })
-                    );
-                }
-            }
-        );
-
-        describe
-        (
-            "Invalid tokens",
-            () =>
-            {
-                for (const token of invalidTokens)
-                {
-                    const scanner = new Scanner(token.value);
-                    it(`Token ${token.value} must dispatch an Syntax Error`, () => expect(() => scanner.nextToken()).to.throw(SyntaxError, token.message));
-                }
-            }
-        );
-
-        describe
-        (
-            "Template strings",
-            () =>
-            {
-                const scanner = new Scanner("`start ${identifier} middle ${1} end`");
-
-                it(`First template segment.`,  () => expect(scanner.nextToken()).include({ value: "start ",     type: Token.Template }));
-                it(`First interporlation.`,    () => expect(scanner.nextToken()).include({ raw:   "identifier", type: Token.Identifier }));
-                it(`Second template segment.`, () => expect(scanner.nextToken()).include({ value: " middle ",   type: Token.Template }));
-                it(`Second interporlation.`,   () => expect(scanner.nextToken()).include({ value: 1,            type: Token.NumericLiteral }));
-                it(`Third template segment.`,  () => expect(scanner.nextToken()).include({ value: " end",       type: Token.Template }));
-            }
-        );
-
-        describe
-        (
-            "Regular Expressions",
-            () =>
-            {
-                it
-                (
-                    "Pattern without flags",
-                    () => expect(new Scanner("/foo[123]bar()\\//").scanRegex())
-                        .include({ raw: "/foo[123]bar()\\//", pattern: "foo[123]bar()\\/", type: Token.RegularExpression })
-                        .and.not.have.key("flag")
-                );
-
-                it
-                (
-                    "Pattern with flags",
-                    () => expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
-                        .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: Token.RegularExpression })
-                );
-            }
-        );
-    }
-);

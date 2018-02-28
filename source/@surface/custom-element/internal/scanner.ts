@@ -1162,6 +1162,11 @@ export default class Scanner
         throw new SyntaxError(message || Messages.unexpectedTokenIllegal, this.index, this.lineNumber, this.index - this.lineStart + 1);
     }
 
+    public backtrack(steps: number): void
+    {
+        this._index -= steps;
+    }
+
     public nextToken(): RawToken
     {
         if (this.eof())

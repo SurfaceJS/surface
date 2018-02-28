@@ -80,7 +80,7 @@ export default class BindParser
             }
             while (!this.eof() && stack > 0);
 
-            expressions.push(new Parser(this.context, this.source.substring(start, this.index - 2), this.notify).parse());
+            expressions.push(Parser.parse(this.context, this.source.substring(start, this.index - 2), this.notify));
 
             return [...expressions, ...this.parse(this.index)];
         }
