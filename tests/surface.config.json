@@ -11,6 +11,10 @@
         {
             "devtoolModuleFilenameTemplate": "[absolute-resource-path]"
         },
+        "externals":
+        {
+            "chai": "commonjs chai"
+        },
         "target": "node",
         "node": { "__dirname": false }
     }

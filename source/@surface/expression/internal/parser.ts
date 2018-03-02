@@ -1,43 +1,37 @@
-import IExpression,
-{
-    ArrayExpression,
-    BinaryExpression,
-    CallExpression,
-    ConditionalExpression,
-    ConstantExpression,
-    IdentifierExpression,
-    MemberExpression,
-    ObjectExpression,
-    PropertyExpression,
-    RegexExpression,
-    TemplateLiteralExpression,
-    UnaryExpression,
-    UpdateExpression,
-}
-from "./expression";
+import IExpression           from "../interfaces/expression";
 import Scanner, { RawToken } from "./scanner";
 import Token                 from "./token";
 
-import { Action } from "@surface/types";
+import ArrayExpression       from "./expressions/array-expression";
+import BinaryExpression      from "./expressions/binary-expression";
+import CallExpression        from "./expressions/call-expression";
+import ConditionalExpression from "./expressions/conditional-expression";
+import ConstantExpression    from "./expressions/constant-expression";
+import IdentifierExpression  from "./expressions/identifier-expression";
+import MemberExpression      from "./expressions/member-expression";
+import ObjectExpression      from "./expressions/object-expression";
+import PropertyExpression    from "./expressions/property-expression";
+import RegexExpression       from "./expressions/regex-expression";
+import TemplateExpression    from "./expressions/template-expression";
+import UnaryExpression       from "./expressions/unary-expression";
+import UpdateExpression      from "./expressions/update-expression";
 
 export default class Parser
 {
     private readonly context: Object;
-    private readonly notify?: Action;
     private readonly scanner: Scanner;
     private lookahead: RawToken;
 
-    public constructor(context: Object, source: string, notify?: Action)
+    private constructor(source: string, context: Object)
     {
         this.context   = context;
-        this.notify    = notify;
         this.scanner   = new Scanner(source);
         this.lookahead = this.scanner.nextToken();
     }
 
-    public static parse(context: Object, source: string, notify?: Action): IExpression
+    public static parse(source: string, context: Object): IExpression
     {
-        return new Parser(context, source).parseExpression();
+        return new Parser(source, context).parseExpression();
     }
 
     private argumentsExpression(): Array<IExpression>
@@ -87,7 +81,7 @@ export default class Parser
             }
             else if (this.match("..."))
             {
-                for (const value of this.spreadExpression().evaluate())
+                for (const value of this.spreadExpression().evaluate() as Iterable<Object>)
                 {
                     elements.push(new ConstantExpression(value));
                 }
@@ -266,7 +260,7 @@ export default class Parser
         if (this.match("**"))
         {
             const operator = this.nextToken().raw;
-            return new BinaryExpression(expression, this.assignmentExpression(), operator as string);
+            return new BinaryExpression(expression, this.assignmentExpression(), operator);
         }
 
         return expression;
@@ -297,7 +291,7 @@ export default class Parser
 
                 if (this.lookahead.type == Token.Identifier)
                 {
-                    expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value), this.notify);
+                    expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value));
                 }
                 else
                 {
@@ -307,7 +301,7 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).property, this.argumentsExpression());
+                expression = new CallExpression(parentExpression, (expression as MemberExpression).property.evaluate() as string, this.argumentsExpression());
             }
             else if (this.match("["))
             {
@@ -337,7 +331,7 @@ export default class Parser
         {
             if (this.match("..."))
             {
-                for (const [key, value] of Object.entries(this.spreadExpression().evaluate() || {}))
+                for (const [key, value] of Object.entries(this.spreadExpression().evaluate() as Object))
                 {
                     properties.push(new PropertyExpression(new ConstantExpression(key), new ConstantExpression(value)));
                 }
@@ -577,7 +571,7 @@ export default class Parser
             quasis.push(token.value as string);
         }
 
-        return new TemplateLiteralExpression(quasis, expressions);
+        return new TemplateExpression(quasis, expressions);
     }
 
     private updateExpression(): IExpression

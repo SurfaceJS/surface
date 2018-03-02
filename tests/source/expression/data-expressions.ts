@@ -1,19 +1,16 @@
-import IExpression,
-{
-    ArrayExpression,
-    BinaryExpression,
-    CallExpression,
-    ConditionalExpression,
-    ConstantExpression,
-    IdentifierExpression,
-    MemberExpression,
-    ObjectExpression,
-    RegexExpression,
-    TemplateLiteralExpression,
-    UnaryExpression,
-    UpdateExpression
-}
-from "@surface/custom-element/internal/expression";
+import IExpression           from "@surface/expression/interfaces/expression";
+import ArrayExpression       from "@surface/expression/internal/expressions/array-expression";
+import BinaryExpression      from "@surface/expression/internal/expressions/binary-expression" ;
+import CallExpression        from "@surface/expression/internal/expressions/call-expression";
+import ConditionalExpression from "@surface/expression/internal/expressions/conditional-expression";
+import ConstantExpression    from "@surface/expression/internal/expressions/constant-expression";
+import IdentifierExpression  from "@surface/expression/internal/expressions/identifier-expression";
+import MemberExpression      from "@surface/expression/internal/expressions/member-expression";
+import ObjectExpression      from "@surface/expression/internal/expressions/object-expression";
+import RegexExpression       from "@surface/expression/internal/expressions/regex-expression";
+import TemplateExpression    from "@surface/expression/internal/expressions/template-expression";
+import UnaryExpression       from "@surface/expression/internal/expressions/unary-expression";
+import UpdateExpression      from "@surface/expression/internal/expressions/update-expression";
 
 import { Constructor } from "@surface/enumerable/node_modules/@surface/types";
 
@@ -93,6 +90,6 @@ export const validExpressions: Array<{ raw: string, value: any, type: Constructo
     { raw: "four.getObject().value",                                value: "Hello World!!!",                                             type: MemberExpression },
     { raw: "/test/.test('test')",                                   value: true,                                                         type: CallExpression },
     { raw: "/test/i.test('TEST')",                                  value: true,                                                         type: CallExpression },
-    { raw: "`The zero.id is: ${zero.id}`",                          value: "The zero.id is: 0",                                          type: TemplateLiteralExpression },
+    { raw: "`The zero.id is: ${zero.id}`",                          value: "The zero.id is: 0",                                          type: TemplateExpression },
     { raw: "1 > 2 ? 'greater' : 'smaller'",                         value: "smaller",                                                    type: ConditionalExpression },
 ];

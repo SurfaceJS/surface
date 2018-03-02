@@ -1,25 +1,25 @@
-import IExpression, { ConstantExpression, Context } from "./expression";
-import Parser                                       from "./parser";
-
-import { Action } from "@surface/types";
+import Expression         from "@surface/expression";
+import IExpression        from "@surface/expression/interfaces/expression";
+import ConstantExpression from "@surface/expression/internal/expressions/constant-expression";
+import { Action }         from "@surface/types";
 
 export default class BindParser
 {
     private readonly source:  string;
-    private readonly notify?: Action;
+    //private readonly notify?: Action;
     private index:   number;
-    private context: Context;
+    private context: Object;
 
-    private constructor(context: Context, source: string, notify?: Action)
+    private constructor(context: Object, source: string, notify?: Action)
     {
         this.context = context;
         this.source  = source;
-        this.notify  = notify;
+        //this.notify  = notify;
 
         this.index = 0;
     }
 
-    public static scan(context: Context, source: string, notify?: Action): IExpression
+    public static scan(context: Object, source: string, notify?: Action): IExpression
     {
         const expressions = new BindParser(context, source, notify).parse(0);
 
@@ -80,7 +80,7 @@ export default class BindParser
             }
             while (!this.eof() && stack > 0);
 
-            expressions.push(Parser.parse(this.context, this.source.substring(start, this.index - 2), this.notify));
+            expressions.push(Expression.from(this.source.substring(start, this.index - 2), this.context));
 
             return [...expressions, ...this.parse(this.index)];
         }

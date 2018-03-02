@@ -1,5 +1,5 @@
-import Messages from "@surface/custom-element/internal/messages";
-import Token    from "@surface/custom-element/internal/token";
+import Messages from "@surface/expression/internal/messages";
+import Token    from "@surface/expression/internal/token";
 
 export const validTokens =
 [

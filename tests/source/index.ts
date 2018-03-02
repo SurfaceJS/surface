@@ -1,2 +1,2 @@
-import "./custom-elements/parser-test";
-import "./custom-elements/scanner-test";
+import "./expression/parser-test";
+import "./expression/scanner-test";

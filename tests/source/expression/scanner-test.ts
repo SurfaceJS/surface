@@ -2,9 +2,9 @@ import { invalidTokens, validTokens } from "./data-tokens";
 
 import { expect } from "chai";
 
-import Scanner     from "@surface/custom-element/internal/scanner";
-import SyntaxError from "@surface/custom-element/internal/syntax-error";
-import Token       from "@surface/custom-element/internal/token";
+import Scanner     from "@surface/expression/internal/scanner";
+import SyntaxError from "@surface/expression/internal/syntax-error";
+import Token       from "@surface/expression/internal/token";
 
 describe
 (
