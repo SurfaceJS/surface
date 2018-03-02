@@ -459,7 +459,6 @@ export default class Parser
                     || this.lookahead.value == "~"
                     || this.lookahead.value == "++"
                     || this.lookahead.value == "--"
-                    || this.lookahead.value == "!!"
                 )
                 {
                     return this.assignmentExpression();

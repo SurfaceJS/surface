@@ -7,6 +7,7 @@ export const validTokens =
     { raw: "identifier",            value: "identifier",          type: Token.Identifier },
     { raw: "identifier\u{123}",     value: "identifier\u{123}",   type: Token.Identifier },
     { raw: "\"double quotes\"",     value: "double quotes",       type: Token.StringLiteral },
+    { raw: "'\\n\\t\\b\\f\\v'",     value: "\\n\\t\\b\\f\\v",     type: Token.StringLiteral },
     { raw: "'single quotes'",       value: "single quotes",       type: Token.StringLiteral },
     { raw: "\"quotes '`\"",         value: "quotes '`",           type: Token.StringLiteral },
     { raw: "'quotes \"`'",          value: "quotes \"`",          type: Token.StringLiteral },

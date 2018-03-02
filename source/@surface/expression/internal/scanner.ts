@@ -718,7 +718,6 @@ export default class Scanner
             }
             else if (char == "\\")
             {
-                this.advance();
                 char = this.source[this.index];
                 if (!char || !Character.isLineTerminator(char.charCodeAt(0)))
                 {
