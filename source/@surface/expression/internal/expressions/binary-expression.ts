@@ -56,7 +56,7 @@ export default class BinaryExpression implements IExpression
         this._left     = left;
         this._operator = operator;
         this._right    = right;
-        this.operation = binaryFunctions[operator];
+        this.operation = binaryFunctions[this.operator];
     }
 
     public evaluate(): Nullable<Object>

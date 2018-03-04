@@ -12,7 +12,9 @@ import TemplateExpression    from "@surface/expression/internal/expressions/temp
 import UnaryExpression       from "@surface/expression/internal/expressions/unary-expression";
 import UpdateExpression      from "@surface/expression/internal/expressions/update-expression";
 
-import { Constructor } from "@surface/enumerable/node_modules/@surface/types";
+import { Constructor, Nullable } from "@surface/enumerable/node_modules/@surface/types";
+
+type ExpressionFixture = { raw: string, value: Nullable<Object>, type: Constructor<IExpression> };
 
 export const context =
 {
@@ -25,7 +27,7 @@ export const context =
 };
 
 // tslint:disable-next-line:no-any
-export const validExpressions: Array<{ raw: string, value: any, type: Constructor<IExpression> }> =
+export const validExpressions: Array<ExpressionFixture> =
 [
     { raw: "1",                                                     value: 1,                                                            type: ConstantExpression },
     { raw: "\"double quotes\"",                                     value: "double quotes",                                              type: ConstantExpression },
@@ -92,4 +94,10 @@ export const validExpressions: Array<{ raw: string, value: any, type: Constructo
     { raw: "/test/i.test('TEST')",                                  value: true,                                                         type: CallExpression },
     { raw: "`The zero.id is: ${zero.id}`",                          value: "The zero.id is: 0",                                          type: TemplateExpression },
     { raw: "1 > 2 ? 'greater' : 'smaller'",                         value: "smaller",                                                    type: ConditionalExpression },
+    { raw: "2 > 1 ? 'greater' : 'smaller'",                         value: "greater",                                                    type: ConditionalExpression },
+];
+
+export const invalidExpressions: Array<ExpressionFixture> =
+[
+    { raw: "foo", value: 1, type: ConstantExpression },
 ];

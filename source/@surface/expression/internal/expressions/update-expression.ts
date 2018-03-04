@@ -40,11 +40,12 @@ export default class UpdateExpression implements IExpression
         this._expression = expression;
         this._prefix     = prefix;
         this._operator   = operator;
-        this.operation   = prefix ? updateFunctions[`${operator}*`] : updateFunctions[`*${operator}`];
+        this.operation   = this.prefix ? updateFunctions[`${this.operator}*`] : updateFunctions[`*${this.operator}`];
     }
 
     public evaluate(): number
     {
+        /* istanbul ignore else  */
         if (this.expression instanceof IdentifierExpression)
         {
             return this.operation(this.expression.context, this.expression.name);

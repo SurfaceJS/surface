@@ -1,7 +1,7 @@
 {
     "context":  "source",
-    "entry":    "index.ts",
-    "filename": "index.js",
+    "entry":    ".",
+    "filename": "[name].js",
     "output":   "build",
     "tsconfig": "tsconfig.json",
     "tslint":   "../tslint.json",
@@ -13,7 +13,8 @@
         },
         "externals":
         {
-            "chai": "commonjs chai"
+            "chai": "commonjs chai",
+            "tslib": "commonjs tslib"
         },
         "target": "node",
         "node": { "__dirname": false }

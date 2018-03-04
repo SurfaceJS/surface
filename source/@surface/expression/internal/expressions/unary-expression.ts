@@ -31,7 +31,7 @@ export default class UnaryExpression implements IExpression
     {
         this._operator = operator;
         this._value    = value;
-        this.operation = unaryFunctions[operator];
+        this.operation = unaryFunctions[this.operator];
     }
 
     public evaluate(): Object

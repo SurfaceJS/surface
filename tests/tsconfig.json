@@ -7,12 +7,12 @@
             "dom",
             "esnext"
         ],
+        "noEmit": true,
         "typeRoots":
         [
             "node_modules/@types",
             "node_modules/@surface/custom-element/@types"
         ]  
     },
-    "include": ["source"],
-    "exclude": ["node_modules/@surface", "node_modules/@surface/**/node_modules/@surface"]
+    "include": ["source"]
 }

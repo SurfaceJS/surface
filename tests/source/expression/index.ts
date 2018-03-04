@@ -1,10 +1,14 @@
-import { invalidTokens, validTokens } from "./data-tokens";
-
 import { expect } from "chai";
 
+import { context, invalidExpressions, validExpressions }  from "./fixtures/expressions";
+import { invalidTokens, validTokens }                     from "./fixtures/tokens";
+
+import Parser      from "@surface/expression/internal/parser";
 import Scanner     from "@surface/expression/internal/scanner";
 import SyntaxError from "@surface/expression/internal/syntax-error";
 import Token       from "@surface/expression/internal/token";
+
+
 
 describe
 (
@@ -75,6 +79,53 @@ describe
                     () => expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
                         .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: Token.RegularExpression })
                 );
+            }
+        );
+    }
+);
+
+describe
+(
+    "Expressions",
+    () =>
+    {
+        describe
+        (
+            "Valid expressions",
+            () =>
+            {
+                for (const expression of validExpressions)
+                {
+                    it
+                    (
+                        `Expression ${expression.raw} must be evaluated to ${expression.type.name}: ${expression.value}`,
+                        () =>
+                        {
+                            const result = Parser.parse(expression.raw, context);
+                            expect(result.evaluate()).to.deep.equal(expression.value);
+                            expect(result).instanceof(expression.type);
+                        }
+                    );
+                }
+            }
+        );
+
+        describe
+        (
+            "Invalid expressions",
+            () =>
+            {
+                for (const expression of invalidExpressions)
+                {
+                    it
+                    (
+                        `Expression ${expression.raw} must throw an error`,
+                        () =>
+                        {
+                            expect(() => Parser.parse(expression.raw, context)).to.throw(Error, `The identifier ${expression.raw} does not exist in this context.`);
+                        }
+                    );
+                }
             }
         );
     }
