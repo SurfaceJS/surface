@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { context, invalidExpressions, validExpressions }  from "./fixtures/expressions";
 import { invalidTokens, validTokens }                     from "./fixtures/tokens";
 
+import Messages    from "@surface/expression/internal/messages";
 import Parser      from "@surface/expression/internal/parser";
 import Scanner     from "@surface/expression/internal/scanner";
 import SyntaxError from "@surface/expression/internal/syntax-error";
@@ -78,6 +79,17 @@ describe
                     "Pattern with flags",
                     () => expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
                         .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: Token.RegularExpression })
+                );
+
+                it
+                (
+                    "Unterminate pattern",
+                    () =>
+                    {
+                        expect(() => new Scanner("foo[123]bar()\\//").scanRegex()).to.throw(SyntaxError, Messages.unexpectedTokenIllegal);
+                        expect(() => new Scanner("/foo[123]bar()\\/").scanRegex()).to.throw(SyntaxError, Messages.unterminatedRegExp);
+                        expect(() => new Scanner("/\\\r").scanRegex()).to.throw(SyntaxError, Messages.unterminatedRegExp);
+                    }
                 );
             }
         );

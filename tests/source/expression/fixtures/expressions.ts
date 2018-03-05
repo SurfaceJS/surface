@@ -19,6 +19,7 @@ type ExpressionFixture = { raw: string, value: Nullable<Object>, type: Construct
 export const context =
 {
     id:    1,
+    識別子: 1,
     zero:  { id: 0 },
     one:   { id: 1, getValue:  () => 1 },
     two:   { id: 2, increment: (value: number) => ++value },
@@ -74,6 +75,7 @@ export const validExpressions: Array<ExpressionFixture> =
     { raw: "!true",                                                 value: false,                                                        type: UnaryExpression },
     { raw: "typeof 1",                                              value: "number",                                                     type: UnaryExpression },
     { raw: "++id",                                                  value: 2,                                                            type: UpdateExpression },
+    { raw: "識別子--",                                              value: 1,                                                            type: UpdateExpression },
     { raw: "++one.id",                                              value: 2,                                                            type: UpdateExpression },
     { raw: "--two.id",                                              value: 1,                                                            type: UpdateExpression },
     { raw: "three.id++",                                            value: 3,                                                            type: UpdateExpression },

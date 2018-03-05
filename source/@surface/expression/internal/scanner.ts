@@ -207,11 +207,6 @@ export default class Scanner
         {
             codePoint = this.source.codePointAt(this.index) as number;
 
-            if (!Character.isIdentifierPart(codePoint))
-            {
-                break;
-            }
-
             let char = String.fromCodePoint(codePoint);
             id += char;
 
@@ -697,7 +692,8 @@ export default class Scanner
             {
                 char = this.source[this.index];
                 this.advance();
-                if (!char || !Character.isLineTerminator(char.charCodeAt(0)))
+
+                if (!Character.isLineTerminator(char.charCodeAt(0)))
                 {
                     switch (char)
                     {
@@ -767,6 +763,10 @@ export default class Scanner
                             break;
                     }
                 }
+                else
+                {
+                    break;
+                }
             }
             else if (Character.isLineTerminator(char.charCodeAt(0)))
             {
@@ -800,7 +800,7 @@ export default class Scanner
     {
         const start = this.index;
 
-                // Check for most common single-character punctuators.
+        // Check for most common single-character punctuators.
         let $string = this.source[this.index];
         switch ($string)
         {
@@ -923,9 +923,7 @@ export default class Scanner
 
         let cooked     = "";
         let terminated = false;
-
-        let tail      = false;
-        let rawOffset = 2;
+        let tail       = false;
 
         this.advance();
 
@@ -936,7 +934,6 @@ export default class Scanner
 
             if (char == "`")
             {
-                rawOffset  = 1;
                 tail       = true;
                 terminated = true;
                 break;
@@ -987,7 +984,7 @@ export default class Scanner
                                 else
                                 {
                                     this.setCursorAt(restore);
-                                    cooked += char;
+                                    cooked += "\\u";
                                 }
                             }
                             break;
@@ -1031,12 +1028,24 @@ export default class Scanner
                             break;
                     }
                 }
+                else
+                {
+                    this.lineNumber++;
+
+                    if (this.source[this.index] == "\n")
+                    {
+                        this.advance();
+                    }
+
+                    this.lineStart = this.index;
+                    cooked += "\\\n";
+                }
             }
             else if (Character.isLineTerminator(char.charCodeAt(0)))
             {
                 this.lineNumber++;
 
-                if (char == "\r" && this.source[this.index] == "\n")
+                if (this.source[this.index] == "\n")
                 {
                     this.advance();
                 }
@@ -1060,12 +1069,12 @@ export default class Scanner
             this.curlyStack.pop();
         }
 
-        const $string = this.source.slice(start + 1, this.index - rawOffset);
+        const $string = this.source.slice(start + 1, this.index - 1);
 
         const token =
         {
-            raw:    "`" + $string + "`",
-            value:  $string,
+            raw:    (head ? "`" : "") + $string + (tail ? "`" : ""),
+            value:  cooked,
             type:   Token.Template,
             cooked: cooked,
             head:   head,
@@ -1207,37 +1216,36 @@ export default class Scanner
                 char = this.source[this.index];
                 pattern += char;
 
-                if (char == "\\")
+                if (char && !Character.isLineTerminator(char.charCodeAt(0)))
                 {
-                    this.advance();
-                    char = this.source[this.index];
-
-                    if (Character.isLineTerminator(char.charCodeAt(0)))
+                    if (char == "\\")
                     {
-                        this.throwUnexpectedToken(Messages.unterminatedRegExp);
-                    }
-
-                    pattern += char;
-                }
-                else if (Character.isLineTerminator(char.charCodeAt(0)))
-                {
-                    this.throwUnexpectedToken(Messages.unterminatedRegExp);
-                }
-                else if (classMarker && char == "]")
-                {
-                    classMarker = false;
-                }
-                else
-                {
-                    if (char == "/")
-                    {
-                        terminated = true;
                         this.advance();
-                        break;
+                        char = this.source[this.index];
+
+                        if (Character.isLineTerminator(char.charCodeAt(0)))
+                        {
+                            this.throwUnexpectedToken(Messages.unterminatedRegExp);
+                        }
+
+                        pattern += char;
                     }
-                    else if (char == "[")
+                    else if (classMarker && char == "]")
                     {
-                        classMarker = true;
+                        classMarker = false;
+                    }
+                    else
+                    {
+                        if (char == "/")
+                        {
+                            terminated = true;
+                            this.advance();
+                            break;
+                        }
+                        else if (char == "[")
+                        {
+                            classMarker = true;
+                        }
                     }
                 }
             }

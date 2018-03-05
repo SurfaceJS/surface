@@ -24,7 +24,7 @@
     ],
     "instrument": true,
     "sourceMap": true
-   },
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SurfaceJS/workbench.git"
