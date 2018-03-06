@@ -182,7 +182,6 @@ export const invalidTokens =
     { value: "\\xD800",                     message: Messages.unexpectedTokenIllegal },
     { value: "\\uD800",                     message: Messages.unexpectedTokenIllegal },
     { value: "\\u{AH}",                     message: Messages.unexpectedTokenIllegal },
-    //{ value: "\\u{123}foo@",                message: Messages.unexpectedTokenIllegal },
     { value: "\\u{123}\\x",                 message: Messages.unexpectedTokenIllegal },
     { value: "\\u{123}\\uD800",             message: Messages.unexpectedTokenIllegal },
     { value: "x\\z",                        message: Messages.unexpectedTokenIllegal },

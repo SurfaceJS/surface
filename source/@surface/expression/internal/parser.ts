@@ -69,7 +69,7 @@ export default class Parser
 
     private arrayExpression(): IExpression
     {
-        const elements: Array<IExpression> = [];
+        let elements: Array<IExpression> = [];
 
         this.expect("[");
 
@@ -77,16 +77,18 @@ export default class Parser
         {
             if (this.match(","))
             {
+                elements = [...elements, new ConstantExpression(undefined)];
                 this.nextToken();
             }
-            else if (this.match("..."))
+
+            if (this.match("..."))
             {
                 for (const value of this.spreadExpression().evaluate() as Iterable<Object>)
                 {
                     elements.push(new ConstantExpression(value));
                 }
             }
-            else
+            else if (!this.match("]"))
             {
                 elements.push(this.assignmentExpression());
             }

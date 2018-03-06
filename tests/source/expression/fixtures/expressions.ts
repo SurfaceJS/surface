@@ -42,6 +42,7 @@ export const validExpressions: Array<ExpressionFixture> =
     { raw: "{ foo: 'bar', ...{ id: 2, value: 3 }}",                 value: { foo: "bar", id: 2, value: 3 },                              type: ObjectExpression },
     { raw: "{ foo: 'bar', ...[1, 2]}",                              value: { 0: 1, 1: 2, foo: "bar" },                                   type: ObjectExpression },
     { raw: "[]",                                                    value: [],                                                           type: ArrayExpression },
+    { raw: "[, 1, 2, , 3, ,]",                                      value: [undefined, 1, 2, undefined, 3, undefined,],                  type: ArrayExpression },
     { raw: "[1, 'foo', true, { foo: 'bar' }]",                      value: [1, "foo", true, { foo: "bar" }],                             type: ArrayExpression },
     { raw: "[1, 'foo', true, ...[{ foo: one }, { bar: two }]]",     value: [1, "foo", true, { foo: context.one }, { bar: context.two }], type: ArrayExpression },
     { raw: "/test/",                                                value: /test/,                                                       type: RegexExpression },
@@ -69,13 +70,14 @@ export const validExpressions: Array<ExpressionFixture> =
     { raw: "0b1000 << 2",                                           value: 0b100000,                                                     type: BinaryExpression },
     { raw: "0b1000 >> 2",                                           value: 0b10,                                                         type: BinaryExpression },
     { raw: "0b1000 >>> 2",                                          value: 0b10,                                                         type: BinaryExpression },
+    { raw: "1 + 1 * 2 / 2",                                         value: 2,                                                            type: BinaryExpression },
     { raw: "+1",                                                    value: 1,                                                            type: UnaryExpression },
     { raw: "-1",                                                    value: -1,                                                           type: UnaryExpression },
     { raw: "~1",                                                    value: -2,                                                           type: UnaryExpression },
     { raw: "!true",                                                 value: false,                                                        type: UnaryExpression },
     { raw: "typeof 1",                                              value: "number",                                                     type: UnaryExpression },
     { raw: "++id",                                                  value: 2,                                                            type: UpdateExpression },
-    { raw: "識別子--",                                              value: 1,                                                            type: UpdateExpression },
+    { raw: "識別子--",                                               value: 1,                                                            type: UpdateExpression },
     { raw: "++one.id",                                              value: 2,                                                            type: UpdateExpression },
     { raw: "--two.id",                                              value: 1,                                                            type: UpdateExpression },
     { raw: "three.id++",                                            value: 3,                                                            type: UpdateExpression },
@@ -91,6 +93,7 @@ export const validExpressions: Array<ExpressionFixture> =
     { raw: "one.getValue()",                                        value: 1,                                                            type: CallExpression },
     { raw: "two.increment(1)",                                      value: 2,                                                            type: CallExpression },
     { raw: "three.greater(1, 2)",                                   value: false,                                                        type: CallExpression },
+    { raw: "three.greater(...[1, 2],)",                             value: false,                                                        type: CallExpression },
     { raw: "four.getObject().value",                                value: "Hello World!!!",                                             type: MemberExpression },
     { raw: "/test/.test('test')",                                   value: true,                                                         type: CallExpression },
     { raw: "/test/i.test('TEST')",                                  value: true,                                                         type: CallExpression },
@@ -101,5 +104,7 @@ export const validExpressions: Array<ExpressionFixture> =
 
 export const invalidExpressions: Array<ExpressionFixture> =
 [
-    { raw: "foo", value: 1, type: ConstantExpression },
+    { raw: "foo",   value: 1, type: ConstantExpression },
+    { raw: "one.1", value: 1, type: ConstantExpression },
+    { raw: "one.?", value: 1, type: ConstantExpression },
 ];
