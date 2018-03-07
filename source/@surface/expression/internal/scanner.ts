@@ -7,16 +7,19 @@ import { Nullable } from "@surface/types";
 
 export type RawToken =
 {
-    raw:      string;
-    value:    Nullable<Object>;
-    type:     Token;
-    pattern?: string;
-    flags?:   string;
-    regex?:   RegExp|null;
-    octal?:   boolean;
-    cooked?:  string;
-    head?:    boolean;
-    tail?:    boolean;
+    end:        number;
+    lineNumber: number;
+    lineStart:  number;
+    raw:        string;
+    start:      number;
+    type:       Token;
+    value:      Nullable<Object>;
+    cooked?:    string;
+    flags?:     string;
+    head?:      boolean;
+    octal?:     boolean;
+    pattern?:   string;
+    tail?:      boolean;
 };
 
 export default class Scanner
@@ -337,9 +340,13 @@ export default class Scanner
 
         const token =
         {
-            raw:   this.source.substring(start, this.index),
-            value: Number.parseInt($number.replace(/_/g, ""), 2),
-            type:  Token.NumericLiteral,
+            raw:        this.source.substring(start, this.index),
+            value:      Number.parseInt($number.replace(/_/g, ""), 2),
+            type:       Token.NumericLiteral,
+            start:      start,
+            end:        this.index,
+            lineNumber: this.lineNumber,
+            lineStart:  this.lineStart,
         };
 
         return token;
@@ -412,6 +419,10 @@ export default class Scanner
             raw:   this.source.substring(start, this.index),
             value: Number.parseInt("0x" + $number.replace(/_/g, ""), 16),
             type:  Token.NumericLiteral,
+            start:      start,
+            end:        this.index,
+            lineNumber: this.lineNumber,
+            lineStart:  this.lineStart,
         };
 
         return token;
@@ -437,11 +448,33 @@ export default class Scanner
         }
         else if (id == "null")
         {
-            return { raw: id, value: null, type: Token.NullLiteral };
+            const token =
+            {
+                raw:        id,
+                value:      null,
+                type:       Token.NullLiteral,
+                start:      start,
+                end:        this.index,
+                lineStart:  this.lineStart,
+                lineNumber: this.lineNumber,
+            };
+
+            return token;
         }
         else if (id == "true" || id == "false")
         {
-            return { raw: id, value: id == "true", type: Token.BooleanLiteral };
+            const token =
+            {
+                raw:        id,
+                value:      id == "true",
+                type:       Token.BooleanLiteral,
+                start:      start,
+                end:        this.index,
+                lineStart:  this.lineStart,
+                lineNumber: this.lineNumber,
+            };
+
+            return token;
         }
         else
         {
@@ -454,7 +487,18 @@ export default class Scanner
             this.throwUnexpectedToken(Messages.invalidEscapedReservedWord);
         }
 
-        return { raw: this.source.substring(start, this.index), value: id, type };
+        const token =
+        {
+            raw:        this.source.substring(start, this.index),
+            value:      id,
+            type:       type,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
+        };
+
+        return token;
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -595,9 +639,13 @@ export default class Scanner
 
         const token =
         {
-            raw:   $number,
-            value: Number.parseFloat($number.replace(/_/g, "")),
-            type:  Token.NumericLiteral,
+            raw:        $number,
+            value:      Number.parseFloat($number.replace(/_/g, "")),
+            type:       Token.NumericLiteral,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
         };
 
         return token;
@@ -657,9 +705,13 @@ export default class Scanner
 
         const token =
         {
-            raw:   this.source.substring(start, this.index),
-            value: Number.parseInt($number.replace(/_/g, ""), 8),
-            type:  Token.NumericLiteral,
+            raw:        this.source.substring(start, this.index),
+            value:      Number.parseInt($number.replace(/_/g, ""), 8),
+            type:       Token.NumericLiteral,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
         };
 
         return token;
@@ -786,10 +838,14 @@ export default class Scanner
 
         const token =
         {
-            raw:   this.source.substring(start, this.index),
-            value: $string,
-            type:  Token.StringLiteral,
-            octal: octal
+            raw:        this.source.substring(start, this.index),
+            value:      $string,
+            type:       Token.StringLiteral,
+            octal:      octal,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
         };
 
         return token;
@@ -907,9 +963,13 @@ export default class Scanner
 
         const token =
         {
-            raw:   $string,
-            value: $string,
-            type:  Token.Punctuator,
+            raw:        $string,
+            value:      $string,
+            type:       Token.Punctuator,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
         };
 
         return token;
@@ -1073,12 +1133,16 @@ export default class Scanner
 
         const token =
         {
-            raw:    (head ? "`" : "") + $string + (tail ? "`" : ""),
-            value:  cooked,
-            type:   Token.Template,
-            cooked: cooked,
-            head:   head,
-            tail:   tail
+            raw:        (head ? "`" : "") + $string + (tail ? "`" : ""),
+            value:      cooked,
+            type:       Token.Template,
+            cooked:     cooked,
+            head:       head,
+            tail:       tail,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
         };
 
         return token;
@@ -1136,7 +1200,18 @@ export default class Scanner
     {
         if (this.eof())
         {
-            return { raw: "", type: Token.EOF, value: "" };
+            const token =
+            {
+                raw:        "",
+                value:      "",
+                type:       Token.EOF,
+                start:      0,
+                end:        this.index,
+                lineStart:  this.lineStart,
+                lineNumber: this.lineNumber,
+            };
+
+            return token;
         }
 
         const charCode = this.source.charCodeAt(this.index);
@@ -1201,6 +1276,8 @@ export default class Scanner
 
     public scanRegex(): RawToken
     {
+        const start = this.index;
+
         let char        = "";
         let pattern     = "";
         let classMarker = false;
@@ -1275,6 +1352,18 @@ export default class Scanner
             this.advance();
         }
 
-        return { raw: pattern + flags, value: "", pattern: pattern.substring(1, pattern.length - 1), type: Token.RegularExpression, flags };
+        const token =
+        {
+            raw:        pattern + flags,
+            value:      new RegExp(pattern, flags),
+            pattern:    pattern.substring(1, pattern.length - 1),
+            type:       Token.RegularExpression, flags,
+            start:      start,
+            end:        this.index,
+            lineStart:  this.lineStart,
+            lineNumber: this.lineNumber,
+        };
+
+        return token;
     }
 }

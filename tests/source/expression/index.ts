@@ -9,8 +9,6 @@ import Scanner     from "@surface/expression/internal/scanner";
 import SyntaxError from "@surface/expression/internal/syntax-error";
 import Token       from "@surface/expression/internal/token";
 
-
-
 describe
 (
     "Tokenizer",
@@ -26,8 +24,7 @@ describe
                     it
                     (
                         `Token ${token.raw} should be ${Token[token.type]}`,
-                        () => expect(new Scanner(token.raw).nextToken())
-                            .include({ raw: token.raw, value: token.value, type: token.type })
+                        () => expect(new Scanner(token.raw).nextToken()).to.deep.equal(token)
                     );
                 }
             }
