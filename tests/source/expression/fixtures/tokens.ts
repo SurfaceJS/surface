@@ -140,7 +140,7 @@ export const validTokens: Array<RawToken> =
         type:       Token.StringLiteral,
         start:      0,
         end:        4,
-        lineStart:  1,
+        lineStart:  0,
         lineNumber: 1,
         octal:      false
     },
@@ -159,7 +159,7 @@ export const validTokens: Array<RawToken> =
         value:      "\v",
         type:       Token.StringLiteral,
         start:      0,
-        end:        5,
+        end:        4,
         lineStart:  0,
         lineNumber: 1,
         octal:      false
@@ -172,7 +172,7 @@ export const validTokens: Array<RawToken> =
         end:        7,
         lineStart:  0,
         lineNumber: 1,
-        octal:      false
+        octal:      true
     },
     {
         raw:        "'\\11...'",
@@ -182,7 +182,7 @@ export const validTokens: Array<RawToken> =
         end:        8,
         lineStart:  0,
         lineNumber: 1,
-        octal:      false
+        octal:      true
     },
     {
         raw:        "'\\123...'",
@@ -192,7 +192,7 @@ export const validTokens: Array<RawToken> =
         end:        9,
         lineStart:  0,
         lineNumber: 1,
-        octal:      false
+        octal:      true
     },
     {
         raw:        "'\\u{A9}'",
@@ -201,7 +201,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        8,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "'\\u00A9'",
@@ -210,7 +211,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        8,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "'\\xA9'",
@@ -219,7 +221,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        6,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "'\\z'",
@@ -228,7 +231,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "'single quotes'",
@@ -237,7 +241,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        15,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "\"quotes '`\"",
@@ -246,7 +251,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        11,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "'quotes \"`'",
@@ -255,7 +261,8 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        11,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        octal:      false
     },
     {
         raw:        "`\\n`",
@@ -264,7 +271,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\r`",
@@ -273,7 +282,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\b`",
@@ -282,7 +293,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\t`",
@@ -291,7 +304,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\f`",
@@ -300,7 +315,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\v`",
@@ -309,7 +326,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\u{A9}`",
@@ -318,7 +337,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        8,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\u00A9`",
@@ -327,7 +348,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        8,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\ujs`",
@@ -336,7 +359,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        6,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\xA9`",
@@ -345,7 +370,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        6,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\z`",
@@ -354,7 +381,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\\r`",
@@ -362,8 +391,10 @@ export const validTokens: Array<RawToken> =
         type:       Token.Template,
         start:      0,
         end:        4,
-        lineStart:  0,
-        lineNumber: 1
+        lineStart:  3,
+        lineNumber: 2,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\\r\n`",
@@ -371,8 +402,10 @@ export const validTokens: Array<RawToken> =
         type:       Token.Template,
         start:      0,
         end:        5,
-        lineStart:  0,
-        lineNumber: 2
+        lineStart:  4,
+        lineNumber: 2,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\r\n`",
@@ -380,8 +413,10 @@ export const validTokens: Array<RawToken> =
         type:       Token.Template,
         start:      0,
         end:        4,
-        lineStart:  0,
-        lineNumber: 2
+        lineStart:  3,
+        lineNumber: 2,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\0a`",
@@ -390,7 +425,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        5,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`foo\nbar`",
@@ -398,8 +435,10 @@ export const validTokens: Array<RawToken> =
         type:       Token.Template,
         start:      0,
         end:        9,
-        lineStart:  0,
-        lineNumber: 2
+        lineStart:  5,
+        lineNumber: 2,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`foo$bar`",
@@ -408,7 +447,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        9,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`\\z`",
@@ -417,7 +458,9 @@ export const validTokens: Array<RawToken> =
         start:      0,
         end:        4,
         lineStart:  0,
-        lineNumber: 1
+        lineNumber: 1,
+        head:       true,
+        tail:       true
     },
     {
         raw:        "`string`",
@@ -536,7 +579,7 @@ export const validTokens: Array<RawToken> =
         value:      81985529216486900,
         type:       Token.NumericLiteral,
         start:      0,
-        end:        0,
+        end:        18,
         lineStart:  0,
         lineNumber: 1
     },

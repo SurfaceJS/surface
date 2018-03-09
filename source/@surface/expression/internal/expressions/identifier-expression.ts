@@ -20,7 +20,7 @@ export default class IdentifierExpression implements IExpression
     {
         if (!(name in context))
         {
-            throw new Error(`The identifier ${name} does not exist in this context.`);
+            throw new Error(`The identifier ${name} does not exist in this context`);
         }
 
         this._context = context;

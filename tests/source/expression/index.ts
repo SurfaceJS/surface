@@ -131,7 +131,14 @@ describe
                         `Expression ${expression.raw} must throw an error`,
                         () =>
                         {
-                            expect(() => Parser.parse(expression.raw, context)).to.throw(Error, `The identifier ${expression.raw} does not exist in this context.`);
+                            try
+                            {
+                                Parser.parse(expression.raw, context);
+                            }
+                            catch (error)
+                            {
+                                expect(error).to.includes(expression.error);
+                            }
                         }
                     );
                 }

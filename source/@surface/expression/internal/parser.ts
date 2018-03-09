@@ -16,6 +16,8 @@ import TemplateExpression    from "./expressions/template-expression";
 import UnaryExpression       from "./expressions/unary-expression";
 import UpdateExpression      from "./expressions/update-expression";
 
+import SyntaxError from "./syntax-error";
+
 export default class Parser
 {
     private readonly context: Object;
@@ -122,7 +124,7 @@ export default class Parser
             let left  = expression;
             let right = this.exponentiationExpression();
 
-            const stack: [IExpression, string, IExpression] = [left, token.value as string, right];
+            const stack: [IExpression, string, IExpression] = [left, token.raw, right];
             const precedences = [precedence];
             while (true)
             {
@@ -142,7 +144,7 @@ export default class Parser
                     stack.push(new BinaryExpression(left, right, operator));
                 }
 
-                stack.push(this.nextToken().value as string);
+                stack.push(this.nextToken().raw);
                 precedences.push(precedence);
                 stack.push(this.exponentiationExpression());
             }
@@ -161,7 +163,7 @@ export default class Parser
 
     private binaryPrecedence(token: RawToken): number
     {
-        const operator = token.value;
+        const operator = token.raw;
 
         if (token.type == Token.Punctuator)
         {
@@ -249,7 +251,8 @@ export default class Parser
     {
         const token = this.nextToken();
 
-        if (token.type !== Token.Punctuator || token.value !== value)
+        /* istanbul ignore if */
+        if (token.type !== Token.Punctuator || token.raw !== value)
         {
             throw this.unexpectedTokenError(token);
         }
@@ -263,6 +266,18 @@ export default class Parser
         {
             const operator = this.nextToken().raw;
             return new BinaryExpression(expression, this.assignmentExpression(), operator);
+        }
+
+        return expression;
+    }
+
+    private expression(): IExpression
+    {
+        const expression = this.assignmentExpression();
+
+        if (this.lookahead.type != Token.EOF)
+        {
+            throw this.unexpectedTokenError(this.lookahead);
         }
 
         return expression;
@@ -363,12 +378,12 @@ export default class Parser
 
         if (token.type == Token.Identifier)
         {
-            key = new ConstantExpression(token.value);
+            key = new ConstantExpression(token.raw);
             this.nextToken();
 
             if (!this.match(":"))
             {
-                return new PropertyExpression(key, new IdentifierExpression(this.context, token.value as string));
+                return new PropertyExpression(key, new IdentifierExpression(this.context, token.raw));
             }
         }
         else
@@ -377,7 +392,6 @@ export default class Parser
 
             switch (token.type)
             {
-                case Token.Identifier:
                 case Token.StringLiteral:
                 case Token.NumericLiteral:
                 case Token.BooleanLiteral:
@@ -385,7 +399,7 @@ export default class Parser
                     key = new ConstantExpression(this.nextToken().value);
                     break;
                 case Token.Punctuator:
-                    if (token.value == "[")
+                    if (token.raw == "[")
                     {
                         this.expect("[");
 
@@ -411,12 +425,12 @@ export default class Parser
 
     private match(value: string): boolean
     {
-        return this.lookahead.type === Token.Punctuator && this.lookahead.value === value;
+        return this.lookahead.type === Token.Punctuator && this.lookahead.raw === value;
     }
 
     private matchKeyword(value: string): boolean
     {
-        return this.lookahead.type === Token.Keyword && this.lookahead.value === value;
+        return this.lookahead.type === Token.Keyword && this.lookahead.raw === value;
     }
 
     private nextToken(): RawToken
@@ -446,37 +460,37 @@ export default class Parser
             case Token.RegularExpression:
             case Token.Template:
             case Token.Identifier:
-                return this.assignmentExpression();
+                return this.expression();
             case Token.Punctuator:
                 if
                 (
-                    this.lookahead.value == "("
-                    || this.lookahead.value == "{"
-                    || this.lookahead.value == "["
-                    || this.lookahead.value == "/"
-                    || this.lookahead.value == "!"
-                    || this.lookahead.value == "+"
-                    || this.lookahead.value == "-"
-                    || this.lookahead.value == "^"
-                    || this.lookahead.value == "~"
-                    || this.lookahead.value == "++"
-                    || this.lookahead.value == "--"
+                    this.lookahead.raw == "("
+                    || this.lookahead.raw == "{"
+                    || this.lookahead.raw == "["
+                    || this.lookahead.raw == "/"
+                    || this.lookahead.raw == "!"
+                    || this.lookahead.raw == "+"
+                    || this.lookahead.raw == "-"
+                    || this.lookahead.raw == "^"
+                    || this.lookahead.raw == "~"
+                    || this.lookahead.raw == "++"
+                    || this.lookahead.raw == "--"
                 )
                 {
-                    return this.assignmentExpression();
+                    return this.expression();
                 }
                 break;
             case Token.Keyword:
-                if (this.lookahead.value == "this" || this.lookahead.value == "typeof")
+                if (this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
                 {
-                    return this.assignmentExpression();
+                    return this.expression();
                 }
                 break;
             default:
                 break;
         }
 
-        throw new Error("Expression not supported");
+        throw this.unexpectedTokenError(this.lookahead);
     }
 
     private primaryExpression(): IExpression
@@ -486,16 +500,16 @@ export default class Parser
             case Token.Keyword:
                 if (this.matchKeyword("this"))
                 {
-                    return new IdentifierExpression(this.context, this.nextToken().value as string);
+                    return new IdentifierExpression(this.context, this.nextToken().raw);
                 }
                 break;
             case Token.Identifier:
-                if (this.lookahead.value == "undefined")
+                if (this.lookahead.raw == "undefined")
                 {
-                    return new ConstantExpression(undefined);
+                    return new ConstantExpression(this.nextToken().value);
                 }
 
-                return new IdentifierExpression(this.context, this.nextToken().value as string);
+                return new IdentifierExpression(this.context, this.nextToken().raw);
 
             case Token.BooleanLiteral:
                 return new ConstantExpression(this.nextToken().value);
@@ -507,7 +521,7 @@ export default class Parser
                 return new ConstantExpression(this.nextToken().value);
 
             case Token.Punctuator:
-                switch (this.lookahead.value)
+                switch (this.lookahead.raw)
                 {
                     case "(":
                         return this.groupExpression();
@@ -524,7 +538,7 @@ export default class Parser
 
             case Token.Template:
                 return this.templateLiteralExpression();
-
+            /* istanbul ignore next */
             default:
                 break;
         }
@@ -549,7 +563,7 @@ export default class Parser
         if (this.match("+") || this.match("-") || this.match("~") || this.match("!") || this.matchKeyword("typeof"))
         {
             const token = this.nextToken();
-            return new UnaryExpression(this.updateExpression(), token.value as string);
+            return new UnaryExpression(this.updateExpression(), token.raw);
         }
         else
         {
@@ -596,8 +610,23 @@ export default class Parser
         }
     }
 
-    private unexpectedTokenError(token: Object, message?: string): Error
+    private unexpectedTokenError(token: RawToken): Error
     {
-        return new Error(message);
+        let unexpected = `token ${token.raw}`;
+
+        switch (token.type)
+        {
+            case Token.StringLiteral:
+                unexpected = "string";
+                break;
+            case Token.NumericLiteral:
+                unexpected = "number";
+            case Token.EOF:
+                unexpected = "end of expression";
+            default:
+                break;
+        }
+
+        return new SyntaxError(`Unexpected ${unexpected}`, token.lineNumber, token.start, token.start - token.lineStart + 1);
     }
 }

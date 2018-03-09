@@ -4,12 +4,12 @@ export default class SyntaxError extends Error
     public index:      number;
     public lineNumber: number;
 
-    public constructor(message: string, index: number, lineNumber: number, column: number)
+    public constructor(message: string, lineNumber: number, index: number, column: number)
     {
         super(message);
 
-        this.index      = index;
         this.lineNumber = lineNumber;
+        this.index      = index;
         this.column     = column;
     }
 }

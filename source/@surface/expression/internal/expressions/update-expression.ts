@@ -56,7 +56,7 @@ export default class UpdateExpression implements IExpression
         }
         else
         {
-            throw new TypeError("Invalid target expression.");
+            throw new TypeError("Invalid target expression");
         }
     }
 }

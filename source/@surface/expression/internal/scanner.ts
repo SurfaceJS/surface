@@ -14,7 +14,6 @@ export type RawToken =
     start:      number;
     type:       Token;
     value:      Nullable<Object>;
-    cooked?:    string;
     flags?:     string;
     head?:      boolean;
     octal?:     boolean;
@@ -416,9 +415,9 @@ export default class Scanner
 
         const token =
         {
-            raw:   this.source.substring(start, this.index),
-            value: Number.parseInt("0x" + $number.replace(/_/g, ""), 16),
-            type:  Token.NumericLiteral,
+            raw:        this.source.substring(start, this.index),
+            value:      Number.parseInt("0x" + $number.replace(/_/g, ""), 16),
+            type:       Token.NumericLiteral,
             start:      start,
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -453,6 +452,21 @@ export default class Scanner
                 raw:        id,
                 value:      null,
                 type:       Token.NullLiteral,
+                start:      start,
+                end:        this.index,
+                lineStart:  this.lineStart,
+                lineNumber: this.lineNumber,
+            };
+
+            return token;
+        }
+        else if (id == "undefined")
+        {
+            const token =
+            {
+                raw:        id,
+                value:      undefined,
+                type:       Token.Identifier,
                 start:      start,
                 end:        this.index,
                 lineStart:  this.lineStart,
@@ -1136,7 +1150,6 @@ export default class Scanner
             raw:        (head ? "`" : "") + $string + (tail ? "`" : ""),
             value:      cooked,
             type:       Token.Template,
-            cooked:     cooked,
             head:       head,
             tail:       tail,
             start:      start,
@@ -1188,7 +1201,7 @@ export default class Scanner
 
     private throwUnexpectedToken(message?: string): never
     {
-        throw new SyntaxError(message || Messages.unexpectedTokenIllegal, this.index, this.lineNumber, this.index - this.lineStart + 1);
+        throw new SyntaxError(message || Messages.unexpectedTokenIllegal, this.lineNumber, this.index, this.index - this.lineStart + 1);
     }
 
     public backtrack(steps: number): void
@@ -1205,7 +1218,7 @@ export default class Scanner
                 raw:        "",
                 value:      "",
                 type:       Token.EOF,
-                start:      0,
+                start:      this.index,
                 end:        this.index,
                 lineStart:  this.lineStart,
                 lineNumber: this.lineNumber,
