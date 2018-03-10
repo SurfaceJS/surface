@@ -1,5 +1,5 @@
-import fs      from "fs";
-import path    from "path";
+import fs         from "fs";
+import path       from "path";
 import { Plugin } from "webpack";
 
 namespace SimblingPriorityPlugin
@@ -74,11 +74,11 @@ class SimblingPriorityPlugin implements Plugin
         // tslint:disable-next-line:no-this-assignment
         const self = this;
 
-        resolver.plugin
+        resolver.hooks.resolved.tap
         (
-            "resolved",
+            SimblingPriorityPlugin.name,
             // tslint:disable-next-line:no-any
-            function(request: any, callback: any)
+            function(request: any)
             {
                 let target    = request.path;
                 let extension = path.parse(target).ext;
@@ -95,8 +95,6 @@ class SimblingPriorityPlugin implements Plugin
                         request.path = simbling;
                     }
                 }
-
-                callback();
             }
         );
     }

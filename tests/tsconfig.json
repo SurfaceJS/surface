@@ -8,14 +8,12 @@
             "dom",
             "esnext"
         ],
-        "noEmit": true,
         "typeRoots":
         [
             "node_modules/@types",
             "node_modules/@surface/custom-element/@types"
         ],
-        "module": "commonjs"
+        "noEmit": true
     },
-    "include": ["source"],
-    "exclude": ["**/@surface/**/*.js"]
+    "include": ["source"]
 }

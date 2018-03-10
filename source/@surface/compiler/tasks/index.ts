@@ -18,7 +18,7 @@ export async function execute(task?: enums.TasksType, config?: string, env?: str
     task   = task   || enums.TasksType.build;
     config = config || "./";
 
-    let enviroment = enums.EnviromentType[env || "debug"];
+    let enviroment = env ? enums.EnviromentType[env] : enums.EnviromentType.development;
 
     watch = !!watch;
 
@@ -177,7 +177,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         }
     }
 
-    plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    plugins.push(new webpack.optimize["SplitChunksPlugin"]({ name: config.runtime }));
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
     plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: config.tsconfig, tslint: config.tslint, watch: config.context }));
 
@@ -191,6 +191,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         context: config.context,
         entry:   config.entry,
+        mode:    enviroment,
         output:
         {
             path:       config.output,
@@ -205,7 +206,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         plugins: plugins
     } as webpack.Configuration;
 
-    if (primaryConfig.plugins && enviroment == enums.EnviromentType.release)
+    if (primaryConfig.plugins && enviroment == enums.EnviromentType.production)
     {
         primaryConfig.devtool = false;
 

@@ -1,4 +1,4 @@
-import { ObjectLiteral, Nullable } from "@surface/types";
+import { Nullable, ObjectLiteral } from "@surface/types";
 
 export class Route
 {

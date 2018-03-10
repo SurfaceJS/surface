@@ -1,9 +1,11 @@
 import "@surface/collection/extensions";
-import { Route }            from "./route";
-import { List }             from "@surface/collection/list";
-import { Enumerable }       from "@surface/enumerable/index";
-import { Action1, Nullable} from "@surface/types";
-import { Dictionary }       from "@surface/collection";
+
+import { Route } from "./route";
+
+import { Dictionary }        from "@surface/collection";
+import { List }              from "@surface/collection/list";
+import { Enumerable }        from "@surface/enumerable/index";
+import { Action1, Nullable } from "@surface/types";
 
 export class Router
 {
