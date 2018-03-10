@@ -2,6 +2,7 @@
     "extends": "../source/@surface/configurations/tsconfig.json",
     "compilerOptions":
     {
+        "allowJs": false,
         "lib":
         [
             "dom",
@@ -12,7 +13,9 @@
         [
             "node_modules/@types",
             "node_modules/@surface/custom-element/@types"
-        ]  
+        ],
+        "module": "commonjs"
     },
-    "include": ["source"]
+    "include": ["source"],
+    "exclude": ["**/@surface/**/*.js"]
 }

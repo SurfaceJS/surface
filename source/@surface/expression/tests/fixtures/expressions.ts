@@ -1,19 +1,19 @@
-import IExpression           from "@surface/expression/interfaces/expression";
-import ArrayExpression       from "@surface/expression/internal/expressions/array-expression";
-import BinaryExpression      from "@surface/expression/internal/expressions/binary-expression" ;
-import CallExpression        from "@surface/expression/internal/expressions/call-expression";
-import ConditionalExpression from "@surface/expression/internal/expressions/conditional-expression";
-import ConstantExpression    from "@surface/expression/internal/expressions/constant-expression";
-import IdentifierExpression  from "@surface/expression/internal/expressions/identifier-expression";
-import MemberExpression      from "@surface/expression/internal/expressions/member-expression";
-import ObjectExpression      from "@surface/expression/internal/expressions/object-expression";
-import RegexExpression       from "@surface/expression/internal/expressions/regex-expression";
-import TemplateExpression    from "@surface/expression/internal/expressions/template-expression";
-import UnaryExpression       from "@surface/expression/internal/expressions/unary-expression";
-import UpdateExpression      from "@surface/expression/internal/expressions/update-expression";
-import SyntaxError           from "@surface/expression/internal/syntax-error";
+import ArrayExpression       from "../../internal/expressions/array-expression";
+import BinaryExpression      from "../../internal/expressions/binary-expression" ;
+import CallExpression        from "../../internal/expressions/call-expression";
+import ConditionalExpression from "../../internal/expressions/conditional-expression";
+import ConstantExpression    from "../../internal/expressions/constant-expression";
+import IExpression           from "../../interfaces/expression";
+import IdentifierExpression  from "../../internal/expressions/identifier-expression";
+import MemberExpression      from "../../internal/expressions/member-expression";
+import ObjectExpression      from "../../internal/expressions/object-expression";
+import RegexExpression       from "../../internal/expressions/regex-expression";
+import SyntaxError           from "../../internal/syntax-error";
+import TemplateExpression    from "../../internal/expressions/template-expression";
+import UnaryExpression       from "../../internal/expressions/unary-expression";
+import UpdateExpression      from "../../internal/expressions/update-expression";
 
-import { Constructor, Nullable } from "@surface/enumerable/node_modules/@surface/types";
+import { Constructor, Nullable } from "@surface/types";
 
 type ExpressionFixture        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression> };
 type InvalidExpressionFixture = { raw: string, error: Error };

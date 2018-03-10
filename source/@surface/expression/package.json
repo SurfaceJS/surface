@@ -3,8 +3,15 @@
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
+    "devDependencies": {
+        "@types/chai": "4.1.2",
+        "@types/mocha": "2.2.48",
+        "chai": "4.1.2",
+        "mocha": "5.0.4"
+    },
     "dependencies": {
-        "@surface/types": "0.0.1"
+        "@surface/types": "0.0.1",
+        "tslib": "1.9.0"
     },
     "description": "Provides an tree representation of javascript expressions.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",

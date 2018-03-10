@@ -1,6 +1,6 @@
-import Messages     from "@surface/expression/internal/messages";
-import { RawToken } from "@surface/expression/internal/scanner";
-import Token        from "@surface/expression/internal/token";
+import Messages     from "../../internal/messages";
+import { RawToken } from "../../internal/scanner";
+import Token        from "../../internal/token";
 
 export const validTokens: Array<RawToken> =
 [
