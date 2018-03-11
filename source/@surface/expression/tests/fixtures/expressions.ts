@@ -15,8 +15,8 @@ import UpdateExpression      from "../../internal/expressions/update-expression"
 
 import { Constructor, Nullable } from "@surface/types";
 
-type ExpressionFixture        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression> };
-type InvalidExpressionFixture = { raw: string, error: Error };
+type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression> };
+type InvalidExpressionFixtureSpec = { raw: string, error: Error };
 
 export const context =
 {
@@ -31,7 +31,7 @@ export const context =
 };
 
 // tslint:disable-next-line:no-any
-export const validExpressions: Array<ExpressionFixture> =
+export const validExpressions: Array<ExpressionFixtureSpec> =
 [
     {
         raw:   "1",
@@ -415,7 +415,7 @@ export const validExpressions: Array<ExpressionFixture> =
     },
 ];
 
-export const invalidExpressions: Array<InvalidExpressionFixture> =
+export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
     {
         raw:   "foo",

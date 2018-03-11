@@ -21,21 +21,21 @@ export default class UnaryExpression implements IExpression
         return this._operator;
     }
 
-    private readonly _value: IExpression;
-    public get value(): IExpression
+    private readonly _expression: IExpression;
+    public get expression(): IExpression
     {
-        return this._value;
+        return this._expression;
     }
 
-    public constructor(value: IExpression, operator: string)
+    public constructor(expression: IExpression, operator: string)
     {
-        this._operator = operator;
-        this._value    = value;
-        this.operation = unaryFunctions[this.operator];
+        this._operator   = operator;
+        this._expression = expression;
+        this.operation   = unaryFunctions[this.operator];
     }
 
     public evaluate(): Object
     {
-        return this.operation(this.value.evaluate());
+        return this.operation(this.expression.evaluate());
     }
 }

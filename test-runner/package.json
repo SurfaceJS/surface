@@ -20,13 +20,9 @@
     "name": "surface-workbench-tests",
     "nyc": {
         "cache": true,
-        "include": [
-            "build/*.js"
-        ],
-        "reporter": [
-            "lcov",
-            "text-summary"
-        ]
+        "include": ["build/*.js"],
+        "exclude": ["build/webpack/bootstrap"],
+        "reporter": ["lcov", "text-summary"]
     },
     "repository": {
         "type": "git",

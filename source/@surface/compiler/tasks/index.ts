@@ -55,7 +55,6 @@ async function build(config: webpack.Configuration, enviroment: enums.Enviroment
         assets:   true,
         errors:   true,
         colors:   true,
-        modules:  true,
         version:  true,
         warnings: true
     };
@@ -191,7 +190,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         context: config.context,
         entry:   config.entry,
-        mode:    enviroment,
+        mode:    enums.EnviromentType.development,
         output:
         {
             path:       config.output,

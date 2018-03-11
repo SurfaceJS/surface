@@ -5,6 +5,12 @@
     "output":   "build",
     "tsconfig": "tsconfig.json",
     "tslint":   "../tslint.json",
+    "simblingResolve":
+    {
+        "from":    ".js",
+        "to":      ".ts",
+        "include": ["node_modules/@surface", "../source/@surface"]
+    },
     "webpackConfig":
     {
         "output":
