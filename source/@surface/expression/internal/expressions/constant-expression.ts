@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Nullable } from "@surface/types";
 
@@ -9,6 +10,12 @@ export default class ConstantExpression implements IExpression
     {
         return this._value;
     }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Constant;
+    }
+
     public constructor(value: Nullable<Object>)
     {
         this._value = value;

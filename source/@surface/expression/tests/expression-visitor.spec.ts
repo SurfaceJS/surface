@@ -12,7 +12,7 @@ describe
     {
         describe
         (
-            "Visit should work",
+            "Visits should work",
             () =>
             {
                 for (const spec of validVisitors)

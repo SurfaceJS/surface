@@ -1,6 +1,7 @@
-import IExpression           from "../interfaces/expression";
-import Scanner, { RawToken } from "./scanner";
-import Token                 from "./token";
+import Scanner, { Token } from "./scanner";
+import TokenType          from "./token-type";
+
+import IExpression from "../interfaces/expression";
 
 import ArrayExpression       from "./expressions/array-expression";
 import BinaryExpression      from "./expressions/binary-expression";
@@ -22,7 +23,7 @@ export default class Parser
 {
     private readonly context: Object;
     private readonly scanner: Scanner;
-    private lookahead: RawToken;
+    private lookahead: Token;
 
     private constructor(source: string, context: Object)
     {
@@ -161,11 +162,11 @@ export default class Parser
         return expression;
     }
 
-    private binaryPrecedence(token: RawToken): number
+    private binaryPrecedence(token: Token): number
     {
         const operator = token.raw;
 
-        if (token.type == Token.Punctuator)
+        if (token.type == TokenType.Punctuator)
         {
             switch (operator)
             {
@@ -219,7 +220,7 @@ export default class Parser
                     return 11;
             }
         }
-        else if (token.type == Token.Keyword)
+        else if (token.type == TokenType.Keyword)
         {
             return (operator == "instanceof" || operator == "in") ? 7 : 0;
         }
@@ -252,7 +253,7 @@ export default class Parser
         const token = this.nextToken();
 
         /* istanbul ignore if */
-        if (token.type !== Token.Punctuator || token.raw !== value)
+        if (token.type !== TokenType.Punctuator || token.raw !== value)
         {
             throw this.unexpectedTokenError(token);
         }
@@ -275,7 +276,7 @@ export default class Parser
     {
         const expression = this.assignmentExpression();
 
-        if (this.lookahead.type != Token.EOF)
+        if (this.lookahead.type != TokenType.EOF)
         {
             throw this.unexpectedTokenError(this.lookahead);
         }
@@ -306,7 +307,7 @@ export default class Parser
                 parentExpression = expression;
                 this.expect(".");
 
-                if (this.lookahead.type == Token.Identifier)
+                if (this.lookahead.type == TokenType.Identifier)
                 {
                     expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value));
                 }
@@ -376,7 +377,7 @@ export default class Parser
         let key:   IExpression;
         let value: IExpression;
 
-        if (token.type == Token.Identifier)
+        if (token.type == TokenType.Identifier)
         {
             key = new ConstantExpression(token.raw);
             this.nextToken();
@@ -392,13 +393,13 @@ export default class Parser
 
             switch (token.type)
             {
-                case Token.StringLiteral:
-                case Token.NumericLiteral:
-                case Token.BooleanLiteral:
-                case Token.NullLiteral:
+                case TokenType.StringLiteral:
+                case TokenType.NumericLiteral:
+                case TokenType.BooleanLiteral:
+                case TokenType.NullLiteral:
                     key = new ConstantExpression(this.nextToken().value);
                     break;
-                case Token.Punctuator:
+                case TokenType.Punctuator:
                     if (token.raw == "[")
                     {
                         this.expect("[");
@@ -425,22 +426,22 @@ export default class Parser
 
     private match(value: string): boolean
     {
-        return this.lookahead.type === Token.Punctuator && this.lookahead.raw === value;
+        return this.lookahead.type === TokenType.Punctuator && this.lookahead.raw === value;
     }
 
     private matchKeyword(value: string): boolean
     {
-        return this.lookahead.type === Token.Keyword && this.lookahead.raw === value;
+        return this.lookahead.type === TokenType.Keyword && this.lookahead.raw === value;
     }
 
-    private nextToken(): RawToken
+    private nextToken(): Token
     {
         const token = this.lookahead;
         this.lookahead = this.scanner.nextToken();
         return token;
     }
 
-    private nextRegexToken(): RawToken
+    private nextRegexToken(): Token
     {
         const token = this.scanner.scanRegex();
 
@@ -453,15 +454,15 @@ export default class Parser
     {
         switch (this.lookahead.type)
         {
-            case Token.StringLiteral:
-            case Token.NumericLiteral:
-            case Token.BooleanLiteral:
-            case Token.NullLiteral:
-            case Token.RegularExpression:
-            case Token.Template:
-            case Token.Identifier:
+            case TokenType.StringLiteral:
+            case TokenType.NumericLiteral:
+            case TokenType.BooleanLiteral:
+            case TokenType.NullLiteral:
+            case TokenType.RegularExpression:
+            case TokenType.Template:
+            case TokenType.Identifier:
                 return this.expression();
-            case Token.Punctuator:
+            case TokenType.Punctuator:
                 if
                 (
                     this.lookahead.raw == "("
@@ -480,7 +481,7 @@ export default class Parser
                     return this.expression();
                 }
                 break;
-            case Token.Keyword:
+            case TokenType.Keyword:
                 if (this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
                 {
                     return this.expression();
@@ -497,13 +498,13 @@ export default class Parser
     {
         switch (this.lookahead.type)
         {
-            case Token.Keyword:
+            case TokenType.Keyword:
                 if (this.matchKeyword("this"))
                 {
                     return new IdentifierExpression(this.context, this.nextToken().raw);
                 }
                 break;
-            case Token.Identifier:
+            case TokenType.Identifier:
                 if (this.lookahead.raw == "undefined")
                 {
                     return new ConstantExpression(this.nextToken().value);
@@ -511,16 +512,16 @@ export default class Parser
 
                 return new IdentifierExpression(this.context, this.nextToken().raw);
 
-            case Token.BooleanLiteral:
+            case TokenType.BooleanLiteral:
                 return new ConstantExpression(this.nextToken().value);
 
-            case Token.NumericLiteral:
-            case Token.NullLiteral:
-            case Token.StringLiteral:
-            case Token.RegularExpression:
+            case TokenType.NumericLiteral:
+            case TokenType.NullLiteral:
+            case TokenType.StringLiteral:
+            case TokenType.RegularExpression:
                 return new ConstantExpression(this.nextToken().value);
 
-            case Token.Punctuator:
+            case TokenType.Punctuator:
                 switch (this.lookahead.raw)
                 {
                     case "(":
@@ -536,7 +537,7 @@ export default class Parser
                         throw this.unexpectedTokenError(this.nextToken());
                 }
 
-            case Token.Template:
+            case TokenType.Template:
                 return this.templateLiteralExpression();
             /* istanbul ignore next */
             default:
@@ -610,18 +611,18 @@ export default class Parser
         }
     }
 
-    private unexpectedTokenError(token: RawToken): Error
+    private unexpectedTokenError(token: Token): Error
     {
         let unexpected = `token ${token.raw}`;
 
         switch (token.type)
         {
-            case Token.StringLiteral:
+            case TokenType.StringLiteral:
                 unexpected = "string";
                 break;
-            case Token.NumericLiteral:
+            case TokenType.NumericLiteral:
                 unexpected = "number";
-            case Token.EOF:
+            case TokenType.EOF:
                 unexpected = "end of expression";
             default:
                 break;

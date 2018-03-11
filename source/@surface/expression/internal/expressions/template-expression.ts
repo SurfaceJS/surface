@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 export default class TemplateExpression implements IExpression
 {
@@ -11,6 +12,11 @@ export default class TemplateExpression implements IExpression
     public get quasis(): Array<string>
     {
         return this._quasis;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Template;
     }
 
     public constructor(quasis: Array<string>, expressions: Array<IExpression>)

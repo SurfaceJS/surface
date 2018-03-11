@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Nullable } from "@surface/types";
 
@@ -20,6 +21,11 @@ export default class CallExpression implements IExpression
     public get args(): Array<IExpression>
     {
         return this._args;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Call;
     }
 
     public constructor(context: IExpression, name: string, args: Array<IExpression>)

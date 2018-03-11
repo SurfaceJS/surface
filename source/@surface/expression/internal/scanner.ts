@@ -1,18 +1,18 @@
 import Character   from "./character";
 import Messages    from "./messages";
 import SyntaxError from "./syntax-error";
-import Token       from "./token";
+import TokenType  from "./token-type";
 
 import { Nullable } from "@surface/types";
 
-export type RawToken =
+export type Token =
 {
     end:        number;
     lineNumber: number;
     lineStart:  number;
     raw:        string;
     start:      number;
-    type:       Token;
+    type:       TokenType;
     value:      Nullable<Object>;
     flags?:     string;
     head?:      boolean;
@@ -287,7 +287,7 @@ export default class Scanner
         return { code, octal };
     }
 
-    private scanBinaryLiteral(prefix: string, start: number): RawToken
+    private scanBinaryLiteral(prefix: string, start: number): Token
     {
         let $number = "";
         let char    = "";
@@ -341,7 +341,7 @@ export default class Scanner
         {
             raw:        this.source.substring(start, this.index),
             value:      Number.parseInt($number.replace(/_/g, ""), 2),
-            type:       Token.NumericLiteral,
+            type:       TokenType.NumericLiteral,
             start:      start,
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -373,7 +373,7 @@ export default class Scanner
         return String.fromCharCode(code);
     }
 
-    private scanHexLiteral(start: number): RawToken
+    private scanHexLiteral(start: number): Token
     {
         let $number = "";
         let char    = "";
@@ -417,7 +417,7 @@ export default class Scanner
         {
             raw:        this.source.substring(start, this.index),
             value:      Number.parseInt("0x" + $number.replace(/_/g, ""), 16),
-            type:       Token.NumericLiteral,
+            type:       TokenType.NumericLiteral,
             start:      start,
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -427,9 +427,9 @@ export default class Scanner
         return token;
     }
 
-    private scanIdentifier(): RawToken
+    private scanIdentifier(): Token
     {
-        let type: Token;
+        let type: TokenType;
         const start = this.index;
 
         // Backslash (U+005C) starts an escaped character.
@@ -439,11 +439,11 @@ export default class Scanner
         // Thus, it must be an identifier.
         if (id.length == 1)
         {
-            type = Token.Identifier;
+            type = TokenType.Identifier;
         }
         else if (this.isKeyword(id))
         {
-            type = Token.Keyword;
+            type = TokenType.Keyword;
         }
         else if (id == "null")
         {
@@ -451,7 +451,7 @@ export default class Scanner
             {
                 raw:        id,
                 value:      null,
-                type:       Token.NullLiteral,
+                type:       TokenType.NullLiteral,
                 start:      start,
                 end:        this.index,
                 lineStart:  this.lineStart,
@@ -466,7 +466,7 @@ export default class Scanner
             {
                 raw:        id,
                 value:      undefined,
-                type:       Token.Identifier,
+                type:       TokenType.Identifier,
                 start:      start,
                 end:        this.index,
                 lineStart:  this.lineStart,
@@ -481,7 +481,7 @@ export default class Scanner
             {
                 raw:        id,
                 value:      id == "true",
-                type:       Token.BooleanLiteral,
+                type:       TokenType.BooleanLiteral,
                 start:      start,
                 end:        this.index,
                 lineStart:  this.lineStart,
@@ -492,10 +492,10 @@ export default class Scanner
         }
         else
         {
-            type = Token.Identifier;
+            type = TokenType.Identifier;
         }
 
-        if (type != Token.Identifier && (start + id.length != this.index))
+        if (type != TokenType.Identifier && (start + id.length != this.index))
         {
             this.setCursorAt(start);
             this.throwUnexpectedToken(Messages.invalidEscapedReservedWord);
@@ -516,7 +516,7 @@ export default class Scanner
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private scanNumericLiteral(): RawToken
+    private scanNumericLiteral(): Token
     {
         const start = this.index;
         let char = this.source[start];
@@ -655,7 +655,7 @@ export default class Scanner
         {
             raw:        $number,
             value:      Number.parseFloat($number.replace(/_/g, "")),
-            type:       Token.NumericLiteral,
+            type:       TokenType.NumericLiteral,
             start:      start,
             end:        this.index,
             lineStart:  this.lineStart,
@@ -665,7 +665,7 @@ export default class Scanner
         return token;
     }
 
-    private scanOctalLiteral(prefix: string, start: number): RawToken
+    private scanOctalLiteral(prefix: string, start: number): Token
     {
         let $number = "";
         let octal   = false;
@@ -721,7 +721,7 @@ export default class Scanner
         {
             raw:        this.source.substring(start, this.index),
             value:      Number.parseInt($number.replace(/_/g, ""), 8),
-            type:       Token.NumericLiteral,
+            type:       TokenType.NumericLiteral,
             start:      start,
             end:        this.index,
             lineStart:  this.lineStart,
@@ -732,7 +732,7 @@ export default class Scanner
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private scanStringLiteral(): RawToken
+    private scanStringLiteral(): Token
     {
         const start = this.index;
 
@@ -854,7 +854,7 @@ export default class Scanner
         {
             raw:        this.source.substring(start, this.index),
             value:      $string,
-            type:       Token.StringLiteral,
+            type:       TokenType.StringLiteral,
             octal:      octal,
             start:      start,
             end:        this.index,
@@ -866,7 +866,7 @@ export default class Scanner
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private scanPunctuator(): RawToken
+    private scanPunctuator(): Token
     {
         const start = this.index;
 
@@ -979,7 +979,7 @@ export default class Scanner
         {
             raw:        $string,
             value:      $string,
-            type:       Token.Punctuator,
+            type:       TokenType.Punctuator,
             start:      start,
             end:        this.index,
             lineStart:  this.lineStart,
@@ -990,7 +990,7 @@ export default class Scanner
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private scanTemplate(): RawToken
+    private scanTemplate(): Token
     {
         const start = this.index;
         const head  = (this.source[start] == "`");
@@ -1149,7 +1149,7 @@ export default class Scanner
         {
             raw:        (head ? "`" : "") + $string + (tail ? "`" : ""),
             value:      cooked,
-            type:       Token.Template,
+            type:       TokenType.Template,
             head:       head,
             tail:       tail,
             start:      start,
@@ -1209,7 +1209,7 @@ export default class Scanner
         this._index -= steps;
     }
 
-    public nextToken(): RawToken
+    public nextToken(): Token
     {
         if (this.eof())
         {
@@ -1217,7 +1217,7 @@ export default class Scanner
             {
                 raw:        "",
                 value:      "",
-                type:       Token.EOF,
+                type:       TokenType.EOF,
                 start:      this.index,
                 end:        this.index,
                 lineStart:  this.lineStart,
@@ -1287,7 +1287,7 @@ export default class Scanner
         return this.scanPunctuator();
     }
 
-    public scanRegex(): RawToken
+    public scanRegex(): Token
     {
         const start = this.index;
 
@@ -1370,7 +1370,7 @@ export default class Scanner
             raw:        pattern + flags,
             value:      new RegExp(pattern, flags),
             pattern:    pattern.substring(1, pattern.length - 1),
-            type:       Token.RegularExpression, flags,
+            type:       TokenType.RegularExpression, flags,
             start:      start,
             end:        this.index,
             lineStart:  this.lineStart,

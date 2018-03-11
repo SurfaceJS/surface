@@ -1,7 +1,6 @@
-import IExpression from "../../interfaces/expression";
-
-import IdentifierExpression from "./identifier-expression";
-import MemberExpression     from "./member-expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
+import TypeGuard      from "../type-guard";
 
 import { Func2, Nullable } from "@surface/types";
 
@@ -35,6 +34,11 @@ export default class UpdateExpression implements IExpression
         return this._prefix;
     }
 
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Update;
+    }
+
     public constructor(expression: IExpression, operator: string, prefix: boolean)
     {
         this._expression = expression;
@@ -46,11 +50,11 @@ export default class UpdateExpression implements IExpression
     public evaluate(): number
     {
         /* istanbul ignore else  */
-        if (this.expression instanceof IdentifierExpression)
+        if (TypeGuard.isIdentifierExpression(this.expression))
         {
             return this.operation(this.expression.context, this.expression.name);
         }
-        else if (this.expression instanceof MemberExpression)
+        else if (TypeGuard.isMemberExpression(this.expression))
         {
             return this.operation(this.expression.target.evaluate(), this.expression.property.evaluate());
         }

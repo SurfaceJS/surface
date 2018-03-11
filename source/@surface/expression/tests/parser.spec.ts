@@ -11,7 +11,7 @@ describe
     {
         describe
         (
-            "Valid expressions",
+            "Expressions should work",
             () =>
             {
                 for (const expression of validExpressions)
@@ -32,7 +32,7 @@ describe
 
         describe
         (
-            "Invalid expressions",
+            "Expressions should throw",
             () =>
             {
                 for (const expression of invalidExpressions)

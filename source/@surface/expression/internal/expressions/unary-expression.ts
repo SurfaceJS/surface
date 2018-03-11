@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Func1, Nullable } from "@surface/types";
 
@@ -25,6 +26,11 @@ export default class UnaryExpression implements IExpression
     public get expression(): IExpression
     {
         return this._expression;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Unary;
     }
 
     public constructor(expression: IExpression, operator: string)

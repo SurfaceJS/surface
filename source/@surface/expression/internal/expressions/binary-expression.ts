@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Func2, Nullable } from "@surface/types";
 
@@ -50,6 +51,11 @@ export default class BinaryExpression implements IExpression
     public get right(): IExpression
     {
         return this._right;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Binary;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: string)

@@ -10,6 +10,7 @@ import ObjectExpression      from "./internal/expressions/object-expression";
 import PropertyExpression    from "./internal/expressions/property-expression";
 import RegexExpression       from "./internal/expressions/regex-expression";
 import TemplateExpression    from "./internal/expressions/template-expression";
+import TypeGuard             from "./internal/type-guard";
 import UnaryExpression       from "./internal/expressions/unary-expression";
 import UpdateExpression      from "./internal/expressions/update-expression";
 
@@ -18,55 +19,55 @@ export default abstract class ExpressionVisitor
     public visit(expression: IExpression): IExpression
     {
         /* istanbul ignore else */
-        if (expression instanceof ArrayExpression)
+        if (TypeGuard.isArrayExpression(expression))
         {
             return this.visitArrayExpression(expression);
         }
-        else if (expression instanceof BinaryExpression)
+        else if (TypeGuard.isBinaryExpression(expression))
         {
             return this.visitBinaryExpression(expression);
         }
-        else if (expression instanceof CallExpression)
+        else if (TypeGuard.isCallExpression(expression))
         {
             return this.visitCallExpression(expression);
         }
-        else if (expression instanceof ConditionalExpression)
+        else if (TypeGuard.isConditionalExpression(expression))
         {
             return this.visitConditionalExpression(expression);
         }
-        else if (expression instanceof ConstantExpression)
+        else if (TypeGuard.isConstantExpression(expression))
         {
             return this.visitConstantExpression(expression);
         }
-        else if (expression instanceof IdentifierExpression)
+        else if (TypeGuard.isIdentifierExpression(expression))
         {
             return this.visitIdentifierExpression(expression);
         }
-        else if (expression instanceof MemberExpression)
+        else if (TypeGuard.isMemberExpression(expression))
         {
             return this.visitMemberExpression(expression);
         }
-        else if (expression instanceof ObjectExpression)
+        else if (TypeGuard.isObjectExpression(expression))
         {
             return this.visitObjectExpression(expression);
         }
-        else if (expression instanceof PropertyExpression)
+        else if (TypeGuard.isPropertyExpression(expression))
         {
             return this.visitPropertyExpression(expression);
         }
-        else if (expression instanceof RegexExpression)
+        else if (TypeGuard.isRegexExpression(expression))
         {
             return this.visitRegexExpression(expression);
         }
-        else if (expression instanceof TemplateExpression)
+        else if (TypeGuard.isTemplateExpression(expression))
         {
             return this.visitTemplateExpression(expression);
         }
-        else if (expression instanceof UpdateExpression)
+        else if (TypeGuard.isUpdateExpression(expression))
         {
             return this.visitUpdateExpression(expression);
         }
-        else if (expression instanceof UnaryExpression)
+        else if (TypeGuard.isUnaryExpression(expression))
         {
             return this.visitUnaryExpression(expression);
         }

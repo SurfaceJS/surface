@@ -6,6 +6,6 @@ export default class FixtureVisitor extends ExpressionVisitor
     public visit(expression: IExpression): IExpression
     {
         const visited = super.visit(expression);
-        return { evaluate: () => (visited as Object).constructor.name };
+        return { type: -1, evaluate: () => (visited as Object).constructor.name };
     }
 }

@@ -5,7 +5,7 @@ import { invalidTokens, validTokens } from "./fixtures/tokens";
 import Messages    from "../internal/messages";
 import Scanner     from "../internal/scanner";
 import SyntaxError from "../internal/syntax-error";
-import Token       from "../internal/token";
+import TokenType   from "../internal/token-type";
 
 describe
 (
@@ -14,14 +14,14 @@ describe
     {
         describe
         (
-            "Valid tokens",
+            "Tokens should work",
             () =>
             {
                 for (const token of validTokens)
                 {
                     it
                     (
-                        `Token ${token.raw} should be ${Token[token.type]}`,
+                        `Token ${token.raw} should be ${TokenType[token.type]}`,
                         () => expect(new Scanner(token.raw).nextToken()).to.deep.equal(token)
                     );
                 }
@@ -30,7 +30,7 @@ describe
 
         describe
         (
-            "Invalid tokens",
+            "Tokens should throw",
             () =>
             {
                 for (const token of invalidTokens)
@@ -43,29 +43,29 @@ describe
 
         describe
         (
-            "Template strings",
+            "Templates should work",
             () =>
             {
                 const scanner = new Scanner("`start ${identifier} middle ${1} end`");
 
-                it(`First template segment.`,  () => expect(scanner.nextToken()).include({ value: "start ",     type: Token.Template }));
-                it(`First interporlation.`,    () => expect(scanner.nextToken()).include({ raw:   "identifier", type: Token.Identifier }));
-                it(`Second template segment.`, () => expect(scanner.nextToken()).include({ value: " middle ",   type: Token.Template }));
-                it(`Second interporlation.`,   () => expect(scanner.nextToken()).include({ value: 1,            type: Token.NumericLiteral }));
-                it(`Third template segment.`,  () => expect(scanner.nextToken()).include({ value: " end",       type: Token.Template }));
+                it(`First template segment.`,  () => expect(scanner.nextToken()).include({ value: "start ",     type: TokenType.Template }));
+                it(`First interporlation.`,    () => expect(scanner.nextToken()).include({ raw:   "identifier", type: TokenType.Identifier }));
+                it(`Second template segment.`, () => expect(scanner.nextToken()).include({ value: " middle ",   type: TokenType.Template }));
+                it(`Second interporlation.`,   () => expect(scanner.nextToken()).include({ value: 1,            type: TokenType.NumericLiteral }));
+                it(`Third template segment.`,  () => expect(scanner.nextToken()).include({ value: " end",       type: TokenType.Template }));
             }
         );
 
         describe
         (
-            "Regular Expressions",
+            "Regex should work",
             () =>
             {
                 it
                 (
                     "Pattern without flags",
                     () => expect(new Scanner("/foo[123]bar()\\//").scanRegex())
-                        .include({ raw: "/foo[123]bar()\\//", pattern: "foo[123]bar()\\/", type: Token.RegularExpression })
+                        .include({ raw: "/foo[123]bar()\\//", pattern: "foo[123]bar()\\/", type: TokenType.RegularExpression })
                         .and.not.have.key("flag")
                 );
 
@@ -73,8 +73,16 @@ describe
                 (
                     "Pattern with flags",
                     () => expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
-                        .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: Token.RegularExpression })
+                        .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: TokenType.RegularExpression })
                 );
+            }
+        );
+
+        describe
+        (
+            "Regex should throw",
+            () =>
+            {
 
                 it
                 (

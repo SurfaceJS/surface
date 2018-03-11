@@ -1,13 +1,13 @@
-import Messages     from "../../internal/messages";
-import { RawToken } from "../../internal/scanner";
-import Token        from "../../internal/token";
+import Messages  from "../../internal/messages";
+import { Token } from "../../internal/scanner";
+import TokenType from "../../internal/token-type";
 
-export const validTokens: Array<RawToken> =
+export const validTokens: Array<Token> =
 [
     {
         raw:        "",
         value:      "",
-        type:       Token.EOF,
+        type:       TokenType.EOF,
         start:      0,
         end:        0,
         lineStart:  0,
@@ -16,7 +16,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "x",
         value:      "x",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -25,7 +25,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "_identifier",
         value:      "_identifier",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -34,7 +34,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "identifier",
         value:      "identifier",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        10,
         lineStart:  0,
@@ -43,7 +43,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "\\u0069\\u{65}",
         value:      "ie",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        12,
         lineStart:  0,
@@ -52,7 +52,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "\\u{65}\\u0069",
         value:      "ei",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        12,
         lineStart:  0,
@@ -61,7 +61,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "identifier_\\u{FF}",
         value:      "identifier_ÿ",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        17,
         lineStart:  0,
@@ -70,7 +70,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "識別子",
         value:      "識別子",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -79,7 +79,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "foo你",
         value:      "foo你",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -88,7 +88,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "你foo",
         value:      "你foo",
-        type:       Token.Identifier,
+        type:       TokenType.Identifier,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -97,7 +97,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "\"double quotes\"",
         value:      "double quotes",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        15,
         lineStart:  0,
@@ -107,7 +107,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\n'",
         value:      "\n",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -117,7 +117,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\r'",
         value:      "\r",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -127,7 +127,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\b'",
         value:      "\b",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -137,7 +137,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\t'",
         value:      "\t",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -147,7 +147,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\f'",
         value:      "\f",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -157,7 +157,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\v'",
         value:      "\v",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -167,7 +167,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\1...'",
         value:      "...",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -177,7 +177,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\11...'",
         value:      "	...",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -187,7 +187,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\123...'",
         value:      "S...",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        9,
         lineStart:  0,
@@ -197,7 +197,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\u{A9}'",
         value:      "©",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -207,7 +207,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\u00A9'",
         value:      "©",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -217,7 +217,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\xA9'",
         value:      "©",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -227,7 +227,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'\\z'",
         value:      "z",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -237,7 +237,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'single quotes'",
         value:      "single quotes",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        15,
         lineStart:  0,
@@ -247,7 +247,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "\"quotes '`\"",
         value:      "quotes '`",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -257,7 +257,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "'quotes \"`'",
         value:      "quotes \"`",
-        type:       Token.StringLiteral,
+        type:       TokenType.StringLiteral,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -267,7 +267,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\n`",
         value:      "\n",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -278,7 +278,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\r`",
         value:      "\r",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -289,7 +289,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\b`",
         value:      "\b",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -300,7 +300,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\t`",
         value:      "\t",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -311,7 +311,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\f`",
         value:      "\f",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -322,7 +322,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\v`",
         value:      "\v",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -333,7 +333,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\u{A9}`",
         value:      "©",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -344,7 +344,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\u00A9`",
         value:      "©",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -355,7 +355,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\ujs`",
         value:      "\\ujs",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -366,7 +366,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\xA9`",
         value:      "©",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -377,7 +377,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\z`",
         value:      "z",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -388,7 +388,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\\r`",
         value:      "\\\n",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  3,
@@ -399,7 +399,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\\r\n`",
         value:      "\\\n",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        5,
         lineStart:  4,
@@ -410,7 +410,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\r\n`",
         value:      "\n",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  3,
@@ -421,7 +421,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\0a`",
         value:      "\0a",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -432,7 +432,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`foo\nbar`",
         value:      "foo\nbar",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        9,
         lineStart:  5,
@@ -443,7 +443,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`foo$bar`",
         value:      "foo$bar",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        9,
         lineStart:  0,
@@ -454,7 +454,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`\\z`",
         value:      "z",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -465,7 +465,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`string`",
         value:      "string",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -476,7 +476,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "`quotes \"'`",
         value:      "quotes \"'",
-        type:       Token.Template,
+        type:       TokenType.Template,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -487,7 +487,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123",
         value:      123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -496,7 +496,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123.123",
         value:      123.123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -505,7 +505,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0.",
         value:      0,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -514,7 +514,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ".123",
         value:      0.123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -523,7 +523,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123_123",
         value:      123123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -532,7 +532,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123_123.123",
         value:      123123.123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -541,7 +541,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ".123_123",
         value:      0.123123,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -550,7 +550,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123e+1",
         value:      1230,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -559,7 +559,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "123e-1",
         value:      12.3,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -568,7 +568,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0x0123456789abcdef",
         value:      81985529216486900,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        18,
         lineStart:  0,
@@ -577,7 +577,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0X0123456789ABCDEF",
         value:      81985529216486900,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        18,
         lineStart:  0,
@@ -586,7 +586,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0x0123456789_abcdef",
         value:      81985529216486900,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        19,
         lineStart:  0,
@@ -595,7 +595,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0X0123456789_ABCDEF",
         value:      81985529216486900,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        19,
         lineStart:  0,
@@ -604,7 +604,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0b0101",
         value:      5,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -613,7 +613,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0B0101",
         value:      5,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -622,7 +622,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0b0101_0101",
         value:      85,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -631,7 +631,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0B0101_0101",
         value:      85,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        11,
         lineStart:  0,
@@ -640,7 +640,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "018",
         value:      18,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -649,7 +649,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "019",
         value:      19,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -658,7 +658,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "08",
         value:      8,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -667,7 +667,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "01234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -676,7 +676,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0_1234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        9,
         lineStart:  0,
@@ -685,7 +685,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0o1234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        9,
         lineStart:  0,
@@ -694,7 +694,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0O1234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        9,
         lineStart:  0,
@@ -703,7 +703,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0o1_234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        10,
         lineStart:  0,
@@ -712,7 +712,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "0O1_234567",
         value:      342391,
-        type:       Token.NumericLiteral,
+        type:       TokenType.NumericLiteral,
         start:      0,
         end:        10,
         lineStart:  0,
@@ -721,7 +721,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "true",
         value:      true,
-        type:       Token.BooleanLiteral,
+        type:       TokenType.BooleanLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -730,7 +730,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "false",
         value:      false,
-        type:       Token.BooleanLiteral,
+        type:       TokenType.BooleanLiteral,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -739,7 +739,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "null",
         value:      null,
-        type:       Token.NullLiteral,
+        type:       TokenType.NullLiteral,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -748,7 +748,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "if",
         value:      "if",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -757,7 +757,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "in",
         value:      "in",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -766,7 +766,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "do",
         value:      "do",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -775,7 +775,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "var",
         value:      "var",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -784,7 +784,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "for",
         value:      "for",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -793,7 +793,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "new",
         value:      "new",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -802,7 +802,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "try",
         value:      "try",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -811,7 +811,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "let",
         value:      "let",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -820,7 +820,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "this",
         value:      "this",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -829,7 +829,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "else",
         value:      "else",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -838,7 +838,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "case",
         value:      "case",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -847,7 +847,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "void",
         value:      "void",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -856,7 +856,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "with",
         value:      "with",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -865,7 +865,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "enum",
         value:      "enum",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -874,7 +874,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "while",
         value:      "while",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -883,7 +883,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "break",
         value:      "break",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -892,7 +892,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "catch",
         value:      "catch",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -901,7 +901,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "throw",
         value:      "throw",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -910,7 +910,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "const",
         value:      "const",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -919,7 +919,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "yield",
         value:      "yield",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -928,7 +928,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "class",
         value:      "class",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -937,7 +937,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "super",
         value:      "super",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        5,
         lineStart:  0,
@@ -946,7 +946,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "return",
         value:      "return",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -955,7 +955,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "typeof",
         value:      "typeof",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -964,7 +964,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "delete",
         value:      "delete",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -973,7 +973,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "switch",
         value:      "switch",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -982,7 +982,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "export",
         value:      "export",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -991,7 +991,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "import",
         value:      "import",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        6,
         lineStart:  0,
@@ -1000,7 +1000,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "default",
         value:      "default",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -1009,7 +1009,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "finally",
         value:      "finally",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -1018,7 +1018,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "extends",
         value:      "extends",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        7,
         lineStart:  0,
@@ -1027,7 +1027,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "function",
         value:      "function",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -1036,7 +1036,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "function",
         value:      "function",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -1045,7 +1045,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "debugger",
         value:      "debugger",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        8,
         lineStart:  0,
@@ -1054,7 +1054,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "instanceof",
         value:      "instanceof",
-        type:       Token.Keyword,
+        type:       TokenType.Keyword,
         start:      0,
         end:        10,
         lineStart:  0,
@@ -1063,7 +1063,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "(",
         value:      "(",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1072,7 +1072,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "{",
         value:      "{",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1081,7 +1081,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ".",
         value:      ".",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1090,7 +1090,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "...",
         value:      "...",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1099,7 +1099,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "}",
         value:      "}",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1108,7 +1108,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ")",
         value:      ")",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1117,7 +1117,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ";",
         value:      ";",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1126,7 +1126,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ",",
         value:      ",",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1135,7 +1135,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:       "[",
         value:     "[",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1144,7 +1144,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "]",
         value:      "]",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1153,7 +1153,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ":",
         value:      ":",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1162,7 +1162,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "?",
         value:      "?",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1171,7 +1171,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "~",
         value:      "~",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1180,7 +1180,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">>>=",
         value:      ">>>=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        4,
         lineStart:  0,
@@ -1189,7 +1189,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "===",
         value:      "===",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1198,7 +1198,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "!==",
         value:      "!==",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1207,7 +1207,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">>>",
         value:      ">>>",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1216,7 +1216,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "<<=",
         value:      "<<=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1225,7 +1225,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">>=",
         value:      ">>=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1234,7 +1234,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "**=",
         value:      "**=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        3,
         lineStart:  0,
@@ -1243,7 +1243,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "&&",
         value:      "&&",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1252,7 +1252,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "||",
         value:      "||",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1261,7 +1261,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "==",
         value:      "==",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1270,7 +1270,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "!=",
         value:      "!=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1279,7 +1279,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "+=",
         value:      "+=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1288,7 +1288,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "-=",
         value:      "-=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1297,7 +1297,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "*=",
         value:      "*=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1306,7 +1306,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "/=",
         value:      "/=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1315,7 +1315,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "++",
         value:      "++",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1324,7 +1324,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "--",
         value:      "--",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1333,7 +1333,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "<<",
         value:      "<<",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1342,7 +1342,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">>",
         value:      ">>",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1351,7 +1351,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "&=",
         value:      "&=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1360,7 +1360,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "|=",
         value:      "|=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1369,7 +1369,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "^=",
         value:      "^=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1378,7 +1378,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "%=",
         value:      "%=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1387,7 +1387,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "<=",
         value:      "<=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1396,7 +1396,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">=",
         value:      ">=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1405,7 +1405,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "=>",
         value:      "=>",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1414,7 +1414,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "**",
         value:      "**",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        2,
         lineStart:  0,
@@ -1423,7 +1423,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "<",
         value:      "<",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1432,7 +1432,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        ">",
         value:      ">",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1441,7 +1441,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "=",
         value:      "=",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1450,7 +1450,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "!",
         value:      "!",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1459,7 +1459,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "+",
         value:      "+",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1468,7 +1468,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "-",
         value:      "-",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1477,7 +1477,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "*",
         value:      "*",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1486,7 +1486,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "%",
         value:      "%",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1495,7 +1495,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "&",
         value:      "&",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1504,7 +1504,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "|",
         value:      "|",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1513,7 +1513,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "^",
         value:      "^",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,
@@ -1522,7 +1522,7 @@ export const validTokens: Array<RawToken> =
     {
         raw:        "/",
         value:      "/",
-        type:       Token.Punctuator,
+        type:       TokenType.Punctuator,
         start:      0,
         end:        1,
         lineStart:  0,

@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 export default class RegexExpression implements IExpression
 {
@@ -12,6 +13,11 @@ export default class RegexExpression implements IExpression
     public get pattern(): string
     {
         return this._pattern;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Regex;
     }
 
     public constructor(pattern: string, flags: string)

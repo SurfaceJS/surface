@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Nullable } from "@surface/types";
 
@@ -20,6 +21,11 @@ export default class ConditionalExpression implements IExpression
     public get truthy(): IExpression
     {
         return this._truthy;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Conditional;
     }
 
     public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)

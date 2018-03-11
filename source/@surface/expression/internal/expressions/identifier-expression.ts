@@ -1,4 +1,5 @@
-import IExpression from "../../interfaces/expression";
+import IExpression    from "../../interfaces/expression";
+import ExpressionType from "../../expression-type";
 
 import { Nullable } from "@surface/types";
 
@@ -14,6 +15,11 @@ export default class IdentifierExpression implements IExpression
     public get name(): string
     {
         return this._name;
+    }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Identifier;
     }
 
     public constructor(context: Object, name: string)

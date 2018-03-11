@@ -1,5 +1,7 @@
-import IExpression        from "../../interfaces/expression";
 import PropertyExpression from "./property-expression";
+
+import IExpression        from "../../interfaces/expression";
+import ExpressionType     from "../../expression-type";
 
 import { Nullable } from "@surface/types";
 
@@ -10,6 +12,12 @@ export default class ObjectExpression implements IExpression
     {
         return this._properties;
     }
+
+    public get type(): ExpressionType
+    {
+        return ExpressionType.Object;
+    }
+
     public constructor(properties: Array<PropertyExpression>)
     {
         this._properties = properties;

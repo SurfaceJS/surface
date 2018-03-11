@@ -29,7 +29,7 @@ export default class BindParser
         }
         else
         {
-            return { evaluate: () => expressions.map(x => `${x.evaluate()}`).reduce((previous, current) => previous + current) };
+            return { type: -1, evaluate: () => expressions.map(x => `${x.evaluate()}`).reduce((previous, current) => previous + current) };
         }
     }
 

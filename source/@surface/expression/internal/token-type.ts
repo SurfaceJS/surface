@@ -1,4 +1,4 @@
-enum Token
+enum TokenType
 {
     BooleanLiteral,
     EOF,
@@ -12,4 +12,4 @@ enum Token
     Template
 }
 
-export default Token;
+export default TokenType;
