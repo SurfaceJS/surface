@@ -1,7 +1,7 @@
 export enum EnviromentType
 {
-    debug   = "debug",
-    release = "release",
+    development = "development",
+    production  = "production",
 }
 
 export enum TasksType

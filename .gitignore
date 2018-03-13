@@ -63,6 +63,8 @@ typings/
 *.js.map
 *.d.ts
 cache-loader
+package-lock.json
 !types.d.ts
 !source/@surface/*/@types/*/index.d.ts
+!source/@surface/*/interfaces/*.d.ts
 !source/@surface/types/**/*.d.ts

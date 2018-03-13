@@ -1,5 +1,5 @@
-import { CustomElement } from "./index";
-import * as symbols      from "./symbols";
+import CustomElement from "./index";
+import * as symbols  from "./symbols";
 
 export function attribute(target: Object, propertyKey: string | symbol): void
 {

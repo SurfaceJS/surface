@@ -1,6 +1,6 @@
-import * as fs      from "fs";
-import * as path    from "path";
-import * as webPack from "webpack";
+import fs         from "fs";
+import path       from "path";
+import { Plugin } from "webpack";
 
 namespace SimblingPriorityPlugin
 {
@@ -13,12 +13,12 @@ namespace SimblingPriorityPlugin
     }
 }
 
-class SimblingPriorityPlugin implements webPack.Plugin
+class SimblingPriorityPlugin implements Plugin
 {
-    private _exclude: Array<string>;
-    private _from:    string;
-    private _include: Array<string>;
-    private _to:      string;
+    private exclude: Array<string>;
+    private from:    string;
+    private include: Array<string>;
+    private to:      string;
 
     public constructor(options?: Partial<SimblingPriorityPlugin.IOptions>)
     {
@@ -62,43 +62,42 @@ class SimblingPriorityPlugin implements webPack.Plugin
             }
         );
 
-        this._exclude = options.exclude;
-        this._from    = options.from;
-        this._include = options.include;
-        this._to      = options.to;
+        this.exclude = options.exclude;
+        this.from    = options.from;
+        this.include = options.include;
+        this.to      = options.to;
     }
 
     // tslint:disable-next-line:no-any
     public apply (resolver: any): void
     {
-        let self = this;
+        // tslint:disable-next-line:no-this-assignment
+        const self = this;
 
-        resolver.plugin
+        resolver.hooks.resolved.tap
         (
-            "resolved",
+            SimblingPriorityPlugin.name,
             // tslint:disable-next-line:no-any
-            function(request: any, callback: any)
+            function(request: any)
             {
                 let target    = request.path;
                 let extension = path.parse(target).ext;
 
-                let canExecute = (self._include.length == 0 || self._include.some(x => target.toLowerCase().startsWith(x.toLowerCase())))
-                    && !self._exclude.some(x => target.toLowerCase().startsWith(x.toLowerCase()));
+                let canExecute = (self.include.length == 0 || self.include.some(x => target.toLowerCase().startsWith(x.toLowerCase())))
+                    && !self.exclude.some(x => target.toLowerCase().startsWith(x.toLowerCase()));
 
                 if (canExecute)
                 {
-                    let simbling = target.replace(new RegExp(`\\${self._from}$`), self._to);
+                    let simbling = target.replace(new RegExp(`\\${self.from}$`), self.to);
 
-                    if ((!extension || extension == self._from) && fs.existsSync(simbling))
+                    if ((!extension || extension == self.from) && fs.existsSync(simbling))
                     {
                         request.path = simbling;
                     }
                 }
-
-                callback();
             }
         );
     }
 }
 
-export = SimblingPriorityPlugin;
+export default SimblingPriorityPlugin;

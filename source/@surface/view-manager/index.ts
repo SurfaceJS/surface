@@ -1,15 +1,16 @@
 import "@surface/reflection/extensions";
 
-import { Dictionary }                   from "@surface/collection";
-import { Router }                       from "@surface/router";
+import { Dictionary } from "@surface/collection";
+import { Router }     from "@surface/router";
+import View           from "@surface/view";
+import ViewHost       from "@surface/view-host";
+
 import { Nullable, Constructor, Func1 } from "@surface/types";
-import { View }                         from "@surface/view";
-import { ViewHost }                     from "@surface/view-host";
 
 /**
  * Handles web client navigation.
  */
-export class ViewManager
+export default class ViewManager
 {
     private static _instance: Nullable<ViewManager>;
     public static get instance(): Nullable<ViewManager>

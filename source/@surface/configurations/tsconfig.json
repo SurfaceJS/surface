@@ -5,6 +5,7 @@
         "alwaysStrict":                     true,
         //"baseUrl":                          "../../", /* Generating messy output */
         "declaration":                      false, /* false for dev */
+        "esModuleInterop":                  true,
         "emitDecoratorMetadata":            true,
         "experimentalDecorators":           true,
         "forceConsistentCasingInFileNames": false, /* Conflicting with symlink */
@@ -18,10 +19,11 @@
         "noImplicitReturns":                true,
         "noImplicitThis":                   true,
         "noUnusedLocals":                   true,
+        "pretty":                           true,
         "sourceMap":                        true,
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
-        //"strictPropertyInitialization":     true, Todo: Waiting support
+        "strictPropertyInitialization":     true,
         "suppressImplicitAnyIndexErrors":   true,
         "target":                           "esnext"
     },

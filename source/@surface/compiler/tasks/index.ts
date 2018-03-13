@@ -2,23 +2,23 @@ import * as defaults from "./defaults";
 import * as enums    from "./enums";
 import { Compiler }  from "../types";
 
-import { merge, resolveFile }     from "@surface/common";
-import * as HtmlTemplatePlugin    from "@surface/html-template-plugin";
-import * as SimblingResolvePlugin from "@surface/simbling-resolve-plugin";
+import { merge, resolveFile } from "@surface/common";
+import HtmlTemplatePlugin     from "@surface/html-template-plugin";
+import SimblingResolvePlugin  from "@surface/simbling-resolve-plugin";
 
-import * as fs                         from "fs";
-import * as path                       from "path";
-import * as rimraf                     from "rimraf";
-import * as webpack                    from "webpack";
-import * as ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
-import * as UglifyJsPlugin             from "uglifyjs-webpack-plugin";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import fs                         from "fs";
+import path                       from "path";
+import rimraf                     from "rimraf";
+import UglifyJsPlugin             from "uglifyjs-webpack-plugin";
+import webpack                    from "webpack";
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
     task   = task   || enums.TasksType.build;
     config = config || "./";
 
-    let enviroment = enums.EnviromentType[env || "debug"];
+    let enviroment = env ? enums.EnviromentType[env] : enums.EnviromentType.development;
 
     watch = !!watch;
 
@@ -55,7 +55,6 @@ async function build(config: webpack.Configuration, enviroment: enums.Enviroment
         assets:   true,
         errors:   true,
         colors:   true,
-        modules:  true,
         version:  true,
         warnings: true
     };
@@ -177,7 +176,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         }
     }
 
-    plugins.push(new webpack.optimize.CommonsChunkPlugin({ name: config.runtime }));
+    plugins.push(new webpack.optimize["SplitChunksPlugin"]({ name: config.runtime }));
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
     plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: config.tsconfig, tslint: config.tslint, watch: config.context }));
 
@@ -191,6 +190,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     {
         context: config.context,
         entry:   config.entry,
+        mode:    enums.EnviromentType.development,
         output:
         {
             path:       config.output,
@@ -205,7 +205,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         plugins: plugins
     } as webpack.Configuration;
 
-    if (primaryConfig.plugins && enviroment == enums.EnviromentType.release)
+    if (primaryConfig.plugins && enviroment == enums.EnviromentType.production)
     {
         primaryConfig.devtool = false;
 

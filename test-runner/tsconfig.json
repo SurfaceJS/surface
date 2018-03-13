@@ -1,0 +1,19 @@
+{
+    "extends": "../source/@surface/configurations/tsconfig.json",
+    "compilerOptions":
+    {
+        "allowJs": false,
+        "lib":
+        [
+            "dom",
+            "esnext"
+        ],
+        "typeRoots":
+        [
+            "node_modules/@types",
+            "node_modules/@surface/custom-element/@types"
+        ],
+        "noEmit": true
+    },
+    "include": ["source"]
+}

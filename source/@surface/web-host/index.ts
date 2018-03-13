@@ -1,17 +1,17 @@
 import { Configuration }          from "./configuration";
 import { StatusCode }             from "./enums";
 import { FallbackRequestHandler } from "./fallback-request-handler";
-import { RequestHandler }         from "./request-handler";
 import { HttpContext }            from "./http-context";
-import { StaticRequestHandler }   from "./static-request-handler";
 import { MvcRequestHandler }      from "./mvc-request-handler";
+import { RequestHandler }         from "./request-handler";
+import { StaticRequestHandler }   from "./static-request-handler";
 import { IStartup }               from "./types";
 
 import { List }     from "@surface/collection/list";
 import { Router }   from "@surface/router";
 import { Nullable } from "@surface/types";
 
-import * as http from "http";
+import http from "http";
 
 export class WebHost
 {

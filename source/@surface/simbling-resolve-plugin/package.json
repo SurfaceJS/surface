@@ -5,8 +5,10 @@
     },
     "dependencies": {
         "@surface/types": "0.0.1",
-        "@types/node": "8.0.33",
-        "@types/webpack": "3.0.13"
+        "@types/node": "9.4.7",
+        "@types/tapable": "1.0.0",
+        "@types/webpack": "4.1.0",
+        "tslib": "1.9.0"
     },
     "description": "Webpack resolve plugin for handling simbling priority.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",

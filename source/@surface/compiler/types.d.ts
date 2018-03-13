@@ -1,7 +1,7 @@
-import * as HtmlTemplatePlugin    from "@surface/html-template-plugin";
-import * as SimblingResolvePlugin from "@surface/simbling-resolve-plugin";
-import { ObjectLiteral }          from "@surface/types";
-import * as webpack               from "webpack";
+import HtmlTemplatePlugin       from "@surface/html-template-plugin";
+import SimblingResolvePlugin    from "@surface/simbling-resolve-plugin";
+import { ObjectLiteral }        from "@surface/types";
+import { Configuration, Stats } from "webpack";
 
 export namespace Compiler
 {
@@ -18,7 +18,7 @@ export namespace Compiler
         simblingResolve?: SimblingResolvePlugin.IOptions|Array<SimblingResolvePlugin.IOptions>;
         tsconfig?:        string;
         tslint?:          string;
-        webpackConfig?:   string|webpack.Configuration;
-        statsLevel?:      webpack.Stats.ToStringOptions;
+        webpackConfig?:   string|Configuration;
+        statsLevel?:      Stats.ToStringOptions;
     }
 }

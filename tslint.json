@@ -79,7 +79,6 @@
         "no-duplicate-variable":           true,
         "no-empty":                        true,
         "no-internal-module":              true,
-        "no-magic-numbers":                true,
         "no-mergeable-namespace":          true,
         "no-misused-new":                  true,
         "no-non-null-assertion":           true,
@@ -96,6 +95,16 @@
         "no-unused-expression":            true,
         "no-var-keyword":                  true,
         "no-unsafe-any":                   false,
+        "ordered-imports":
+        [
+            true,
+            {
+                "import-sources-order": "lowercase-first",
+                "grouped-import": true,
+                "module-source-path":   "basename",
+                "named-imports-order":  "lowercase-first"
+            }
+        ],        
         "one-variable-per-declaration":    true,
         "prefer-for-of":                   true,
         "promise-function-async":          true,

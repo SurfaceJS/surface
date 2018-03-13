@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/types": "0.0.1",
         "@types/node": "8.0.33",
-        "@types/webpack": "3.0.13"
+        "tslib": "1.9.0"
     },
     "description": "Common modules used by @surface's projects.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
