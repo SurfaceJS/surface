@@ -1,0 +1,1 @@
+import "@surface/custom-element/tests/bind-expression-visitor.spec";
