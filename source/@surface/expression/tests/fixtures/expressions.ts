@@ -15,462 +15,511 @@ import UpdateExpression      from "../../internal/expressions/update-expression"
 
 import { Constructor, Nullable } from "@surface/types";
 
-type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression> };
-type InvalidExpressionFixtureSpec = { raw: string, error: Error };
+type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression>, context: Object };
+type InvalidExpressionFixtureSpec = { raw: string, error: Error, context: Object };
 
-export const context =
+const context =
 {
-    this:  { },
-    id:    1,
-    識別子: 1,
-    zero:  { id: 0 },
-    one:   { id: 1, getValue:  () => 1 },
-    two:   { id: 2, increment: (value: number) => ++value },
-    three: { id: 3, greater:   (left: number, right: number) => left > right },
-    four:  { id: 4, getObject: () => ({ value: "Hello World!!!" }) },
+    this:
+    {
+        id:        1,
+        greater:   (left: number, right: number) => left > right,
+        increment: (value: number) => ++value,
+        getObject: () => ({ value: "Hello World!!!" }),
+        getValue:  () => 42
+    }
 };
 
 // tslint:disable-next-line:no-any
 export const validExpressions: Array<ExpressionFixtureSpec> =
 [
     {
-        raw:   "1",
-        value: 1,
-        type:  ConstantExpression
+        context: context,
+        raw:     "1",
+        value:   1,
+        type:    ConstantExpression,
     },
     {
-        raw:   "\"double quotes\"",
-        value: "double quotes",
-        type:  ConstantExpression
+        context: context,
+        raw:     "\"double quotes\"",
+        value:   "double quotes",
+        type:    ConstantExpression,
     },
     {
-        raw:   "'single quotes'",
-        value: "single quotes",
-        type:  ConstantExpression
+        context: context,
+        raw:     "'single quotes'",
+        value:   "single quotes",
+        type:    ConstantExpression,
     },
     {
-        raw:   "true",
-        value: true,
-        type:  ConstantExpression
+        context: context,
+        raw:     "true",
+        value:   true,
+        type:    ConstantExpression,
     },
     {
+        context: context,
         raw:    "false",
-        value: false,
-        type:  ConstantExpression
+        value:  false,
+        type:   ConstantExpression,
     },
     {
-        raw:   "null",
-        value: null,
-        type:  ConstantExpression
+        context: context,
+        raw:     "null",
+        value:   null,
+        type:    ConstantExpression,
     },
     {
-        raw:   "undefined",
-        value: undefined,
-        type:  ConstantExpression
+        context: context,
+        raw:     "undefined",
+        value:   undefined,
+        type:    ConstantExpression,
     },
     {
-        raw:   "{ }",
-        value: { },
-        type:  ObjectExpression
+        context: context,
+        raw:     "{ }",
+        value:   { },
+        type:    ObjectExpression,
     },
     {
-        raw:   "{ foo: 1, \"bar\": [1, ...[2, 3]], [{id: 1}.id]: 1 }",
-        value: { foo: 1, "bar": [1, 2, 3], [{id: 1}.id]: 1 },
-        type:  ObjectExpression
+        context: context,
+        raw:     "{ foo: 1, \"bar\": [1, ...[2, 3]], [{id: 1}.id]: 1 }",
+        value:   { foo: 1, "bar": [1, 2, 3], [{id: 1}.id]: 1 },
+        type:    ObjectExpression,
     },
     {
-        raw:   "{ foo: 'bar', ...{ id: 2, value: 3 }}",
-        value: { foo: "bar", id: 2, value: 3 },
-        type:  ObjectExpression
+        context: context,
+        raw:     "{ foo: 'bar', ...{ id: 2, value: 3 }}",
+        value:   { foo: "bar", id: 2, value: 3 },
+        type:    ObjectExpression,
     },
     {
-        raw:   "{ foo: 'bar', ...[1, 2]}",
-        value: { 0: 1, 1: 2, foo: "bar" },
-        type:  ObjectExpression
+        context: context,
+        raw:     "{ foo: 'bar', ...[1, 2]}",
+        value:   { 0: 1, 1: 2, foo: "bar" },
+        type:    ObjectExpression,
     },
     {
-        raw:   "{ id }",
-        value: { id: 1 },
-        type:  ObjectExpression
+        context: { id: 1 },
+        raw:     "{ id }",
+        value:   { id: 1 },
+        type:    ObjectExpression,
     },
     {
-        raw:   "{ [id]: 2 }",
-        value: { 1: 2 },
-        type:  ObjectExpression
+        context: { id: 1 },
+        raw:     "{ [id]: 2 }",
+        value:   { 1: 2 },
+        type:    ObjectExpression,
     },
     {
-        raw:   "[]",
-        value: [],
-        type:  ArrayExpression
+        context: context,
+        raw:     "[]",
+        value:   [],
+        type:    ArrayExpression,
     },
     {
-        raw:   "[, 1, 2, , 3, ,]",
-        value: [undefined, 1, 2, undefined, 3, undefined,],
-        type:  ArrayExpression
+        context: context,
+        raw:     "[, 1, 2, , 3, ,]",
+        value:   [undefined, 1, 2, undefined, 3, undefined,],
+        type:    ArrayExpression,
     },
     {
-        raw:   "[1, 'foo', true, { foo: 'bar' }]",
-        value: [1, "foo", true, { foo: "bar" }],
-        type:  ArrayExpression
+        context: context,
+        raw:     "[1, 'foo', true, { foo: 'bar' }]",
+        value:   [1, "foo", true, { foo: "bar" }],
+        type:    ArrayExpression,
     },
     {
-        raw:   "[1, 'foo', true, ...[{ foo: one }, { bar: two }]]",
-        value: [1, "foo", true, { foo: context.one }, { bar: context.two }],
-        type:  ArrayExpression
+        context: { one: 1, two: 2 },
+        raw:     "[1, 'foo', true, ...[{ foo: one }, { bar: two }]]",
+        value:   [1, "foo", true, { foo: 1 }, { bar: 2 }],
+        type:    ArrayExpression,
     },
     {
-        raw:   "/test/",
-        value: /test/,
-        type:  RegexExpression
+        context: context,
+        raw:     "/test/",
+        value:   /test/,
+        type:    RegexExpression,
     },
     {
-        raw:   "/test/ig",
-        value: /test/ig,
-        type:  RegexExpression
+        context: context,
+        raw:     "/test/ig",
+        value:   /test/ig,
+        type:    RegexExpression,
     },
     {
-        raw:   "1 + 1",
-        value: 2,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 + 1",
+        value:   2,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 - 1",
-        value: 0,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 - 1",
+        value:   0,
+        type:    BinaryExpression,
     },
     {
-        raw:   "2 * 2",
-        value: 4,
-        type:  BinaryExpression
+        context: context,
+        raw:     "2 * 2",
+        value:   4,
+        type:    BinaryExpression,
     },
     {
-        raw:   "4 / 2",
-        value: 2,
-        type:  BinaryExpression
+        context: context,
+        raw:     "4 / 2",
+        value:   2,
+        type:    BinaryExpression,
     },
     {
-        raw:   "10 % 3",
-        value: 1,
-        type:  BinaryExpression
+        context: context,
+        raw:     "10 % 3",
+        value:   1,
+        type:    BinaryExpression,
     },
     {
-        raw:   "true && false",
-        value: false,
-        type:  BinaryExpression
+        context: context,
+        raw:     "true && false",
+        value:   false,
+        type:    BinaryExpression,
     },
     {
-        raw:   "true || false",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "true || false",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "false || true",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "false || true",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "'id' in one",
-        value: true,
-        type:  BinaryExpression
+        context: { this: { id: 1 } },
+        raw:     "'id' in this",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 == 1",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 == 1",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 === 1",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 === 1",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 != 1",
-        value: false,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 != 1",
+        value:   false,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 !== 1",
-        value: false,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 !== 1",
+        value:   false,
+        type:    BinaryExpression,
     },
     {
-        raw:   "({ }) instanceof ({ }).constructor",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "({ }) instanceof ({ }).constructor",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 <= 0",
-        value: false,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 <= 0",
+        value:   false,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 >= 0",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 >= 0",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 > 0",
-        value: true,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 > 0",
+        value:   true,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 < 0",
-        value: false,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 < 0",
+        value:   false,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 & 2",
-        value: 0,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 & 2",
+        value:   0,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 | 2",
-        value: 3,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 | 2",
+        value:   3,
+        type:    BinaryExpression,
     },
     {
-        raw:   "1 ^ 2",
-        value: 3,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 ^ 2",
+        value:   3,
+        type:    BinaryExpression,
     },
     {
-        raw:   "2 ** 2",
-        value: 4,
-        type:  BinaryExpression
+        context: context,
+        raw:     "2 ** 2",
+        value:   4,
+        type:    BinaryExpression
     },
     {
-        raw:   "0b1000 << 2",
-        value: 0b100000,
-        type:  BinaryExpression
+        context: context,
+        raw:     "0b1000 << 2",
+        value:   0b100000,
+        type:    BinaryExpression
     },
     {
-        raw:   "0b1000 >> 2",
-        value: 0b10,
-        type:  BinaryExpression
+        context: context,
+        raw:     "0b1000 >> 2",
+        value:   0b10,
+        type:    BinaryExpression
     },
     {
-        raw:   "0b1000 >>> 2",
-        value: 0b10,
-        type:  BinaryExpression
+        context: context,
+        raw:     "0b1000 >>> 2",
+        value:   0b10,
+        type:    BinaryExpression
     },
     {
-        raw:   "1 + 1 * 2 / 2",
-        value: 2,
-        type:  BinaryExpression
+        context: context,
+        raw:     "1 + 1 * 2 / 2",
+        value:   2,
+        type:    BinaryExpression
     },
     {
-        raw:   "+1",
-        value: 1,
-        type:  UnaryExpression
+        context: context,
+        raw:     "+1",
+        value:   1,
+        type:    UnaryExpression
     },
     {
-        raw:   "-1",
-        value: -1,
-        type:  UnaryExpression
+        context: context,
+        raw:     "-1",
+        value:   -1,
+        type:    UnaryExpression
     },
     {
-        raw:   "~1",
-        value: -2,
-        type:  UnaryExpression
+        context: context,
+        raw:     "~1",
+        value:   -2,
+        type:    UnaryExpression
     },
     {
-        raw:   "!true",
-        value: false,
-        type:  UnaryExpression
+        context: context,
+        raw:     "!true",
+        value:   false,
+        type:    UnaryExpression
     },
     {
-        raw:   "typeof 1",
-        value: "number",
-        type:  UnaryExpression
+        context: context,
+        raw:     "typeof 1",
+        value:   "number",
+        type:    UnaryExpression
     },
     {
-        raw:   "++id",
-        value: 2,
-        type:  UpdateExpression
+        context: { value: 1 },
+        raw:     "++value",
+        value:   2,
+        type:    UpdateExpression
     },
     {
-        raw:   "識別子--",
-        value: 1,
-        type:  UpdateExpression
+        context: { 識別子: 1 },
+        raw:     "識別子--",
+        value:   1,
+        type:    UpdateExpression
     },
     {
-        raw:   "++one.id",
-        value: 2,
-        type:  UpdateExpression
+        context: { this: { value: 1 } },
+        raw:     "++this.value",
+        value:   2,
+        type:    UpdateExpression
     },
     {
-        raw:   "--two.id",
-        value: 1,
-        type:  UpdateExpression
+        context: { this: { value: 1 } },
+        raw:     "--this.value",
+        value:   0,
+        type:    UpdateExpression
     },
     {
-        raw:   "three.id++",
-        value: 3,
-        type:  UpdateExpression
+        context: { this: { value: 1 } },
+        raw:     "this.value++",
+        value:   1,
+        type:    UpdateExpression
     },
     {
-        raw:   "four.id--",
-        value: 4,
-        type:  UpdateExpression
+        context: { this: { value: 1 } },
+        raw:     "this.value--",
+        value:   1,
+        type:    UpdateExpression
     },
     {
-        raw:   "this",
-        value: context.this,
-        type:  IdentifierExpression
+        context: { this: { id: 1 } },
+        raw:     "this",
+        value:   { id: 1 },
+        type:    IdentifierExpression,
     },
     {
-        raw:   "one",
-        value: context.one,
-        type:  IdentifierExpression
+        context: { this: { id: 1 } },
+        raw:     "this.id",
+        value:   1,
+        type:    MemberExpression,
     },
     {
-        raw:   "two",
-        value: context.two,
-        type:  IdentifierExpression
+        context: context,
+        raw:     "this.increment",
+        value:   context.this.increment,
+        type:    MemberExpression,
     },
     {
-        raw:   "three",
-        value: context.three,
-        type:  IdentifierExpression
+        context: context,
+        raw:     "this['increment']",
+        value:   context.this.increment,
+        type:    MemberExpression,
     },
     {
-        raw:   "four",
-        value: context.four,
-        type:  IdentifierExpression
+        context: context,
+        raw:     "this.getValue()",
+        value:   42,
+        type:    CallExpression,
     },
     {
-        raw:   "one.getValue",
-        value: context.one.getValue,
-        type:  MemberExpression
+        context: context,
+        raw:     "this.increment(1)",
+        value:   2,
+        type:    CallExpression,
     },
     {
-        raw:   "two.increment",
-        value: context.two.increment,
-        type:  MemberExpression
+        context: context,
+        raw:     "this.greater(1, 2)",
+        value:   false,
+        type:    CallExpression,
     },
     {
-        raw:   "three.greater",
-        value: context.three.greater,
-        type:  MemberExpression
+        context: context,
+        raw:     "this.greater(...[1, 2],)",
+        value:   false,
+        type:    CallExpression,
     },
     {
-        raw:   "four.getObject",
-        value: context.four.getObject,
-        type:  MemberExpression
+        context: context,
+        raw:     "this.getObject().value",
+        value:   "Hello World!!!",
+        type:    MemberExpression,
     },
     {
-        raw:   "four['getObject']",
-        value: context.four.getObject,
-        type:  MemberExpression
+        context: context,
+        raw:     "/test/.test('test')",
+        value:   true,
+        type:    CallExpression
     },
     {
-        raw:   "one.getValue()",
-        value: 1,
-        type:  CallExpression
+        context: context,
+        raw:     "/test/i.test('TEST')",
+        value:   true,
+        type:    CallExpression
     },
     {
-        raw:   "two.increment(1)",
-        value: 2,
-        type:  CallExpression
+        context: context,
+        raw:     "`The id is: ${this.id}`",
+        value:   "The id is: 1",
+        type:    TemplateExpression
     },
     {
-        raw:   "three.greater(1, 2)",
-        value: false,
-        type:  CallExpression
+        context: context,
+        raw:     "1 > 2 ? 'greater' : 'smaller'",
+        value:   "smaller",
+        type:    ConditionalExpression
     },
     {
-        raw:   "three.greater(...[1, 2],)",
-        value: false,
-        type:  CallExpression
-    },
-    {
-        raw:   "four.getObject().value",
-        value: "Hello World!!!",
-        type:  MemberExpression
-    },
-    {
-        raw:   "/test/.test('test')",
-        value: true,
-        type:  CallExpression
-    },
-    {
-        raw:   "/test/i.test('TEST')",
-        value: true,
-        type:  CallExpression
-    },
-    {
-        raw:   "`The zero.id is: ${zero.id}`",
-        value: "The zero.id is: 0",
-        type:  TemplateExpression
-    },
-    {
-        raw:   "1 > 2 ? 'greater' : 'smaller'",
-        value: "smaller",
-        type:  ConditionalExpression
-    },
-    {
-        raw:   "2 > 1 ? 'greater' : 'smaller'",
-        value: "greater",
-        type:  ConditionalExpression
+        context: context,
+        raw:     "2 > 1 ? 'greater' : 'smaller'",
+        value:   "greater",
+        type:    ConditionalExpression
     },
 ];
 
 export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
     {
-        raw:   "foo",
-        error: new Error("The identifier foo does not exist in this context")
+        context: context,
+        raw:     "foo",
+        error:   new Error("The identifier foo does not exist in this context")
     },
     {
-        raw:   "one.''",
-        error: new SyntaxError("Unexpected string", 1, 4, 5)
+        context: context,
+        raw:     "this.''",
+        error:   new SyntaxError("Unexpected string", 1, 5, 6)
     },
     {
-        raw:   "one.1",
-        error: new SyntaxError("Unexpected number", 1, 3, 4)
+        context: context,
+        raw:     "this.1",
+        error:   new SyntaxError("Unexpected number", 1, 4, 5)
     },
     {
-        raw:   ".",
-        error: new SyntaxError("Unexpected token .", 1, 0, 1)
+        context: context,
+        raw:     ".",
+        error:   new SyntaxError("Unexpected token .", 1, 0, 1)
     },
     {
-        raw:   "if",
-        error: new SyntaxError("Unexpected token if.", 1, 0, 1)
+        context: context,
+        raw:     "if",
+        error:   new SyntaxError("Unexpected token if.", 1, 0, 1)
     },
     {
-        raw:   "one.?",
-        error: new SyntaxError("Unexpected token ?", 1, 4, 5)
+        context: context,
+        raw:     "this.?",
+        error:   new SyntaxError("Unexpected token ?", 1, 5, 6)
     },
     {
-        raw:   "one if",
-        error: new SyntaxError("Unexpected token if", 1, 4, 5)
+        context: context,
+        raw:     "this if",
+        error:   new SyntaxError("Unexpected token if", 1, 5, 6)
     },
     {
-        raw:   "{ (foo) }",
-        error: new SyntaxError("Unexpected token (", 1, 2, 3)
+        context: context,
+        raw:     "{ (foo) }",
+        error:   new SyntaxError("Unexpected token (", 1, 2, 3)
     },
     {
-        raw:   "{ new }",
-        error: new SyntaxError("Unexpected token new", 1, 2, 3)
+        context: context,
+        raw:     "{ new }",
+        error:   new SyntaxError("Unexpected token new", 1, 2, 3)
     },
     {
-        raw:   "1 + if",
-        error: new SyntaxError("Unexpected end of if", 1, 4, 5)
+        context: context,
+        raw:     "1 + if",
+        error:   new SyntaxError("Unexpected end of if", 1, 4, 5)
     },
     {
-        raw:   "1 + if",
-        error: new SyntaxError("Unexpected end of if", 1, 4, 5)
+        context: context,
+        raw:     "[ ? ]",
+        error:   new SyntaxError("Unexpected token ?", 1, 2, 3)
     },
     {
-        raw:   "[ ? ]",
-        error: new SyntaxError("Unexpected token ?", 1, 2, 3)
+        context: context,
+        raw:     "",
+        error:   new SyntaxError("Unexpected end of expression", 1, 0, 1)
     },
     {
-        raw:   "",
-        error: new SyntaxError("Unexpected end of expression", 1, 0, 1)
-    },
-    {
-        raw:   "1 < 2 ? true .",
-        error: new SyntaxError("Unexpected end of expression", 1, 14, 15)
+        context: context,
+        raw:     "1 < 2 ? true .",
+        error:   new SyntaxError("Unexpected end of expression", 1, 14, 15)
     },
 ];

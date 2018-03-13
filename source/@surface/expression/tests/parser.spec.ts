@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { context, invalidExpressions, validExpressions } from "./fixtures/expressions";
+import { invalidExpressions, validExpressions } from "./fixtures/expressions";
 
 import Parser      from "../internal/parser";
 
@@ -21,7 +21,7 @@ describe
                         `Expression ${expression.raw} must be evaluated to ${expression.type.name}: ${expression.value}`,
                         () =>
                         {
-                            const result = Parser.parse(expression.raw, context);
+                            const result = Parser.parse(expression.raw, expression.context);
                             expect(result.evaluate()).to.deep.equal(expression.value);
                             expect(result).instanceof(expression.type);
                         }
@@ -44,7 +44,7 @@ describe
                         {
                             try
                             {
-                                Parser.parse(expression.raw, context);
+                                Parser.parse(expression.raw, expression.context);
                             }
                             catch (error)
                             {

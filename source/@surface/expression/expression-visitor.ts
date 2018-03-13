@@ -16,6 +16,110 @@ import UpdateExpression      from "./internal/expressions/update-expression";
 
 export default abstract class ExpressionVisitor
 {
+    protected visitArrayExpression(expression: ArrayExpression): IExpression
+    {
+        for (const element of expression.elements)
+        {
+            this.visit(element);
+        }
+
+        return expression;
+    }
+
+    protected visitBinaryExpression(expression: BinaryExpression): IExpression
+    {
+        this.visit(expression.left);
+        this.visit(expression.right);
+
+        return expression;
+    }
+
+    protected visitCallExpression(expression: CallExpression): IExpression
+    {
+        this.visit(expression.context);
+
+        for (const arg of expression.args)
+        {
+            this.visit(arg);
+        }
+
+        return expression;
+    }
+
+    protected visitConditionalExpression(expression: ConditionalExpression): IExpression
+    {
+        this.visit(expression.condition);
+        this.visit(expression.truthy);
+        this.visit(expression.falsy);
+
+        return expression;
+    }
+
+    protected visitConstantExpression(expression: ConstantExpression): IExpression
+    {
+        return expression;
+    }
+
+    protected visitIdentifierExpression(expression: IdentifierExpression): IExpression
+    {
+        return expression;
+    }
+
+    protected visitMemberExpression(expression: MemberExpression): IExpression
+    {
+        this.visit(expression.target);
+        this.visit(expression.property);
+
+        return expression;
+    }
+
+    protected visitObjectExpression(expression: ObjectExpression): IExpression
+    {
+        for (const property of expression.properties)
+        {
+            this.visit(property);
+        }
+
+        return expression;
+    }
+
+    protected visitPropertyExpression(expression: PropertyExpression): IExpression
+    {
+        this.visit(expression.key);
+        this.visit(expression.value);
+
+        return expression;
+    }
+
+    protected visitRegexExpression(expression: RegexExpression): IExpression
+    {
+        return expression;
+    }
+
+    protected visitTemplateExpression(expression: TemplateExpression): IExpression
+    {
+        for (const node of expression.expressions)
+        {
+            this.visit(node);
+        }
+
+        return expression;
+    }
+
+    protected visitUnaryExpression(expression: UnaryExpression): IExpression
+    {
+        this.visit(expression.expression);
+
+        return expression;
+    }
+
+    protected visitUpdateExpression(expression: UpdateExpression): IExpression
+    {
+        this.visit(expression.expression);
+
+        return expression;
+    }
+
     public visit(expression: IExpression): IExpression
     {
         /* istanbul ignore else */
@@ -75,109 +179,5 @@ export default abstract class ExpressionVisitor
         {
             throw new Error("Unexpected expression");
         }
-    }
-
-    public visitArrayExpression(expression: ArrayExpression): IExpression
-    {
-        for (const element of expression.elements)
-        {
-            this.visit(element);
-        }
-
-        return expression;
-    }
-
-    public visitBinaryExpression(expression: BinaryExpression): IExpression
-    {
-        this.visit(expression.left);
-        this.visit(expression.right);
-
-        return expression;
-    }
-
-    public visitCallExpression(expression: CallExpression): IExpression
-    {
-        this.visit(expression.context);
-
-        for (const arg of expression.args)
-        {
-            this.visit(arg);
-        }
-
-        return expression;
-    }
-
-    public visitConditionalExpression(expression: ConditionalExpression): IExpression
-    {
-        this.visit(expression.condition);
-        this.visit(expression.truthy);
-        this.visit(expression.falsy);
-
-        return expression;
-    }
-
-    public visitConstantExpression(expression: ConstantExpression): IExpression
-    {
-        return expression;
-    }
-
-    public visitIdentifierExpression(expression: IdentifierExpression): IExpression
-    {
-        return expression;
-    }
-
-    public visitMemberExpression(expression: MemberExpression): IExpression
-    {
-        this.visit(expression.target);
-        this.visit(expression.property);
-
-        return expression;
-    }
-
-    public visitObjectExpression(expression: ObjectExpression): IExpression
-    {
-        for (const property of expression.properties)
-        {
-            this.visit(property);
-        }
-
-        return expression;
-    }
-
-    public visitPropertyExpression(expression: PropertyExpression): IExpression
-    {
-        this.visit(expression.key);
-        this.visit(expression.value);
-
-        return expression;
-    }
-
-    public visitRegexExpression(expression: RegexExpression): IExpression
-    {
-        return expression;
-    }
-
-    public visitTemplateExpression(expression: TemplateExpression): IExpression
-    {
-        for (const node of expression.expressions)
-        {
-            this.visit(node);
-        }
-
-        return expression;
-    }
-
-    public visitUnaryExpression(expression: UnaryExpression): IExpression
-    {
-        this.visit(expression.expression);
-
-        return expression;
-    }
-
-    public visitUpdateExpression(expression: UpdateExpression): IExpression
-    {
-        this.visit(expression.expression);
-
-        return expression;
     }
 }
