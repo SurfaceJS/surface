@@ -1,1 +1,1 @@
-import "@surface/custom-element/tests/bind-expression-visitor.spec";
+import "../../../source/@surface/custom-element/tests/bind-expression-visitor.spec";

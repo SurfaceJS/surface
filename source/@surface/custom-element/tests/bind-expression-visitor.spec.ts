@@ -4,6 +4,8 @@ import BindExpressionVisitor from "../internal/bind-expression-visitor";
 
 import Expression from "@surface/expression";
 
+import { expect } from "chai";
+
 describe
 (
     "Bind should work",
@@ -32,11 +34,11 @@ describe
                 };
 
                 const expression = Expression.from("this.value", context);
-                const visitor    = new BindExpressionVisitor(() => console.log("Changed"));
+                const visitor    = new BindExpressionVisitor(() => expect(expression.evaluate()).to.equal(2));
 
                 visitor.visit(expression);
 
-                context.this.value = 2;
+                context.this.value += 1;
             }
         );
     }
