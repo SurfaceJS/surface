@@ -19,7 +19,8 @@
         },
         "externals":
         {
-            "chai": "commonjs chai",
+            "chai":  "commonjs chai",
+            "jsdom": "commonjs jsdom",
             "tslib": "commonjs tslib"
         },
         "target": "node",

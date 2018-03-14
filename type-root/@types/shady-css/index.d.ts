@@ -1,4 +1,8 @@
-/// <reference path="../../../compiler/@types/global/index.d.ts"/>
+interface HTMLElement
+{ }
+
+interface HTMLTemplateElement
+{ }
 
 declare interface ShadyCSS
 {

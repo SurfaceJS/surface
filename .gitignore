@@ -65,6 +65,7 @@ typings/
 cache-loader
 package-lock.json
 !types.d.ts
+!type-root/@types/**/*.d.ts
 !source/@surface/*/@types/*/index.d.ts
 !source/@surface/*/interfaces/*.d.ts
 !source/@surface/types/**/*.d.ts
