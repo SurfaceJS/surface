@@ -1,8 +1,10 @@
-import Enumerable from "..";
-import HashEncode from "./hash-encode";
 import Group      from "./group";
+import HashEncode from "./hash-encode";
+import Enumerable from "..";
 
-import { IComparer, ILookup }     from "../types";
+import IComparer from "../interfaces/comparer";
+import ILookup   from "../interfaces/lookup";
+
 import { Func1, Func2, Nullable } from "@surface/types";
 
 export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>, ILookup<TKey, TElement>

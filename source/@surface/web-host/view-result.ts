@@ -1,12 +1,13 @@
-import { ActionResult } from "./action-result";
-import { StatusCode }   from "./enums";
-import { HttpContext }  from "./http-context";
-import { mymeType }     from "./variables";
-import { Nullable }     from "@surface/types";
-import * as fs          from "fs";
-import * as path        from "path";
+import { Nullable } from "@surface/types";
+import ActionResult from "./action-result";
+import HttpContext  from "./http-context";
+import StatusCode   from "./status-code";
+import { mymeType } from "./variables";
 
-export class ViewResult extends ActionResult
+import fs   from "fs";
+import path from "path";
+
+export default class ViewResult extends ActionResult
 {
     private readonly controllerName: string;
     private readonly model:          Nullable<object>;

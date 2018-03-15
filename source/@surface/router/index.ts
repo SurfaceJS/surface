@@ -1,15 +1,16 @@
 import "@surface/collection/extensions";
 
-import { Route } from "./route";
+import Route      from "./route";
+import IRouteData from "./interfaces/route-data";
 
-import { Dictionary }        from "@surface/collection";
-import { List }              from "@surface/collection/list";
-import { Enumerable }        from "@surface/enumerable/index";
+import Dictionary            from "@surface/collection/dictionary";
+import List                  from "@surface/collection/list";
+import Enumerable            from "@surface/enumerable/index";
 import { Action1, Nullable } from "@surface/types";
 
-export class Router
+export default class Router
 {
-    private readonly routeAction: Dictionary<string, Action1<Nullable<Route.IData>>>;
+    private readonly routeAction: Dictionary<string, Action1<Nullable<IRouteData>>>;
     private readonly routes:      List<Route>;
 
     public constructor();
@@ -26,7 +27,7 @@ export class Router
         return this;
     }
 
-    public match(path: string): Nullable<Route.IData>
+    public match(path: string): Nullable<IRouteData>
     {
         let routes = this.routes as Enumerable<Route>;
 
@@ -47,7 +48,7 @@ export class Router
         return routeData;
     }
 
-    public when(route: string, action: Action1<Nullable<Route.IData>>): Router
+    public when(route: string, action: Action1<Nullable<IRouteData>>): Router
     {
         this.routeAction[route] = action;
         return this;

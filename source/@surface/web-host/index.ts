@@ -1,19 +1,19 @@
-import { Configuration }          from "./configuration";
-import { StatusCode }             from "./enums";
-import { FallbackRequestHandler } from "./fallback-request-handler";
-import { HttpContext }            from "./http-context";
-import { MvcRequestHandler }      from "./mvc-request-handler";
-import { RequestHandler }         from "./request-handler";
-import { StaticRequestHandler }   from "./static-request-handler";
-import { IStartup }               from "./types";
+import Configuration          from "./configuration";
+import FallbackRequestHandler from "./fallback-request-handler";
+import HttpContext            from "./http-context";
+import MvcRequestHandler      from "./mvc-request-handler";
+import RequestHandler         from "./request-handler";
+import IStartup               from "./interfaces/startup";
+import StaticRequestHandler   from "./static-request-handler";
+import StatusCode             from "./status-code";
 
-import { List }     from "@surface/collection/list";
-import { Router }   from "@surface/router";
+import List         from "@surface/collection/list";
+import Router       from "@surface/router";
 import { Nullable } from "@surface/types";
 
 import http from "http";
 
-export class WebHost
+export default class WebHost
 {
     private static _instance: WebHost;
     public static get instance(): WebHost

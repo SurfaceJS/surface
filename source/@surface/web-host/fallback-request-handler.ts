@@ -1,9 +1,9 @@
-import { StatusCode }     from "./enums";
-import { RequestHandler } from "./request-handler";
-import { HttpContext }    from "./http-context";
-import { mymeType }       from "./variables";
+import HttpContext    from "./http-context";
+import RequestHandler from "./request-handler";
+import StatusCode     from "./status-code";
+import { mymeType }   from "./variables";
 
-export class FallbackRequestHandler extends RequestHandler
+export default class FallbackRequestHandler extends RequestHandler
 {
     private readonly _fallbackRoute: string;
     public get fallbackRoute(): string

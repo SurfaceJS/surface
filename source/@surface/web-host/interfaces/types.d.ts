@@ -1,0 +1,1 @@
+export type HttpVerbs = "POST"|"GET"|"PUT"|"DELETE";

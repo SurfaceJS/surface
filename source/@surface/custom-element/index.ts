@@ -6,7 +6,7 @@ import "@surface/enumerable/extensions";
 import DataBind     from "./internal/data-bind";
 import * as symbols from "./symbols";
 
-import { List } from "@surface/collection";
+import List from "@surface/collection/list";
 
 import { Nullable } from "@surface/types";
 
