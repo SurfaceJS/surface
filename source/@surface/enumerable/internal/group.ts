@@ -1,6 +1,6 @@
+import IGroup     from "../interfaces/group";
 import Enumerable from "..";
 
-import { IGroup }   from "../types";
 import { Nullable } from "@surface/types";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>

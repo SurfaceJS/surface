@@ -1,10 +1,12 @@
+import KeyValuePair from "./key-value-pair";
+
 import "@surface/enumerable/extensions";
 
 import Enumerable from "@surface/enumerable";
 
 import { Nullable, ObjectLiteral } from "@surface/types";
 
-export class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
+export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
     private source: Map<TKey, TValue>;
 
@@ -64,23 +66,3 @@ export class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TVal
     }
 }
 
-export class KeyValuePair<TKey, TValue>
-{
-    private readonly _key: TKey;
-    public get key(): TKey
-    {
-        return this._key;
-    }
-
-    private readonly _value: TValue;
-    public get value(): TValue
-    {
-        return this._value;
-    }
-
-    public constructor(key: TKey, value: TValue)
-    {
-        this._key   = key;
-        this._value = value;
-    }
-}

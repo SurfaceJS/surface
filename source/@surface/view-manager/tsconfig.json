@@ -1,8 +1,8 @@
 {
-    "extends": "../configurations/tsconfig.json",
+    "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "lib":       ["dom", "esnext"],
-        "typeRoots": ["../../@surface/custom-element/@types"]
+        "lib":   ["dom", "esnext"],
+        "types": ["file-extensions", "shady-css"]
     }
 }

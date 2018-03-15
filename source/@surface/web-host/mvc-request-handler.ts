@@ -1,14 +1,14 @@
 import "@surface/reflection/extensions";
 
-import { ActionResult }   from "./action-result";
-import { Controller }     from "./controller";
-import { RequestHandler } from "./request-handler";
-import { HttpContext }    from "./http-context";
+import ActionResult   from "./action-result";
+import Controller     from "./controller";
+import HttpContext    from "./http-context";
+import RequestHandler from "./request-handler";
 
-import { Router }                from "@surface/router";
+import Router                    from "@surface/router";
 import { Constructor, Nullable } from "@surface/types";
 
-export class MvcRequestHandler extends RequestHandler
+export default class MvcRequestHandler extends RequestHandler
 {
     private readonly _router: Router;
     protected get router(): Router

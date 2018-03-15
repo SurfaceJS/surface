@@ -1,5 +1,6 @@
-import { Dictionary, KeyValuePair } from "./dictionary";
-import { List }                     from "./list";
+import Dictionary   from "./dictionary";
+import KeyValuePair from "./key-value-pair";
+import List         from "./list";
 
 import Enumerable from "@surface/enumerable";
 

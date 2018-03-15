@@ -25,7 +25,12 @@
         "strictNullChecks":                 true,
         "strictPropertyInitialization":     true,
         "suppressImplicitAnyIndexErrors":   true,
-        "target":                           "esnext"
-    },
-    "exclude": ["../**/node_modules"]
+        "target":                           "esnext",
+        "types":                            [],
+        "typeRoots":
+        [
+            "type-root/@types",
+            "type-root/node_modules/@types"
+        ]
+    }
 }

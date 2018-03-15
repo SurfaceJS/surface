@@ -1,14 +1,14 @@
-import { HttpContext } from "./http-context";
+import HttpContext from "./http-context";
 
-import * as fs   from "fs";
-import * as path from "path";
+import fs   from "fs";
+import path from "path";
 
 const internal = { fs, path };
 
 type FS   = typeof internal.fs;
 type Path = typeof internal.path;
 
-export abstract class RequestHandler
+export default abstract class RequestHandler
 {
     protected readonly fs:   FS;
     protected readonly path: Path;

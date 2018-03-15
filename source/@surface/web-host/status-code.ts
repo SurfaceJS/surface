@@ -1,4 +1,4 @@
-export enum StatusCode
+enum StatusCode
 {
     /*
         1xx Informational responses
@@ -389,3 +389,5 @@ export enum StatusCode
      */
     networkAuthenticationRequired = 511,
 }
+
+export default StatusCode;

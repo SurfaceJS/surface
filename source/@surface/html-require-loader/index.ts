@@ -1,7 +1,7 @@
 import { Nullable } from "@surface/types";
 
 // tslint:disable-next-line:no-any
-export = function (this: any, content: string): string
+export default function (this: any, content: string): string
 {
     // tslint:disable-next-line:no-unused-expression
     this.cacheable && this.cacheable();

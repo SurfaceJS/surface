@@ -1,6 +1,6 @@
 import Enumerable from "@surface/enumerable";
 
-export class List<TSource> extends Enumerable<TSource>
+export default class List<TSource> extends Enumerable<TSource>
 {
     private source: Array<TSource>;
 

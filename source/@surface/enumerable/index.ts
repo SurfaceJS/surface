@@ -3,8 +3,10 @@ import EnumerableSorter from "./internal/enumerable-sorter";
 import Lookup           from "./internal/lookup";
 import Set              from "./internal/set";
 
-import { IComparer, IGroup, ILookup }             from "./types";
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
+import IComparer from "./interfaces/comparer";
+import IGroup    from "./interfaces/group";
+import ILookup   from "./interfaces/lookup";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {

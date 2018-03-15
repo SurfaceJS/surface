@@ -1,7 +1,7 @@
-import http        from "http";
-import { WebHost } from "./index";
+import http    from "http";
+import WebHost from "./index";
 
-export class HttpContext
+export default class HttpContext
 {
     private readonly _request: http.IncomingMessage;
     public get request(): http.IncomingMessage

@@ -129,4 +129,4 @@ class HtmlTemplatePlugin
     }
 }
 
-export = HtmlTemplatePlugin;
+export default HtmlTemplatePlugin;

@@ -1,6 +1,8 @@
+import IRouteData from "./interfaces/route-data";
+
 import { Nullable, ObjectLiteral } from "@surface/types";
 
-export class Route
+export default class Route
 {
     private _expression: RegExp;
     public get expression(): RegExp
@@ -50,7 +52,7 @@ export class Route
         return new RegExp(`^\/?${expression}\/?$`, "i");
     }
 
-    public match(route: string): Nullable<Route.IData>
+    public match(route: string): Nullable<IRouteData>
     {
         let [path, queryString] = route.split("?");
 
@@ -107,17 +109,5 @@ export class Route
         }
 
         return null;
-    }
-}
-
-export namespace Route
-{
-    export interface IData
-    {
-        match:  string;
-        params: ObjectLiteral<string>;
-        root:   string;
-        route:  string;
-        search: Nullable<ObjectLiteral<string>>;
     }
 }

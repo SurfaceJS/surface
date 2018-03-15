@@ -1,19 +1,10 @@
 {
-    "extends": "../source/@surface/configurations/tsconfig.json",
+    "extends": "../tsconfig.json",
     "compilerOptions":
     {
         "allowJs": false,
-        "lib":
-        [
-            "dom",
-            "esnext"
-        ],
-        "typeRoots":
-        [
-            "node_modules/@types",
-            "node_modules/@surface/custom-element/@types"
-        ],
-        "noEmit": true
-    },
-    "include": ["source"]
+        "lib":     ["dom", "esnext"],
+        "noEmit":  true,
+        "types":   ["mocha"]
+    }
 }

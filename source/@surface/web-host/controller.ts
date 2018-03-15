@@ -1,11 +1,12 @@
-import { ActionResult } from "./action-result";
-import { StatusCode }   from "./enums";
-import { HttpContext }  from "./http-context";
-import { JsonResult }   from "./json-result";
-import { ViewResult }   from "./view-result";
-import { Nullable }     from "@surface/types";
+import ActionResult from "./action-result";
+import HttpContext  from "./http-context";
+import JsonResult   from "./json-result";
+import StatusCode   from "./status-code";
+import ViewResult   from "./view-result";
 
-export abstract class Controller
+import { Nullable } from "@surface/types";
+
+export default abstract class Controller
 {
     private readonly _httpContext: HttpContext;
     public get httpContext(): HttpContext

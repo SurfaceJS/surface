@@ -1,4 +1,4 @@
-export class Configuration
+export default class Configuration
 {
     private readonly _serverRoot: string;
     public get serverRoot(): string
