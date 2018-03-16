@@ -8,9 +8,15 @@
         "@surface/enumerable": "0.0.5",
         "@surface/expression": "0.0.0",
         "@surface/types": "0.0.1",
-        "@types/reflect-metadata": "0.0.5"
+        "@types/chai": "4.1.2",
+        "@types/jsdom": "11.0.4",
+        "tslib": "1.9.0"
     },
     "description": "Base class used to define custom elements.",
+    "devDependencies": {
+        "chai": "4.1.2",
+        "jsdom": "11.6.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",
