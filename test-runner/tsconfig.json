@@ -10,6 +10,6 @@
             "chai": ["../type-root/node_modules/@types/chai/index.d.ts"]
         },
         "noEmit":  true,
-        "types":   ["mocha", "node", "shady-css"]
+        "types":   ["file-extensions", "mocha", "node", "shady-css"]
     }
 }

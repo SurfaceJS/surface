@@ -19,9 +19,10 @@
         },
         "externals":
         {
-            "chai":  "commonjs chai",
-            "jsdom": "commonjs jsdom",
-            "tslib": "commonjs tslib"
+            "chai":            "commonjs chai",
+            "jsdom":           "commonjs jsdom",
+            "tslib":           "commonjs tslib",
+            "webcomponentsjs": "commonjs webcomponentsjs"
         },
         "target": "node",
         "node": { "__dirname": false }

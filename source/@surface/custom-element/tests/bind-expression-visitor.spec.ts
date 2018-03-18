@@ -1,4 +1,4 @@
-import "./fixtures/dom";
+import FixtureElement from "./fixtures/fixture-element";
 
 import BindExpressionVisitor from "../internal/bind-expression-visitor";
 
@@ -18,19 +18,7 @@ describe
             {
                 const context =
                 {
-                    this: new class
-                    {
-                        private _value: number = 1;
-                        public get value(): number
-                        {
-                            return this._value;
-                        }
-
-                        public set value(value: number)
-                        {
-                            this._value = value;
-                        }
-                    }()
+                    this: new FixtureElement()
                 };
 
                 const expression = Expression.from("this.value", context);

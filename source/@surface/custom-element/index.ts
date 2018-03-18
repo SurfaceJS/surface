@@ -33,7 +33,10 @@ export default abstract class CustomElement extends HTMLElement
             window.ShadyCSS.styleElement(this);
         }
 
-        this.applyTemplate(this.constructor[symbols.template]);
+        if (this.constructor[symbols.template])
+        {
+            this.applyTemplate(this.constructor[symbols.template]);
+        }
     }
 
     private applyTemplate(template: HTMLTemplateElement): void

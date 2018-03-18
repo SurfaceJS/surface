@@ -20,10 +20,9 @@
     "nyc": {
         "cache": true,
         "include": [
-            "build/*.js"
+            "build/custom-element.js"
         ],
         "exclude": [
-            "build/webpack/bootstrap"
         ],
         "reporter": [
             "lcov",
@@ -42,6 +41,7 @@
     },
     "version": "0.0.0",
     "devDependencies": {
-        "karma-chrome-launcher": "2.2.0"
+        "karma-chrome-launcher": "2.2.0",
+        "webcomponentsjs": "^1.0.2"
     }
 }
