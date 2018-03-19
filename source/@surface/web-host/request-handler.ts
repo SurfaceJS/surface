@@ -1,7 +1,6 @@
+import fs          from "fs";
+import path        from "path";
 import HttpContext from "./http-context";
-
-import fs   from "fs";
-import path from "path";
 
 const internal = { fs, path };
 

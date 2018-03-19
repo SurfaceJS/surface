@@ -1,6 +1,5 @@
-import Enumerable from "..";
-
 import { Nullable } from "@surface/types";
+import Enumerable   from "..";
 
 export default class HashEncode
 {

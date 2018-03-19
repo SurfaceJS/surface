@@ -1,9 +1,8 @@
+import { Nullable } from "@surface/types";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
 import StatusCode   from "./status-code";
 import { mymeType } from "./variables";
-
-import { Nullable } from "@surface/types";
 
 export default class JsonResult extends ActionResult
 {

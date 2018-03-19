@@ -1,12 +1,11 @@
 import "@surface/collection/extensions";
 
-import Route      from "./route";
-import IRouteData from "./interfaces/route-data";
-
 import Dictionary            from "@surface/collection/dictionary";
 import List                  from "@surface/collection/list";
 import Enumerable            from "@surface/enumerable/index";
 import { Action1, Nullable } from "@surface/types";
+import IRouteData            from "./interfaces/route-data";
+import Route                 from "./route";
 
 export default class Router
 {

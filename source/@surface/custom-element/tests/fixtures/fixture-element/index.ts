@@ -1,9 +1,7 @@
-import index from "./index.html";
-
-import { element }   from "../../../decorators";
 import CustomElement from "../../..";
+import { element }   from "../../../decorators";
 
-@element("fixture-element", index)
+@element("fixture-element", "<span>this value is: {{ host.value }}</span>")
 export default class FixtureElement extends CustomElement
 {
     private _value: number = 1;

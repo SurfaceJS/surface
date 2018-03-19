@@ -1,17 +1,16 @@
-import * as defaults from "./defaults";
-import * as enums    from "./enums";
-import { Compiler }  from "../types";
-
-import { merge, resolveFile } from "@surface/common";
-import HtmlTemplatePlugin     from "@surface/html-template-plugin";
-import SimblingResolvePlugin  from "@surface/simbling-resolve-plugin";
-
+import { merge, resolveFile }     from "@surface/common";
+import HtmlTemplatePlugin         from "@surface/html-template-plugin";
+import SimblingResolvePlugin      from "@surface/simbling-resolve-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import fs                         from "fs";
 import path                       from "path";
 import rimraf                     from "rimraf";
 import UglifyJsPlugin             from "uglifyjs-webpack-plugin";
 import webpack                    from "webpack";
+import IConfiguration             from "../interfaces/configuration";
+import { Entry }                  from "../interfaces/types";
+import * as defaults              from "./defaults";
+import * as enums                 from "./enums";
 
 export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
@@ -107,7 +106,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 {
     filepath = resolveFile(process.cwd(), filepath, "surface.config.json");
 
-    let config = require(filepath) as Compiler.Config;
+    let config = require(filepath) as IConfiguration;
 
     const root = path.dirname(filepath);
 
@@ -148,7 +147,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
     config.tsconfig = config.tsconfig && path.resolve(root, config.tsconfig) || "tsconfig.json";
     config.tslint   = config.tslint   && path.resolve(root, config.tslint);
 
-    defaults.loaders.tsLoader.options.configFile = config.tsconfig;
+    defaults.loaders.ts.options.configFile = config.tsconfig;
 
     let resolvePlugins: Array<webpack.ResolvePlugin> = [];
     let plugins: Array<webpack.Plugin> = [];
@@ -228,9 +227,9 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
  * @param entries Entries to be resolved.
  * @param context Context used to resolve entries.
  */
-function resolveEntries(context: string, entries: Compiler.Entry): Compiler.Entry
+function resolveEntries(context: string, entries: Entry): Entry
 {
-    let result: Compiler.Entry = { };
+    let result: Entry = { };
 
     if (typeof entries == "string")
     {
@@ -239,7 +238,7 @@ function resolveEntries(context: string, entries: Compiler.Entry): Compiler.Entr
 
     if (Array.isArray(entries))
     {
-        let tmp: Compiler.Entry = { };
+        let tmp: Entry = { };
         for (let entry of entries)
         {
             tmp[path.dirname(entry)] = entry;
@@ -304,7 +303,7 @@ function resolveEntries(context: string, entries: Compiler.Entry): Compiler.Entr
  * @param key    Key of the object.
  * @param value  Value to be setted or pushed.
  */
-function setOrPush(target: Compiler.Entry, key: string, value: string): void
+function setOrPush(target: Entry, key: string, value: string): void
 {
     if (!target[key])
     {

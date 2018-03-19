@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import * as common from "@surface/common";
-
+import * as common    from "@surface/common";
 import * as commander from "commander";
 import * as fs        from "fs";
 import * as path      from "path";

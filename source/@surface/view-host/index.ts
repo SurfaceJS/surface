@@ -1,10 +1,8 @@
-import template from "./index.html";
-
 import CustomElement from "@surface/custom-element";
 import { element }   from "@surface/custom-element/decorators";
+import { Nullable }  from "@surface/types";
 import View          from "@surface/view";
-
-import { Nullable } from "@surface/types";
+import template      from "./index.html";
 
 @element("surface-view-host", template)
 export default class ViewHost extends CustomElement

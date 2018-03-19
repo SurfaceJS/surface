@@ -1,11 +1,10 @@
 import { Nullable } from "@surface/types";
+import fs           from "fs";
+import path         from "path";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
 import StatusCode   from "./status-code";
 import { mymeType } from "./variables";
-
-import fs   from "fs";
-import path from "path";
 
 export default class ViewResult extends ActionResult
 {

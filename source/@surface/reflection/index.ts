@@ -1,15 +1,13 @@
-import "reflect-metadata";
-
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
-
-import FieldInfo    from "./field-info";
-import MethodInfo   from "./method-info";
-import PropertyInfo from "./property-info";
+import "reflect-metadata";
 
 import Dictionary   from "@surface/collection/dictionary";
 import Enumerable   from "@surface/enumerable";
 import { Nullable } from "@surface/types";
+import FieldInfo    from "./field-info";
+import MethodInfo   from "./method-info";
+import PropertyInfo from "./property-info";
 
 export default class Type
 {

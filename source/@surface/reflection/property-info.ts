@@ -1,6 +1,5 @@
-import FieldInfo from "./field-info";
-
 import { Nullable } from "@surface/types";
+import FieldInfo    from "./field-info";
 
 export default class PropertyInfo extends FieldInfo
 {

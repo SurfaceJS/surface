@@ -1,8 +1,6 @@
-import HashEncode from "./hash-encode";
-
-import IComparer from "../interfaces/comparer";
-
 import { Nullable }  from "@surface/types";
+import IComparer     from "../interfaces/comparer";
+import HashEncode    from "./hash-encode";
 
 type Slot<TElement> =
 {

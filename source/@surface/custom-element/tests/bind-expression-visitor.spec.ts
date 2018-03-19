@@ -1,10 +1,9 @@
-import FixtureElement from "./fixtures/fixture-element";
+import "./fixtures/dom";
 
+import Expression            from "@surface/expression";
+import { expect }            from "chai";
 import BindExpressionVisitor from "../internal/bind-expression-visitor";
-
-import Expression from "@surface/expression";
-
-import { expect } from "chai";
+import FixtureElement        from "./fixtures/fixture-element";
 
 describe
 (

@@ -1,8 +1,7 @@
 import { Nullable, ObjectLiteral } from "@surface/types";
-
-import fs                        from "fs";
-import path                      from "path";
-import { compilation, Compiler } from "webpack";
+import fs                          from "fs";
+import path                        from "path";
+import { compilation, Compiler }   from "webpack";
 
 namespace HtmlTemplatePlugin
 {

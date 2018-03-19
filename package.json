@@ -1,0 +1,26 @@
+{
+    "author": "HitalloExiled",
+    "description": "Global modules and shared types",
+    "devDependencies": {
+        "@types/chai": "4.1.2",
+        "@types/mocha": "2.2.48",
+        "@types/node": "9.4.7",
+        "mocha": "5.0.4",
+        "nyc": "11.6.0"
+    },
+    "keywords": [
+        "types",
+        "tests",
+        "shared"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "type-root",
+    "scripts": {
+        "tests:build": "tsc -p tsconfig.test.json",
+        "tests:cover": "nyc mocha source/@surface/*/tests/*.spec.js",
+        "tests:run": "mocha source/@surface/*/tests/*.spec.js",
+        "tests:watch": "tsc -p tsconfig.test.json -w"
+    },
+    "version": "1.0.0"
+}

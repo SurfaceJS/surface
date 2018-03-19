@@ -1,9 +1,8 @@
+import Enumerable    from "@surface/enumerable";
+import { Nullable }  from "@surface/types";
+import Type          from ".";
 import MemberInfo    from "./member-info";
 import ParameterInfo from "./parameter-info";
-import Type          from ".";
-
-import Enumerable   from "@surface/enumerable";
-import { Nullable } from "@surface/types";
 
 export default class MethodInfo extends MemberInfo
 {

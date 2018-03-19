@@ -1,10 +1,9 @@
-import * as symbols  from "../symbols";
-import CustomElement from "..";
-
 import ExpressionVisitor    from "@surface/expression/expression-visitor";
 import IExpression          from "@surface/expression/interfaces/expression";
 import MemberExpression     from "@surface/expression/internal/expressions/member-expression";
 import { Action, Nullable } from "@surface/types";
+import CustomElement        from "..";
+import * as symbols         from "../symbols";
 
 export default class BindExpressionVisitor extends ExpressionVisitor
 {

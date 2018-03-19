@@ -1,14 +1,11 @@
-import "./extensions";
-
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
+import "./extensions";
 
+import List         from "@surface/collection/list";
+import { Nullable } from "@surface/types";
 import DataBind     from "./internal/data-bind";
 import * as symbols from "./symbols";
-
-import List from "@surface/collection/list";
-
-import { Nullable } from "@surface/types";
 
 const shadowRoot = Symbol.for("shadowRoot");
 

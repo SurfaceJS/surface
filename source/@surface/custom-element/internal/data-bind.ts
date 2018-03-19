@@ -1,8 +1,6 @@
-import CustomElement from "..";
-
-import BindParser from "./bind-parser";
-
 import { Action, Func } from "@surface/types";
+import CustomElement    from "..";
+import BindParser       from "./bind-parser";
 
 export default class DataBind<T extends CustomElement>
 {
