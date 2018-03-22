@@ -3,25 +3,21 @@
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
-    "devDependencies": {
-        "@types/chai": "4.1.2",
-        "chai": "4.1.2"
-    },
-    "description": "Provides an tree representation of javascript expressions.",
+    "description": "Oriented object test suite powered by mocha.",
     "dependencies": {
-        "@surface/test-suite": "0.0.0",
         "@surface/types": "0.0.1",
         "tslib": "1.9.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",
-        "typescript",
-        "expression"
+        "suite",
+        "test",
+        "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/expression",
+    "name": "@surface/test-suite",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
@@ -29,6 +25,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "types": "index.d.ts",
     "version": "0.0.0"
 }

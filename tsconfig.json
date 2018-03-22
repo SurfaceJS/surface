@@ -32,5 +32,6 @@
             "@types",
             "node_modules/@types"
         ]
-    }
+    },
+    "exclude": ["source/@surface/*/node_modules"]
 }
