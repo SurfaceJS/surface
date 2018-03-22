@@ -74,10 +74,10 @@ export function suite(description: string): ClassDecorator
         const tests:       Array<Test>                = [];
         const catergories: ObjectLiteral<Array<Test>> = { };
 
-        let afterCallback:      Nullable<Action>           = null;
-        let afterEachCallback:  Nullable<Action>           = null;
-        let beforeCallback:     Nullable<Action>           = null;
-        let beforeEachCallback: Nullable<Action>           = null;
+        let afterCallback:      Nullable<Action> = null;
+        let afterEachCallback:  Nullable<Action> = null;
+        let beforeCallback:     Nullable<Action> = null;
+        let beforeEachCallback: Nullable<Action> = null;
 
         for (const name of Object.getOwnPropertyNames(target.prototype))
         {

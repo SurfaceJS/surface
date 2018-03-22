@@ -56,6 +56,7 @@ export default class BindExpressionVisitor extends ExpressionVisitor
                     context,
                     property,
                     {
+                        configurable: true,
                         get: () => getter && getter.call(context),
                         set: (value: Object) =>
                         {

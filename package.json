@@ -18,8 +18,8 @@
     "name": "type-root",
     "scripts": {
         "tests:build": "tsc -p tsconfig.test.json",
-        "tests:cover": "nyc mocha source/@surface/*/tests/*.spec.js",
-        "tests:run": "mocha source/@surface/*/tests/*.spec.js",
+        "tests:cover": "nyc mocha --ui tdd source/@surface/*/tests/*.spec.js",
+        "tests:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
         "tests:watch": "tsc -p tsconfig.test.json -w"
     },
     "version": "1.0.0"

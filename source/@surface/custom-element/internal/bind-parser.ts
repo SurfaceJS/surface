@@ -1,12 +1,13 @@
-import Expression         from "@surface/expression";
-import IExpression        from "@surface/expression/interfaces/expression";
-import ConstantExpression from "@surface/expression/internal/expressions/constant-expression";
-import { Action }         from "@surface/types";
+import Expression            from "@surface/expression";
+import IExpression           from "@surface/expression/interfaces/expression";
+import ConstantExpression    from "@surface/expression/internal/expressions/constant-expression";
+import { Action }            from "@surface/types";
+import BindExpressionVisitor from "./bind-expression-visitor";
 
 export default class BindParser
 {
-    private readonly source:  string;
-    //private readonly notify?: Action;
+    private readonly source: string;
+
     private index:   number;
     private context: Object;
 
@@ -14,14 +15,18 @@ export default class BindParser
     {
         this.context = context;
         this.source  = source;
-        //this.notify  = notify;
-
-        this.index = 0;
+        this.index   = 0;
     }
 
     public static scan(context: Object, source: string, notify?: Action): IExpression
     {
         const expressions = new BindParser(context, source, notify).parse(0);
+
+        if (notify)
+        {
+            const visitor = new BindExpressionVisitor(notify);
+            expressions.forEach(x => visitor.visit(x));
+        }
 
         if (expressions.length == 1)
         {
