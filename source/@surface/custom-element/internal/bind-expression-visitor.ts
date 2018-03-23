@@ -29,8 +29,8 @@ export default class BindExpressionVisitor extends ExpressionVisitor
         const observedAttributes = context.constructor[symbols.observedAttributes] as Array<string>;
         if (observedAttributes && context instanceof CustomElement && observedAttributes.some(x => x == property))
         {
-            const onAttributeChanged = context[symbols.onAttributeChanged];
-            context[symbols.onAttributeChanged] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
+            const onAttributeChanged = context["attributeChangedCallback"];
+            context["attributeChangedCallback"] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
                 if (attributeName == property)
                 {

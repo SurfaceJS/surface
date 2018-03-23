@@ -23,11 +23,8 @@ export default class DataBind<T extends CustomElement>
         {
             if (attribute.value.indexOf("{{") > -1)
             {
-                console.log(attribute.value);
-                console.time();
                 const expression = BindParser.scan({ global: window, host: context, this: node }, attribute.value, notify);
-                console.timeEnd();
-                console.log(expression);
+
                 if (attribute.name.startsWith("on-"))
                 {
                     node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
@@ -57,12 +54,7 @@ export default class DataBind<T extends CustomElement>
 
         if (node.nodeValue && node.nodeValue.indexOf("{{") > -1)
         {
-            console.log(node.nodeValue);
-            console.time();
-
             const expression = BindParser.scan({ global: window, host: context, this: node }, node.nodeValue, notify);
-            console.timeEnd();
-            console.log(expression);
 
             binders.push(() => `${expression.evaluate()}`);
             notify();

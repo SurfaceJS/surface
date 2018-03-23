@@ -1,5 +1,5 @@
 import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/types";
-import mocha                                                   from "./mocha";
+import mocha                                                   from "./internal/mocha";
 
 const afterToken       = Symbol("test:after");
 const afterEachToken   = Symbol("test:after-each");
