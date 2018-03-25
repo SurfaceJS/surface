@@ -62,7 +62,7 @@ typings/
 *.js
 *.js.map
 *.d.ts
-cache-loader
+cache
 package-lock.json
 !types.d.ts
 !@types/**/*.d.ts

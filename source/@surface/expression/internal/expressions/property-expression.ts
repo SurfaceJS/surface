@@ -1,7 +1,6 @@
-import IExpression    from "../../interfaces/expression";
+import { Nullable }   from "@surface/types";
 import ExpressionType from "../../expression-type";
-
-import { Nullable } from "@surface/types";
+import IExpression    from "../../interfaces/expression";
 
 export default class PropertyExpression implements IExpression
 {

@@ -2,7 +2,6 @@ import ExpressionVisitor    from "@surface/expression/expression-visitor";
 import IExpression          from "@surface/expression/interfaces/expression";
 import MemberExpression     from "@surface/expression/internal/expressions/member-expression";
 import { Action, Nullable } from "@surface/types";
-import CustomElement        from "..";
 import * as symbols         from "../symbols";
 
 export default class BindExpressionVisitor extends ExpressionVisitor
@@ -21,16 +20,16 @@ export default class BindExpressionVisitor extends ExpressionVisitor
 
         if (!context || !property)
         {
-            throw new TypeError("Can't bind to non initialized object.");
+            throw new TypeError("Can't bind to non initialized object");
         }
 
         const notify = this.notify;
 
         const observedAttributes = context.constructor[symbols.observedAttributes] as Array<string>;
-        if (observedAttributes && context instanceof CustomElement && observedAttributes.some(x => x == property))
+        if (observedAttributes && observedAttributes.some(x => x == property))
         {
             const onAttributeChanged = context["attributeChangedCallback"];
-            context["attributeChangedCallback"] = function (this: CustomElement, attributeName: string, oldValue: string, newValue: string, namespace: string): void
+            context["attributeChangedCallback"] = function (this: Object, attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
                 if (attributeName == property)
                 {
@@ -63,9 +62,8 @@ export default class BindExpressionVisitor extends ExpressionVisitor
                             if (setter)
                             {
                                 setter.call(context, value);
+                                notify();
                             }
-
-                            notify();
                         }
                     }
                 );

@@ -505,7 +505,7 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     {
         context: context,
         raw:     "1 + if",
-        error:   new SyntaxError("Unexpected end of if", 1, 4, 5)
+        error:   new SyntaxError("Unexpected token if", 1, 4, 5)
     },
     {
         context: context,

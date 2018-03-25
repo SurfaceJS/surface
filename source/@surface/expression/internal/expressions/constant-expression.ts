@@ -1,5 +1,5 @@
-import IExpression    from "../../interfaces/expression";
 import ExpressionType from "../../expression-type";
+import IExpression    from "../../interfaces/expression";
 
 import { Nullable } from "@surface/types";
 

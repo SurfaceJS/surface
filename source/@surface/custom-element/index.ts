@@ -46,18 +46,6 @@ export default abstract class CustomElement extends HTMLElement
     }
 
     /**
-     * Called when an attribute is changed, appended, removed, or replaced on the element.
-     * Only called for observed attributes.
-     */
-    protected attributeChangedCallback(attributeName: string, oldValue: string, newValue: string, namespace: string): void
-    {
-        if (this[symbols.onAttributeChanged])
-        {
-            this[symbols.onAttributeChanged](attributeName, oldValue, newValue, namespace);
-        }
-    }
-
-    /**
      * Returns the first element that matches the specified selector.
      * @param selector Query selector.
      */
