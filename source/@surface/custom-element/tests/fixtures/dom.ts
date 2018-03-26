@@ -1,7 +1,6 @@
 import { JSDOM } from "jsdom";
 
 const window = new JSDOM().window;
-
 Object.assign
 (
     window,
@@ -34,5 +33,6 @@ Object.assign
         location:      window.location,
         NodeList:      window.NodeList,
         NamedNodeMap:  window.NamedNodeMap,
+        Event:         window.Event
     }
 );

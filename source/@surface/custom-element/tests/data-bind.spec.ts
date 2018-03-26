@@ -1,20 +1,12 @@
-import { before, category, suite, test } from "@surface/test-suite";
-import { expect }                        from "chai";
-import { JSDOM }                         from "jsdom";
-import DataBind                          from "../internal/data-bind";
+import "./fixtures/dom";
+
+import { category, suite, test } from "@surface/test-suite";
+import { expect }                from "chai";
+import DataBind                  from "../internal/data-bind";
 
 @suite("Data bind")
 export default class DataBindSpec
 {
-    @before("Mock dom")
-    public before(): void
-    {
-        let window       = new JSDOM().window;
-        global["window"] = window;
-        global["Node"]   = window.Node;
-        global["Event"]  = window.Event;
-    }
-
     @category("Should work")
     @test("Element without attributes")
     public async elementWithoutAttributes(): Promise<void>
