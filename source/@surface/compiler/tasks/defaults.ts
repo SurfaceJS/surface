@@ -116,11 +116,6 @@ export let webpackConfig: webpack.Configuration =
                 ]
             },
             {
-                test:    /\.(js|ts)$/,
-                use:     loaders.istanbul,
-                enforce: "post"
-            },
-            {
                 test: /\.ts$/,
                 use:
                 [

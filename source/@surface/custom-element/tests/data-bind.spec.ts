@@ -1,14 +1,13 @@
 import "./fixtures/dom";
 
-import { category, suite, test } from "@surface/test-suite";
-import { expect }                from "chai";
-import DataBind                  from "../internal/data-bind";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                              from "chai";
+import DataBind                                from "../internal/data-bind";
 
-@suite("Data bind")
+@suite
 export default class DataBindSpec
 {
-    @category("Should work")
-    @test("Element without attributes")
+    @test @shouldPass
     public async elementWithoutAttributes(): Promise<void>
     {
         const document = window.document;
@@ -18,8 +17,7 @@ export default class DataBindSpec
         await DataBind.for(host, content);
     }
 
-    @category("Should work")
-    @test("Element with attributes")
+    @test @shouldPass
     public async elementWithAttributes(): Promise<void>
     {
         const document = window.document;
@@ -37,8 +35,7 @@ export default class DataBindSpec
 
     }
 
-    @category("Should work")
-    @test("Element with attributes bind")
+    @test @shouldPass
     public async elementWithAttributesBind(): Promise<void>
     {
         const document = window.document;
@@ -57,8 +54,7 @@ export default class DataBindSpec
         }
     }
 
-    @category("Should work")
-    @test("Element with attributes with event bind")
+    @test @shouldPass
     public async elementWithAttributesWithEventBind(): Promise<void>
     {
         const document = window.document;
@@ -77,8 +73,7 @@ export default class DataBindSpec
         }
     }
 
-    @category("Should work")
-    @test("Element with text node bind")
+    @test @shouldPass
     public async elementWithTextNodeBind(): Promise<void>
     {
         const document = window.document;
@@ -95,8 +90,7 @@ export default class DataBindSpec
         }
     }
 
-    @category("Should throw")
-    @test("Element with invalid bind expression")
+    @test @shouldFail
     public async elementWithInvalidBindExpression(): Promise<void>
     {
         const document = window.document;

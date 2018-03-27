@@ -1,9 +1,9 @@
-import { category, suite, test } from "@surface/test-suite";
-import { Action }                from "@surface/types";
-import { expect }                from "chai";
-import BindParser                from "../internal/bind-parser";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { Action }                              from "@surface/types";
+import { expect }                              from "chai";
+import BindParser                              from "../internal/bind-parser";
 
-@suite("Bind Parser")
+@suite
 export default class BindParserSpec
 {
     private testBind(notify?: Action): string
@@ -29,8 +29,7 @@ export default class BindParserSpec
         return expression.evaluate() as string;
     }
 
-    @category("Should work")
-    @test("Scaped expression")
+    @test @shouldPass
     public scapedExpression(): void
     {
         const context =
@@ -44,21 +43,19 @@ export default class BindParserSpec
         expect(value).to.equal("This is an scaped expression {{ this.value }}");
     }
 
-    @category("Should work")
-    @test("With notify")
+    @test @shouldPass
     public withNotify(): void
     {
         expect(this.testBind(() => expect(true))).to.equal("This is my value: 0");
     }
 
-    @category("Should work")
-    @test("Without notify")
+    @test @shouldPass
     public withoutNotify(): void
     {
         expect(this.testBind()).to.equal("This is my value: 0");
     }
 
-    @category("Should throw")
+    @test @shouldFail
     @test("Invalid identifier")
     public invalidIdentifier(): void
     {

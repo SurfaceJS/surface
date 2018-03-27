@@ -134,7 +134,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     if (config.webpackConfig)
     {
-        if(typeof config.webpackConfig == "string" && fs.existsSync(config.webpackConfig))
+        if (typeof config.webpackConfig == "string" && fs.existsSync(config.webpackConfig))
         {
             userWebpack = require(path.resolve(root, config.webpackConfig)) as webpack.Configuration;
         }
@@ -268,7 +268,7 @@ function resolveEntries(context: string, entries: Entry): Entry
                     let modulePath = path.resolve(sourcePath, $module);
                     if (fs.existsSync(modulePath))
                     {
-                        if(fs.lstatSync(modulePath).isDirectory())
+                        if (fs.lstatSync(modulePath).isDirectory())
                         {
                             let index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
                             if (index)

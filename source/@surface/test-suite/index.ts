@@ -1,35 +1,68 @@
 import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/types";
 import mocha                                                   from "./internal/mocha";
 
-const afterToken       = Symbol("test:after");
-const afterEachToken   = Symbol("test:after-each");
-const batchTestToken   = Symbol("test:batch");
-const beforeToken      = Symbol("test:before");
-const beforeEachToken  = Symbol("test:before-each");
-const categoryToken    = Symbol("test:category");
-const dataToken        = Symbol("test:data");
-const descriptionToken = Symbol("test:description");
-const expectationToken = Symbol("test:expectation");
-const testToken        = Symbol("test:method");
+import
+{
+    afterEachToken,
+    afterToken,
+    batchTestToken,
+    beforeEachToken,
+    beforeToken,
+    categoryToken,
+    dataToken,
+    descriptionToken,
+    expectationToken,
+    testToken
+}
+from "./internal/symbols";
 
 type Test = { expectation: string, getMethod: (context: Object) => (done?: MochaDone) => void };
 
-export function after(description?: string): MethodDecorator
+function textify(identifier: string): string
 {
-    return (target: Object, key: string|symbol) =>
+    return identifier.split(/(?=[A-Z])/).join(" ").toLowerCase();
+}
+
+export function after(description: string): MethodDecorator;
+export function after<T>(target: Object, key: string|symbol): void;
+export function after(...args: Array<Object>): MethodDecorator|void
+{
+    const decorator = (target: Object, key: string|symbol, description: string) =>
     {
         target[key][afterToken]       = true;
         target[key][descriptionToken] = description;
     };
+
+    if (args.length == 1)
+    {
+        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+    }
+    else
+    {
+        const [target, key] = args as [Object, string];
+        decorator(target, key, textify(key));
+    }
 }
 
-export function afterEach(description?: string): MethodDecorator
+export function afterEach(description: string): MethodDecorator;
+export function afterEach<T>(target: Object, key: string|symbol): void;
+export function afterEach(...args: Array<Object>): MethodDecorator|void
 {
-    return (target: Object, key: string|symbol) =>
+    const decorator = (target: Object, key: string|symbol, description: string) =>
     {
         target[key][afterEachToken]   = true;
         target[key][descriptionToken] = description;
     };
+
+    if (args.length == 1)
+    {
+        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+    }
+    else
+    {
+        const [target, key] = args as [Object, string];
+        decorator(target, key, textify(key));
+    }
 }
 
 export function batchTest<T>(source: Array<T>, expectation: Func1<T, string>): MethodDecorator
@@ -41,22 +74,46 @@ export function batchTest<T>(source: Array<T>, expectation: Func1<T, string>): M
     };
 }
 
-export function before(description?: string): MethodDecorator
+export function before(description: string): MethodDecorator;
+export function before<T>(target: Object, key: string|symbol): void;
+export function before(...args: Array<Object>): MethodDecorator|void
 {
-    return (target: Object, key: string|symbol) =>
+    const decorator = (target: Object, key: string|symbol, description: string) =>
     {
         target[key][beforeToken]      = true;
         target[key][descriptionToken] = description;
     };
+
+    if (args.length == 1)
+    {
+        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+    }
+    else
+    {
+        const [target, key] = args as [Object, string];
+        decorator(target, key, textify(key));
+    }
 }
 
-export function beforeEach(description?: string): MethodDecorator
+export function beforeEach(description: string): MethodDecorator;
+export function beforeEach<T>(target: Object, propertyKey: string|symbol): void;
+export function beforeEach(...args: Array<Object>): MethodDecorator|void
 {
-    return (target: Object, key: string|symbol) =>
+    const decorator = (target: Object, key: string, description: string) =>
     {
-        target[key][beforeEachToken]      = true;
+        target[key][beforeEachToken]  = true;
         target[key][descriptionToken] = description;
     };
+
+    if (args.length == 1)
+    {
+        return (target: Object, key: string|symbol) => decorator(target, key.toString(), args[0] as string);
+    }
+    else
+    {
+        const [target, key] = args as [Object, string];
+        decorator(target, key, textify(key));
+    }
 }
 
 export function category(name: string): MethodDecorator
@@ -67,9 +124,21 @@ export function category(name: string): MethodDecorator
     };
 }
 
-export function suite(description: string): ClassDecorator
+export function shouldPass(target: Object, propertyKey: string|symbol): void
 {
-    return (target: Function) =>
+    category("should pass")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<Object>);
+}
+
+export function shouldFail(target: Object, propertyKey: string|symbol): void
+{
+    category("should fail")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<Object>);
+}
+
+export function suite(target: Function): void;
+export function suite(description: string): ClassDecorator;
+export function suite(targetOrDescription: Function|string): ClassDecorator|void
+{
+    const decorator = (target: Function, description: string) =>
     {
         const tests:       Array<Test>                = [];
         const catergories: ObjectLiteral<Array<Test>> = { };
@@ -158,12 +227,12 @@ export function suite(description: string): ClassDecorator
             {
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback);
+                    mocha.before(beforeCallback[descriptionToken], beforeCallback);
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback);
+                    mocha.beforeEach(beforeEachCallback[descriptionToken], beforeEachCallback);
                 }
 
                 for (const test of tests)
@@ -190,23 +259,48 @@ export function suite(description: string): ClassDecorator
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback);
+                    mocha.afterEach(afterEachCallback[descriptionToken], afterEachCallback);
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback);
+                    mocha.after(afterCallback[descriptionToken], afterCallback);
                 }
             }
         );
     };
+
+    if (typeof targetOrDescription == "string")
+    {
+        return (target: Function) => decorator(target, targetOrDescription);
+    }
+    else
+    {
+        decorator(targetOrDescription, textify(targetOrDescription.name));
+    }
 }
 
-export function test(expectation: string): MethodDecorator
+export function test(target: Object, key: string|symbol): void;
+export function test(expectation: string): MethodDecorator;
+export function test(...args: Array<Object>): MethodDecorator|void
 {
-    return (target: Object, key: string|symbol) =>
+    let expectation = "";
+
+    const decorator = (target: Object, key: string|symbol) =>
     {
         target[key][testToken]        = true;
         target[key][expectationToken] = expectation;
     };
+
+    if (args.length == 1)
+    {
+        expectation = args[0] as string;
+        return decorator;
+    }
+    else
+    {
+        const [target, key] = args as [Object, string];
+        expectation = key.split(/(?=[A-Z])/).join(" ").toLowerCase();
+        decorator(target, key);
+    }
 }

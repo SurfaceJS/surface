@@ -1,16 +1,15 @@
 import "./fixtures/dom";
 
-import { category, suite, test } from "@surface/test-suite";
-import { expect }                from "chai";
-import CustomElement             from "..";
-import { attribute, element }    from "../decorators";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                              from "chai";
+import CustomElement                           from "..";
+import { attribute, element }                  from "../decorators";
 
-@suite("Decorators")
+@suite
 export default class DecoratorsSpec
 {
-    @category("Should work")
-    @test("Element extending HTMLElement")
-    public elementDecoratorHTMLElement(): void
+    @test @shouldPass
+    public elementDecoratorHtmlElement(): void
     {
         @element("mock-element")
         class Mock extends HTMLElement
@@ -19,9 +18,8 @@ export default class DecoratorsSpec
         expect(() => new Mock()).to.not.throw();
     }
 
-    @category("Should work")
-    @test("Element extending HTMLElement with observed attibute")
-    public elementDecoratorHTMLElementWithObservedAttibute(): void
+    @test @shouldPass
+    public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
         @element("mock-element")
         class Mock extends HTMLElement
@@ -44,9 +42,8 @@ export default class DecoratorsSpec
         expect(Mock["observedAttributes"]).to.deep.equal(["value"]);
     }
 
-    @category("Should work")
-    @test("Element extending HTMLElement with multiples observed attibute")
-    public elementDecoratorHTMLElementWithMultiplesObservedAttibute(): void
+    @test @shouldPass
+    public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
     {
         @element("mock-element")
         class Mock extends HTMLElement
@@ -82,8 +79,7 @@ export default class DecoratorsSpec
         expect(Mock["observedAttributes"]).to.deep.equal(["value1", "value2"]);
     }
 
-    @category("Should work")
-    @test("Element extending CustomElement")
+    @test @shouldPass
     public elementDecoratorCustomElement(): void
     {
         @element("mock-element")
@@ -98,8 +94,7 @@ export default class DecoratorsSpec
         expect(() => new Mock()).to.not.throw();
     }
 
-    @category("Should work")
-    @test("Element extending CustomElement with template")
+    @test @shouldPass
     public elementDecoratorCustomElementWithTemplate(): void
     {
         @element("mock-element", "<div>Template</div>")
@@ -114,8 +109,7 @@ export default class DecoratorsSpec
         expect(() => new Mock()).to.not.throw();
     }
 
-    @category("Should work")
-    @test("Element extending CustomElement with template and style")
+    @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyle(): void
     {
         @element("mock-element", "<div>Template</div>", "div { color: red; }")
@@ -130,9 +124,8 @@ export default class DecoratorsSpec
         expect(() => new Mock()).to.not.throw();
     }
 
-    @category("Should work")
-    @test("Element extending CustomElement with template, style and ShadyCSS")
-    public elementDecoratorCustomElementWithTemplateAndStyleAndShadyCSS(): void
+    @test @shouldPass
+    public elementDecoratorCustomElementWithTemplateAndStyleAndShadyCss(): void
     {
         window.ShadyCSS =
         {
@@ -152,9 +145,8 @@ export default class DecoratorsSpec
         expect(() => new Mock()).to.not.throw();
     }
 
-    @category("Should throw")
-    @test("Element decorator on non HTMLElement subclass")
-    public elementDecoratorOnNonHTMLElementSubclass(): void
+    @test @shouldFail
+    public elementDecoratorOnNonHtmlElementSubclass(): void
     {
         class Mock
         { }
@@ -163,9 +155,8 @@ export default class DecoratorsSpec
             .to.throw(TypeError, "Constructor is not an valid subclass of HTMLElement");
     }
 
-    @category("Should throw")
-    @test("Attribute decorator on non HTMLElement subclass")
-    public aattributeDecoratorOnNonHTMLElementSubclass(): void
+    @test @shouldFail
+    public attributeDecoratorOnNonHtmlElementSubclass(): void
     {
         class Mock
         {
@@ -186,9 +177,8 @@ export default class DecoratorsSpec
             .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
     }
 
-    @category("Should throw")
-    @test("Decorate non HTMLElement subclass")
-    public decorateNonHTMLElementSubclass(): void
+    @test @shouldFail
+    public decorateNonHtmlElementSubclass(): void
     {
         class Mock
         { }
@@ -197,9 +187,8 @@ export default class DecoratorsSpec
             .to.throw(TypeError, "Constructor is not an valid subclass of HTMLElement");
     }
 
-    @category("Should throw")
-    @test("Decorate with template HTMLElement subclass")
-    public decorateWithTemplateHTMLElementSubclass(): void
+    @test @shouldFail
+    public decorateWithTemplateHtmlElementSubclass(): void
     {
         class Mock extends HTMLElement
         { }

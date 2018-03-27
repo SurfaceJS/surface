@@ -1,15 +1,14 @@
-import Expression                from "@surface/expression";
-import { category, suite, test } from "@surface/test-suite";
-import { expect }                from "chai";
-import BindExpressionVisitor     from "../internal/bind-expression-visitor";
-import { observedAttributes }    from "../symbols";
+import Expression                              from "@surface/expression";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                              from "chai";
+import BindExpressionVisitor                   from "../internal/bind-expression-visitor";
+import { observedAttributes }                  from "../symbols";
 
-@suite("Bind expression visitor")
+@suite
 export class BindExpressionVisitorSpec
 {
-    @category("Should work")
-    @test("Object bind")
-    public customeElementOneWay(): void
+    @test @shouldPass
+    public objectPropertyBind(): void
     {
         const context =
         {
@@ -36,8 +35,7 @@ export class BindExpressionVisitorSpec
         context.this.value += 1;
     }
 
-    @category("Should work")
-    @test("Object observedAttributes bind")
+    @test @shouldPass
     public objectObservedAttributesBind(): void
     {
         const context =
@@ -72,8 +70,7 @@ export class BindExpressionVisitorSpec
         context.this["attributeChangedCallback"]("anotherValue", "0", "1", "");
     }
 
-    @category("Should work")
-    @test("Object Without Attribute Changed Callback")
+    @test @shouldPass
     public objectWithoutAttributeChangedCallback(): void
     {
         const context =
@@ -101,8 +98,7 @@ export class BindExpressionVisitorSpec
         context.this["attributeChangedCallback"]("value", 0, 1, "");
     }
 
-    @category("Should work")
-    @test("Object skip function bind")
+    @test @shouldPass
     public objectSkipFunctionBind(): void
     {
         const context =
@@ -122,8 +118,7 @@ export class BindExpressionVisitorSpec
         visitor.visit(expression);
     }
 
-    @category("Should work")
-    @test("Object property without setter")
+    @test @shouldPass
     public objectPropertyWithoutSetter(): void
     {
         const context =
@@ -145,8 +140,7 @@ export class BindExpressionVisitorSpec
         (context.this as Object)["value"] = 1;
     }
 
-    @category("Should throw")
-    @test("Non initialized object")
+    @test @shouldFail
     public objectInvalidBind(): void
     {
         const context =
