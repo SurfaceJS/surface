@@ -2,7 +2,7 @@ import ExpressionVisitor    from "@surface/expression/expression-visitor";
 import IExpression          from "@surface/expression/interfaces/expression";
 import MemberExpression     from "@surface/expression/internal/expressions/member-expression";
 import { Action, Nullable } from "@surface/types";
-import * as symbols         from "../symbols";
+import * as symbols         from "../internal/symbols";
 
 export default class BindExpressionVisitor extends ExpressionVisitor
 {
@@ -28,7 +28,7 @@ export default class BindExpressionVisitor extends ExpressionVisitor
         const observedAttributes = context.constructor[symbols.observedAttributes] as Array<string>;
         if (observedAttributes && observedAttributes.some(x => x == property))
         {
-            const onAttributeChanged = context["attributeChangedCallback"];
+            const attributeChangedCallback = context["attributeChangedCallback"] as Nullable<Function>;
             context["attributeChangedCallback"] = function (this: Object, attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
                 if (attributeName == property)
@@ -36,9 +36,9 @@ export default class BindExpressionVisitor extends ExpressionVisitor
                     notify();
                 }
 
-                if (onAttributeChanged)
+                if (attributeChangedCallback)
                 {
-                    onAttributeChanged.call(context, attributeName, oldValue, newValue, namespace);
+                    attributeChangedCallback.call(context, attributeName, oldValue, newValue, namespace);
                 }
             };
         }

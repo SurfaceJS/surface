@@ -6,8 +6,8 @@
     "dependencies": {
         "@surface/types": "0.0.1",
         "tslib": "1.9.0"
-    },    
-    "description": "Provides an tree representation of javascript expressions.",    
+    },
+    "description": "Provides an tree representation of javascript expressions.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "@types/chai": "4.1.2",

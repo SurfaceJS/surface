@@ -3,6 +3,6 @@
     "compilerOptions":
     {
         "lib":   ["dom", "esnext"],
-        "types": ["file-extensions", "mocha", "shady-css"]
+        "types": ["shady-css"]
     }
 }

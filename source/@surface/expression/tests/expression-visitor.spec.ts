@@ -1,14 +1,14 @@
-import { batchTest, category, suite } from "@surface/test-suite";
-import { expect }                     from "chai";
-import Expression                     from "..";
-import FixtureVisitor                 from "./fixtures/fixture-visitor";
-import { validVisitors }              from "./fixtures/visitors";
+import { batchTest, shouldPass, suite } from "@surface/test-suite";
+import { expect }                       from "chai";
+import Expression                       from "..";
+import FixtureVisitor                   from "./fixtures/fixture-visitor";
+import { validVisitors }                from "./fixtures/visitors";
 
-@suite("Expression Visitor")
+@suite
 export default class ExpressionVisitorSpec
 {
-    @category("Visits should work")
-    @batchTest(validVisitors, x => `Visit ${x.value}`)
+    @shouldPass
+    @batchTest(validVisitors, x => `visit ${x.value}`)
     public visitsShouldWork(spec: { raw: string, value: string, context?: Object }): void
     {
         const visitor  = new FixtureVisitor();

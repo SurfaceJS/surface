@@ -55,6 +55,24 @@ export default class DataBindSpec
     }
 
     @test @shouldPass
+    public async elementWithAttributesBindExpression(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        host.lang = "pt-br";
+        content.innerHTML = "<span has-childs='{{ this.childNodes.length > 0 }}'></span>";
+
+        await DataBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            expect(content.firstElementChild.getAttribute("has-childs")).to.equal("false");
+        }
+    }
+
+    @test @shouldPass
     public async elementWithAttributesWithEventBind(): Promise<void>
     {
         const document = window.document;

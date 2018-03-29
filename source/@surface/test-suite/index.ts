@@ -16,7 +16,7 @@ import
 }
 from "./internal/symbols";
 
-type Test = { expectation: string, getMethod: (context: Object) => (done?: MochaDone) => void };
+type Test = { expectation: string, getMethod: (context: Object) => () => void };
 
 function textify(identifier: string): string
 {

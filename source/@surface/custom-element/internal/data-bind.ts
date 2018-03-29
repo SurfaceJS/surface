@@ -1,37 +1,42 @@
-import { Action, Func } from "@surface/types";
+import { Action, Func, Nullable } from "@surface/types";
 import BindParser       from "./bind-parser";
 
 export default class DataBind
 {
-    private constructor()
-    { }
-
-    public static async for(context: HTMLElement, content: Node): Promise<void>
+    private readonly host: HTMLElement;
+    private constructor(host: HTMLElement)
     {
-        return new DataBind().traverseElement(context, content);
+        this.host = host;
     }
 
-    private async bindAttribute(context: object, node: Node): Promise<void>
+    public static async for(host: HTMLElement, content: Node): Promise<void>
+    {
+        return new DataBind(host).traverseElement(content);
+    }
+
+    private async bindAttribute(element: Element): Promise<void>
     {
         const binders: Array<Action> = [];
         const notify = () => binders.forEach(x => x());
 
-        for (const attribute of Array.from(node.attributes))
+        for (const attribute of Array.from(element.attributes))
         {
             if (attribute.value.indexOf("{{") > -1)
             {
-                const expression = BindParser.scan({ window: window, host: context, this: node }, attribute.value, notify);
+                const expression = BindParser.scan({ window: window, host: this.host, this: element }, attribute.value, notify);
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
+                    element.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
                     attribute.value = "[binding]";
                 }
                 else
                 {
-                    if (attribute.name in node)
+                    const property = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
+
+                    if (property in element)
                     {
-                        binders.push(() => node[attribute.name] = expression.evaluate());
+                        binders.push(() => element[property] = expression.evaluate());
                     }
 
                     binders.push(() => attribute.value = `${expression.evaluate()}`);
@@ -42,36 +47,38 @@ export default class DataBind
         notify();
     }
 
-    private async bindTextNode(context: object, node: Node): Promise<void>
+    private async bindTextNode(element: Element): Promise<void>
     {
         const binders: Array<Func<string>> = [];
-        const notify = () => node.nodeValue = binders.map(x => x()).join("");
+        const notify = () => element.nodeValue = binders.map(x => x()).join("");
 
-        if (node.nodeValue && node.nodeValue.indexOf("{{") > -1)
+        if (element.nodeValue && element.nodeValue.indexOf("{{") > -1)
         {
-            const expression = BindParser.scan({ window: window, host: context, this: node }, node.nodeValue, notify);
+            const expression = BindParser.scan({ window: window, host: this.host, this: element }, element.nodeValue, notify);
 
-            binders.push(() => `${expression.evaluate()}`);
+            const coalesce = <T>(value: Nullable<T>, fallback: T) => value !== null && value !== undefined ? value : fallback;
+
+            binders.push(() => `${coalesce(expression.evaluate(), "")}`);
             notify();
         }
     }
 
-    private async traverseElement(context: object, node: Node): Promise<void>
+    private async traverseElement(node: Node): Promise<void>
     {
         const promises: Array<Promise<void>> = [];
-        for (const currentNode of Array.from(node.childNodes))
+        for (const element of Array.from(node.childNodes) as Array<Element>)
         {
-            if (currentNode.attributes && currentNode.attributes.length > 0)
+            if (element.attributes && element.attributes.length > 0)
             {
-                promises.push(this.bindAttribute(context, currentNode));
+                promises.push(this.bindAttribute(element));
             }
 
-            if (currentNode.nodeType == Node.TEXT_NODE)
+            if (element.nodeType == Node.TEXT_NODE)
             {
-                promises.push(this.bindTextNode(context, currentNode));
+                promises.push(this.bindTextNode(element));
             }
 
-            promises.push(this.traverseElement(context, currentNode));
+            promises.push(this.traverseElement(element));
         }
 
         try

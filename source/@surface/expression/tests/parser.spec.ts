@@ -1,6 +1,6 @@
-import { batchTest, category, suite } from "@surface/test-suite";
-import { expect }                     from "chai";
-import Parser                         from "../internal/parser";
+import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
+import { expect }                                   from "chai";
+import Parser                                       from "../internal/parser";
 import
 {
     invalidExpressions,
@@ -9,11 +9,11 @@ import
     InvalidExpressionFixtureSpec
 } from "./fixtures/expressions";
 
-@suite("Parser")
+@suite
 export default class ParserSpec
 {
-    @category("Parsing should work")
-    @batchTest(validExpressions, x => `Expression ${x.raw} must be evaluated to ${x.type.name}: ${x.value}`)
+    @shouldPass
+    @batchTest(validExpressions, x => `expression (${x.raw}) should be evaluated to ${x.type.name}: ${x.value}`)
     public expressionsShouldWork(expression: ExpressionFixtureSpec): void
     {
         const result = Parser.parse(expression.raw, expression.context);
@@ -21,8 +21,8 @@ export default class ParserSpec
         expect(result).instanceof(expression.type);
     }
 
-    @category("Parsing should throw")
-    @batchTest(invalidExpressions, x => `Expression ${x.raw} must throw an error`)
+    @shouldFail
+    @batchTest(invalidExpressions, x => `Expression (${x.raw}) should throw ${x.error.message}`)
     public expressionsShouldThrow(expression: InvalidExpressionFixtureSpec): void
     {
         try

@@ -5,9 +5,9 @@ import "./extensions";
 import List         from "@surface/collection/list";
 import { Nullable } from "@surface/types";
 import DataBind     from "./internal/data-bind";
-import * as symbols from "./symbols";
+import * as symbols from "./internal/symbols";
 
-const shadowRoot = Symbol.for("shadowRoot");
+const shadowRoot = Symbol("shadowRoot");
 
 export default abstract class CustomElement extends HTMLElement
 {

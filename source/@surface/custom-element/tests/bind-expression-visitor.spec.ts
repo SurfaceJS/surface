@@ -2,7 +2,7 @@ import Expression                              from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import BindExpressionVisitor                   from "../internal/bind-expression-visitor";
-import { observedAttributes }                  from "../symbols";
+import { observedAttributes }                  from "../internal/symbols";
 
 @suite
 export class BindExpressionVisitorSpec
