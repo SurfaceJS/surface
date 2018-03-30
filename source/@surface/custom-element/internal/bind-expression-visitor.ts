@@ -1,73 +1,177 @@
 import ExpressionVisitor    from "@surface/expression/expression-visitor";
 import IExpression          from "@surface/expression/interfaces/expression";
 import MemberExpression     from "@surface/expression/internal/expressions/member-expression";
+import Type                 from "@surface/reflection";
+import MethodInfo           from "@surface/reflection/method-info";
+import PropertyInfo         from "@surface/reflection/property-info";
 import { Action, Nullable } from "@surface/types";
 import * as symbols         from "../internal/symbols";
+import BindingMode          from "./binding-mode";
 
 export default class BindExpressionVisitor extends ExpressionVisitor
 {
-    private readonly notify: Action;
-    public constructor(notify: Action)
+    private readonly bindingMode: BindingMode;
+    private readonly notify:      Nullable<Action>;
+    private readonly key:    string;
+    private readonly host:        Object;
+
+    public constructor(bindingMode: BindingMode, host: Object, property: string, notify?: Action)
     {
         super();
-        this.notify = notify;
+
+        this.bindingMode = bindingMode;
+        this.notify      = notify;
+        this.key    = property;
+        this.host        = host;
     }
 
-    protected visitMemberExpression(expression: MemberExpression): IExpression
+    private applyBind(target: Object, targetProperty: PropertyInfo|MethodInfo, host: Object, hostProperty: Nullable<PropertyInfo|MethodInfo>): void
     {
-        const context  = expression.target.evaluate();
-        const property = expression.property.evaluate() as Nullable<string>;
-
-        if (!context || !property)
-        {
-            throw new TypeError("Can't bind to non initialized object");
-        }
+        let propagating = false;
 
         const notify = this.notify;
 
-        const observedAttributes = context.constructor[symbols.observedAttributes] as Array<string>;
-        if (observedAttributes && observedAttributes.some(x => x == property))
+        const observedAttributes = target.constructor[symbols.observedAttributes] as Array<string>;
+        if (observedAttributes && observedAttributes.some(x => x == targetProperty.key))
         {
-            const attributeChangedCallback = context["attributeChangedCallback"] as Nullable<Function>;
-            context["attributeChangedCallback"] = function (this: Object, attributeName: string, oldValue: string, newValue: string, namespace: string): void
+            const attributeChangedCallback = target["attributeChangedCallback"] as Nullable<Function>;
+            target["attributeChangedCallback"] = function (attributeName: string, oldValue: string, newValue: string, namespace: string): void
             {
-                if (attributeName == property)
+                if (attributeName == targetProperty.key)
                 {
-                    notify();
+                    if (notify)
+                    {
+                        notify();
+                    }
                 }
 
                 if (attributeChangedCallback)
                 {
-                    attributeChangedCallback.call(context, attributeName, oldValue, newValue, namespace);
+                    attributeChangedCallback.call(target, attributeName, oldValue, newValue, namespace);
                 }
             };
         }
         else
         {
-            let descriptor = Object.getOwnPropertyDescriptor(context.constructor.prototype, property);
-            if (descriptor && descriptor.get)
+            if (targetProperty instanceof PropertyInfo)
             {
-                let getter = descriptor.get;
-                let setter = descriptor.set;
+                const getter = targetProperty.getter;
+                const setter = targetProperty.setter;
 
                 Object.defineProperty
                 (
-                    context,
-                    property,
+                    target,
+                    targetProperty.key,
                     {
                         configurable: true,
-                        get: () => getter && getter.call(context),
+                        get: () => getter && getter.call(target),
                         set: (value: Object) =>
                         {
                             if (setter)
                             {
-                                setter.call(context, value);
-                                notify();
+                                setter.call(target, value);
+
+                                if (hostProperty instanceof PropertyInfo && hostProperty.setter)
+                                {
+                                    hostProperty.setter.call(this.host, value);
+                                }
+
+                                if (notify)
+                                {
+                                    notify();
+                                }
                             }
                         }
                     }
                 );
+
+                if (hostProperty instanceof PropertyInfo && hostProperty.setter)
+                {
+                    hostProperty.setter.call(this.host, target[targetProperty.key]);
+                }
             }
+        }
+
+        if (this.bindingMode == BindingMode.twoWay && hostProperty instanceof PropertyInfo && hostProperty.getter)
+        {
+            const getter = hostProperty.getter;
+            const setter = hostProperty.setter;
+
+            Object.defineProperty
+            (
+                host,
+                hostProperty.key,
+                {
+                    configurable: true,
+                    get: () => getter && getter.call(this.host),
+                    set: (value: Object) =>
+                    {
+                        if (setter)
+                        {
+                            setter.call(this.host, value);
+
+                            if (targetProperty instanceof PropertyInfo && targetProperty.setter)
+                            {
+                                targetProperty.setter.call(target, value);
+                            }
+
+                            if (target instanceof HTMLElement)
+                            {
+                                propagating = true;
+                                target.dispatchEvent(new Event("change"));
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        if (target instanceof HTMLElement)
+        {
+            target.addEventListener
+            (
+                "change",
+                () =>
+                {
+                    if (!propagating && hostProperty instanceof PropertyInfo && hostProperty.setter)
+                    {
+                        hostProperty.setter.call(this.host, target[targetProperty.key]);
+                    }
+
+                    propagating = false;
+
+                    if (notify)
+                    {
+                        notify();
+                    }
+                }
+            );
+        }
+    }
+
+    protected visitMemberExpression(expression: MemberExpression): IExpression
+    {
+        const target    = expression.target.evaluate();
+        const targetKey = `${expression.property.evaluate()}`;
+
+        if (!target)
+        {
+            throw new TypeError("Can't bind to non initialized object");
+        }
+
+        const hostType    = Type.from(this.host);
+        const contextType = Type.from(target);
+
+        const hostProperty   = hostType.getProperty(this.key)     || hostType.getMethod(this.key);
+        const targetProperty = contextType.getProperty(targetKey) || contextType.getMethod(targetKey);
+
+        if (targetProperty)
+        {
+            this.applyBind(target, targetProperty, this.host, hostProperty);
+        }
+        else
+        {
+            throw new TypeError("Property does not exist on target object");
         }
 
         return expression;

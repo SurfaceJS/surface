@@ -128,20 +128,9 @@ export default class Type
             .select(x => new FieldInfo(x.key, x.descriptor, x.prototype));
     }
 
-    public getProperty(property: string): Nullable<PropertyInfo>
-    {
-        return this.getProperties().firstOrDefault(x => x.key == property);
-    }
-
-    public getPrototype(): Object
-    {
-        return this.targetConstructor.prototype;
-    }
-
     public getMethod(key: string): Nullable<MethodInfo>
     {
-        return this.getMethods()
-            .where(x => x.key == key).firstOrDefault();
+        return this.getMethods().firstOrDefault(x => x.key == key);
     }
 
     public getMethods(): Enumerable<MethodInfo>
@@ -151,10 +140,20 @@ export default class Type
             .select(x => new MethodInfo(x.key, x.descriptor.value, x.prototype));
     }
 
+    public getProperty(property: string): Nullable<PropertyInfo>
+    {
+        return this.getProperties().firstOrDefault(x => x.key == property);
+    }
+
     public getProperties(): Enumerable<PropertyInfo>
     {
         return this.enumerateProtoChain()
             .where(x => !(x.descriptor.value instanceof Function) && (!!x.descriptor.get || !!x.descriptor.set))
             .select(x => new PropertyInfo(x.key, x.descriptor, x.prototype));
+    }
+
+    public getPrototype(): Object
+    {
+        return this.targetConstructor.prototype;
     }
 }

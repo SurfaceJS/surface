@@ -7,7 +7,7 @@ import { Nullable } from "@surface/types";
 import DataBind     from "./internal/data-bind";
 import * as symbols from "./internal/symbols";
 
-const shadowRoot = Symbol("shadowRoot");
+const shadowRoot = Symbol("custom-element:shadowRoot");
 
 export default abstract class CustomElement extends HTMLElement
 {
@@ -40,62 +40,62 @@ export default abstract class CustomElement extends HTMLElement
     {
         let content = document.importNode(template.content, true);
 
-        DataBind.for(this, content);
-
         this[shadowRoot].appendChild(content);
+
+        DataBind.for(this, this[shadowRoot]);
     }
 
     /**
      * Returns the first element that matches the specified selector.
      * @param selector Query selector.
      */
-    public get<T extends HTMLElement>(selector: string): T;
+    public find<T extends HTMLElement>(selector: string): T;
     /**
      * Returns the first element that matches the specified pattern.
      * @param selector Query pattern.
      */
-    public get<T extends HTMLElement>(selector: RegExp): T;
+    public find<T extends HTMLElement>(selector: RegExp): T;
     /**
      * Returns the first element that matches the specified name at the specified slot.
      * @param selector Query selector.
      * @param slotName Slot name.
      */
-    public get<T extends HTMLElement>(selector: string, slotName: string): T;
+    public find<T extends HTMLElement>(selector: string, slotName: string): T;
     /**
      * Returns the first element that matches the specified pattern at the specified slot.
      * @param selector Query pattern.
      * @param slotName Slot name.
      */
-    public get<T extends HTMLElement>(selector: RegExp, slotName: string): T;
-    public get<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
+    public find<T extends HTMLElement>(selector: RegExp, slotName: string): T;
+    public find<T extends HTMLElement>(selector: string|RegExp, slotName?: string): T
     {
         // tslint:disable-next-line:no-any
-        return this.getAll<T>(selector as any, slotName as any).first();
+        return this.findAll<T>(selector as any, slotName as any).first();
     }
 
     /**
      * Returns the all elements that matches the specified name.
      * @param selector Query selector.
      */
-    public getAll<T extends HTMLElement>(selector: string): List<T>;
+    public findAll<T extends HTMLElement>(selector: string): List<T>;
     /**
      * Returns the all elements that matches the specified pattern.
      * @param selector Query pattern.
      */
-    public getAll<T extends HTMLElement>(selector: RegExp): List<T>;
+    public findAll<T extends HTMLElement>(selector: RegExp): List<T>;
     /**
      * Returns the all elements that matches the specified name at the specified slot.
      * @param selector Query selector.
      * @param slotName Slot name.
      */
-    public getAll<T extends HTMLElement>(selector: string, slotName: string): List<T>;
+    public findAll<T extends HTMLElement>(selector: string, slotName: string): List<T>;
     /**
      * Returns the all elements that matches the specified pattern at the specified slot.
      * @param selector Query pattern.
      * @param slotName Slot name.
      */
-    public getAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
-    public getAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
+    public findAll<T extends HTMLElement>(selector: RegExp, slotName: string): List<T>;
+    public findAll<T extends HTMLElement>(selector: string|RegExp, slotName?: string): List<T>
     {
         let slots = this[shadowRoot]
             .querySelectorAll(slotName ? `slot[name="${slotName}"]` : "slot");

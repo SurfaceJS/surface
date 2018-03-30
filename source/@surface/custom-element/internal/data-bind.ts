@@ -1,12 +1,19 @@
-import { Action, Func, Nullable } from "@surface/types";
-import BindParser       from "./bind-parser";
+import IExpression  from "@surface/expression/interfaces/expression";
+import { Nullable } from "@surface/types";
+import BindParser   from "./bind-parser";
 
 export default class DataBind
 {
+    private readonly window: Window;
     private readonly host: HTMLElement;
     private constructor(host: HTMLElement)
     {
         this.host = host;
+
+        const wrapper = { "Window": function () { return; } }["Window"];
+        wrapper.prototype = window;
+        wrapper.prototype.constructor = wrapper;
+        this.window = wrapper.prototype;
     }
 
     public static async for(host: HTMLElement, content: Node): Promise<void>
@@ -16,17 +23,15 @@ export default class DataBind
 
     private async bindAttribute(element: Element): Promise<void>
     {
-        const binders: Array<Action> = [];
-        const notify = () => binders.forEach(x => x());
-
         for (const attribute of Array.from(element.attributes))
         {
             if (attribute.value.indexOf("{{") > -1)
             {
-                const expression = BindParser.scan({ window: window, host: this.host, this: element }, attribute.value, notify);
-
+                const context = { window: this.window, host: this.host, this: element };
                 if (attribute.name.startsWith("on-"))
                 {
+                    const expression = BindParser.scan(context, attribute.value, element, "");
+
                     element.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
                     attribute.value = "[binding]";
                 }
@@ -34,31 +39,34 @@ export default class DataBind
                 {
                     const property = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
 
-                    if (property in element)
-                    {
-                        binders.push(() => element[property] = expression.evaluate());
-                    }
+                    let expression: IExpression;
 
-                    binders.push(() => attribute.value = `${expression.evaluate()}`);
+                    const notify = () =>
+                    {
+                        if (!(property in element))
+                        {
+                            attribute.value = `${expression.evaluate()}`;
+                        }
+                    };
+
+                    expression = BindParser.scan(context, attribute.value, element, property, notify);
+
+                    notify();
                 }
             }
         }
-
-        notify();
     }
 
     private async bindTextNode(element: Element): Promise<void>
     {
-        const binders: Array<Func<string>> = [];
-        const notify = () => element.nodeValue = binders.map(x => x()).join("");
-
-        if (element.nodeValue && element.nodeValue.indexOf("{{") > -1)
+        if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[")))
         {
-            const expression = BindParser.scan({ window: window, host: this.host, this: element }, element.nodeValue, notify);
-
+            let expression: IExpression;
             const coalesce = <T>(value: Nullable<T>, fallback: T) => value !== null && value !== undefined ? value : fallback;
+            const notify = () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            binders.push(() => `${coalesce(expression.evaluate(), "")}`);
+            expression = BindParser.scan({ window: this.window, host: this.host, this: element }, element.nodeValue, element, "", notify);
+
             notify();
         }
     }

@@ -32,7 +32,6 @@ export default class DataBindSpec
         {
             expect(content.firstElementChild.getAttribute("value")).to.equal("1");
         }
-
     }
 
     @test @shouldPass
@@ -49,8 +48,14 @@ export default class DataBindSpec
 
         if (content.firstElementChild)
         {
-            expect(content.firstElementChild.getAttribute("lang")).to.equal("pt-br");
-            expect(content.firstElementChild.getAttribute("parent")).to.equal("DIV");
+            const span = content.firstElementChild as HTMLSpanElement;
+            expect(span.lang).to.equal("pt-br");
+            expect(span.getAttribute("lang")).to.equal("pt-br");
+            expect(span.getAttribute("parent")).to.equal("DIV");
+
+            span.lang = "en-us";
+            span.dispatchEvent(new Event("change"));
+            expect(host.lang).to.equal("en-us");
         }
     }
 
@@ -98,13 +103,17 @@ export default class DataBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        content.innerHTML = "<span>Host tag name: {{ host.tagName }}</span>";
+        host.id = "01";
+        content.innerHTML = "<span>Host id: {{ host.id }}</span>";
 
         await DataBind.for(host, content);
 
         if (content.firstElementChild)
         {
-            expect(content.firstElementChild.innerHTML).to.equal("Host tag name: DIV");
+            expect(content.firstElementChild.innerHTML).to.equal("Host id: 01");
+            host.id = "02";
+            host.dispatchEvent(new Event("change"));
+            expect(content.firstElementChild.innerHTML).to.equal("Host id: 02");
         }
     }
 

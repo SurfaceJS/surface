@@ -23,7 +23,7 @@ export default class ViewHost extends CustomElement
     {
         if (!this._view)
         {
-            this._view = super.get<View>(/^view-/);
+            this._view = super.find<View>(/^view-/);
         }
 
         return this._view;

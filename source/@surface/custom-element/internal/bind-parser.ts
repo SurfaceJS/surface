@@ -4,44 +4,53 @@ import ConstantExpression    from "@surface/expression/internal/expressions/cons
 import SyntaxError           from "@surface/expression/internal/syntax-error";
 import { Action }            from "@surface/types";
 import BindExpressionVisitor from "./bind-expression-visitor";
+import BindingMode           from "./binding-mode";
 
 export default class BindParser
 {
-    private readonly source: string;
+    private readonly context: Object;
+    private readonly source:  string;
 
-    private index:   number;
-    private context: Object;
+    private bindingMode: BindingMode = BindingMode.oneWay;
+    private index:       number      = 0;
 
-    private constructor(context: Object, source: string, notify?: Action)
+    private constructor(source: string, context: Object)
     {
-        this.context = context;
         this.source  = source;
-        this.index   = 0;
+        this.context = context;
     }
 
-    public static scan(context: Object, source: string, notify?: Action): IExpression
+    public static scan(context: Object, source: string, host: Object, property: string, notify?: Action): IExpression
     {
-        const expressions = new BindParser(context, source, notify).parse(0);
-
-        if (notify)
-        {
-            const visitor = new BindExpressionVisitor(notify);
-            expressions.forEach(x => visitor.visit(x));
-        }
-
-        if (expressions.length == 1)
-        {
-            return expressions[0];
-        }
-        else
-        {
-            return { type: -1, evaluate: () => expressions.map(x => `${x.evaluate()}`).reduce((previous, current) => previous + current) };
-        }
+        return new BindParser(source, context).bind(host, property, notify);
     }
 
     private advance(): void
     {
         this.index++;
+    }
+
+    private bind(host: Object, property: string, notify?: Action): IExpression
+    {
+        const expressions = this.parse(0);
+
+        if (expressions.length == 1)
+        {
+            const expression = expressions[0];
+
+            const visitor = new BindExpressionVisitor(this.bindingMode, host, property, notify);
+
+            visitor.visit(expression);
+
+            return expression;
+        }
+        else
+        {
+            const visitor = new BindExpressionVisitor(BindingMode.oneWay, host, property, notify);
+            expressions.forEach(x => visitor.visit(x));
+
+            return { type: -1, evaluate: () => expressions.map(x => `${x.evaluate()}`).reduce((previous, current) => previous + current) };
+        }
     }
 
     private parse(start: number): Array<IExpression>
@@ -52,7 +61,7 @@ export default class BindParser
 
             const expressions: Array<IExpression> = [];
 
-            while (!this.eof() && (this.source.substring(this.index, this.index + 2) != "{{" || scaped))
+            while (!this.eof() && (this.source.substring(this.index, this.index + 2) != "{{" && this.source.substring(this.index, this.index + 2) != "[[") || scaped)
             {
                 scaped = this.source[this.index] == "\\" && !scaped;
                 this.advance();
@@ -63,23 +72,31 @@ export default class BindParser
                 const textFragment = this.source.substring(start, this.index)
                     .replace(/\\\\/g, "\\")
                     .replace(/\\\{/g, "{")
-                    .replace(/\\\}/g, "}");
+                    .replace(/\\\}/g, "}")
+                    .replace(/\\\[/g, "[")
+                    .replace(/\\\]/g, "]");
 
                 expressions.push(new ConstantExpression(textFragment));
             }
 
             if (!this.eof())
             {
+                if (this.source[this.index] == "{")
+                {
+                    this.bindingMode = BindingMode.twoWay;
+                }
+
                 let start = this.index + 2;
                 let stack = 0;
+
                 do
                 {
-                    if (this.source[this.index] == "{" && !scaped)
+                    if (!scaped && (this.source[this.index] == "{" || this.source[this.index] == "["))
                     {
                         stack++;
                     }
 
-                    if (this.source[this.index] == "}" && !scaped)
+                    if (!scaped && (this.source[this.index] == "}" || this.source[this.index] == "]"))
                     {
                         stack--;
                     }
