@@ -68,7 +68,7 @@ export default abstract class ExpressionVisitor
     protected visitMemberExpression(expression: IMemberExpression): IExpression
     {
         this.visit(expression.target);
-        this.visit(expression.property);
+        this.visit(expression.key);
 
         return expression;
     }

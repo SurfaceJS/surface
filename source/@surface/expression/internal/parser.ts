@@ -316,7 +316,7 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).property.evaluate() as string, this.argumentsExpression());
+                expression = new CallExpression(parentExpression, (expression as MemberExpression).key.evaluate() as string, this.argumentsExpression());
             }
             else if (this.match("["))
             {

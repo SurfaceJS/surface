@@ -121,10 +121,15 @@ export default class Type
         return this.targetConstructor;
     }
 
+    public getField(key: string): Nullable<FieldInfo>
+    {
+        return this.getFields().firstOrDefault(x => x.key == key);
+    }
+
     public getFields(): Enumerable<FieldInfo>
     {
         return this.enumerateProtoChain()
-            .where(x => !(x.descriptor.value instanceof Function) && !x.descriptor.get && !x.descriptor.set)
+            .where(x => !x.descriptor.get && !x.descriptor.set)
             .select(x => new FieldInfo(x.key, x.descriptor, x.prototype));
     }
 

@@ -2,7 +2,7 @@ import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import DataBind                                from "../internal/data-bind";
+import ElementBind                             from "../internal/element-bind";
 
 @suite
 export default class DataBindSpec
@@ -14,7 +14,7 @@ export default class DataBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("span");
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
     }
 
     @test @shouldPass
@@ -26,7 +26,7 @@ export default class DataBindSpec
 
         content.innerHTML = "<span value='1'>Text</span>";
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
 
         if (content.firstElementChild)
         {
@@ -44,7 +44,7 @@ export default class DataBindSpec
         host.lang = "pt-br";
         content.innerHTML = "<span lang='{{ host.lang }}' parent='{{ host.tagName }}'>Text</span>";
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
 
         if (content.firstElementChild)
         {
@@ -69,7 +69,7 @@ export default class DataBindSpec
         host.lang = "pt-br";
         content.innerHTML = "<span has-childs='{{ this.childNodes.length > 0 }}'></span>";
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
 
         if (content.firstElementChild)
         {
@@ -88,7 +88,7 @@ export default class DataBindSpec
 
         content.innerHTML = "<span on-click='{{ host.click }}'>Text</span>";
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
 
         if (content.firstElementChild)
         {
@@ -106,7 +106,7 @@ export default class DataBindSpec
         host.id = "01";
         content.innerHTML = "<span>Host id: {{ host.id }}</span>";
 
-        await DataBind.for(host, content);
+        await ElementBind.for(host, content);
 
         if (content.firstElementChild)
         {
@@ -128,7 +128,7 @@ export default class DataBindSpec
 
         try
         {
-            await DataBind.for(host, content);
+            await ElementBind.for(host, content);
         }
         catch (error)
         {

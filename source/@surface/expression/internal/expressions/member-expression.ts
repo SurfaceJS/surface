@@ -5,10 +5,10 @@ import { Nullable } from "@surface/types";
 
 export default class MemberExpression implements IExpression
 {
-    private readonly _property: IExpression;
-    public get property(): IExpression
+    private readonly _key: IExpression;
+    public get key(): IExpression
     {
-        return this._property;
+        return this._key;
     }
 
     private readonly _target: IExpression;
@@ -22,14 +22,14 @@ export default class MemberExpression implements IExpression
         return ExpressionType.Member;
     }
 
-    public constructor(target: IExpression, property: IExpression)
+    public constructor(target: IExpression, key: IExpression)
     {
-        this._property = property;
-        this._target   = target;
+        this._key    = key;
+        this._target = target;
     }
 
     public evaluate(): Nullable<Object>
     {
-        return (this.target.evaluate() as Object)[this.property.evaluate() as string];
+        return (this.target.evaluate() as Object)[`${this.key.evaluate()}`];
     }
 }

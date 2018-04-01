@@ -1,3 +1,2 @@
-export const template           = Symbol("template");
-export const observedAttributes = Symbol("observedAttributes");
-export const onAttributeChanged = Symbol("onAttributeChanged");
+export const template           = Symbol("custom-element:template");
+export const observedAttributes = Symbol("custom-element:observedAttributes");

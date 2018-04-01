@@ -4,7 +4,7 @@ import "./extensions";
 
 import List         from "@surface/collection/list";
 import { Nullable } from "@surface/types";
-import DataBind     from "./internal/data-bind";
+import ElementBind  from "./internal/element-bind";
 import * as symbols from "./internal/symbols";
 
 const shadowRoot = Symbol("custom-element:shadowRoot");
@@ -15,8 +15,6 @@ export default abstract class CustomElement extends HTMLElement
     public static readonly [symbols.template]:           Nullable<HTMLTemplateElement>;
 
     private readonly [shadowRoot]: ShadowRoot;
-
-    public [symbols.onAttributeChanged]: (attributeName: string, oldValue: string, newValue: string, namespace: string) => void;
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);
@@ -42,7 +40,7 @@ export default abstract class CustomElement extends HTMLElement
 
         this[shadowRoot].appendChild(content);
 
-        DataBind.for(this, this[shadowRoot]);
+        ElementBind.for(this, this[shadowRoot]);
     }
 
     /**
