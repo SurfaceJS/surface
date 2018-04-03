@@ -1,65 +1,94 @@
-import Type       from "@surface/reflection";
-import { Action } from "@surface/types";
+import Type                from "@surface/reflection";
+import { Action, Unknown } from "@surface/types";
+import Observer            from "@surface/types/observer";
 
-const onbinding = Symbol("data-bind:onbinding");
+const caller   = Symbol("data-bind:caller");
+const observer = Symbol("data-bind:observer");
+
+type Observable =
+{
+    [key: string]: Unknown,
+    [caller]:      boolean,
+    [observer]:    Observer
+};
 
 export default class DataBind
 {
-    public static oneWay(target: Object, key: string, action: Action): void
+    public static oneWay(target: Object, key: string, action: Action): void;
+    public static oneWay(target: Observable, key: string, action: Action): void
     {
         const property = Type.from(target).getProperty(key);
 
-        if (!property)
+        target[observer] = target[observer] || new Observer();
+
+        target[observer].subscribe(action);
+
+        if (property)
         {
-            throw new Error(`Property ${key} does not exists on target object`);
-        }
-        Object.defineProperty
-        (
-            target,
-            key,
-            {
-                configurable: true,
-                get: () => property.getter && property.getter.call(target),
-                set: (value: Object) =>
+            Object.defineProperty
+            (
+                target,
+                key,
                 {
-                    if (property.setter)
+                    configurable: true,
+                    get: () => property.getter && property.getter.call(target),
+                    set: (value: Object) =>
                     {
-                        target[onbinding] = true;
+                        if (!target[caller] && property.setter)
+                        {
+                            property.setter.call(target, value);
 
-                        property.setter.call(target, value);
-
-                        action();
-
-                        target[onbinding] = false;
+                            target[observer].notify();
+                        }
                     }
                 }
-            }
-        );
+            );
 
-        if (target instanceof HTMLElement)
-        {
-            const setAttribute = target.setAttribute;
-
-            target.setAttribute = function (qualifiedName: string, value: string)
+            if (target instanceof HTMLElement)
             {
-                if (!target[onbinding] && qualifiedName == key)
+                const setAttribute = target.setAttribute;
+
+                target.setAttribute = function (qualifiedName: string, value: string)
                 {
-                    target[key] = value;
-                }
+                    if (qualifiedName == key)
+                    {
+                        target[observer].notify();
+                    }
 
-                setAttribute.call(this, qualifiedName, value);
-            };
+                    setAttribute.call(this, qualifiedName, value);
+                };
 
-            target.addEventListener("change", action);
+                target.addEventListener("change", () => target[observer].notify());
+                target.addEventListener("keyup", () => target[observer].notify());
+            }
         }
     }
 
-    public static twoWay(left: Object, leftKey: string, right: Object, rightKey: string): void
+    public static twoWay(left: Object, leftKey: string, right: Object, rightKey: string): void;
+    public static twoWay(left: Observable, leftKey: string, right: Observable, rightKey: string): void
     {
-        const leftProperty  = Type.from(left).getProperty(leftKey);
-        const rightProperty = Type.from(right).getProperty(rightKey);
+        DataBind.oneWay
+        (
+            left,
+            leftKey,
+            () =>
+                {
+                    left[caller]    = true;
+                    right[rightKey] = left[leftKey];
+                    left[caller]    = false;
+                }
+        );
 
-        DataBind.oneWay(left,  leftKey,  () => rightProperty && rightProperty.setter && rightProperty.setter.call(right, left[leftKey]));
-        DataBind.oneWay(right, rightKey, () => leftProperty  && leftProperty.setter  && leftProperty.setter.call(left, right[rightKey]));
+        DataBind.oneWay
+        (
+            right,
+            rightKey,
+            () =>
+                {
+                    right[caller] = true;
+                    left[leftKey] = right[rightKey];
+                    right[caller] = false;
+                }
+        );
     }
 }

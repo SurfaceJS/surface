@@ -99,6 +99,7 @@ export class BindExpressionVisitorSpec
         context.this["attributeChangedCallback"]("another-value", "0", "1", "");
     }
 
+    /*
     @test @shouldPass
     public objectWithoutAttributeChangedCallback(): void
     {
@@ -125,6 +126,7 @@ export class BindExpressionVisitorSpec
         context.this.value = 1;
         context.this["attributeChangedCallback"]("value", "0", "1", "");
     }
+    */
 
     @test @shouldPass
     public skipFunctionNotify(): void

@@ -1,7 +1,7 @@
 import ExpressionType        from "@surface/expression/expression-type";
 import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
-import { Nullable }          from "@surface/types";
+import { Action, Nullable }  from "@surface/types";
 import IArrayExpression      from "../../expression/interfaces/array-expression";
 import BindExpressionVisitor from "./bind-expression-visitor";
 import BindParser            from "./bind-parser";
@@ -30,7 +30,8 @@ export default class ElementBind
         {
             if (attribute.value.indexOf("{{") > -1 || attribute.value.indexOf("[[") > -1)
             {
-                const context = { window: this.window, host: this.host, this: element };
+                const context = this.createProxy({ window: this.window, host: this.host, this: element });
+
                 const { bindingMode, expression } = BindParser.scan(context, attribute.value);
 
                 if (attribute.name.startsWith("on-"))
@@ -42,21 +43,30 @@ export default class ElementBind
                 {
                     const attributeName = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
 
-                    if (bindingMode == BindingMode.twoWay && attributeName in element)
+                    let notify: Action;
+
+                    if (bindingMode == BindingMode.twoWay)
                     {
-                        const notify = () => attribute.value = `${expression.evaluate()}`;
+                        notify = () => attribute.value = `${expression.evaluate()}`;
 
                         const visitor = new BindExpressionVisitor(notify);
                         visitor.visit(expression);
 
-                        const { target, key } = (expression as IMemberExpression);
-                        DataBind.twoWay(element, attributeName, target.evaluate() as Object, key.evaluate() as string);
+                        const target = (expression as IMemberExpression).target.evaluate() as Object;
+                        const key    = (expression as IMemberExpression).key.evaluate()    as string;
 
-                        notify();
+                        if (attributeName in element)
+                        {
+                            DataBind.twoWay(element, attributeName, target, key);
+                        }
+                        else
+                        {
+                            DataBind.twoWay(attribute, "value", target, key);
+                        }
                     }
                     else
                     {
-                        const notify = () =>
+                        notify = () =>
                         {
                             const value = expression.evaluate();
                             attribute.value = `${value}`;
@@ -69,9 +79,9 @@ export default class ElementBind
 
                         const visitor = new BindExpressionVisitor(notify);
                         visitor.visit(expression);
-
-                        notify();
                     }
+
+                    notify();
                 }
             }
         }
@@ -84,7 +94,9 @@ export default class ElementBind
             let expression: IExpression;
             const coalesce = <T>(value: Nullable<T>, fallback: T) => value !== null && value !== undefined ? value : fallback;
 
-            expression = BindParser.scan({ window: this.window, host: this.host, this: element }, element.nodeValue).expression;
+            const context = this.createProxy({ window: this.window, host: this.host, this: element });
+
+            expression = BindParser.scan(context, element.nodeValue).expression;
 
             const notify = expression.type == ExpressionType.Array ?
                 () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
@@ -95,6 +107,11 @@ export default class ElementBind
 
             notify();
         }
+    }
+
+    private createProxy(context: Object): Object
+    {
+        return new Proxy(context, { get: (target, key) => key in target ? target[key] : this.window[key] });
     }
 
     private async traverseElement(node: Node): Promise<void>
