@@ -56,6 +56,9 @@ export default class DataBindSpec
             span.lang = "en-us";
             span.dispatchEvent(new Event("change"));
             expect(host.lang).to.equal("en-us");
+
+            span.setAttribute("lang", "pt-pt");
+            expect(host.lang).to.equal("pt-pt");
         }
     }
 

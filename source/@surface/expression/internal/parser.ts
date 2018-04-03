@@ -1,4 +1,5 @@
 import IExpression           from "../interfaces/expression";
+import SyntaxError           from "../syntax-error";
 import ArrayExpression       from "./expressions/array-expression";
 import BinaryExpression      from "./expressions/binary-expression";
 import CallExpression        from "./expressions/call-expression";
@@ -13,7 +14,6 @@ import TemplateExpression    from "./expressions/template-expression";
 import UnaryExpression       from "./expressions/unary-expression";
 import UpdateExpression      from "./expressions/update-expression";
 import Scanner, { Token }    from "./scanner";
-import SyntaxError           from "./syntax-error";
 import TokenType             from "./token-type";
 
 export default class Parser

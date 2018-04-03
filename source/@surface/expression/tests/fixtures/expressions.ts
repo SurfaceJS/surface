@@ -11,7 +11,7 @@ import RegexExpression       from "../../internal/expressions/regex-expression";
 import TemplateExpression    from "../../internal/expressions/template-expression";
 import UnaryExpression       from "../../internal/expressions/unary-expression";
 import UpdateExpression      from "../../internal/expressions/update-expression";
-import SyntaxError           from "../../internal/syntax-error";
+import SyntaxError           from "../../syntax-error";
 
 import { Constructor, Nullable } from "@surface/types";
 

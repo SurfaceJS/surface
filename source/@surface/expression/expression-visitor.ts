@@ -175,9 +175,7 @@ export default abstract class ExpressionVisitor
         {
             return this.visitUnaryExpression(expression);
         }
-        else
-        {
-            throw new Error("Unexpected expression");
-        }
+
+        return expression;
     }
 }

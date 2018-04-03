@@ -1,7 +1,7 @@
 import { Nullable } from "@surface/types";
+import SyntaxError  from "../syntax-error";
 import Character    from "./character";
 import Messages     from "./messages";
-import SyntaxError  from "./syntax-error";
 import TokenType    from "./token-type";
 
 export type Token =

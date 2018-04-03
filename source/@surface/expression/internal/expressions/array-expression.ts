@@ -1,7 +1,7 @@
+import { Unknown }    from "@surface/types";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
-import { Nullable } from "@surface/types";
 
 export default class ArrayExpression implements IExpression
 {
@@ -22,7 +22,7 @@ export default class ArrayExpression implements IExpression
     }
 
 
-    public evaluate(): Array<Nullable<Object>>
+    public evaluate(): Array<Unknown>
     {
         return this.elements.map(x => x.evaluate());
     }

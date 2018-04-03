@@ -2,8 +2,8 @@ import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-su
 import { expect }                                         from "chai";
 import Messages                                           from "../internal/messages";
 import Scanner, { Token }                                 from "../internal/scanner";
-import SyntaxError                                        from "../internal/syntax-error";
 import TokenType                                          from "../internal/token-type";
+import SyntaxError                                        from "../syntax-error";
 import { invalidTokens, validTokens, InvalidToken }       from "./fixtures/tokens";
 
 @suite

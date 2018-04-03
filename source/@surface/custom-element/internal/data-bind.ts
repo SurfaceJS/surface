@@ -1,62 +1,65 @@
+import Type       from "@surface/reflection";
+import { Action } from "@surface/types";
+
+const onbinding = Symbol("data-bind:onbinding");
+
 export default class DataBind
 {
-    public static apply(left: Object, leftKey: string, right: Object, rightKey: string)
+    public static oneWay(target: Object, key: string, action: Action): void
     {
-        const leftDescriptor  = Object.getOwnPropertyDescriptor(left, leftKey);
-        const rightDescriptor = Object.getOwnPropertyDescriptor(left, leftKey);
+        const property = Type.from(target).getProperty(key);
 
-        if (!leftDescriptor)
+        if (!property)
         {
-            throw new Error(`Property ${leftKey} does not exists on left hand object`);
+            throw new Error(`Property ${key} does not exists on target object`);
         }
-
-        if (!rightDescriptor)
-        {
-            throw new Error(`Property ${rightKey} does not exists on right hand object`);
-        }
-
         Object.defineProperty
         (
-            left,
-            leftKey,
+            target,
+            key,
             {
                 configurable: true,
-                get: () => leftDescriptor.get && leftDescriptor.get.call(right),
+                get: () => property.getter && property.getter.call(target),
                 set: (value: Object) =>
                 {
-                    if (leftDescriptor.set)
+                    if (property.setter)
                     {
-                        leftDescriptor.set.call(left, value);
+                        target[onbinding] = true;
 
-                        if (rightDescriptor.set)
-                        {
-                            rightDescriptor.set.call(right, value);
-                        }
+                        property.setter.call(target, value);
+
+                        action();
+
+                        target[onbinding] = false;
                     }
                 }
             }
         );
 
-        Object.defineProperty
-        (
-            right,
-            rightKey,
-            {
-                configurable: true,
-                get: () => rightDescriptor.get && rightDescriptor.get.call(right),
-                set: (value: Object) =>
-                {
-                    if (rightDescriptor.set)
-                    {
-                        rightDescriptor.set.call(right, value);
+        if (target instanceof HTMLElement)
+        {
+            const setAttribute = target.setAttribute;
 
-                        if (leftDescriptor.set)
-                        {
-                            leftDescriptor.set.call(left, value);
-                        }
-                    }
+            target.setAttribute = function (qualifiedName: string, value: string)
+            {
+                if (!target[onbinding] && qualifiedName == key)
+                {
+                    target[key] = value;
                 }
-            }
-        );
+
+                setAttribute.call(this, qualifiedName, value);
+            };
+
+            target.addEventListener("change", action);
+        }
+    }
+
+    public static twoWay(left: Object, leftKey: string, right: Object, rightKey: string): void
+    {
+        const leftProperty  = Type.from(left).getProperty(leftKey);
+        const rightProperty = Type.from(right).getProperty(rightKey);
+
+        DataBind.oneWay(left,  leftKey,  () => rightProperty && rightProperty.setter && rightProperty.setter.call(right, left[leftKey]));
+        DataBind.oneWay(right, rightKey, () => leftProperty  && leftProperty.setter  && leftProperty.setter.call(left, right[rightKey]));
     }
 }

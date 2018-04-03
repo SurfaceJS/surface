@@ -1,6 +1,8 @@
+import ExpressionType        from "@surface/expression/expression-type";
 import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
 import { Nullable }          from "@surface/types";
+import IArrayExpression      from "../../expression/interfaces/array-expression";
 import BindExpressionVisitor from "./bind-expression-visitor";
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";
@@ -26,7 +28,7 @@ export default class ElementBind
     {
         for (const attribute of Array.from(element.attributes))
         {
-            if (attribute.value.indexOf("{{") > -1)
+            if (attribute.value.indexOf("{{") > -1 || attribute.value.indexOf("[[") > -1)
             {
                 const context = { window: this.window, host: this.host, this: element };
                 const { bindingMode, expression } = BindParser.scan(context, attribute.value);
@@ -40,7 +42,19 @@ export default class ElementBind
                 {
                     const attributeName = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
 
-                    if (bindingMode == BindingMode.oneWay)
+                    if (bindingMode == BindingMode.twoWay && attributeName in element)
+                    {
+                        const notify = () => attribute.value = `${expression.evaluate()}`;
+
+                        const visitor = new BindExpressionVisitor(notify);
+                        visitor.visit(expression);
+
+                        const { target, key } = (expression as IMemberExpression);
+                        DataBind.twoWay(element, attributeName, target.evaluate() as Object, key.evaluate() as string);
+
+                        notify();
+                    }
+                    else
                     {
                         const notify = () =>
                         {
@@ -55,11 +69,8 @@ export default class ElementBind
 
                         const visitor = new BindExpressionVisitor(notify);
                         visitor.visit(expression);
-                    }
-                    else if (attributeName in element)
-                    {
-                        const { target, key } = (expression as IMemberExpression);
-                        DataBind.apply(element, attributeName, target.evaluate() as Object, key.evaluate() as string);
+
+                        notify();
                     }
                 }
             }
@@ -68,13 +79,19 @@ export default class ElementBind
 
     private async bindTextNode(element: Element): Promise<void>
     {
-        if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[")))
+        if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[") > -1))
         {
             let expression: IExpression;
             const coalesce = <T>(value: Nullable<T>, fallback: T) => value !== null && value !== undefined ? value : fallback;
-            const notify = () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
             expression = BindParser.scan({ window: this.window, host: this.host, this: element }, element.nodeValue).expression;
+
+            const notify = expression.type == ExpressionType.Array ?
+                () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
+                () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
+
+            const visitor = new BindExpressionVisitor(notify);
+            visitor.visit(expression);
 
             notify();
         }

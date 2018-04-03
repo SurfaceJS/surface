@@ -1,10 +1,8 @@
-import Expression         from "@surface/expression";
-import ExpressionType     from "@surface/expression/expression-type";
-import IExpression        from "@surface/expression/interfaces/expression";
-import ConstantExpression from "@surface/expression/internal/expressions/constant-expression";
-import SyntaxError        from "@surface/expression/internal/syntax-error";
-import BindingMode        from "./binding-mode";
-import IExpressionBind    from "./interfaces/expression-bind";
+import Expression      from "@surface/expression";
+import ExpressionType  from "@surface/expression/expression-type";
+import SyntaxError     from "@surface/expression/syntax-error";
+import BindingMode     from "./binding-mode";
+import IExpressionBind from "./interfaces/expression-bind";
 
 export default class BindParser
 {
@@ -54,7 +52,7 @@ export default class BindParser
                     .replace(/\\\[/g, "[")
                     .replace(/\\\]/g, "]");
 
-                this.expressions.push({ bindingMode: BindingMode.oneWay, expression: new ConstantExpression(textFragment) });
+                this.expressions.push({ bindingMode: BindingMode.oneWay, expression: Expression.constant(textFragment) });
             }
 
             if (!this.eof())
@@ -120,16 +118,13 @@ export default class BindParser
     {
         this.parse(0);
 
-        let expression: IExpression;
-
         if (this.expressions.length == 1)
         {
             return this.expressions[0];
         }
         else
         {
-            expression = { type: -1, evaluate: () => this.expressions.map(x => `${x.expression.evaluate()}`).reduce((previous, current) => previous + current) };
-            return { bindingMode: BindingMode.oneWay, expression };
+            return { bindingMode: BindingMode.oneWay, expression: Expression.array(this.expressions.map(x => x.expression)) };
         }
     }
 }
