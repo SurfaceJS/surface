@@ -36,8 +36,20 @@ export default class ElementBind
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    element.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
-                    attribute.value = "[binding]";
+                    let action: Action;
+                    if (expression.type == ExpressionType.Member)
+                    {
+                        action = expression.evaluate() as Action;
+                        element.addEventListener(attribute.name.replace(/^on-/, ""), action);
+                        attribute.value = `[binding]`;
+                    }
+                    else
+                    {
+                        action = () => expression.evaluate();
+                        element.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
+                    }
+
+                    attribute.value = `[binding ${action.name || "expression"}]`;
                 }
                 else
                 {

@@ -1,17 +1,9 @@
 import "./fixtures/dom";
 
-import IArrayExpression                        from "@surface/expression/interfaces/array-expression";
-import IExpression                             from "@surface/expression/interfaces/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import BindParser                              from "../internal/bind-parser";
 import BindingMode                             from "../internal/binding-mode";
-
-function concateExpression(expression: IExpression): string
-{
-    return (expression as IArrayExpression).evaluate()
-        .reduce((previous, current) => `${previous}${current}`) as string;
-}
 
 class Mock
 {
@@ -72,10 +64,10 @@ export default class BindParserSpec
         const { bindingMode, expression } = BindParser.scan(context, "The value is: [[ this.value ]]");
 
         expect(bindingMode).to.equal(BindingMode.oneWay);
-        expect(concateExpression(expression)).to.equal("The value is: 0");
+        expect(expression.evaluate()).to.deep.equal(["The value is: ", 0]);
 
         context.this.value = 1;
-        expect(concateExpression(expression)).to.equal("The value is: 1");
+        expect(expression.evaluate()).to.deep.equal(["The value is: ", 1]);
     }
 
     @test @shouldPass
@@ -114,13 +106,13 @@ export default class BindParserSpec
         const { bindingMode, expression } = BindParser.scan(context, "Value: {{ this.value }}; Text: {{ this.text }}");
 
         expect(bindingMode).to.equal(BindingMode.oneWay);
-        expect(concateExpression(expression)).to.equal("Value: 0; Text: Hello World!!!");
+        expect(expression.evaluate()).to.deep.equal(["Value: ", 0, "; Text: ", "Hello World!!!"]);
 
         context.this.value = 1;
-        expect(concateExpression(expression)).to.equal("Value: 1; Text: Hello World!!!");
+        expect(expression.evaluate()).to.deep.equal(["Value: ", 1, "; Text: ", "Hello World!!!"]);
 
         context.this.text = "Updated!!!";
-        expect(concateExpression(expression)).to.equal("Value: 1; Text: Updated!!!");
+        expect(expression.evaluate()).to.deep.equal(["Value: ", 1, "; Text: ", "Updated!!!"]);
     }
 
     @test @shouldPass
