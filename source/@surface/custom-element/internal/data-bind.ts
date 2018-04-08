@@ -50,12 +50,12 @@ export default class DataBind
 
                 target.setAttribute = function (qualifiedName: string, value: string)
                 {
+                    setAttribute.call(this, qualifiedName, value);
+
                     if (qualifiedName == key)
                     {
                         target[observer].notify();
                     }
-
-                    setAttribute.call(this, qualifiedName, value);
                 };
 
                 target.addEventListener("change", () => target[observer].notify());
@@ -72,11 +72,11 @@ export default class DataBind
             left,
             leftKey,
             () =>
-                {
-                    left[caller]    = true;
-                    right[rightKey] = left[leftKey];
-                    left[caller]    = false;
-                }
+            {
+                left[caller]    = true;
+                right[rightKey] = left[leftKey];
+                left[caller]    = false;
+            }
         );
 
         DataBind.oneWay
@@ -84,11 +84,11 @@ export default class DataBind
             right,
             rightKey,
             () =>
-                {
-                    right[caller] = true;
-                    left[leftKey] = right[rightKey];
-                    right[caller] = false;
-                }
+            {
+                right[caller] = true;
+                left[leftKey] = right[rightKey];
+                right[caller] = false;
+            }
         );
     }
 }

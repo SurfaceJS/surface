@@ -11,7 +11,6 @@ Object.assign
 
 // tslint:disable-next-line:no-empty
 function ProxyHTMLElement() { }
-
 ProxyHTMLElement.prototype = window.HTMLElement.prototype;
 
 let shadowRoot: HTMLElement|null = null;

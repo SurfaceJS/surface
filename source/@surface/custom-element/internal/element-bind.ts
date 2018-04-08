@@ -3,10 +3,10 @@ import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
 import { Action, Nullable }  from "@surface/types";
 import IArrayExpression      from "../../expression/interfaces/array-expression";
-import BindExpressionVisitor from "./bind-expression-visitor";
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";
 import DataBind              from "./data-bind";
+import BindExpressionVisitor from "./observer-visitor";
 import windowWrapper         from "./window-wrapper";
 
 export default class ElementBind
@@ -40,15 +40,13 @@ export default class ElementBind
                     if (expression.type == ExpressionType.Member)
                     {
                         action = expression.evaluate() as Action;
-                        element.addEventListener(attribute.name.replace(/^on-/, ""), action);
-                        attribute.value = `[binding]`;
                     }
                     else
                     {
                         action = () => expression.evaluate();
-                        element.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
                     }
 
+                    element.addEventListener(attribute.name.replace(/^on-/, ""), action);
                     attribute.value = `[binding ${action.name || "expression"}]`;
                 }
                 else
@@ -123,7 +121,13 @@ export default class ElementBind
 
     private createProxy(context: Object): Object
     {
-        return new Proxy(context, { get: (target, key) => key in target ? target[key] : this.window[key] });
+        const handler: ProxyHandler<Object> =
+        {
+            get: (target, key) => key in target ? target[key] : this.window[key],
+            has: (target, key) => key in target || key in this.window
+        };
+
+        return new Proxy(context, handler);
     }
 
     private async traverseElement(node: Node): Promise<void>

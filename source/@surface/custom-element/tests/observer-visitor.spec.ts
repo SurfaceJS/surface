@@ -3,11 +3,11 @@ import "./fixtures/dom";
 import Expression                              from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import BindExpressionVisitor                   from "../internal/bind-expression-visitor";
+import BindExpressionVisitor                   from "../internal/observer-visitor";
 import { observedAttributes }                  from "../internal/symbols";
 
 @suite
-export class BindExpressionVisitorSpec
+export class ObserverVisitorSpec
 {
     @test @shouldPass
     public propertyNotify(): void

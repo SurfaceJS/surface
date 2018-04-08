@@ -122,7 +122,6 @@ export default abstract class ExpressionVisitor
 
     public visit(expression: IExpression): IExpression
     {
-        /* istanbul ignore else */
         if (TypeGuard.isArrayExpression(expression))
         {
             return this.visitArrayExpression(expression);
@@ -175,7 +174,9 @@ export default abstract class ExpressionVisitor
         {
             return this.visitUnaryExpression(expression);
         }
-
-        return expression;
+        else
+        {
+            throw new Error("Invalid expression");
+        }
     }
 }

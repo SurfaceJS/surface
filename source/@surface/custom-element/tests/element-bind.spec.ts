@@ -5,7 +5,7 @@ import { expect }                              from "chai";
 import ElementBind                             from "../internal/element-bind";
 
 @suite
-export default class DataBindSpec
+export default class ElementBindSpec
 {
     @test @shouldPass
     public async elementWithoutAttributes(): Promise<void>
@@ -59,6 +59,28 @@ export default class DataBindSpec
 
             span.setAttribute("lang", "pt-pt");
             expect(host.lang).to.equal("pt-pt");
+
+            span.lang = "pt-br";
+            span.dispatchEvent(new Event("keyup"));
+            expect(host.lang).to.equal("pt-br");
+        }
+    }
+
+    @test @shouldPass
+    public async elementWithAttributesBindToWindowFallback(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        content.innerHTML = "<span lang='{{ Node.name }}'</span>";
+
+        await ElementBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            const span = content.firstElementChild as HTMLSpanElement;
+            expect(span.lang).to.equal("Node");
         }
     }
 
@@ -69,7 +91,6 @@ export default class DataBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        host.lang = "pt-br";
         content.innerHTML = "<span has-childs='{{ this.childNodes.length > 0 }}'></span>";
 
         await ElementBind.for(host, content);
@@ -81,13 +102,33 @@ export default class DataBindSpec
     }
 
     @test @shouldPass
+    public async elementWithPropertyAttributeBindExpression(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        content.innerHTML = "<span id='{{ this.childNodes.length > 0 }}'></span>";
+
+        await ElementBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            const span = content.firstElementChild;
+
+            expect(span.getAttribute("id")).to.equal("false");
+            expect(span.id).to.equal("false");
+        }
+    }
+
+    @test @shouldPass
     public async elementWithAttributesWithEventBind(): Promise<void>
     {
         const document = window.document;
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        host.click = () => expect(true);
+        host.click = () => expect(true).to.equal(true);
 
         content.innerHTML = "<span on-click='{{ host.click }}'>Text</span>";
 
@@ -96,6 +137,42 @@ export default class DataBindSpec
         if (content.firstElementChild)
         {
             content.firstElementChild.dispatchEvent(new Event("click"));
+        }
+    }
+
+    @test @shouldPass
+    public async elementWithAttributesWithExpressionEventBind(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        host["method"] = (value: boolean) => expect(value).to.equal(true);
+
+        content.innerHTML = "<span on-click='{{ host.method(true) }}'>Text</span>";
+
+        await ElementBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            content.firstElementChild.dispatchEvent(new Event("click"));
+        }
+    }
+
+    @test @shouldPass
+    public async elementWithTextNodeNonInitilizedBind(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        content.innerHTML = "<span>{{ host.foo }}</span>";
+
+        await ElementBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            expect(content.firstElementChild.innerHTML).to.equal("");
         }
     }
 
@@ -117,6 +194,27 @@ export default class DataBindSpec
             host.id = "02";
             host.dispatchEvent(new Event("change"));
             expect(content.firstElementChild.innerHTML).to.equal("Host id: 02");
+        }
+    }
+
+    @test @shouldPass
+    public async elementWithTextNodeBindExpression(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        host.id = "01";
+        content.innerHTML = "<span>{{ host.id == '01' }}</span>";
+
+        await ElementBind.for(host, content);
+
+        if (content.firstElementChild)
+        {
+            expect(content.firstElementChild.innerHTML).to.equal("true");
+            host.id = "02";
+            host.dispatchEvent(new Event("change"));
+            expect(content.firstElementChild.innerHTML).to.equal("false");
         }
     }
 

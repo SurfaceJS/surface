@@ -99,6 +99,34 @@ export default class BindParserSpec
     }
 
     @test @shouldPass
+    public twoWayExpression(): void
+    {
+        class Mock
+        {
+            private _value: number = 0;
+            public get value(): number
+            {
+                return this._value;
+            }
+
+            public set value(value: number)
+            {
+                this._value = value;
+            }
+        }
+
+        const context = { this: new Mock() };
+
+        const { bindingMode, expression } = BindParser.scan(context, "{{ this.value > 0 }}");
+
+        expect(bindingMode).to.equal(BindingMode.oneWay);
+        expect(expression.evaluate()).to.equal(false);
+
+        context.this.value = 1;
+        expect(expression.evaluate()).to.equal(true);
+    }
+
+    @test @shouldPass
     public twoWayBindWithInterpolation(): void
     {
         const context = { this: new Mock() };
@@ -126,5 +154,17 @@ export default class BindParserSpec
     public invalidIdentifier(): void
     {
         expect(() => BindParser.scan({ }, "This is my value: {{ this.value }}")).to.throw(Error, "The identifier this does not exist in this context");
+    }
+
+    @test @shouldFail
+    public invalidIndentifier(): void
+    {
+        expect(() => BindParser.scan({ }, "This is my value: {{ this }}")).to.throw(Error, "The identifier this does not exist in this context");
+    }
+
+    @test @shouldFail
+    public invalidSyntax(): void
+    {
+        expect(() => BindParser.scan({ this: { } }, "This is my value: {{ this.? }}")).to.throw(Error, "Unexpected token ? at posistion 6");
     }
 }
