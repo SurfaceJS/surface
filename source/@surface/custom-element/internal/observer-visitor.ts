@@ -1,6 +1,7 @@
 import ExpressionVisitor from "@surface/expression/expression-visitor";
+import ICallExpression   from "@surface/expression/interfaces/call-expression";
 import IExpression       from "@surface/expression/interfaces/expression";
-import MemberExpression  from "@surface/expression/internal/expressions/member-expression";
+import IMemberExpression from "@surface/expression/interfaces/member-expression";
 import { Action }        from "@surface/types";
 import DataBind          from "./data-bind";
 
@@ -14,7 +15,17 @@ export default class BindExpressionVisitor extends ExpressionVisitor
         this.notify = notify;
     }
 
-    protected visitMemberExpression(expression: MemberExpression): IExpression
+    protected visitCallExpression(expression: ICallExpression)
+    {
+        for (const arg of expression.args)
+        {
+            super.visit(arg);
+        }
+
+        return expression;
+    }
+
+    protected visitMemberExpression(expression: IMemberExpression): IExpression
     {
         const target = expression.target.evaluate();
         const key    = `${expression.key.evaluate()}`;

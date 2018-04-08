@@ -73,7 +73,7 @@ export default class ElementBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        content.innerHTML = "<span lang='{{ Node.name }}'</span>";
+        content.innerHTML = "<span lang='[[ Node.name ]]'</span>";
 
         await ElementBind.for(host, content);
 
