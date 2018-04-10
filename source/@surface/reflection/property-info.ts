@@ -18,9 +18,9 @@ export default class PropertyInfo extends FieldInfo
         return this.descriptor.set;
     }
 
-    public constructor(key: string, descriptor: PropertyDescriptor, prototype: Object)
+    public constructor(key: string, descriptor: PropertyDescriptor, owner: Object)
     {
-        super(key, descriptor, prototype);
+        super(key, descriptor, owner);
         this.descriptor = descriptor;
     }
 }

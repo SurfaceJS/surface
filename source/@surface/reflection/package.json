@@ -6,6 +6,7 @@
     "dependencies": {
         "@surface/collection": "0.0.0",
         "@surface/enumerable": "0.0.5",
+        "@surface/test-suite": "0.0.0",
         "@surface/types": "0.0.1",
         "@types/reflect-metadata": "0.1.0",
         "reflect-metadata": "0.1.12",
@@ -14,8 +15,8 @@
     "description": "Module for reflection capability.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
+        "reflection",
         "surface",
-        "type",
         "typescrypt"
     ],
     "license": "MIT",

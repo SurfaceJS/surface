@@ -43,9 +43,9 @@ export default class MethodInfo extends MemberInfo
         return this._parameters;
     }
 
-    public constructor(key: string, invoke: Function, prototype: Object)
+    public constructor(key: string, invoke: Function, owner: Object)
     {
-        super(key, Type.from(prototype));
+        super(key, Type.from(owner));
 
         this._invoke        = invoke;
         this._isConstructor = !!invoke.prototype;

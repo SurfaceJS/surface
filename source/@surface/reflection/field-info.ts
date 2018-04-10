@@ -26,9 +26,9 @@ export default class FieldInfo extends MemberInfo
         return this.descriptor.value;
     }
 
-    public constructor(key: string, descriptor: PropertyDescriptor, prototype: Object)
+    public constructor(key: string, descriptor: PropertyDescriptor, owner: Object)
     {
-        super(key, Type.from(prototype));
+        super(key, Type.from(owner));
         this.descriptor = descriptor;
     }
 }
