@@ -1,6 +1,5 @@
-import FieldInfo from "./field-info";
-
 import { Nullable } from "@surface/types";
+import FieldInfo    from "./field-info";
 
 export default class PropertyInfo extends FieldInfo
 {
@@ -18,6 +17,7 @@ export default class PropertyInfo extends FieldInfo
     {
         return this.descriptor.set;
     }
+
     public constructor(key: string, descriptor: PropertyDescriptor, prototype: Object)
     {
         super(key, descriptor, prototype);

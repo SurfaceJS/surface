@@ -1,15 +1,13 @@
-import "reflect-metadata";
-
 import "@surface/collection/extensions";
 import "@surface/enumerable/extensions";
-
-import FieldInfo    from "./field-info";
-import MethodInfo   from "./method-info";
-import PropertyInfo from "./property-info";
+import "reflect-metadata";
 
 import Dictionary   from "@surface/collection/dictionary";
 import Enumerable   from "@surface/enumerable";
-import { Nullable } from "@surface/types";
+import { Nullable, Unknown } from "@surface/types";
+import FieldInfo    from "./field-info";
+import MethodInfo   from "./method-info";
+import PropertyInfo from "./property-info";
 
 export default class Type
 {
@@ -20,7 +18,7 @@ export default class Type
     {
         if (!this._baseType && (this.targetConstructor as Object) != Object)
         {
-            this._baseType = new Type(Reflect.getPrototypeOf(this.targetConstructor.prototype)) as Nullable<Type>;
+            this._baseType = new Type(Reflect.getPrototypeOf(this.targetConstructor.prototype).constructor) as Nullable<Type>;
         }
 
         return this._baseType;
@@ -56,22 +54,52 @@ export default class Type
         return this.targetConstructor.name;
     }
 
-    private constructor(target: Object)
+    private constructor(target: Function)
     {
-        this.targetConstructor = target.constructor;
+        this.targetConstructor = target;
     }
 
     public static from(target: Object)
     {
-        return new Type(target);
+        return new Type(target.constructor);
     }
 
     public static of(target: Function): Type
     {
-        return new Type(target.prototype);
+        return new Type(target);
     }
 
-    private enumerateProtoChain(): Enumerable<{ key: string, descriptor: PropertyDescriptor, prototype: Object }>
+    private enumerateStaticMembers(): Enumerable<{ key: string, descriptor: PropertyDescriptor, targetConstructor: Function }>
+    {
+        let targetConstructor = this.targetConstructor;
+
+        let iterator = function*()
+        {
+            do
+            {
+                for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(targetConstructor)))
+                {
+                    yield { key, descriptor, targetConstructor };
+                }
+
+                let prototype = Object.getPrototypeOf(targetConstructor.prototype) as Unknown;
+
+                if (prototype)
+                {
+                    targetConstructor = prototype.constructor;
+                }
+                else
+                {
+                    break;
+                }
+
+            } while (true);
+        };
+
+        return Enumerable.from(iterator());
+    }
+
+    private enumerateMembers(): Enumerable<{ key: string, descriptor: PropertyDescriptor, prototype: Object }>
     {
         let prototype = this.targetConstructor.prototype;
 
@@ -123,11 +151,40 @@ export default class Type
         return this.targetConstructor;
     }
 
+    public getField(key: string): Nullable<FieldInfo>
+    {
+        return this.getFields().firstOrDefault(x => x.key == key);
+    }
+
+    public getStaticField(key: string): Nullable<FieldInfo>
+    {
+        return this.getStaticFields().firstOrDefault(x => x.key == key);
+    }
+
+    public getStaticFields(): Enumerable<FieldInfo>
+    {
+        return this.enumerateStaticMembers()
+            .where(x => !x.descriptor.get && !x.descriptor.set)
+            .select(x => new FieldInfo(x.key, x.descriptor, x.targetConstructor));
+    }
+
     public getFields(): Enumerable<FieldInfo>
     {
-        return this.enumerateProtoChain()
-            .where(x => !(x.descriptor.value instanceof Function) && !x.descriptor.get && !x.descriptor.set)
+        return this.enumerateMembers()
+            .where(x => !x.descriptor.get && !x.descriptor.set)
             .select(x => new FieldInfo(x.key, x.descriptor, x.prototype));
+    }
+
+    public getMethod(key: string): Nullable<MethodInfo>
+    {
+        return this.getMethods().firstOrDefault(x => x.key == key);
+    }
+
+    public getMethods(): Enumerable<MethodInfo>
+    {
+        return this.enumerateMembers()
+            .where(x => x.descriptor.value instanceof Function)
+            .select(x => new MethodInfo(x.key, x.descriptor.value, x.prototype));
     }
 
     public getProperty(property: string): Nullable<PropertyInfo>
@@ -135,28 +192,27 @@ export default class Type
         return this.getProperties().firstOrDefault(x => x.key == property);
     }
 
-    public getPrototype(): Object
+    public getStaticProperty(property: string): Nullable<PropertyInfo>
     {
-        return this.targetConstructor.prototype;
-    }
-
-    public getMethod(key: string): Nullable<MethodInfo>
-    {
-        return this.getMethods()
-            .where(x => x.key == key).firstOrDefault();
-    }
-
-    public getMethods(): Enumerable<MethodInfo>
-    {
-        return this.enumerateProtoChain()
-            .where(x => x.descriptor.value instanceof Function)
-            .select(x => new MethodInfo(x.key, x.descriptor.value, x.prototype));
+        return this.getStaticProperties().firstOrDefault(x => x.key == property);
     }
 
     public getProperties(): Enumerable<PropertyInfo>
     {
-        return this.enumerateProtoChain()
+        return this.enumerateMembers()
             .where(x => !(x.descriptor.value instanceof Function) && (!!x.descriptor.get || !!x.descriptor.set))
             .select(x => new PropertyInfo(x.key, x.descriptor, x.prototype));
+    }
+
+    public getStaticProperties(): Enumerable<PropertyInfo>
+    {
+        return this.enumerateStaticMembers()
+            .where(x => !(x.descriptor.value instanceof Function) && (!!x.descriptor.get || !!x.descriptor.set))
+            .select(x => new PropertyInfo(x.key, x.descriptor, x.targetConstructor));
+    }
+
+    public getPrototype(): Object
+    {
+        return this.targetConstructor.prototype;
     }
 }

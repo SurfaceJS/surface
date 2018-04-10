@@ -1,17 +1,15 @@
+import List                   from "@surface/collection/list";
+import Router                 from "@surface/router";
+import { Nullable }           from "@surface/types";
+import http                   from "http";
 import Configuration          from "./configuration";
 import FallbackRequestHandler from "./fallback-request-handler";
 import HttpContext            from "./http-context";
+import IStartup               from "./interfaces/startup";
 import MvcRequestHandler      from "./mvc-request-handler";
 import RequestHandler         from "./request-handler";
-import IStartup               from "./interfaces/startup";
 import StaticRequestHandler   from "./static-request-handler";
 import StatusCode             from "./status-code";
-
-import List         from "@surface/collection/list";
-import Router       from "@surface/router";
-import { Nullable } from "@surface/types";
-
-import http from "http";
 
 export default class WebHost
 {

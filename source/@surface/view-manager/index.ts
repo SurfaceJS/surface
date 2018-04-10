@@ -1,11 +1,10 @@
 import "@surface/reflection/extensions";
 
-import Dictionary from "@surface/collection/dictionary";
-import Router     from "@surface/router";
-import View       from "@surface/view";
-import ViewHost   from "@surface/view-host";
-
+import Dictionary                       from "@surface/collection/dictionary";
+import Router                           from "@surface/router";
 import { Constructor, Func1, Nullable } from "@surface/types";
+import View                             from "@surface/view";
+import ViewHost                         from "@surface/view-host";
 
 /**
  * Handles web client navigation.

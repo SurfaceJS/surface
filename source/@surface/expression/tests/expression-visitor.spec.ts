@@ -1,28 +1,28 @@
-import FixtureVisitor from "./fixtures/fixture-visitor";
-import Expression     from "..";
+import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                                         from "chai";
+import Expression                                         from "..";
+import FixtureVisitor                                     from "./fixtures/fixture-visitor";
+import { validVisitors }                                  from "./fixtures/visitors";
 
-import { validVisitors } from "./fixtures/visitors";
-
-import { expect } from "chai";
-
-describe
-(
-    "Expression Visitor",
-    () =>
+@suite
+export default class ExpressionVisitorSpec
+{
+    @shouldPass
+    @batchTest(validVisitors, x => `visit ${x.value}`)
+    public visitsShouldWork(spec: { raw: string, value: string, context?: Object }): void
     {
-        describe
-        (
-            "Visits should work",
-            () =>
-            {
-                for (const spec of validVisitors)
-                {
-                    const visitor  = new FixtureVisitor();
-                    let expression = Expression.from(spec.raw, spec.context);
+        const visitor  = new FixtureVisitor();
+        let expression = Expression.from(spec.raw, spec.context);
 
-                    it(`Visit ${spec.value}`, () => expect(visitor.visit(expression).evaluate()).to.equal(spec.value));
-                }
-            }
-        );
+        expect(visitor.visit(expression).evaluate()).to.equal(spec.value);
     }
-);
+
+    @test @shouldFail
+    public invalidExpression(): void
+    {
+        const visitor  = new FixtureVisitor();
+        let expression = { type: -1, evaluate: () => null };
+
+        expect(() => visitor.visit(expression).evaluate()).to.throw(Error, "Invalid expression");
+    }
+}

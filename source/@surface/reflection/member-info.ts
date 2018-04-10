@@ -1,7 +1,6 @@
-import Type from ".";
-
-import Dictionary from   "@surface/collection/dictionary";
+import Dictionary   from "@surface/collection/dictionary";
 import { Nullable } from "@surface/types";
+import Type         from ".";
 
 export default abstract class MemberInfo
 {

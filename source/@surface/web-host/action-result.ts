@@ -1,7 +1,6 @@
-import HttpContext from "./http-context";
-
 import IRouteData   from "@surface/router/interfaces/route-data";
 import { Nullable } from "@surface/types";
+import HttpContext  from "./http-context";
 
 export default abstract class ActionResult
 {

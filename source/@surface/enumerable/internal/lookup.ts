@@ -1,9 +1,8 @@
+import Enumerable from "..";
+import IComparer  from "../interfaces/comparer";
+import ILookup    from "../interfaces/lookup";
 import Group      from "./group";
 import HashEncode from "./hash-encode";
-import Enumerable from "..";
-
-import IComparer from "../interfaces/comparer";
-import ILookup   from "../interfaces/lookup";
 
 import { Func1, Func2, Nullable } from "@surface/types";
 

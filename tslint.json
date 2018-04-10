@@ -100,8 +100,8 @@
             true,
             {
                 "import-sources-order": "lowercase-first",
-                "grouped-import": true,
-                "module-source-path":   "basename",
+                "grouped-import":       true,
+                "module-source-path":   "full",
                 "named-imports-order":  "lowercase-first"
             }
         ],        
@@ -121,6 +121,6 @@
             "ban-keywords",
             "check-format"
         ],
-        "whitespace": true        
+        "whitespace": true
     }
 }

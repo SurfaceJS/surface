@@ -1,7 +1,6 @@
-import MemberInfo from "./member-info";
-import Type       from ".";
-
 import { Nullable } from "@surface/types";
+import Type         from ".";
+import MemberInfo   from "./member-info";
 
 export default class FieldInfo extends MemberInfo
 {

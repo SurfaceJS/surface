@@ -1,22 +1,22 @@
+import IExpression           from "../../interfaces/expression";
 import ArrayExpression       from "../../internal/expressions/array-expression";
 import BinaryExpression      from "../../internal/expressions/binary-expression" ;
 import CallExpression        from "../../internal/expressions/call-expression";
 import ConditionalExpression from "../../internal/expressions/conditional-expression";
 import ConstantExpression    from "../../internal/expressions/constant-expression";
-import IExpression           from "../../interfaces/expression";
 import IdentifierExpression  from "../../internal/expressions/identifier-expression";
 import MemberExpression      from "../../internal/expressions/member-expression";
 import ObjectExpression      from "../../internal/expressions/object-expression";
 import RegexExpression       from "../../internal/expressions/regex-expression";
-import SyntaxError           from "../../internal/syntax-error";
 import TemplateExpression    from "../../internal/expressions/template-expression";
 import UnaryExpression       from "../../internal/expressions/unary-expression";
 import UpdateExpression      from "../../internal/expressions/update-expression";
+import SyntaxError           from "../../syntax-error";
 
 import { Constructor, Nullable } from "@surface/types";
 
-type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression>, context: Object };
-type InvalidExpressionFixtureSpec = { raw: string, error: Error, context: Object };
+export type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression>, context: Object };
+export type InvalidExpressionFixtureSpec = { raw: string, error: Error, context: Object };
 
 const context =
 {
@@ -505,7 +505,7 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     {
         context: context,
         raw:     "1 + if",
-        error:   new SyntaxError("Unexpected end of if", 1, 4, 5)
+        error:   new SyntaxError("Unexpected token if", 1, 4, 5)
     },
     {
         context: context,

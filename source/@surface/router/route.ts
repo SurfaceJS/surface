@@ -1,6 +1,5 @@
-import IRouteData from "./interfaces/route-data";
-
 import { Nullable, ObjectLiteral } from "@surface/types";
+import IRouteData                  from "./interfaces/route-data";
 
 export default class Route
 {

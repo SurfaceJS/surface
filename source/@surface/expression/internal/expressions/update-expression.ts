@@ -1,5 +1,5 @@
-import IExpression    from "../../interfaces/expression";
 import ExpressionType from "../../expression-type";
+import IExpression    from "../../interfaces/expression";
 import TypeGuard      from "../type-guard";
 
 import { Func2, Nullable } from "@surface/types";
@@ -56,7 +56,7 @@ export default class UpdateExpression implements IExpression
         }
         else if (TypeGuard.isMemberExpression(this.expression))
         {
-            return this.operation(this.expression.target.evaluate(), this.expression.property.evaluate());
+            return this.operation(this.expression.target.evaluate(), this.expression.key.evaluate());
         }
         else
         {

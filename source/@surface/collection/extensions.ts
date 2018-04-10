@@ -1,10 +1,8 @@
+import Enumerable   from "@surface/enumerable";
+import { Func1 }    from "@surface/types";
 import Dictionary   from "./dictionary";
 import KeyValuePair from "./key-value-pair";
 import List         from "./list";
-
-import Enumerable from "@surface/enumerable";
-
-import { Func1 } from "@surface/types";
 
 declare global
 {

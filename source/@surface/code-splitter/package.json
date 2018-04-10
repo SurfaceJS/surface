@@ -9,7 +9,7 @@
     "dependencies": {
         "@surface/common": "0.0.8",
         "@surface/types": "0.0.1",
-        "commander": "2.12.2"
+        "commander": "2.15.1"
     },
     "description": "Generate lazy loading module.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",

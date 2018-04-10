@@ -1,22 +1,22 @@
-import ArrayExpression       from "./internal/expressions/array-expression";
-import BinaryExpression      from "./internal/expressions/binary-expression";
-import CallExpression        from "./internal/expressions/call-expression";
-import ConditionalExpression from "./internal/expressions/conditional-expression";
-import ConstantExpression    from "./internal/expressions/constant-expression";
-import IExpression           from "./interfaces/expression";
-import IdentifierExpression  from "./internal/expressions/identifier-expression";
-import MemberExpression      from "./internal/expressions/member-expression";
-import ObjectExpression      from "./internal/expressions/object-expression";
-import PropertyExpression    from "./internal/expressions/property-expression";
-import RegexExpression       from "./internal/expressions/regex-expression";
-import TemplateExpression    from "./internal/expressions/template-expression";
-import TypeGuard             from "./internal/type-guard";
-import UnaryExpression       from "./internal/expressions/unary-expression";
-import UpdateExpression      from "./internal/expressions/update-expression";
+import IArrayExpression       from "./interfaces/array-expression";
+import IBinaryExpression      from "./interfaces/binary-expression";
+import ICallExpression        from "./interfaces/call-expression";
+import IConditionalExpression from "./interfaces/conditional-expression";
+import IConstantExpression    from "./interfaces/constant-expression";
+import IExpression            from "./interfaces/expression";
+import IIdentifierExpression  from "./interfaces/identifier-expression";
+import IMemberExpression      from "./interfaces/member-expression";
+import IObjectExpression      from "./interfaces/object-expression";
+import IPropertyExpression    from "./interfaces/property-expression";
+import IRegexExpression       from "./interfaces/regex-expression";
+import ITemplateExpression    from "./interfaces/template-expression";
+import IUnaryExpression       from "./interfaces/unary-expression";
+import IUpdateExpression      from "./interfaces/update-expression";
+import TypeGuard              from "./internal/type-guard";
 
 export default abstract class ExpressionVisitor
 {
-    protected visitArrayExpression(expression: ArrayExpression): IExpression
+    protected visitArrayExpression(expression: IArrayExpression): IExpression
     {
         for (const element of expression.elements)
         {
@@ -26,7 +26,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitBinaryExpression(expression: BinaryExpression): IExpression
+    protected visitBinaryExpression(expression: IBinaryExpression): IExpression
     {
         this.visit(expression.left);
         this.visit(expression.right);
@@ -34,7 +34,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitCallExpression(expression: CallExpression): IExpression
+    protected visitCallExpression(expression: ICallExpression): IExpression
     {
         this.visit(expression.context);
 
@@ -46,7 +46,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitConditionalExpression(expression: ConditionalExpression): IExpression
+    protected visitConditionalExpression(expression: IConditionalExpression): IExpression
     {
         this.visit(expression.condition);
         this.visit(expression.truthy);
@@ -55,25 +55,25 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitConstantExpression(expression: ConstantExpression): IExpression
+    protected visitConstantExpression(expression: IConstantExpression): IExpression
     {
         return expression;
     }
 
-    protected visitIdentifierExpression(expression: IdentifierExpression): IExpression
+    protected visitIdentifierExpression(expression: IIdentifierExpression): IExpression
     {
         return expression;
     }
 
-    protected visitMemberExpression(expression: MemberExpression): IExpression
+    protected visitMemberExpression(expression: IMemberExpression): IExpression
     {
         this.visit(expression.target);
-        this.visit(expression.property);
+        this.visit(expression.key);
 
         return expression;
     }
 
-    protected visitObjectExpression(expression: ObjectExpression): IExpression
+    protected visitObjectExpression(expression: IObjectExpression): IExpression
     {
         for (const property of expression.properties)
         {
@@ -83,7 +83,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitPropertyExpression(expression: PropertyExpression): IExpression
+    protected visitPropertyExpression(expression: IPropertyExpression): IExpression
     {
         this.visit(expression.key);
         this.visit(expression.value);
@@ -91,12 +91,12 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitRegexExpression(expression: RegexExpression): IExpression
+    protected visitRegexExpression(expression: IRegexExpression): IExpression
     {
         return expression;
     }
 
-    protected visitTemplateExpression(expression: TemplateExpression): IExpression
+    protected visitTemplateExpression(expression: ITemplateExpression): IExpression
     {
         for (const node of expression.expressions)
         {
@@ -106,14 +106,14 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitUnaryExpression(expression: UnaryExpression): IExpression
+    protected visitUnaryExpression(expression: IUnaryExpression): IExpression
     {
         this.visit(expression.expression);
 
         return expression;
     }
 
-    protected visitUpdateExpression(expression: UpdateExpression): IExpression
+    protected visitUpdateExpression(expression: IUpdateExpression): IExpression
     {
         this.visit(expression.expression);
 
@@ -122,7 +122,6 @@ export default abstract class ExpressionVisitor
 
     public visit(expression: IExpression): IExpression
     {
-        /* istanbul ignore else */
         if (TypeGuard.isArrayExpression(expression))
         {
             return this.visitArrayExpression(expression);
@@ -177,7 +176,7 @@ export default abstract class ExpressionVisitor
         }
         else
         {
-            throw new Error("Unexpected expression");
+            throw new Error("Invalid expression");
         }
     }
 }

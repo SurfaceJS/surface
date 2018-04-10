@@ -1,8 +1,5 @@
-import Scanner, { Token } from "./scanner";
-import TokenType          from "./token-type";
-
-import IExpression from "../interfaces/expression";
-
+import IExpression           from "../interfaces/expression";
+import SyntaxError           from "../syntax-error";
 import ArrayExpression       from "./expressions/array-expression";
 import BinaryExpression      from "./expressions/binary-expression";
 import CallExpression        from "./expressions/call-expression";
@@ -16,8 +13,8 @@ import RegexExpression       from "./expressions/regex-expression";
 import TemplateExpression    from "./expressions/template-expression";
 import UnaryExpression       from "./expressions/unary-expression";
 import UpdateExpression      from "./expressions/update-expression";
-
-import SyntaxError from "./syntax-error";
+import Scanner, { Token }    from "./scanner";
+import TokenType             from "./token-type";
 
 export default class Parser
 {
@@ -319,7 +316,7 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).property.evaluate() as string, this.argumentsExpression());
+                expression = new CallExpression(parentExpression, (expression as MemberExpression).key.evaluate() as string, this.argumentsExpression());
             }
             else if (this.match("["))
             {

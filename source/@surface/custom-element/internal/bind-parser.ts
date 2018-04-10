@@ -1,36 +1,27 @@
-import Expression         from "@surface/expression";
-import IExpression        from "@surface/expression/interfaces/expression";
-import ConstantExpression from "@surface/expression/internal/expressions/constant-expression";
-import { Action }         from "@surface/types";
+import Expression      from "@surface/expression";
+import ExpressionType  from "@surface/expression/expression-type";
+import SyntaxError     from "@surface/expression/syntax-error";
+import BindingMode     from "./binding-mode";
+import IExpressionBind from "./interfaces/expression-bind";
 
 export default class BindParser
 {
+    private readonly expressions: Array<IExpressionBind> = [];
+
+    private readonly context: Object;
     private readonly source:  string;
-    //private readonly notify?: Action;
-    private index:   number;
-    private context: Object;
 
-    private constructor(context: Object, source: string, notify?: Action)
+    private index: number = 0;
+
+    private constructor(source: string, context: Object)
     {
-        this.context = context;
         this.source  = source;
-        //this.notify  = notify;
-
-        this.index = 0;
+        this.context = context;
     }
 
-    public static scan(context: Object, source: string, notify?: Action): IExpression
+    public static scan(context: Object, source: string): IExpressionBind
     {
-        const expressions = new BindParser(context, source, notify).parse(0);
-
-        if (expressions.length == 1)
-        {
-            return expressions[0];
-        }
-        else
-        {
-            return { type: -1, evaluate: () => expressions.map(x => `${x.evaluate()}`).reduce((previous, current) => previous + current) };
-        }
+        return new BindParser(source, context).scan();
     }
 
     private advance(): void
@@ -38,58 +29,102 @@ export default class BindParser
         this.index++;
     }
 
-    private parse(start: number): Array<IExpression>
+    // tslint:disable-next-line:cyclomatic-complexity
+    private parse(start: number): void
     {
-        let scaped = false;
-
-        const expressions: Array<IExpression> = [];
-
-        while (!this.eof() && (this.source.substring(this.index, this.index + 2) != "{{" || scaped))
+        try
         {
-            scaped = this.source[this.index] == "\\" && !scaped;
-            this.advance();
-        }
+            let bindingMode = BindingMode.oneWay;
+            let scaped      = false;
 
-        if (start < this.index)
-        {
-            const textFragment = this.source.substring(start, this.index)
-                .replace(/\\\\/g, "\\")
-                .replace(/\\\{/g, "{")
-                .replace(/\\\}/g, "}");
-
-            expressions.push(new ConstantExpression(textFragment));
-        }
-
-        if (!this.eof())
-        {
-            let start = this.index + 2;
-            let stack = 0;
-            do
+            while (!this.eof() && (this.source.substring(this.index, this.index + 2) != "{{" && this.source.substring(this.index, this.index + 2) != "[[") || scaped)
             {
-                if (this.source[this.index] == "{" && !scaped)
-                {
-                    stack++;
-                }
-
-                if (this.source[this.index] == "}" && !scaped)
-                {
-                    stack--;
-                }
-
+                scaped = this.source[this.index] == "\\" && !scaped;
                 this.advance();
             }
-            while (!this.eof() && stack > 0);
 
-            expressions.push(Expression.from(this.source.substring(start, this.index - 2), this.context));
+            if (start < this.index)
+            {
+                const textFragment = this.source.substring(start, this.index)
+                    .replace(/\\\\/g, "\\")
+                    .replace(/\\\{/g, "{")
+                    .replace(/\\\}/g, "}")
+                    .replace(/\\\[/g, "[")
+                    .replace(/\\\]/g, "]");
 
-            return [...expressions, ...this.parse(this.index)];
+                this.expressions.push({ bindingMode: BindingMode.oneWay, expression: Expression.constant(textFragment) });
+            }
+
+            if (!this.eof())
+            {
+                if (this.source[this.index] == "{")
+                {
+                    bindingMode = BindingMode.twoWay;
+                }
+
+                let start = this.index + 2;
+                let stack = 0;
+
+                do
+                {
+                    if (!scaped && (this.source[this.index] == "{" || this.source[this.index] == "["))
+                    {
+                        stack++;
+                    }
+
+                    if (!scaped && (this.source[this.index] == "}" || this.source[this.index] == "]"))
+                    {
+                        stack--;
+                    }
+
+                    this.advance();
+                }
+                while (!this.eof() && stack > 0);
+
+                const expression = Expression.from(this.source.substring(start, this.index - 2), this.context);
+
+                if (expression.type != ExpressionType.Member)
+                {
+                    bindingMode = BindingMode.oneWay;
+                }
+
+                this.expressions.push({ bindingMode, expression });
+
+                if (!this.eof())
+                {
+                    this.parse(this.index);
+                }
+            }
         }
-
-        return expressions;
+        catch (error)
+        {
+            if (error instanceof SyntaxError)
+            {
+                throw new Error(`${error.message} at posistion ${error.index}`);
+            }
+            else
+            {
+                throw error;
+            }
+        }
     }
 
     private eof(): boolean
     {
         return this.index == this.source.length;
+    }
+
+    private scan(): IExpressionBind
+    {
+        this.parse(0);
+
+        if (this.expressions.length == 1)
+        {
+            return this.expressions[0];
+        }
+        else
+        {
+            return { bindingMode: BindingMode.oneWay, expression: Expression.array(this.expressions.map(x => x.expression)) };
+        }
     }
 }

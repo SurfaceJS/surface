@@ -11,7 +11,7 @@
         "forceConsistentCasingInFileNames": false, /* Conflicting with symlink */
         "importHelpers":                    true,
         "lib":                              ["esnext"],
-        "module":                           "esnext",
+        "module":                           "commonjs",
         "moduleResolution":                 "node",
         "noEmitHelpers":                    true,
         "noEmitOnError":                    true,
@@ -29,8 +29,9 @@
         "types":                            [],
         "typeRoots":
         [
-            "type-root/@types",
-            "type-root/node_modules/@types"
+            "@types",
+            "node_modules/@types"
         ]
-    }
+    },
+    "exclude": ["source/@surface/*/node_modules"]
 }

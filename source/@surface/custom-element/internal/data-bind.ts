@@ -1,95 +1,118 @@
-import CustomElement from "..";
+import Type                          from "@surface/reflection";
+import FieldInfo                     from "@surface/reflection/field-info";
+import MemberInfo                    from "@surface/reflection/member-info";
+import PropertyInfo                  from "@surface/reflection/property-info";
+import { Action, Nullable, Unknown } from "@surface/types";
+import Observer                      from "@surface/types/observer";
 
-import BindParser from "./bind-parser";
+const caller   = Symbol("data-bind:caller");
+const observer = Symbol("data-bind:observer");
 
-import { Action, Func } from "@surface/types";
-
-export default class DataBind<T extends CustomElement>
+type Observable =
 {
-    public constructor(context: T, content: Node)
-    {
-        this.traverseElement(context, content);
-    }
+    [key: string]: Unknown,
+    [caller]:      boolean,
+    [observer]:    Observer
+};
 
-    public static for<T extends CustomElement>(context: T, content: Node): DataBind<T>
+export default class DataBind
+{
+    public static oneWay(target: Object, key: string, action: Action): void;
+    public static oneWay(target: Observable, key: string, action: Action): void
     {
-        return new DataBind(context, content);
-    }
+        let member: Nullable<MemberInfo>;
 
-    private async bindAttribute(context: object, node: Node): Promise<void>
-    {
-        const binders: Array<Action> = [];
-        const notify = async () => await Promise.resolve(binders.forEach(x => x()));
-
-        for (const attribute of node.attributes.asEnumerable())
+        if (target instanceof Function)
         {
-            if (attribute.value.indexOf("{{") > -1)
-            {
-                console.log(attribute.value);
-                console.time();
-                const expression = BindParser.scan({ global: window, host: context, this: node }, attribute.value, notify);
-                console.timeEnd();
-                console.log(expression);
-                if (attribute.name.startsWith("on-"))
+            const type = Type.of(target);
+            member = type.getStaticProperty(key) || type.getStaticField(key);
+        }
+        else
+        {
+            const type = Type.from(target);
+            member = type.getProperty(key) || type.getField(key);
+        }
+
+        target[observer] = target[observer] || new Observer();
+
+        target[observer].subscribe(action);
+
+        if (member instanceof PropertyInfo)
+        {
+            const property = member;
+
+            Object.defineProperty
+            (
+                target,
+                key,
                 {
-                    node.addEventListener(attribute.name.replace(/^on-/, ""), () => expression.evaluate());
-                    attribute.value = "[binding]";
-                }
-                else
-                {
-                    if (attribute.name in node)
+                    configurable: true,
+                    get: () => property.getter && property.getter.call(target),
+                    set: (value: Object) =>
                     {
-                        binders.push(() => node[attribute.name] = expression.evaluate());
+                        if (!target[caller] && property.setter)
+                        {
+                            property.setter.call(target, value);
+
+                            target[observer].notify();
+                        }
                     }
-
-                    binders.push(() => attribute.value = `${expression.evaluate()}`);
                 }
+            );
+
+            if (target instanceof HTMLElement)
+            {
+                const setAttribute = target.setAttribute;
+
+                target.setAttribute = function (qualifiedName: string, value: string)
+                {
+                    setAttribute.call(this, qualifiedName, value);
+
+                    if (qualifiedName == key)
+                    {
+                        target[observer].notify();
+                    }
+                };
+
+                target.addEventListener("change", () => target[observer].notify());
+                target.addEventListener("keyup", () => target[observer].notify());
             }
         }
-
-        notify();
-
-        await Promise.resolve();
+        else if (member instanceof FieldInfo)
+        {
+            target[observer].notify();
+        }
+        else
+        {
+            throw new Error(`Property ${key} does not exist on ${target instanceof Function ? target.name : target.constructor.name} type`);
+        }
     }
 
-    private async bindTextNode(context: object, node: Node): Promise<void>
+    public static twoWay(left: Object, leftKey: string, right: Object, rightKey: string): void;
+    public static twoWay(left: Observable, leftKey: string, right: Observable, rightKey: string): void
     {
-        const binders: Array<Func<string>> = [];
-        const notify = async () => node.nodeValue = await Promise.resolve(binders.map(x => x()).join(""));
-
-        if (node.nodeValue && node.nodeValue.indexOf("{{") > -1)
-        {
-            console.log(node.nodeValue);
-            console.time();
-
-            const expression = BindParser.scan({ global: window, host: context, this: node }, node.nodeValue, notify);
-            console.timeEnd();
-            console.log(expression);
-
-            binders.push(() => `${expression.evaluate()}`);
-            notify();
-        }
-
-        await Promise.resolve();
-    }
-
-    private async traverseElement(context: object, node: Node): Promise<void>
-    {
-        for (const currentNode of Array.from(node.childNodes))
-        {
-            if (currentNode.attributes && currentNode.attributes.length > 0)
+        DataBind.oneWay
+        (
+            left,
+            leftKey,
+            () =>
             {
-                this.bindAttribute(context, currentNode);
+                left[caller]    = true;
+                right[rightKey] = left[leftKey];
+                left[caller]    = false;
             }
+        );
 
-            if (currentNode.nodeType == Node.TEXT_NODE)
+        DataBind.oneWay
+        (
+            right,
+            rightKey,
+            () =>
             {
-                this.bindTextNode(context, currentNode);
+                right[caller] = true;
+                left[leftKey] = right[rightKey];
+                right[caller] = false;
             }
-
-            this.traverseElement(context, currentNode);
-        }
-
-        await Promise.resolve();
+        );
     }
 }

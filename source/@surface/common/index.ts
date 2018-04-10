@@ -1,8 +1,7 @@
 import { Nullable } from "@surface/types";
-
-import fs   from "fs";
-import path from "path";
-import util from "util";
+import fs           from "fs";
+import path         from "path";
+import util         from "util";
 
 /**
  * Resolve surface"s config file location

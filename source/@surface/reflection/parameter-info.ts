@@ -1,8 +1,7 @@
-import MemberInfo from "./member-info";
-import Type       from ".";
-
 import Dictionary   from "@surface/collection/dictionary";
 import { Nullable } from "@surface/types";
+import Type         from ".";
+import MemberInfo   from "./member-info";
 
 export default class ParameterInfo extends MemberInfo
 {

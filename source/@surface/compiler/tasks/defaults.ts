@@ -3,14 +3,24 @@ import webpack from "webpack";
 
 export let loaders =
 {
-    cacheLoader: { loader: "cache-loader", options: { cacheDirectory: path.resolve(__dirname, "cache-loader") }},
-    cssLoader:   { loader: "css-loader" },
-    fileLoader:
+    cache:
+    {
+        loader: "cache-loader",
+        options:
+        {
+            cacheDirectory: path.resolve(__dirname, "cache")
+        }
+    },
+    css:
+    {
+        loader: "css-loader"
+    },
+    file:
     {
         loader: "file-loader",
         options: { name: "/resources/[hash].[ext]" }
     },
-    htmlLoader:
+    html:
     {
         loader: "html-loader",
         options:
@@ -19,12 +29,24 @@ export let loaders =
             minify: true
         }
     },
-    htmlRequireLoader:
+    htmlRequire:
     {
         loader: "html-require-loader"
     },
-    sassLoader: { loader: "sass-loader" },
-    threadLoader:
+    istanbul:
+    {
+        loader: "istanbul-instrumenter-loader",
+        options:
+        {
+            esModules:        true,
+            produceSourceMap: true
+        }
+    },
+    sass:
+    {
+        loader: "sass-loader"
+    },
+    thread:
     {
         loader: "thread-loader",
         options:
@@ -33,8 +55,11 @@ export let loaders =
           workers: require("os").cpus().length - 1,
         },
     },
-    toStringLoader: { loader: "to-string-loader" },
-    tsLoader:
+    toString:
+    {
+        loader: "to-string-loader"
+    },
+    ts:
     {
         loader: "ts-loader",
         options:
@@ -47,12 +72,12 @@ export let loaders =
     },
 };
 
-export let webpackConfig =
+export let webpackConfig: webpack.Configuration =
 {
     devtool: "#source-map",
     resolve:
     {
-        alias:      { "tslib": path.resolve(__dirname, "../node_modules", "tslib") },
+        alias:      { tslib: path.resolve(__dirname, "../node_modules", "tslib") },
         extensions: [".ts", ".js"],
         modules:    [".", "node_modules"]
     },
@@ -71,34 +96,34 @@ export let webpackConfig =
         [
             {
                 test: /\.(png|jpe?g|svg)$/,
-                use:  [loaders.fileLoader]
+                use:  loaders.file
             },
             {
                 test: /\.s[ac]ss$/,
                 use:
                 [
-                    loaders.toStringLoader,
-                    loaders.cssLoader,
-                    loaders.sassLoader
+                    loaders.toString,
+                    loaders.css,
+                    loaders.sass
                 ]
             },
             {
                 test: /\.html$/,
                 use:
                 [
-                    loaders.htmlRequireLoader,
-                    loaders.htmlLoader
+                    loaders.htmlRequire,
+                    loaders.html
                 ]
             },
             {
                 test: /\.ts$/,
                 use:
                 [
-                    loaders.cacheLoader,
-                    loaders.threadLoader,
-                    loaders.tsLoader
-                ]
+                    loaders.cache,
+                    loaders.thread,
+                    loaders.ts
+                ],
             },
-        ],
+        ]
     }
-} as webpack.Configuration;
+};

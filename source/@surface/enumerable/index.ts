@@ -1,12 +1,11 @@
-import Comparer         from "./internal/comparer";
-import EnumerableSorter from "./internal/enumerable-sorter";
-import Lookup           from "./internal/lookup";
-import Set              from "./internal/set";
-
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
-import IComparer from "./interfaces/comparer";
-import IGroup    from "./interfaces/group";
-import ILookup   from "./interfaces/lookup";
+import IComparer                                  from "./interfaces/comparer";
+import IGroup                                     from "./interfaces/group";
+import ILookup                                    from "./interfaces/lookup";
+import Comparer                                   from "./internal/comparer";
+import EnumerableSorter                           from "./internal/enumerable-sorter";
+import Lookup                                     from "./internal/lookup";
+import Set                                        from "./internal/set";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {

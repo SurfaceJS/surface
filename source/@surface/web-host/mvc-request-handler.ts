@@ -1,12 +1,11 @@
 import "@surface/reflection/extensions";
 
-import ActionResult   from "./action-result";
-import Controller     from "./controller";
-import HttpContext    from "./http-context";
-import RequestHandler from "./request-handler";
-
 import Router                    from "@surface/router";
 import { Constructor, Nullable } from "@surface/types";
+import ActionResult              from "./action-result";
+import Controller                from "./controller";
+import HttpContext               from "./http-context";
+import RequestHandler            from "./request-handler";
 
 export default class MvcRequestHandler extends RequestHandler
 {

@@ -1,5 +1,5 @@
 import CustomElement from "./index";
-import * as symbols  from "./symbols";
+import * as symbols  from "./internal/symbols";
 
 export function attribute(target: Object, propertyKey: string | symbol): void
 {
@@ -15,7 +15,7 @@ export function attribute(target: Object, propertyKey: string | symbol): void
     }
     else
     {
-        throw new TypeError("Target is not an valid subclass of HTMLElement.");
+        throw new TypeError("Target is not an valid subclass of HTMLElement");
     }
 }
 
@@ -73,5 +73,5 @@ function isCustomElement(source: Function): source is typeof CustomElement
 
 function isHTMLElement(source: Function): source is typeof HTMLElement
 {
-    return source.prototype instanceof CustomElement;
+    return source.prototype instanceof HTMLElement;
 }
