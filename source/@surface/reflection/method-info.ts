@@ -1,8 +1,8 @@
 import Enumerable    from "@surface/enumerable";
 import { Nullable }  from "@surface/types";
-import Type          from ".";
 import MemberInfo    from "./member-info";
 import ParameterInfo from "./parameter-info";
+import Type          from "./type";
 
 export default class MethodInfo extends MemberInfo
 {
@@ -27,12 +27,16 @@ export default class MethodInfo extends MemberInfo
 
             if (match)
             {
-                let paramTypes = this.metadata.has("design:paramtypes") && this.metadata.get("design:paramtypes") || [];
+                const args = match[1].split(",").map(x => x.trim());
 
-                this._parameters = match[1].split(",")
+                const paramTypes = (this.metadata.has("design:paramtypes") ?
+                    this.metadata.get("design:paramtypes") :
+                    new Array(args.length)) as Array<Object>;
+
+                this._parameters = args
                     .asEnumerable()
-                    .zip(paramTypes as Array<Object>, (a, b) => ({ key: a, paramType: b }) )
-                    .select(x => new ParameterInfo(x.key, this.invoke, this.declaringType, x.paramType));
+                    .zip(paramTypes, (a, b) => ({ key: a, paramType: b }))
+                    .select((element, index) => new ParameterInfo(element.key, index, this, element.paramType));
             }
             else
             {
@@ -43,9 +47,9 @@ export default class MethodInfo extends MemberInfo
         return this._parameters;
     }
 
-    public constructor(key: string, invoke: Function, owner: Object)
+    public constructor(key: string, invoke: Function, declaringType: Type, isStatic: boolean)
     {
-        super(key, Type.from(owner));
+        super(key, declaringType, isStatic);
 
         this._invoke        = invoke;
         this._isConstructor = !!invoke.prototype;
