@@ -1,6 +1,7 @@
 import ExpressionType        from "@surface/expression/expression-type";
 import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
+import Type                  from "@surface/reflection";
 import { Action, Nullable }  from "@surface/types";
 import IArrayExpression      from "../../expression/interfaces/array-expression";
 import BindParser            from "./bind-parser";
@@ -67,7 +68,14 @@ export default class ElementBind
 
                         if (attributeName in element)
                         {
-                            DataBind.twoWay(element, attributeName, target, key);
+                            if (Type.from(target).hasMember(attributeName))
+                            {
+                                DataBind.twoWay(element, attributeName, target, key);
+                            }
+                            else
+                            {
+                                notify();
+                            }
                         }
                         else
                         {

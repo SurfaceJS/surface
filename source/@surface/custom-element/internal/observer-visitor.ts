@@ -2,6 +2,7 @@ import ExpressionVisitor from "@surface/expression/expression-visitor";
 import ICallExpression   from "@surface/expression/interfaces/call-expression";
 import IExpression       from "@surface/expression/interfaces/expression";
 import IMemberExpression from "@surface/expression/interfaces/member-expression";
+import Type              from "@surface/reflection";
 import { Action }        from "@surface/types";
 import DataBind          from "./data-bind";
 
@@ -35,7 +36,14 @@ export default class BindExpressionVisitor extends ExpressionVisitor
             throw new TypeError("Can't bind to non initialized object");
         }
 
-        DataBind.oneWay(target, key, this.notify);
+        if (Type.from(target).hasMember(key))
+        {
+            DataBind.oneWay(target, key, this.notify);
+        }
+        else
+        {
+            this.notify();
+        }
 
         return expression;
     }

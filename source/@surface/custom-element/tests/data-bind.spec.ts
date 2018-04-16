@@ -1,25 +1,12 @@
 import "./fixtures/dom";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import DataBind                    from "../internal/data-bind";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                              from "chai";
+import DataBind                                from "../internal/data-bind";
 
 @suite
 export default class DataBindSpec
 {
-    @test @shouldPass
-    public oneWayObjectSkipDataBind(): void
-    {
-        const target = { value: 1 };
-
-        let changed = false;
-        DataBind.oneWay(target, "value", () => changed = true);
-
-        target.value = 2;
-
-        expect(changed).to.equal(false);
-    }
-
     @test @shouldPass
     public oneWayObjectDataBind(): void
     {
@@ -121,5 +108,13 @@ export default class DataBindSpec
         source.value = 3;
 
         expect(target.value).to.equal(3);
+    }
+
+    @test @shouldFail
+    public invalidMember(): void
+    {
+        const target = { value: 1 };
+
+        expect(() => DataBind.oneWay(target, "value", () => null)).to.throw(Error, "Property value does not exist on Object type");
     }
 }
