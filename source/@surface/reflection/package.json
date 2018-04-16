@@ -12,10 +12,14 @@
         "tslib": "1.9.0"
     },
     "description": "Module for reflection capability.",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
+        "reflection",
         "surface",
-        "type",
         "typescrypt"
     ],
     "license": "MIT",
