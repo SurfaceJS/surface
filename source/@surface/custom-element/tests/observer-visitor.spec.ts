@@ -1,9 +1,11 @@
+// tslint:disable:no-non-null-assertion
 import "./fixtures/dom";
 
 import Expression                              from "@surface/expression";
+import ICallExpression                         from "@surface/expression/interfaces/call-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import BindExpressionVisitor                   from "../internal/observer-visitor";
+import ObserverVisitor                   from "../internal/observer-visitor";
 import { observedAttributes }                  from "../internal/symbols";
 
 @suite
@@ -29,7 +31,7 @@ export class ObserverVisitorSpec
         const context = { this: new Mock() };
 
         const expression = Expression.from("this.value", context);
-        const visitor    = new BindExpressionVisitor(() => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value += 1;
@@ -60,7 +62,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new Mock() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new BindExpressionVisitor(() => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value = 1;
@@ -92,7 +94,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new Mock() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new BindExpressionVisitor(() => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value = 1;
@@ -133,18 +135,21 @@ export class ObserverVisitorSpec
     {
         class Mock
         {
-            public doSomething(): void
+            public increment(value: number): number
             {
-                return;
+                return ++value;
             }
         }
 
         const context    = { this: new Mock() };
-        const expression = Expression.from("this.doSomething", context);
-        const visitor    = new BindExpressionVisitor(() => undefined);
+        const expression = Expression.from("this.increment(1)", context);
+        const visitor    = new ObserverVisitor(() => undefined);
+
+        const invoker = (expression as ICallExpression).context.evaluate()![(expression as ICallExpression).name];
 
         visitor.visit(expression);
-        expect(context.this.doSomething).to.equal(Mock.prototype.doSomething);
+
+        expect(invoker).to.equal(Mock.prototype.increment);
     }
 
     @test @shouldPass
@@ -160,7 +165,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new MockWithoutSetter() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new BindExpressionVisitor(() => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
 
@@ -179,7 +184,7 @@ export class ObserverVisitorSpec
         };
 
         const expression = Expression.from("this.data['value']", context);
-        const visitor    = new BindExpressionVisitor(() => undefined);
+        const visitor    = new ObserverVisitor(() => undefined);
 
         expect(() => visitor.visit(expression)).to.throw(Error, "Can't bind to non initialized object");
     }

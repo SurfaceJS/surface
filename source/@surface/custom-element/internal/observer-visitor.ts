@@ -6,7 +6,7 @@ import Type              from "@surface/reflection";
 import { Action }        from "@surface/types";
 import DataBind          from "./data-bind";
 
-export default class BindExpressionVisitor extends ExpressionVisitor
+export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly notify: Action;
 
@@ -36,9 +36,11 @@ export default class BindExpressionVisitor extends ExpressionVisitor
             throw new TypeError("Can't bind to non initialized object");
         }
 
-        if (Type.from(target).hasMember(key))
+        const member = Type.from(target).getProperty(key);
+
+        if (member)
         {
-            DataBind.oneWay(target, key, this.notify);
+            DataBind.oneWay(target, member, this.notify);
         }
         else
         {

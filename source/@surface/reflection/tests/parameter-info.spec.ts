@@ -31,7 +31,7 @@ export default class ParameterInfoSpec
     }
 
     @test @shouldPass
-    public noMmetadata(): void
+    public noMetadata(): void
     {
         const methodInfo    = new MethodInfo("instanceMethodWithParameters", Mock.prototype.instanceMethodWithParameters, Type.of(Mock), false);
         const parameterInfo = new ParameterInfo("a", 0, methodInfo, undefined);

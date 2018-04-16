@@ -7,7 +7,7 @@ import IArrayExpression      from "../../expression/interfaces/array-expression"
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";
 import DataBind              from "./data-bind";
-import BindExpressionVisitor from "./observer-visitor";
+import ObserverVisitor from "./observer-visitor";
 import windowWrapper         from "./window-wrapper";
 
 export default class ElementBind
@@ -60,26 +60,26 @@ export default class ElementBind
                     {
                         notify = () => attribute.value = `${expression.evaluate()}`;
 
-                        const visitor = new BindExpressionVisitor(notify);
-                        visitor.visit(expression);
+                        const source = attributeName in element ? element : attribute;
+
+                        const leftProperty = attributeName in element ?
+                            Type.from(element).getProperty(attributeName) :
+                            Type.from(attribute).getProperty("value");
 
                         const target = (expression as IMemberExpression).target.evaluate() as Object;
-                        const key    = (expression as IMemberExpression).key.evaluate()    as string;
+                        const key    = `${(expression as IMemberExpression).key.evaluate()}`;
 
-                        if (attributeName in element)
+                        const rightProperty = (target instanceof Function) ?
+                            Type.of(target).getStaticProperty(attributeName) :
+                            Type.from(target).getProperty(key);
+
+                        if (leftProperty && rightProperty)
                         {
-                            if (Type.from(target).hasMember(attributeName))
-                            {
-                                DataBind.twoWay(element, attributeName, target, key);
-                            }
-                            else
-                            {
-                                notify();
-                            }
+                            DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
-                        else
+                        else if (rightProperty)
                         {
-                            DataBind.twoWay(attribute, "value", target, key);
+                            DataBind.oneWay(target, rightProperty, notify);
                         }
                     }
                     else
@@ -95,7 +95,7 @@ export default class ElementBind
                             }
                         };
 
-                        const visitor = new BindExpressionVisitor(notify);
+                        const visitor = new ObserverVisitor(notify);
                         visitor.visit(expression);
                     }
 
@@ -120,7 +120,7 @@ export default class ElementBind
                 () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
                 () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            const visitor = new BindExpressionVisitor(notify);
+            const visitor = new ObserverVisitor(notify);
             visitor.visit(expression);
 
             notify();

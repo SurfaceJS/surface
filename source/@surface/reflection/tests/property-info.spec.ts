@@ -1,5 +1,4 @@
 // tslint:disable:no-non-null-assertion
-
 import KeyValuePair                from "@surface/collection/key-value-pair";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
@@ -45,6 +44,20 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
+        const metadata =
+        [
+            new KeyValuePair("design:paramtypes", [Number]),
+            new KeyValuePair("design:type", Number),
+        ];
+
+        expect(propertyInfo.metadata.toArray()).to.deep.equal(metadata);
+    }
+
+    @test @shouldPass
+    public staticPropertymetadata(): void
+    {
+        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock ,"staticProperty")!, Type.of(Mock), true);
+
         const metadata =
         [
             new KeyValuePair("design:paramtypes", [Number]),
