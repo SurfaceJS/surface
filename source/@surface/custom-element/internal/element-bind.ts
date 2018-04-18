@@ -54,12 +54,19 @@ export default class ElementBind
                 {
                     const attributeName = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
 
-                    let notify: Action;
+                    let notify = () =>
+                    {
+                        const value = expression.evaluate();
+                        attribute.value = `${value}`;
+
+                        if (attributeName in element)
+                        {
+                            element[attributeName] = value;
+                        }
+                    };
 
                     if (bindingMode == BindingMode.twoWay)
                     {
-                        notify = () => attribute.value = `${expression.evaluate()}`;
-
                         const source = attributeName in element ? element : attribute;
 
                         const leftProperty = attributeName in element ?
@@ -75,6 +82,8 @@ export default class ElementBind
 
                         if (leftProperty && rightProperty)
                         {
+                            notify = () => attribute.value = `${expression.evaluate()}`;
+
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
                         else if (rightProperty)
@@ -84,17 +93,6 @@ export default class ElementBind
                     }
                     else
                     {
-                        notify = () =>
-                        {
-                            const value = expression.evaluate();
-                            attribute.value = `${value}`;
-
-                            if (attributeName in element)
-                            {
-                                element[attributeName] = value;
-                            }
-                        };
-
                         const visitor = new ObserverVisitor(notify);
                         visitor.visit(expression);
                     }
