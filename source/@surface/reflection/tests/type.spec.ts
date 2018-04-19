@@ -1,3 +1,4 @@
+// tslint:disable:no-non-null-assertion
 import KeyValuePair                from "@surface/collection/key-value-pair";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
@@ -7,8 +8,6 @@ import PropertyInfo                from "../property-info";
 import Type                        from "../type";
 import BaseMock                    from "./fixtures/base-mock";
 import Mock                        from "./fixtures/mock";
-
-// tslint:disable:no-non-null-assertion
 
 @suite
 export default class TypeSpec
@@ -61,9 +60,14 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getInvalidField(): void
+    public getFielMember(): void
     {
-        expect(Type.of(Mock).getField("__invalid__")).to.deep.equal(null);
+        const key = "instanceField";
+
+        const actual   = Type.of(Mock).getMember(key);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -78,9 +82,14 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getInvalidStaticField(): void
+    public getStaticFieldMember(): void
     {
-        expect(Type.of(Mock).getStaticField("__invalid__")).to.deep.equal(null);
+        const key = "staticField";
+
+        const actual   = Type.of(Mock).getStaticMember(key);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -95,9 +104,14 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getInvalidMethod(): void
+    public getMethodMember(): void
     {
-        expect(Type.of(Mock).getMethod("__invalid__")).to.deep.equal(null);
+        const key = "instanceMethod";
+
+        const actual   = Type.of(Mock).getMember(key);
+        const expected = new MethodInfo(key, Mock.prototype[key], Type.of(Mock), false);
+
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -112,9 +126,14 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getInvalidStaticMethod(): void
+    public getStaticMethodMember(): void
     {
-        expect(Type.of(Mock).getStaticMethod("__invalid__")).to.deep.equal(null);
+        const key = "staticMethod";
+
+        const actual   = Type.of(Mock).getStaticMember(key);
+        const expected = new MethodInfo(key, Mock[key], Type.of(Mock), true);
+
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -126,13 +145,17 @@ export default class TypeSpec
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
 
         expect(actual).to.deep.equal(expected);
-        expect(actual!.isStatic).to.equal(false);
-        expect(actual!.getter).to.instanceof(Function);
-        expect(actual!.setter).to.instanceof(Function);
-        expect(actual!.value).to.equal(undefined);
-        expect(actual!.readonly).to.equal(false);
-        expect(actual!.configurable).to.equal(true);
-        expect(actual!.enumerable).to.equal(false);
+    }
+
+    @test @shouldPass
+    public getPropertyMember(): void
+    {
+        const key = "instanceProperty";
+
+        const actual   = Type.of(Mock).getMember(key);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -148,17 +171,22 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getInvalidProperty(): void
-    {
-        expect(Type.of(Mock).getProperty("__invalid__")).to.deep.equal(null);
-    }
-
-    @test @shouldPass
     public getStaticProperty(): void
     {
         const key = "staticProperty";
 
         const actual   = Type.of(Mock).getStaticProperty(key);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+
+        expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldPass
+    public getStaticPropertyMember(): void
+    {
+        const key = "staticProperty";
+
+        const actual   = Type.of(Mock).getStaticMember(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
 
         expect(actual).to.deep.equal(expected);
@@ -174,6 +202,48 @@ export default class TypeSpec
 
         expect(actual).to.deep.equal(expected);
         expect(actual!.readonly).to.equal(true);
+    }
+
+    @test @shouldPass
+    public getInvalidMember(): void
+    {
+        expect(Type.of(Mock).getMember("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidField(): void
+    {
+        expect(Type.of(Mock).getField("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidMethod(): void
+    {
+        expect(Type.of(Mock).getMethod("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidProperty(): void
+    {
+        expect(Type.of(Mock).getProperty("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidStaticMember(): void
+    {
+        expect(Type.of(Mock).getStaticMember("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidStaticField(): void
+    {
+        expect(Type.of(Mock).getStaticField("__invalid__")).to.deep.equal(null);
+    }
+
+    @test @shouldPass
+    public getInvalidStaticMethod(): void
+    {
+        expect(Type.of(Mock).getStaticMethod("__invalid__")).to.deep.equal(null);
     }
 
     @test @shouldPass
@@ -429,49 +499,5 @@ export default class TypeSpec
     public checkEqualsType(): void
     {
         expect(Type.of(Mock).equals(Type.of(Mock))).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasFieldMember(): void
-    {
-        expect(Type.of(Mock).hasMember("baseInstanceField")).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasPropertyMember(): void
-    {
-        expect(Type.of(Mock).hasMember("baseInstanceProperty")).to.equal(true);
-        expect(Type.of(Mock).hasMember("_baseStaticProperty")).to.equal(false);
-    }
-
-    @test @shouldPass
-    public checkHasMethodMember(): void
-    {
-        expect(Type.of(Mock).hasMember("baseInstanceProperty")).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasStaticFieldMember(): void
-    {
-        expect(Type.of(Mock).hasStaticMember("baseStaticField")).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasStaticPropertyMember(): void
-    {
-        expect(Type.of(Mock).hasStaticMember("baseStaticProperty")).to.equal(true);
-        expect(Type.of(Mock).hasStaticMember("_baseStaticProperty")).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasStaticMethodMember(): void
-    {
-        expect(Type.of(Mock).hasStaticMember("baseStaticMethod")).to.equal(true);
-    }
-
-    @test @shouldPass
-    public checkHasInvalidStaticMethodMember(): void
-    {
-        expect(Type.of(Mock).hasStaticMember("__invalid__")).to.equal(false);
     }
 }

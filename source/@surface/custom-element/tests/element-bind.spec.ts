@@ -67,13 +67,31 @@ export default class ElementBindSpec
     }
 
     @test @shouldPass
+    public async elementWithAttributesBindToNonBindableField(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        content.innerHTML = "<span foo='{{ host.tagName }}'</span>";
+
+        const span = content.firstElementChild as HTMLSpanElement;
+
+        span["foo"] = "";
+
+        await ElementBind.for(host, content);
+
+        expect(span["foo"]).to.equal("DIV");
+    }
+
+    @test @shouldPass
     public async elementWithAttributesBindToWindowFallback(): Promise<void>
     {
         const document = window.document;
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        content.innerHTML = "<span lang='[[ Node.name ]]'</span>";
+        content.innerHTML = "<span lang='{{ Node.name }}'</span>";
 
         await ElementBind.for(host, content);
 

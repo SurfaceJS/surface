@@ -1,12 +1,13 @@
 import ExpressionType        from "@surface/expression/expression-type";
 import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
+import Type                  from "@surface/reflection";
 import { Action, Nullable }  from "@surface/types";
 import IArrayExpression      from "../../expression/interfaces/array-expression";
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";
 import DataBind              from "./data-bind";
-import BindExpressionVisitor from "./observer-visitor";
+import ObserverVisitor from "./observer-visitor";
 import windowWrapper         from "./window-wrapper";
 
 export default class ElementBind
@@ -53,41 +54,46 @@ export default class ElementBind
                 {
                     const attributeName = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
 
-                    let notify: Action;
-
-                    if (bindingMode == BindingMode.twoWay)
+                    let notify = () =>
                     {
-                        notify = () => attribute.value = `${expression.evaluate()}`;
-
-                        const visitor = new BindExpressionVisitor(notify);
-                        visitor.visit(expression);
-
-                        const target = (expression as IMemberExpression).target.evaluate() as Object;
-                        const key    = (expression as IMemberExpression).key.evaluate()    as string;
+                        const value = expression.evaluate();
+                        attribute.value = `${value}`;
 
                         if (attributeName in element)
                         {
-                            DataBind.twoWay(element, attributeName, target, key);
+                            element[attributeName] = value;
                         }
-                        else
+                    };
+
+                    if (bindingMode == BindingMode.twoWay)
+                    {
+                        const source = attributeName in element ? element : attribute;
+
+                        const leftProperty = attributeName in element ?
+                            Type.from(element).getProperty(attributeName) :
+                            Type.from(attribute).getProperty("value");
+
+                        const target = (expression as IMemberExpression).target.evaluate() as Object;
+                        const key    = `${(expression as IMemberExpression).key.evaluate()}`;
+
+                        const rightProperty = (target instanceof Function) ?
+                            Type.of(target).getStaticProperty(attributeName) :
+                            Type.from(target).getProperty(key);
+
+                        if (leftProperty && rightProperty)
                         {
-                            DataBind.twoWay(attribute, "value", target, key);
+                            notify = () => attribute.value = `${expression.evaluate()}`;
+
+                            DataBind.twoWay(source, leftProperty, target, rightProperty);
+                        }
+                        else if (rightProperty)
+                        {
+                            DataBind.oneWay(target, rightProperty, notify);
                         }
                     }
                     else
                     {
-                        notify = () =>
-                        {
-                            const value = expression.evaluate();
-                            attribute.value = `${value}`;
-
-                            if (attributeName in element)
-                            {
-                                element[attributeName] = value;
-                            }
-                        };
-
-                        const visitor = new BindExpressionVisitor(notify);
+                        const visitor = new ObserverVisitor(notify);
                         visitor.visit(expression);
                     }
 
@@ -112,7 +118,7 @@ export default class ElementBind
                 () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
                 () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            const visitor = new BindExpressionVisitor(notify);
+            const visitor = new ObserverVisitor(notify);
             visitor.visit(expression);
 
             notify();

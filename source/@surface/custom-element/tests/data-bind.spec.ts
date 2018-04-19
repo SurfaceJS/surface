@@ -1,5 +1,7 @@
+// tslint:disable:no-non-null-assertion
 import "./fixtures/dom";
 
+import Type                        from "@surface/reflection/type";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import DataBind                    from "../internal/data-bind";
@@ -7,19 +9,6 @@ import DataBind                    from "../internal/data-bind";
 @suite
 export default class DataBindSpec
 {
-    @test @shouldPass
-    public oneWayObjectSkipDataBind(): void
-    {
-        const target = { value: 1 };
-
-        let changed = false;
-        DataBind.oneWay(target, "value", () => changed = true);
-
-        target.value = 2;
-
-        expect(changed).to.equal(false);
-    }
-
     @test @shouldPass
     public oneWayObjectDataBind(): void
     {
@@ -40,7 +29,8 @@ export default class DataBindSpec
         const target = new Mock();
 
         let changed = false;
-        DataBind.oneWay(target, "value", () => changed = true);
+
+        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
 
         target.value = 2;
 
@@ -54,7 +44,7 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target, "value", () => changed = true);
+        DataBind.oneWay(target, Type.from(target).getProperty("value")!, () => changed = true);
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
@@ -71,7 +61,7 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute, "value", () => value = attribute.value);
+        DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, () => value = attribute.value);
 
         attribute.value = "2";
         expect(value).to.equal("2");
@@ -84,7 +74,7 @@ export default class DataBindSpec
         target.lang = "pt-br";
 
         let value = target.lang;
-        DataBind.oneWay(target, "lang", () => value = target.lang);
+        DataBind.oneWay(target, Type.from(target).getProperty("lang")!, () => value = target.lang);
 
         target.setAttribute("lang", "en-us");
         target.setAttribute("lang1", "en-us");
@@ -109,17 +99,17 @@ export default class DataBindSpec
             }
         }
 
-        const target = new Mock();
-        const source = new Mock();
+        const left  = new Mock();
+        const right = new Mock();
 
-        DataBind.twoWay(target, "value", source, "value");
+        DataBind.twoWay(left, Type.from(left).getProperty("value")!, right, Type.from(right).getProperty("value")!);
 
-        target.value = 2;
+        left.value = 2;
 
-        expect(source.value).to.equal(2);
+        expect(right.value).to.equal(2);
 
-        source.value = 3;
+        right.value = 3;
 
-        expect(target.value).to.equal(3);
+        expect(left.value).to.equal(3);
     }
 }
