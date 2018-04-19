@@ -13,8 +13,7 @@ Object.assign
 function ProxyHTMLElement() { }
 ProxyHTMLElement.prototype = window.HTMLElement.prototype;
 
-let shadowRoot: HTMLElement|null = null;
-ProxyHTMLElement.prototype["attachShadow"] = () => shadowRoot || (shadowRoot = window.document.createElement("div"));
+ProxyHTMLElement.prototype["attachShadow"] = () => window.document.createElement("div");
 
 (window.HTMLElement as Object) = ProxyHTMLElement;
 
