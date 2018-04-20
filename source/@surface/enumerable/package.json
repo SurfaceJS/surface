@@ -8,6 +8,11 @@
         "tslib": "1.9.0"
     },
     "description": "Enumerable module the provides many methods to iterate through of collections.",
+    "devDependencies": {
+        "@types/chai": "4.1.2",
+        "chai": "4.1.2",
+        "jsdom": "11.6.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "enumerable",
