@@ -1,44 +1,46 @@
 import Enumerable from "@surface/enumerable";
 
+const source = Symbol("list:source");
+
 export default class List<TSource> extends Enumerable<TSource>
 {
-    private source: Array<TSource>;
+    private [source]: Array<TSource>;
 
     /** Returns Length of the list. */
     public get length(): number
     {
-        return this.source.length;
+        return this[source].length;
     }
 
     public constructor();
     /**
-     * @param source Array<TSource> used to create the list.
+     * @param elements Array<TSource> used to create the list.
      */
-    public constructor(source: Array<TSource>);
+    public constructor(elements: Array<TSource>);
     /**
-     * @param source Enumerable<TSource> used to create the list.
+     * @param elements Enumerable<TSource> used to create the list.
      */
-    public constructor(source: Enumerable<TSource>);
-    public constructor(source?: Array<TSource>|Enumerable<TSource>)
+    public constructor(elements: Enumerable<TSource>);
+    public constructor(elements?: Array<TSource>|Enumerable<TSource>)
     {
         super();
-        if (source && Array.isArray(source))
+        if (elements && Array.isArray(elements))
         {
-            this.source = source;
+            this[source] = elements;
         }
-        else if (source instanceof Enumerable)
+        else if (elements instanceof Enumerable)
         {
-            this.source = source.toArray();
+            this[source] = elements.toArray();
         }
         else
         {
-            this.source = [];
+            this[source] = [];
         }
     }
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        for (const element of this.source)
+        for (const element of this[source])
         {
             yield element;
         }
@@ -50,7 +52,7 @@ export default class List<TSource> extends Enumerable<TSource>
      */
     public add(item: TSource): void
     {
-        this.source.push(item);
+        this[source].push(item);
     }
 
     /**
@@ -73,19 +75,19 @@ export default class List<TSource> extends Enumerable<TSource>
     public addAt(items: List<TSource>, index: number): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index: number): void
     {
-        const remaining = this.source.splice(index + 1);
+        const remaining = this[source].splice(index);
 
         if (Array.isArray(itemOrItems))
         {
-            this.source = this.source.concat(itemOrItems).concat(remaining);
+            this[source] = this[source].concat(itemOrItems).concat(remaining);
         }
         else if (itemOrItems instanceof List)
         {
-            this.source = this.source.concat(itemOrItems.toArray()).concat(remaining);
+            this[source] = this[source].concat(itemOrItems.toArray()).concat(remaining);
         }
         else
         {
-            this.source = this.source.concat([itemOrItems]).concat(remaining);
+            this[source] = this[source].concat([itemOrItems]).concat(remaining);
         }
     }
 
@@ -109,11 +111,11 @@ export default class List<TSource> extends Enumerable<TSource>
     {
         if (typeof indexOritem == "number")
         {
-            this.source.splice(indexOritem, count || 1);
+            this[source].splice(indexOritem, count || 1);
         }
         else
         {
-            this.source.splice(this.source.findIndex(x => Object.is(x, indexOritem)), 1);
+            this[source].splice(this[source].findIndex(x => Object.is(x, indexOritem)), 1);
         }
     }
 
@@ -123,6 +125,6 @@ export default class List<TSource> extends Enumerable<TSource>
      */
     public item(index: number): TSource
     {
-        return this.source[index];
+        return this[source][index];
     }
 }

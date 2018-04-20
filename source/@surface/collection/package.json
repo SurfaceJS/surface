@@ -10,9 +10,8 @@
     },
     "description": "Collection modules.",
     "devDependencies": {
-        "@types/chai": "4.1.2",
-        "chai": "4.1.2",
-        "jsdom": "11.6.2"
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
