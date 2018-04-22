@@ -31,9 +31,9 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
         }
     }
 
-    public static of<TValue>(source: ObjectLiteral<TValue>): Dictionary<string, TValue>
+    public static from<TValue>(source: ObjectLiteral<TValue>): Dictionary<string, TValue>
     {
-        return new Dictionary(Enumerable.from(Object.keys(source)).select(x => new KeyValuePair(x, source[x])).toArray());
+        return new Dictionary(Enumerable.of(Object.keys(source)).select(x => new KeyValuePair(x, source[x])).toArray());
     }
 
     public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>

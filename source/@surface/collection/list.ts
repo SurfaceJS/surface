@@ -1,9 +1,11 @@
-import Enumerable from "@surface/enumerable";
+import Enumerable              from "@surface/enumerable";
+import ArgumentOutOfRangeError from "@surface/types/errors/argument-out-of-range-rrror";
 
 const source = Symbol("list:source");
 
 export default class List<TSource> extends Enumerable<TSource>
 {
+    [index: number]:  TSource;
     private [source]: Array<TSource>;
 
     /** Returns Length of the list. */
@@ -36,6 +38,59 @@ export default class List<TSource> extends Enumerable<TSource>
         {
             this[source] = [];
         }
+
+        const handler: ProxyHandler<List<TSource>> =
+        {
+            has: (target, key) => Number.isInteger(parseInt(key.toString())) ? key in this[source] : key in this,
+            get: (target, key) =>
+            {
+                const index = parseInt(key.toString());
+
+                if (Number.isInteger(index))
+                {
+                    if (index < 0)
+                    {
+                        throw new ArgumentOutOfRangeError("index is less than 0");
+                    }
+                    else if (index >= this.length)
+                    {
+                        throw new ArgumentOutOfRangeError("index is equal to or greater than length");
+                    }
+
+                    return this[source][index];
+                }
+                else
+                {
+                    return this[key];
+                }
+            },
+            set: (target, key, value) =>
+            {
+                const index = parseInt(key.toString());
+
+                if (Number.isInteger(index))
+                {
+                    if (index < 0)
+                    {
+                        throw new ArgumentOutOfRangeError("index is less than 0");
+                    }
+                    else if (index >= this.length)
+                    {
+                        throw new ArgumentOutOfRangeError("index is equal to or greater than length");
+                    }
+
+                    this[source][index] = value;
+                }
+                else
+                {
+                    this[key] = value;
+                }
+
+                return true;
+            }
+        };
+
+        return new Proxy(this, handler);
     }
 
     public *[Symbol.iterator](): Iterator<TSource>
@@ -117,14 +172,5 @@ export default class List<TSource> extends Enumerable<TSource>
         {
             this[source].splice(this[source].findIndex(x => Object.is(x, indexOritem)), 1);
         }
-    }
-
-    /**
-     * Returns the item at the specified index.
-     * @param index Position of the item.
-     */
-    public item(index: number): TSource
-    {
-        return this[source][index];
     }
 }

@@ -18,7 +18,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Create a enumerable object from a iterable source
      * @param source Source used to create the iterable object
      */
-    public static from<TSource>(source: Iterable<TSource>): Enumerable<TSource>
+    public static of<TSource>(source: Iterable<TSource>): Enumerable<TSource>
     {
         return new EnumerableIterator(source);
     }
