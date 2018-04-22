@@ -1,5 +1,5 @@
-import "@surface/reflection/extensions";
-
+import Enumerable                from "@surface/enumerable";
+import Type                      from "@surface/reflection/type";
 import Router                    from "@surface/router";
 import { Constructor, Nullable } from "@surface/types";
 import ActionResult              from "./action-result";
@@ -26,10 +26,9 @@ export default class MvcRequestHandler extends RequestHandler
         let esmodule = require(filepath) as object;
 
         let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
-            || esmodule.getType().extends(Controller) && esmodule
-            || esmodule.getType().equals(Object) && Object.keys(esmodule)
-                .asEnumerable()
-                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(Controller))
+            || Type.from(esmodule).extends(Controller) && esmodule
+            || Type.from(esmodule).equals(Object) && Enumerable.of(Object.keys(esmodule))
+                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.from(esmodule[x]).extends(Controller))
                 .select(x => esmodule[x])
                 .firstOrDefault();
 
@@ -69,8 +68,7 @@ export default class MvcRequestHandler extends RequestHandler
 
                         let targetController = new constructor(httpContext);
 
-                        let actionMethod = targetController.getType()
-                            .getMethods()
+                        let actionMethod = Enumerable.of(Type.from(targetController).getMethods())
                             .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
 
                         if (actionMethod)

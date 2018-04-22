@@ -1,11 +1,10 @@
-// tslint:disable:no-non-null-assertion
-import KeyValuePair                from "@surface/collection/key-value-pair";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import PropertyInfo                from "../property-info";
 import Type                        from "../type";
 import Mock                        from "./fixtures/mock";
 
+// tslint:disable:no-non-null-assertion
 const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceProperty")!, Type.of(Mock), false);
 
 @suite
@@ -45,12 +44,12 @@ export default class FieldInfoSpec
     public metadata(): void
     {
         const metadata =
-        [
-            new KeyValuePair("design:paramtypes", [Number]),
-            new KeyValuePair("design:type", Number),
-        ];
+        {
+            "design:paramtypes": [Number],
+            "design:type": Number
+        };
 
-        expect(propertyInfo.metadata.toArray()).to.deep.equal(metadata);
+        expect(propertyInfo.metadata).to.deep.equal(metadata);
     }
 
     @test @shouldPass
@@ -59,12 +58,12 @@ export default class FieldInfoSpec
         const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock ,"staticProperty")!, Type.of(Mock), true);
 
         const metadata =
-        [
-            new KeyValuePair("design:paramtypes", [Number]),
-            new KeyValuePair("design:type", Number),
-        ];
+        {
+            "design:paramtypes": [Number],
+            "design:type": Number,
+        };
 
-        expect(propertyInfo.metadata.toArray()).to.deep.equal(metadata);
+        expect(propertyInfo.metadata).to.deep.equal(metadata);
     }
 
     @test @shouldPass

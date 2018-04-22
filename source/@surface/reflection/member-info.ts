@@ -1,4 +1,3 @@
-import Dictionary   from "@surface/collection/dictionary";
 import { Nullable } from "@surface/types";
 import Type         from "./type";
 
@@ -22,14 +21,19 @@ export default abstract class MemberInfo
         return this._key;
     }
 
-    protected _metadata: Nullable<Dictionary<string, Object>>;
-    public get metadata(): Dictionary<string, Object>
+    protected _metadata: Nullable<Object>;
+    public get metadata(): Object
     {
-        return this._metadata = this._metadata ||
+        if (!this._metadata)
+        {
+            const metadata = { };
             Reflect.getMetadataKeys(this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key)
-                .asEnumerable()
-                .cast<string>()
-                .toDictionary(x => x, x => Reflect.getMetadata(x, this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key));
+                .forEach(key => metadata[key] = Reflect.getMetadata(key, this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key));
+
+            this._metadata = metadata;
+        }
+
+        return this._metadata;
     }
 
     protected constructor(key: string, declaringType: Type, isStatic: boolean)

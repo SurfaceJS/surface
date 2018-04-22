@@ -1,5 +1,5 @@
 // tslint:disable:no-non-null-assertion
-import KeyValuePair                from "@surface/collection/key-value-pair";
+import Enumerable                  from "@surface/enumerable";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import FieldInfo                   from "../field-info";
@@ -255,8 +255,9 @@ export default class TypeSpec
     @test @shouldPass
     public getClassMetadata(): void
     {
-        const actual   = Type.of(Mock).metadata.toArray();
-        const expected = [] as Array<KeyValuePair<string, Object>>;
+        const type     = Type.of(Mock);
+        const actual   = type.metadata /* caching */ && type.metadata;
+        const expected = { };
 
         expect(actual).to.deep.equal(expected);
     }
@@ -330,8 +331,8 @@ export default class TypeSpec
     @test @shouldPass
     public getBaseClassMetadata(): void
     {
-        const actual   = Type.of(BaseMock).metadata.toArray();
-        const expected = [] as Array<KeyValuePair<string, Object>>;
+        const actual   = Type.of(BaseMock).metadata;
+        const expected = { };
 
         expect(actual).to.deep.equal(expected);
     }
@@ -342,7 +343,7 @@ export default class TypeSpec
         const key     = "instanceField";
         const baseKey = "baseInstanceField";
 
-        const actual = Type.of(Mock).getFields().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -364,7 +365,7 @@ export default class TypeSpec
         const privateBaseStaticProperty = "_baseStaticProperty";
         const baseStaticField           = "baseStaticField";
 
-        const actual = Type.of(Mock).getStaticFields().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getStaticFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -390,7 +391,7 @@ export default class TypeSpec
         const instanceReadonlyProperty = "instanceReadonlyProperty";
         const baseInstanceProperty     = "baseInstanceProperty";
 
-        const actual = Type.of(Mock).getProperties().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -409,7 +410,7 @@ export default class TypeSpec
         const staticReadonlyProperty = "staticReadonlyProperty";
         const baseStaticProperty     = "baseStaticProperty";
 
-        const actual = Type.of(Mock).getStaticProperties().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getStaticProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -424,7 +425,7 @@ export default class TypeSpec
     @test @shouldPass
     public getMethods(): void
     {
-        const actual = Type.of(Mock).getMethods().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -442,7 +443,7 @@ export default class TypeSpec
     @test @shouldPass
     public getStaticMethods(): void
     {
-        const actual = Type.of(Mock).getStaticMethods().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.of(Type.of(Mock).getStaticMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [

@@ -1,4 +1,3 @@
-import Dictionary   from "@surface/collection/dictionary";
 import { Nullable } from "@surface/types";
 import MethodInfo   from "./method-info";
 
@@ -16,8 +15,8 @@ export default class ParameterInfo
         return this._index;
     }
 
-    private readonly _metadata: Dictionary<string, Object>;
-    public get metadata(): Dictionary<string, Object>
+    private readonly _metadata: Object;
+    public get metadata(): Object
     {
         return this._metadata;
     }
@@ -33,6 +32,6 @@ export default class ParameterInfo
         this._declaringMethod = declaringMethod;
         this._name            = name;
         this._index           = index;
-        this._metadata        = paramType ? Dictionary.of({ "design:type": paramType }) : new Dictionary();
+        this._metadata        = paramType ? { "design:type": paramType } : { };
     }
 }

@@ -1,4 +1,3 @@
-import KeyValuePair                from "@surface/collection/key-value-pair";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import MethodInfo                  from "../method-info";
@@ -27,7 +26,7 @@ export default class ParameterInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        expect(parameterInfo.metadata.toArray()).to.deep.equal([new KeyValuePair("design:type", Number)]);
+        expect(parameterInfo.metadata).to.deep.equal({ "design:type": Number });
     }
 
     @test @shouldPass
@@ -35,7 +34,7 @@ export default class ParameterInfoSpec
     {
         const methodInfo    = new MethodInfo("instanceMethodWithParameters", Mock.prototype.instanceMethodWithParameters, Type.of(Mock), false);
         const parameterInfo = new ParameterInfo("a", 0, methodInfo, undefined);
-        expect(parameterInfo.metadata.toArray()).to.deep.equal([]);
+        expect(parameterInfo.metadata).to.deep.equal({ });
     }
 
     @test @shouldPass

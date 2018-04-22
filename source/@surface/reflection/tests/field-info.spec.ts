@@ -44,7 +44,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        expect(fieldInfo.metadata.toArray()).to.deep.equal([]);
+        expect(fieldInfo.metadata).to.deep.equal({ });
     }
 
     @test @shouldPass
