@@ -27,7 +27,7 @@ export default class MvcRequestHandler extends RequestHandler
 
         let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
             || Type.from(esmodule).extends(Controller) && esmodule
-            || Type.from(esmodule).equals(Object) && Enumerable.of(Object.keys(esmodule))
+            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
                 .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.from(esmodule[x]).extends(Controller))
                 .select(x => esmodule[x])
                 .firstOrDefault();
@@ -68,7 +68,7 @@ export default class MvcRequestHandler extends RequestHandler
 
                         let targetController = new constructor(httpContext);
 
-                        let actionMethod = Enumerable.of(Type.from(targetController).getMethods())
+                        let actionMethod = Enumerable.from(Type.from(targetController).getMethods())
                             .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
 
                         if (actionMethod)

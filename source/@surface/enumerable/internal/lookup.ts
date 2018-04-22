@@ -1,17 +1,14 @@
-import Enumerable from "..";
-import IComparer  from "../interfaces/comparer";
-import ILookup    from "../interfaces/lookup";
-import Group      from "./group";
-import HashEncode from "./hash-encode";
+import { Func1, Nullable } from "@surface/types";
+import IComparer           from "../interfaces/comparer";
+import ILookup             from "../interfaces/lookup";
+import Group               from "./group";
+import HashEncode          from "./hash-encode";
 
-import { Func1, Func2, Nullable } from "@surface/types";
-
-export default class Lookup<TSource, TKey, TElement, TResult> implements Iterable<TResult>, ILookup<TKey, TElement>
+export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<TKey, TElement>>, ILookup<TKey, TElement>
 {
-    private comparer:       IComparer<TKey>;
-    private groups:         Array<Group<TKey, TElement>>;
-    private lastGroup:      Nullable<Group<TKey, TElement>>;
-    private resultSelector: Func2<TKey, Enumerable<TElement>, TResult>;
+    private comparer:  IComparer<TKey>;
+    private groups:    Array<Group<TKey, TElement>>;
+    private lastGroup: Nullable<Group<TKey, TElement>>;
 
     private _count: number;
     public get count(): number
@@ -19,14 +16,13 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         return this._count;
     }
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Enumerable<TElement>, TResult>, comparer: IComparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, comparer: IComparer<TKey>)
     {
         const initialSize = 7;
 
         this._count         = 0;
         this.comparer       = comparer;
         this.groups         = new Array(initialSize);
-        this.resultSelector = resultSelector;
 
         for (const element of source)
         {
@@ -93,36 +89,34 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         const newSize = this._count * two + 1;
         const buffer  = new Array<Group<TKey, TElement>>(newSize);
 
-        let current = this.lastGroup;
+        let current = this.lastGroup as Group<TKey, TElement>;
 
         do
         {
-            if (current = current && current.next)
-            {
-                const index = current.hash % newSize;
+            current = current.next as Group<TKey, TElement>;
 
-                current.hashNext = buffer[index];
+            const index = current.hash % newSize;
 
-                buffer[index] = current;
-            }
+            current.hashNext = buffer[index];
+
+            buffer[index] = current;
         }
         while (current != this.lastGroup);
 
         this.groups = buffer;
     }
 
-    public *[Symbol.iterator](): Iterator<TResult>
+    public *[Symbol.iterator](): Iterator<Group<TKey, TElement>>
     {
-        let current = this.lastGroup;
+        let current = this.lastGroup as Group<TKey, TElement>;
 
         do
         {
-            if (current = current && current.next)
-            {
-                yield this.resultSelector(current.key, Enumerable.from(current.elements));
-            }
+            current = current.next as Group<TKey, TElement>;
+
+            yield current;
         }
-        while(current != this.lastGroup);
+        while (current != this.lastGroup);
     }
 
     public contains(key: TKey): boolean
@@ -130,15 +124,15 @@ export default class Lookup<TSource, TKey, TElement, TResult> implements Iterabl
         return !!this.getGroup(key, HashEncode.getHashCode(key));
     }
 
-    public get(key: TKey): Enumerable<TElement>
+    public get(key: TKey): Array<TElement>
     {
         const group = this.getGroup(key, HashEncode.getHashCode(key));
 
         if (group)
         {
-            return Enumerable.from(group.elements);
+            return group.elements;
         }
 
-        return Enumerable.empty();
+        return [];
     }
 }

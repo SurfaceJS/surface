@@ -27,7 +27,7 @@ export default class ListSpec
     @test @shouldPass
     public createEmptyFromEnumerable(): void
     {
-        const list = new List(Enumerable.of([1, 2, 3]));
+        const list = new List(Enumerable.from([1, 2, 3]));
 
         expect(list[0],     "list[0]").to.equal(1);
         expect(list[1],     "list[1]").to.equal(2);

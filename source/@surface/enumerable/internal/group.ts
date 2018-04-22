@@ -1,13 +1,12 @@
 import { Nullable } from "@surface/types";
-import Enumerable   from "..";
 import IGroup       from "../interfaces/group";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
 {
     private readonly source: Array<TElement> = [];
-    public get elements(): Enumerable<TElement>
+    public get elements(): Array<TElement>
     {
-        return Enumerable.from(this.source);
+        return this.source;
     }
 
     private readonly _key: TKey;
@@ -21,15 +20,10 @@ export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
         return this.source.length;
     }
 
-    private _hash: number;
+    private readonly _hash: number;
     public get hash(): number
     {
         return this._hash;
-    }
-
-    public set hash(value: number)
-    {
-        this._hash = value;
     }
 
     private _hashNext: Nullable<Group<TKey, TElement>>;

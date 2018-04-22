@@ -343,7 +343,7 @@ export default class TypeSpec
         const key     = "instanceField";
         const baseKey = "baseInstanceField";
 
-        const actual = Enumerable.of(Type.of(Mock).getFields()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -365,7 +365,7 @@ export default class TypeSpec
         const privateBaseStaticProperty = "_baseStaticProperty";
         const baseStaticField           = "baseStaticField";
 
-        const actual = Enumerable.of(Type.of(Mock).getStaticFields()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -391,7 +391,7 @@ export default class TypeSpec
         const instanceReadonlyProperty = "instanceReadonlyProperty";
         const baseInstanceProperty     = "baseInstanceProperty";
 
-        const actual = Enumerable.of(Type.of(Mock).getProperties()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -410,7 +410,7 @@ export default class TypeSpec
         const staticReadonlyProperty = "staticReadonlyProperty";
         const baseStaticProperty     = "baseStaticProperty";
 
-        const actual = Enumerable.of(Type.of(Mock).getStaticProperties()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -425,7 +425,7 @@ export default class TypeSpec
     @test @shouldPass
     public getMethods(): void
     {
-        const actual = Enumerable.of(Type.of(Mock).getMethods()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -443,7 +443,7 @@ export default class TypeSpec
     @test @shouldPass
     public getStaticMethods(): void
     {
-        const actual = Enumerable.of(Type.of(Mock).getStaticMethods()).where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [

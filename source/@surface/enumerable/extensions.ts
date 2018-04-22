@@ -12,5 +12,5 @@ declare global
 
 Array.prototype.asEnumerable = Array.prototype.asEnumerable || function asEnumerable<T>(this: Array<T>)
 {
-    return Enumerable.of(this);
+    return Enumerable.from(this);
 };
