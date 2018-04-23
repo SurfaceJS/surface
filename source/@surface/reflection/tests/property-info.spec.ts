@@ -49,6 +49,7 @@ export default class FieldInfoSpec
             "design:type": Number
         };
 
+        expect(propertyInfo.metadata).to.deep.equal(metadata); // caching
         expect(propertyInfo.metadata).to.deep.equal(metadata);
     }
 
