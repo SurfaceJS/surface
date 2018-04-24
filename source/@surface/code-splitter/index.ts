@@ -1,10 +1,8 @@
-#!/usr/bin/env node
-import * as common    from "@surface/common";
-import * as commander from "commander";
-import * as fs        from "fs";
-import * as path      from "path";
+import * as common from "@surface/common";
+import fs          from "fs";
+import path        from "path";
 
-export namespace CodeSplitter
+namespace CodeSplitter
 {
     export interface IOptions
     {
@@ -14,7 +12,7 @@ export namespace CodeSplitter
     }
 }
 
-export class CodeSplitter
+class CodeSplitter
 {
     private readonly context:  string;
     private readonly entries:  Array<string>;
@@ -25,22 +23,22 @@ export class CodeSplitter
     {
         if (!options)
         {
-            throw new Error("Parameter \"options\" can't be null.");
+            throw new Error("parameter \"options\" not specified");
         }
 
         if (!options.context)
         {
-            throw new Error("Parameter \"options.context\" not specified.");
+            throw new Error("parameter \"options.context\" not specified");
         }
 
         if (!options.entries)
         {
-            throw new Error("Parameter \"options.entries\" not specified.");
+            throw new Error("parameter \"options.entries\" not specified");
         }
 
         if (!options.output)
         {
-            throw new Error("Parameter \"options.output\" not specified.");
+            throw new Error("parameter \"options.output\" not specified");
         }
 
         this.context = path.isAbsolute(options.context) ? options.context : path.resolve(process.cwd(), options.context);
@@ -183,11 +181,4 @@ export class CodeSplitter
     }
 }
 
-commander
-    .version("0.0.1")
-    .option("-c, --context <path>", "Context path")
-    .option("-e, --entries <paths>", "Entry files or directories", files => files.split(","))
-    .option("-o, --output  <path>", "Output path")
-    .parse(process.argv);
-
-CodeSplitter.execute({ context: commander.context, entries: commander.entries, output: commander.output });
+export default CodeSplitter;
