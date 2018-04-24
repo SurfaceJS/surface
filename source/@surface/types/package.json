@@ -3,6 +3,9 @@
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
+    "dependencies": {
+        "tslib": "1.9.0"
+    },
     "description": "Types module of @surface projects.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
