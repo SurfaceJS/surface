@@ -3,7 +3,7 @@ import List                  from "@surface/collection/list";
 import Enumerable            from "@surface/enumerable/index";
 import { Action1, Nullable } from "@surface/types";
 import IRouteData            from "./interfaces/route-data";
-import Route                 from "./route";
+import Route                 from "./internal/route";
 
 export default class Router
 {
@@ -33,9 +33,9 @@ export default class Router
             routes = routes.where(x => x.isDefault);
         }
 
-        let routeData = this.routes.select(x => x.match(path)).firstOrDefault(x => !!x);
+        const routeData = routes.select(x => x.match(path)).firstOrDefault(x => !!x);
 
-        let action = this.routeAction.get(path) || this.routeAction.get("*");
+        const action = this.routeAction.get(path) || this.routeAction.get("*");
 
         if (action)
         {
@@ -47,7 +47,7 @@ export default class Router
 
     public when(route: string, action: Action1<Nullable<IRouteData>>): Router
     {
-        this.routeAction[route] = action;
+        this.routeAction.set(route, action);
         return this;
     }
 }
