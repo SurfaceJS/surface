@@ -1,6 +1,6 @@
+import { ObjectLiteral }        from "@surface/core";
 import HtmlTemplatePlugin       from "@surface/html-template-plugin";
 import SimblingResolvePlugin    from "@surface/simbling-resolve-plugin";
-import { ObjectLiteral }        from "@surface/types";
 import { Configuration, Stats } from "webpack"
 import { Entry }                from "./types";
 

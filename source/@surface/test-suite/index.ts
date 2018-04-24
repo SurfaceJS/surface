@@ -1,4 +1,4 @@
-import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/types";
+import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
 import mocha                                                   from "./internal/mocha";
 
 import
@@ -179,7 +179,7 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                     catergories[categoryName] = catergories[categoryName] || [];
                     catergories[categoryName].push
                     ({
-                        getMethod:   context => method.bind(context),
+                        getMethod:   (context: Object) => method.bind(context),
                         expectation: method[expectationToken],
                     });
                 }
@@ -205,7 +205,7 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                         catergories[categoryName].push
                         ({
                             expectation: batch.expectation(data),
-                            getMethod:   context => () => method.call(context, data),
+                            getMethod:   (context: Object) => () => method.call(context, data),
                         });
                     }
                     else

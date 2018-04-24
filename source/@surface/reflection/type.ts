@@ -1,6 +1,6 @@
 import "reflect-metadata";
 
-import { Nullable, Unknown } from "@surface/types";
+import { Nullable, Unknown } from "@surface/core";
 import FieldInfo             from "./field-info";
 import MemberInfo            from "./member-info";
 import MethodInfo            from "./method-info";

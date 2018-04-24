@@ -1,5 +1,5 @@
+import ArgumentOutOfRangeError from "@surface/core/errors/argument-out-of-range-error";
 import Enumerable              from "@surface/enumerable";
-import ArgumentOutOfRangeError from "@surface/types/errors/argument-out-of-range-rrror";
 
 const source = Symbol("list:source");
 

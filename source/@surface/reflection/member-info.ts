@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import Type         from "./type";
 
 export default abstract class MemberInfo

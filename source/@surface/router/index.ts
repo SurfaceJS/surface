@@ -1,7 +1,7 @@
 import Dictionary            from "@surface/collection/dictionary";
 import List                  from "@surface/collection/list";
+import { Action1, Nullable } from "@surface/core";
 import Enumerable            from "@surface/enumerable/index";
-import { Action1, Nullable } from "@surface/types";
 import IRouteData            from "./interfaces/route-data";
 import Route                 from "./internal/route";
 

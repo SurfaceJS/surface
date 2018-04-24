@@ -1,4 +1,4 @@
-import { Func1, Nullable } from "@surface/types";
+import { Func1, Nullable } from "@surface/core";
 import IComparer           from "../interfaces/comparer";
 import ILookup             from "../interfaces/lookup";
 import Group               from "./group";

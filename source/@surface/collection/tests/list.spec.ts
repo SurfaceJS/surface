@@ -1,6 +1,6 @@
+import ArgumentOutOfRangeError                 from "@surface/core/errors/argument-out-of-range-error";
 import { Enumerable }                          from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import ArgumentOutOfRangeError                 from "@surface/types/errors/argument-out-of-range-rrror";
 import { expect }                              from "chai";
 import List                                    from "../list";
 

@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import IGroup       from "../interfaces/group";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>

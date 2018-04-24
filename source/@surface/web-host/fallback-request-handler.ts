@@ -1,3 +1,4 @@
+import Enumerable     from "@surface/enumerable";
 import HttpContext    from "./http-context";
 import RequestHandler from "./request-handler";
 import StatusCode     from "./status-code";
@@ -34,7 +35,7 @@ export default class FallbackRequestHandler extends RequestHandler
 
         try
         {
-            filepath = targets.asEnumerable().first(x => this.fs.existsSync(x) && this.fs.lstatSync(x).isFile());
+            filepath = Enumerable.from(targets).first(x => this.fs.existsSync(x) && this.fs.lstatSync(x).isFile());
         }
         catch (error)
         {

@@ -1,4 +1,4 @@
-import { Unknown } from "@surface/types";
+import { Unknown } from "@surface/core";
 
 export default class HashEncode
 {

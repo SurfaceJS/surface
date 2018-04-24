@@ -3,7 +3,7 @@ import "@surface/enumerable/extensions";
 import "./extensions";
 
 import List         from "@surface/collection/list";
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import ElementBind  from "./internal/element-bind";
 import * as symbols from "./internal/symbols";
 

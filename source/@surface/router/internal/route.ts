@@ -1,5 +1,5 @@
+import { Nullable, ObjectLiteral } from "@surface/core";
 import Enumerable                  from "@surface/enumerable";
-import { Nullable, ObjectLiteral } from "@surface/types";
 import IRouteData                  from "../interfaces/route-data";
 
 export default class Route

@@ -1,8 +1,8 @@
+import { Action, Nullable }  from "@surface/core";
 import ExpressionType        from "@surface/expression/expression-type";
 import IExpression           from "@surface/expression/interfaces/expression";
 import IMemberExpression     from "@surface/expression/interfaces/member-expression";
 import Type                  from "@surface/reflection";
-import { Action, Nullable }  from "@surface/types";
 import IArrayExpression      from "../../expression/interfaces/array-expression";
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";

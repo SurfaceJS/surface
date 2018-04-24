@@ -1,5 +1,3 @@
-// tslint:disable:no-non-null-assertion
-
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import FieldInfo                   from "../field-info";

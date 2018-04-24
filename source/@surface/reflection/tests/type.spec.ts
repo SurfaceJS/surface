@@ -1,4 +1,3 @@
-// tslint:disable:no-non-null-assertion
 import Enumerable                  from "@surface/enumerable";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";

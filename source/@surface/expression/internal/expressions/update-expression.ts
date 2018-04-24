@@ -1,8 +1,7 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import TypeGuard      from "../type-guard";
-
-import { Func2, Nullable } from "@surface/types";
+import { Func2, Nullable } from "@surface/core";
+import ExpressionType      from "../../expression-type";
+import IExpression         from "../../interfaces/expression";
+import TypeGuard           from "../type-guard";
 
 const updateFunctions =
 {

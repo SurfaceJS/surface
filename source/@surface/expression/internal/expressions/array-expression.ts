@@ -1,7 +1,6 @@
-import { Unknown }    from "@surface/types";
+import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
-
 
 export default class ArrayExpression implements IExpression
 {

@@ -4,7 +4,7 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/types": "0.0.1",
+        "@surface/core": "0.0.3",
         "tslib": "1.9.0"
     },
     "description": "Webpack resolve plugin for handling simbling priority.",

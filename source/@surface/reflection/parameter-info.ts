@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import MethodInfo   from "./method-info";
 
 export default class ParameterInfo

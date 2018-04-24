@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/common": "0.0.8",
-        "@surface/types": "0.0.1",
+        "@surface/core": "0.0.3",
         "tslib": "1.9.0"
     },
     "description": "Webpack loader for side effects require inside html.",

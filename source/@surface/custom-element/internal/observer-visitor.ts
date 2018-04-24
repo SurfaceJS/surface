@@ -1,9 +1,9 @@
+import { Action }        from "@surface/core";
 import ExpressionVisitor from "@surface/expression/expression-visitor";
 import ICallExpression   from "@surface/expression/interfaces/call-expression";
 import IExpression       from "@surface/expression/interfaces/expression";
 import IMemberExpression from "@surface/expression/interfaces/member-expression";
 import Type              from "@surface/reflection";
-import { Action }        from "@surface/types";
 import DataBind          from "./data-bind";
 
 export default class ObserverVisitor extends ExpressionVisitor

@@ -1,4 +1,4 @@
-import { Nullable }       from "@surface/types";
+import { Nullable }       from "@surface/core";
 import ExpressionType     from "../../expression-type";
 import IExpression        from "../../interfaces/expression";
 import PropertyExpression from "./property-expression";

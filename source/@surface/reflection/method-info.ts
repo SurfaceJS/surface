@@ -1,4 +1,4 @@
-import { Nullable }  from "@surface/types";
+import { Nullable }  from "@surface/core";
 import MemberInfo    from "./member-info";
 import ParameterInfo from "./parameter-info";
 import Type          from "./type";

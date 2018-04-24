@@ -1,4 +1,4 @@
-import { Unknown }    from "@surface/types";
+import { Unknown }    from "@surface/core";
 import Expression     from "../..";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";

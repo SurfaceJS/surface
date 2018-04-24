@@ -1,4 +1,4 @@
-import { Nullable }  from "@surface/types";
+import { Nullable }  from "@surface/core";
 import IComparer     from "../interfaces/comparer";
 import HashEncode    from "./hash-encode";
 

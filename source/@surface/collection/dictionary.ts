@@ -1,7 +1,5 @@
-import "@surface/enumerable/extensions";
-
+import { Nullable, ObjectLiteral } from "@surface/core";
 import Enumerable                  from "@surface/enumerable";
-import { Nullable, ObjectLiteral } from "@surface/types";
 import KeyValuePair                from "./key-value-pair";
 
 const source = Symbol("dictionary:source");

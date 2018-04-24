@@ -1,5 +1,5 @@
+import { Func1 }    from "@surface/core";
 import Enumerable   from "@surface/enumerable";
-import { Func1 }    from "@surface/types";
 import Dictionary   from "./dictionary";
 import KeyValuePair from "./key-value-pair";
 import List         from "./list";

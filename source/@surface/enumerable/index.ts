@@ -1,4 +1,4 @@
-import { Action2, Func1, Func2, Func3, Nullable } from "@surface/types";
+import { Action2, Func1, Func2, Func3, Nullable } from "@surface/core";
 import IComparer                                  from "./interfaces/comparer";
 import IGroup                                     from "./interfaces/group";
 import ILookup                                    from "./interfaces/lookup";

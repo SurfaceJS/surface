@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
 import JsonResult   from "./json-result";

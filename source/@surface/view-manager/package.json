@@ -5,10 +5,10 @@
     },
     "dependencies": {
         "@surface/collection": "0.0.0",
+        "@surface/core": "0.0.3",
         "@surface/custom-element": "0.0.6",
         "@surface/reflection": "0.0.0",
         "@surface/router": "0.0.0",
-        "@surface/types": "0.0.1",
         "@surface/view": "0.0.0",
         "@surface/view-host": "0.0.0",
         "tslib": "1.8.1"

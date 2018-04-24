@@ -1,7 +1,7 @@
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
-import { Func2, Nullable } from "@surface/types";
+import { Func2, Nullable } from "@surface/core";
 
 const binaryFunctions =
 {
