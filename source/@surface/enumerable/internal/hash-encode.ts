@@ -39,8 +39,8 @@ export default class HashEncode
         const bits         = 32;
 
         const signature = typeof source != "object" || typeof source == "object" && source == null ?
-                HashEncode.getSignature({ __value__: source })
-                : HashEncode.getSignature(source);
+            HashEncode.getSignature({ __value__: source })
+            : HashEncode.getSignature(source);
 
         return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
     }

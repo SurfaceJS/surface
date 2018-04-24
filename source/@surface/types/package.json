@@ -4,6 +4,10 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "description": "Types module of @surface projects.",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "types",

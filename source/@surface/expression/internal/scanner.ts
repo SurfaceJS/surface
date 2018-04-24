@@ -112,7 +112,7 @@ export default class Scanner
             default:
                 return false;
         }
-            }
+    }
 
     private isImplicitOctalLiteral(): boolean
     {

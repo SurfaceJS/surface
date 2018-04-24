@@ -1,5 +1,3 @@
-import "@surface/collection/extensions";
-
 import Dictionary            from "@surface/collection/dictionary";
 import List                  from "@surface/collection/list";
 import Enumerable            from "@surface/enumerable/index";

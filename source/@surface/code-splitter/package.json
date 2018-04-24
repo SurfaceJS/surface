@@ -12,6 +12,10 @@
         "commander": "2.15.1"
     },
     "description": "Generate lazy loading module.",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "code-splitter",

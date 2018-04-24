@@ -11,7 +11,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public static empty<TSource>(): Enumerable<TSource>
     {
-        return new EnumerableIterator(new Array());
+        return new EnumerableIterator([] as Array<TSource>);
     }
 
     /**
@@ -124,13 +124,13 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Computes the average of a sequence of numeric values.
      */
-    public average(): number;
+    public average(): TSource extends number ? number : void;
     /**
      * Computes the average of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public average(selector: Func1<TSource, number>): number;
-    public average(selector?: Func1<TSource, number>): number
+    public average(selector?: Func1<TSource, number>): number|void
     {
         if (selector)
         {
@@ -543,13 +543,13 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Computes the max of a sequence of numeric values.
      */
-    public max(): number;
+    public max(): TSource extends number ? number : void;
     /**
      * Computes the max of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public max(selector: Func1<TSource, number>): number;
-    public max(selector?: Func1<TSource, number>): number
+    public max(selector?: Func1<TSource, number>): number|void
     {
         if (selector)
         {
@@ -581,13 +581,13 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Computes the min of a sequence of numeric values.
      */
-    public min(): number;
+    public min(): TSource extends number ? number : void;
     /**
      * Computes the min of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public min(selector: Func1<TSource, number>): number;
-    public min(selector?: Func1<TSource, number>): number
+    public min(selector?: Func1<TSource, number>): number|void
     {
         if (selector)
         {

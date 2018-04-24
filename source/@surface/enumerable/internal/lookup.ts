@@ -89,11 +89,11 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
         const newSize = this._count * two + 1;
         const buffer  = new Array<Group<TKey, TElement>>(newSize);
 
-        let current = this.lastGroup as Group<TKey, TElement>;
+        let current = this.lastGroup!;
 
         do
         {
-            current = current.next as Group<TKey, TElement>;
+            current = current.next!;
 
             const index = current.hash % newSize;
 
@@ -108,11 +108,11 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
 
     public *[Symbol.iterator](): Iterator<Group<TKey, TElement>>
     {
-        let current = this.lastGroup as Group<TKey, TElement>;
+        let current = this.lastGroup!;
 
         do
         {
-            current = current.next as Group<TKey, TElement>;
+            current = current.next!;
 
             yield current;
         }
