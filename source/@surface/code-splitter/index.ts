@@ -16,7 +16,7 @@ class CodeSplitter
 {
     private readonly context:  string;
     private readonly entries:  Array<string>;
-    private readonly fileType: string;
+    private readonly extension: string;
     private readonly output:   string;
 
     private constructor(options?: Partial<CodeSplitter.IOptions>)
@@ -49,12 +49,12 @@ class CodeSplitter
 
         if (match)
         {
-            this.fileType = match[0];
+            this.extension = match[0];
         }
         else
         {
             this.output   = this.output + ".js";
-            this.fileType = ".js";
+            this.extension = ".js";
         }
     }
 
@@ -63,38 +63,44 @@ class CodeSplitter
         new CodeSplitter(options).execute();
     }
 
+    private isTsSimbling(filePath: string): boolean
+    {
+        return (this.extension == ".ts" && filePath.endsWith(".js") && fs.existsSync(filePath.replace(/\.js$/, ".ts")));
+    }
+
     private getModulesPath(entry: string): Array<string>
     {
-        let result: Array<string> = [];
+        const result = [] as Array<string>;
 
         if (!fs.existsSync(entry))
         {
-            Promise.reject(new Error("Path not exists"));
+            throw new Error(`entry ${entry} path not exists`);
         }
 
-        if (!fs.lstatSync(entry).isFile())
+        if (fs.lstatSync(entry).isFile())
         {
-            Promise.resolve([entry]);
+            return [entry];
         }
 
-        for (let source of fs.readdirSync(entry))
+        for (const source of fs.readdirSync(entry))
         {
-            let currentPath = path.join(entry, source);
+            const filePath = path.join(entry, source);
 
-            if (fs.lstatSync(currentPath).isDirectory())
+            for (const extension of [".js", ".ts"])
             {
-                for (let extension of [".ts", ".js"])
+                if (fs.lstatSync(filePath).isDirectory())
                 {
-                    let file = path.join(currentPath, "index" + extension);
-                    if (fs.existsSync(file))
+                    const file = path.join(filePath, "index" + extension);
+
+                    if (fs.existsSync(file) && !this.isTsSimbling(file))
                     {
                         result.push(file);
                     }
                 }
-            }
-            else
-            {
-                result.push(currentPath);
+                else if (filePath.endsWith(extension) && !this.isTsSimbling(filePath))
+                {
+                    result.push(filePath);
+                }
             }
         }
 
@@ -103,10 +109,10 @@ class CodeSplitter
 
     private writeEntry(context: string, filePath: string, modulePath: string): string
     {
-        let key          = path.relative(context, modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
-        let resolvedPath = path.relative(path.dirname(filePath), modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
+        const key          = path.relative(context, modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
+        const resolvedPath = path.relative(path.dirname(filePath), modulePath).replace(/\\/g, "/").replace(/(\/index)?(\.[tj]s?)?$/, "");
 
-        let result =
+        const result =
         [
             `        case "${key}":`,
             `            return import(/* webpackChunkName: "${key}" */ "${resolvedPath}");`
@@ -117,7 +123,7 @@ class CodeSplitter
 
     private writeFooter(): string
     {
-        let result =
+        const result =
         [
             "        default:",
             "            return Promise.reject(\"path not found\");",
@@ -130,15 +136,15 @@ class CodeSplitter
 
     private writeHeader(): string
     {
-        let result =
+        const result =
         [
             "// File generated automatically. Don't change.",
             "",
             "/**",
             " * Requires the module of the specified path.",
-            ` * @param ${this.fileType == ".ts" ? "" : "{string} "}path Path to the module.${this.fileType == ".ts" ? "" : "\n * @returns {Promise}"}`,
+            ` * @param ${this.extension == ".ts" ? "" : "{string} "}path Path to the module.${this.extension == ".ts" ? "" : "\n * @returns {Promise}"}`,
             " */",
-            this.fileType == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
+            this.extension == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
             "{",
             "    switch (path)",
             "    {",
@@ -151,28 +157,21 @@ class CodeSplitter
     {
         let output = this.output;
 
-        if (!this.context)
-        {
-            throw new Error("Context can\"t be null");
-        }
-
         output = path.resolve(this.context, output);
 
-        let content = "";
+        let content = this.writeHeader() + "\n";
 
-        for (let entry of this.entries)
+        for (const entry of this.entries)
         {
-            let modulesPath = this.getModulesPath(path.resolve(this.context, entry));
+            const modulesPath = this.getModulesPath(path.resolve(this.context, entry));
 
-            content = this.writeHeader() + "\n";
-
-            for (let modulePath of modulesPath)
+            for (const modulePath of modulesPath)
             {
                 content += this.writeEntry(this.context, output, modulePath) + "\n";
             }
-
-            content += this.writeFooter();
         }
+
+        content += this.writeFooter();
 
         common.makePath(path.dirname(output));
         fs.writeFileSync(output, content);

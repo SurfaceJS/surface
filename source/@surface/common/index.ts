@@ -3,6 +3,34 @@ import fs           from "fs";
 import path         from "path";
 import util         from "util";
 
+export function deletePath(targetPath: string): void
+{
+    if (fs.existsSync(targetPath))
+    {
+        if (fs.lstatSync(targetPath).isFile())
+        {
+            fs.unlinkSync(targetPath);
+        }
+        else
+        {
+            for (const fileOrDirectory of fs.readdirSync(targetPath))
+            {
+                if (fs.lstatSync(targetPath).isFile())
+                {
+                    fs.unlinkSync(targetPath);
+                }
+                else
+                {
+                    deletePath(path.join(targetPath, fileOrDirectory));
+                }
+
+            }
+
+            fs.readdirSync(targetPath);
+        }
+    }
+}
+
 /**
  * Resolve surface"s config file location
  * @param context  Cotext used to resolve.
@@ -238,4 +266,3 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
 
     return target as TTarget & TSource;
 }
-
