@@ -1,13 +1,16 @@
 import { Nullable } from "@surface/core";
-import fs           from "fs";
-import path         from "path";
-import util         from "util";
+import fs                    from "fs";
+import path                  from "path";
 
-export function deletePath(targetPath: string): void
+export function deletePath(targetPath: string): boolean
 {
     if (fs.existsSync(targetPath))
     {
-        if (fs.lstatSync(targetPath).isFile())
+        if (fs.lstatSync(targetPath).isSymbolicLink())
+        {
+            fs.unlinkSync(targetPath);
+        }
+        else if (fs.lstatSync(targetPath).isFile())
         {
             fs.unlinkSync(targetPath);
         }
@@ -15,69 +18,44 @@ export function deletePath(targetPath: string): void
         {
             for (const fileOrDirectory of fs.readdirSync(targetPath))
             {
-                if (fs.lstatSync(targetPath).isFile())
-                {
-                    fs.unlinkSync(targetPath);
-                }
-                else
-                {
-                    deletePath(path.join(targetPath, fileOrDirectory));
-                }
-
+                deletePath(path.join(targetPath, fileOrDirectory));
             }
 
-            fs.readdirSync(targetPath);
+            fs.rmdirSync(targetPath);
         }
+
+        return true;
     }
+
+    return false;
 }
 
 /**
- * Resolve surface"s config file location
- * @param context  Cotext used to resolve.
- * @param filepath Relative or absolute path to folder or file.
- * @param filename Filename to resolve.
- */
-export function resolveFile(context: string, filepath: string, filename: string): string;
-/**
- * Resolve surface"s config file location
+ * Resolve file location
  * @param context   Cotext used to resolve.
  * @param filepath  Relative or absolute path to folder or file.
  * @param filenames Possible filenames to resolve.
  */
-export function resolveFile(context: string, filepath: string, filenames: Array<string>): string;
-export function resolveFile(context: string, filepath: string, filenames: string|Array<string>): string
+export function resolveFile(context: string, filepaths: Array<string>): string
 {
-    if (!path.isAbsolute(filepath))
+    for (const filepath of filepaths)
     {
-        filepath = path.resolve(context, filepath);
-    }
-
-    if (fs.existsSync(filepath))
-    {
-        if (fs.lstatSync(filepath).isDirectory())
+        if (path.isAbsolute(filepath) && fs.existsSync(filepath))
         {
-            if (!Array.isArray(filenames))
-            {
-                filenames = [filenames];
-            }
-
-            for (let filename of filenames)
-            {
-                if (fs.existsSync(path.join(filepath, filename)))
-                {
-                    return path.join(filepath, filename);
-                }
-            }
-
-            throw new Error("Configuration file not found");
+            return filepath;
         }
+        else
+        {
+            const resolved = path.resolve(context, filepath);
 
-        return filepath;
+            if (fs.existsSync(resolved))
+            {
+                return resolved;
+            }
+        }
     }
-    else
-    {
-        throw new Error("Configuration file not found");
-    }
+
+    throw new Error("paths not found");
 }
 
 /**
@@ -87,11 +65,11 @@ export function resolveFile(context: string, filepath: string, filenames: string
  */
 export function lookUp(startPath: string, target: string): Nullable<string>
 {
-    let slices = startPath.split(path.sep);
+    const slices = startPath.split(path.sep);
 
     while (slices.length > 0)
     {
-        let filepath = path.join(slices.join("/"), target);
+        const filepath = path.join(slices.join("/"), target);
 
         if (fs.existsSync(filepath))
         {
@@ -101,7 +79,7 @@ export function lookUp(startPath: string, target: string): Nullable<string>
         slices.pop();
     }
 
-    return;
+    return null;
 }
 
 /**
@@ -123,7 +101,7 @@ export function makePath(targetPath: string, mode?: number): void
 
         if (!fs.lstatSync(targetPath).isDirectory())
         {
-            throw new Error(`${targetPath} exist and isn't an directory.`);
+            throw new Error(`${targetPath} exist and isn't an directory`);
         }
 
         return;
@@ -131,9 +109,9 @@ export function makePath(targetPath: string, mode?: number): void
 
     const parentDir = path.dirname(targetPath.toString());
     // tslint:disable-next-line:no-magic-numbers
-    mode = parseInt("0777", 8) & (~process.umask());
+    mode = mode || parseInt("0777", 8) & (~process.umask());
 
-    if(!fs.existsSync(parentDir))
+    if (!fs.existsSync(parentDir))
     {
         makePath(parentDir, mode);
         return fs.mkdirSync(targetPath, mode);
@@ -157,35 +135,7 @@ export async function makePathAsync(path: string): Promise<void>;
 export async function makePathAsync(path: string, mode:  number): Promise<void>;
 export async function makePathAsync(targetPath: string, mode?: number): Promise<void>
 {
-    const exists = util.promisify(fs.exists);
-    const mkdir  = util.promisify(fs.mkdir);
-    const stat   = util.promisify(fs.lstat);
-
-    if (await exists(targetPath))
-    {
-        targetPath = (await stat(targetPath)).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
-
-        if (!(await stat(targetPath)).isDirectory())
-        {
-            throw new Error(`${targetPath} exist and isn't an directory.`);
-        }
-
-        return Promise.resolve();
-    }
-
-    const parentDir = path.dirname(targetPath.toString());
-    // tslint:disable-next-line:no-magic-numbers
-    mode = parseInt("0777", 8) & (~process.umask());
-
-    if(!(await exists(parentDir)))
-    {
-        await makePathAsync(parentDir, mode);
-        return mkdir(targetPath, mode);
-    }
-    else
-    {
-        return mkdir(targetPath, mode);
-    }
+    await Promise.resolve(makePath(targetPath, mode || mode || parseInt("0777", 8) & (~process.umask())));
 }
 
 /**
@@ -223,43 +173,28 @@ export function merge<TTarget = object, TSource = object>(target: TTarget, sourc
         source = [source];
     }
 
-    for (let current of source)
+    for (const current of source)
     {
-        for (let key of Object.keys(current))
+        for (const key of Object.getOwnPropertyNames(current))
         {
-            if (!current[key])
-            {
-                continue;
-            }
-
-            if (target[key] && target[key] instanceof Object)
+            if (target[key] instanceof Object)
             {
                 if (Array.isArray(target[key]) && Array.isArray(current[key]) && combineArrays)
                 {
                     target[key] = target[key].concat(current[key]);
                 }
-                else if (target[key] instanceof Object && current[key] instanceof Object && target[key].constructor.name == "Object" && current[key].constructor.name == "Object")
+                else if (current[key] instanceof Object)
                 {
                     target[key] = merge(target[key], current[key], combineArrays);
                 }
-                else if (current[key])
-                {
-                    let descriptor = Object.getOwnPropertyDescriptor(current, key);
-
-                    if (descriptor && descriptor.enumerable)
-                    {
-                        target[key] = current[key];
-                    }
-                }
-            }
-            else if (current[key])
-            {
-                let descriptor = Object.getOwnPropertyDescriptor(current, key);
-
-                if (descriptor && descriptor.enumerable)
+                else if (current[key] != undefined)
                 {
                     target[key] = current[key];
                 }
+            }
+            else if (current[key] != undefined)
+            {
+                target[key] = current[key];
             }
         }
     }

@@ -7,7 +7,7 @@ import IArrayExpression      from "../../expression/interfaces/array-expression"
 import BindParser            from "./bind-parser";
 import BindingMode           from "./binding-mode";
 import DataBind              from "./data-bind";
-import ObserverVisitor from "./observer-visitor";
+import ObserverVisitor       from "./observer-visitor";
 import windowWrapper         from "./window-wrapper";
 
 export default class ElementBind

@@ -1,8 +1,8 @@
-const windowWrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"];
+const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as Object as typeof Window;
 
-windowWrapper.prototype = window;
-windowWrapper.prototype.constructor = windowWrapper;
+wrapper.prototype = window;
+wrapper.prototype.constructor = wrapper;
 
-const instance = windowWrapper.prototype;
+const windowWrapper = wrapper.prototype;
 
-export default instance;
+export default windowWrapper;

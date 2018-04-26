@@ -1,22 +1,26 @@
-import { deletePath, makePath }                        from "@surface/common";
-import { before, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                                      from "chai";
-import fs                                              from "fs";
-import path                                            from "path";
-import CodeSplitter                                    from "..";
+import * as common                                            from "@surface/common";
+import { after, before, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import chai                                                   from "chai";
+import fs                                                     from "fs";
+import path                                                   from "path";
+import CodeSplitter                                           from "..";
 
 @suite
 export default class CodeSplitterSpec
 {
     @before
-    public before(): void
+    public setPwd(): void
     {
         process.chdir(__dirname);
+    }
 
+    @after
+    public cleanup(): void
+    {
         const actual = path.resolve(__dirname, "./fixtures/actual");
 
-        deletePath(actual);
-        makePath(actual);
+        common.deletePath(actual);
+        common.makePath(actual);
     }
 
     @test @shouldPass
@@ -27,7 +31,7 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/emit-js.js")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/emit-js.js")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -38,7 +42,7 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/emit-js.js")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/emit-js.js")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -49,7 +53,7 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/emit-ts.ts")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/emit-ts.ts")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -60,7 +64,7 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/emit-js.js")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/emit-js.js")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -71,7 +75,7 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/single-entry.ts")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/single-entry.ts")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -82,37 +86,37 @@ export default class CodeSplitterSpec
         const actual   = fs.readFileSync(path.resolve(__dirname, "./fixtures/actual/emit-multiples-entries.ts")).toString();
         const expected = fs.readFileSync(path.resolve(__dirname, "./fixtures/expected/emit-multiples-entries.ts")).toString();
 
-        expect(actual).to.deep.equal(expected);
+        chai.expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldFail
     public noOptions(): void
     {
-        expect(() => CodeSplitter.execute()).to.throw(Error, "parameter \"options\" not specified");
+        chai.expect(() => CodeSplitter.execute()).to.throw(Error, "parameter \"options\" not specified");
     }
 
     @test @shouldFail
     public noContextOption(): void
     {
-        expect(() => CodeSplitter.execute({ entries: [], output: "." })).to.throw(Error, "parameter \"options.context\" not specified");
+        chai.expect(() => CodeSplitter.execute({ entries: [], output: "." })).to.throw(Error, "parameter \"options.context\" not specified");
     }
 
     @test @shouldFail
     public noEntriesOption(): void
     {
-        expect(() => CodeSplitter.execute({ context: ".", output: "." })).to.throw(Error, "parameter \"options.entries\" not specified");
+        chai.expect(() => CodeSplitter.execute({ context: ".", output: "." })).to.throw(Error, "parameter \"options.entries\" not specified");
     }
 
     @test @shouldFail
     public noOutputOption(): void
     {
-        expect(() => CodeSplitter.execute({ context: ".", entries: [] })).to.throw(Error, "parameter \"options.output\" not specified");
+        chai.expect(() => CodeSplitter.execute({ context: ".", entries: [] })).to.throw(Error, "parameter \"options.output\" not specified");
     }
 
     @test @shouldFail
     public invalidEntry(): void
     {
         const options = { context: "./fixtures", entries: ["./ts-modules_"], output: "./actual/emit-ts.ts" };
-        expect(() => CodeSplitter.execute(options)).to.throw(Error, `entry ${path.resolve(__dirname, "fixtures/./ts-modules_")} path not exists`);
+        chai.expect(() => CodeSplitter.execute(options)).to.throw(Error, `entry ${path.resolve(__dirname, "fixtures/./ts-modules_")} path not exists`);
     }
 }
