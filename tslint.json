@@ -81,7 +81,6 @@
         "no-internal-module":              true,
         "no-mergeable-namespace":          true,
         "no-misused-new":                  true,
-        "no-non-null-assertion":           true,
         "no-reference":                    true,
         "no-reference-import":             true,
         "no-shadowed-variable":            false,

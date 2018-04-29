@@ -1,4 +1,3 @@
-// tslint:disable:no-non-null-assertion
 import "./fixtures/dom";
 
 import Expression                              from "@surface/expression";
@@ -100,35 +99,6 @@ export class ObserverVisitorSpec
         context.this.value = 1;
         context.this["attributeChangedCallback"]("another-value", "0", "1", "");
     }
-
-    /*
-    @test @shouldPass
-    public objectWithoutAttributeChangedCallback(): void
-    {
-        class Mock
-        {
-            public static [observedAttributes] = ["value"];
-            private _value: number = 0;
-            public get value(): number
-            {
-                return this._value;
-            }
-
-            public set value(value: number)
-            {
-                this._value = value;
-            }
-        }
-
-        const context    = { this: new Mock() };
-        const expression = Expression.from("this.value", context);
-        const visitor    = new BindExpressionVisitor(() => expect(context.this.value).to.equal(1));
-
-        visitor.visit(expression);
-        context.this.value = 1;
-        context.this["attributeChangedCallback"]("value", "0", "1", "");
-    }
-    */
 
     @test @shouldPass
     public skipFunctionNotify(): void

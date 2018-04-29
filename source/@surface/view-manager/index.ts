@@ -1,8 +1,8 @@
 import "@surface/reflection/extensions";
 
 import Dictionary                       from "@surface/collection/dictionary";
+import { Constructor, Func1, Nullable } from "@surface/core";
 import Router                           from "@surface/router";
-import { Constructor, Func1, Nullable } from "@surface/types";
 import View                             from "@surface/view";
 import ViewHost                         from "@surface/view-host";
 

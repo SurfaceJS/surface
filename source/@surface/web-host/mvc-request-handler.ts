@@ -1,7 +1,7 @@
-import "@surface/reflection/extensions";
-
+import { Constructor, Nullable } from "@surface/core";
+import Enumerable                from "@surface/enumerable";
+import Type                      from "@surface/reflection/type";
 import Router                    from "@surface/router";
-import { Constructor, Nullable } from "@surface/types";
 import ActionResult              from "./action-result";
 import Controller                from "./controller";
 import HttpContext               from "./http-context";
@@ -26,10 +26,9 @@ export default class MvcRequestHandler extends RequestHandler
         let esmodule = require(filepath) as object;
 
         let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
-            || esmodule.getType().extends(Controller) && esmodule
-            || esmodule.getType().equals(Object) && Object.keys(esmodule)
-                .asEnumerable()
-                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(Controller))
+            || Type.from(esmodule).extends(Controller) && esmodule
+            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
+                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.from(esmodule[x]).extends(Controller))
                 .select(x => esmodule[x])
                 .firstOrDefault();
 
@@ -45,32 +44,30 @@ export default class MvcRequestHandler extends RequestHandler
     {
         if (httpContext.request.url)
         {
-            let routeData = this.router.match(httpContext.request.url);
+            const routeData = this.router.match(httpContext.request.url);
 
             if (routeData)
             {
                 const { controller, action, id } = routeData.params;
                 if (controller)
                 {
-                    let controllersPath = this.path.join(httpContext.host.root, "controllers");
+                    const controllersPath = this.path.join(httpContext.host.root, "controllers");
 
-                    let filepath =
-                    [
-                        this.path.join(controllersPath, `${controller}.js`),
-                        this.path.join(controllersPath, `${controller}controller.js`),
-                        this.path.join(controllersPath, `${controller}-controller.js`),
-                    ]
-                    .asEnumerable()
-                    .firstOrDefault(x => this.fs.existsSync(x));
+                    const filepath = Enumerable.from
+                        ([
+                            this.path.join(controllersPath, `${controller}.js`),
+                            this.path.join(controllersPath, `${controller}controller.js`),
+                            this.path.join(controllersPath, `${controller}-controller.js`),
+                        ])
+                        .firstOrDefault(x => this.fs.existsSync(x));
 
                     if (filepath)
                     {
-                        let constructor = this.getController(controller, filepath);
+                        const constructor = this.getController(controller, filepath);
 
-                        let targetController = new constructor(httpContext);
+                        const targetController = new constructor(httpContext);
 
-                        let actionMethod = targetController.getType()
-                            .getMethods()
+                        const actionMethod = Enumerable.from(Type.from(targetController).getMethods())
                             .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
 
                         if (actionMethod)

@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import SyntaxError  from "../syntax-error";
 import Character    from "./character";
 import Messages     from "./messages";
@@ -112,7 +112,7 @@ export default class Scanner
             default:
                 return false;
         }
-            }
+    }
 
     private isImplicitOctalLiteral(): boolean
     {

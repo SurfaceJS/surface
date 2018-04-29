@@ -1,5 +1,3 @@
-// tslint:disable:no-non-null-assertion
-
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import FieldInfo                   from "../field-info";
@@ -44,7 +42,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        expect(fieldInfo.metadata.toArray()).to.deep.equal([]);
+        expect(fieldInfo.metadata).to.deep.equal({ });
     }
 
     @test @shouldPass

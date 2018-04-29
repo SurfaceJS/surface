@@ -1,6 +1,6 @@
 import List                   from "@surface/collection/list";
+import { Nullable }           from "@surface/core";
 import Router                 from "@surface/router";
-import { Nullable }           from "@surface/types";
 import http                   from "http";
 import Configuration          from "./configuration";
 import FallbackRequestHandler from "./fallback-request-handler";

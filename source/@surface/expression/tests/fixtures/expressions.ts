@@ -13,7 +13,7 @@ import UnaryExpression       from "../../internal/expressions/unary-expression";
 import UpdateExpression      from "../../internal/expressions/update-expression";
 import SyntaxError           from "../../syntax-error";
 
-import { Constructor, Nullable } from "@surface/types";
+import { Constructor, Nullable } from "@surface/core";
 
 export type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression>, context: Object };
 export type InvalidExpressionFixtureSpec = { raw: string, error: Error, context: Object };

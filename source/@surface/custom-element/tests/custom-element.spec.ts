@@ -1,4 +1,3 @@
-// tslint:disable:no-non-null-assertion
 import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";

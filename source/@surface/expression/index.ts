@@ -1,4 +1,4 @@
-import { Unknown }                       from "@surface/types";
+import { Unknown }                       from "@surface/core";
 import IArrayExpression                  from "./interfaces/array-expression";
 import ICallExpression                   from "./interfaces/call-expression";
 import IConditionalExpression            from "./interfaces/conditional-expression";

@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import FieldInfo    from "./field-info";
 import Type         from "./type";
 

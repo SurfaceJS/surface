@@ -1,6 +1,6 @@
+import { Action, Unknown } from "@surface/core";
+import Observer            from "@surface/core/observer";
 import PropertyInfo        from "@surface/reflection/property-info";
-import { Action, Unknown } from "@surface/types";
-import Observer            from "@surface/types/observer";
 
 const caller   = Symbol("data-bind:caller");
 const observer = Symbol("data-bind:observer");

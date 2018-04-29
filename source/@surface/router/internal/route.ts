@@ -1,5 +1,6 @@
-import { Nullable, ObjectLiteral } from "@surface/types";
-import IRouteData                  from "./interfaces/route-data";
+import { Nullable, ObjectLiteral } from "@surface/core";
+import Enumerable                  from "@surface/enumerable";
+import IRouteData                  from "../interfaces/route-data";
 
 export default class Route
 {
@@ -39,7 +40,7 @@ export default class Route
 
     private toExpression(pattern: string): RegExp
     {
-        let expression = pattern.replace(/^\/|\/$/g, "").split("/").asEnumerable()
+        let expression = Enumerable.from(pattern.replace(/^\/|\/$/g, "").split("/"))
             .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, "([^\\\/]+)").replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, "([^\\\/]*)"))
             .toArray()
             .join("\\\/");
@@ -64,44 +65,41 @@ export default class Route
         {
             search = { };
 
-            decodeURI(queryString).split("&")
-                .asEnumerable()
+            Enumerable.from(decodeURI(queryString).split("&"))
                 .select(x => x.split("="))
                 .forEach(x => search && (search[x[0]] = x[1]));
         }
 
         if (this._expression.test(path))
         {
-            let keys = this._expression.exec(this._pattern);
+            const keys = this._expression.exec(this._pattern)!;
 
             this._expression.lastIndex = 0;
 
-            let values = this._expression.exec(path);
+            const values = this._expression.exec(path)!;
 
-            if (keys && values)
-            {
-                Array.from(keys).asEnumerable()
-                    .zip(values, (key, value) => ({ key, value }))
-                    .skip(1)
-                    .forEach
-                    (
-                        x =>
+            Enumerable.from(keys)
+                .zip(values, (key, value) => ({ key, value }))
+                .skip(1)
+                .forEach
+                (
+                    x =>
+                    {
+                        const match = /{\s*([^=?]+)\??(?:=([^}]*))?\s*}/.exec(x.key);
+
+                        if (match)
                         {
-                            let match = /{\s*([^=?]+)\??(?:=([^}]*))?\s*}/.exec(x.key);
-                            if (match)
-                            {
-                                const groups = { key: 1, value: 2 };
-                                params[match[groups.key]] = x.value || match[groups.value];
-                            }
+                            const groups = { key: 1, value: 2 };
+                            params[match[groups.key]] = x.value || match[groups.value];
                         }
-                    );
+                    }
+                );
 
-                let match = /^(\/?(?:[\w-_]+\/?)+)(?:$|\/[^\w-_]*)/.exec(this._pattern);
+            const match = /^(\/?(?:[\w-_]+\/?)+)(?:$|\/[^\w-_]*)/.exec(this._pattern);
 
-                if (match)
-                {
-                    root = match[1];
-                }
+            if (match)
+            {
+                root = match[1];
             }
 
             return { match: this.pattern, root, route, params, search };

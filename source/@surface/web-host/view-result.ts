@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 import fs           from "fs";
 import path         from "path";
 import ActionResult from "./action-result";

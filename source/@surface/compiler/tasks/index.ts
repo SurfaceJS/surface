@@ -104,9 +104,9 @@ async function clean(config: webpack.Configuration): Promise<void>
  */
 function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.Configuration
 {
-    filepath = resolveFile(process.cwd(), filepath, "surface.config.json");
+    filepath = resolveFile(process.cwd(), [path.join(filepath, "surface.config.json")]);
 
-    let config = require(filepath) as IConfiguration;
+    const config = require(filepath) as IConfiguration;
 
     const root = path.dirname(filepath);
 

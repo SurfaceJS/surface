@@ -1,5 +1,4 @@
-import Enumerable    from "@surface/enumerable";
-import { Nullable }  from "@surface/types";
+import { Nullable }  from "@surface/core";
 import MemberInfo    from "./member-info";
 import ParameterInfo from "./parameter-info";
 import Type          from "./type";
@@ -18,8 +17,8 @@ export default class MethodInfo extends MemberInfo
         return this._isConstructor;
     }
 
-    private _parameters: Nullable<Enumerable<ParameterInfo>>;
-    public get parameters(): Enumerable<ParameterInfo>
+    private _parameters: Nullable<Array<ParameterInfo>>;
+    public get parameters(): Array<ParameterInfo>
     {
         if (!this._parameters)
         {
@@ -29,18 +28,13 @@ export default class MethodInfo extends MemberInfo
             {
                 const args = match[1].split(",").map(x => x.trim());
 
-                const paramTypes = (this.metadata.has("design:paramtypes") ?
-                    this.metadata.get("design:paramtypes") :
-                    new Array(args.length)) as Array<Object>;
+                const paramTypes = this.metadata["design:paramtypes"] || [] as Array<Object>;
 
-                this._parameters = args
-                    .asEnumerable()
-                    .zip(paramTypes, (a, b) => ({ key: a, paramType: b }))
-                    .select((element, index) => new ParameterInfo(element.key, index, this, element.paramType));
+                this._parameters = args.map((name, index) => new ParameterInfo(name, index, this, paramTypes[index]));
             }
             else
             {
-                this._parameters = Enumerable.empty();
+                this._parameters = [];
             }
         }
 

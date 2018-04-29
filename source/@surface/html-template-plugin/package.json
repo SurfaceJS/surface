@@ -5,10 +5,14 @@
     },
     "dependencies": {
         "@surface/common": "0.0.8",
-        "@surface/types": "0.0.1",
+        "@surface/core": "0.0.3",
         "tslib": "1.9.0"
     },
     "description": "@surface's plugin for html templating.",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "html",

@@ -1,6 +1,3 @@
-// tslint:disable:no-non-null-assertion
-
-import KeyValuePair                from "@surface/collection/key-value-pair";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import MethodInfo                  from "../method-info";
@@ -49,19 +46,19 @@ export default class FieldInfoSpec
         const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false);
 
         const metadata =
-        [
-            new KeyValuePair("design:returntype", undefined),
-            new KeyValuePair("design:paramtypes", [Number, String, Boolean]),
-            new KeyValuePair("design:type", Function),
-        ];
+        {
+            "design:returntype": undefined,
+            "design:paramtypes": [Number, String, Boolean],
+            "design:type":       Function,
+        };
 
-        expect(methodInfo.metadata.toArray()).to.deep.equal(metadata);
+        expect(methodInfo.metadata).to.deep.equal(metadata);
     }
 
     @test @shouldPass
     public noParameters(): void
     {
-        expect(methodInfo.parameters.toArray()).to.deep.equal([]);
+        expect(Array.from(methodInfo.parameters)).to.deep.equal([]);
     }
 
     @test @shouldPass
@@ -76,9 +73,8 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo, null),
         ];
 
-        methodInfo.parameters.toArray(); // Caching;
-
-        expect(methodInfo.parameters.toArray()).to.deep.equal(parameters);
+        expect(methodInfo.parameters.length).to.equal(3);
+        expect(methodInfo.parameters).to.deep.equal(parameters);
     }
 
     @test @shouldPass
@@ -93,8 +89,7 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo, Boolean),
         ];
 
-        methodInfo.parameters.toArray(); // Caching;
-
-        expect(methodInfo.parameters.toArray()).to.deep.equal(parameters);
+        expect(methodInfo.parameters.length).to.equal(3);
+        expect(methodInfo.parameters).to.deep.equal(parameters);
     }
 }

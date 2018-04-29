@@ -3,7 +3,14 @@
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
+    "dependencies": {
+        "tslib": "1.9.0"
+    },
     "description": "Types module of @surface projects.",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "chai": "4.1.2"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "types",
@@ -11,7 +18,7 @@
         "typescrypt"
     ],
     "license": "MIT",
-    "name": "@surface/types",
+    "name": "@surface/core",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
@@ -19,5 +26,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "version": "0.0.1"
+    "version": "0.0.4"
 }

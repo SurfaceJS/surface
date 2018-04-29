@@ -1,4 +1,4 @@
-import { Nullable, ObjectLiteral } from "@surface/types";
+import { Nullable, ObjectLiteral } from "@surface/core";
 import fs                          from "fs";
 import path                        from "path";
 import { compilation, Compiler }   from "webpack";

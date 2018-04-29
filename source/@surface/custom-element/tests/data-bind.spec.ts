@@ -1,4 +1,3 @@
-// tslint:disable:no-non-null-assertion
 import "./fixtures/dom";
 
 import Type                        from "@surface/reflection/type";

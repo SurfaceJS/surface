@@ -1,4 +1,4 @@
-import { ObjectLiteral, Nullable } from "@surface/types";
+import { ObjectLiteral, Nullable } from "@surface/core";
 
 export default interface IRouteData
 {

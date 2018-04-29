@@ -1,4 +1,4 @@
-import { Nullable } from "@surface/types";
+import { Nullable } from "@surface/core";
 
 // tslint:disable-next-line:no-any
 export default function (this: any, content: string): string
@@ -40,4 +40,4 @@ export default function (this: any, content: string): string
     let stringModule = requires.concat(["", cleanContent]).join("\n");
 
     return stringModule;
-};
+}

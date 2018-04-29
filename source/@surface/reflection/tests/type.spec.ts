@@ -1,5 +1,4 @@
-// tslint:disable:no-non-null-assertion
-import KeyValuePair                from "@surface/collection/key-value-pair";
+import Enumerable                  from "@surface/enumerable";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import FieldInfo                   from "../field-info";
@@ -255,8 +254,9 @@ export default class TypeSpec
     @test @shouldPass
     public getClassMetadata(): void
     {
-        const actual   = Type.of(Mock).metadata.toArray();
-        const expected = [] as Array<KeyValuePair<string, Object>>;
+        const type     = Type.of(Mock);
+        const actual   = type.metadata /* caching */ && type.metadata;
+        const expected = { };
 
         expect(actual).to.deep.equal(expected);
     }
@@ -330,8 +330,8 @@ export default class TypeSpec
     @test @shouldPass
     public getBaseClassMetadata(): void
     {
-        const actual   = Type.of(BaseMock).metadata.toArray();
-        const expected = [] as Array<KeyValuePair<string, Object>>;
+        const actual   = Type.of(BaseMock).metadata;
+        const expected = { };
 
         expect(actual).to.deep.equal(expected);
     }
@@ -342,7 +342,7 @@ export default class TypeSpec
         const key     = "instanceField";
         const baseKey = "baseInstanceField";
 
-        const actual = Type.of(Mock).getFields().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -364,7 +364,7 @@ export default class TypeSpec
         const privateBaseStaticProperty = "_baseStaticProperty";
         const baseStaticField           = "baseStaticField";
 
-        const actual = Type.of(Mock).getStaticFields().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticFields()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -390,7 +390,7 @@ export default class TypeSpec
         const instanceReadonlyProperty = "instanceReadonlyProperty";
         const baseInstanceProperty     = "baseInstanceProperty";
 
-        const actual = Type.of(Mock).getProperties().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -409,7 +409,7 @@ export default class TypeSpec
         const staticReadonlyProperty = "staticReadonlyProperty";
         const baseStaticProperty     = "baseStaticProperty";
 
-        const actual = Type.of(Mock).getStaticProperties().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticProperties()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -424,7 +424,7 @@ export default class TypeSpec
     @test @shouldPass
     public getMethods(): void
     {
-        const actual = Type.of(Mock).getMethods().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
@@ -442,12 +442,79 @@ export default class TypeSpec
     @test @shouldPass
     public getStaticMethods(): void
     {
-        const actual = Type.of(Mock).getStaticMethods().where(x => !x.declaringType.equals(Object)).toArray();
+        const actual = Enumerable.from(Type.of(Mock).getStaticMethods()).where(x => !x.declaringType.equals(Object)).toArray();
 
         const expected =
         [
             new MethodInfo("staticMethod",     Mock.staticMethod,         Type.of(Mock),     false),
             new MethodInfo("baseStaticMethod", BaseMock.baseStaticMethod, Type.of(BaseMock), false),
+        ];
+
+        expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldPass
+    public getMembers(): void
+    {
+        const instanceField            = "instanceField";
+        const baseInstanceField        = "baseInstanceField";
+        const instanceProperty         = "instanceProperty";
+        const instanceReadonlyProperty = "instanceReadonlyProperty";
+        const baseInstanceProperty     = "baseInstanceProperty";
+
+        const actual = Enumerable.from(Type.of(Mock).getMembers()).where(x => !x.declaringType.equals(Object)).toArray();
+
+        const expected =
+        [
+            new MethodInfo("constructor", Mock.prototype.constructor, Type.of(Mock), false),
+            new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype, instanceProperty)!,         Type.of(Mock), false),
+            new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype, instanceReadonlyProperty)!, Type.of(Mock), false),
+            new MethodInfo("instanceMethod",                       Mock.prototype.instanceMethod,                       Type.of(Mock), false),
+            new MethodInfo("instanceMethodWithParameters",         Mock.prototype.instanceMethodWithParameters,         Type.of(Mock), false),
+            new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false),
+            new FieldInfo(instanceField, Object.getOwnPropertyDescriptor(Mock.prototype, instanceField)!, Type.of(Mock), false),
+            new MethodInfo("constructor", BaseMock.prototype.constructor, Type.of(BaseMock), false),
+            new PropertyInfo(baseInstanceProperty, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!, Type.of(BaseMock), false),
+            new MethodInfo("baseInstanceMethod", BaseMock.prototype.baseInstanceMethod, Type.of(BaseMock), false),
+            new FieldInfo(baseInstanceField, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceField)!, Type.of(BaseMock), false),
+        ];
+
+        expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldPass
+    public getStaticMembers(): void
+    {
+        const length                    = "length";
+        const prototype                 = "prototype";
+        const name                      = "name";
+        const privateStaticProperty     = "_staticProperty";
+        const staticField               = "staticField";
+        const privateBaseStaticProperty = "_baseStaticProperty";
+        const baseStaticField           = "baseStaticField";
+        const staticProperty            = "staticProperty";
+        const staticReadonlyProperty    = "staticReadonlyProperty";
+        const baseStaticProperty        = "baseStaticProperty";
+
+        const actual = Enumerable.from(Type.of(Mock).getStaticMembers()).where(x => !x.declaringType.equals(Object)).toArray();
+
+        const expected =
+        [
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(Mock,     length)!,                    Type.of(Mock),     true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(Mock,     prototype)!,                 Type.of(Mock),     true),
+            new PropertyInfo(staticProperty,         Object.getOwnPropertyDescriptor(Mock,     staticProperty)!,         Type.of(Mock),     true),
+            new PropertyInfo(staticReadonlyProperty, Object.getOwnPropertyDescriptor(Mock,     staticReadonlyProperty)!, Type.of(Mock),     true),
+            new MethodInfo("staticMethod",     Mock.staticMethod,         Type.of(Mock),     true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(Mock,     name)!,                      Type.of(Mock),     true),
+            new FieldInfo(privateStaticProperty,     Object.getOwnPropertyDescriptor(Mock,     privateStaticProperty)!,     Type.of(Mock),     true),
+            new FieldInfo(staticField,               Object.getOwnPropertyDescriptor(Mock,     staticField)!,               Type.of(Mock),     true),
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(BaseMock, length)!,                    Type.of(BaseMock), true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(BaseMock, prototype)!,                 Type.of(BaseMock), true),
+            new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,     Type.of(BaseMock), true),
+            new MethodInfo("baseStaticMethod", BaseMock.baseStaticMethod, Type.of(BaseMock), true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(BaseMock, name)!,                      Type.of(BaseMock), true),
+            new FieldInfo(privateBaseStaticProperty, Object.getOwnPropertyDescriptor(BaseMock, privateBaseStaticProperty)!, Type.of(BaseMock), true),
+            new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true),
         ];
 
         expect(actual).to.deep.equal(expected);

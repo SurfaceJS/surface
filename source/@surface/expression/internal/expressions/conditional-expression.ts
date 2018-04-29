@@ -1,7 +1,6 @@
+import { Nullable }   from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
-
-import { Nullable } from "@surface/types";
 
 export default class ConditionalExpression implements IExpression
 {

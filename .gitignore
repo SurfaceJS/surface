@@ -67,4 +67,4 @@ package-lock.json
 !types.d.ts
 !@types/**/*.d.ts
 !source/@surface/**/interfaces/*.d.ts
-!source/@surface/types/**/*.d.ts
+!source/@surface/core/**/*.d.ts
