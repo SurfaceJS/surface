@@ -1,7 +1,7 @@
-import "@surface/reflection/extensions";
-
 import Dictionary                       from "@surface/collection/dictionary";
 import { Constructor, Func1, Nullable } from "@surface/core";
+import Enumerable                       from "@surface/enumerable";
+import Type                             from "@surface/reflection";
 import Router                           from "@surface/router";
 import View                             from "@surface/view";
 import ViewHost                         from "@surface/view-host";
@@ -45,13 +45,12 @@ export default class ViewManager
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        let esmodule = await this.moduleLoader(path);
+        const esmodule = await this.moduleLoader(path);
 
-        let constructor: Nullable<Constructor<View>> = esmodule["default"]
-            || esmodule.getType().extends(View) && esmodule
-            || esmodule.getType().equals(Object) && Object.keys(esmodule)
-                .asEnumerable()
-                .where(x => new RegExp(`^${view}(view)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(View))
+        const constructor: Nullable<Constructor<View>> = esmodule["default"]
+            || Type.from(esmodule).extends(View) && esmodule
+            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
+                .where(x => new RegExp(`^${view}(view)?$`, "i").test(x) && Type.from(esmodule[x]).extends(View))
                 .select(x => esmodule[x])
                 .firstOrDefault();
 
@@ -60,17 +59,17 @@ export default class ViewManager
             return constructor;
         }
 
-        throw new TypeError("Can't find an valid subclass of View.");
+        throw new TypeError("can't find an valid subclass of View");
     }
 
     public async routeTo(route: string): Promise<void>
     {
-        let routeData = this.router.match(route);
+        const routeData = this.router.match(route);
 
         if (routeData)
         {
             window.history.pushState(null, routeData.params["view"], route);
-            let { view, action } = routeData.params;
+            const { view, action } = routeData.params;
 
             let path = `views/${view}`;
 
@@ -81,7 +80,7 @@ export default class ViewManager
 
             if (!this.views.has(view))
             {
-                let viewConstructor = await this.getView(view, path);
+                const viewConstructor = await this.getView(view, path);
                 this.views.set(view, new viewConstructor());
             }
 
@@ -89,7 +88,7 @@ export default class ViewManager
         }
         else
         {
-            throw new Error("Invalid route path");
+            throw new Error("invalid route path");
         }
     }
 }

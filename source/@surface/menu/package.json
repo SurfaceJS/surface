@@ -4,32 +4,22 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/core": "0.0.3",
-        "@surface/custom-element": "0.0.6",
+        "@surface/core": "0.0.4",
+        "@surface/custom-element": "0.0.5",
         "@surface/enumerable": "0.0.0",
-        "@surface/reflection": "0.0.0",
-        "@surface/router": "0.0.0",
-        "@surface/view": "0.0.0",
-        "@surface/view-host": "0.0.0",
-        "tslib": "1.8.1"
+        "tslib": "1.9.0"
     },
-    "description": "Web component view manager.",
-    "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "chai": "4.1.2"
-    },
+    "description": "Menu web component.",
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "manager",
+        "menu",
         "surface",
         "typescript",
-        "view",
         "webcomponents"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/view-manager",
+    "name": "@surface/menu",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

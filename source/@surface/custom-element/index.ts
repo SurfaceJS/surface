@@ -1,9 +1,5 @@
-import "@surface/collection/extensions";
-import "@surface/enumerable/extensions";
-import "./extensions";
-
-import List         from "@surface/collection/list";
 import { Nullable } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
 import ElementBind  from "./internal/element-bind";
 import * as symbols from "./internal/symbols";
 
@@ -45,19 +41,21 @@ export default abstract class CustomElement extends HTMLElement
 
     /**
      * Returns the first element that matches the specified selector.
-     * @param selector Query selector.
+     * @param selector         Query selector.
+     * @param findInShadowRoot Perform query on element shadowRoot.
      */
-    public find<T extends HTMLElement>(selector: string): T
+    public find<T extends HTMLElement>(selector: string, findInShadowRoot?: boolean): T
     {
-        return this[shadowRoot].querySelector(selector) as T;
+        return (!!findInShadowRoot ? this[shadowRoot].querySelector(selector) : this.querySelector(selector)) as T;
     }
 
     /**
      * Returns the all elements that matches the specified name.
-     * @param selector Query selector.
+     * @param selector         Query selector.
+     * @param findInShadowRoot Perform query on element shadowRoot.
      */
-    public findAll<T extends HTMLElement>(selector: string): List<T>
+    public findAll<T extends HTMLElement>(selector: string, findInShadowRoot?: boolean): Enumerable<T>
     {
-        return this[shadowRoot].querySelectorAll(selector).asEnumerable().cast<T>().toList();
+        return Enumerable.from((Array.from(!!findInShadowRoot ? this[shadowRoot].querySelectorAll(selector) : this.querySelectorAll(selector))));
     }
 }

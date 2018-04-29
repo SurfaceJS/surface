@@ -28,15 +28,15 @@ NodeList.prototype.toArray = NodeList.prototype.toArray || function toArray<T ex
 
 NodeList.prototype.asEnumerable = NodeList.prototype.asEnumerable || function asEnumerable<T extends Node>(this: NodeListOf<T>)
 {
-    return Array.from(this).asEnumerable();
+    return Enumerable.from(Array.from(this));
 };
 
 NodeList.prototype.toList = NodeList.prototype.toList || function toList<T extends Node>(this: NodeListOf<T>)
 {
-    return Array.from(this).toList();
+    return new List(Array.from(this));
 };
 
 NamedNodeMap.prototype.asEnumerable = NamedNodeMap.prototype.asEnumerable || function asEnumerable(this: NamedNodeMap)
 {
-    return Array.from(this).asEnumerable();
+    return Enumerable.from(Array.from(this));
 };

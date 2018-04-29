@@ -1,0 +1,75 @@
+:host
+{
+    --color:                           white;
+    --background-color:                rgb(102, 102, 102);
+    --background-color-hover:          rgb(160, 160, 160);
+    --background-color-active:         rgb(219, 219, 219);
+    --sub-item-color:                  white;
+    --sub-item-background-color:       rgb(73, 73, 73);
+    --sub-item-background-color-hover: rgb(110, 110, 110);
+    --sub-item-background-color-active:rgb(172, 172, 172);
+    --text-align:                        center;
+
+    position: relative;
+    width:    100%;
+
+    background: var(--background-color);
+    color:      var(--color);
+    text-align: var(--text-align);
+
+    > sub-items
+    {
+        display:        none;
+        flex-direction: column;
+        position:       absolute;
+        width:          100%;
+
+    }
+
+    span[root]::after
+    {
+        content:  "\25b6";
+        font-size: 0.65em;
+    }
+}
+
+:host(:hover)
+{
+    background-color: var(--background-color-hover);
+    > sub-items
+    {
+        display: flex;        
+    }
+}
+
+:host(:active)
+{
+    background-color: var(--background-color-active);
+}
+
+:host-context(sub-items)
+{
+    &:host
+    {
+        background-color: var(--sub-item-background-color);
+        > sub-items
+        {
+            display: none;
+            top:     0;
+        }
+    }
+
+    &:host(:hover)
+    {
+        background-color: var(--sub-item-background-color-hover);
+        > sub-items
+        {
+            display: flex;
+        }
+    }
+
+    &:host(:active)
+    {
+        background-color: var(--sub-item-background-color-active);
+    }
+}

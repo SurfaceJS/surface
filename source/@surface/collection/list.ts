@@ -20,24 +20,14 @@ export default class List<TSource> extends Enumerable<TSource>
      */
     public constructor(elements: Array<TSource>);
     /**
-     * @param elements Enumerable<TSource> used to create the list.
+     * @param elements Iterable<TSource> used to create the list.
      */
     public constructor(elements: Enumerable<TSource>);
-    public constructor(elements?: Array<TSource>|Enumerable<TSource>)
+    public constructor(elements?: Iterable<TSource>)
     {
         super();
-        if (elements && Array.isArray(elements))
-        {
-            this[source] = elements;
-        }
-        else if (elements instanceof Enumerable)
-        {
-            this[source] = elements.toArray();
-        }
-        else
-        {
-            this[source] = [];
-        }
+
+        this[source] = elements ? Array.from(elements) : [];
 
         const handler: ProxyHandler<List<TSource>> =
         {
