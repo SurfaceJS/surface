@@ -31,5 +31,8 @@
         "test:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
         "test:watch": "tsc -p tsconfig.test.json -w"
     },
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "dependencies": {
+        "npm": "^6.0.1"
+    }
 }
