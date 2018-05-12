@@ -19,7 +19,7 @@
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/menu",
+    "name": "@surface/components",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
