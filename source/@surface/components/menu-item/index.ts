@@ -1,14 +1,25 @@
-import { Nullable }  from "@surface/core";
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
-import Enumerable    from "@surface/enumerable";
-import template      from "./index.html";
-import style         from "./index.scss";
+import { Nullable }           from "@surface/core";
+import CustomElement          from "@surface/custom-element";
+import { attribute, element } from "@surface/custom-element/decorators";
+import Enumerable             from "@surface/enumerable";
+import template               from "./index.html";
+import style                  from "./index.scss";
 
 @element("surface-menu-item", template, style)
 export default class MenuItem extends CustomElement
 {
     private parent: Nullable<MenuItem>;
+
+    @attribute
+    public get icon(): string
+    {
+        return super.getAttribute("icon") || "" as string;
+    }
+
+    public set icon(value: string)
+    {
+        super.setAttribute("icon", value.toString());
+    }
 
     public get items(): Enumerable<MenuItem>
     {
@@ -37,7 +48,7 @@ export default class MenuItem extends CustomElement
         {
             if (items.any())
             {
-                super.find("span", true)!.setAttribute("root", "");
+                super.find("#arrow", true)!.setAttribute("root", "");
             }
 
             super.addEventListener
@@ -47,8 +58,9 @@ export default class MenuItem extends CustomElement
                 {
                     const subItems = super.find("sub-items", true)!;
                     const bounding = this.getBoundingClientRect();
+                    const offset   = window.scrollbars.visible ? 30 : 0;
 
-                    subItems.style.left = bounding.left + bounding.width < window.innerWidth ? `${bounding.width}px` : `${-bounding.width}px`;
+                    subItems.style.left = bounding.left + bounding.width + offset <= window.innerWidth ? `${bounding.width}px` : `${-bounding.width}px`;
                 }
             )
         }

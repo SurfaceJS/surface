@@ -1,0 +1,149 @@
+:host
+{
+    display:        flex;
+    flex-direction: column;
+    flex-grow:      1;
+    flex-shrink:    0;
+
+    ::slotted(*)
+    {
+        margin: 0;
+    }
+}    
+
+:host([orientation=vertical])
+{
+    flex-direction: column;
+    ::slotted(*)
+    {
+        width: 100%;
+    }
+}
+
+:host([orientation=horizontal])
+{
+    flex-direction: row;
+    ::slotted(*)
+    {
+        height: 100%;
+    }
+}
+
+:host([orientation=vertical][distribuition=center])
+{
+    ::slotted(*)
+    {
+        margin-top:    auto;
+        margin-bottom: auto;
+    }
+}
+
+:host,
+:host([orientation=vertical]),
+:host([orientation=horizontal])
+{
+    ::slotted([vertical-align=top])
+    {
+        width:         auto;
+        margin-top:    0;
+        margin-bottom: auto;
+    }
+
+    ::slotted([vertical-align=center])
+    {
+        width:         auto;
+        margin-top:    auto;
+        margin-bottom: auto;
+    }
+    
+    ::slotted([vertical-align=bottom])
+    {
+        width:         auto;
+        margin-top:    auto;
+        margin-bottom: 0;
+    }
+    
+    ::slotted([horizontal-align=left])
+    {
+        height:       auto;
+        margin-left:  0;
+        margin-right: auto;
+    }
+
+    ::slotted([horizontal-align=center])
+    {
+        height:       auto;
+        margin-left:  auto;
+        margin-right: auto;
+    }
+
+    ::slotted([horizontal-align=right])
+    {
+        height:       auto;
+        margin-left:  auto;
+        margin-right: 0;
+    }
+}
+
+:host([orientation=vertical][distribuition=justify])
+{
+    ::slotted(:not(:first-child)),
+    ::slotted(:not(:last-child))
+    {
+        margin-top:    auto;
+        margin-bottom: auto;
+    }
+
+    ::slotted(:first-child)
+    {
+        margin-top:    0;
+        margin-bottom: auto;
+    }
+
+    ::slotted(:last-child)
+    {
+        margin-top:    auto;
+        margin-bottom: 0;
+    }
+}
+
+:host([orientation=vertical][reverse=true])
+{
+    flex-direction: column-reverse;
+}
+
+:host([orientation=horizontal][distribuition=justify])
+{
+    ::slotted(:not(:first-child)),
+    ::slotted(:not(:last-child))
+    {
+        margin-left:  auto;
+        margin-right: auto;
+    }
+
+    ::slotted(:first-child)
+    {
+        margin-left:  0;
+        margin-right: auto;
+    }
+
+    ::slotted(:last-child)
+    {
+        margin-left:  auto;
+        margin-right: 0;
+    }
+}
+
+:host([orientation=horizontal][distribuition=center])
+{
+    ::slotted(*)
+    {
+        margin-left:  auto;
+        margin-right: auto;
+    }
+}
+
+:host([orientation=horizontal][reverse=true])
+{
+    flex-direction: row-reverse;
+}

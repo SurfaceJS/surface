@@ -1,4 +1,5 @@
 import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
+import { camelToText }                                     from "@surface/core/common/string";
 import mocha                                                   from "./internal/mocha";
 
 import
@@ -18,11 +19,6 @@ from "./internal/symbols";
 
 type Test = { expectation: string, getMethod: (context: Object) => () => void };
 
-function textify(identifier: string): string
-{
-    return identifier.split(/(?=[A-Z])/).join(" ").toLowerCase();
-}
-
 export function after(description: string): MethodDecorator;
 export function after<T>(target: Object, key: string|symbol): void;
 export function after(...args: Array<Object>): MethodDecorator|void
@@ -40,7 +36,7 @@ export function after(...args: Array<Object>): MethodDecorator|void
     else
     {
         const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        decorator(target, key, camelToText(key));
     }
 }
 
@@ -61,7 +57,7 @@ export function afterEach(...args: Array<Object>): MethodDecorator|void
     else
     {
         const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        decorator(target, key, camelToText(key));
     }
 }
 
@@ -91,7 +87,7 @@ export function before(...args: Array<Object>): MethodDecorator|void
     else
     {
         const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        decorator(target, key, camelToText(key));
     }
 }
 
@@ -112,7 +108,7 @@ export function beforeEach(...args: Array<Object>): MethodDecorator|void
     else
     {
         const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        decorator(target, key, camelToText(key));
     }
 }
 
@@ -276,7 +272,7 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
     }
     else
     {
-        decorator(targetOrDescription, textify(targetOrDescription.name));
+        decorator(targetOrDescription, camelToText(targetOrDescription.name));
     }
 }
 
@@ -300,7 +296,7 @@ export function test(...args: Array<Object>): MethodDecorator|void
     else
     {
         const [target, key] = args as [Object, string];
-        expectation = key.split(/(?=[A-Z])/).join(" ").toLowerCase();
+        expectation = camelToText(key);
         decorator(target, key);
     }
 }

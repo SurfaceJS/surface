@@ -1,14 +1,15 @@
-import { Action, Nullable }  from "@surface/core";
-import ExpressionType        from "@surface/expression/expression-type";
-import IExpression           from "@surface/expression/interfaces/expression";
-import IMemberExpression     from "@surface/expression/interfaces/member-expression";
-import Type                  from "@surface/reflection";
-import IArrayExpression      from "../../expression/interfaces/array-expression";
-import BindParser            from "./bind-parser";
-import BindingMode           from "./binding-mode";
-import DataBind              from "./data-bind";
-import ObserverVisitor       from "./observer-visitor";
-import windowWrapper         from "./window-wrapper";
+import { Action }        from "@surface/core";
+import { coalesce }      from "@surface/core/common/generic";
+import { dashedToCamel } from "@surface/core/common/string";
+import ExpressionType    from "@surface/expression/expression-type";
+import IMemberExpression from "@surface/expression/interfaces/member-expression";
+import Type              from "@surface/reflection";
+import IArrayExpression  from "../../expression/interfaces/array-expression";
+import BindParser        from "./bind-parser";
+import BindingMode       from "./binding-mode";
+import DataBind          from "./data-bind";
+import ObserverVisitor   from "./observer-visitor";
+import windowWrapper     from "./window-wrapper";
 
 export default class ElementBind
 {
@@ -31,6 +32,9 @@ export default class ElementBind
         {
             if (attribute.value.indexOf("{{") > -1 || attribute.value.indexOf("[[") > -1)
             {
+                const interpolation = !(attribute.value.startsWith("{{") && attribute.value.endsWith("}}"))
+                    && !(attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));
+
                 const context = this.createProxy({ window: this.window, host: this.host, this: element });
 
                 const { bindingMode, expression } = BindParser.scan(context, attribute.value);
@@ -52,12 +56,15 @@ export default class ElementBind
                 }
                 else
                 {
-                    const attributeName = attribute.name.replace(/-([a-z])/g, x => x[1].toUpperCase());
+                    const attributeName = dashedToCamel(attribute.name);
 
                     let notify = () =>
                     {
-                        const value = expression.evaluate();
-                        attribute.value = `${value}`;
+                        const value = expression.type == ExpressionType.Array && interpolation ?
+                            (expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`) :
+                            expression.evaluate();
+
+                        attribute.value = `${coalesce(value, "")}`;
 
                         if (attributeName in element)
                         {
@@ -107,12 +114,9 @@ export default class ElementBind
     {
         if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[") > -1))
         {
-            let expression: IExpression;
-            const coalesce = <T>(value: Nullable<T>, fallback: T) => value !== null && value !== undefined ? value : fallback;
-
             const context = this.createProxy({ window: this.window, host: this.host, this: element });
 
-            expression = BindParser.scan(context, element.nodeValue).expression;
+            let expression = BindParser.scan(context, element.nodeValue).expression;
 
             const notify = expression.type == ExpressionType.Array ?
                 () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :

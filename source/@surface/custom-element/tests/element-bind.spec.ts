@@ -67,6 +67,20 @@ export default class ElementBindSpec
     }
 
     @test @shouldPass
+    public async elementWithAttributesBindInterpolation(): Promise<void>
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const content  = document.createElement("div");
+
+        host.lang = "pt-br";
+        content.innerHTML = "<span data-text='Tag name: {{ host.tagName }}'>Text</span>";
+
+        await ElementBind.for(host, content);
+        expect(content.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
+    }
+
+    @test @shouldPass
     public async elementWithAttributesBindToNonBindableField(): Promise<void>
     {
         const document = window.document;
@@ -109,7 +123,7 @@ export default class ElementBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("div");
 
-        content.innerHTML = "<span has-childs='{{ this.childNodes.length > 0 }}'></span>";
+        content.innerHTML = "<span has-childs='[[ this.childNodes.length > 0 ]]'></span>";
 
         await ElementBind.for(host, content);
 

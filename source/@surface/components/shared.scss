@@ -1,0 +1,61 @@
+:host 
+{
+    display:        flex;
+    flex-direction: column;
+    flex-grow:      1;
+    flex-shrink:    0;
+
+    ::slotted(*),
+    ::slotted([vertical-align=center])
+    {
+        margin: auto;
+    }
+
+    //#region vertical-top
+    ::slotted([vertical-align=top])
+    {
+        margin: 0 auto 0 auto;
+    }
+
+    ::slotted(:last-child[vertical-align=top])
+    {
+        margin: 0 auto auto auto;
+    }
+    //#endregion vertical-top
+
+    //#region vertical-bottom    
+    ::slotted([vertical-align=bottom])
+    {
+        margin: 0 auto 0 auto;
+    }
+    
+    ::slotted(:first-child[vertical-align=bottom])
+    {
+        margin: auto auto 0 auto;
+    }
+    //#endregion vertical-bottom
+
+    //#region horizontal-left
+    ::slotted([horizontal-align=left])
+    {
+        margin: auto 0 auto 0;
+    }
+
+    ::slotted(:last-child[horizontal-align=left])
+    {
+        margin: auto auto auto 0;
+    }
+    //#endregion horizontal-left
+
+    //#region horizontal-right    
+    ::slotted([horizontal-align=right])
+    {
+        margin: auto 0 auto 0;
+    }
+    
+    ::slotted(:last-child[horizontal-align=right])
+    {
+        margin: auto 0 auto auto;
+    }
+    //#endregion horizontal-right
+}

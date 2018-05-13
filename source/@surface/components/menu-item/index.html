@@ -1,8 +1,12 @@
-<require path="../stack-layout" />
+<require path="../stack-panel" />
 
-<surface-stack-layout orientation="horizontal" justify="false" align="top-right" style="height: 100px;">
-    <span>{{host.name}}</span><span>{{host.name}}</span><span>{{host.name}}</span>
-</surface-stack-layout>
+<surface-stack-panel orientation="horizontal">
+    <div id="icon-holder">
+        <span id="icon" style="background-image: url({{host.icon}});"></span>
+    </div>
+    <span id="text"  horizontal-align="left"  vertical-align="center">{{host.name}}</span>
+    <span id="arrow" horizontal-align="right" vertical-align="center"></span>
+</surface-stack-panel>
 <sub-items>
     <slot></slot>
 </sub-items>

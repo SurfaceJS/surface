@@ -5,7 +5,7 @@ import { expect }                  from "chai";
 import MockElement                 from "./fixtures/mock-element";
 
 @suite
-export default class CustomElementSpc
+export default class CustomElementSpec
 {
     @test @shouldPass
     public construct(): void
@@ -17,13 +17,13 @@ export default class CustomElementSpc
     public findElement(): void
     {
         const mock = new MockElement();
-        expect(mock.find("span")).to.instanceof(HTMLElement);
+        expect(mock.find("span", true)).to.instanceof(HTMLElement);
     }
 
     @test @shouldPass
-    public findElementInSlot(): void
+    public findElementAll(): void
     {
         const mock = new MockElement();
-        expect(mock.findAll("span").toArray().length).to.equal(2);
+        expect(mock.findAll("span", true).toArray().length).to.equal(2);
     }
 }
