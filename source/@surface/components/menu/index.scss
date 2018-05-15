@@ -1,6 +1,15 @@
 :host
 {
+    --background-color: rgb(100, 100, 100);
+
+    background-color: var(--background-color);
+
     display:        flex;
     flex-direction: row;
     width:          100%;
+}
+
+:host([wrap=true])
+{
+    flex-wrap: wrap;
 }

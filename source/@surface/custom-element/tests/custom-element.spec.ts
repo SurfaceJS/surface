@@ -17,13 +17,13 @@ export default class CustomElementSpec
     public findElement(): void
     {
         const mock = new MockElement();
-        expect(mock.find("span", true)).to.instanceof(HTMLElement);
+        expect(mock["shadowQuery"]("span")).to.instanceof(HTMLElement);
     }
 
     @test @shouldPass
     public findElementAll(): void
     {
         const mock = new MockElement();
-        expect(mock.findAll("span", true).toArray().length).to.equal(2);
+        expect(mock["shadowQueryAll"]("span").toArray().length).to.equal(2);
     }
 }

@@ -12,42 +12,46 @@
     --text-align:                        center;
 
     position: relative;
-    width:    100%;
     height:   30px;
 
-    background: var(--background-color);
     color:      var(--color);
-    text-align: var(--text-align);
+    background: var(--background-color);
 
     > surface-stack-panel
     {
-        height: 100%;
+        min-height: 30px;
+        background: inherit;
+        > #text
+        {
+            padding-left:  10px;
+            padding-right: 10px; 
+            text-overflow: ellipsis;
+            user-select:   none;
+            white-space:   nowrap;
+        }
     }
 
-    > sub-items
+    > #container
     {
         display:        none;
         flex-direction: column;
         position:       absolute;
-        width:          100%;
-    }
-
-    #text
-    {
-        padding-left: 10px;
+        height:         auto;
+        width:          inherit;
+        z-index:        999;
     }
 }
 
 :host(:hover)
 {
     background-color: var(--background-color-hover);
-    > sub-items
+    > #container
     {
-        display: flex;        
+        display: flex;
     }
 }
 
-:host(:hover:active)
+:host(:active)
 {
     background-color: var(--background-color-active);
 }
@@ -55,7 +59,6 @@
 %icon-holder
 {
     width:   30px;
-    height:  100%;
     display: flex;
 }
 
@@ -70,49 +73,39 @@
     display:             block;
 }
 
-:host-context(sub-items)
+:host-context(#container)
 {
     &:host
     {
         background-color: var(--sub-item-background-color);
-        > sub-items
+
+        > #container
         {
-            display: none;
-            top:     0;
+            top: 0;
+        }
+
+        #arrow[root]::after
+        {
+            content:       "\25b6";
+            font-size:     0.65em;
+            padding-right: 5px;
+        }
+
+        #icon-holder
+        {
+            @extend %icon-holder;
+            background-color: var(--sub-item-background-color-hover);
+            #icon
+            {
+                @extend %icon;
+            }
         }
     }
 
     &:host(:hover)
     {
         background-color: var(--sub-item-background-color-hover);
-        > sub-items
-        {
-            display: flex;
-        }
     }
-
-    &:host(:active)
-    {
-        background-color: var(--sub-item-background-color-active);
-    }
-
-    #arrow[root]::after
-    {
-        content:       "\25b6";
-        font-size:     0.65em;
-        padding-right: 5px;
-    }
-
-    #icon-holder
-    {
-        @extend %icon-holder;
-        background-color: var(--sub-item-ident);
-        #icon
-        {
-            @extend %icon;
-        }
-    }
-
 }
 
 :host([icon])
@@ -120,7 +113,6 @@
     #icon-holder
     {
         @extend %icon-holder;
-        //background-color: unset;
         #icon
         {
             @extend %icon;

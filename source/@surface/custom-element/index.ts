@@ -40,22 +40,38 @@ export default abstract class CustomElement extends HTMLElement
     }
 
     /**
-     * Returns the first element that matches the specified selector.
-     * @param selector         Query selector.
-     * @param findInShadowRoot Perform query on element shadowRoot.
+     * Returns the first element that matches the specified selector on element shadowRoot
+     * @param selector Query selector
      */
-    public find<T extends HTMLElement>(selector: string, findInShadowRoot?: boolean): T
+    protected shadowQuery<T extends HTMLElement>(selector: string): Nullable<T>
     {
-        return (!!findInShadowRoot ? this[shadowRoot].querySelector(selector) : this.querySelector(selector)) as T;
+        return this[shadowRoot].querySelector(selector) as Nullable<T>;
     }
 
     /**
-     * Returns the all elements that matches the specified name.
-     * @param selector         Query selector.
-     * @param findInShadowRoot Perform query on element shadowRoot.
+     * Returns an enumerable from the all elements that matches the specified name on element shadowRoot
+     * @param selector Query selector
      */
-    public findAll<T extends HTMLElement>(selector: string, findInShadowRoot?: boolean): Enumerable<T>
+    protected shadowQueryAll<T extends HTMLElement>(selector: string): Enumerable<T>
     {
-        return Enumerable.from((Array.from(!!findInShadowRoot ? this[shadowRoot].querySelectorAll(selector) : this.querySelectorAll(selector))));
+        return Enumerable.from((Array.from(this[shadowRoot].querySelectorAll(selector))));
+    }
+
+    /**
+     * Returns the first element that matches the specified selector
+     * @param selector Query selector
+     */
+    public query<T extends HTMLElement>(selector: string): Nullable<T>
+    {
+        return this.querySelector(selector) as Nullable<T>;
+    }
+
+    /**
+     * Returns an enumerable from the all elements that matches the specified name
+     * @param selector Query selector
+     */
+    public queryAll<T extends HTMLElement>(selector: string): Enumerable<T>
+    {
+        return Enumerable.from((Array.from(super.querySelectorAll(selector))));
     }
 }

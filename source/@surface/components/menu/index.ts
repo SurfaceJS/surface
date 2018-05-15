@@ -10,6 +10,6 @@ export class Menu extends CustomElement
 {
     public get items(): Enumerable<MenuItem>
     {
-        return super.findAll<MenuItem>("surface-menu-item").where(x => x.parentElement == this);
+        return super.shadowQueryAll<MenuItem>("surface-menu-item").where(x => x.parentElement == this);
     }
 }

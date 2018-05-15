@@ -23,7 +23,7 @@ export default class ViewHost extends CustomElement
     {
         if (!this._view)
         {
-            this._view = super.findAll<View>("*").firstOrDefault(x => /^view-/.test(x.tagName));
+            this._view = super.queryAll<View>("*").firstOrDefault(x => /^view-/.test(x.tagName));
         }
 
         return this._view;
