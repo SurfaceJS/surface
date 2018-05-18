@@ -1,33 +1,41 @@
+$default-size:    30px;
+$only-icons-size: 60px;
+
 :host
 {
-    --color:                           white;
-    --background-color:                rgb(100, 100, 100);
-    --background-color-hover:          rgb(125, 125, 125);
-    --background-color-active:         rgb(150, 150, 150);
-    --sub-item-color:                  white;
-    --sub-item-ident:                  rgb(50, 50, 50);
-    --sub-item-background-color:       rgb(75, 75, 75);
-    --sub-item-background-color-hover: rgb(100, 100, 100);
-    --sub-item-background-color-active:rgb(125, 125, 125);
-    --text-align:                        center;
+    --color:                   white;
+    --background-color:        rgb(125, 125, 125);
+    --background-color-hover:  rgb(150, 150, 150);
+    --background-color-active: rgb(175, 175, 175);
 
+    height:   $default-size;
     position: relative;
-    height:   30px;
 
     color:      var(--color);
     background: var(--background-color);
 
     > surface-stack-panel
     {
-        min-height: 30px;
+        min-height: $default-size;
         background: inherit;
-        > #text
+        
+        #text
         {
-            padding-left:  10px;
-            padding-right: 10px; 
+            $padding: 5px;
+
+            padding-left:  $padding;
+            padding-right: $padding;
             text-overflow: ellipsis;
             user-select:   none;
             white-space:   nowrap;
+        }
+
+        #inline-arrow
+        {
+            margin-right:  2px;
+            margin-bottom: 2px;
+            fill:          var(--background-color-active);
+            display:       none;
         }
     }
 
@@ -58,64 +66,119 @@
 
 %icon-holder
 {
-    width:   30px;
     display: flex;
+    height:  $default-size;
+    width:   $default-size;
 }
 
 %icon
 {
-    width:               25px;
-    height:              25px;
-    margin:              auto;
-    background-size:     cover;
-    background-repeat:   no-repeat;
     background-position: center center;
+    background-repeat:   no-repeat;
+    background-size:     cover;
     display:             block;
+    height:              $default-size - 5;
+    margin:              auto;
+    width:               $default-size - 5;
 }
 
-:host-context(#container)
+:host-context(surface-menu[type=only-icons])
 {
     &:host
     {
-        background-color: var(--sub-item-background-color);
-
-        > #container
+        height: 60px;
+        > surface-stack-panel
         {
-            top: 0;
-        }
+            #text
+            {
+                display: none;
+            }
 
-        #arrow[root]::after
-        {
-            content:       "\25b6";
-            font-size:     0.65em;
-            padding-right: 5px;
+            #inline-arrow
+            {
+                display: none;
+            }
         }
+    }
 
+    &:host([icon])
+    {
         #icon-holder
         {
             @extend %icon-holder;
-            background-color: var(--sub-item-background-color-hover);
+
+            background-color: var(--background-color);
+            height:           $only-icons-size;
+            width:            $only-icons-size;
+
+            #icon
+            {
+                @extend %icon;
+                height: $only-icons-size - 10;
+                width:  $only-icons-size - 10;
+            }
+        }
+    }
+}
+
+/*
+:host-context(surface-menu[orientation=vertical])
+{
+    &:host
+    {
+        #icon-holder
+        {
+            @extend %icon-holder;
+            background-color: var(--background-color-hover);
+
             #icon
             {
                 @extend %icon;
             }
         }
+
+        > #inline-arrow[has-items]
+        {
+            display: block;
+        }
+    }
+}
+*/
+
+:host-context(#container),
+:host-context(surface-menu[orientation=vertical])
+{
+    &:host
+    {
+        background-color: var(--background-color);
+        
+        > surface-stack-panel
+        {
+            > #icon-holder
+            {
+                @extend %icon-holder;
+                background-color: var(--background-color-hover);
+
+                #icon
+                {
+                    @extend %icon;
+                }
+            }
+
+            > #inline-arrow[has-items]
+            {
+                display: block;
+            }
+        }
+
+        > #container
+        {
+            top: 0;
+        }
     }
 
     &:host(:hover)
     {
-        background-color: var(--sub-item-background-color-hover);
-    }
-}
-
-:host([icon])
-{
-    #icon-holder
-    {
-        @extend %icon-holder;
-        #icon
-        {
-            @extend %icon;
-        }
+        background-color: var(--background-color-hover);
     }
 }

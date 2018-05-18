@@ -1,15 +1,20 @@
 :host
 {
-    --background-color: rgb(100, 100, 100);
+    --background-color: rgb(125, 125, 125);
 
     background-color: var(--background-color);
-
+    
     display:        flex;
     flex-direction: row;
-    width:          100%;
 }
 
 :host([wrap=true])
 {
     flex-wrap: wrap;
+}
+
+:host([orientation=vertical])
+{
+    display:        inline-flex;
+    flex-direction: column;
 }

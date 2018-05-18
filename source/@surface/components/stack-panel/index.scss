@@ -1,6 +1,6 @@
 :host
 {
-    display:        flex;
+    display:        inline-flex;
     flex-direction: column;
     flex-grow:      1;
 
@@ -37,12 +37,14 @@
 
 :host([orientation=vertical])
 {
+    
     flex-direction: column;
     align-items:    stretch;
 }
 
 :host([orientation=horizontal])
 {
+    display:        flex;
     flex-direction: row;
     align-items:    stretch;
 }

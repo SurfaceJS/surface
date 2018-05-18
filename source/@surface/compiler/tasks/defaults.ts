@@ -1,7 +1,7 @@
 import path    from "path";
 import webpack from "webpack";
 
-export let loaders =
+export const loaders =
 {
     cache:
     {
@@ -18,7 +18,7 @@ export let loaders =
     file:
     {
         loader: "file-loader",
-        options: { name: "/resources/[hash].[ext]" }
+        options: { name: "[hash].[ext]", outputPath: "resources" }
     },
     html:
     {
@@ -42,6 +42,7 @@ export let loaders =
             produceSourceMap: true
         }
     },
+    resolveUrl: { loader: "resolve-url-loader" },
     sass:
     {
         loader: "sass-loader"
@@ -72,7 +73,7 @@ export let loaders =
     },
 };
 
-export let webpackConfig: webpack.Configuration =
+export const webpackConfig: webpack.Configuration =
 {
     devtool: "#source-map",
     resolve:
@@ -95,7 +96,7 @@ export let webpackConfig: webpack.Configuration =
         rules:
         [
             {
-                test: /\.(png|jpe?g|svg)$/,
+                test: /\.(png|jpe?g|svg|ttf|woff)$/,
                 use:  loaders.file
             },
             {
@@ -104,6 +105,7 @@ export let webpackConfig: webpack.Configuration =
                 [
                     loaders.toString,
                     loaders.css,
+                    loaders.resolveUrl,
                     loaders.sass
                 ]
             },
