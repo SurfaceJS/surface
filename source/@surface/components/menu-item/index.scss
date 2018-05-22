@@ -1,7 +1,7 @@
 $default-size:    30px;
 $only-icons-size: 60px;
 
-:host
+:host > #root
 {
     --color:                   white;
     --background-color:        rgb(125, 125, 125);
@@ -32,10 +32,11 @@ $only-icons-size: 60px;
 
         #inline-arrow
         {
-            margin-right:  2px;
-            margin-bottom: 2px;
-            fill:          var(--background-color-active);
-            display:       none;
+            position: absolute;
+            right:    2px;
+            bottom:   2px;
+            fill:     var(--background-color-active);
+            display:  none;
         }
     }
 
@@ -50,16 +51,20 @@ $only-icons-size: 60px;
     }
 }
 
-:host(:hover)
+:host > #root:hover
 {
-    background-color: var(--background-color-hover);
+    > surface-stack-panel
+    {
+        background-color: var(--background-color-hover);
+    }
+
     > #container
     {
         display: flex;
     }
 }
 
-:host(:active)
+:host > #root:not([has-items]):active > surface-stack-panel
 {
     background-color: var(--background-color-active);
 }
@@ -82,11 +87,12 @@ $only-icons-size: 60px;
     width:               $default-size - 5;
 }
 
-:host-context(surface-menu[type=only-icons])
+:host-context(surface-menu[type=only-icons]),
+:host-context(surface-menu[type=only-icons]):host-context(#container)
 {
-    &:host
+    &:host > #root
     {
-        height: 60px;
+        height: $only-icons-size;
         > surface-stack-panel
         {
             #text
@@ -101,57 +107,59 @@ $only-icons-size: 60px;
         }
     }
 
-    &:host([icon])
+    //&:host-context(#container):host > #root
+    //{
+    //    > surface-stack-panel
+    //    {
+    //        height: inherit;
+    //        #text
+    //        {
+    //            display: initial;
+    //        }
+    //    }
+    //}
+
+    &:host([icon]) > #root
     {
         #icon-holder
         {
             @extend %icon-holder;
 
-            background-color: var(--background-color);
+            //background-color: var(--background-color);
+            background-color: transparent;
             height:           $only-icons-size;
             width:            $only-icons-size;
 
             #icon
             {
                 @extend %icon;
-                height: $only-icons-size - 10;
-                width:  $only-icons-size - 10;
+                height: $only-icons-size - 5;
+                width:  $only-icons-size - 5;
             }
         }
     }
-}
 
-/*
-:host-context(surface-menu[orientation=vertical])
-{
-    &:host
+    &:host > #root[has-items] > surface-stack-panel > #inline-arrow
     {
-        #icon-holder
-        {
-            @extend %icon-holder;
-            background-color: var(--background-color-hover);
-
-            #icon
-            {
-                @extend %icon;
-            }
-        }
-
-        > #inline-arrow[has-items]
-        {
-            display: block;
-        }
+        display: block;
     }
 }
-*/
 
 :host-context(#container),
 :host-context(surface-menu[orientation=vertical])
 {
-    &:host
+    &:host > #root
     {
         background-color: var(--background-color);
         
+        &[has-items] > surface-stack-panel
+        {
+            > #inline-arrow
+            {
+                display: block;
+            }
+        }
+
         > surface-stack-panel
         {
             > #icon-holder
@@ -164,11 +172,6 @@ $only-icons-size: 60px;
                     @extend %icon;
                 }
             }
-
-            > #inline-arrow[has-items]
-            {
-                display: block;
-            }
         }
 
         > #container
@@ -177,8 +180,13 @@ $only-icons-size: 60px;
         }
     }
 
-    &:host(:hover)
-    {
-        background-color: var(--background-color-hover);
-    }
+    //&:host(:active) > #root
+    //{
+    //    background-color: var(--background-color-active);
+    //}
+
+    //&:host(:hover) > #root
+    //{
+    //    background-color: var(--background-color-hover);
+    //}
 }

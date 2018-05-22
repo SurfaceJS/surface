@@ -9,8 +9,8 @@ import style         from "./index.scss";
 @element("surface-menu-item", template, style)
 export default class MenuItem extends CustomElement
 {
-    private readonly container:   HTMLElement;
-    private readonly inlineArrow: HTMLElement;
+    private readonly container: HTMLElement;
+    private readonly root:      HTMLElement;
     private parentContainer: Nullable<HTMLElement>;
     public get icon(): string
     {
@@ -41,7 +41,7 @@ export default class MenuItem extends CustomElement
     {
         super();
         this.container   = super.shadowQuery("#container")!;
-        this.inlineArrow = super.shadowQuery("#inline-arrow")!;
+        this.root = super.shadowQuery("#root")!;
     }
 
     private onClick(): void
@@ -91,7 +91,7 @@ export default class MenuItem extends CustomElement
 
         if (hasItems)
         {
-            this.inlineArrow.setAttribute("has-items", "");
+            this.root.setAttribute("has-items", "");
         }
 
         if (this.parentElement instanceof MenuItem)
@@ -118,6 +118,6 @@ export default class MenuItem extends CustomElement
         super.removeEventListener("mouseleave", this.onMouseLeave);
         super.removeEventListener("mouseover", this.onMouseOverItem);
         super.removeEventListener("mouseover", this.onMouseOverRoot);
-        this.inlineArrow.removeAttribute("has-items");
+        this.root.removeAttribute("has-items");
     }
 }
