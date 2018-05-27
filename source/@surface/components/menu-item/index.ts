@@ -2,7 +2,8 @@ import { Nullable }  from "@surface/core";
 import CustomElement from "@surface/custom-element";
 import { element }   from "@surface/custom-element/decorators";
 import Enumerable    from "@surface/enumerable";
-import { Menu }      from "../menu";
+import ContexMenu    from "../context-menu";
+import Menu          from "../menu";
 import template      from "./index.html";
 import style         from "./index.scss";
 
@@ -40,49 +41,54 @@ export default class MenuItem extends CustomElement
     public constructor()
     {
         super();
-        this.container   = super.shadowQuery("#container")!;
-        this.root = super.shadowQuery("#root")!;
+        this.container = super.shadowQuery("#container")!;
+        this.root      = super.shadowQuery("#root")!;
     }
 
     private onClick(): void
     {
-        this.parentContainer!.style.display = "none";
+        if (this.parentElement instanceof ContexMenu)
+        {
+            this.parentElement.style.display = "none";
+        }
+        else
+        {
+            this.parentContainer!.style.display = "none";
+        }
     }
 
     private onMouseLeave(): void
     {
-        this.parentContainer!.style.display = "";
+        if (this.parentElement instanceof ContexMenu)
+        {
+            this.parentElement.style.display = "";
+        }
+        else
+        {
+            this.parentContainer!.style.display = "";
+        }
     }
 
-    private onMouseOver(root: boolean): void
+    private onMouseOver(): void
     {
         const bounding          = this.getBoundingClientRect();
         const containerBounding = this.container.getBoundingClientRect();
 
-        if (root)
+        let offset = 0;
+        if (this.parentElement instanceof ContexMenu)
         {
-            let offset = 0;
-            if (this.parentElement instanceof Menu && this.parentElement.orientation == Menu.Orientation.Vertical)
-            {
-                this.container.style.top = "0";
-                offset = bounding.width;
-            }
+            this.container.style.top = "0";
+            offset = bounding.width;
+        }
+
+        if (this.parentElement instanceof Menu)
+        {
             this.container.style.left = bounding.left + containerBounding.width <= window.innerWidth ? `${offset}px` : `${-(containerBounding.width -(window.innerWidth - bounding.left))}px`;
         }
         else
         {
             this.container.style.left = bounding.left + (bounding.width + containerBounding.width) <= window.innerWidth ? `${bounding.width}px` : `${-containerBounding.width}px`;
         }
-    }
-
-    private onMouseOverItem(): void
-    {
-        this.onMouseOver(false);
-    }
-
-    private onMouseOverRoot(): void
-    {
-        this.onMouseOver(true);
     }
 
     protected connectedCallback(): void
@@ -96,7 +102,7 @@ export default class MenuItem extends CustomElement
 
         if (this.parentElement instanceof MenuItem)
         {
-            super.addEventListener("mouseover", this.onMouseOverItem.bind(this));
+            super.addEventListener("mouseover", this.onMouseOver.bind(this));
 
             if (!hasItems)
             {
@@ -108,7 +114,13 @@ export default class MenuItem extends CustomElement
         }
         else
         {
-            super.addEventListener("mouseover", this.onMouseOverRoot.bind(this));
+            super.addEventListener("mouseover", this.onMouseOver.bind(this));
+
+            if (this.parentElement instanceof ContexMenu)
+            {
+                super.addEventListener("click", this.onClick.bind(this));
+                super.addEventListener("mouseleave", this.onMouseLeave.bind(this));
+            }
         }
     }
 
@@ -116,8 +128,7 @@ export default class MenuItem extends CustomElement
     {
         super.removeEventListener("click", this.onClick);
         super.removeEventListener("mouseleave", this.onMouseLeave);
-        super.removeEventListener("mouseover", this.onMouseOverItem);
-        super.removeEventListener("mouseover", this.onMouseOverRoot);
+        super.removeEventListener("mouseover", this.onMouseOver);
         this.root.removeAttribute("has-items");
     }
 }

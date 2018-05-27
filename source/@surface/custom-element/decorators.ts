@@ -7,7 +7,7 @@ export function attribute(target: Object, propertyKey: string | symbol): void
     {
         if (!target.constructor[symbols.observedAttributes] && !target.constructor[symbols.observedAttributes])
         {
-            let values: Array<string> = [];
+            const values: Array<string> = [];
             Object.defineProperty(target.constructor, symbols.observedAttributes, { get: () => values } );
             Object.defineProperty(target.constructor, "observedAttributes", { get: () => target.constructor[symbols.observedAttributes] });
         }
@@ -29,39 +29,36 @@ export function element(name: string, template?: string, style?: string, options
     {
         if (isHTMLElement(target))
         {
-            if (template)
+            if (isCustomElement(target))
             {
-                if (isCustomElement(target))
+                const templateElement = document.createElement("template");
+
+                templateElement.innerHTML = template || "<slot></slot>";
+
+                if (style)
                 {
-                    let templateElement = document.createElement("template");
-
-                    templateElement.innerHTML = template;
-
-                    if (style)
-                    {
-                        let styleElement = document.createElement("style");
-                        styleElement.innerHTML = style;
-                        templateElement.content.appendChild(styleElement);
-                    }
-
-                    if (window.ShadyCSS)
-                    {
-                        window.ShadyCSS.prepareTemplate(templateElement, name, options && options.extends);
-                    }
-
-                    Object.defineProperty(target, symbols.template, { get: () => templateElement } );
+                    const styleElement = document.createElement("style");
+                    styleElement.innerHTML = style;
+                    templateElement.content.appendChild(styleElement);
                 }
-                else
+
+                if (window.ShadyCSS)
                 {
-                    throw new TypeError("Constructor is not an valid subclass of CustomElement.");
+                    window.ShadyCSS.prepareTemplate(templateElement, name, options && options.extends);
                 }
+
+                Object.defineProperty(target, symbols.template, { get: () => templateElement } );
+            }
+            else
+            {
+                throw new TypeError("constructor is not an valid subclass of CustomElement");
             }
 
             window.customElements.define(name, target, options);
         }
         else
         {
-            throw new TypeError("Constructor is not an valid subclass of HTMLElement.");
+            throw new TypeError("constructor is not an valid subclass of HTMLElement");
         }
     };
 }

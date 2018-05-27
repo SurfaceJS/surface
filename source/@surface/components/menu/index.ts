@@ -14,22 +14,24 @@ export class Menu extends CustomElement
         return super.queryAll<MenuItem>("surface-menu-item").where(x => x.parentElement == this);
     }
 
-    public get orientation(): Menu.Orientation
+    public get type(): Menu.Type
     {
-        return Menu.Orientation[dashedToTitle(super.getAttribute("orientation") || "")] || Menu.Orientation.Horizontal;
+        return Menu.Type[dashedToTitle(super.getAttribute("type") || "")] || Menu.Type.Static;
     }
 
-    public set orientation(value: Menu.Orientation)
+    public set type(value: Menu.Type)
     {
-        super.setAttribute("orientation", Menu.Orientation[value].toLowerCase());
+        super.setAttribute("type", Menu.Type[value].toLowerCase());
     }
 }
 
 export namespace Menu
 {
-    export enum Orientation
+    export enum Type
     {
-        Horizontal,
-        Vertical
+        Static,
+        Context
     }
 }
+
+export default Menu;

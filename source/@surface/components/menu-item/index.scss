@@ -21,10 +21,10 @@ $only-icons-size: 60px;
         
         #text
         {
-            $padding: 5px;
+            $padding: 10px;
 
             padding-left:  $padding;
-            padding-right: $padding;
+            padding-right: $padding;            
             text-overflow: ellipsis;
             user-select:   none;
             white-space:   nowrap;
@@ -42,16 +42,29 @@ $only-icons-size: 60px;
 
     > #container
     {
-        display:        none;
-        flex-direction: column;
-        position:       absolute;
-        height:         auto;
-        width:          inherit;
-        z-index:        999;
+        display:          none;
+        flex-direction:   column;
+        position:         absolute;
+        height:           auto;
+        width:            inherit;
+        z-index:          999;
+        background-color: inherit;
+    }
+
+    ::slotted(surface-menu-separator)
+    {
+        &::before
+        {
+            width: 10px;
+        }
+
+        background-color: inherit;
+        border:           solid 1px var(--background-color-hover);
+        margin:           8px;
     }
 }
 
-:host > #root:hover
+:host(:hover) > #root
 {
     > surface-stack-panel
     {
@@ -64,89 +77,13 @@ $only-icons-size: 60px;
     }
 }
 
-:host > #root:not([has-items]):active > surface-stack-panel
+:host(:active) > #root:not([has-items]) > surface-stack-panel
 {
     background-color: var(--background-color-active);
 }
 
-%icon-holder
-{
-    display: flex;
-    height:  $default-size;
-    width:   $default-size;
-}
-
-%icon
-{
-    background-position: center center;
-    background-repeat:   no-repeat;
-    background-size:     cover;
-    display:             block;
-    height:              $default-size - 5;
-    margin:              auto;
-    width:               $default-size - 5;
-}
-
-:host-context(surface-menu[type=only-icons]),
-:host-context(surface-menu[type=only-icons]):host-context(#container)
-{
-    &:host > #root
-    {
-        height: $only-icons-size;
-        > surface-stack-panel
-        {
-            #text
-            {
-                display: none;
-            }
-
-            #inline-arrow
-            {
-                display: none;
-            }
-        }
-    }
-
-    //&:host-context(#container):host > #root
-    //{
-    //    > surface-stack-panel
-    //    {
-    //        height: inherit;
-    //        #text
-    //        {
-    //            display: initial;
-    //        }
-    //    }
-    //}
-
-    &:host([icon]) > #root
-    {
-        #icon-holder
-        {
-            @extend %icon-holder;
-
-            //background-color: var(--background-color);
-            background-color: transparent;
-            height:           $only-icons-size;
-            width:            $only-icons-size;
-
-            #icon
-            {
-                @extend %icon;
-                height: $only-icons-size - 5;
-                width:  $only-icons-size - 5;
-            }
-        }
-    }
-
-    &:host > #root[has-items] > surface-stack-panel > #inline-arrow
-    {
-        display: block;
-    }
-}
-
-:host-context(#container),
-:host-context(surface-menu[orientation=vertical])
+:host-context(surface-context-menu),
+:host-context(surface-menu-item):host-context(#container)
 {
     &:host > #root
     {
@@ -164,29 +101,27 @@ $only-icons-size: 60px;
         {
             > #icon-holder
             {
-                @extend %icon-holder;
                 background-color: var(--background-color-hover);
+                display:          flex;
+                height:           $default-size;
+                width:            $default-size;
 
                 #icon
                 {
-                    @extend %icon;
+                    background-position: center center;
+                    background-repeat:   no-repeat;
+                    background-size:     cover;
+                    display:             block;
+                    height:              $default-size - 5;
+                    margin:              auto;
+                    width:               $default-size - 5;
                 }
             }
-        }
+        }        
 
         > #container
         {
             top: 0;
         }
     }
-
-    //&:host(:active) > #root
-    //{
-    //    background-color: var(--background-color-active);
-    //}
-
-    //&:host(:hover) > #root
-    //{
-    //    background-color: var(--background-color-hover);
-    //}
 }

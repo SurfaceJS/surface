@@ -7,8 +7,9 @@
 
     background-color: var(--background-color);
     
-    display:        flex;
-    flex-direction: row;
+    display:        none;
+    flex-direction: column;
+    position:       fixed;
 
     ::slotted(surface-menu-separator)
     {
@@ -25,18 +26,7 @@
     }
 }
 
-:host([wrap=true])
+:host([visible])
 {
-    flex-wrap: wrap;
-}
-
-:host([type=context])
-{
-    display:        inline-flex;
-    flex-direction: column;
-}
-
-:host([hidden])
-{
-    display: none;
+    display: inline-flex;
 }
