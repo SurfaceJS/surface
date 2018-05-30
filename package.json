@@ -2,13 +2,13 @@
     "author": "HitalloExiled",
     "description": "Global modules and shared types",
     "devDependencies": {
-        "@types/chai": "4.1.2",
-        "@types/mocha": "5.0.0",
-        "@types/node": "9.6.0",
-        "@types/tapable": "1.0.1",
-        "@types/webpack": "4.1.3",
-        "mocha": "5.0.5",
-        "nyc": "11.6.0"
+        "@types/chai": "4.1.3",
+        "@types/mocha": "5.2.0",
+        "@types/node": "10.0.8",
+        "@types/tapable": "1.0.2",
+        "@types/webpack": "4.1.6",
+        "mocha": "5.1.1",
+        "nyc": "11.7.3"
     },
     "keywords": [
         "types",
@@ -16,9 +16,16 @@
         "shared"
     ],
     "license": "MIT",
-    "main": "index.js",
-    "name": "type-root",
+    "name": "modules",
     "scripts": {
+        "task:build": "node ./tasks/cli build",
+        "task:clean": "node ./tasks/cli clean",
+        "task:install": "node ./tasks/cli install",
+        "task:link": "node ./tasks/cli link",
+        "task:publish": "node ./tasks/cli publish",
+        "task:relink": "node ./tasks/cli relink",
+        "task:setup": "npm i && tsc -p ./tasks && node ./tasks/cli setup",
+        "task:unlink": "node ./tasks/cli unlink",
         "tests:build": "tsc -p tsconfig.test.json",
         "tests:cover": "nyc mocha --ui tdd source/@surface/*/tests/*.spec.js",
         "tests:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
