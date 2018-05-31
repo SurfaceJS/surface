@@ -2,14 +2,14 @@ import CustomElement from "@surface/custom-element";
 
 export default abstract class View extends CustomElement
 {
-    private _name: string = "";
-    public get name(): string
+    private _viewName: string = "";
+    public get viewName(): string
     {
-        return this._name;
+        return this._viewName;
     }
 
-    public set name(value: string)
+    public set viewName(value: string)
     {
-        this._name = value;
+        this._viewName = value;
     }
 }

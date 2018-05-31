@@ -1,0 +1,16 @@
+:host
+{
+    display: table-cell;
+    height:  inherit;
+    #content
+    {
+        height:  inherit;
+        display: flex;
+        margin:  auto 4px;
+        label
+        {
+            margin-top:    auto;
+            margin-bottom: auto;
+        }
+    }
+}

@@ -32,11 +32,16 @@ export default abstract class CustomElement extends HTMLElement
 
     private applyTemplate(template: HTMLTemplateElement): void
     {
-        let content = document.importNode(template.content, true);
+        const content = document.importNode(template.content, true);
 
         this[shadowRoot].appendChild(content);
 
         ElementBind.for(this, this[shadowRoot]);
+    }
+
+    protected applyBind(host: HTMLElement, content: Node): void
+    {
+        ElementBind.for(host, content);
     }
 
     /**

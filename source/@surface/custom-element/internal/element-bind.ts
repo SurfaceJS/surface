@@ -145,17 +145,20 @@ export default class ElementBind
         const promises: Array<Promise<void>> = [];
         for (const element of Array.from(node.childNodes) as Array<Element>)
         {
-            if (element.attributes && element.attributes.length > 0)
+            if (!element.nodeName.endsWith("TEMPLATE"))
             {
-                promises.push(this.bindAttribute(element));
-            }
+                if (element.attributes && element.attributes.length > 0)
+                {
+                    promises.push(this.bindAttribute(element));
+                }
 
-            if (element.nodeType == Node.TEXT_NODE)
-            {
-                promises.push(this.bindTextNode(element));
-            }
+                if (element.nodeType == Node.TEXT_NODE)
+                {
+                    promises.push(this.bindTextNode(element));
+                }
 
-            promises.push(this.traverseElement(element));
+                promises.push(this.traverseElement(element));
+            }
         }
 
         try

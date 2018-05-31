@@ -42,7 +42,7 @@ export default class ViewHost extends CustomElement
                 this.appendChild(value);
             }
 
-            this.title = value.name;
+            this.title = value.viewName;
         }
         else if (this._view)
         {
