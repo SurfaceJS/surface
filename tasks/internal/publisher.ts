@@ -1,14 +1,19 @@
 import fs          from "fs";
 import path        from "path";
-import * as common from "./common";
-import IPackage    from "./interfaces/package";
-import packages    from "./common/packages";
-import patterns    from "./common/patterns";
+import * as common from "../common";
+import packages    from "../common/packages";
+import patterns    from "../common/patterns";
+import IPackage    from "../interfaces/package";
 
 export default class Publisher
 {
     private versions:  { [key: string]: string } = { };
     private toPublish: Array<IPackage>           = [];
+
+    public static async publish(): Promise<void>
+    {
+        await new Publisher().publish();
+    }
 
     private checkVersion($package: IPackage)
     {
@@ -60,31 +65,31 @@ export default class Publisher
     private async publish()
     {
         const token = fs.readFileSync(path.normalize(`${process.env.USERPROFILE}/.npmrc`)).toString().replace("\n", "");
-    
+
         const versionsFile = path.resolve(__dirname, "./versions.json");
-    
+
         if (fs.existsSync(versionsFile))
         {
             this.versions = require(versionsFile);
         }
-    
+
         packages.forEach(this.checkVersion.bind(this));
         this.toPublish.forEach(this.checkDependencies.bind(this));
-    
+
         for (const $package of this.toPublish)
         {
             fs.writeFileSync(path.resolve($package.path, "package.json"), JSON.stringify($package, null, 4));
-    
+
             common.cleanup($package.path, patterns.clean.include, patterns.clean.exclude);
             await common.execute(`Compiling ${$package.path}`, `tsc -p ${$package.path} --noEmit false --declaration true`);
-    
+
             await common.execute(`Publishing ${$package.name}:`, `npm set ${token} & cd ${$package.path} && npm publish --access public`);
         }
-    
+
         if (this.toPublish.length > 0)
         {
             fs.writeFileSync(versionsFile, JSON.stringify(this.versions, null, 4));
-        }    
+        }
     }
 
     private updateVersion($package: IPackage)
@@ -94,10 +99,5 @@ export default class Publisher
         revision++;
 
         $package.version = [major, minor, revision].join(".");
-    }
-
-    public static async publish(): Promise<void>
-    {
-        await new Publisher().publish();
     }
 }

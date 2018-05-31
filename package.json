@@ -26,10 +26,10 @@
         "task:relink": "node ./tasks/cli relink",
         "task:setup": "npm i && tsc -p ./tasks && node ./tasks/cli setup",
         "task:unlink": "node ./tasks/cli unlink",
-        "tests:build": "tsc -p tsconfig.test.json",
-        "tests:cover": "nyc mocha --ui tdd source/@surface/*/tests/*.spec.js",
-        "tests:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
-        "tests:watch": "tsc -p tsconfig.test.json -w"
+        "test:build": "tsc -p tsconfig.test.json",
+        "test:cover": "nyc mocha --ui tdd source/@surface/*/tests/*.spec.js",
+        "test:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
+        "test:watch": "tsc -p tsconfig.test.json -w"
     },
     "version": "1.0.0"
 }

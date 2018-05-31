@@ -3,7 +3,7 @@ import path        from "path";
 import * as common from "./common";
 import packages    from "./common/packages";
 import patterns    from "./common/patterns";
-import Publisher   from "./publisher";
+import Publisher   from "./internal/publisher";
 
 const paths =
 {
@@ -44,6 +44,20 @@ export default class Tasks
         }
 
         console.log("Cleaning done!");
+    }
+
+    public static async cover(filepath: string): Promise<void>
+    {
+        const file = path.parse(filepath);
+
+        let alias = file.name.replace(".spec", "");
+
+        if (alias == path.parse(path.resolve(file.dir, "../")).base)
+        {
+            alias = "index";
+        }
+
+        await common.execute(`cover ${file.name} tests`, `nyc --include ./**/${alias}.js --exclude tests/* --reporter=text mocha --ui tdd ${file.name}.js`);
     }
 
     public static async install(full: "true"|"false"): Promise<void>
