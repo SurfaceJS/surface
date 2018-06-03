@@ -14,7 +14,7 @@ export default class ElementBindSpec
         const host     = document.createElement("div");
         const content  = document.createElement("span");
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
     }
 
     @test @shouldPass
@@ -26,7 +26,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span value='1'>Text</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -44,7 +44,7 @@ export default class ElementBindSpec
         host.lang = "pt-br";
         content.innerHTML = "<span lang='{{ host.lang }}' parent='{{ host.tagName }}'>Text</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -76,7 +76,7 @@ export default class ElementBindSpec
         host.lang = "pt-br";
         content.innerHTML = "<span data-text='Tag name: {{ host.tagName }}'>Text</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
         expect(content.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
     }
 
@@ -93,7 +93,7 @@ export default class ElementBindSpec
 
         span["foo"] = "";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         expect(span["foo"]).to.equal("DIV");
     }
@@ -107,7 +107,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span lang='{{ Node.name }}'</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -125,7 +125,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span has-childs='[[ this.childNodes.length > 0 ]]'></span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -142,7 +142,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span id='{{ this.childNodes.length > 0 }}'></span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -164,7 +164,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span on-click='{{ host.click }}'>Text</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -183,7 +183,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span on-click='{{ host.method(true) }}'>Text</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -200,7 +200,7 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span>{{ host.foo }}</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -218,7 +218,7 @@ export default class ElementBindSpec
         host.id = "01";
         content.innerHTML = "<span>Host id: {{ host.id }}</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -239,7 +239,7 @@ export default class ElementBindSpec
         host.id = "01";
         content.innerHTML = "<span>{{ host.id == '01' }}</span>";
 
-        await ElementBind.for(host, content);
+        await ElementBind.for({ host }, content);
 
         if (content.firstElementChild)
         {
@@ -261,7 +261,7 @@ export default class ElementBindSpec
 
         try
         {
-            await ElementBind.for(host, content);
+            await ElementBind.for({ host }, content);
         }
         catch (error)
         {

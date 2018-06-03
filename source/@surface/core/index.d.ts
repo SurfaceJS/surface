@@ -10,6 +10,7 @@ export type Action2<T1, T2>            = (arg1: T1, arg2: T2) => void;
 export type Action3<T1, T2, T3>        = (arg1: T1, arg2: T2, arg3: T3) => void;
 export type ClassDecoratorOf<T>        = (target: Constructor<T>) => Constructor<T> | void;
 export type DeepRequired<T>            = { [K in keyof T]-?: T[K] extends T[K]|undefined ? DeepRequired<T[K]> : Required<T[K]> };
+export type FieldsOf<T>                = { [K in keyof T]: T[K] };
 export type Func<TResult>              = () => TResult;
 export type Func1<T1, TResult>         = (arg: T1) => TResult;
 export type Func2<T1, T2, TResult>     = (arg1: T1, arg2: T2) => TResult;

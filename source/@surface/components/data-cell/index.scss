@@ -7,10 +7,18 @@
         height:  inherit;
         display: flex;
         margin:  auto 4px;
-        label
+        > span
         {
             margin-top:    auto;
             margin-bottom: auto;
         }
+    }
+}
+
+:host-context(surface-data-header-group):host
+{
+    #content > span
+    {
+        margin: auto;
     }
 }

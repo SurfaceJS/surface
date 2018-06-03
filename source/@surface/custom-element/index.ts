@@ -36,12 +36,12 @@ export default abstract class CustomElement extends HTMLElement
 
         this[shadowRoot].appendChild(content);
 
-        ElementBind.for(this, this[shadowRoot]);
+        this.contextBind({ host: this }, this[shadowRoot]);
     }
 
-    protected applyBind(host: HTMLElement, content: Node): void
+    protected async contextBind(context: Object, content: Node): Promise<void>
     {
-        ElementBind.for(host, content);
+        await ElementBind.for(context, content);
     }
 
     /**

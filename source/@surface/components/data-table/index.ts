@@ -1,20 +1,32 @@
-import Observer      from "@surface/core/observer";
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
-import Enumerable    from "@surface/enumerable";
-import DataCell      from "../data-cell";
-import DataHeader    from "../data-header";
-import DataRow       from "../data-row";
-import DataTemplate  from "../data-template";
-import template      from "./index.html";
-import style         from "./index.scss";
+import Observer        from "@surface/core/observer";
+import CustomElement   from "@surface/custom-element";
+import { element }     from "@surface/custom-element/decorators";
+import Enumerable      from "@surface/enumerable";
+import DataCell        from "../data-cell";
+import DataFooterGroup from "../data-footer-group";
+import DataHeaderGroup from "../data-header-group";
+import DataRow         from "../data-row";
+import DataRowGroup    from "../data-row-group";
+import DataTemplate    from "../data-template";
+import template        from "./index.html";
+import style           from "./index.scss";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
 {
-    public get dataHeaders(): Enumerable<DataHeader>
+    public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
-        return super.queryAll("surface-data-header");
+        return super.queryAll("surface-data-footer");
+    }
+
+    public get dataHeaderGroups(): Enumerable<DataHeaderGroup>
+    {
+        return super.queryAll("surface-data-header-group");
+    }
+
+    public get dataRowGroups(): Enumerable<DataRowGroup>
+    {
+        return super.queryAll("surface-data-row-group");
     }
 
     private readonly _onDatasourceChange: Observer = new Observer();
@@ -35,60 +47,89 @@ export default class DataTable extends CustomElement
         {
             this._datasource = value;
             this.applyDataBind();
-            this.onDatasourceChange.notify();
+            this.onDatasourceChange.notify(value);
         }
     }
 
     private applyDataBind()
     {
-        const dataTemplates = super.queryAll<DataTemplate>("surface-data-template");
+        const dataTemplate = super.query<HTMLTemplateElement>("template");
+
+        if (dataTemplate)
+        {
+            const content = document.importNode(dataTemplate.content, true);
+
+            const dataTemplates = Array.from(content.querySelectorAll("surface-data-template")) as Array<DataTemplate>;
+
+            this.prepareHeaders(dataTemplates);
+            this.prepareRows(dataTemplates);
+            this.prepareFooters(dataTemplates);
+
+            super.removeChild(dataTemplate);
+        }
+    }
+
+    private prepareHeaders(dataTemplates: Array<DataTemplate>): void
+    {
+        const headerGroup = new DataHeaderGroup();
+        for (const dataTemplate of dataTemplates)
+        {
+            const cell = new DataCell();
+            cell.value = dataTemplate.header;
+
+            const content = document.createElement("div");
+            content.id    = "content";
+
+            content.innerHTML = `<span>{{host.value}}</span>`;
+
+            cell.setContent(content);
+
+            super.contextBind({ host: cell }, content);
+
+            headerGroup.appendChild(cell);
+        }
+        super.appendChild(headerGroup);
+    }
+
+    private prepareRows(dataTemplates: Array<DataTemplate>): void
+    {
+        const rowGroup = new DataRowGroup();
 
         for (const data of this.datasource)
         {
             const row = new DataRow();
             for (const dataTemplate of dataTemplates)
             {
-                const column = new DataCell();
-                row.data = data;
-                column.value = data[dataTemplate.field];
+                const cell = new DataCell();
+                cell.value = data[dataTemplate.field];
 
-                const content = document.importNode(dataTemplate.template.content, true);
+                const content = document.createElement("div");
+                content.id    = "content";
 
-                column.appendChild(content);
+                if (dataTemplate.childNodes.length > 0)
+                {
+                    content.innerHTML = dataTemplate.innerHTML;
 
-                super.applyBind(row, column);
+                    cell.appendChild(content);
+                }
+                else
+                {
+                    content.innerHTML = `<span>{{data['${dataTemplate.field}']}}</span>`;
 
-                row.appendChild(column);
+                    cell.setContent(content);
+                }
+
+                super.contextBind({ host: cell, data }, content);
+
+                row.appendChild(cell);
             }
-            super.appendChild(row);
+            rowGroup.appendChild(row);
         }
-
-        dataTemplates.forEach(x => super.removeChild(x));
+        super.appendChild(rowGroup);
     }
 
-    /*
-    private applyDataBind2()
+    private prepareFooters(dataTemplates: Array<DataTemplate>): void
     {
-        const headers = this.dataHeaders;
-
-        if (headers.all(x => !(x.parentElement instanceof DataRow)))
-        {
-            const row = new DataRow();
-            headers.forEach(x => row.appendChild(x));
-            super.appendChild(row);
-        }
-
-        for (const data of this.datasource)
-        {
-            const row = new DataRow();
-            for (const header of headers)
-            {
-                const column = new DataCell();
-                column.value = data[header.field];
-                row.appendChild(column);
-            }
-            super.appendChild(row);
-        }
+        return;
     }
-    */
 }

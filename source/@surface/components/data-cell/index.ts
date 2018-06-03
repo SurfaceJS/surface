@@ -4,7 +4,7 @@ import template      from "./index.html";
 import style         from "./index.scss";
 
 @element("surface-data-cell", template, style)
-export default class DataColumn extends CustomElement
+export default class DataCell extends CustomElement
 {
     public get value(): string
     {
@@ -13,6 +13,16 @@ export default class DataColumn extends CustomElement
 
     public set value(value: string)
     {
-        super.setAttribute("value", value);
+        super.setAttribute("value", value || "");
+    }
+
+    public constructor()
+    {
+        super({ mode: "open" });
+    }
+
+    public setContent(content: HTMLElement)
+    {
+        super.shadowRoot!.appendChild(content);
     }
 }

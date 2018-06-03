@@ -14,16 +14,17 @@ import windowWrapper     from "./window-wrapper";
 export default class ElementBind
 {
     private readonly window: Window;
-    private readonly host: HTMLElement;
-    private constructor(host: HTMLElement)
+    private readonly context: Object;
+
+    private constructor(context: Object)
     {
-        this.host   = host;
-        this.window = windowWrapper;
+        this.context = context;
+        this.window  = windowWrapper;
     }
 
-    public static async for(host: HTMLElement, content: Node): Promise<void>
+    public static async for(context: Object, content: Node): Promise<void>
     {
-        return new ElementBind(host).traverseElement(content);
+        return new ElementBind(context).traverseElement(content);
     }
 
     private async bindAttribute(element: Element): Promise<void>
@@ -35,7 +36,7 @@ export default class ElementBind
                 const interpolation = !(attribute.value.startsWith("{{") && attribute.value.endsWith("}}"))
                     && !(attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));
 
-                const context = this.createProxy({ window: this.window, host: this.host, this: element });
+                const context = this.createProxy({ this: element, ...this.context });
 
                 const { bindingMode, expression } = BindParser.scan(context, attribute.value);
 
@@ -114,7 +115,7 @@ export default class ElementBind
     {
         if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[") > -1))
         {
-            const context = this.createProxy({ window: this.window, host: this.host, this: element });
+            const context = this.createProxy({ this: element, ...this.context });
 
             let expression = BindParser.scan(context, element.nodeValue).expression;
 
@@ -145,7 +146,7 @@ export default class ElementBind
         const promises: Array<Promise<void>> = [];
         for (const element of Array.from(node.childNodes) as Array<Element>)
         {
-            if (!element.nodeName.endsWith("TEMPLATE"))
+            if (element.tagName != "TEMPLATE")
             {
                 if (element.attributes && element.attributes.length > 0)
                 {
