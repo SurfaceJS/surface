@@ -90,7 +90,7 @@ export default class ElementBind
 
                         if (leftProperty && rightProperty)
                         {
-                            notify = () => attribute.value = `${expression.evaluate()}`;
+                            notify = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
