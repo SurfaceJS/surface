@@ -92,6 +92,11 @@ export default class ElementBind
                         {
                             notify = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
+                            if (leftProperty.getter)
+                            {
+                                leftProperty.getter.call(source, expression.evaluate());
+                            }
+
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
                         else if (rightProperty)

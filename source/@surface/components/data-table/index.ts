@@ -1,4 +1,4 @@
-import { Unknown }     from "@surface/core";
+import { Nullable }     from "@surface/core";
 import { coalesce }    from "@surface/core/common/generic";
 import Observer        from "@surface/core/observer";
 import CustomElement   from "@surface/custom-element";
@@ -40,15 +40,22 @@ export default class DataTable extends CustomElement
         return super.queryAll("surface-data-row-group");
     }
 
-    private _host: Unknown;
-    public get host(): Unknown
+    private _host: Nullable<HTMLElement>;
+    public get host(): HTMLElement
     {
-        return this._host;
-    }
+        if (!this._host)
+        {
+            let node = super.parentNode;
 
-    public set host(value: Unknown)
-    {
-        this._host = value;
+            while (node && node.parentNode)
+            {
+                node = node.parentNode;
+            }
+
+            this._host = (node && node.nodeName == "#document-fragment" ? (node as ShadowRoot).host : document.body) as HTMLElement;
+        }
+
+        return this._host;
     }
 
     private readonly _onDatasourceChange: Observer = new Observer();
@@ -65,7 +72,7 @@ export default class DataTable extends CustomElement
 
     public set datasource(value: Iterable<Object>)
     {
-        if (value && !Object.is(value, this._datasource))
+        if (!Object.is(value, this._datasource))
         {
             this._datasource = value;
             this.applyDataBind();
@@ -115,7 +122,7 @@ export default class DataTable extends CustomElement
 
             cell.appendChild(content);
 
-            super.contextBind({ this: cell }, content);
+            CustomElement.contextBind({ this: cell }, content);
 
             headerGroup.appendChild(cell);
         }
@@ -147,7 +154,7 @@ export default class DataTable extends CustomElement
                 cell.appendChild(content);
                 row.appendChild(cell);
 
-                super.contextBind({ host: this.host, data }, content);
+                CustomElement.contextBind({ host: this.host, data }, content);
             }
             rowGroup.appendChild(row);
         }
@@ -171,7 +178,7 @@ export default class DataTable extends CustomElement
             cell.setContent(content);
             footerGroup.appendChild(cell);
 
-            super.contextBind({ host: this.host }, content);
+            CustomElement.contextBind({ host: this.host }, content);
         }
         super.appendChild(footerGroup);
     }

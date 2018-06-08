@@ -1,14 +1,12 @@
-import { Nullable } from "@surface/core";
-import Enumerable   from "@surface/enumerable";
-import ElementBind  from "./internal/element-bind";
-import * as symbols from "./internal/symbols";
-
-const shadowRoot = Symbol("custom-element:shadowRoot");
+import { Nullable }                                 from "@surface/core";
+import Enumerable                                   from "@surface/enumerable";
+import ElementBind                                  from "./internal/element-bind";
+import { observedAttributes, shadowRoot, template } from "./internal/symbols";
 
 export default abstract class CustomElement extends HTMLElement
 {
-    public static readonly [symbols.observedAttributes]: Nullable<Array<string>>;
-    public static readonly [symbols.template]:           Nullable<HTMLTemplateElement>;
+    public static readonly [observedAttributes]: Nullable<Array<string>>;
+    public static readonly [template]:           Nullable<HTMLTemplateElement>;
 
     private readonly [shadowRoot]: ShadowRoot;
 
@@ -24,10 +22,15 @@ export default abstract class CustomElement extends HTMLElement
             window.ShadyCSS.styleElement(this);
         }
 
-        if (this.constructor[symbols.template])
+        if (this.constructor[template])
         {
-            this.applyTemplate(this.constructor[symbols.template]);
+            this.applyTemplate(this.constructor[template]);
         }
+    }
+
+    protected static async contextBind(context: Object, content: Node): Promise<void>
+    {
+        await ElementBind.for(context, content);
     }
 
     private applyTemplate(template: HTMLTemplateElement): void
@@ -35,13 +38,6 @@ export default abstract class CustomElement extends HTMLElement
         const content = document.importNode(template.content, true);
 
         this[shadowRoot].appendChild(content);
-
-        this.contextBind({ host: this }, this[shadowRoot]);
-    }
-
-    protected async contextBind(context: Object, content: Node): Promise<void>
-    {
-        await ElementBind.for(context, content);
     }
 
     /**
