@@ -16,4 +16,20 @@ export default class DataRow extends CustomElement
     {
         this._data = value;
     }
+
+    private _editMode: boolean = false;
+    public get editMode(): boolean
+    {
+        return this._editMode;
+    }
+
+    public set editMode(value: boolean)
+    {
+        this._editMode = value;
+    }
+
+    public edit(value: boolean): void
+    {
+        this.editMode = value;
+    }
 }

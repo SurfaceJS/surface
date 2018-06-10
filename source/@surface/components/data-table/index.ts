@@ -1,4 +1,4 @@
-import { Nullable }     from "@surface/core";
+import { Nullable }    from "@surface/core";
 import { coalesce }    from "@surface/core/common/generic";
 import Observer        from "@surface/core/observer";
 import CustomElement   from "@surface/custom-element";
@@ -25,6 +25,8 @@ const templateAttributes =
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
 {
+    private readonly dataTemplate: Nullable<HTMLTemplateElement>;
+
     public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
         return super.queryAll("surface-data-footer");
@@ -38,24 +40,6 @@ export default class DataTable extends CustomElement
     public get dataRowGroups(): Enumerable<DataRowGroup>
     {
         return super.queryAll("surface-data-row-group");
-    }
-
-    private _host: Nullable<HTMLElement>;
-    public get host(): HTMLElement
-    {
-        if (!this._host)
-        {
-            let node = super.parentNode;
-
-            while (node && node.parentNode)
-            {
-                node = node.parentNode;
-            }
-
-            this._host = (node && node.nodeName == "#document-fragment" ? (node as ShadowRoot).host : document.body) as HTMLElement;
-        }
-
-        return this._host;
     }
 
     private readonly _onDatasourceChange: Observer = new Observer();
@@ -80,15 +64,23 @@ export default class DataTable extends CustomElement
         }
     }
 
+    public constructor()
+    {
+        super();
+
+        this.dataTemplate = super.query<HTMLTemplateElement>("template");
+
+        if (this.dataTemplate)
+        {
+            super.removeChild(this.dataTemplate);
+        }
+    }
+
     private applyDataBind()
     {
-        const dataTemplate = super.query<HTMLTemplateElement>("template");
-
-        if (dataTemplate)
+        if (this.dataTemplate)
         {
-            const content = document.importNode(dataTemplate.content, true);
-
-            const dataTemplates = Array.from(content.querySelectorAll("data-template"));
+            const dataTemplates = Array.from(this.dataTemplate.content.querySelectorAll("data-template"));
 
             const headerFilter = (element: Element) => (element.parentElement && element.parentElement.tagName == "HEADER-TEMPLATE")
                 || !!element.getAttribute(templateAttributes.header);
@@ -101,8 +93,6 @@ export default class DataTable extends CustomElement
             this.prepareHeaders(dataTemplates.filter(headerFilter));
             this.prepareRows(dataTemplates.filter(rowFilter));
             this.prepareFooters(dataTemplates.filter(footerFilter));
-
-            super.removeChild(dataTemplate);
         }
     }
 
@@ -115,14 +105,9 @@ export default class DataTable extends CustomElement
             cell.text  = dataTemplate.getAttribute(templateAttributes.header) || dataTemplate.getAttribute(templateAttributes.field) || "";
             cell.value = cell.text;
 
-            const content = document.createElement("div");
-            content.id    = "content";
+            cell.innerHTML = `<span>{{this.value}}</span>`;
 
-            content.innerHTML = `<span>{{this.value}}</span>`;
-
-            cell.appendChild(content);
-
-            CustomElement.contextBind({ this: cell }, content);
+            CustomElement.contextBind({ this: cell }, cell);
 
             headerGroup.appendChild(cell);
         }
@@ -132,13 +117,19 @@ export default class DataTable extends CustomElement
     private prepareRows(dataTemplates: Array<Element>): void
     {
         const rowGroup = new DataRowGroup();
+        super.appendChild(rowGroup);
 
         for (const data of this.datasource)
         {
             const row = new DataRow();
+            rowGroup.appendChild(row);
+
             for (const dataTemplate of dataTemplates)
             {
                 const cell  = new DataCell();
+                row.appendChild(cell);
+                row.data = data;
+
                 const field = dataTemplate.getAttribute(templateAttributes.field) || "";
 
                 const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
@@ -146,19 +137,50 @@ export default class DataTable extends CustomElement
                 cell.text  = coalesce(value, "") as string;
                 cell.value = value;
 
-                const content = document.createElement("div");
+                let innerHTML = "";
 
-                content.id        = "content";
-                content.innerHTML = dataTemplate.childNodes.length > 0 ? dataTemplate.innerHTML : `<span>{{data.${field}}}</span>`;
+                if (dataTemplate.childNodes.length > 0)
+                {
+                    innerHTML = dataTemplate.innerHTML;
+                }
+                else
+                {
+                    const edit    = dataTemplate.getAttribute("edit") == "true";
+                    const $delete = dataTemplate.getAttribute("delete") == "true";
 
-                cell.appendChild(content);
-                row.appendChild(cell);
+                    if (edit || $delete)
+                    {
+                        if (edit)
+                        {
+                            innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}'>";
+                        }
 
-                CustomElement.contextBind({ host: this.host, data }, content);
+                        if ($delete)
+                        {
+                            innerHTML = innerHTML + "<input type='button' value='delete'>";
+                        }
+                    }
+                    else
+                    {
+                        innerHTML =
+                        `
+                            <surface-switch value="{{row.editMode}}">
+                                <template when="true">
+                                    <input type='text' value="{{row.data.${field}}}" style="width: inherit" />
+                                </template>
+                                <template when="false">
+                                    <span>{{row.data.${field}}}</span>
+                                </template>
+                            </surface-switch>
+                        `;
+                    }
+                }
+
+                cell.innerHTML = innerHTML;
+
+                CustomElement.contextBind({ ...super.context, table: this, row }, cell);
             }
-            rowGroup.appendChild(row);
         }
-        super.appendChild(rowGroup);
     }
 
     private prepareFooters(dataTemplates: Array<Element>): void
@@ -170,15 +192,11 @@ export default class DataTable extends CustomElement
             cell.text  = dataTemplate.getAttribute(templateAttributes.agreggation) || dataTemplate.getAttribute(templateAttributes.field) || "";
             cell.value = cell.text;
 
-            const content = document.createElement("div");
-            content.id    = "content";
+            cell.innerHTML = dataTemplate.childNodes.length > 0 ? dataTemplate.innerHTML : "";
 
-            content.innerHTML = dataTemplate.childNodes.length > 0 ? dataTemplate.innerHTML : "";
-
-            cell.setContent(content);
             footerGroup.appendChild(cell);
 
-            CustomElement.contextBind({ host: this.host }, content);
+            CustomElement.contextBind({ ...super.context }, cell);
         }
         super.appendChild(footerGroup);
     }

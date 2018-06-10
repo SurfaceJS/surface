@@ -10,6 +10,7 @@ export function attribute(target: Object, propertyKey: string | symbol): void
         Object.defineProperty(target.constructor, symbols.observedAttributes, { get: () => values } );
         Object.defineProperty(target.constructor, "observedAttributes", { get: () => target.constructor[symbols.observedAttributes] });
     }
+
     target.constructor[symbols.observedAttributes].push(propertyKey);
 }
 
@@ -53,8 +54,6 @@ export function element(name: string, template?: string, style?: string, options
         proxy.prototype.constructor = proxy;
 
         window.customElements.define(name, proxy, options);
-
-        console.dir(proxy);
 
         return proxy as Function as T;
     };

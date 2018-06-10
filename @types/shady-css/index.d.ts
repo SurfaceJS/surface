@@ -1,7 +1,7 @@
-interface HTMLElement
+interface HTMLElement extends Element, ElementCSSInlineStyle
 { }
 
-interface HTMLTemplateElement
+interface HTMLTemplateElement extends HTMLElement
 { }
 
 declare interface ShadyCSS

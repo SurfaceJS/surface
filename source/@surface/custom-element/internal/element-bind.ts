@@ -1,19 +1,20 @@
-import { Action }        from "@surface/core";
-import { coalesce }      from "@surface/core/common/generic";
-import { dashedToCamel } from "@surface/core/common/string";
-import ExpressionType    from "@surface/expression/expression-type";
-import IMemberExpression from "@surface/expression/interfaces/member-expression";
-import Type              from "@surface/reflection";
-import IArrayExpression  from "../../expression/interfaces/array-expression";
-import BindParser        from "./bind-parser";
-import BindingMode       from "./binding-mode";
-import DataBind          from "./data-bind";
-import ObserverVisitor   from "./observer-visitor";
-import windowWrapper     from "./window-wrapper";
+import { Action }          from "@surface/core";
+import { coalesce }        from "@surface/core/common/generic";
+import { dashedToCamel }   from "@surface/core/common/string";
+import ExpressionType      from "@surface/expression/expression-type";
+import IMemberExpression   from "@surface/expression/interfaces/member-expression";
+import Type                from "@surface/reflection";
+import IArrayExpression    from "../../expression/interfaces/array-expression";
+import BindParser          from "./bind-parser";
+import BindingMode         from "./binding-mode";
+import DataBind            from "./data-bind";
+import ObserverVisitor     from "./observer-visitor";
+import { binded, context } from "./symbols";
+import windowWrapper       from "./window-wrapper";
 
 export default class ElementBind
 {
-    private readonly window: Window;
+    private readonly window:  Window;
     private readonly context: Object;
 
     private constructor(context: Object)
@@ -92,9 +93,9 @@ export default class ElementBind
                         {
                             notify = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
-                            if (leftProperty.getter)
+                            if (leftProperty.setter)
                             {
-                                leftProperty.getter.call(source, expression.evaluate());
+                                leftProperty.setter.call(source, expression.evaluate());
                             }
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
@@ -151,8 +152,11 @@ export default class ElementBind
         const promises: Array<Promise<void>> = [];
         for (const element of Array.from(node.childNodes) as Array<Element>)
         {
-            if (element.tagName != "TEMPLATE")
+            if (!element[binded] && element.tagName != "TEMPLATE")
             {
+                element[binded]  = true;
+                element[context] = this.context;
+
                 if (element.attributes && element.attributes.length > 0)
                 {
                     promises.push(this.bindAttribute(element));

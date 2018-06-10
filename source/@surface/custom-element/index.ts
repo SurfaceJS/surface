@@ -1,12 +1,18 @@
-import { Nullable }                                 from "@surface/core";
-import Enumerable                                   from "@surface/enumerable";
-import ElementBind                                  from "./internal/element-bind";
-import { observedAttributes, shadowRoot, template } from "./internal/symbols";
+import { Nullable }                                          from "@surface/core";
+import Enumerable                                            from "@surface/enumerable";
+import ElementBind                                           from "./internal/element-bind";
+import { context, observedAttributes, shadowRoot, template } from "./internal/symbols";
 
 export default abstract class CustomElement extends HTMLElement
 {
     public static readonly [observedAttributes]: Nullable<Array<string>>;
     public static readonly [template]:           Nullable<HTMLTemplateElement>;
+
+    private [context]: Nullable<Object>;
+    protected get context(): Object
+    {
+        return this[context] || { };
+    }
 
     private readonly [shadowRoot]: ShadowRoot;
 
@@ -27,7 +33,6 @@ export default abstract class CustomElement extends HTMLElement
             this.applyTemplate(this.constructor[template]);
         }
     }
-
     protected static async contextBind(context: Object, content: Node): Promise<void>
     {
         await ElementBind.for(context, content);
