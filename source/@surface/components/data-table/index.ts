@@ -159,6 +159,18 @@ export default class DataTable extends CustomElement
                         {
                             innerHTML = innerHTML + "<input type='button' value='delete'>";
                         }
+
+                        innerHTML =
+                        `
+                            <surface-switch value="{{row.editMode}}">
+                                <template when="true">
+                                    <input type='button' value='cancel' on-click='{{row.edit(false)}}'>
+                                </template>
+                                <template when="false">
+                                    ${innerHTML}
+                                </template>
+                            </surface-switch>
+                        `;
                     }
                     else
                     {

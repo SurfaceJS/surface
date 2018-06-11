@@ -40,7 +40,7 @@ export default class DataBind
             }
         );
 
-        if (target instanceof HTMLElement)
+        if (target instanceof HTMLInputElement)
         {
             const setAttribute = target.setAttribute;
 
