@@ -1,7 +1,9 @@
 :host
 {
+    display: flex;
     > slot
     {
-        display: table
+        width:   100%;
+        display: table;
     };
 }

@@ -152,7 +152,7 @@ export default class DataTable extends CustomElement
                     {
                         if (edit)
                         {
-                            innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}'>";
+                            innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}' />";
                         }
 
                         if ($delete)
@@ -164,7 +164,7 @@ export default class DataTable extends CustomElement
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <input type='button' value='cancel' on-click='{{row.edit(false)}}'>
+                                    <input type='button' value='cancel' on-click='{{row.edit(false)}}' />
                                 </template>
                                 <template when="false">
                                     ${innerHTML}
@@ -178,7 +178,7 @@ export default class DataTable extends CustomElement
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <input type='text' value="{{row.data.${field}}}" style="width: inherit" />
+                                    <input type='text' value="{{row.data.${field}}}" />
                                 </template>
                                 <template when="false">
                                     <span>{{row.data.${field}}}</span>

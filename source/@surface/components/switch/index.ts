@@ -1,8 +1,9 @@
 import { typeGuard } from "@surface/core/common/generic";
 import CustomElement from "@surface/custom-element";
 import { element }   from "@surface/custom-element/decorators";
+import style         from "./index.scss";
 
-@element("surface-switch")
+@element("surface-switch", "", style)
 export default class Switch extends CustomElement
 {
     private readonly templates: Map<string, HTMLTemplateElement> = new Map();
