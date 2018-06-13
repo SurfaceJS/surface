@@ -99,17 +99,28 @@ export default class DataTable extends CustomElement
     private prepareHeaders(dataTemplates: Array<Element>): void
     {
         const headerGroup = new DataHeaderGroup();
+        const row         = new DataRow();
+
+        headerGroup.appendChild(row);
         for (const dataTemplate of dataTemplates)
         {
             const cell = new DataCell();
+
+            const elementStyle = dataTemplate.getAttribute("style");
+
+            if (elementStyle)
+            {
+                cell.setAttribute("style", elementStyle);
+            }
+
             cell.text  = dataTemplate.getAttribute(templateAttributes.header) || dataTemplate.getAttribute(templateAttributes.field) || "";
             cell.value = cell.text;
 
-            cell.innerHTML = `<span>{{this.value}}</span>`;
+            cell.innerHTML = `<span><b>{{this.value}}</b></span>`;
 
             CustomElement.contextBind({ this: cell }, cell);
 
-            headerGroup.appendChild(cell);
+            row.appendChild(cell);
         }
         super.appendChild(headerGroup);
     }
@@ -129,6 +140,13 @@ export default class DataTable extends CustomElement
                 const cell  = new DataCell();
                 row.appendChild(cell);
                 row.data = data;
+
+                const elementStyle = dataTemplate.getAttribute("style");
+
+                if (elementStyle)
+                {
+                    cell.setAttribute("style", elementStyle);
+                }
 
                 const field = dataTemplate.getAttribute(templateAttributes.field) || "";
 
@@ -164,27 +182,35 @@ export default class DataTable extends CustomElement
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <input type='button' value='cancel' on-click='{{row.edit(false)}}' />
+                                    <surface-stack-panel distribuition="center" orientation="horizontal">
+                                        <input type='button' value='cancel' on-click='{{row.edit(false)}}' />
+                                    </surface-stack-panel>
                                 </template>
                                 <template when="false">
-                                    ${innerHTML}
+                                    <surface-stack-panel distribuition="center" orientation="horizontal">
+                                        ${innerHTML}
+                                    </surface-stack-panel>
                                 </template>
                             </surface-switch>
                         `;
                     }
-                    else
+                    else if (dataTemplate.getAttribute("editable") == "true")
                     {
                         innerHTML =
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <input type='text' value="{{row.data.${field}}}" />
+                                    <input type='text' value="{{row.data.${field}}}" style="width: 100%;" />
                                 </template>
                                 <template when="false">
                                     <span>{{row.data.${field}}}</span>
                                 </template>
                             </surface-switch>
                         `;
+                    }
+                    else
+                    {
+                        innerHTML = `<span>{{row.data.${field}}}</span>`;
                     }
                 }
 
@@ -198,15 +224,26 @@ export default class DataTable extends CustomElement
     private prepareFooters(dataTemplates: Array<Element>): void
     {
         const footerGroup = new DataFooterGroup();
+
+        const row = new DataRow();
+        footerGroup.appendChild(row);
         for (const dataTemplate of dataTemplates)
         {
             const cell = new DataCell();
+
+            const elementStyle = dataTemplate.getAttribute("style");
+
+            if (elementStyle)
+            {
+                cell.setAttribute("style", elementStyle);
+            }
+
             cell.text  = dataTemplate.getAttribute(templateAttributes.agreggation) || dataTemplate.getAttribute(templateAttributes.field) || "";
             cell.value = cell.text;
 
             cell.innerHTML = dataTemplate.childNodes.length > 0 ? dataTemplate.innerHTML : "";
 
-            footerGroup.appendChild(cell);
+            row.appendChild(cell);
 
             CustomElement.contextBind({ ...super.context }, cell);
         }

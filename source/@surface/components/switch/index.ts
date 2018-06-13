@@ -1,12 +1,14 @@
-import { typeGuard } from "@surface/core/common/generic";
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
-import style         from "./index.scss";
+import { typeGuard }          from "@surface/core/common/generic";
+import CustomElement          from "@surface/custom-element";
+import { attribute, element } from "@surface/custom-element/decorators";
+import style                  from "./index.scss";
 
 @element("surface-switch", "", style)
 export default class Switch extends CustomElement
 {
     private readonly templates: Map<string, HTMLTemplateElement> = new Map();
+
+    @attribute
     public get value(): string
     {
         return super.getAttribute("value") || "" as string;
@@ -36,6 +38,11 @@ export default class Switch extends CustomElement
 
             CustomElement.contextBind(super.context, this);
         }
+    }
+
+    protected attributeChangedCallback()
+    {
+        this.changed();
     }
 
     public appendChild<T extends Node>(element: T): T

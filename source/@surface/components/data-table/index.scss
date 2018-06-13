@@ -1,9 +1,11 @@
 :host
 {
-    display: flex;
+    display:  flex;
+    overflow: auto;
     > slot
     {
-        width:   100%;
-        display: table;
+        display:      table;
+        table-layout: fixed;
+        width:        100%;
     };
 }
