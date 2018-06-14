@@ -1,24 +1,44 @@
-import CustomElement from "@surface/custom-element";
+import { dashedToCamel, toTitle } from "@surface/core/common/string";
+import CustomElement              from "@surface/custom-element";
 
-export default abstract class Component extends CustomElement
+export abstract class Component extends CustomElement
 {
-    public get horizontalAlignment(): string
+    public get horizontalAlignment(): Component.HorizontalAlignment
     {
-        return super.getAttribute("horizontalAlignment") || "" as string;
+        return Component.VerticalAlignment[toTitle(super.getAttribute("horizontalAlignment") || "")] || Component.HorizontalAlignment.Left;
     }
 
-    public set horizontalAlignment(value: string)
+    public set horizontalAlignment(value: Component.HorizontalAlignment)
     {
-        super.setAttribute("horizontalAlignment", value);
+        super.setAttribute("horizontalAlignment", dashedToCamel(Component.HorizontalAlignment[value]));
     }
 
-    public get verticalAlignment(): string
+    public get verticalAlignment(): Component.VerticalAlignment
     {
-        return super.getAttribute("verticalAlignment") || "" as string;
+        return Component.VerticalAlignment[toTitle(super.getAttribute("verticalAlignment") || "")] || Component.VerticalAlignment.Top;
     }
 
-    public set verticalAlignment(value: string)
+    public set verticalAlignment(value: Component.VerticalAlignment)
     {
-        super.setAttribute("verticalAlignment", value);
+        super.setAttribute("verticalAlignment", dashedToCamel(Component.VerticalAlignment[value]));
     }
 }
+
+export namespace Component
+{
+    export enum HorizontalAlignment
+    {
+        Center = "center",
+        Left   = "left",
+        Right  = "right"
+    }
+
+    export enum VerticalAlignment
+    {
+        Bottom = "bottom",
+        Center = "center",
+        Top    = "top",
+    }
+}
+
+export default Component;

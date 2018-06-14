@@ -2,10 +2,10 @@
 {
     display:  flex;
     overflow: auto;
+    table-layout: fixed;
     > slot
     {
         display:      table;
-        table-layout: fixed;
         width:        100%;
     };
 }

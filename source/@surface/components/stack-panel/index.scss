@@ -49,53 +49,6 @@
     align-items:    stretch;
 }
 
-:host,
-:host([orientation=vertical]),
-:host([orientation=horizontal])
-{
-    ::slotted([vertical-align=top])
-    {
-        height:        auto;
-        margin-top:    0;
-        margin-bottom: auto;
-    }
-
-    ::slotted([vertical-align=center])
-    {
-        height:        auto;
-        margin-top:    auto;
-        margin-bottom: auto;
-    }
-    
-    ::slotted([vertical-align=bottom])
-    {
-        height:        auto;
-        margin-top:    auto;
-        margin-bottom: 0;
-    }
-    
-    ::slotted([horizontal-align=left])
-    {
-        width:        auto;
-        margin-left:  0;
-        margin-right: auto;
-    }
-
-    ::slotted([horizontal-align=center])
-    {
-        width:        auto;
-        margin-left:  auto;
-        margin-right: auto;
-    }
-
-    ::slotted([horizontal-align=right])
-    {
-        width:        auto;
-        margin-left:  auto;
-        margin-right: 0;
-    }
-}
-
 :host([orientation=vertical][distribuition=justify]),
 :host([orientation=horizontal][distribuition=justify])
 {
@@ -117,3 +70,5 @@
 {
     flex-direction: row-reverse;
 }
+
+@import "../index.scss"

@@ -2,7 +2,6 @@ import { Nullable }    from "@surface/core";
 import { coalesce }    from "@surface/core/common/generic";
 import Observer        from "@surface/core/observer";
 import CustomElement   from "@surface/custom-element";
-import { element }     from "@surface/custom-element/decorators";
 import Enumerable      from "@surface/enumerable";
 import Expression      from "@surface/expression";
 import DataCell        from "../data-cell";
@@ -10,6 +9,7 @@ import DataFooterGroup from "../data-footer-group";
 import DataHeaderGroup from "../data-header-group";
 import DataRow         from "../data-row";
 import DataRowGroup    from "../data-row-group";
+import { element }     from "../decorators";
 //import DataTemplate    from "../data-template";
 import template        from "./index.html";
 import style           from "./index.scss";
@@ -116,7 +116,7 @@ export default class DataTable extends CustomElement
             cell.text  = dataTemplate.getAttribute(templateAttributes.header) || dataTemplate.getAttribute(templateAttributes.field) || "";
             cell.value = cell.text;
 
-            cell.innerHTML = `<span><b>{{this.value}}</b></span>`;
+            cell.innerHTML = `<span horizontal-align="center"><b>{{this.value}}</b></span>`;
 
             CustomElement.contextBind({ this: cell }, cell);
 
@@ -182,9 +182,7 @@ export default class DataTable extends CustomElement
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <surface-stack-panel distribuition="center" orientation="horizontal">
-                                        <input type='button' value='cancel' on-click='{{row.edit(false)}}' />
-                                    </surface-stack-panel>
+                                    <input type='button' value='cancel' horizontal-align="center" on-click='{{row.edit(false)}}' />
                                 </template>
                                 <template when="false">
                                     <surface-stack-panel distribuition="center" orientation="horizontal">

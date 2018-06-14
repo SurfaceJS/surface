@@ -25,11 +25,6 @@
 
 :host-context(surface-data-header-group):host-context(surface-data-row):host
 {
-    ::slotted(*)
-    {
-        background-color: gray;
-        color:            white;
-        margin:             auto;
-        text-align:         center;
-    }
+    background-color: gray;
+    color:            white;
 }

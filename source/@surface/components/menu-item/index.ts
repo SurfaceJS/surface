@@ -1,8 +1,8 @@
 import { Nullable }  from "@surface/core";
 import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
 import Enumerable    from "@surface/enumerable";
 import ContexMenu    from "../context-menu";
+import { element }   from "../decorators";
 import Menu          from "../menu";
 import template      from "./index.html";
 import style         from "./index.scss";

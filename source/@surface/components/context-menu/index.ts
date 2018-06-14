@@ -1,5 +1,5 @@
 import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
+import { element }   from "../decorators";
 import style         from "./index.scss";
 
 @element("surface-context-menu", "", style)
@@ -32,7 +32,7 @@ export default class ContexMenu extends CustomElement
         {
             super.style.left = `${event.pageX - (bounding.width / 2)}px`;
         }
-        
+
         super.style.top  = `${event.pageY}px`;
 
         event.preventDefault();

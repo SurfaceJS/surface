@@ -14,10 +14,6 @@ export function attribute(target: Object, propertyKey: string | symbol): void
     target.constructor[symbols.observedAttributes].push(propertyKey);
 }
 
-export function element(name: string): ClassDecorator;
-export function element(name: string, template:  string): ClassDecorator;
-export function element(name: string, template:  string, style:  string): ClassDecorator;
-export function element(name: string, template:  string, style:  string, options:  ElementDefinitionOptions): ClassDecorator;
 export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecorator
 {
     return <T extends Function>(target: T) =>

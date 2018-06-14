@@ -1,29 +1,30 @@
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
-import template      from "./index.html";
-import style         from "./index.scss";
+import { dashedToCamel, toTitle } from "@surface/core/common/string";
+import Component                  from "..";
+import { element }                from "../decorators";
+import template                   from "./index.html";
+import style                      from "./index.scss";
 
 @element("surface-stack-panel", template, style)
-export class StackPanel extends CustomElement
+export class StackPanel extends Component
 {
     public get distribuition(): StackPanel.Distribuition
     {
-        return StackPanel.Distribuition[super.getAttribute("distribuition") || ""] || StackPanel.Distribuition.None;
+        return StackPanel.Distribuition[toTitle(super.getAttribute("distribuition") || "")] || StackPanel.Distribuition.None;
     }
 
     public set distribuition(value: StackPanel.Distribuition)
     {
-        super.setAttribute("distribuition", StackPanel.Distribuition[value].toLowerCase());
+        super.setAttribute("distribuition", dashedToCamel(StackPanel.Distribuition[value].toLowerCase()));
     }
 
     public get orientation(): StackPanel.Orientation
     {
-        return StackPanel.Orientation[super.getAttribute("orientation") || ""] || StackPanel.Orientation.Vertical;
+        return StackPanel.Orientation[toTitle(super.getAttribute("orientation") || "")] || StackPanel.Orientation.Vertical;
     }
 
     public set orientation(value: StackPanel.Orientation)
     {
-        super.setAttribute("orientation", StackPanel.Orientation[value].toLowerCase());
+        super.setAttribute("orientation", dashedToCamel(StackPanel.Orientation[value]));
     }
 }
 
