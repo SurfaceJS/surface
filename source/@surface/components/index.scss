@@ -1,5 +1,8 @@
 :host
 {
+    display: flex;
+
+    [vertical-align=top],
     ::slotted([vertical-align=top])
     {
         height:        auto;
@@ -7,6 +10,7 @@
         margin-bottom: auto;
     }
 
+    [vertical-align=center],
     ::slotted([vertical-align=center])
     {
         height:        auto;
@@ -14,6 +18,7 @@
         margin-bottom: auto;
     }
     
+    [vertical-align=bottom],
     ::slotted([vertical-align=bottom])
     {
         height:        auto;
@@ -21,6 +26,7 @@
         margin-bottom: 0;
     }
     
+    [horizontal-align=left],
     ::slotted([horizontal-align=left])
     {
         width:        auto;
@@ -28,6 +34,7 @@
         margin-right: auto;
     }
 
+    [horizontal-align=center],
     ::slotted([horizontal-align=center])
     {
         width:        auto;
@@ -35,6 +42,7 @@
         margin-right: auto;
     }
 
+    [horizontal-align=right],
     ::slotted([horizontal-align=right])
     {
         width:        auto;

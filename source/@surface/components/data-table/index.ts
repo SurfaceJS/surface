@@ -1,4 +1,3 @@
-import { Nullable }    from "@surface/core";
 import { coalesce }    from "@surface/core/common/generic";
 import Observer        from "@surface/core/observer";
 import CustomElement   from "@surface/custom-element";
@@ -10,22 +9,14 @@ import DataHeaderGroup from "../data-header-group";
 import DataRow         from "../data-row";
 import DataRowGroup    from "../data-row-group";
 import { element }     from "../decorators";
-//import DataTemplate    from "../data-template";
 import template        from "./index.html";
 import style           from "./index.scss";
-
-const templateAttributes =
-{
-    field:       "field",
-    header:      "header",
-    agreggation: "agreggation",
-    type:        "type"
-};
+import DataTemplate    from "./internal/data-template";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
 {
-    private readonly dataTemplate: Nullable<HTMLTemplateElement>;
+    private readonly dataTemplates: Enumerable<DataTemplate> = Enumerable.empty();
 
     public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
@@ -68,65 +59,43 @@ export default class DataTable extends CustomElement
     {
         super();
 
-        this.dataTemplate = super.query<HTMLTemplateElement>("template");
+        const dataTemplate = super.query<HTMLTemplateElement>("template");
 
-        if (this.dataTemplate)
+        if (dataTemplate)
         {
-            super.removeChild(this.dataTemplate);
+            this.dataTemplates = Enumerable.from(Array.from(dataTemplate.content.querySelectorAll("data-template")))
+                .select(x => new DataTemplate(x));
+
+            super.removeChild(dataTemplate);
         }
     }
 
     private applyDataBind()
     {
-        if (this.dataTemplate)
+        if (this.dataTemplates.any())
         {
-            const dataTemplates = Array.from(this.dataTemplate.content.querySelectorAll("data-template"));
-
-            const headerFilter = (element: Element) => (element.parentElement && element.parentElement.tagName == "HEADER-TEMPLATE")
-                || !!element.getAttribute(templateAttributes.header);
-
-            const rowFilter = (element: Element) => !element.parentElement || element.parentElement!.tagName == "TEMPLATE-ROW";
-
-            const footerFilter = (element: Element) => (element.parentElement && element.parentElement!.tagName == "FOOTER-TEMPLATE")
-                || !!element.getAttribute(templateAttributes.agreggation);
-
-            this.prepareHeaders(dataTemplates.filter(headerFilter));
-            this.prepareRows(dataTemplates.filter(rowFilter));
-            this.prepareFooters(dataTemplates.filter(footerFilter));
+            this.prepareRows();
         }
     }
 
-    private prepareHeaders(dataTemplates: Array<Element>): void
+    private prepareRows(): void
     {
-        const headerGroup = new DataHeaderGroup();
-        const row         = new DataRow();
-
-        headerGroup.appendChild(row);
-        for (const dataTemplate of dataTemplates)
+        if (this.dataTemplates.where(x => !!x.header))
         {
-            const cell = new DataCell();
+            const headerGroup = new DataHeaderGroup();
+            super.appendChild(headerGroup);
 
-            const elementStyle = dataTemplate.getAttribute("style");
+            const row = new DataRow();
+            headerGroup.appendChild(row);
 
-            if (elementStyle)
+            for (const header of this.dataTemplates)
             {
-                cell.setAttribute("style", elementStyle);
+                const cell = new DataCell();
+                row.appendChild(cell);
+                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
-
-            cell.text  = dataTemplate.getAttribute(templateAttributes.header) || dataTemplate.getAttribute(templateAttributes.field) || "";
-            cell.value = cell.text;
-
-            cell.innerHTML = `<span horizontal-align="center"><b>{{this.value}}</b></span>`;
-
-            CustomElement.contextBind({ this: cell }, cell);
-
-            row.appendChild(cell);
         }
-        super.appendChild(headerGroup);
-    }
 
-    private prepareRows(dataTemplates: Array<Element>): void
-    {
         const rowGroup = new DataRowGroup();
         super.appendChild(rowGroup);
 
@@ -135,20 +104,21 @@ export default class DataTable extends CustomElement
             const row = new DataRow();
             rowGroup.appendChild(row);
 
-            for (const dataTemplate of dataTemplates)
+            for (const dataTemplate of this.dataTemplates)
             {
+                console.dir(dataTemplate);
                 const cell  = new DataCell();
                 row.appendChild(cell);
                 row.data = data;
 
-                const elementStyle = dataTemplate.getAttribute("style");
+                const elementStyle = dataTemplate.style;
 
                 if (elementStyle)
                 {
                     cell.setAttribute("style", elementStyle);
                 }
 
-                const field = dataTemplate.getAttribute(templateAttributes.field) || "";
+                const field = dataTemplate.field;
 
                 const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
 
@@ -157,23 +127,20 @@ export default class DataTable extends CustomElement
 
                 let innerHTML = "";
 
-                if (dataTemplate.childNodes.length > 0)
+                if (dataTemplate.template)
                 {
-                    innerHTML = dataTemplate.innerHTML;
+                    innerHTML = dataTemplate.template.innerHTML;
                 }
                 else
                 {
-                    const edit    = dataTemplate.getAttribute("edit") == "true";
-                    const $delete = dataTemplate.getAttribute("delete") == "true";
-
-                    if (edit || $delete)
+                    if (dataTemplate.edit || dataTemplate.delete)
                     {
-                        if (edit)
+                        if (dataTemplate.edit)
                         {
                             innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}' />";
                         }
 
-                        if ($delete)
+                        if (dataTemplate.delete)
                         {
                             innerHTML = innerHTML + "<input type='button' value='delete'>";
                         }
@@ -192,7 +159,7 @@ export default class DataTable extends CustomElement
                             </surface-switch>
                         `;
                     }
-                    else if (dataTemplate.getAttribute("editable") == "true")
+                    else if (dataTemplate.editable)
                     {
                         innerHTML =
                         `
@@ -217,34 +184,5 @@ export default class DataTable extends CustomElement
                 CustomElement.contextBind({ ...super.context, table: this, row }, cell);
             }
         }
-    }
-
-    private prepareFooters(dataTemplates: Array<Element>): void
-    {
-        const footerGroup = new DataFooterGroup();
-
-        const row = new DataRow();
-        footerGroup.appendChild(row);
-        for (const dataTemplate of dataTemplates)
-        {
-            const cell = new DataCell();
-
-            const elementStyle = dataTemplate.getAttribute("style");
-
-            if (elementStyle)
-            {
-                cell.setAttribute("style", elementStyle);
-            }
-
-            cell.text  = dataTemplate.getAttribute(templateAttributes.agreggation) || dataTemplate.getAttribute(templateAttributes.field) || "";
-            cell.value = cell.text;
-
-            cell.innerHTML = dataTemplate.childNodes.length > 0 ? dataTemplate.innerHTML : "";
-
-            row.appendChild(cell);
-
-            CustomElement.contextBind({ ...super.context }, cell);
-        }
-        super.appendChild(footerGroup);
     }
 }

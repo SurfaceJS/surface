@@ -3,16 +3,7 @@ import defaultStyle                          from "./index.scss";
 
 export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecorator
 {
-    if (style)
-    {
-        style = `${style}\n\n${defaultStyle}`;
-    }
-    else
-    {
-        style = defaultStyle;
-    }
-
-    return __element__(name, template, style, options);
+    return __element__(name, template, `${defaultStyle}\n\n${style || ""}`, options);
 }
 
 export { attribute };

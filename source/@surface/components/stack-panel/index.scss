@@ -4,11 +4,6 @@
     flex-direction: column;
     flex-grow:      1;
 
-    ::slotted(*)
-    {
-        margin: 0;
-    }
-
     ::slotted([grow="0"])
     {
         flex-grow: 0;
@@ -70,5 +65,3 @@
 {
     flex-direction: row-reverse;
 }
-
-@import "../index.scss"
