@@ -5,8 +5,8 @@ import Enumerable      from "@surface/enumerable";
 import Expression      from "@surface/expression";
 import { element }     from "../decorators";
 import DataCell        from "./data-cell";
-import DataFooterGroup from "./data-footer-group";
-import DataHeaderGroup from "./data-header-group";
+import DataFooter      from "./data-footer";
+import DataHeader      from "./data-header";
 import DataRow         from "./data-row";
 import DataRowGroup    from "./data-row-group";
 import template        from "./index.html";
@@ -18,14 +18,14 @@ export default class DataTable extends CustomElement
 {
     private readonly dataTemplates: Enumerable<DataTemplate> = Enumerable.empty();
 
-    public get dataFooterGroups(): Enumerable<DataFooterGroup>
+    public get dataFooterGroups(): Enumerable<DataFooter>
     {
         return super.queryAll("surface-data-footer");
     }
 
-    public get dataHeaderGroups(): Enumerable<DataHeaderGroup>
+    public get dataHeaderGroups(): Enumerable<DataHeader>
     {
-        return super.queryAll("surface-data-header-group");
+        return super.queryAll("surface-data-header");
     }
 
     public get dataRowGroups(): Enumerable<DataRowGroup>
@@ -82,9 +82,9 @@ export default class DataTable extends CustomElement
     {
         if (this.dataTemplates.any(x => !!x.header))
         {
-            const headerGroup = new DataHeaderGroup();
+            const headerGroup = new DataHeader();
 
-            const headerElement = super.query("surface-data-table > surface-data-header-group:last-of-type");
+            const headerElement = super.query("surface-data-table > surface-data-header:last-of-type");
 
             if (headerElement)
             {
@@ -103,6 +103,12 @@ export default class DataTable extends CustomElement
             for (const header of this.dataTemplates)
             {
                 const cell = new DataCell();
+                
+                if (header.style)
+                {
+                    cell.setAttribute("style", header.style);
+                }
+
                 row.appendChild(cell);
                 cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
@@ -110,10 +116,10 @@ export default class DataTable extends CustomElement
 
         if (this.dataTemplates.any(x => !!x.footer))
         {
-            const footerGroup = new DataFooterGroup();
+            const footerGroup = new DataFooter();
 
-            const footerElement = super.query("surface-data-table > surface-data-footer-group:last-of-type")
-                || super.query("surface-data-table > surface-data-header-group:last-of-type");
+            const footerElement = super.query("surface-data-table > surface-data-footer:last-of-type")
+                || super.query("surface-data-table > surface-data-header:last-of-type");
 
             if (footerElement)
             {
@@ -130,6 +136,12 @@ export default class DataTable extends CustomElement
             for (const header of this.dataTemplates)
             {
                 const cell = new DataCell();
+
+                if (header.style)
+                {
+                    cell.setAttribute("style", header.style);
+                }
+
                 row.appendChild(cell);
                 cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
@@ -138,7 +150,7 @@ export default class DataTable extends CustomElement
         const rowGroup = new DataRowGroup();
 
         const headerElement = super.query("surface-data-table > surface-data-row-group:last-of-type")
-            || super.query("surface-data-table > surface-data-header-group:last-of-type");
+            || super.query("surface-data-table > surface-data-header:last-of-type");
 
         if (headerElement)
         {
@@ -157,8 +169,13 @@ export default class DataTable extends CustomElement
             let index = 0;
             for (const dataTemplate of this.dataTemplates)
             {
-                console.dir(dataTemplate);
                 const cell  = new DataCell();
+
+                if (dataTemplate.style)
+                {
+                    cell.setAttribute("style", dataTemplate.style);
+                }
+
                 cell.index = index;
                 row.appendChild(cell);
                 row.data = data;
