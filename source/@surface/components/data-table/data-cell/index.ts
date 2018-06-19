@@ -1,12 +1,23 @@
 import { Unknown }   from "@surface/core";
 import CustomElement from "@surface/custom-element";
-import { element }   from "../decorators";
+import { element }   from "../../decorators";
 import template      from "./index.html";
 import style         from "./index.scss";
 
 @element("surface-data-cell", template, style)
 export default class DataCell extends CustomElement
 {
+    private _index: number = 0;
+    public get index(): number
+    {
+        return this._index;
+    }
+
+    public set index(value: number)
+    {
+        this._index = value;
+    }
+
     public get text(): string
     {
         return super.getAttribute("value") || "" as string;

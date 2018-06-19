@@ -3,12 +3,12 @@ import Observer        from "@surface/core/observer";
 import CustomElement   from "@surface/custom-element";
 import Enumerable      from "@surface/enumerable";
 import Expression      from "@surface/expression";
-import DataCell        from "../data-cell";
-import DataFooterGroup from "../data-footer-group";
-import DataHeaderGroup from "../data-header-group";
-import DataRow         from "../data-row";
-import DataRowGroup    from "../data-row-group";
 import { element }     from "../decorators";
+import DataCell        from "./data-cell";
+import DataFooterGroup from "./data-footer-group";
+import DataHeaderGroup from "./data-header-group";
+import DataRow         from "./data-row";
+import DataRowGroup    from "./data-row-group";
 import template        from "./index.html";
 import style           from "./index.scss";
 import DataTemplate    from "./internal/data-template";
@@ -80,10 +80,22 @@ export default class DataTable extends CustomElement
 
     private prepareRows(): void
     {
-        if (this.dataTemplates.where(x => !!x.header))
+        if (this.dataTemplates.any(x => !!x.header))
         {
             const headerGroup = new DataHeaderGroup();
-            super.appendChild(headerGroup);
+
+            const headerElement = super.query("surface-data-table > surface-data-header-group:last-of-type");
+
+            if (headerElement)
+            {
+                headerElement.insertAdjacentElement("afterend", headerGroup);
+            }
+            else
+            {
+                super.appendChild(headerGroup);
+            }
+
+            //super.appendChild(headerGroup);
 
             const row = new DataRow();
             headerGroup.appendChild(row);
@@ -96,18 +108,58 @@ export default class DataTable extends CustomElement
             }
         }
 
+        if (this.dataTemplates.any(x => !!x.footer))
+        {
+            const footerGroup = new DataFooterGroup();
+
+            const footerElement = super.query("surface-data-table > surface-data-footer-group:last-of-type")
+                || super.query("surface-data-table > surface-data-header-group:last-of-type");
+
+            if (footerElement)
+            {
+                footerElement.insertAdjacentElement("afterend", footerGroup);
+            }
+            else
+            {
+                super.appendChild(footerGroup);
+            }
+
+            const row = new DataRow();
+            footerGroup.appendChild(row);
+
+            for (const header of this.dataTemplates)
+            {
+                const cell = new DataCell();
+                row.appendChild(cell);
+                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
+            }
+        }
+
         const rowGroup = new DataRowGroup();
-        super.appendChild(rowGroup);
+
+        const headerElement = super.query("surface-data-table > surface-data-row-group:last-of-type")
+            || super.query("surface-data-table > surface-data-header-group:last-of-type");
+
+        if (headerElement)
+        {
+            headerElement.insertAdjacentElement("afterend", rowGroup);
+        }
+        else
+        {
+            super.appendChild(rowGroup);
+        }
 
         for (const data of this.datasource)
         {
             const row = new DataRow();
             rowGroup.appendChild(row);
 
+            let index = 0;
             for (const dataTemplate of this.dataTemplates)
             {
                 console.dir(dataTemplate);
                 const cell  = new DataCell();
+                cell.index = index;
                 row.appendChild(cell);
                 row.data = data;
 
@@ -182,6 +234,8 @@ export default class DataTable extends CustomElement
                 cell.innerHTML = innerHTML;
 
                 CustomElement.contextBind({ ...super.context, table: this, row }, cell);
+
+                index++;
             }
         }
     }

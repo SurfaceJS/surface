@@ -18,9 +18,15 @@
             text-overflow: ellipsis;
         }
     }
+
+    ::slotted(surface-switch)
+    {
+        width: 100%;
+    }
 }
 
-:host-context(surface-data-header-group):host-context(surface-data-row):host
+:host-context(surface-data-header-group):host-context(surface-data-row):host,
+:host-context(surface-data-footer-group):host-context(surface-data-row):host
 {
     background-color: gray;
     color:            white;
