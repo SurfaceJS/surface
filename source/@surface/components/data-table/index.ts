@@ -1,17 +1,20 @@
-import { coalesce }    from "@surface/core/common/generic";
-import Observer        from "@surface/core/observer";
-import CustomElement   from "@surface/custom-element";
-import Enumerable      from "@surface/enumerable";
-import Expression      from "@surface/expression";
-import { element }     from "../decorators";
-import DataCell        from "./data-cell";
-import DataFooter      from "./data-footer";
-import DataHeader      from "./data-header";
-import DataRow         from "./data-row";
-import DataRowGroup    from "./data-row-group";
-import template        from "./index.html";
-import style           from "./index.scss";
-import DataTemplate    from "./internal/data-template";
+import { coalesce }     from "@surface/core/common/generic";
+import Observer         from "@surface/core/observer";
+import CustomElement    from "@surface/custom-element";
+import Enumerable       from "@surface/enumerable";
+import Expression       from "@surface/expression";
+import { element }      from "../decorators";
+import DataCell         from "./data-cell";
+import DataFooter       from "./data-footer";
+import DataHeader       from "./data-header";
+import DataRow          from "./data-row";
+import DataRowGroup     from "./data-row-group";
+import template         from "./index.html";
+import style            from "./index.scss";
+import DataTemplate     from "./internal/data-template";
+import booleanTemplate  from "./templates/boolean.html";
+import numberTemplate   from "./templates/number.html";
+import stringTemplate   from "./templates/string.html";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
@@ -50,7 +53,10 @@ export default class DataTable extends CustomElement
         if (!Object.is(value, this._datasource))
         {
             this._datasource = value;
+            const now = Date.now();
+            console.time(now.toString());
             this.applyDataBind();
+            console.timeEnd(now.toString());
             this.onDatasourceChange.notify(value);
         }
     }
@@ -70,14 +76,16 @@ export default class DataTable extends CustomElement
         }
     }
 
-    private applyDataBind()
+    private async applyDataBind()
     {
         if (this.dataTemplates.any())
         {
+            await Promise.resolve();
             this.prepareRows();
         }
     }
 
+    // tslint:disable-next-line:cyclomatic-complexity
     private prepareRows(): void
     {
         if (this.dataTemplates.any(x => !!x.header))
@@ -95,15 +103,13 @@ export default class DataTable extends CustomElement
                 super.appendChild(headerGroup);
             }
 
-            //super.appendChild(headerGroup);
-
             const row = new DataRow();
             headerGroup.appendChild(row);
 
             for (const header of this.dataTemplates)
             {
                 const cell = new DataCell();
-                
+
                 if (header.style)
                 {
                     cell.setAttribute("style", header.style);
@@ -191,8 +197,9 @@ export default class DataTable extends CustomElement
 
                 const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
 
-                cell.text  = coalesce(value, "") as string;
-                cell.value = value;
+                cell.text     = coalesce(value, "") as string;
+                cell.value    = value;
+                cell.editable = dataTemplate.editable;
 
                 let innerHTML = "";
 
@@ -228,29 +235,27 @@ export default class DataTable extends CustomElement
                             </surface-switch>
                         `;
                     }
-                    else if (dataTemplate.editable)
-                    {
-                        innerHTML =
-                        `
-                            <surface-switch value="{{row.editMode}}">
-                                <template when="true">
-                                    <input type='text' value="{{row.data.${field}}}" style="width: 100%;" />
-                                </template>
-                                <template when="false">
-                                    <span>{{row.data.${field}}}</span>
-                                </template>
-                            </surface-switch>
-                        `;
-                    }
                     else
                     {
-                        innerHTML = `<span>{{row.data.${field}}}</span>`;
+                        switch (typeof value)
+                        {
+                            case "boolean":
+                                innerHTML = (booleanTemplate as string).replace(/\$\{(field)\}/g, field);
+                                break;
+                            case "number":
+                                innerHTML = (numberTemplate as string).replace(/\$\{(field)\}/g, field);
+                                break;
+                            case "string":
+                            default:
+                                innerHTML = (stringTemplate as string).replace(/\$\{(field)\}/g, field);
+                                break;
+                        }
                     }
                 }
 
                 cell.innerHTML = innerHTML;
 
-                CustomElement.contextBind({ ...super.context, table: this, row }, cell);
+                CustomElement.contextBind({ ...super.context, table: this, row, cell }, cell);
 
                 index++;
             }

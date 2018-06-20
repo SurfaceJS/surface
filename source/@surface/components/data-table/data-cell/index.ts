@@ -7,6 +7,16 @@ import style         from "./index.scss";
 @element("surface-data-cell", template, style)
 export default class DataCell extends CustomElement
 {
+    private _editable: boolean = false;
+    public get editable(): boolean
+    {
+        return this._editable;
+    }
+    public set editable(value: boolean)
+    {
+        this._editable = value;
+    }
+
     private _index: number = 0;
     public get index(): number
     {
