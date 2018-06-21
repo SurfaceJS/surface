@@ -25,10 +25,10 @@ export default class ElementBind
 
     public static async for(context: Object, content: Node): Promise<void>
     {
-        return new ElementBind(context).traverseElement(content);
+        await Promise.resolve(new ElementBind(context).traverseElement(content));
     }
 
-    private async bindAttribute(element: Element): Promise<void>
+    private bindAttribute(element: Element): void
     {
         for (const attribute of Array.from(element.attributes))
         {
@@ -70,7 +70,7 @@ export default class ElementBind
 
                         if (attributeName in element)
                         {
-                            element[attributeName] = value;
+                            setTimeout(() => element[attributeName] = value, 0);
                         }
                     };
 
@@ -95,7 +95,7 @@ export default class ElementBind
 
                             if (leftProperty.setter)
                             {
-                                leftProperty.setter.call(source, expression.evaluate());
+                                setTimeout(() => leftProperty!.setter!.call(source, expression.evaluate()), 0);
                             }
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
@@ -117,7 +117,7 @@ export default class ElementBind
         }
     }
 
-    private async bindTextNode(element: Element): Promise<void>
+    private bindTextNode(element: Element): void
     {
         if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[") > -1))
         {
@@ -147,9 +147,9 @@ export default class ElementBind
         return new Proxy(context, handler);
     }
 
-    private async traverseElement(node: Node): Promise<void>
+    private traverseElement(node: Node): void//Promise<void>
     {
-        const promises: Array<Promise<void>> = [];
+        //const promises: Array<Promise<void>> = [];
         for (const element of Array.from(node.childNodes) as Array<Element>)
         {
             if (!element[binded] && element.tagName != "TEMPLATE")
@@ -159,25 +159,29 @@ export default class ElementBind
 
                 if (element.attributes && element.attributes.length > 0)
                 {
-                    promises.push(this.bindAttribute(element));
+                    //promises.push(this.bindAttribute(element));
+                    this.bindAttribute(element);
                 }
 
                 if (element.nodeType == Node.TEXT_NODE)
                 {
-                    promises.push(this.bindTextNode(element));
+                    //promises.push(this.bindTextNode(element));
+                    this.bindTextNode(element);
                 }
 
-                promises.push(this.traverseElement(element));
+                //promises.push(this.traverseElement(element));
+                //await this.traverseElement(element);
+                this.traverseElement(element);
             }
         }
 
-        try
-        {
-            await Promise.all(promises);
-        }
-        catch (error)
-        {
-            return Promise.reject(error);
-        }
+        //try
+        //{
+        //    await Promise.all(promises);
+        //}
+        //catch (error)
+        //{
+        //    return Promise.reject(error);
+        //}
     }
 }

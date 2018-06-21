@@ -39,6 +39,7 @@ export function element(name: string, template?: string, style?: string, options
         const proxy = function(this: HTMLElement, ...args: Array<Unknown>)
         {
             const instance = Reflect.construct(target, args, new.target) as HTMLElement;
+
             ElementBind.for({ host: instance }, instance[symbols.shadowRoot]);
 
             return instance;

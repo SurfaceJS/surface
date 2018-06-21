@@ -53,10 +53,7 @@ export default class DataTable extends CustomElement
         if (!Object.is(value, this._datasource))
         {
             this._datasource = value;
-            const now = Date.now();
-            console.time(now.toString());
             this.applyDataBind();
-            console.timeEnd(now.toString());
             this.onDatasourceChange.notify(value);
         }
     }
@@ -76,11 +73,10 @@ export default class DataTable extends CustomElement
         }
     }
 
-    private async applyDataBind()
+    private applyDataBind()
     {
         if (this.dataTemplates.any())
         {
-            await Promise.resolve();
             this.prepareRows();
         }
     }

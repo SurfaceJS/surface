@@ -29,7 +29,7 @@ export default class ViewManager
 
     private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>)
     {
-        this._viewHost     = viewHost;
+        this._viewHost    = viewHost;
         this.moduleLoader = moduleLoader;
 
         this.views  = new Dictionary<string, View>();
@@ -81,7 +81,13 @@ export default class ViewManager
             if (!this.views.has(view))
             {
                 const viewConstructor = await this.getView(view, path);
-                this.views.set(view, new viewConstructor());
+
+                console.log(`Start construct ${view}`);
+
+                const element = new viewConstructor();
+
+                console.log(`End construct ${view}`);
+                this.views.set(view, element);
             }
 
             this._viewHost.view = this.views.get(view);
