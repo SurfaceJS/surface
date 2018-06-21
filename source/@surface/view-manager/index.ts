@@ -82,11 +82,8 @@ export default class ViewManager
             {
                 const viewConstructor = await this.getView(view, path);
 
-                console.log(`Start construct ${view}`);
-
                 const element = new viewConstructor();
 
-                console.log(`End construct ${view}`);
                 this.views.set(view, element);
             }
 

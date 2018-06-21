@@ -1,20 +1,21 @@
-import { coalesce }     from "@surface/core/common/generic";
-import Observer         from "@surface/core/observer";
-import CustomElement    from "@surface/custom-element";
-import Enumerable       from "@surface/enumerable";
-import Expression       from "@surface/expression";
-import { element }      from "../decorators";
-import DataCell         from "./data-cell";
-import DataFooter       from "./data-footer";
-import DataHeader       from "./data-header";
-import DataRow          from "./data-row";
-import DataRowGroup     from "./data-row-group";
-import template         from "./index.html";
-import style            from "./index.scss";
-import DataTemplate     from "./internal/data-template";
-import booleanTemplate  from "./templates/boolean.html";
-import numberTemplate   from "./templates/number.html";
-import stringTemplate   from "./templates/string.html";
+import { coalesce }    from "@surface/core/common/generic";
+import Observer        from "@surface/core/observer";
+import CustomElement   from "@surface/custom-element";
+import Enumerable      from "@surface/enumerable";
+import Expression      from "@surface/expression";
+import { runAsync }    from "../../core/common/promise";
+import { element }     from "../decorators";
+import DataCell        from "./data-cell";
+import DataFooter      from "./data-footer";
+import DataHeader      from "./data-header";
+import DataRow         from "./data-row";
+import DataRowGroup    from "./data-row-group";
+import template        from "./index.html";
+import style           from "./index.scss";
+import DataTemplate    from "./internal/data-template";
+import booleanTemplate from "./templates/boolean.html";
+import numberTemplate  from "./templates/number.html";
+import stringTemplate  from "./templates/string.html";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
@@ -53,7 +54,7 @@ export default class DataTable extends CustomElement
         if (!Object.is(value, this._datasource))
         {
             this._datasource = value;
-            this.applyDataBind();
+            runAsync(() => this.applyDataBind());
             this.onDatasourceChange.notify(value);
         }
     }
@@ -73,11 +74,11 @@ export default class DataTable extends CustomElement
         }
     }
 
-    private applyDataBind()
+    private applyDataBind(): void
     {
         if (this.dataTemplates.any())
         {
-            this.prepareRows();
+            runAsync(() => this.prepareRows());
         }
     }
 
@@ -105,13 +106,13 @@ export default class DataTable extends CustomElement
             for (const header of this.dataTemplates)
             {
                 const cell = new DataCell();
+                row.appendChild(cell);
 
                 if (header.style)
                 {
                     cell.setAttribute("style", header.style);
                 }
 
-                row.appendChild(cell);
                 cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
         }
@@ -138,13 +139,13 @@ export default class DataTable extends CustomElement
             for (const header of this.dataTemplates)
             {
                 const cell = new DataCell();
+                row.appendChild(cell);
 
                 if (header.style)
                 {
                     cell.setAttribute("style", header.style);
                 }
 
-                row.appendChild(cell);
                 cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
         }
@@ -172,6 +173,7 @@ export default class DataTable extends CustomElement
             for (const dataTemplate of this.dataTemplates)
             {
                 const cell  = new DataCell();
+                row.appendChild(cell);
 
                 if (dataTemplate.style)
                 {
@@ -179,7 +181,6 @@ export default class DataTable extends CustomElement
                 }
 
                 cell.index = index;
-                row.appendChild(cell);
                 row.data = data;
 
                 const elementStyle = dataTemplate.style;

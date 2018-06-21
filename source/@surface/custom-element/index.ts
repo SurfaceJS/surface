@@ -33,9 +33,9 @@ export default abstract class CustomElement extends HTMLElement
             this.applyTemplate(this.constructor[template]);
         }
     }
-    protected static async contextBind(context: Object, content: Node): Promise<void>
+    protected static contextBind(context: Object, content: Node): void
     {
-        await ElementBind.for(context, content);
+        ElementBind.for(context, content);
     }
 
     private applyTemplate(template: HTMLTemplateElement): void

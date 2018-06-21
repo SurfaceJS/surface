@@ -23,9 +23,9 @@ export default class ElementBind
         this.window  = windowWrapper;
     }
 
-    public static async for(context: Object, content: Node): Promise<void>
+    public static for(context: Object, content: Node): void
     {
-        await Promise.resolve(new ElementBind(context).traverseElement(content));
+        new ElementBind(context).traverseElement(content);
     }
 
     private bindAttribute(element: Element): void
@@ -70,7 +70,7 @@ export default class ElementBind
 
                         if (attributeName in element)
                         {
-                            setTimeout(() => element[attributeName] = value, 0);
+                            element[attributeName] = value;
                         }
                     };
 
@@ -95,7 +95,7 @@ export default class ElementBind
 
                             if (leftProperty.setter)
                             {
-                                setTimeout(() => leftProperty!.setter!.call(source, expression.evaluate()), 0);
+                                leftProperty.setter.call(source, expression.evaluate());
                             }
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
@@ -147,9 +147,8 @@ export default class ElementBind
         return new Proxy(context, handler);
     }
 
-    private traverseElement(node: Node): void//Promise<void>
+    private traverseElement(node: Node): void
     {
-        //const promises: Array<Promise<void>> = [];
         for (const element of Array.from(node.childNodes) as Array<Element>)
         {
             if (!element[binded] && element.tagName != "TEMPLATE")
@@ -159,29 +158,16 @@ export default class ElementBind
 
                 if (element.attributes && element.attributes.length > 0)
                 {
-                    //promises.push(this.bindAttribute(element));
                     this.bindAttribute(element);
                 }
 
                 if (element.nodeType == Node.TEXT_NODE)
                 {
-                    //promises.push(this.bindTextNode(element));
                     this.bindTextNode(element);
                 }
 
-                //promises.push(this.traverseElement(element));
-                //await this.traverseElement(element);
                 this.traverseElement(element);
             }
         }
-
-        //try
-        //{
-        //    await Promise.all(promises);
-        //}
-        //catch (error)
-        //{
-        //    return Promise.reject(error);
-        //}
     }
 }
