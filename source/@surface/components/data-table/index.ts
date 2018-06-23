@@ -78,45 +78,14 @@ export default class DataTable extends CustomElement
     {
         if (this.dataTemplates.any())
         {
-            runAsync(() => this.prepareRows());
+            this.prepareHeaders();
+            this.prepareRows();
+            this.prepareFooters();
         }
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity
-    private prepareRows(): void
+    private prepareFooters(): void
     {
-        if (this.dataTemplates.any(x => !!x.header))
-        {
-            const headerGroup = new DataHeader();
-
-            const headerElement = super.query("surface-data-table > surface-data-header:last-of-type");
-
-            if (headerElement)
-            {
-                headerElement.insertAdjacentElement("afterend", headerGroup);
-            }
-            else
-            {
-                super.appendChild(headerGroup);
-            }
-
-            const row = new DataRow();
-            headerGroup.appendChild(row);
-
-            for (const header of this.dataTemplates)
-            {
-                const cell = new DataCell();
-                row.appendChild(cell);
-
-                if (header.style)
-                {
-                    cell.setAttribute("style", header.style);
-                }
-
-                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
-            }
-        }
-
         if (this.dataTemplates.any(x => !!x.footer))
         {
             const footerGroup = new DataFooter();
@@ -149,7 +118,45 @@ export default class DataTable extends CustomElement
                 cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
             }
         }
+    }
 
+    private prepareHeaders(): void
+    {
+        if (this.dataTemplates.any(x => !!x.header))
+        {
+            const headerGroup = new DataHeader();
+
+            const headerElement = super.query("surface-data-table > surface-data-header:last-of-type");
+
+            if (headerElement)
+            {
+                headerElement.insertAdjacentElement("afterend", headerGroup);
+            }
+            else
+            {
+                super.appendChild(headerGroup);
+            }
+
+            const row = new DataRow();
+            headerGroup.appendChild(row);
+
+            for (const header of this.dataTemplates)
+            {
+                const cell = new DataCell();
+                row.appendChild(cell);
+
+                if (header.style)
+                {
+                    cell.setAttribute("style", header.style);
+                }
+
+                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
+            }
+        }
+    }
+
+    private prepareRows(): void
+    {
         const rowGroup = new DataRowGroup();
 
         const headerElement = super.query("surface-data-table > surface-data-row-group:last-of-type")
@@ -166,37 +173,22 @@ export default class DataTable extends CustomElement
 
         for (const data of this.datasource)
         {
-            const row = new DataRow();
+            const row = new DataRow(data);
             rowGroup.appendChild(row);
 
             let index = 0;
             for (const dataTemplate of this.dataTemplates)
             {
-                const cell  = new DataCell();
+                const field = dataTemplate.field;
+                const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
+
+                const cell = new DataCell(dataTemplate.editable, index, coalesce(value, ""), value);
                 row.appendChild(cell);
 
                 if (dataTemplate.style)
                 {
                     cell.setAttribute("style", dataTemplate.style);
                 }
-
-                cell.index = index;
-                row.data = data;
-
-                const elementStyle = dataTemplate.style;
-
-                if (elementStyle)
-                {
-                    cell.setAttribute("style", elementStyle);
-                }
-
-                const field = dataTemplate.field;
-
-                const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
-
-                cell.text     = coalesce(value, "") as string;
-                cell.value    = value;
-                cell.editable = dataTemplate.editable;
 
                 let innerHTML = "";
 

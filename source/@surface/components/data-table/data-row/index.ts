@@ -28,6 +28,12 @@ export default class DataRow extends CustomElement
         this._editMode = value;
     }
 
+    public constructor(data?: Object)
+    {
+        super();
+        this._data = data || { };
+    }
+
     public edit(value: boolean): void
     {
         this.editMode = value;

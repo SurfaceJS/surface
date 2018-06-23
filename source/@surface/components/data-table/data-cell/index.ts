@@ -1,4 +1,5 @@
 import { Unknown }   from "@surface/core";
+import { coalesce }  from "@surface/core/common/generic";
 import CustomElement from "@surface/custom-element";
 import { element }   from "../../decorators";
 import template      from "./index.html";
@@ -7,7 +8,7 @@ import style         from "./index.scss";
 @element("surface-data-cell", template, style)
 export default class DataCell extends CustomElement
 {
-    private _editable: boolean = false;
+    private _editable: boolean;
     public get editable(): boolean
     {
         return this._editable;
@@ -17,7 +18,7 @@ export default class DataCell extends CustomElement
         this._editable = value;
     }
 
-    private _index: number = 0;
+    private _index: number;
     public get index(): number
     {
         return this._index;
@@ -49,9 +50,17 @@ export default class DataCell extends CustomElement
         this._value = value;
     }
 
-    public constructor()
+    public constructor(editable?: boolean, index?: number, text?: string, value?: Unknown)
     {
-        super({ mode: "open" });
+        super();
+        this._editable = coalesce<boolean>(editable, false);
+        this._index    = coalesce<number>(index, 0);
+        this._value    = value;
+
+        if (text)
+        {
+            this.text = text;
+        }
     }
 
     public setContent(content: HTMLElement)
