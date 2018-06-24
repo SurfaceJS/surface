@@ -221,19 +221,20 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
             description,
             () =>
             {
+                const context = new (target as Constructor<Object>)();
+
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback[descriptionToken], beforeCallback);
+                    mocha.before(beforeCallback[descriptionToken], beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback[descriptionToken], beforeEachCallback);
+                    mocha.beforeEach(beforeEachCallback[descriptionToken], beforeEachCallback.bind(context));
                 }
 
                 for (const test of tests)
                 {
-                    const context = new (target as Constructor<Object>)();
                     mocha.test(test.expectation, test.getMethod(context));
                 }
 
@@ -246,7 +247,6 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                         {
                             for (const test of tests)
                             {
-                                const context = new (target as Constructor<Object>)();
                                 mocha.test(test.expectation, test.getMethod(context));
                             }
                         }
@@ -255,12 +255,12 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback[descriptionToken], afterEachCallback);
+                    mocha.afterEach(afterEachCallback[descriptionToken], afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback[descriptionToken], afterCallback);
+                    mocha.after(afterCallback[descriptionToken], afterCallback.bind(context));
                 }
             }
         );

@@ -40,7 +40,7 @@ export default class DataBind
             }
         );
 
-        if (target instanceof HTMLInputElement)
+        if (target instanceof HTMLElement)
         {
             const setAttribute = target.setAttribute;
 
@@ -54,8 +54,11 @@ export default class DataBind
                 }
             };
 
-            target.addEventListener("change", () => target[observer].notify());
-            target.addEventListener("keyup", () => target[observer].notify());
+            if (target instanceof HTMLInputElement)
+            {
+                target.addEventListener("change", () => target[observer].notify());
+                target.addEventListener("keyup", () => target[observer].notify());
+            }
         }
     }
 

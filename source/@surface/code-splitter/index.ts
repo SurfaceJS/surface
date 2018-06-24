@@ -144,7 +144,7 @@ class CodeSplitter
             " * Requires the module of the specified path.",
             ` * @param ${this.extension == ".ts" ? "" : "{string} "}path Path to the module.${this.extension == ".ts" ? "" : "\n * @returns {Promise}"}`,
             " */",
-            this.extension == ".ts" ? "export function load(path: string): Promise<Object>" : "export function load(path)",
+            this.extension == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
             "{",
             "    switch (path)",
             "    {",

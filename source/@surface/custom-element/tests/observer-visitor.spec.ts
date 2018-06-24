@@ -4,7 +4,7 @@ import Expression                              from "@surface/expression";
 import ICallExpression                         from "@surface/expression/interfaces/call-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import ObserverVisitor                   from "../internal/observer-visitor";
+import ObserverVisitor                         from "../internal/observer-visitor";
 import { observedAttributes }                  from "../internal/symbols";
 
 @suite

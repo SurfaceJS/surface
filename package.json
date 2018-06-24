@@ -27,7 +27,7 @@
         "task:setup": "npm i && tsc -p ./tasks && node ./tasks/cli setup",
         "task:unlink": "node ./tasks/cli unlink",
         "test:build": "tsc -p tsconfig.test.json",
-        "test:cover": "nyc mocha --ui tdd source/@surface/*/tests/*.spec.js",
+        "test:cover": "nyc mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
         "test:run": "mocha --ui tdd source/@surface/*/tests/*.spec.js",
         "test:watch": "tsc -p tsconfig.test.json -w"
     },

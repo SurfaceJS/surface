@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
+import * as chai                   from "chai";
 import Observer                    from "../observer";
 
 @suite
@@ -8,7 +8,7 @@ export default class ObserverSpec
     @test @shouldPass
     public create(): void
     {
-        expect(() => new Observer()).to.not.throw();
+        chai.expect(() => new Observer()).to.not.throw();
     }
 
     @test @shouldPass
@@ -21,7 +21,7 @@ export default class ObserverSpec
         observer.subscribe(() => passed = true);
         observer.notify();
 
-        expect(passed).to.equal(true);
+        chai.expect(passed).to.equal(true);
     }
 
     @test @shouldPass
@@ -36,6 +36,6 @@ export default class ObserverSpec
         observer.unsubscribe(action);
         observer.notify();
 
-        expect(passed).to.equal(false);
+        chai.expect(passed).to.equal(false);
     }
 }

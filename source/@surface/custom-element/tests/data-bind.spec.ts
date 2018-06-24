@@ -2,7 +2,7 @@ import "./fixtures/dom";
 
 import Type                        from "@surface/reflection/type";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
+import * as chai                   from "chai";
 import DataBind                    from "../internal/data-bind";
 
 @suite
@@ -33,7 +33,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        expect(changed).to.equal(true);
+        chai.expect(changed).to.equal(true);
     }
 
     @test @shouldPass
@@ -48,7 +48,7 @@ export default class DataBindSpec
         target.value = "2";
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
-        expect(changed).to.equal(true);
+        chai.expect(changed).to.equal(true);
     }
 
     @test @shouldPass
@@ -63,7 +63,7 @@ export default class DataBindSpec
         DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, () => value = attribute.value);
 
         attribute.value = "2";
-        expect(value).to.equal("2");
+        chai.expect(value).to.equal("2");
     }
 
     @test @shouldPass
@@ -77,8 +77,8 @@ export default class DataBindSpec
 
         target.setAttribute("lang", "en-us");
         target.setAttribute("lang1", "en-us");
-        expect(value).to.equal("en-us");
-        expect(target.getAttribute("lang1")).to.equal("en-us");
+        chai.expect(value, "value").to.equal("en-us");
+        chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
     }
 
     @test @shouldPass
@@ -105,10 +105,10 @@ export default class DataBindSpec
 
         left.value = 2;
 
-        expect(right.value).to.equal(2);
+        chai.expect(right.value).to.equal(2);
 
         right.value = 3;
 
-        expect(left.value).to.equal(3);
+        chai.expect(left.value).to.equal(3);
     }
 }
