@@ -10,7 +10,13 @@
         "@surface/expression": "0.0.0",
         "tslib": "1.9.2"
     },
-    "description": "Menu web component.",
+    "description": "Surface web components",
+    "devDependencies": {
+        "@surface/test-suite": "0.0.0",
+        "@types/jsdom": "11.0.4",
+        "chai": "4.1.2",
+        "jsdom": "11.11.0"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "menu",

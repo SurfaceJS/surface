@@ -1,7 +1,7 @@
-import { Nullable, ObjectLiteral } from "@surface/core";
-import fs                          from "fs";
-import path                        from "path";
-import { compilation, Compiler }   from "webpack";
+import { Nullable, ObjectLiteral }       from "@surface/core";
+import fs                                from "fs";
+import path                              from "path";
+import { compilation, Compiler, Plugin } from "webpack";
 
 namespace HtmlTemplatePlugin
 {
@@ -12,7 +12,7 @@ namespace HtmlTemplatePlugin
     }
 }
 
-class HtmlTemplatePlugin
+class HtmlTemplatePlugin implements Plugin
 {
     private readonly filename: Nullable<string>;
     private readonly template: string;
