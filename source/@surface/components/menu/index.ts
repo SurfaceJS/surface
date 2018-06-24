@@ -2,9 +2,9 @@ import { dashedToTitle } from "@surface/core/common/string";
 import CustomElement     from "@surface/custom-element";
 import Enumerable        from "@surface/enumerable";
 import { element }       from "../decorators";
-import MenuItem          from "../menu-item";
 import template          from "./index.html";
 import style             from "./index.scss";
+import MenuItem          from "./menu-item";
 
 @element("surface-menu", template, style)
 export class Menu extends CustomElement

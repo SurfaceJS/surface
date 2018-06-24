@@ -1,9 +1,12 @@
-import { Unknown }   from "@surface/core";
-import { coalesce }  from "@surface/core/common/generic";
-import CustomElement from "@surface/custom-element";
-import { element }   from "../../decorators";
-import template      from "./index.html";
-import style         from "./index.scss";
+import { Unknown as __Unknown__ } from "@surface/core";
+import { coalesce }               from "@surface/core/common/generic";
+import CustomElement              from "@surface/custom-element";
+import { element }                from "../../decorators";
+import template                   from "./index.html";
+import style                      from "./index.scss";
+
+/* ts-loader has a bug on imported types used on constructor */
+type Unknown = __Unknown__;
 
 @element("surface-data-cell", template, style)
 export default class DataCell extends CustomElement
@@ -53,18 +56,13 @@ export default class DataCell extends CustomElement
     public constructor(editable?: boolean, index?: number, text?: string, value?: Unknown)
     {
         super();
-        this._editable = coalesce<boolean>(editable, false);
-        this._index    = coalesce<number>(index, 0);
+        this._editable = coalesce(editable, false);
+        this._index    = coalesce(index, 0);
         this._value    = value;
 
         if (text)
         {
             this.text = text;
         }
-    }
-
-    public setContent(content: HTMLElement)
-    {
-        super.shadowRoot!.appendChild(content);
     }
 }

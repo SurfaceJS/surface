@@ -1,26 +1,27 @@
-import { coalesce }    from "@surface/core/common/generic";
-import Observer        from "@surface/core/observer";
-import CustomElement   from "@surface/custom-element";
-import Enumerable      from "@surface/enumerable";
-import Expression      from "@surface/expression";
-import { runAsync }    from "../../core/common/promise";
-import { element }     from "../decorators";
-import DataCell        from "./data-cell";
-import DataFooter      from "./data-footer";
-import DataHeader      from "./data-header";
-import DataRow         from "./data-row";
-import DataRowGroup    from "./data-row-group";
-import template        from "./index.html";
-import style           from "./index.scss";
-import DataTemplate    from "./internal/data-template";
-import booleanTemplate from "./templates/boolean.html";
-import numberTemplate  from "./templates/number.html";
-import stringTemplate  from "./templates/string.html";
+import { ObjectLiteral } from "@surface/core";
+import { coalesce }      from "@surface/core/common/generic";
+import Observer          from "@surface/core/observer";
+import CustomElement     from "@surface/custom-element";
+import Enumerable        from "@surface/enumerable";
+import Expression        from "@surface/expression";
+import { runAsync }      from "../../core/common/promise";
+import { element }       from "../decorators";
+import DataCell          from "./data-cell";
+import DataFooter        from "./data-footer";
+import DataHeader        from "./data-header";
+import DataRow           from "./data-row";
+import DataRowGroup      from "./data-row-group";
+import template          from "./index.html";
+import style             from "./index.scss";
+import ColumnDefinition  from "./internal/column-definition";
+import booleanTemplate   from "./templates/boolean.html";
+import numberTemplate    from "./templates/number.html";
+import stringTemplate    from "./templates/string.html";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends CustomElement
 {
-    private readonly dataTemplates: Enumerable<DataTemplate> = Enumerable.empty();
+    private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
     public get dataFooterGroups(): Enumerable<DataFooter>
     {
@@ -43,13 +44,13 @@ export default class DataTable extends CustomElement
         return this._onDatasourceChange;
     }
 
-    private _datasource: Iterable<Object> = [];
-    public get datasource(): Iterable<Object>
+    private _datasource: Iterable<ObjectLiteral> = [];
+    public get datasource(): Iterable<ObjectLiteral>
     {
         return this._datasource;
     }
 
-    public set datasource(value: Iterable<Object>)
+    public set datasource(value: Iterable<ObjectLiteral>)
     {
         if (!Object.is(value, this._datasource))
         {
@@ -67,8 +68,8 @@ export default class DataTable extends CustomElement
 
         if (dataTemplate)
         {
-            this.dataTemplates = Enumerable.from(Array.from(dataTemplate.content.querySelectorAll("data-template")))
-                .select(x => new DataTemplate(x));
+            this.columnDefinitions = Enumerable.from(Array.from(dataTemplate.content.querySelectorAll("column-definition")))
+                .select(x => new ColumnDefinition(x));
 
             super.removeChild(dataTemplate);
         }
@@ -76,7 +77,7 @@ export default class DataTable extends CustomElement
 
     private applyDataBind(): void
     {
-        if (this.dataTemplates.any())
+        if (this.columnDefinitions.any())
         {
             this.prepareHeaders();
             this.prepareRows();
@@ -86,7 +87,7 @@ export default class DataTable extends CustomElement
 
     private prepareFooters(): void
     {
-        if (this.dataTemplates.any(x => !!x.footer))
+        if (this.columnDefinitions.any(x => !!x.footer))
         {
             const footerGroup = new DataFooter();
 
@@ -105,24 +106,24 @@ export default class DataTable extends CustomElement
             const row = new DataRow();
             footerGroup.appendChild(row);
 
-            for (const header of this.dataTemplates)
+            for (const columnDefinition of this.columnDefinitions)
             {
                 const cell = new DataCell();
                 row.appendChild(cell);
 
-                if (header.style)
+                if (columnDefinition.style)
                 {
-                    cell.setAttribute("style", header.style);
+                    cell.setAttribute("style", columnDefinition.style);
                 }
 
-                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
+                cell.innerHTML = `<span horizontal-align='center'><b>${columnDefinition.header}</b></span>`;
             }
         }
     }
 
     private prepareHeaders(): void
     {
-        if (this.dataTemplates.any(x => !!x.header))
+        if (this.columnDefinitions.any(x => !!x.header))
         {
             const headerGroup = new DataHeader();
 
@@ -140,17 +141,17 @@ export default class DataTable extends CustomElement
             const row = new DataRow();
             headerGroup.appendChild(row);
 
-            for (const header of this.dataTemplates)
+            for (const columnDefinition of this.columnDefinitions)
             {
                 const cell = new DataCell();
                 row.appendChild(cell);
 
-                if (header.style)
+                if (columnDefinition.style)
                 {
-                    cell.setAttribute("style", header.style);
+                    cell.setAttribute("style", columnDefinition.style);
                 }
 
-                cell.innerHTML = `<span horizontal-align='center'><b>${header.header}</b></span>`;
+                cell.innerHTML = `<span horizontal-align='center'><b>${columnDefinition.header}</b></span>`;
             }
         }
     }
@@ -177,35 +178,35 @@ export default class DataTable extends CustomElement
             rowGroup.appendChild(row);
 
             let index = 0;
-            for (const dataTemplate of this.dataTemplates)
+            for (const columnDefinition of this.columnDefinitions)
             {
-                const field = dataTemplate.field;
+                const field = columnDefinition.field;
                 const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
 
-                const cell = new DataCell(dataTemplate.editable, index, coalesce(value, ""), value);
+                const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
                 row.appendChild(cell);
 
-                if (dataTemplate.style)
+                if (columnDefinition.style)
                 {
-                    cell.setAttribute("style", dataTemplate.style);
+                    cell.setAttribute("style", columnDefinition.style);
                 }
 
                 let innerHTML = "";
 
-                if (dataTemplate.template)
+                if (columnDefinition.template)
                 {
-                    innerHTML = dataTemplate.template.innerHTML;
+                    innerHTML = columnDefinition.template.innerHTML;
                 }
                 else
                 {
-                    if (dataTemplate.edit || dataTemplate.delete)
+                    if (columnDefinition.edit || columnDefinition.delete)
                     {
-                        if (dataTemplate.edit)
+                        if (columnDefinition.edit)
                         {
                             innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}' />";
                         }
 
-                        if (dataTemplate.delete)
+                        if (columnDefinition.delete)
                         {
                             innerHTML = innerHTML + "<input type='button' value='delete'>";
                         }
