@@ -4,16 +4,6 @@ export default class ColumnDefinition
 {
     private readonly element: Element;
 
-    public get edit(): boolean
-    {
-        return this.element.getAttribute("edit") == "true";
-    }
-
-    public set edit(value: boolean)
-    {
-        this.element.setAttribute("edit", value.toString());
-    }
-
     public get editable(): boolean
     {
         return this.element.getAttribute("editable") == "true";
@@ -24,14 +14,24 @@ export default class ColumnDefinition
         this.element.setAttribute("editable", value.toString());
     }
 
-    public get delete(): boolean
+    public get editButtom(): boolean
     {
-        return this.element.getAttribute("delete") == "true";
+        return this.element.getAttribute("edit-buttom") == "true";
     }
 
-    public set delete(value: boolean)
+    public set editButtom(value: boolean)
     {
-        this.element.setAttribute("delete", value.toString());
+        this.element.setAttribute("edit-buttom", value.toString());
+    }
+
+    public get deleteButtom(): boolean
+    {
+        return this.element.getAttribute("delete-buttom") == "true";
+    }
+
+    public set deleteButtom(value: boolean)
+    {
+        this.element.setAttribute("delete-buttom", value.toString());
     }
 
     public get field(): string

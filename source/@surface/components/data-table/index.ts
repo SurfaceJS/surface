@@ -1,5 +1,6 @@
 import { ObjectLiteral } from "@surface/core";
 import { coalesce }      from "@surface/core/common/generic";
+import { proxyFactory }  from "@surface/core/common/object";
 import Observer          from "@surface/core/observer";
 import CustomElement     from "@surface/custom-element";
 import Enumerable        from "@surface/enumerable";
@@ -44,7 +45,7 @@ export default class DataTable extends CustomElement
         return this._onDatasourceChange;
     }
 
-    private _datasource: Iterable<ObjectLiteral> = [];
+    private _datasource: Iterable<ObjectLiteral> = Enumerable.empty();
     public get datasource(): Iterable<ObjectLiteral>
     {
         return this._datasource;
@@ -54,8 +55,10 @@ export default class DataTable extends CustomElement
     {
         if (!Object.is(value, this._datasource))
         {
-            this._datasource = value;
+            this._datasource = this.createProxy(value);
+
             runAsync(() => this.applyDataBind());
+
             this.onDatasourceChange.notify(value);
         }
     }
@@ -83,6 +86,20 @@ export default class DataTable extends CustomElement
             this.prepareRows();
             this.prepareFooters();
         }
+    }
+
+    private createProxy(datasource: Iterable<ObjectLiteral>): Iterable<ObjectLiteral>
+    {
+        const sequence = Enumerable.from(datasource);
+
+        if (sequence.any())
+        {
+            const proxy = proxyFactory(sequence.first());
+
+            return sequence.select(x => new proxy(x));
+        }
+
+        return [];
     }
 
     private prepareFooters(): void
@@ -172,16 +189,16 @@ export default class DataTable extends CustomElement
             super.appendChild(rowGroup);
         }
 
-        for (const data of this.datasource)
+        for (const item of this.datasource)
         {
-            const row = new DataRow(data);
+            const row = new DataRow(item);
             rowGroup.appendChild(row);
 
             let index = 0;
             for (const columnDefinition of this.columnDefinitions)
             {
                 const field = columnDefinition.field;
-                const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
+                const value = field.indexOf(".") > -1 ? Expression.from(field, item).evaluate() : item[field];
 
                 const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
                 row.appendChild(cell);
@@ -199,14 +216,14 @@ export default class DataTable extends CustomElement
                 }
                 else
                 {
-                    if (columnDefinition.edit || columnDefinition.delete)
+                    if (columnDefinition.editButtom || columnDefinition.deleteButtom)
                     {
-                        if (columnDefinition.edit)
+                        if (columnDefinition.editButtom)
                         {
                             innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}' />";
                         }
 
-                        if (columnDefinition.delete)
+                        if (columnDefinition.deleteButtom)
                         {
                             innerHTML = innerHTML + "<input type='button' value='delete'>";
                         }
