@@ -15,10 +15,17 @@ export type Func<TResult>                            = () => TResult;
 export type Func1<T1, TResult>                       = (arg: T1) => TResult;
 export type Func2<T1, T2, TResult>                   = (arg1: T1, arg2: T2) => TResult;
 export type Func3<T1, T2, T3, TResult>               = (arg1: T1, arg2: T2, arg3: T3) => TResult;
+export type IgnoreKeysOfType<T extends object, U>    = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
+export type IgnoreOfType<T extends object, U>        = { [K in IgnoreKeysOfType<T, U>]: T[K] };
 export type Nullable<T>                              = T|null|undefined;
 export type ObjectLiteral<T = Object|null|undefined> = { [key: string]: T };
 export type Omit<T, U extends keyof T>               = { [K in Exclude<keyof T, U>]: T[K] };
+export type OnlyKeysOfType<T extends object, U>      = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
+export type OnlyOfType<T extends object, U>          = Pick<T, OnlyKeysOfType<T, U>>;
 export type Overwrite<T, U>                          = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] }; 
 export type Required<T>                              = { [K in keyof T]-?: NonNullable<T[K]> };
 export type TypesOf<T>                               = { [K in keyof T]: T[K] }[keyof T];
 export type Unknown                                  = Object|null|undefined;
+
+
+
