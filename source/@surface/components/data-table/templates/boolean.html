@@ -3,6 +3,6 @@
         <input type="checkbox" checked="{{row.data.${field}}}" style="width: 100%;" />
     </template>
     <template when="false">
-        <span>{{row.data.${field}}}</span>
+        <input type="checkbox" checked="{{row.data.${field}}}" style="width: 100%;" disabled />
     </template>
 </surface-switch>

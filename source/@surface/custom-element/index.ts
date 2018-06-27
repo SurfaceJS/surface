@@ -1,4 +1,4 @@
-import { Nullable }                                          from "@surface/core";
+import { Action, Nullable }                                  from "@surface/core";
 import Enumerable                                            from "@surface/enumerable";
 import ElementBind                                           from "./internal/element-bind";
 import { context, observedAttributes, shadowRoot, template } from "./internal/symbols";
@@ -15,6 +15,8 @@ export default abstract class CustomElement extends HTMLElement
     }
 
     private readonly [shadowRoot]: ShadowRoot;
+
+    public onAfterBind?: Action;
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);

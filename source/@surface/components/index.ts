@@ -1,7 +1,7 @@
 import { dashedToCamel, toTitle } from "@surface/core/common/string";
 import CustomElement              from "@surface/custom-element";
 
-export abstract class Component extends CustomElement
+abstract class Component extends CustomElement
 {
     public get horizontalAlignment(): Component.HorizontalAlignment
     {
@@ -24,7 +24,7 @@ export abstract class Component extends CustomElement
     }
 }
 
-export namespace Component
+namespace Component
 {
     export enum HorizontalAlignment
     {

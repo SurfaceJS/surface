@@ -3,7 +3,7 @@ import IDataProvider  from "../interfaces/data-provider";
 
 export default class DataProvider<T> implements IDataProvider<T>
 {
-    private readonly source: Array<T>;
+    private readonly datasource: Array<T>;
 
     private _pageCount: number = 0;
     public get pageCount(): number
@@ -45,10 +45,6 @@ export default class DataProvider<T> implements IDataProvider<T>
         {
             throw new Error("Page size cannot be lesser than 1");
         }
-        else if (value > total)
-        {
-            throw new Error("Page size cannot be greater than total");
-        }
 
         this._pageSize = value;
 
@@ -59,18 +55,18 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public get total(): number
     {
-        return this.source.length;
+        return this.datasource.length;
     }
 
     public constructor(source: Iterable<T>, pageSize: number)
     {
-        this.source   = Array.from(source);
-        this.pageSize = pageSize;
+        this.datasource = Array.from(source);
+        this.pageSize   = pageSize;
     }
 
     public *[Symbol.iterator](): Iterator<T>
     {
-        for (const element of Enumerable.from(this.source).skip((this.page - 1) * this.pageSize).take(this.pageSize))
+        for (const element of Enumerable.from(this.datasource).skip((this.page - 1) * this.pageSize).take(this.pageSize))
         {
             yield element;
         }

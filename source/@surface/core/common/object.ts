@@ -9,8 +9,7 @@ interface IProxyObject
     undo(): void;
 }
 
-type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> & IProxyObject : T[K] } & IProxyObject;
-type ProxyType<T extends object> = ProxyObject<T>;
+export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject;
 
 export function objectFactory(keys: Array<string>, target?: object): object
 {
@@ -32,15 +31,21 @@ export function objectFactory(keys: Array<string>, target?: object): object
 
 export function proxyFactory<T extends object>(source: T): Constructor<ProxyObject<T>>
 {
-    const keys =
-    (
-        source.constructor == Object ?
-            Object.getOwnPropertyNames(source) :
-            Object.getOwnPropertyNames(source).concat(Object.getOwnPropertyNames(source.constructor.prototype))
-    )
-    .filter(x => !x.startsWith("_") && x != "constructor");
+    const keys = new Set<string>();
+    let prototype = source;
 
-    class ProxyObject<T extends object> implements IProxyObject
+    do
+    {
+        for (const key of Object.getOwnPropertyNames(prototype))
+        {
+            if (!key.startsWith("_") && key != "constructor")
+            {
+                keys.add(key);
+            }
+        }
+    } while (prototype = Object.getPrototypeOf(prototype));
+
+    class ProxyClass<T extends object> implements IProxyObject
     {
         [key: string]: Unknown;
 
@@ -63,7 +68,7 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
             for (const key of keys)
             {
                 const value = this[key];
-                if (value instanceof ProxyObject)
+                if (value instanceof ProxyClass)
                 {
                     value.save();
                 }
@@ -79,7 +84,7 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
             for (const key of keys)
             {
                 const value = this[key];
-                if (value instanceof ProxyObject)
+                if (value instanceof ProxyClass)
                 {
                     value.undo();
                 }
@@ -95,10 +100,10 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
     {
         Object.defineProperty
         (
-            ProxyObject.prototype,
+            ProxyClass.prototype,
             key,
             {
-                get: function(this: ProxyObject<object>)
+                get: function(this: ProxyClass<object>)
                 {
                     if (!hasValue(this[`_${key}`]))
                     {
@@ -116,7 +121,7 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
 
                     return this[`_${key}`];
                 },
-                set: function(this: ProxyObject<object>, value: Unknown)
+                set: function(this: ProxyClass<object>, value: Unknown)
                 {
                     this[`_${key}`] = value;
                 }
@@ -124,5 +129,5 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
         );
     }
 
-    return ProxyObject as Function as Constructor<ProxyType<T>>;
+    return ProxyClass as Function as Constructor<ProxyObject<T>>;
 }

@@ -1,27 +1,31 @@
-import { ObjectLiteral } from "@surface/core";
-import { coalesce }      from "@surface/core/common/generic";
-import { proxyFactory }  from "@surface/core/common/object";
-import Observer          from "@surface/core/observer";
-import CustomElement     from "@surface/custom-element";
-import Enumerable        from "@surface/enumerable";
-import Expression        from "@surface/expression";
-import { runAsync }      from "../../core/common/promise";
-import { element }       from "../decorators";
-import DataCell          from "./data-cell";
-import DataFooter        from "./data-footer";
-import DataHeader        from "./data-header";
-import DataRow           from "./data-row";
-import DataRowGroup      from "./data-row-group";
-import template          from "./index.html";
-import style             from "./index.scss";
-import ColumnDefinition  from "./internal/column-definition";
-import booleanTemplate   from "./templates/boolean.html";
-import numberTemplate    from "./templates/number.html";
-import stringTemplate    from "./templates/string.html";
+import { Nullable }                  from "@surface/core";
+import { coalesce }                  from "@surface/core/common/generic";
+import { proxyFactory, ProxyObject } from "@surface/core/common/object";
+import { runAsync }                  from "@surface/core/common/promise";
+import Observer                      from "@surface/core/observer";
+import CustomElement                 from "@surface/custom-element";
+import Enumerable                    from "@surface/enumerable";
+import Expression                    from "@surface/expression";
+import Component                     from "..";
+import { element }                   from "../decorators";
+import DataCell                      from "./data-cell";
+import DataFooter                    from "./data-footer";
+import DataHeader                    from "./data-header";
+import DataRow                       from "./data-row";
+import DataRowGroup                  from "./data-row-group";
+import template                      from "./index.html";
+import style                         from "./index.scss";
+import IDataProvider                 from "./interfaces/data-provider";
+import ColumnDefinition              from "./internal/column-definition";
+import DataProvider                  from "./internal/data-provider";
+import booleanTemplate               from "./templates/boolean.html";
+import numberTemplate                from "./templates/number.html";
+import stringTemplate                from "./templates/string.html";
 
 @element("surface-data-table", template, style)
-export default class DataTable extends CustomElement
+export default class DataTable extends Component
 {
+    private dataProvider: IDataProvider<object>;
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
     public get dataFooterGroups(): Enumerable<DataFooter>
@@ -39,28 +43,25 @@ export default class DataTable extends CustomElement
         return super.queryAll("surface-data-row-group");
     }
 
+    public set datasource(value: Iterable<object>)
+    {
+        this.dataProvider = new DataProvider(value, this.pageSize);
+    }
+
     private readonly _onDatasourceChange: Observer = new Observer();
     public get onDatasourceChange(): Observer
     {
         return this._onDatasourceChange;
     }
 
-    private _datasource: Iterable<ObjectLiteral> = Enumerable.empty();
-    public get datasource(): Iterable<ObjectLiteral>
+    public get pageSize(): number
     {
-        return this._datasource;
+        return Number.parseInt(super.getAttribute("page-size") || "10");
     }
 
-    public set datasource(value: Iterable<ObjectLiteral>)
+    public set pageSize(value: number)
     {
-        if (!Object.is(value, this._datasource))
-        {
-            this._datasource = this.createProxy(value);
-
-            runAsync(() => this.applyDataBind());
-
-            this.onDatasourceChange.notify(value);
-        }
+        super.setAttribute("page-size", value.toString());
     }
 
     public constructor()
@@ -76,19 +77,26 @@ export default class DataTable extends CustomElement
 
             super.removeChild(dataTemplate);
         }
+
+        const dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.endsWith("data-provider")) as Nullable<IDataProvider<object>>;
+
+        this.dataProvider = dataProvider || new DataProvider([], this.pageSize);
+
+        super.onAfterBind = () => runAsync(() => this.applyDataBind());
     }
 
     private applyDataBind(): void
     {
+        const datasource = this.createProxy(Array.from(this.dataProvider));
         if (this.columnDefinitions.any())
         {
             this.prepareHeaders();
-            this.prepareRows();
+            this.prepareRows(datasource);
             this.prepareFooters();
         }
     }
 
-    private createProxy(datasource: Iterable<ObjectLiteral>): Iterable<ObjectLiteral>
+    private createProxy(datasource: Iterable<object>): Iterable<ProxyObject<object>>
     {
         const sequence = Enumerable.from(datasource);
 
@@ -173,7 +181,7 @@ export default class DataTable extends CustomElement
         }
     }
 
-    private prepareRows(): void
+    private prepareRows(datasource: Iterable<ProxyObject<object>>): void
     {
         const rowGroup = new DataRowGroup();
 
@@ -189,7 +197,7 @@ export default class DataTable extends CustomElement
             super.appendChild(rowGroup);
         }
 
-        for (const item of this.datasource)
+        for (const item of datasource)
         {
             const row = new DataRow(item);
             rowGroup.appendChild(row);
@@ -232,7 +240,8 @@ export default class DataTable extends CustomElement
                         `
                             <surface-switch value="{{row.editMode}}">
                                 <template when="true">
-                                    <input type='button' value='cancel' horizontal-align="center" on-click='{{row.edit(false)}}' />
+                                    <input type='button' value='save'   horizontal-align="center" on-click='{{row.save()}}' />
+                                    <input type='button' value='cancel' horizontal-align="center" on-click='{{row.cancel()}}' />
                                 </template>
                                 <template when="false">
                                     <surface-stack-panel distribuition="center" orientation="horizontal">

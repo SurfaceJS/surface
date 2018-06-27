@@ -57,32 +57,34 @@ export function element(name: string, template?: string, style?: string, options
                 }
 
                 Object.defineProperty(target, symbols.template, { get: () => templateElement } );
+
+                const proxy = function(this: CustomElement, ...args: Array<Unknown>)
+                {
+                    const instance = Reflect.construct(target, args, new.target) as CustomElement;
+
+                    ElementBind.for({ host: instance }, instance[symbols.shadowRoot]);
+
+                    if (instance.onAfterBind)
+                    {
+                        instance.onAfterBind();
+                    }
+
+                    return instance;
+                };
+
+                Object.setPrototypeOf(proxy, Object.getPrototypeOf(target));
+                Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(target));
+
+                proxy.prototype.constructor = proxy;
+
+                window.customElements.define(name, proxy, options);
+
+                return proxy as Function as T;
             }
 
-            const proxy = function(this: HTMLElement, ...args: Array<Unknown>)
-            {
-                const instance = Reflect.construct(target, args, new.target) as HTMLElement;
+            window.customElements.define(name, target, options);
 
-                if (instance instanceof CustomElement)
-                {
-                    ElementBind.for({ host: instance }, instance[symbols.shadowRoot]);
-                }
-                else
-                {
-                    ElementBind.for({ host: instance }, instance);
-                }
-
-                return instance;
-            };
-
-            Object.setPrototypeOf(proxy, Object.getPrototypeOf(target));
-            Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(target));
-
-            proxy.prototype.constructor = proxy;
-
-            window.customElements.define(name, proxy, options);
-
-            return proxy as Function as T;
+            return target;
         }
         else
         {
