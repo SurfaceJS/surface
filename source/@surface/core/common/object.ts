@@ -33,7 +33,7 @@ export function clone<T extends object>(source: T): T
     }
     else
     {
-        const result = Object.create(source.constructor.prototype);
+        const result = Object.create(Object.getPrototypeOf(source));
         for (const key of Object.getOwnPropertyNames(source))
         {
             if (source[key] instanceof Object)
@@ -54,28 +54,28 @@ export function clone<T extends object>(source: T): T
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
 /**
  * Deeply merges two or more objects, and optionally concatenate array values.
  * @param target        Object to receive merge.
  * @param source        Object to merge to the target.
  * @param combineArrays Specify to combine or not arrays.
  */
-export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
 /**
  * Deeply merges two objects.
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource): TTarget & TSource;
 /**
  * Deeply merges two objects, and optionally concatenate array values.
  * @param target Object to receive merge.
  * @param source Object to merge to the target.
  * @param combineArrays
  */
-export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
-export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
     combineArrays = !!combineArrays;
 
@@ -152,8 +152,8 @@ export function proxyFactory<T extends object>(signature: T): Constructor<ProxyO
     {
         [key: string]: Unknown;
 
-        private readonly _source: object;
-        public get source(): object
+        private readonly _source: T;
+        public get source(): T
         {
             return this._source;
         }
@@ -220,7 +220,7 @@ export function proxyFactory<T extends object>(signature: T): Constructor<ProxyO
                         const value = this.source[key];
                         if (value instanceof Object && valueProxy)
                         {
-                            this[`_${key}`] = new valueProxy(value) as object as Unknown;
+                            this[`_${key}`] = new valueProxy(value) as Unknown;
                         }
                         else
                         {
