@@ -12,6 +12,70 @@ interface IProxyObject
 
 export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject;
 
+/**
+ * Deeply merges two or more objects.
+ * @param target Object to receive merge.
+ * @param source Objects to merge to the target.
+ */
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+/**
+ * Deeply merges two or more objects, and optionally concatenate array values.
+ * @param target        Object to receive merge.
+ * @param source        Object to merge to the target.
+ * @param combineArrays Specify to combine or not arrays.
+ */
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+/**
+ * Deeply merges two objects.
+ * @param target Object to receive merge.
+ * @param source Objects to merge to the target.
+ */
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource): TTarget & TSource;
+/**
+ * Deeply merges two objects, and optionally concatenate array values.
+ * @param target Object to receive merge.
+ * @param source Object to merge to the target.
+ * @param combineArrays
+ */
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget = object, TSource = object>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+{
+    combineArrays = !!combineArrays;
+
+    if (!Array.isArray(source))
+    {
+        source = [source];
+    }
+
+    for (const current of source)
+    {
+        for (const key of Object.getOwnPropertyNames(current))
+        {
+            if (target[key] instanceof Object)
+            {
+                if (Array.isArray(target[key]) && Array.isArray(current[key]) && combineArrays)
+                {
+                    target[key] = target[key].concat(current[key]);
+                }
+                else if (current[key] instanceof Object)
+                {
+                    target[key] = merge(target[key], current[key], combineArrays);
+                }
+                else if (current[key] != undefined)
+                {
+                    target[key] = current[key];
+                }
+            }
+            else if (current[key] != undefined)
+            {
+                target[key] = current[key];
+            }
+        }
+    }
+
+    return target as TTarget & TSource;
+}
+
 export function objectFactory(keys: Array<[string, Unknown]>, target?: object): object
 {
     target = target || { };

@@ -1,4 +1,5 @@
-import { merge, resolveFile }     from "@surface/common";
+import { resolveFile }            from "@surface/common";
+import { merge }                  from "@surface/core/common/object";
 import HtmlTemplatePlugin         from "@surface/html-template-plugin";
 import SimblingResolvePlugin      from "@surface/simbling-resolve-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
