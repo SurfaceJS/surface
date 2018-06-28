@@ -1,11 +1,13 @@
 export default interface IDataProvider<T> extends Iterable<T>
 {
-    page:           number;
-    pageCount:      number;
-    pageSize:       number;
-    total:          number;
-    firstPage():    void;
-    nextPage():     void;
-    lastPage():     void;
-    previousPage(): void;
+    page:            number;
+    pageCount:       number;
+    pageSize:        number;
+    total:           number;
+    add(data: T):    void;
+    remove(data: T): void;
+    firstPage():     void;
+    nextPage():      void;
+    lastPage():      void;
+    previousPage():  void;
 }

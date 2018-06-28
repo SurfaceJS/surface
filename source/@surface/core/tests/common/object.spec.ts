@@ -8,10 +8,10 @@ export default class CommonObjectSpec
     @test @shouldPass
     public objectFactory(): void
     {
-        const actual   = objectFactory(["foo", "bar", "baz.one", "baz.two", "baz.two.alpha", "baz.two.beta"]);
+        const actual   = objectFactory([["foo", 0], ["bar", undefined], ["baz.one", undefined], ["baz.two", undefined], ["baz.two.alpha", undefined], ["baz.two.beta", 1]]);
         const expected =
         {
-            foo: undefined,
+            foo: 0,
             bar: undefined,
             baz:
             {
@@ -19,7 +19,7 @@ export default class CommonObjectSpec
                 two:
                 {
                     alpha: undefined,
-                    beta:  undefined
+                    beta:  1
                 },
             }
         };

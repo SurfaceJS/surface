@@ -34,7 +34,7 @@ export default class DataRow extends CustomElement
     public constructor(data?: ProxyObject<object>)
     {
         super();
-        this._data = data || { save: () => undefined, undo: () => undefined };
+        this._data = data || { source: { }, save: () => undefined, undo: () => undefined };
     }
 
     public edit(): void

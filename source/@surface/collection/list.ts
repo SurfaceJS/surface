@@ -16,13 +16,9 @@ export default class List<TSource> extends Enumerable<TSource>
 
     public constructor();
     /**
-     * @param elements Array<TSource> used to create the list.
-     */
-    public constructor(elements: Array<TSource>);
-    /**
      * @param elements Iterable<TSource> used to create the list.
      */
-    public constructor(elements: Enumerable<TSource>);
+    public constructor(elements: Iterable<TSource>);
     public constructor(elements?: Iterable<TSource>)
     {
         super();

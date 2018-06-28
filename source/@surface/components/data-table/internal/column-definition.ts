@@ -1,5 +1,7 @@
 import { Nullable } from "@surface/core";
 
+type FieldType = "string"|"number"|"boolean"|"object";
+
 export default class ColumnDefinition
 {
     private readonly element: Element;
@@ -42,6 +44,16 @@ export default class ColumnDefinition
     public set field(value: string)
     {
         this.element.setAttribute("field", value);
+    }
+
+    public get fieldType(): FieldType
+    {
+        return (this.element.getAttribute("field-type") || "string") as FieldType;
+    }
+
+    public set fieldType(value: FieldType)
+    {
+        this.element.setAttribute("field-type", value);
     }
 
     public get filterable(): boolean

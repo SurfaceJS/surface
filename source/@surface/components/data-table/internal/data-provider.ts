@@ -1,9 +1,9 @@
-import { Enumerable } from "@surface/enumerable";
-import IDataProvider  from "../interfaces/data-provider";
+import List          from "@surface/collection/list";
+import IDataProvider from "../interfaces/data-provider";
 
 export default class DataProvider<T> implements IDataProvider<T>
 {
-    private readonly datasource: Array<T>;
+    private readonly datasource: List<T>;
 
     private _pageCount: number = 0;
     public get pageCount(): number
@@ -60,16 +60,26 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public constructor(source: Iterable<T>, pageSize: number)
     {
-        this.datasource = Array.from(source);
+        this.datasource = new List(source);
         this.pageSize   = pageSize;
     }
 
     public *[Symbol.iterator](): Iterator<T>
     {
-        for (const element of Enumerable.from(this.datasource).skip((this.page - 1) * this.pageSize).take(this.pageSize))
+        for (const element of this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize))
         {
             yield element;
         }
+    }
+
+    public add(data: T): void
+    {
+        this.datasource.add(data);
+    }
+
+    public remove(data: T): void
+    {
+        this.datasource.remove(data);
     }
 
     public firstPage(): void

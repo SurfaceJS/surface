@@ -5,25 +5,27 @@ const proxy = Symbol("proxy-factory:instance");
 
 interface IProxyObject
 {
+    source: object;
     save(): void;
     undo(): void;
 }
 
 export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject;
 
-export function objectFactory(keys: Array<string>, target?: object): object
+export function objectFactory(keys: Array<[string, Unknown]>, target?: object): object
 {
     target = target || { };
-    for (const key of keys)
+    for (const entries of keys)
     {
+        const [key, value] = entries;
         if (key.includes("."))
         {
             const [name, ...rest] = key.split(".");
-            target[name] = objectFactory([rest.join(".")], target[name]);
+            target[name] = objectFactory([[rest.join("."), value]], target[name]);
         }
         else
         {
-            target[key] = undefined;
+            target[key] = value;
         }
     }
     return target;
@@ -43,24 +45,29 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
                 keys.add(key);
             }
         }
-    } while (prototype = Object.getPrototypeOf(prototype));
+    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 
     class ProxyClass<T extends object> implements IProxyObject
     {
         [key: string]: Unknown;
 
+        private readonly _source: object;
+        public get source(): object
+        {
+            return this._source;
+        }
+
         public readonly [proxy]: boolean;
 
-        public readonly source: T;
         public constructor(source: T)
         {
             this[proxy] = true;
-            this.source = source;
+            this._source = source;
         }
 
         public static [Symbol.hasInstance](instance: object): boolean
         {
-            return hasValue(instance[proxy]);
+            return instance && !!instance[proxy];
         }
 
         public save(): void
