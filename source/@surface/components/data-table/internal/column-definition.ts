@@ -1,6 +1,6 @@
 import { Nullable } from "@surface/core";
 
-type FieldType = "string"|"number"|"boolean"|"object";
+type FieldType = "string"|"number"|"boolean";
 
 export default class ColumnDefinition
 {
@@ -84,6 +84,16 @@ export default class ColumnDefinition
     public set header(value: string)
     {
         this.element.setAttribute("header", value);
+    }
+
+    public get required(): boolean
+    {
+        return this.element.getAttribute("required") == "true";
+    }
+
+    public set required(value: boolean)
+    {
+        this.element.setAttribute("required", value.toString());
     }
 
     public get style(): string

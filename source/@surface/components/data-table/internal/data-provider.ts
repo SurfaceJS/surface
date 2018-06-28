@@ -39,8 +39,6 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public set pageSize(value: number)
     {
-        const total = this.total;
-
         if (value <= 0)
         {
             throw new Error("Page size cannot be lesser than 1");
@@ -48,9 +46,7 @@ export default class DataProvider<T> implements IDataProvider<T>
 
         this._pageSize = value;
 
-        const pageCount = total / value;
-
-        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
+        this.calculatePageCount();
     }
 
     public get total(): number
@@ -61,7 +57,17 @@ export default class DataProvider<T> implements IDataProvider<T>
     public constructor(source: Iterable<T>, pageSize: number)
     {
         this.datasource = new List(source);
-        this.pageSize   = pageSize;
+        this._pageSize  = pageSize;
+        this.calculatePageCount();
+    }
+
+    private calculatePageCount(): void
+    {
+        const total = this.total;
+
+        const pageCount = total / this.pageSize;
+
+        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
     }
 
     public *[Symbol.iterator](): Iterator<T>
@@ -75,11 +81,13 @@ export default class DataProvider<T> implements IDataProvider<T>
     public add(data: T): void
     {
         this.datasource.add(data);
+        this.calculatePageCount();
     }
 
     public remove(data: T): void
     {
         this.datasource.remove(data);
+        this.calculatePageCount();
     }
 
     public firstPage(): void

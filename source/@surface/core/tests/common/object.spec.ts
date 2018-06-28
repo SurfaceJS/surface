@@ -69,8 +69,11 @@ export default class CommonObjectSpec
     @test @shouldPass
     public proxyFactory(): void
     {
+        const signature = { foo: 1, bar: "", baz: { foobar: false } };
+
+        const proxy = proxyFactory(signature);
+
         const data      = { foo: 1, bar: "bar", baz: { foobar: false } };
-        const proxy     = proxyFactory(data);
         const proxyData = new proxy(data);
 
         const descriptors = Object.getOwnPropertyDescriptors(proxy.prototype);
@@ -111,12 +114,15 @@ export default class CommonObjectSpec
 
         proxyData.save();
 
-        proxyData.foo = 666;
-        proxyData.bar = "rab";
-        proxyData.baz.foobar = true;
-
         chai.expect(proxyData.foo,        "proxyData.foo save").to.equal(666);
         chai.expect(proxyData.bar,        "proxyData.bar save").to.equal("rab");
+        chai.expect(proxyData.baz.foobar, "proxyData.baz.foobar save").to.equal(true);
+
+        const proxyData1 = new proxy(merge({ }, data));
+
+        proxyData1.baz.foobar = false;
+        proxyData1.save();
+        proxyData.undo();
         chai.expect(proxyData.baz.foobar, "proxyData.baz.foobar save").to.equal(true);
     }
 }

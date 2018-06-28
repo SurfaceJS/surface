@@ -12,6 +12,43 @@ interface IProxyObject
 
 export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject;
 
+export function clone<T extends object>(source: T): T
+{
+    if (Array.isArray(source))
+    {
+        const result = [];
+        for (const value of source)
+        {
+            if (value instanceof Object)
+            {
+                result.push(clone(value));
+            }
+            else
+            {
+                result.push(value);
+            }
+        }
+
+        return result as T;
+    }
+    else
+    {
+        const result = Object.create(source.constructor.prototype);
+        for (const key of Object.getOwnPropertyNames(source))
+        {
+            if (source[key] instanceof Object)
+            {
+                result[key] = clone(source[key]);
+            }
+            else
+            {
+                result[key] = source[key];
+            }
+        }
+        return result as T;
+    }
+}
+
 /**
  * Deeply merges two or more objects.
  * @param target Object to receive merge.
@@ -95,10 +132,10 @@ export function objectFactory(keys: Array<[string, Unknown]>, target?: object): 
     return target;
 }
 
-export function proxyFactory<T extends object>(source: T): Constructor<ProxyObject<T>>
+export function proxyFactory<T extends object>(signature: T): Constructor<ProxyObject<T>>
 {
     const keys = new Set<string>();
-    let prototype = source;
+    let prototype = signature;
 
     do
     {
@@ -169,6 +206,8 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
 
     for (const key of keys)
     {
+        const valueProxy = signature[key] instanceof Object ? proxyFactory(signature[key]) : undefined;
+
         Object.defineProperty
         (
             ProxyClass.prototype,
@@ -179,10 +218,9 @@ export function proxyFactory<T extends object>(source: T): Constructor<ProxyObje
                     if (!hasValue(this[`_${key}`]))
                     {
                         const value = this.source[key];
-                        if (hasValue(value) && typeof value == "object")
+                        if (value instanceof Object && valueProxy)
                         {
-                            const proxy = proxyFactory(value);
-                            this[`_${key}`] = new proxy(value) as object as Unknown;
+                            this[`_${key}`] = new valueProxy(value) as object as Unknown;
                         }
                         else
                         {

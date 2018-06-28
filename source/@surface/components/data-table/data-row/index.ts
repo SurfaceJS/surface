@@ -1,3 +1,4 @@
+import { coalesce }                       from "@surface/core/common/generic";
 import { ProxyObject as __ProxyObject__ } from "@surface/core/common/object";
 import CustomElement                      from "@surface/custom-element";
 import { element }                        from "../../decorators";
@@ -31,26 +32,32 @@ export default class DataRow extends CustomElement
         this._editMode = value;
     }
 
-    public constructor(data?: ProxyObject<object>)
+    private _isNew: boolean;
+    public get isNew(): boolean
     {
-        super();
-        this._data = data || { source: { }, save: () => undefined, undo: () => undefined };
+        return this._isNew;
     }
 
-    public edit(): void
+    public set isNew(value: boolean)
+    {
+        this._isNew = value;
+    }
+
+    public constructor(isNew?: boolean, data?: ProxyObject<object>)
+    {
+        super();
+        this._isNew    = coalesce(isNew, true);
+        this._editMode = this._isNew;
+        this._data     = data || { source: { }, save: () => undefined, undo: () => undefined };
+    }
+
+    public enterEdit(): void
     {
         this.editMode = true;
     }
 
-    public cancel(): void
+    public leaveEdit(): void
     {
-        this.data.undo();
-        this.editMode = false;
-    }
-
-    public save(): void
-    {
-        this.data.save();
         this.editMode = false;
     }
 }

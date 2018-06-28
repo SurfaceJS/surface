@@ -1,35 +1,45 @@
-import { Constructor, Nullable, Unknown }                    from "@surface/core";
-import { coalesce }                                 from "@surface/core/common/generic";
-import { objectFactory, proxyFactory, ProxyObject } from "@surface/core/common/object";
-import { runAsync }                                 from "@surface/core/common/promise";
-import Observer                                     from "@surface/core/observer";
-import CustomElement                                from "@surface/custom-element";
-import Enumerable                                   from "@surface/enumerable";
-import Expression                                   from "@surface/expression";
-import Component                                    from "..";
-import { element }                                  from "../decorators";
-import DataCell                                     from "./data-cell";
-import DataFooter                                   from "./data-footer";
-import DataHeader                                   from "./data-header";
-import DataRow                                      from "./data-row";
-import DataRowGroup                                 from "./data-row-group";
-import template                                     from "./index.html";
-import style                                        from "./index.scss";
-import IDataProvider                                from "./interfaces/data-provider";
-import ColumnDefinition                             from "./internal/column-definition";
-import DataProvider                                 from "./internal/data-provider";
-import booleanTemplate                              from "./templates/boolean.html";
-import numberTemplate                               from "./templates/number.html";
-import stringTemplate                               from "./templates/string.html";
+import { Constructor, Nullable, Unknown }                  from "@surface/core";
+import { coalesce }                                        from "@surface/core/common/generic";
+import { clone, objectFactory, proxyFactory, ProxyObject } from "@surface/core/common/object";
+import { runAsync }                                        from "@surface/core/common/promise";
+import Observer                                            from "@surface/core/observer";
+import CustomElement                                       from "@surface/custom-element";
+import Enumerable                                          from "@surface/enumerable";
+import Expression                                          from "@surface/expression";
+import Component                                           from "..";
+import { element }                                         from "../decorators";
+import DataCell                                            from "./data-cell";
+import DataFooter                                          from "./data-footer";
+import DataHeader                                          from "./data-header";
+import DataRow                                             from "./data-row";
+import DataRowGroup                                        from "./data-row-group";
+import template                                            from "./index.html";
+import style                                               from "./index.scss";
+import IDataProvider                                       from "./interfaces/data-provider";
+import ColumnDefinition                                    from "./internal/column-definition";
+import DataProvider                                        from "./internal/data-provider";
+import booleanTemplate                                     from "./templates/boolean.html";
+import numberTemplate                                      from "./templates/number.html";
+import stringTemplate                                      from "./templates/string.html";
 
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
-    private dataDefinition!:   object;
     private rowGroup!:         DataRowGroup;
     private proxyConstructor!: Constructor<ProxyObject<object>>;
+
+    private _dataDefinition: object = { };
+    public get dataDefinition(): object
+    {
+        return this._dataDefinition;
+    }
+
+    public set dataDefinition(value: object)
+    {
+        this._dataDefinition = value;
+    }
 
     private dataProvider: IDataProvider<object>;
 
@@ -87,42 +97,49 @@ export default class DataTable extends Component
         const dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.endsWith("data-provider")) as Nullable<IDataProvider<object>>;
 
         this.dataProvider = dataProvider || new DataProvider([], this.pageSize);
+
+        this.prepareHeaders();
+        this.prepareFooters();
     }
 
     private dataBind(): void
     {
         if (this.columnDefinitions.any())
         {
-            this.createDefinitions();
+            this.checkDefinitions();
 
             const datasource = Enumerable.from(this.dataProvider).select(x => new this.proxyConstructor(x));
-
-            this.prepareHeaders();
             this.prepareRows(datasource);
-            this.prepareFooters();
         }
     }
 
-    private createDefinitions(): void
+    private checkDefinitions(): void
     {
-        this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, ""] as [string, Unknown]).toArray());
+        if (!this.proxyConstructor)
+        {
+            const primitives =
+            {
+                "string":  "",
+                "boolean": false,
+                "number":  0,
+            };
 
-        this.proxyConstructor = proxyFactory(this.dataDefinition);
+            this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, Unknown]).toArray());
+
+            this.proxyConstructor = proxyFactory(this.dataDefinition);
+        }
     }
 
     private createData(): ProxyObject<object>
     {
-        if (!this.proxyConstructor)
-        {
-            this.createDefinitions();
-        }
+        this.checkDefinitions();
 
-        return new this.proxyConstructor(Object.create(this.dataDefinition));
+        return new this.proxyConstructor(clone(this.dataDefinition));
     }
 
-    private createRow(data: ProxyObject<object>): DataRow
+    private createRow(data: ProxyObject<object>, isNew: boolean): DataRow
     {
-        const row = new DataRow(data);
+        const row = new DataRow(isNew, data);
         let index = 0;
         for (const columnDefinition of this.columnDefinitions)
         {
@@ -149,7 +166,7 @@ export default class DataTable extends Component
                 {
                     if (columnDefinition.editButtom)
                     {
-                        innerHTML = "<input type='button' value='edit' on-click='{{row.edit(true)}}' />";
+                        innerHTML = "<input type='button' value='edit' on-click='{{row.enterEdit()}}' />";
                     }
 
                     if (columnDefinition.deleteButtom)
@@ -161,8 +178,8 @@ export default class DataTable extends Component
                     `
                         <surface-switch value="{{row.editMode}}">
                             <template when="true">
-                                <input type='button' value='save'   horizontal-align="center" on-click='{{row.save()}}' />
-                                <input type='button' value='cancel' horizontal-align="center" on-click='{{row.cancel()}}' />
+                                <input type='button' value='save'   horizontal-align="center" on-click='{{dataTable.saveRow(row)}}' />
+                                <input type='button' value='cancel' horizontal-align="center" on-click='{{dataTable.undoRow(row)}}' />
                             </template>
                             <template when="false">
                                 <surface-stack-panel distribuition="center" orientation="horizontal">
@@ -174,7 +191,7 @@ export default class DataTable extends Component
                 }
                 else
                 {
-                    switch (typeof value)
+                    switch (columnDefinition.fieldType)
                     {
                         case "boolean":
                             innerHTML = (booleanTemplate as string).replace(/\$\{(field)\}/g, field);
@@ -290,7 +307,7 @@ export default class DataTable extends Component
 
         for (const item of datasource)
         {
-            const row = this.createRow(item);
+            const row = this.createRow(item, false);
             rowGroup.appendChild(row);
         }
     }
@@ -298,7 +315,7 @@ export default class DataTable extends Component
     public addNew(): void
     {
         const data = this.createData();
-        const row  = this.createRow(data);
+        const row  = this.createRow(data, true);
         this.rowGroup.appendChild(row);
     }
 
@@ -312,5 +329,41 @@ export default class DataTable extends Component
     {
         this.dataProvider.remove(row.data.source);
         this.rowGroup.removeChild(row);
+        if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
+        {
+            this.rowGroup.innerHTML = "";
+            this.dataBind();
+        }
+    }
+
+    public saveRow(row: DataRow): void
+    {
+        row.data.save();
+        row.isNew    = false;
+        row.editMode = false;
+
+        if (row.isNew)
+        {
+            this.dataProvider.add(row.data.source);
+            if (this.rowGroup.childNodes.length > this.pageSize)
+            {
+                this.rowGroup.innerHTML = "";
+                this.dataBind();
+            }
+        }
+    }
+
+    public undoRow(row: DataRow): void
+    {
+        if (row.isNew)
+        {
+            this.deleteRow(row);
+        }
+        else
+        {
+            row.data.undo();
+        }
+
+        row.editMode = false;
     }
 }
