@@ -1,4 +1,4 @@
-$default-size:    30px;
+$default-size:    28px;
 $only-icons-size: 60px;
 
 :host > #root
@@ -10,6 +10,7 @@ $only-icons-size: 60px;
 
     height:   $default-size;
     position: relative;
+    width:    100%;
 
     color:      var(--color);
     background: var(--background-color);
@@ -23,7 +24,7 @@ $only-icons-size: 60px;
         {
             $padding: 10px;
 
-            padding-left:  $padding;
+            //padding-left:  $padding;
             padding-right: $padding;            
             text-overflow: ellipsis;
             user-select:   none;
@@ -101,7 +102,7 @@ $only-icons-size: 60px;
         {
             > #icon-holder
             {
-                background-color: var(--background-color-hover);
+                //background-color: var(--background-color-hover);
                 display:          flex;
                 height:           $default-size;
                 width:            $default-size;

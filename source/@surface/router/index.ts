@@ -1,7 +1,6 @@
 import Dictionary            from "@surface/collection/dictionary";
 import List                  from "@surface/collection/list";
 import { Action1, Nullable } from "@surface/core";
-import Enumerable            from "@surface/enumerable/index";
 import IRouteData            from "./interfaces/route-data";
 import Route                 from "./internal/route";
 
@@ -26,7 +25,7 @@ export default class Router
 
     public match(path: string): Nullable<IRouteData>
     {
-        let routes = this.routes as Enumerable<Route>;
+        let routes = this.routes.cast();
 
         if (path == "/")
         {

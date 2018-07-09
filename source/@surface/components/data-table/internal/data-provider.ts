@@ -84,7 +84,7 @@ export default class DataProvider<T> implements IDataProvider<T>
         this.calculatePageCount();
     }
 
-    public remove(data: T): void
+    public delete(data: T): void
     {
         this.datasource.remove(data);
         this.calculatePageCount();

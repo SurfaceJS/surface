@@ -1,6 +1,6 @@
 import { Nullable } from "@surface/core";
 
-type FieldType = "string"|"number"|"boolean";
+type FieldType = "string"|"number"|"boolean"|"array";
 
 export default class ColumnDefinition
 {

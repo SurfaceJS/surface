@@ -18,6 +18,7 @@ import style                                               from "./index.scss";
 import IDataProvider                                       from "./interfaces/data-provider";
 import ColumnDefinition                                    from "./internal/column-definition";
 import DataProvider                                        from "./internal/data-provider";
+import arrayTemplate                                       from "./templates/array.html";
 import booleanTemplate                                     from "./templates/boolean.html";
 import numberTemplate                                      from "./templates/number.html";
 import stringTemplate                                      from "./templates/string.html";
@@ -119,9 +120,10 @@ export default class DataTable extends Component
         {
             const primitives =
             {
-                "string":  "",
+                "array":   [],
                 "boolean": false,
                 "number":  0,
+                "string":  "",
             };
 
             this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, Unknown]).toArray());
@@ -193,6 +195,9 @@ export default class DataTable extends Component
                 {
                     switch (columnDefinition.fieldType)
                     {
+                        case "array":
+                            innerHTML = (arrayTemplate as string).replace(/\$\{(field)\}/g, field);
+                            break;
                         case "boolean":
                             innerHTML = (booleanTemplate as string).replace(/\$\{(field)\}/g, field);
                             break;
@@ -327,7 +332,7 @@ export default class DataTable extends Component
 
     public deleteRow(row: DataRow): void
     {
-        this.dataProvider.remove(row.data.source);
+        this.dataProvider.delete(row.data.source);
         this.rowGroup.removeChild(row);
         if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
         {

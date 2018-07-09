@@ -107,8 +107,9 @@ export default class Tasks
 
                 if (!fs.existsSync(symlink))
                 {
-                    console.log(`Linking ${$package.name} dependence[${key}]`);
-                    fs.symlinkSync(original, symlink);
+                    //console.log(`Linking ${$package.name} dependence[${key}]`);
+                    //fs.symlinkSync(original, symlink);
+                    common.execute(`Linking ${$package.name} dependence[${key}]`, `mklink /J ${symlink} ${original}`);
                 }
             }
         }
