@@ -155,9 +155,7 @@ class CodeSplitter
 
     private execute()
     {
-        let output = this.output;
-
-        output = path.resolve(this.context, output);
+        const output = path.resolve(this.context, this.output);
 
         let content = this.writeHeader() + "\n";
 

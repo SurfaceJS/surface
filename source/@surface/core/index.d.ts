@@ -26,6 +26,3 @@ export type Overwrite<T, U>                          = { [K in Exclude<keyof T, 
 export type Required<T>                              = { [K in keyof T]-?: NonNullable<T[K]> };
 export type TypesOf<T>                               = { [K in keyof T]: T[K] }[keyof T];
 export type Unknown                                  = Object|null|undefined;
-
-
-

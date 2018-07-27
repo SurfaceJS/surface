@@ -2,20 +2,20 @@ import { Action1, Unknown } from ".";
 
 export default class Observer
 {
-    private observers: Array<Action1<Unknown>> = [];
+    private listeners: Array<Action1<Unknown>> = [];
+
+    public notify(value?: Unknown): void
+    {
+        this.listeners.forEach(listener => listener(value));
+    }
 
     public subscribe(action: Action1<Unknown>): void
     {
-        this.observers.push(action);
+        this.listeners.push(action);
     }
 
     public unsubscribe(action: Action1<Unknown>): void
     {
-        this.observers = this.observers.filter(x => x != action);
-    }
-
-    public notify(value?: Unknown): void
-    {
-        this.observers.forEach(observer => observer(value));
+        this.listeners = this.listeners.filter(x => x != action);
     }
 }
