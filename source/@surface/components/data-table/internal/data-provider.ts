@@ -70,21 +70,13 @@ export default class DataProvider<T> implements IDataProvider<T>
         this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
     }
 
-    public *[Symbol.iterator](): Iterator<T>
-    {
-        for (const element of this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize))
-        {
-            yield element;
-        }
-    }
-
-    public add(data: T): void
+    public async create(data: T): Promise<void>
     {
         this.datasource.add(data);
         this.calculatePageCount();
     }
 
-    public delete(data: T): void
+    public async delete(data: T): Promise<void>
     {
         this.datasource.remove(data);
         this.calculatePageCount();
@@ -108,11 +100,26 @@ export default class DataProvider<T> implements IDataProvider<T>
         this._page = this.pageCount;
     }
 
+    public order(field: string, direction: "asc" | "desc"): void
+    {
+        throw new Error("Method not implemented.");
+    }
+
     public previousPage(): void
     {
         if (this._page - 1 > 1)
         {
             this._page--;
         }
+    }
+
+    public async read(): Promise<Iterable<T>>
+    {
+        return await Promise.resolve(this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
+    }
+
+    public async update(data: T): Promise<void>
+    {
+        throw new Error("Method not implemented.");
     }
 }

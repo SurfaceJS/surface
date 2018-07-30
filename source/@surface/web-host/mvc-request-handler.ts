@@ -28,7 +28,7 @@ export default class MvcRequestHandler extends RequestHandler
         let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
             || Type.from(esmodule).extends(Controller) && esmodule
             || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
-                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.from(esmodule[x]).extends(Controller))
+                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esmodule[x]).extends(Controller))
                 .select(x => esmodule[x])
                 .firstOrDefault();
 
@@ -40,7 +40,27 @@ export default class MvcRequestHandler extends RequestHandler
         throw new TypeError("Can't find an valid subclass of Controller.");
     }
 
-    public handle(httpContext: HttpContext): boolean
+    private async parseBody(httpContext: HttpContext): Promise<Object>
+    {
+        let body = "";
+        httpContext.request.on
+        (
+            "data",
+            chunk =>
+            {
+                body += chunk.toString();
+
+                if (body.length > 1e6)
+                {
+                    httpContext.request.connection.destroy();
+                }
+            }
+        );
+
+        return await new Promise(resolve => httpContext.request.on("end", () => resolve(JSON.parse(body))));
+    }
+
+    public async handle(httpContext: HttpContext): Promise<boolean>
     {
         if (httpContext.request.url)
         {
@@ -74,14 +94,16 @@ export default class MvcRequestHandler extends RequestHandler
                         {
                             let actionResult: ActionResult;
 
+                            const postData = await this.parseBody(httpContext);
+
+                            const inbound = { ...routeData.search, ...postData };
+
                             if (id)
                             {
-                                actionResult = actionMethod.invoke.call(targetController, { id });
+                                inbound["id"] = id;
                             }
-                            else
-                            {
-                                actionResult = actionMethod.invoke.call(targetController, routeData.search);
-                            }
+
+                            actionResult = actionMethod.invoke.call(targetController, inbound);
 
                             actionResult.executeResult();
 

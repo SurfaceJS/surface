@@ -32,7 +32,7 @@ export default class ElementBind
     {
         for (const attribute of Array.from(element.attributes))
         {
-            if (attribute.value.indexOf("{{") > -1 || attribute.value.indexOf("[[") > -1)
+            if (attribute.value.includes("{{") || attribute.value.includes("[["))
             {
                 const interpolation = !(attribute.value.startsWith("{{") && attribute.value.endsWith("}}"))
                     && !(attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));

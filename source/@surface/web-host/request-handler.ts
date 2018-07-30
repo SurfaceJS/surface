@@ -20,5 +20,5 @@ export default abstract class RequestHandler
         this.path = path || internal.path;
     }
 
-    public abstract handle(httpContext: HttpContext): boolean;
+    public abstract handle(httpContext: HttpContext): Promise<boolean>;
 }

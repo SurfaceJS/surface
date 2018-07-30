@@ -18,7 +18,7 @@ export default class FallbackRequestHandler extends RequestHandler
         this._fallbackRoute = fallbackRoute;
     }
 
-    public handle(httpContext: HttpContext): boolean
+    public async handle(httpContext: HttpContext): Promise<boolean>
     {
         let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this.fallbackRoute.replace(/^\/|\/$/g, ""));
 

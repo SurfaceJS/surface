@@ -28,6 +28,8 @@ export default class DataTable extends Component
 {
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
+    private initialized = false;
+
     private rowGroup!:         DataRowGroup;
     private proxyConstructor!: Constructor<ProxyObject<object>>;
 
@@ -42,7 +44,7 @@ export default class DataTable extends Component
         this._dataDefinition = value;
     }
 
-    private dataProvider: IDataProvider<object>;
+    private dataProvider!: IDataProvider<object>;
 
     public get dataFooterGroups(): Enumerable<DataFooter>
     {
@@ -95,21 +97,28 @@ export default class DataTable extends Component
             super.removeChild(dataTemplate);
         }
 
-        const dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.endsWith("data-provider")) as Nullable<IDataProvider<object>>;
+        const dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider<object>>;
 
-        this.dataProvider = dataProvider || new DataProvider([], this.pageSize);
+        if (dataProvider)
+        {
+            this.dataProvider = dataProvider;
+        }
+        else
+        {
+            this.dataProvider = new DataProvider([], this.pageSize);
+        }
 
         this.prepareHeaders();
         this.prepareFooters();
     }
 
-    private dataBind(): void
+    private async dataBind(): Promise<void>
     {
         if (this.columnDefinitions.any())
         {
             this.checkDefinitions();
 
-            const datasource = Enumerable.from(this.dataProvider).select(x => new this.proxyConstructor(x));
+            const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
             this.prepareRows(datasource);
         }
     }
@@ -278,10 +287,16 @@ export default class DataTable extends Component
             const row = new DataRow();
             headerGroup.appendChild(row);
 
+            const order = { true: "asc", false: "desc" };
+
             for (const columnDefinition of this.columnDefinitions)
             {
                 const cell = new DataCell();
                 row.appendChild(cell);
+
+                let asc = false;
+
+                cell.addEventListener("click", () => this.order(columnDefinition.field, order[(asc = !asc).toString()]));
 
                 if (columnDefinition.style)
                 {
@@ -326,8 +341,17 @@ export default class DataTable extends Component
 
     public addRow(row: DataRow): void
     {
-        this.dataProvider.add(row.data.source);
+        this.dataProvider.create(row.data.source);
         this.rowGroup.appendChild(row);
+    }
+
+    public connectedCallback(): void
+    {
+        if (!this.initialized)
+        {
+            this.dataBind();
+            this.initialized = true;
+        }
     }
 
     public deleteRow(row: DataRow): void
@@ -336,9 +360,20 @@ export default class DataTable extends Component
         this.rowGroup.removeChild(row);
         if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
         {
-            this.rowGroup.innerHTML = "";
-            this.dataBind();
+            this.refresh();
         }
+    }
+
+    public order(field: string, direction: "asc" | "desc"): void
+    {
+        this.dataProvider.order(field, direction);
+        this.refresh();
+    }
+
+    public async refresh(): Promise<void>
+    {
+        this.rowGroup.innerHTML = "";
+        await this.dataBind();
     }
 
     public saveRow(row: DataRow): void
@@ -349,11 +384,10 @@ export default class DataTable extends Component
 
         if (row.isNew)
         {
-            this.dataProvider.add(row.data.source);
+            this.dataProvider.create(row.data.source);
             if (this.rowGroup.childNodes.length > this.pageSize)
             {
-                this.rowGroup.innerHTML = "";
-                this.dataBind();
+                this.refresh();
             }
         }
     }
