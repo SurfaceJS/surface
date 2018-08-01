@@ -1,4 +1,4 @@
-import { Nullable }   from "@surface/core";
+import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
@@ -34,7 +34,7 @@ export default class CallExpression implements IExpression
         this._name    = name;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): Unknown
     {
         const context = this.context.evaluate() as Object;
         return context[this.name].apply(context, this.args.map(x => x.evaluate()));

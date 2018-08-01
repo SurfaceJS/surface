@@ -1,5 +1,5 @@
 import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
-import { camelToText }                                     from "@surface/core/common/string";
+import { camelToText }                                         from "@surface/core/common/string";
 import mocha                                                   from "./internal/mocha";
 
 import

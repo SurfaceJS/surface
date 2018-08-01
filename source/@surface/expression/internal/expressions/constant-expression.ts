@@ -1,11 +1,11 @@
-import { Nullable }   from "@surface/core";
+import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
 export default class ConstantExpression implements IExpression
 {
-    private readonly _value: Nullable<Object>;
-    public get value(): Nullable<Object>
+    private readonly _value: Unknown;
+    public get value(): Unknown
     {
         return this._value;
     }
@@ -15,12 +15,12 @@ export default class ConstantExpression implements IExpression
         return ExpressionType.Constant;
     }
 
-    public constructor(value: Nullable<Object>)
+    public constructor(value: Unknown)
     {
         this._value = value;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): Unknown
     {
         return this.value;
     }

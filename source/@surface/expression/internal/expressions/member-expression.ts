@@ -1,4 +1,4 @@
-import { Nullable }   from "@surface/core";
+import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
@@ -27,7 +27,7 @@ export default class MemberExpression implements IExpression
         this._target = target;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): Unknown
     {
         return (this.target.evaluate() as Object)[`${this.key.evaluate()}`];
     }

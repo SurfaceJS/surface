@@ -1,19 +1,19 @@
-import { Func2, Nullable } from "@surface/core";
-import ExpressionType      from "../../expression-type";
-import IExpression         from "../../interfaces/expression";
-import TypeGuard           from "../type-guard";
+import { Func2, Unknown } from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import TypeGuard          from "../type-guard";
 
 const updateFunctions =
 {
-    "++*": (target: Object, key: string) => ++target[key],
-    "--*": (target: Object, key: string) => --target[key],
-    "*++": (target: Object, key: string) => target[key]++,
-    "*--": (target: Object, key: string) => target[key]--,
+    "++*": (target: object, key: string) => ++target[key],
+    "--*": (target: object, key: string) => --target[key],
+    "*++": (target: object, key: string) => target[key]++,
+    "*--": (target: object, key: string) => target[key]--,
 };
 
 export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Func2<Nullable<Object>, Nullable<Object>, number>;
+    private readonly operation: Func2<Unknown, Unknown, number>;
 
     private readonly _expression: IExpression;
     public get expression(): IExpression

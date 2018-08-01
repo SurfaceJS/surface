@@ -1,7 +1,7 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import { Func1, Unknown } from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
 
-import { Func1, Nullable } from "@surface/core";
 
 const unaryFunctions =
 {
@@ -14,7 +14,7 @@ const unaryFunctions =
 
 export default class UnaryExpression implements IExpression
 {
-    private readonly operation: Func1<Nullable<Object>, Object>;
+    private readonly operation: Func1<Unknown, Object>;
 
     private readonly _operator: string;
     public get operator(): string

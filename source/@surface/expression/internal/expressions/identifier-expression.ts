@@ -1,11 +1,11 @@
-import { Nullable }   from "@surface/core";
+import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
 export default class IdentifierExpression implements IExpression
 {
-    private readonly _context: Object;
-    public get context(): Object
+    private readonly _context: object;
+    public get context(): object
     {
         return this._context;
     }
@@ -21,7 +21,7 @@ export default class IdentifierExpression implements IExpression
         return ExpressionType.Identifier;
     }
 
-    public constructor(context: Object, name: string)
+    public constructor(context: object, name: string)
     {
         if (!(name in context))
         {
@@ -32,7 +32,7 @@ export default class IdentifierExpression implements IExpression
         this._name    = name;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): Unknown
     {
         return this.context[this.name];
     }

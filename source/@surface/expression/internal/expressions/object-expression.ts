@@ -1,7 +1,7 @@
-import { Nullable }       from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
-import PropertyExpression from "./property-expression";
+import { ObjectLiteral, Unknown } from "@surface/core";
+import ExpressionType             from "../../expression-type";
+import IExpression                from "../../interfaces/expression";
+import PropertyExpression         from "./property-expression";
 
 export default class ObjectExpression implements IExpression
 {
@@ -23,7 +23,7 @@ export default class ObjectExpression implements IExpression
 
     public evaluate(): Object
     {
-        const $object: { [key: string]: Nullable<Object> } = { };
+        const $object: ObjectLiteral<Unknown> = { };
 
         for (const property of this.properties)
         {
