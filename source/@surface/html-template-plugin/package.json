@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/common": "0.0.8",
         "@surface/core": "0.0.3",
-        "tslib": "1.9.2"
+        "tslib": "1.9.3"
     },
     "description": "@surface's plugin for html templating.",
     "devDependencies": {

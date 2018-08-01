@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/core": "0.0.3",
-        "tslib": "1.9.2"
+        "tslib": "1.9.3"
     },
     "description": "Webpack resolve plugin for handling simbling priority.",
     "devDependencies": {

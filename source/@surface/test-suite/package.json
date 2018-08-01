@@ -9,7 +9,7 @@
     "description": "Oriented object test suite powered by mocha.",
     "dependencies": {
         "@surface/core": "0.0.3",
-        "tslib": "1.9.2"
+        "tslib": "1.9.3"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

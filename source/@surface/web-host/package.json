@@ -10,7 +10,7 @@
         "@surface/enumerable": "0.0.5",
         "@surface/reflection": "0.0.0",
         "@surface/router": "0.0.0",
-        "tslib": "1.9.2"
+        "tslib": "1.9.3"
     },
     "description": "Simple web host for @surface projects.",
     "devDependencies": {
