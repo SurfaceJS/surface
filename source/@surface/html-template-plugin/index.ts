@@ -1,7 +1,13 @@
-import { Nullable, ObjectLiteral }       from "@surface/core";
-import fs                                from "fs";
-import path                              from "path";
-import { compilation, Compiler, Plugin } from "webpack";
+import { Nullable, ObjectLiteral } from "@surface/core";
+import fs                          from "fs";
+import path                        from "path";
+import webpack                     from "webpack";
+
+type Entrypoint =
+{
+    chunks: Array<webpack.compilation.Chunk>;
+    name:   string;
+};
 
 namespace HtmlTemplatePlugin
 {
@@ -12,7 +18,7 @@ namespace HtmlTemplatePlugin
     }
 }
 
-class HtmlTemplatePlugin implements Plugin
+class HtmlTemplatePlugin implements webpack.Plugin
 {
     private readonly filename: Nullable<string>;
     private readonly template: string;
@@ -66,7 +72,7 @@ class HtmlTemplatePlugin implements Plugin
         return filename;
     }
 
-    public apply(compiler: Compiler)
+    public apply(compiler: webpack.Compiler)
     {
         // tslint:disable-next-line:no-this-assignment
         const self = this;
@@ -76,7 +82,7 @@ class HtmlTemplatePlugin implements Plugin
         (
             HtmlTemplatePlugin.name,
             // tslint:disable-next-line:no-any
-            function (compilation: compilation.Compilation)
+            function (compilation: webpack.compilation.Compilation)
             {
                 if (!compiler.options.entry)
                 {
@@ -88,27 +94,25 @@ class HtmlTemplatePlugin implements Plugin
                     throw new Error("Context can\"t be null.");
                 }
 
-                for (const [key, value] of compilation.entrypoints.entries())
+                for (const [key, entry] of compilation.entrypoints.entries() as IterableIterator<[string, Entrypoint]>)
                 {
-                    const entry = value;
-                    const chunk = (entry.chunks as Array<{ id: string, name: string, files: Array<string> }>)
+                    const chunk = entry.chunks
                         .filter(x => x.name == key)[0]
                         || entry.chunks[0];
 
-                    const $module = Array.isArray(compiler.options.entry[key]) ?
-                        self.getModuleName(entry.name) :
-                        self.getModuleName(compiler.options.entry[key]);
+                    const $module = Array.isArray(compiler.options.entry) ?
+                        self.getModuleName((compiler.options.entry as Array<string>)[0]) :
+                        self.getModuleName(entry.name);
 
                     const file = ("/" + chunk.files.filter(x => path.extname(x) == ".js")[0] || "").replace("./", "");
 
                     const keys =
                     {
-                        file:     file,
-                        fullHash: compilation["fullHash"],
-                        hash:     compilation["hash"],
-                        module:   $module,
-                        name:     entry.name,
-                        id:       chunk.id
+                        file:   file,
+                        hash:   compilation.hash || "",
+                        module: $module,
+                        name:   entry.name,
+                        id:     chunk.id as string
                     };
 
                     let template = fs.readFileSync(path.resolve(compiler.options.context, self.template)).toString();

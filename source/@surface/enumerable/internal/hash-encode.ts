@@ -1,12 +1,13 @@
-import { Unknown } from "@surface/core";
+import { ObjectLiteral } from "@surface/core";
 
 export default class HashEncode
 {
-    private static getEntrySignature(key: string, source: Object): string
+    private static getEntrySignature(key: string, source: ObjectLiteral): string
     {
         const value = source[key];
 
-        return `${key}:${typeof value == "symbol" ? value.toString() : value}#${value != null && value != undefined ? value.constructor.name : "?"}`;
+        // Todo - Typescript narrow bug, cast should be unnecessary
+        return `${key}:${typeof value == "symbol" ? value.toString() : value}#${value != null && value != undefined ? (value as object).constructor.name : "?"}`;
     }
 
     private static getSignature(source: Object): string
@@ -32,7 +33,7 @@ export default class HashEncode
         return `${signature}[${source.constructor.name}]`;
     }
 
-    public static getHashCode(source: Unknown): number
+    public static getHashCode(source: unknown): number
     {
         const initialValue = 7;
         const max          = 0x7FFFFFFF;
@@ -40,7 +41,7 @@ export default class HashEncode
 
         const signature = typeof source != "object" || typeof source == "object" && source == null ?
             HashEncode.getSignature({ __value__: source })
-            : HashEncode.getSignature(source);
+            : HashEncode.getSignature(source as object); // Todo - Typescript narrow bug, cast should be unnecessary
 
         return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
     }

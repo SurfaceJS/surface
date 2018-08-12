@@ -1,6 +1,6 @@
-import { Unknown }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import { ObjectLiteral } from "@surface/core";
+import ExpressionType    from "../../expression-type";
+import IExpression       from "../../interfaces/expression";
 
 export default class CallExpression implements IExpression
 {
@@ -34,9 +34,9 @@ export default class CallExpression implements IExpression
         this._name    = name;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
-        const context = this.context.evaluate() as Object;
+        const context = this.context.evaluate() as ObjectLiteral<Function>;
         return context[this.name].apply(context, this.args.map(x => x.evaluate()));
     }
 }

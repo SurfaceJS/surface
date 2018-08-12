@@ -14,60 +14,60 @@ export default class DataProviderSpec
     }
 
     @test @shouldPass
-    public default(): void
+    public async default(): Promise<void>
     {
         chai.expect(this.dataProvider.pageCount, "page count").to.equal(4);
-        chai.expect(Array.from(this.dataProvider), "iteration").to.deep.equal([1, 2, 3]);
+        chai.expect(Array.from(await this.dataProvider.read()), "iteration").to.deep.equal([1, 2, 3]);
     }
 
     @test @shouldPass
-    public nextPage(): void
+    public async nextPage(): Promise<void>
     {
         this.dataProvider.nextPage();
 
-        chai.expect(Array.from(this.dataProvider)).to.deep.equal([4, 5, 6]);
+        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([4, 5, 6]);
     }
 
     @test @shouldPass
-    public lastPage(): void
+    public async lastPage(): Promise<void>
     {
         this.dataProvider.lastPage();
 
-        chai.expect(Array.from(this.dataProvider)).to.deep.equal([10]);
+        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([10]);
     }
 
     @test @shouldPass
-    public previousPage(): void
+    public async previousPage(): Promise<void>
     {
         this.dataProvider.previousPage();
 
-        chai.expect(Array.from(this.dataProvider)).to.deep.equal([7, 8, 9]);
+        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([7, 8, 9]);
     }
 
     @test @shouldPass
-    public firstPage(): void
+    public async firstPage(): Promise<void>
     {
         this.dataProvider.firstPage();
 
-        chai.expect(Array.from(this.dataProvider)).to.deep.equal([1, 2, 3]);
+        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([1, 2, 3]);
     }
 
     @test @shouldPass
-    public changePageSize(): void
+    public async changePageSize(): Promise<void>
     {
         this.dataProvider.pageSize = 5;
 
         this.dataProvider.page = 2;
 
         chai.expect(this.dataProvider.pageCount, "page size 5 - page count").to.equal(2);
-        chai.expect(Array.from(this.dataProvider), "page size 2 - iteration").to.deep.equal([6, 7, 8, 9, 10]);
+        chai.expect(Array.from(await this.dataProvider.read()), "page size 2 - iteration").to.deep.equal([6, 7, 8, 9, 10]);
 
         this.dataProvider.pageSize = 4;
 
         this.dataProvider.page = 2;
 
         chai.expect(this.dataProvider.pageCount, "page size 4 - page count").to.equal(3);
-        chai.expect(Array.from(this.dataProvider), "page size 2 - iteration").to.deep.equal([5, 6, 7, 8]);
+        chai.expect(Array.from(await this.dataProvider.read()), "page size 2 - iteration").to.deep.equal([5, 6, 7, 8]);
     }
 
     @test @shouldPass

@@ -28,6 +28,8 @@ export default class DecoratorsSpec
         @element("mock-element")
         class Mock extends CustomElement
         {
+            public static observedAttributes?: Array<string>;
+
             private _value: Object = 1;
 
             @attribute
@@ -48,7 +50,7 @@ export default class DecoratorsSpec
         }
 
         expect(() => new Mock()).to.not.throw();
-        expect(Mock["observedAttributes"]).to.deep.equal(["value"]);
+        expect(Mock.observedAttributes).to.deep.equal(["value"]);
     }
 
     @test @shouldPass
@@ -57,7 +59,7 @@ export default class DecoratorsSpec
         @element("mock-element")
         class Mock extends CustomElement
         {
-            private _value1: Object = 1;
+            public static observedAttributes?: Array<string>;
 
             @attribute
             public get value1(): Object
@@ -70,8 +72,6 @@ export default class DecoratorsSpec
                 this._value1 = value;
             }
 
-            private _value2: Object = 1;
-
             @attribute
             public get value2(): Object
             {
@@ -83,6 +83,10 @@ export default class DecoratorsSpec
                 this._value2 = value;
             }
 
+            private _value1: Object = 1;
+
+            private _value2: Object = 1;
+
             public constructor()
             {
                 super();
@@ -90,7 +94,7 @@ export default class DecoratorsSpec
         }
 
         expect(() => new Mock()).to.not.throw();
-        expect(Mock["observedAttributes"]).to.deep.equal(["value1", "value2"]);
+        expect(Mock.observedAttributes).to.deep.equal(["value1", "value2"]);
     }
 
     @test @shouldPass

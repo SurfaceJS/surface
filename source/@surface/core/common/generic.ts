@@ -1,6 +1,6 @@
-import { Func1, Nullable, Unknown } from "../";
+import { Func1, Nullable } from "../";
 
-export function coalesce<T>(value: Unknown, fallback: T): T
+export function coalesce<T>(value: unknown, fallback: T): T
 {
     return value !== null && value !== undefined ? value as T : fallback;
 }

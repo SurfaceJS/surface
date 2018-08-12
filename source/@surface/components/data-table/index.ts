@@ -1,4 +1,4 @@
-import { Constructor, Nullable, Unknown }                  from "@surface/core";
+import { Constructor, Nullable, ObjectLiteral }            from "@surface/core";
 import { coalesce }                                        from "@surface/core/common/generic";
 import { clone, objectFactory, proxyFactory, ProxyObject } from "@surface/core/common/object";
 import { runAsync }                                        from "@surface/core/common/promise";
@@ -135,7 +135,7 @@ export default class DataTable extends Component
                 "string":  "",
             };
 
-            this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, Unknown]).toArray());
+            this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, unknown]).toArray());
 
             this.proxyConstructor = proxyFactory(this.dataDefinition);
         }
@@ -148,7 +148,7 @@ export default class DataTable extends Component
         return new this.proxyConstructor(clone(this.dataDefinition));
     }
 
-    private createRow(data: ProxyObject<object>, isNew: boolean): DataRow
+    private createRow(data: ProxyObject<ObjectLiteral>, isNew: boolean): DataRow
     {
         const row = new DataRow(isNew, data);
         let index = 0;
@@ -296,7 +296,7 @@ export default class DataTable extends Component
 
                 let asc = false;
 
-                cell.addEventListener("click", () => this.order(columnDefinition.field, order[(asc = !asc).toString()]));
+                cell.addEventListener("click", () => this.order(columnDefinition.field, order[(asc = !asc).toString() as "true"|"false"] as "asc"|"desc"));
 
                 if (columnDefinition.style)
                 {

@@ -1,4 +1,6 @@
 import { resolveFile }            from "@surface/common";
+import { ObjectLiteral }          from "@surface/core";
+import { coalesce }               from "@surface/core/common/generic";
 import { merge }                  from "@surface/core/common/object";
 import HtmlTemplatePlugin         from "@surface/html-template-plugin";
 import SimblingResolvePlugin      from "@surface/simbling-resolve-plugin";
@@ -13,16 +15,14 @@ import { Entry }                  from "../interfaces/types";
 import * as defaults              from "./defaults";
 import * as enums                 from "./enums";
 
-export async function execute(task?: enums.TasksType, config?: string, env?: string, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
+export async function execute(task?: enums.TasksType, config?: string, enviroment?: enums.EnviromentType, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
-    task   = task   || enums.TasksType.build;
-    config = config || "./";
+    task       = coalesce<enums.TasksType>(task, enums.TasksType.build);
+    config     = coalesce(config, "./");
+    enviroment = coalesce(enviroment, enums.EnviromentType.development);
+    watch      = coalesce(watch, false);
 
-    let enviroment = env ? enums.EnviromentType[env] : enums.EnviromentType.development;
-
-    watch = !!watch;
-
-    let wepackconfig = getConfig(config, enviroment);
+    const wepackconfig = getConfig(config, enviroment);
 
     switch (task)
     {
@@ -176,7 +176,6 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         }
     }
 
-    plugins.push(new webpack.optimize["SplitChunksPlugin"]({ name: config.runtime }));
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
     plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: config.tsconfig, tslint: config.tslint, watch: config.context }));
 
@@ -202,7 +201,28 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
             modules: [config.context],
             plugins: resolvePlugins
         },
-        plugins: plugins
+        plugins: plugins,
+        optimization:
+        {
+            splitChunks:
+            {
+                chunks: "all",
+                cacheGroups:
+                {
+                    vendors:
+                    {
+                        test:     /[\\/]node_modules[\\/]/,
+                        priority: -10
+                    },
+                    default:
+                    {
+                        minChunks:          2,
+                        priority:           -20,
+                        reuseExistingChunk: true
+                    }
+                }
+            }
+        }
     } as webpack.Configuration;
 
     if (primaryConfig.plugins && enviroment == enums.EnviromentType.production)
@@ -300,22 +320,24 @@ function resolveEntries(context: string, entries: Entry): Entry
 
 /**
  * Set or push value in a string|Array<string> value of the object.
- * @param target Target object.
+ * @param source Target object.
  * @param key    Key of the object.
  * @param value  Value to be setted or pushed.
  */
-function setOrPush(target: Entry, key: string, value: string): void
+function setOrPush(source: ObjectLiteral<string|Array<string>>, key: string, value: string): void
 {
-    if (!target[key])
+    const target = source[key];
+
+    if (!target)
     {
-        target[key] = value;
+        source[key] = value;
     }
-    else if (!Array.isArray(target[key]))
+    else if (!Array.isArray(target))
     {
-        target[key] = [target[key]].concat(value) as Array<string>;
+        source[key] = [target].concat(value) as Array<string>;
     }
     else
     {
-        (target[key] as Array<string>).push(value);
+        target.push(value);
     }
 }

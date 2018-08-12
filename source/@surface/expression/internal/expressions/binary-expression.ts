@@ -1,6 +1,7 @@
-import { Func2, Unknown } from "@surface/core";
+import { Func2 }          from "@surface/core";
 import ExpressionType     from "../../expression-type";
 import IExpression        from "../../interfaces/expression";
+import { BinaryOperator } from "../../types";
 
 
 const binaryFunctions =
@@ -33,7 +34,7 @@ const binaryFunctions =
 
 export default class BinaryExpression implements IExpression
 {
-    private readonly operation: Func2<Unknown, Unknown, Unknown>;
+    private readonly operation: Func2<unknown, unknown, unknown>;
 
     private readonly _left: IExpression;
     public get left(): IExpression
@@ -41,8 +42,8 @@ export default class BinaryExpression implements IExpression
         return this._left;
     }
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: BinaryOperator;
+    public get operator(): BinaryOperator
     {
         return this._operator;
     }
@@ -58,15 +59,15 @@ export default class BinaryExpression implements IExpression
         return ExpressionType.Binary;
     }
 
-    public constructor(left: IExpression, right: IExpression, operator: string)
+    public constructor(left: IExpression, right: IExpression, operator: BinaryOperator)
     {
         this._left     = left;
         this._operator = operator;
         this._right    = right;
-        this.operation = binaryFunctions[this.operator];
+        this.operation = binaryFunctions[this.operator] as Func2<unknown, unknown, unknown>;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
         return this.operation(this.left.evaluate(), this.right.evaluate());
     }

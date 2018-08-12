@@ -1,9 +1,8 @@
-import { Unknown }    from "@surface/core";
 import Expression     from "../..";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
-export type ExpressionFactoryFixture = { factory: () => IExpression, type: ExpressionType, value: Unknown };
+export type ExpressionFactoryFixture = { factory: () => IExpression, type: ExpressionType, value: unknown };
 
 export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
 [

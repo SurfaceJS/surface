@@ -1,5 +1,5 @@
 import Dictionary                       from "@surface/collection/dictionary";
-import { Constructor, Func1, Nullable } from "@surface/core";
+import { Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
 import Enumerable                       from "@surface/enumerable";
 import Type                             from "@surface/reflection";
 import Router                           from "@surface/router";
@@ -45,14 +45,24 @@ export default class ViewManager
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        const esmodule = await this.moduleLoader(path);
+        const esmodule = await this.moduleLoader(path) as ObjectLiteral<Nullable<Constructor<View>>>;
 
-        const constructor: Nullable<Constructor<View>> = esmodule["default"]
-            || Type.from(esmodule).extends(View) && esmodule
-            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
-                .where(x => new RegExp(`^${view}(view)?$`, "i").test(x) && Type.from(esmodule[x]).extends(View))
-                .select(x => esmodule[x])
-                .firstOrDefault();
+        let constructor: Nullable<Constructor<View>>;
+
+        if (!(constructor = esmodule["default"]))
+        {
+            if (Type.from(esmodule).extends(View))
+            {
+                constructor = esmodule as object as Constructor<View>;
+            }
+            else if (Type.from(esmodule).equals(Object))
+            {
+                constructor = Enumerable.from(Object.keys(esmodule))
+                    .where(x => new RegExp(`^${view}(controller)?$`, "i").test(x) && Type.of(esmodule[x] as Function).extends(View))
+                    .select(x => esmodule[x])
+                    .firstOrDefault();
+            }
+        }
 
         if (constructor)
         {

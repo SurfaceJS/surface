@@ -11,6 +11,7 @@ import
     shouldPass,
     suite,
     test,
+    TestMethod,
 }
 from "..";
 import
@@ -83,8 +84,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.test[testToken]).to.equal(true);
-        expect(Mock.prototype.test[expectationToken]).to.equal("test");
+        expect((Mock.prototype.test as TestMethod)[testToken]).to.equal(true);
+        expect((Mock.prototype.test as TestMethod)[expectationToken]).to.equal("test");
     }
 
     @test @shouldPass
@@ -100,8 +101,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.test[testToken]).to.equal(true);
-        expect(Mock.prototype.test[expectationToken]).to.equal("test should pass");
+        expect((Mock.prototype.test as TestMethod)[testToken]).to.equal(true);
+        expect((Mock.prototype.test as TestMethod)[expectationToken]).to.equal("test should pass");
     }
 
     @test @shouldPass
@@ -116,7 +117,7 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.testCategoryDecorator[categoryToken]).to.equal("custom category");
+        expect((Mock.prototype.testCategoryDecorator as TestMethod)[categoryToken]).to.equal("custom category");
     }
 
     @test @shouldPass
@@ -131,7 +132,7 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.testCategoryDecorator[categoryToken]).to.equal("should pass");
+        expect((Mock.prototype.testCategoryDecorator as TestMethod)[categoryToken]).to.equal("should pass");
     }
 
     @test @shouldPass
@@ -146,7 +147,7 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.testCategoryDecorator[categoryToken]).to.equal("should fail");
+        expect((Mock.prototype.testCategoryDecorator as TestMethod)[categoryToken]).to.equal("should fail");
     }
 
     @test @shouldPass
@@ -164,9 +165,9 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.batchTest[batchTestToken]).to.equal(true);
-        expect(Mock.prototype.batchTest[dataToken]["source"]).to.deep.equal([1, 2, 3]);
-        expect(Mock.prototype.batchTest[dataToken]["expectation"].toString())
+        expect((Mock.prototype.batchTest as TestMethod)[batchTestToken]).to.equal(true);
+        expect((Mock.prototype.batchTest as TestMethod)[dataToken]!.source).to.deep.equal([1, 2, 3]);
+        expect((Mock.prototype.batchTest as TestMethod)[dataToken]!.expectation.toString())
             .to.deep.equal(((x: number) => `expected value is ${x}`).toString());
     }
 
@@ -183,8 +184,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.afterTests[afterToken]).to.equal(true);
-        expect(Mock.prototype.afterTests[descriptionToken]).to.equal("after tests");
+        expect((Mock.prototype.afterTests as TestMethod)[afterToken]).to.equal(true);
+        expect((Mock.prototype.afterTests as TestMethod)[descriptionToken]).to.equal("after tests");
     }
 
     @test @shouldPass
@@ -200,8 +201,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.afterTests[afterToken]).to.equal(true);
-        expect(Mock.prototype.afterTests[descriptionToken]).to.equal("after tests with custom description");
+        expect((Mock.prototype.afterTests as TestMethod)[afterToken]).to.equal(true);
+        expect((Mock.prototype.afterTests as TestMethod)[descriptionToken]).to.equal("after tests with custom description");
     }
 
     @test @shouldPass
@@ -217,8 +218,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.afterEachTests[afterEachToken]).to.equal(true);
-        expect(Mock.prototype.afterEachTests[descriptionToken]).to.equal("after each tests");
+        expect((Mock.prototype.afterEachTests as TestMethod)[afterEachToken]).to.equal(true);
+        expect((Mock.prototype.afterEachTests as TestMethod)[descriptionToken]).to.equal("after each tests");
     }
 
     @test @shouldPass
@@ -234,8 +235,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.beforeTests[beforeToken]).to.equal(true);
-        expect(Mock.prototype.beforeTests[descriptionToken]).to.equal("before tests");
+        expect((Mock.prototype.beforeTests as TestMethod)[beforeToken]).to.equal(true);
+        expect((Mock.prototype.beforeTests as TestMethod)[descriptionToken]).to.equal("before tests");
     }
 
     @test @shouldPass
@@ -251,8 +252,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.beforeTests[beforeToken]).to.equal(true);
-        expect(Mock.prototype.beforeTests[descriptionToken]).to.equal("before tests with custom description");
+        expect((Mock.prototype.beforeTests as TestMethod)[beforeToken]).to.equal(true);
+        expect((Mock.prototype.beforeTests as TestMethod)[descriptionToken]).to.equal("before tests with custom description");
     }
 
     @test @shouldPass
@@ -268,8 +269,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.beforeEachTests[beforeEachToken]).to.equal(true);
-        expect(Mock.prototype.beforeEachTests[descriptionToken]).to.equal("before each tests with custom description");
+        expect((Mock.prototype.beforeEachTests as TestMethod)[beforeEachToken]).to.equal(true);
+        expect((Mock.prototype.beforeEachTests as TestMethod)[descriptionToken]).to.equal("before each tests with custom description");
     }
 
     @test @shouldPass
@@ -285,8 +286,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.afterEachTests[afterEachToken]).to.equal(true);
-        expect(Mock.prototype.afterEachTests[descriptionToken]).to.equal("after each tests with custom description");
+        expect((Mock.prototype.afterEachTests as TestMethod)[afterEachToken]).to.equal(true);
+        expect((Mock.prototype.afterEachTests as TestMethod)[descriptionToken]).to.equal("after each tests with custom description");
     }
 
     @test @shouldPass
@@ -302,8 +303,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect(Mock.prototype.beforeEachTests[beforeEachToken]).to.equal(true);
-        expect(Mock.prototype.beforeEachTests[descriptionToken]).to.equal("before each tests");
+        expect((Mock.prototype.beforeEachTests as TestMethod)[beforeEachToken]).to.equal(true);
+        expect((Mock.prototype.beforeEachTests as TestMethod)[descriptionToken]).to.equal("before each tests");
     }
 
     @test

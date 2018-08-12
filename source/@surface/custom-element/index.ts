@@ -30,9 +30,11 @@ export default abstract class CustomElement extends HTMLElement
             window.ShadyCSS.styleElement(this);
         }
 
-        if (this.constructor[template])
+        const templateElement = (this.constructor as typeof CustomElement)[template];
+
+        if (templateElement)
         {
-            this.applyTemplate(this.constructor[template]);
+            this.applyTemplate(templateElement);
         }
     }
     protected static contextBind(context: Object, content: Node): void

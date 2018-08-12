@@ -1,19 +1,22 @@
-import { Func2, Unknown } from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
-import TypeGuard          from "../type-guard";
+import { Func2, ObjectLiteral } from "@surface/core";
+import ExpressionType           from "../../expression-type";
+import IExpression              from "../../interfaces/expression";
+import { UpdateOperator }       from "../../types";
+import TypeGuard                from "../type-guard";
+
+type Operators = "++*"|"--*"|"*++"|"*--";
 
 const updateFunctions =
 {
-    "++*": (target: object, key: string) => ++target[key],
-    "--*": (target: object, key: string) => --target[key],
-    "*++": (target: object, key: string) => target[key]++,
-    "*--": (target: object, key: string) => target[key]--,
+    "++*": (target: ObjectLiteral<number>, key: string) => ++target[key],
+    "--*": (target: ObjectLiteral<number>, key: string) => --target[key],
+    "*++": (target: ObjectLiteral<number>, key: string) => target[key]++,
+    "*--": (target: ObjectLiteral<number>, key: string) => target[key]--,
 };
 
 export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Func2<Unknown, Unknown, number>;
+    private readonly operation: Func2<unknown, unknown, number>;
 
     private readonly _expression: IExpression;
     public get expression(): IExpression
@@ -21,8 +24,8 @@ export default class UpdateExpression implements IExpression
         return this._expression;
     }
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: UpdateOperator;
+    public get operator(): UpdateOperator
     {
         return this._operator;
     }
@@ -38,12 +41,12 @@ export default class UpdateExpression implements IExpression
         return ExpressionType.Update;
     }
 
-    public constructor(expression: IExpression, operator: string, prefix: boolean)
+    public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)
     {
         this._expression = expression;
         this._prefix     = prefix;
         this._operator   = operator;
-        this.operation   = this.prefix ? updateFunctions[`${this.operator}*`] : updateFunctions[`*${this.operator}`];
+        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]) as Func2<unknown, unknown, number>;
     }
 
     public evaluate(): number

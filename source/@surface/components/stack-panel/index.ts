@@ -9,7 +9,7 @@ export class StackPanel extends Component
 {
     public get distribuition(): StackPanel.Distribuition
     {
-        return StackPanel.Distribuition[toTitle(super.getAttribute("distribuition") || "")] || StackPanel.Distribuition.None;
+        return StackPanel.Distribuition[toTitle(super.getAttribute("distribuition") || "") as keyof typeof StackPanel.Distribuition] || StackPanel.Distribuition.None;
     }
 
     public set distribuition(value: StackPanel.Distribuition)
@@ -19,7 +19,7 @@ export class StackPanel extends Component
 
     public get orientation(): StackPanel.Orientation
     {
-        return StackPanel.Orientation[toTitle(super.getAttribute("orientation") || "")] || StackPanel.Orientation.Vertical;
+        return StackPanel.Orientation[toTitle(super.getAttribute("orientation") || "") as keyof typeof StackPanel.Orientation] || StackPanel.Orientation.Vertical;
     }
 
     public set orientation(value: StackPanel.Orientation)

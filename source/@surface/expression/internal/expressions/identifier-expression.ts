@@ -1,11 +1,11 @@
-import { Unknown }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import { ObjectLiteral } from "@surface/core";
+import ExpressionType    from "../../expression-type";
+import IExpression       from "../../interfaces/expression";
 
 export default class IdentifierExpression implements IExpression
 {
-    private readonly _context: object;
-    public get context(): object
+    private readonly _context: ObjectLiteral;
+    public get context(): ObjectLiteral
     {
         return this._context;
     }
@@ -32,7 +32,7 @@ export default class IdentifierExpression implements IExpression
         this._name    = name;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
         return this.context[this.name];
     }
