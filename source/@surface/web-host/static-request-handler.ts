@@ -17,7 +17,7 @@ export default class StaticRequestHandler extends RequestHandler
             const filepath = this.path.join(httpContext.host.root, httpContext.host.wwwroot, httpContext.request.url);
             if (this.path.extname(filepath) && this.fs.existsSync(filepath))
             {
-                const extension = this.path.extname(filepath);
+                const extension = this.path.extname(filepath) as keyof typeof mymeType;
                 const data      = this.fs.readFileSync(filepath);
 
                 httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] || mymeType[".html"] });

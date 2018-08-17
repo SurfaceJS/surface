@@ -1,7 +1,7 @@
-import { Func1, Unknown } from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
-
+import { Func1 }         from "@surface/core";
+import ExpressionType    from "../../expression-type";
+import IExpression       from "../../interfaces/expression";
+import { UnaryOperator } from "../../types";
 
 const unaryFunctions =
 {
@@ -14,10 +14,10 @@ const unaryFunctions =
 
 export default class UnaryExpression implements IExpression
 {
-    private readonly operation: Func1<Unknown, Object>;
+    private readonly operation: Func1<unknown, Object>;
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: UnaryOperator;
+    public get operator(): UnaryOperator
     {
         return this._operator;
     }
@@ -33,11 +33,11 @@ export default class UnaryExpression implements IExpression
         return ExpressionType.Unary;
     }
 
-    public constructor(expression: IExpression, operator: string)
+    public constructor(expression: IExpression, operator: UnaryOperator)
     {
         this._operator   = operator;
         this._expression = expression;
-        this.operation   = unaryFunctions[this.operator];
+        this.operation   = unaryFunctions[this.operator] as Func1<unknown, Object>;
     }
 
     public evaluate(): Object

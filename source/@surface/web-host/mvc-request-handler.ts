@@ -1,11 +1,11 @@
-import { Constructor, Nullable } from "@surface/core";
-import Enumerable                from "@surface/enumerable";
-import Type                      from "@surface/reflection/type";
-import Router                    from "@surface/router";
-import ActionResult              from "./action-result";
-import Controller                from "./controller";
-import HttpContext               from "./http-context";
-import RequestHandler            from "./request-handler";
+import { Constructor, Nullable, ObjectLiteral } from "@surface/core";
+import Enumerable                               from "@surface/enumerable";
+import Type                                     from "@surface/reflection/type";
+import Router                                   from "@surface/router";
+import ActionResult                             from "./action-result";
+import Controller                               from "./controller";
+import HttpContext                              from "./http-context";
+import RequestHandler                           from "./request-handler";
 
 export default class MvcRequestHandler extends RequestHandler
 {
@@ -23,14 +23,24 @@ export default class MvcRequestHandler extends RequestHandler
 
     private getController(controller: string, filepath: string): Constructor<Controller>
     {
-        let esmodule = require(filepath) as object;
+        const esmodule = require(filepath) as ObjectLiteral<Nullable<Constructor<Controller>>>;
 
-        let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
-            || Type.from(esmodule).extends(Controller) && esmodule
-            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
-                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esmodule[x]).extends(Controller))
-                .select(x => esmodule[x])
-                .firstOrDefault();
+        let constructor: Nullable<Constructor<Controller>>;
+
+        if (!(constructor = esmodule["default"]))
+        {
+            if (Type.from(esmodule).extends(Controller))
+            {
+                constructor = esmodule as object as Constructor<Controller>;
+            }
+            else if (Type.from(esmodule).equals(Object))
+            {
+                constructor = Enumerable.from(Object.keys(esmodule))
+                    .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esmodule[x] as Function).extends(Controller))
+                    .select(x => esmodule[x])
+                    .firstOrDefault();
+            }
+        }
 
         if (constructor)
         {
@@ -96,7 +106,7 @@ export default class MvcRequestHandler extends RequestHandler
 
                             const postData = await this.parseBody(httpContext);
 
-                            const inbound = { ...routeData.search, ...postData };
+                            const inbound = { ...routeData.search, ...postData } as ObjectLiteral;
 
                             if (id)
                             {

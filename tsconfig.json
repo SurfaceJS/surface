@@ -24,7 +24,7 @@
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
         "strictPropertyInitialization":     true,
-        "suppressImplicitAnyIndexErrors":   true,
+        //"suppressImplicitAnyIndexErrors":   true,
         "target":                           "esnext",
         "types":                            [],
         "typeRoots":

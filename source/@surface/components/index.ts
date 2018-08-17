@@ -5,22 +5,22 @@ abstract class Component extends CustomElement
 {
     public get horizontalAlign(): Component.HorizontalAlign
     {
-        return Component.VerticalAlign[toTitle(super.getAttribute("horizontal-align") || "")] || Component.HorizontalAlign.Left;
+        return Component.HorizontalAlign[toTitle(super.getAttribute("horizontal-align") || "") as keyof typeof Component.HorizontalAlign] || Component.HorizontalAlign.Left;
     }
 
     public set horizontalAlign(value: Component.HorizontalAlign)
     {
-        super.setAttribute("horizontal-align", dashedToCamel(Component.HorizontalAlign[value]));
+        super.setAttribute("horizontal-align", dashedToCamel(Component.HorizontalAlign[value as string as keyof typeof Component.HorizontalAlign]));
     }
 
     public get verticalAlign(): Component.VerticalAlign
     {
-        return Component.VerticalAlign[toTitle(super.getAttribute("vertical-align") || "")] || Component.VerticalAlign.Top;
+        return Component.VerticalAlign[toTitle(super.getAttribute("vertical-align") || "") as keyof typeof Component.VerticalAlign] || Component.VerticalAlign.Top;
     }
 
     public set verticalAlign(value: Component.VerticalAlign)
     {
-        super.setAttribute("vertical-align", dashedToCamel(Component.VerticalAlign[value]));
+        super.setAttribute("vertical-align", dashedToCamel(Component.VerticalAlign[value as string as keyof typeof Component.VerticalAlign]));
     }
 }
 

@@ -1,10 +1,10 @@
 import "reflect-metadata";
 
-import { Nullable, Unknown } from "@surface/core";
-import FieldInfo             from "./field-info";
-import MemberInfo            from "./member-info";
-import MethodInfo            from "./method-info";
-import PropertyInfo          from "./property-info";
+import { Nullable, ObjectLiteral } from "@surface/core";
+import FieldInfo                   from "./field-info";
+import MemberInfo                  from "./member-info";
+import MethodInfo                  from "./method-info";
+import PropertyInfo                from "./property-info";
 
 type Member = { key: string, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean };
 
@@ -38,12 +38,12 @@ export default class Type
         return Object.isSealed(this.targetConstructor.prototype);
     }
 
-    private _metadata: Nullable<Object>;
-    public get metadata(): Object
+    private _metadata: Nullable<ObjectLiteral>;
+    public get metadata(): ObjectLiteral
     {
         if (!this._metadata)
         {
-            const metadata = { };
+            const metadata: ObjectLiteral = { };
 
             Reflect.getMetadataKeys(this.targetConstructor)
                 .forEach(/* istanbul ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.targetConstructor));
@@ -98,7 +98,7 @@ export default class Type
                 yield { key, descriptor, declaringType: Type.of(targetConstructor), isStatic: true };
             }
 
-            let prototype = Object.getPrototypeOf(targetConstructor.prototype) as Unknown;
+            const prototype = Object.getPrototypeOf(targetConstructor.prototype) as Nullable<ObjectLiteral>;
 
             if (prototype)
             {
@@ -308,7 +308,7 @@ export default class Type
                 }
             }
 
-            let prototype = Object.getPrototypeOf(targetConstructor.prototype) as Unknown;
+            let prototype = Object.getPrototypeOf(targetConstructor.prototype) as Nullable<ObjectLiteral>;
 
             if (prototype)
             {

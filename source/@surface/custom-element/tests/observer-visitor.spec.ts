@@ -6,6 +6,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import ObserverVisitor                         from "../internal/observer-visitor";
 import { observedAttributes }                  from "../internal/symbols";
+import { ObjectLiteral } from '@surface/core';
 
 @suite
 export class ObserverVisitorSpec
@@ -115,7 +116,7 @@ export class ObserverVisitorSpec
         const expression = Expression.from("this.increment(1)", context);
         const visitor    = new ObserverVisitor(() => undefined);
 
-        const invoker = (expression as ICallExpression).context.evaluate()![(expression as ICallExpression).name];
+        const invoker = ((expression as ICallExpression).context.evaluate() as ObjectLiteral)[(expression as ICallExpression).name];
 
         visitor.visit(expression);
 
@@ -139,7 +140,7 @@ export class ObserverVisitorSpec
 
         visitor.visit(expression);
 
-        (context.this as Object)["value"] = 1;
+        (context.this as ObjectLiteral)["value"] = 1;
     }
 
     @test @shouldFail

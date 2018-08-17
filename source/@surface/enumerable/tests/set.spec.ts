@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import Comparer                    from "../internal/comparer";
-import Set                      from "../internal/set";
+import Set                         from "../internal/set";
 
 @suite
 export default class SetSpec

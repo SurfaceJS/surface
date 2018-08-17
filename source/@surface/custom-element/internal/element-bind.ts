@@ -1,4 +1,4 @@
-import { Action }          from "@surface/core";
+import { Action, ObjectLiteral }          from "@surface/core";
 import { coalesce }        from "@surface/core/common/generic";
 import { dashedToCamel }   from "@surface/core/common/string";
 import ExpressionType      from "@surface/expression/expression-type";
@@ -70,7 +70,7 @@ export default class ElementBind
 
                         if (attributeName in element)
                         {
-                            element[attributeName] = value;
+                            (element as ObjectLiteral)[attributeName] = value;
                         }
                     };
 
@@ -138,9 +138,9 @@ export default class ElementBind
 
     private createProxy(context: Object): Object
     {
-        const handler: ProxyHandler<Object> =
+        const handler: ProxyHandler<ObjectLiteral> =
         {
-            get: (target, key) => key in target ? target[key] : this.window[key],
+            get: (target, key) => key in target ? target[key as string] : (this.window as ObjectLiteral)[key as string],
             has: (target, key) => key in target || key in this.window
         };
 
@@ -149,7 +149,7 @@ export default class ElementBind
 
     private traverseElement(node: Node): void
     {
-        for (const element of Array.from(node.childNodes) as Array<Element>)
+        for (const element of Array.from(node.childNodes) as Array<Element & { [binded]?: boolean, [context]?: object }>)
         {
             if (!element[binded] && element.tagName != "TEMPLATE")
             {

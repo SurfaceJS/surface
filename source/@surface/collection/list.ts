@@ -47,7 +47,7 @@ export default class List<TSource> extends Enumerable<TSource>
                 }
                 else
                 {
-                    return this[key];
+                    return this[key as keyof this];
                 }
             },
             set: (target, key, value) =>
@@ -69,7 +69,7 @@ export default class List<TSource> extends Enumerable<TSource>
                 }
                 else
                 {
-                    this[key] = value;
+                    this[key as keyof this] = value;
                 }
 
                 return true;

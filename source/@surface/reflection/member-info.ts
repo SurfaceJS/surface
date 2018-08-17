@@ -1,5 +1,5 @@
-import { Nullable } from "@surface/core";
-import Type         from "./type";
+import { Nullable, ObjectLiteral } from "@surface/core";
+import Type                        from "./type";
 
 export default abstract class MemberInfo
 {
@@ -21,12 +21,12 @@ export default abstract class MemberInfo
         return this._key;
     }
 
-    protected _metadata: Nullable<Object>;
-    public get metadata(): Object
+    protected _metadata: Nullable<ObjectLiteral>;
+    public get metadata(): ObjectLiteral
     {
         if (!this._metadata)
         {
-            const metadata = { };
+            const metadata: ObjectLiteral = { };
             Reflect.getMetadataKeys(this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key)
                 .forEach(key => metadata[key] = Reflect.getMetadata(key, this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key));
 

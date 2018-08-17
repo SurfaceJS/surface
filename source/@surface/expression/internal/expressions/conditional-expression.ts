@@ -1,4 +1,3 @@
-import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
@@ -34,7 +33,7 @@ export default class ConditionalExpression implements IExpression
         this._truthy    = truthy;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
         return this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
     }

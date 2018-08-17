@@ -28,7 +28,7 @@ export default abstract class Controller
     public view(viewName:  string, model: Nullable<Object>): ActionResult;
     public view(viewName?: string, model?: Nullable<Object>): ActionResult
     {
-        let controllerName = this["__proto__"]["constructor"]["name"] as string;
+        let controllerName = this["__proto__" as keyof this].constructor.name;
 
         controllerName = controllerName.replace(/controller$/i, "");
 

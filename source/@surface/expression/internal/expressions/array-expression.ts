@@ -1,4 +1,3 @@
-import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
@@ -21,7 +20,7 @@ export default class ArrayExpression implements IExpression
     }
 
 
-    public evaluate(): Array<Unknown>
+    public evaluate(): Array<unknown>
     {
         return this.elements.map(x => x.evaluate());
     }

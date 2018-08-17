@@ -16,7 +16,7 @@ export class Menu extends CustomElement
 
     public get type(): Menu.Type
     {
-        return Menu.Type[dashedToTitle(super.getAttribute("type") || "")] || Menu.Type.Static;
+        return Menu.Type[dashedToTitle(super.getAttribute("type") || "") as keyof typeof Menu.Type] || Menu.Type.Static;
     }
 
     public set type(value: Menu.Type)

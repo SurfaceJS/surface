@@ -89,13 +89,13 @@ export default class ElementBindSpec
 
         content.innerHTML = "<span foo='{{ host.tagName }}'</span>";
 
-        const span = content.firstElementChild as HTMLSpanElement;
+        const span = content.firstElementChild as HTMLSpanElement & { foo?: string };
 
-        span["foo"] = "";
+        span.foo = "";
 
         ElementBind.for({ host }, content);
 
-        chai.expect(span["foo"]).to.equal("DIV");
+        chai.expect(span.foo).to.equal("DIV");
     }
 
     @test @shouldPass
@@ -176,10 +176,10 @@ export default class ElementBindSpec
     public elementWithAttributesWithExpressionEventBind(): void
     {
         const document = window.document;
-        const host     = document.createElement("div");
+        const host     = document.createElement("div") as HTMLDivElement & { method?: Function };
         const content  = document.createElement("div");
 
-        host["method"] = (value: boolean) => chai.expect(value).to.equal(true);
+        host.method = (value: boolean) => chai.expect(value).to.equal(true);
 
         content.innerHTML = "<span on-click='{{ host.method(true) }}'>Text</span>";
 

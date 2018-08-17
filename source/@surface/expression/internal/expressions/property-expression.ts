@@ -1,4 +1,3 @@
-import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
@@ -27,7 +26,7 @@ export default class PropertyExpression implements IExpression
         this._value = value;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
         return this.value.evaluate();
     }

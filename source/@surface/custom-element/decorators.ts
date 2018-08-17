@@ -1,7 +1,11 @@
-import { Unknown }   from "@surface/core";
 import CustomElement from ".";
 import ElementBind   from "./internal/element-bind";
 import * as symbols  from "./internal/symbols";
+
+type Observable =
+{
+    [symbols.observedAttributes]?: Array<string|symbol>;
+};
 
 function isCustomElement(source: Function): source is typeof CustomElement
 {
@@ -17,14 +21,14 @@ export function attribute(target: Object, propertyKey: string | symbol): void
 {
     if (target instanceof HTMLElement)
     {
-        if (!target.constructor[symbols.observedAttributes])
+        if (!(target.constructor as Observable)[symbols.observedAttributes])
         {
             const values: Array<string> = [];
             Object.defineProperty(target.constructor, symbols.observedAttributes, { get: () => values } );
-            Object.defineProperty(target.constructor, "observedAttributes", { get: () => target.constructor[symbols.observedAttributes] });
+            Object.defineProperty(target.constructor, "observedAttributes", { get: () => (target.constructor as Observable)[symbols.observedAttributes] });
         }
 
-        target.constructor[symbols.observedAttributes].push(propertyKey);
+        (target.constructor as Observable)[symbols.observedAttributes]!.push(propertyKey);
     }
     else
     {
@@ -58,7 +62,7 @@ export function element(name: string, template?: string, style?: string, options
 
                 Object.defineProperty(target, symbols.template, { get: () => templateElement } );
 
-                const proxy = function(this: CustomElement, ...args: Array<Unknown>)
+                const proxy = function(this: CustomElement, ...args: Array<unknown>)
                 {
                     const instance = Reflect.construct(target, args, new.target) as CustomElement;
 

@@ -1,11 +1,10 @@
-import { Unknown }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 
 export default class ConstantExpression implements IExpression
 {
-    private readonly _value: Unknown;
-    public get value(): Unknown
+    private readonly _value: unknown;
+    public get value(): unknown
     {
         return this._value;
     }
@@ -15,12 +14,12 @@ export default class ConstantExpression implements IExpression
         return ExpressionType.Constant;
     }
 
-    public constructor(value: Unknown)
+    public constructor(value: unknown)
     {
         this._value = value;
     }
 
-    public evaluate(): Unknown
+    public evaluate(): unknown
     {
         return this.value;
     }
