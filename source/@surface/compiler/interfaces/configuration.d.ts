@@ -11,7 +11,6 @@ export default interface IConfiguration
     filename:         string;
     output:           string;
     htmlTemplate?:    HtmlTemplatePlugin.IOptions;
-    runtime?:         string;
     simblingResolve?: SimblingResolvePlugin.IOptions|Array<SimblingResolvePlugin.IOptions>;
     tsconfig?:        string;
     tslint?:          string;

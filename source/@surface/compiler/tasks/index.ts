@@ -128,7 +128,6 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     config.context = path.resolve(root, config.context);
     config.entry   = resolveEntries(config.context, config.entry);
-    config.runtime = config.runtime || Object.keys(config.entry)[0];
     config.output  = path.resolve(root, config.output);
 
     let userWebpack: webpack.Configuration = { };
@@ -150,8 +149,8 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     defaults.loaders.ts.options.configFile = config.tsconfig;
 
-    let resolvePlugins: Array<webpack.ResolvePlugin> = [];
-    let plugins: Array<webpack.Plugin> = [];
+    const resolvePlugins: Array<webpack.ResolvePlugin> = [];
+    const plugins: Array<webpack.Plugin> = [];
 
     if (config.simblingResolve)
     {
@@ -160,7 +159,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
             config.simblingResolve = [config.simblingResolve];
         }
 
-        for (let option of config.simblingResolve)
+        for (const option of config.simblingResolve)
         {
             if (option.include)
             {
@@ -185,7 +184,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         plugins.push(new HtmlTemplatePlugin(config.htmlTemplate));
     }
 
-    let primaryConfig =
+    const primaryConfig =
     {
         context: config.context,
         entry:   config.entry,
@@ -206,19 +205,26 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         {
             splitChunks:
             {
-                chunks: "all",
+                chunks:                 "async",
+                minSize:                30000,
+                maxSize:                0,
+                minChunks:              1,
+                maxAsyncRequests:       5,
+                maxInitialRequests:     3,
+                automaticNameDelimiter: "~",
+                name:                   true,
                 cacheGroups:
                 {
-                    vendors:
-                    {
-                        test:     /[\\/]node_modules[\\/]/,
-                        priority: -10
-                    },
                     default:
                     {
                         minChunks:          2,
                         priority:           -20,
                         reuseExistingChunk: true
+                    },
+                    vendors:
+                    {
+                        test:     /[\\/]node_modules[\\/]/,
+                        priority: -10
                     }
                 }
             }
@@ -238,7 +244,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions }));
     }
 
-    let webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
+    const webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
 
     return webpackConfig;
 }
@@ -250,7 +256,12 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
  */
 function resolveEntries(context: string, entries: Entry): Entry
 {
-    let result: Entry = { };
+    const result: Entry = { };
+
+    if (typeof entries == "function")
+    {
+        entries = [entries.call(undefined)];
+    }
 
     if (typeof entries == "string")
     {
@@ -259,8 +270,8 @@ function resolveEntries(context: string, entries: Entry): Entry
 
     if (Array.isArray(entries))
     {
-        let tmp: Entry = { };
-        for (let entry of entries)
+        const tmp: Entry = { };
+        for (const entry of entries)
         {
             tmp[path.dirname(entry)] = entry;
         }
@@ -268,30 +279,25 @@ function resolveEntries(context: string, entries: Entry): Entry
         entries = tmp;
     }
 
-    for (let key in entries)
+    for (const key in entries)
     {
-        let value   = entries[key];
-        let sources = Array.isArray(value) ? value : [value];
+        const value   = entries[key];
+        const sources = Array.isArray(value) ? value : [value];
 
-        for (let source of sources)
+        for (const source of sources.map(x => x.replace(/\/\*$/, "")))
         {
-            if (source.endsWith("/*"))
-            {
-                source = source.replace(/\/\*$/, "");
-            }
-
-            let sourcePath = path.resolve(context, source);
+            const sourcePath = path.resolve(context, source);
 
             if (fs.lstatSync(sourcePath).isDirectory())
             {
-                for (let $module of fs.readdirSync(sourcePath))
+                for (const $module of fs.readdirSync(sourcePath))
                 {
-                    let modulePath = path.resolve(sourcePath, $module);
+                    const modulePath = path.resolve(sourcePath, $module);
                     if (fs.existsSync(modulePath))
                     {
                         if (fs.lstatSync(modulePath).isDirectory())
                         {
-                            let index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
+                            const index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
                             if (index)
                             {
                                 result[`${key}/${$module}`] = `${source}/${$module}/${index}`;

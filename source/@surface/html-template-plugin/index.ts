@@ -3,10 +3,11 @@ import fs                          from "fs";
 import path                        from "path";
 import webpack                     from "webpack";
 
-type Entrypoint =
+type Chunk =
 {
-    chunks: Array<webpack.compilation.Chunk>;
-    name:   string;
+    id:    string;
+    name:  string;
+    files: Array<string>;
 };
 
 namespace HtmlTemplatePlugin
@@ -94,32 +95,52 @@ class HtmlTemplatePlugin implements webpack.Plugin
                     throw new Error("Context can\"t be null.");
                 }
 
-                for (const [key, entry] of compilation.entrypoints.entries() as IterableIterator<[string, Entrypoint]>)
+                let entries = compiler.options.entry;
+
+                if (typeof entries == "function")
                 {
-                    const chunk = entry.chunks
-                        .filter(x => x.name == key)[0]
-                        || entry.chunks[0];
+                    entries = [entries.call(undefined)];
+                    if (entries instanceof Promise)
+                    {
+                        // Todo - Add support to promises
+                        entries = [];
+                    }
+                }
 
-                    const $module = Array.isArray(compiler.options.entry) ?
-                        self.getModuleName((compiler.options.entry as Array<string>)[0]) :
-                        self.getModuleName(entry.name);
+                if (typeof entries == "string")
+                {
+                    entries = [entries];
+                }
 
-                    const file = ("/" + chunk.files.filter(x => path.extname(x) == ".js")[0] || "").replace("./", "");
+                if (Array.isArray(entries))
+                {
+                    const tmp: ObjectLiteral<string> = { };
+                    for (const entry of entries)
+                    {
+                        tmp[path.dirname(entry)] = entry;
+                    }
+
+                    entries = tmp;
+                }
+
+                for (const [key, entry] of Object.entries(entries))
+                {
+                    const chunk = compilation.chunks.filter(x => x.name == key)[0] as Chunk;
 
                     const keys =
                     {
-                        file:   file,
+                        file:   ("/" + chunk.files.filter(x => path.extname(x) == ".js")[0] || "").replace("./", ""),
                         hash:   compilation.hash || "",
-                        module: $module,
-                        name:   entry.name,
-                        id:     chunk.id as string
+                        module: self.getModuleName(Array.isArray(entry) ? entry[0] : entry),
+                        name:   chunk.name,
+                        id:     chunk.id
                     };
 
-                    let template = fs.readFileSync(path.resolve(compiler.options.context, self.template)).toString();
+                    const template = fs.readFileSync(path.resolve(compiler.options.context, self.template)).toString();
 
-                    let html = self.templateParse(template, keys);
+                    const html = self.templateParse(template, keys);
 
-                    let asset = self.filenameParse(filename, keys);
+                    const asset = self.filenameParse(filename, keys);
 
                     compilation.assets[asset] =
                     {

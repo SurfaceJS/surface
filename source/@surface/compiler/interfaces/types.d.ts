@@ -1,3 +1,5 @@
 import { ObjectLiteral } from "@surface/core";
 
-export type Entry = string|Array<string>|ObjectLiteral<string>|ObjectLiteral<Array<string>>;
+type EntryType = string|Array<string>|ObjectLiteral<string>|ObjectLiteral<Array<string>>;
+
+export type Entry = EntryType|(() => EntryType|Promise<EntryType>);
