@@ -67,6 +67,16 @@ export default class DataTable extends Component
         runAsync(() => this.dataBind());
     }
 
+    public get infinityScroll(): boolean
+    {
+        return this.getAttribute("infinity-scroll") == "true";
+    }
+
+    public set infinityScroll(value: boolean)
+    {
+        this.setAttribute("infinity-scroll", value.toString());
+    }
+
     private readonly _onDatasourceChange: Observer = new Observer();
     public get onDatasourceChange(): Observer
     {
@@ -310,26 +320,38 @@ export default class DataTable extends Component
 
     private prepareRows(datasource: Iterable<ProxyObject<object>>): void
     {
-        const rowGroup = new DataRowGroup();
-        this.rowGroup = rowGroup;
-
-        const simbling = super.query("surface-data-table > surface-data-row-group:last-of-type")
-            || super.query("surface-data-table > surface-data-header:last-of-type");
-
-        if (simbling)
+        if (!this.rowGroup)
         {
-            simbling.insertAdjacentElement("afterend", rowGroup);
-        }
-        else
-        {
-            super.appendChild(rowGroup);
+            const rowGroup = new DataRowGroup();
+            this.rowGroup = rowGroup;
+
+            const simbling = super.query("surface-data-table > surface-data-row-group:last-of-type")
+                || super.query("surface-data-table > surface-data-header:last-of-type");
+
+            if (simbling)
+            {
+                simbling.insertAdjacentElement("afterend", rowGroup);
+            }
+            else
+            {
+                super.appendChild(rowGroup);
+            }
         }
 
         for (const item of datasource)
         {
             const row = this.createRow(item, false);
-            rowGroup.appendChild(row);
+            this.rowGroup.appendChild(row);
         }
+    }
+
+    private async updateRows(): Promise<void>
+    {
+        const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
+
+        this.rowGroup.queryAll<DataRow>("surface-data-row")
+            .zip(datasource, (row, data) => ({ row, data }))
+            .forEach(x => x.row.data = x.data);
     }
 
     public addNew(): void
@@ -341,7 +363,7 @@ export default class DataTable extends Component
 
     public addRow(row: DataRow): void
     {
-        this.dataProvider.create(row.data.source);
+        this.dataProvider.create(row.data.getSource());
         this.rowGroup.appendChild(row);
     }
 
@@ -356,7 +378,7 @@ export default class DataTable extends Component
 
     public deleteRow(row: DataRow): void
     {
-        this.dataProvider.delete(row.data.source);
+        this.dataProvider.delete(row.data.getSource());
         this.rowGroup.removeChild(row);
         if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
         {
@@ -372,8 +394,7 @@ export default class DataTable extends Component
 
     public async refresh(): Promise<void>
     {
-        this.rowGroup.innerHTML = "";
-        await this.dataBind();
+        await this.updateRows();
     }
 
     public saveRow(row: DataRow): void
@@ -384,7 +405,7 @@ export default class DataTable extends Component
 
         if (row.isNew)
         {
-            this.dataProvider.create(row.data.source);
+            this.dataProvider.create(row.data.getSource());
             if (this.rowGroup.childNodes.length > this.pageSize)
             {
                 this.refresh();

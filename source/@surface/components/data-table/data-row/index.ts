@@ -1,6 +1,7 @@
 import { coalesce }                       from "@surface/core/common/generic";
 import { ProxyObject as __ProxyObject__ } from "@surface/core/common/object";
 import CustomElement                      from "@surface/custom-element";
+import Type                               from "@surface/reflection";
 import { element }                        from "../../decorators";
 import template                           from "./index.html";
 import style                              from "./index.scss";
@@ -18,7 +19,7 @@ export default class DataRow extends CustomElement
 
     public set data(value: ProxyObject<object>)
     {
-        this._data = value;
+        this.setData(this._data, value);
     }
 
     private _editMode: boolean = false;
@@ -48,7 +49,26 @@ export default class DataRow extends CustomElement
         super();
         this._isNew    = coalesce(isNew, true);
         this._editMode = this._isNew;
-        this._data     = data || { source: { }, save: () => undefined, undo: () => undefined };
+        this._data     = data || { getSource: () => ({ }), save: () => undefined, undo: () => undefined };
+    }
+
+    private setData(target: object, source: object): void
+    {
+        for (const property of Type.from(target).getProperties())
+        {
+            const value = source[property.key as keyof Object];
+            if (value instanceof Object)
+            {
+                this.setData(target[property.key as keyof Object], value);
+            }
+            else
+            {
+                if (!property.readonly)
+                {
+                    target[property.key as keyof Object] = source[property.key as keyof Object];
+                }
+            }
+        }
     }
 
     public enterEdit(): void

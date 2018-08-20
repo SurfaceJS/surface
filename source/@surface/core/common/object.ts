@@ -1,16 +1,17 @@
 import { Constructor, ObjectLiteral } from "..";
 import { hasValue }                   from "./generic";
 
-const proxy = Symbol("proxy-factory:instance");
-
-interface IProxyObject
+interface IProxyObject<T>
 {
-    source: object;
-    save(): void;
-    undo(): void;
+    save():      void;
+    undo():      void;
+    getSource(): T;
 }
 
-export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject;
+export type ProxyObject<T extends object> = { [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends object ? ProxyObject<T[K]> : T[K] } & IProxyObject<T>;
+
+const PROXY  = Symbol("proxy-factory:proxy");
+const SOURCE = Symbol("proxy-factory:source");
 
 export function clone<T extends ObjectLiteral>(source: T): T
 {
@@ -153,27 +154,28 @@ export function proxyFactory<T extends ObjectLiteral>(signature: T): Constructor
         }
     } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 
-    class ProxyClass<T extends ObjectLiteral> implements IProxyObject
+    class ProxyClass<T extends ObjectLiteral> implements IProxyObject<T>
     {
         [key: string]: unknown;
 
-        private readonly _source: T;
-        public get source(): T
-        {
-            return this._source;
-        }
+        private readonly [SOURCE]: T;
 
-        public readonly [proxy]: boolean;
+        public readonly [PROXY]: boolean;
 
         public constructor(source: T)
         {
-            this[proxy] = true;
-            this._source = source;
+            this[PROXY]  = true;
+            this[SOURCE] = source;
         }
 
-        public static [Symbol.hasInstance](instance: object & { [proxy]?: boolean }): boolean
+        public static [Symbol.hasInstance](instance: object & { [PROXY]?: boolean }): boolean
         {
-            return instance && !!instance[proxy];
+            return instance && !!instance[PROXY];
+        }
+
+        public getSource(): T
+        {
+            return this[SOURCE];
         }
 
         public save(): void
@@ -187,7 +189,7 @@ export function proxyFactory<T extends ObjectLiteral>(signature: T): Constructor
                 }
                 else
                 {
-                    this.source[key] = value;
+                    this[SOURCE][key] = value;
                 }
             }
         }
@@ -203,7 +205,7 @@ export function proxyFactory<T extends ObjectLiteral>(signature: T): Constructor
                 }
                 else
                 {
-                    this[key] = this.source[key];
+                    this[key] = this[SOURCE][key];
                 }
             }
         }
@@ -223,14 +225,14 @@ export function proxyFactory<T extends ObjectLiteral>(signature: T): Constructor
                 {
                     if (!hasValue(this[`_${key}`]))
                     {
-                        const value = this.source[key];
+                        const value = this.getSource()[key];
                         if (value instanceof Object && valueProxy)
                         {
                             this[`_${key}`] = new valueProxy(value) as unknown;
                         }
                         else
                         {
-                            this[`_${key}`] = this.source[key];
+                            this[`_${key}`] = this.getSource()[key];
                         }
                     }
 

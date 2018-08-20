@@ -82,6 +82,11 @@ export default class Type
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(prototype)))
             {
+                if (key == "__proto__")
+                {
+                    continue;
+                }
+
                 yield { key, descriptor, declaringType: Type.from(prototype), isStatic: false };
             }
         } while (prototype = Object.getPrototypeOf(prototype));

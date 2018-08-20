@@ -9,6 +9,7 @@
         "@surface/custom-element": "0.0.5",
         "@surface/enumerable": "0.0.0",
         "@surface/expression": "0.0.0",
+        "@surface/reflection": "0.0.0",
         "tslib": "1.9.3"
     },
     "description": "Surface web components",
