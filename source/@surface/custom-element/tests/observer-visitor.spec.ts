@@ -1,12 +1,12 @@
 import "./fixtures/dom";
 
+import { ObjectLiteral }                       from "@surface/core";
 import Expression                              from "@surface/expression";
 import ICallExpression                         from "@surface/expression/interfaces/call-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import ObserverVisitor                         from "../internal/observer-visitor";
-import { observedAttributes }                  from "../internal/symbols";
-import { ObjectLiteral } from '@surface/core';
+import { OBSERVED_ATTRIBUTES }                 from "../internal/symbols";
 
 @suite
 export class ObserverVisitorSpec
@@ -42,7 +42,7 @@ export class ObserverVisitorSpec
     {
         class Mock
         {
-            public static [observedAttributes] = ["value"];
+            public static [OBSERVED_ATTRIBUTES] = ["value"];
             private _value: number = 0;
             public get value(): number
             {
@@ -74,7 +74,7 @@ export class ObserverVisitorSpec
     {
         class Mock
         {
-            public static [observedAttributes] = ["value"];
+            public static [OBSERVED_ATTRIBUTES] = ["value"];
             private _value: number = 0;
             public get value(): number
             {

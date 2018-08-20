@@ -1,20 +1,20 @@
 import { Action, Nullable }                                  from "@surface/core";
 import Enumerable                                            from "@surface/enumerable";
 import ElementBind                                           from "./internal/element-bind";
-import { context, observedAttributes, shadowRoot, template } from "./internal/symbols";
+import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
 
 export default abstract class CustomElement extends HTMLElement
 {
-    public static readonly [observedAttributes]: Nullable<Array<string>>;
-    public static readonly [template]:           Nullable<HTMLTemplateElement>;
+    public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
+    public static readonly [TEMPLATE]:           Nullable<HTMLTemplateElement>;
 
-    private [context]: Nullable<Object>;
+    private [CONTEXT]: Nullable<Object>;
     protected get context(): Object
     {
-        return this[context] || { };
+        return this[CONTEXT] || { };
     }
 
-    private readonly [shadowRoot]: ShadowRoot;
+    private readonly [SHADOW_ROOT]: ShadowRoot;
 
     public onAfterBind?: Action;
 
@@ -23,18 +23,18 @@ export default abstract class CustomElement extends HTMLElement
     protected constructor(shadowRootInit?: ShadowRootInit)
     {
         super();
-        this[shadowRoot] = this.attachShadow(shadowRootInit || { mode: "closed" });
+        this[SHADOW_ROOT] = this.attachShadow(shadowRootInit || { mode: "closed" });
 
         if (window.ShadyCSS)
         {
             window.ShadyCSS.styleElement(this);
         }
 
-        const templateElement = (this.constructor as typeof CustomElement)[template];
+        const template = (this.constructor as typeof CustomElement)[TEMPLATE];
 
-        if (templateElement)
+        if (template)
         {
-            this.applyTemplate(templateElement);
+            this.applyTemplate(template);
         }
     }
     protected static contextBind(context: Object, content: Node): void
@@ -46,7 +46,7 @@ export default abstract class CustomElement extends HTMLElement
     {
         const content = document.importNode(template.content, true);
 
-        this[shadowRoot].appendChild(content);
+        this[SHADOW_ROOT].appendChild(content);
     }
 
     /**
@@ -55,7 +55,7 @@ export default abstract class CustomElement extends HTMLElement
      */
     protected shadowQuery<T extends HTMLElement>(selector: string): Nullable<T>
     {
-        return this[shadowRoot].querySelector(selector) as Nullable<T>;
+        return this[SHADOW_ROOT].querySelector(selector) as Nullable<T>;
     }
 
     /**
@@ -64,7 +64,7 @@ export default abstract class CustomElement extends HTMLElement
      */
     protected shadowQueryAll<T extends HTMLElement>(selector: string): Enumerable<T>
     {
-        return Enumerable.from((Array.from(this[shadowRoot].querySelectorAll(selector))));
+        return Enumerable.from((Array.from(this[SHADOW_ROOT].querySelectorAll(selector))));
     }
 
     /**

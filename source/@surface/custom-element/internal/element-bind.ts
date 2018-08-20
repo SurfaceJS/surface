@@ -1,16 +1,16 @@
-import { Action, ObjectLiteral }          from "@surface/core";
-import { coalesce }        from "@surface/core/common/generic";
-import { dashedToCamel }   from "@surface/core/common/string";
-import ExpressionType      from "@surface/expression/expression-type";
-import IMemberExpression   from "@surface/expression/interfaces/member-expression";
-import Type                from "@surface/reflection";
-import IArrayExpression    from "../../expression/interfaces/array-expression";
-import BindParser          from "./bind-parser";
-import BindingMode         from "./binding-mode";
-import DataBind            from "./data-bind";
-import ObserverVisitor     from "./observer-visitor";
-import { binded, context } from "./symbols";
-import windowWrapper       from "./window-wrapper";
+import { Action, ObjectLiteral } from "@surface/core";
+import { coalesce }              from "@surface/core/common/generic";
+import { dashedToCamel }         from "@surface/core/common/string";
+import ExpressionType            from "@surface/expression/expression-type";
+import IMemberExpression         from "@surface/expression/interfaces/member-expression";
+import Type                      from "@surface/reflection";
+import IArrayExpression          from "../../expression/interfaces/array-expression";
+import BindParser                from "./bind-parser";
+import BindingMode               from "./binding-mode";
+import DataBind                  from "./data-bind";
+import ObserverVisitor           from "./observer-visitor";
+import { BINDED, CONTEXT }       from "./symbols";
+import windowWrapper             from "./window-wrapper";
 
 export default class ElementBind
 {
@@ -149,12 +149,12 @@ export default class ElementBind
 
     private traverseElement(node: Node): void
     {
-        for (const element of Array.from(node.childNodes) as Array<Element & { [binded]?: boolean, [context]?: object }>)
+        for (const element of Array.from(node.childNodes) as Array<Element & { [BINDED]?: boolean, [CONTEXT]?: object }>)
         {
-            if (!element[binded] && element.tagName != "TEMPLATE")
+            if (!element[BINDED] && element.tagName != "TEMPLATE")
             {
-                element[binded]  = true;
-                element[context] = this.context;
+                element[BINDED]  = true;
+                element[CONTEXT] = this.context;
 
                 if (element.attributes && element.attributes.length > 0)
                 {

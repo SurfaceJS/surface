@@ -4,7 +4,7 @@ import * as symbols  from "./internal/symbols";
 
 type Observable =
 {
-    [symbols.observedAttributes]?: Array<string|symbol>;
+    [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>;
 };
 
 function isCustomElement(source: Function): source is typeof CustomElement
@@ -21,14 +21,14 @@ export function attribute(target: Object, propertyKey: string | symbol): void
 {
     if (target instanceof HTMLElement)
     {
-        if (!(target.constructor as Observable)[symbols.observedAttributes])
+        if (!(target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES])
         {
             const values: Array<string> = [];
-            Object.defineProperty(target.constructor, symbols.observedAttributes, { get: () => values } );
-            Object.defineProperty(target.constructor, "observedAttributes", { get: () => (target.constructor as Observable)[symbols.observedAttributes] });
+            Object.defineProperty(target.constructor, symbols.OBSERVED_ATTRIBUTES, { get: () => values } );
+            Object.defineProperty(target.constructor, "observedAttributes", { get: () => (target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES] });
         }
 
-        (target.constructor as Observable)[symbols.observedAttributes]!.push(propertyKey);
+        (target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES]!.push(propertyKey);
     }
     else
     {
@@ -60,13 +60,13 @@ export function element(name: string, template?: string, style?: string, options
                     window.ShadyCSS.prepareTemplate(templateElement, name, options && options.extends);
                 }
 
-                Object.defineProperty(target, symbols.template, { get: () => templateElement } );
+                Object.defineProperty(target, symbols.TEMPLATE, { get: () => templateElement } );
 
                 const proxy = function(this: CustomElement, ...args: Array<unknown>)
                 {
                     const instance = Reflect.construct(target, args, new.target) as CustomElement;
 
-                    ElementBind.for({ host: instance }, instance[symbols.shadowRoot]);
+                    ElementBind.for({ host: instance }, instance[symbols.SHADOW_ROOT]);
 
                     if (instance.onAfterBind)
                     {

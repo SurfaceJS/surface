@@ -1,6 +1,6 @@
 import { Nullable } from "@surface/core";
-import fs                    from "fs";
-import path                  from "path";
+import fs           from "fs";
+import path         from "path";
 
 export function deletePath(targetPath: string): boolean
 {

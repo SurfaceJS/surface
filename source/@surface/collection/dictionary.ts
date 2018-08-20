@@ -2,15 +2,15 @@ import { Nullable, ObjectLiteral } from "@surface/core";
 import Enumerable                  from "@surface/enumerable";
 import KeyValuePair                from "./key-value-pair";
 
-const source = Symbol("dictionary:source");
+const SOURCE = Symbol("dictionary:source");
 
 export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
-    private [source]: Map<TKey, TValue>;
+    private [SOURCE]: Map<TKey, TValue>;
 
     public get size(): number
     {
-        return this[source].size;
+        return this[SOURCE].size;
     }
 
     public constructor();
@@ -18,13 +18,13 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
     public constructor(elements?: Iterable<KeyValuePair<TKey, TValue>>)
     {
         super();
-        this[source] = new Map();
+        this[SOURCE] = new Map();
 
         if (elements)
         {
             for (const element of elements)
             {
-                this[source].set(element.key, element.value);
+                this[SOURCE].set(element.key, element.value);
             }
         }
     }
@@ -36,7 +36,7 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
 
     public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>
     {
-        for (const element of this[source])
+        for (const element of this[SOURCE])
         {
             let [ key, value ] = element;
             yield new KeyValuePair(key, value);
@@ -45,22 +45,22 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
 
     public delete(key: TKey): void
     {
-        this[source].delete(key);
+        this[SOURCE].delete(key);
     }
 
     public has(key: TKey): boolean
     {
-        return this[source].has(key);
+        return this[SOURCE].has(key);
     }
 
     public get(key: TKey): Nullable<TValue>
     {
-        return this[source].get(key);
+        return this[SOURCE].get(key);
     }
 
     public set(key: TKey, value: TValue): void
     {
-        this[source].set(key, value);
+        this[SOURCE].set(key, value);
     }
 }
 

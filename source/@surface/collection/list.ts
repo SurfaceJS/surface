@@ -1,17 +1,17 @@
 import ArgumentOutOfRangeError from "@surface/core/errors/argument-out-of-range-error";
 import Enumerable              from "@surface/enumerable";
 
-const source = Symbol("list:source");
+const SOURCE = Symbol("list:source");
 
 export default class List<TSource> extends Enumerable<TSource>
 {
     [index: number]:  TSource;
-    private [source]: Array<TSource>;
+    private [SOURCE]: Array<TSource>;
 
     /** Returns Length of the list. */
     public get length(): number
     {
-        return this[source].length;
+        return this[SOURCE].length;
     }
 
     public constructor();
@@ -23,11 +23,11 @@ export default class List<TSource> extends Enumerable<TSource>
     {
         super();
 
-        this[source] = elements ? Array.from(elements) : [];
+        this[SOURCE] = elements ? Array.from(elements) : [];
 
         const handler: ProxyHandler<List<TSource>> =
         {
-            has: (target, key) => Number.isInteger(parseInt(key.toString())) ? key in this[source] : key in this,
+            has: (target, key) => Number.isInteger(parseInt(key.toString())) ? key in this[SOURCE] : key in this,
             get: (target, key) =>
             {
                 const index = parseInt(key.toString());
@@ -43,7 +43,7 @@ export default class List<TSource> extends Enumerable<TSource>
                         throw new ArgumentOutOfRangeError("index is equal to or greater than length");
                     }
 
-                    return this[source][index];
+                    return this[SOURCE][index];
                 }
                 else
                 {
@@ -65,7 +65,7 @@ export default class List<TSource> extends Enumerable<TSource>
                         throw new ArgumentOutOfRangeError("index is equal to or greater than length");
                     }
 
-                    this[source][index] = value;
+                    this[SOURCE][index] = value;
                 }
                 else
                 {
@@ -81,7 +81,7 @@ export default class List<TSource> extends Enumerable<TSource>
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        for (const element of this[source])
+        for (const element of this[SOURCE])
         {
             yield element;
         }
@@ -93,7 +93,7 @@ export default class List<TSource> extends Enumerable<TSource>
      */
     public add(item: TSource): void
     {
-        this[source].push(item);
+        this[SOURCE].push(item);
     }
 
     /**
@@ -116,19 +116,19 @@ export default class List<TSource> extends Enumerable<TSource>
     public addAt(items: List<TSource>, index: number): void;
     public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index: number): void
     {
-        const remaining = this[source].splice(index);
+        const remaining = this[SOURCE].splice(index);
 
         if (Array.isArray(itemOrItems))
         {
-            this[source] = this[source].concat(itemOrItems).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat(itemOrItems).concat(remaining);
         }
         else if (itemOrItems instanceof List)
         {
-            this[source] = this[source].concat(itemOrItems.toArray()).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat(itemOrItems.toArray()).concat(remaining);
         }
         else
         {
-            this[source] = this[source].concat([itemOrItems]).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat([itemOrItems]).concat(remaining);
         }
     }
 
@@ -152,11 +152,11 @@ export default class List<TSource> extends Enumerable<TSource>
     {
         if (typeof indexOritem == "number")
         {
-            this[source].splice(indexOritem, count || 1);
+            this[SOURCE].splice(indexOritem, count || 1);
         }
         else
         {
-            this[source].splice(this[source].findIndex(x => Object.is(x, indexOritem)), 1);
+            this[SOURCE].splice(this[SOURCE].findIndex(x => Object.is(x, indexOritem)), 1);
         }
     }
 }

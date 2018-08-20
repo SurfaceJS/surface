@@ -4,31 +4,31 @@ import mocha                                                   from "./internal/
 
 import
 {
-    afterEachToken,
-    afterToken,
-    batchTestToken,
-    beforeEachToken,
-    beforeToken,
-    categoryToken,
-    dataToken,
-    descriptionToken,
-    expectationToken,
-    testToken
+    AFTER,
+    AFTER_EACH,
+    BATCH,
+    BEFORE,
+    BEFORE_EACH,
+    CATEGORY,
+    DATA,
+    DESCRIPTION,
+    EXPECTATION,
+    TEST
 }
 from "./internal/symbols";
 
 export type TestMethod = Function &
 {
-    [afterToken]?:       boolean;
-    [afterEachToken]?:   boolean;
-    [beforeToken]?:      boolean;
-    [beforeEachToken]?:  boolean;
-    [batchTestToken]?:   boolean;
-    [categoryToken]?:    string;
-    [dataToken]?:        { source: Array<Object>, expectation: Func1<Object, string> };
-    [descriptionToken]?: string;
-    [expectationToken]?: string;
-    [testToken]?:        boolean;
+    [AFTER]?:       boolean;
+    [AFTER_EACH]?:   boolean;
+    [BEFORE]?:      boolean;
+    [BEFORE_EACH]?:  boolean;
+    [BATCH]?:   boolean;
+    [CATEGORY]?:    string;
+    [DATA]?:        { source: Array<Object>, expectation: Func1<Object, string> };
+    [DESCRIPTION]?: string;
+    [EXPECTATION]?: string;
+    [TEST]?:        boolean;
 };
 
 export type TestObject = { [key: string]: TestMethod };
@@ -41,8 +41,8 @@ export function after(...args: Array<Object>): MethodDecorator|void
 {
     const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key as string][afterToken]       = true;
-        target[key as string][descriptionToken] = description;
+        target[key as string][AFTER]       = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
@@ -62,8 +62,8 @@ export function afterEach(...args: Array<Object>): MethodDecorator|void
 {
     const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key as string][afterEachToken]   = true;
-        target[key as string][descriptionToken] = description;
+        target[key as string][AFTER_EACH]   = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
@@ -81,8 +81,8 @@ export function batchTest<T extends Object>(source: Array<T>, expectation: Func1
 {
     return (target: object, key: string|symbol) =>
     {
-        (target as TestObject)[key as string][batchTestToken] = true;
-        (target as TestObject)[key as string][dataToken]      = { source: source as Array<Object>, expectation: expectation as Func1<Object, string> };
+        (target as TestObject)[key as string][BATCH] = true;
+        (target as TestObject)[key as string][DATA]      = { source: source as Array<Object>, expectation: expectation as Func1<Object, string> };
     };
 }
 
@@ -92,8 +92,8 @@ export function before(...args: Array<Object>): MethodDecorator|void
 {
     const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key as string][beforeToken]      = true;
-        target[key as string][descriptionToken] = description;
+        target[key as string][BEFORE]      = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
@@ -113,8 +113,8 @@ export function beforeEach(...args: Array<Object>): MethodDecorator|void
 {
     const decorator = (target: TestObject, key: string, description: string) =>
     {
-        target[key as string][beforeEachToken]  = true;
-        target[key as string][descriptionToken] = description;
+        target[key as string][BEFORE_EACH]  = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
@@ -132,7 +132,7 @@ export function category(name: string): MethodDecorator
 {
     return (target: Object, key: string|symbol) =>
     {
-        (target as TestObject)[key as string][categoryToken] = name;
+        (target as TestObject)[key as string][CATEGORY] = name;
     };
 }
 
@@ -163,36 +163,36 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
         for (const name of Object.getOwnPropertyNames(target.prototype))
         {
             const method = target.prototype[name] as TestMethod;
-            if (method[afterToken])
+            if (method[AFTER])
             {
                 afterCallback = method as Action;
             }
 
-            if (method[afterEachToken])
+            if (method[AFTER_EACH])
             {
                 afterEachCallback = method as Action;
             }
 
-            if (method[beforeToken])
+            if (method[BEFORE])
             {
                 beforeCallback = method as Action;
             }
 
-            if (method[beforeEachToken])
+            if (method[BEFORE_EACH])
             {
                 beforeEachCallback = method as Action;
             }
 
-            if (method[testToken])
+            if (method[TEST])
             {
-                const categoryName = method[categoryToken];
+                const categoryName = method[CATEGORY];
                 if (categoryName)
                 {
                     catergories[categoryName] = catergories[categoryName] || [];
                     catergories[categoryName].push
                     ({
                         getMethod:   (context: object) => method.bind(context),
-                        expectation: method[expectationToken] || "",
+                        expectation: method[EXPECTATION] || "",
                     });
                 }
                 else
@@ -200,17 +200,17 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                     tests.push
                     ({
                         getMethod:   context => method.bind(context),
-                        expectation: method[expectationToken] || "",
+                        expectation: method[EXPECTATION] || "",
                     });
                 }
             }
 
-            if (method[batchTestToken])
+            if (method[BATCH])
             {
-                const batch = method[dataToken] as { source: Array<Object>, expectation: Func1<Object, string> };
+                const batch = method[DATA] as { source: Array<Object>, expectation: Func1<Object, string> };
                 for (const data of batch.source)
                 {
-                    const categoryName = method[categoryToken];
+                    const categoryName = method[CATEGORY];
                     if (categoryName)
                     {
                         catergories[categoryName] = catergories[categoryName] || [];
@@ -241,12 +241,12 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
 
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback[descriptionToken] || "", beforeCallback.bind(context));
+                    mocha.before(beforeCallback[DESCRIPTION] || "", beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback[descriptionToken] || "", beforeEachCallback.bind(context));
+                    mocha.beforeEach(beforeEachCallback[DESCRIPTION] || "", beforeEachCallback.bind(context));
                 }
 
                 for (const test of tests)
@@ -271,12 +271,12 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback[descriptionToken] || "", afterEachCallback.bind(context));
+                    mocha.afterEach(afterEachCallback[DESCRIPTION] || "", afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback[descriptionToken] || "", afterCallback.bind(context));
+                    mocha.after(afterCallback[DESCRIPTION] || "", afterCallback.bind(context));
                 }
             }
         );
@@ -298,8 +298,8 @@ export function test(...args: Array<Object>): MethodDecorator|void
 {
     const decorator = (target: TestObject, key: string|symbol, expectation: string) =>
     {
-        target[key as string][testToken]        = true;
-        target[key as string][expectationToken] = expectation;
+        target[key as string][TEST]        = true;
+        target[key as string][EXPECTATION] = expectation;
     };
 
     if (args.length == 1)

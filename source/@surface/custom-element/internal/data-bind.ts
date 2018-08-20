@@ -2,14 +2,14 @@ import { Action }   from "@surface/core";
 import Observer     from "@surface/core/observer";
 import PropertyInfo from "@surface/reflection/property-info";
 
-const caller   = Symbol("data-bind:caller");
-const observer = Symbol("data-bind:observer");
+const CALLER   = Symbol("data-bind:caller");
+const OBSERVER = Symbol("data-bind:observer");
 
 type Observable =
 {
     [key: string]: unknown,
-    [caller]:      boolean,
-    [observer]:    Observer
+    [CALLER]:      boolean,
+    [OBSERVER]:    Observer
 };
 
 export default class DataBind
@@ -17,9 +17,9 @@ export default class DataBind
     public static oneWay(target: Object,     property: PropertyInfo, action: Action): void;
     public static oneWay(target: Observable, property: PropertyInfo, action: Action): void
     {
-        target[observer] = target[observer] || new Observer();
+        target[OBSERVER] = target[OBSERVER] || new Observer();
 
-        target[observer].subscribe(action);
+        target[OBSERVER].subscribe(action);
 
         Object.defineProperty
         (
@@ -30,11 +30,11 @@ export default class DataBind
                 get: () => property.getter && property.getter.call(target),
                 set: (value: Object) =>
                 {
-                    if (!target[caller] && property.setter)
+                    if (!target[CALLER] && property.setter)
                     {
                         property.setter.call(target, value);
 
-                        target[observer].notify();
+                        target[OBSERVER].notify();
                     }
                 }
             }
@@ -50,14 +50,14 @@ export default class DataBind
 
                 if (qualifiedName == property.key)
                 {
-                    target[observer].notify();
+                    target[OBSERVER].notify();
                 }
             };
 
             if (target instanceof HTMLInputElement)
             {
-                target.addEventListener("change", () => target[observer].notify());
-                target.addEventListener("keyup", () => target[observer].notify());
+                target.addEventListener("change", () => target[OBSERVER].notify());
+                target.addEventListener("keyup", () => target[OBSERVER].notify());
             }
         }
     }
@@ -71,9 +71,9 @@ export default class DataBind
             leftProperty,
             () =>
             {
-                left[caller]             = true;
+                left[CALLER]             = true;
                 right[rightProperty.key] = left[leftProperty.key];
-                left[caller]             = false;
+                left[CALLER]             = false;
             }
         );
 
@@ -83,9 +83,9 @@ export default class DataBind
             rightProperty,
             () =>
             {
-                right[caller]          = true;
+                right[CALLER]          = true;
                 left[leftProperty.key] = right[rightProperty.key];
-                right[caller]          = false;
+                right[CALLER]          = false;
             }
         );
     }
