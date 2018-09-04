@@ -98,7 +98,7 @@ export default class MvcRequestHandler extends RequestHandler
                         const targetController = new constructor(httpContext);
 
                         const actionMethod = Enumerable.from(Type.from(targetController).getMethods())
-                            .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
+                            .firstOrDefault(x => typeof x.key == "string" && new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
 
                         if (actionMethod)
                         {

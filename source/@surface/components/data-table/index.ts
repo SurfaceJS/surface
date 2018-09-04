@@ -2,10 +2,11 @@ import { Constructor, Nullable, ObjectLiteral }            from "@surface/core";
 import { coalesce }                                        from "@surface/core/common/generic";
 import { clone, objectFactory, proxyFactory, ProxyObject } from "@surface/core/common/object";
 import { runAsync }                                        from "@surface/core/common/promise";
-import Observer                                            from "@surface/core/observer";
 import CustomElement                                       from "@surface/custom-element";
 import Enumerable                                          from "@surface/enumerable";
 import Expression                                          from "@surface/expression";
+import Observer                                            from "@surface/observer";
+import { notify, observe }                                 from "@surface/observer/common";
 import Component                                           from "..";
 import { element }                                         from "../decorators";
 import DataCell                                            from "./data-cell";
@@ -34,6 +35,9 @@ export default class DataTable extends Component
     private proxyConstructor!: Constructor<ProxyObject<object>>;
 
     private _dataDefinition: object = { };
+    private dataProvider!: IDataProvider<object>;
+
+    public readonly _onDatasourceChange: Observer = new Observer();
     public get dataDefinition(): object
     {
         return this._dataDefinition;
@@ -43,8 +47,6 @@ export default class DataTable extends Component
     {
         this._dataDefinition = value;
     }
-
-    private dataProvider!: IDataProvider<object>;
 
     public get dataFooterGroups(): Enumerable<DataFooter>
     {
@@ -77,10 +79,14 @@ export default class DataTable extends Component
         this.setAttribute("infinity-scroll", value.toString());
     }
 
-    private readonly _onDatasourceChange: Observer = new Observer();
     public get onDatasourceChange(): Observer
     {
         return this._onDatasourceChange;
+    }
+
+    public get pageCount(): number
+    {
+        return this.dataProvider.pageCount;
     }
 
     public get pageSize(): number
@@ -117,6 +123,10 @@ export default class DataTable extends Component
         {
             this.dataProvider = new DataProvider([], this.pageSize);
         }
+
+        const observer = observe(this.dataProvider, "pageCount");
+
+        observer.subscribe(() => notify(this, "pageCount"));
 
         this.prepareHeaders();
         this.prepareFooters();

@@ -8,10 +8,10 @@ export default abstract class CustomElement extends HTMLElement
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
     public static readonly [TEMPLATE]:           Nullable<HTMLTemplateElement>;
 
-    private [CONTEXT]: Nullable<Object>;
-    protected get context(): Object
+    private [CONTEXT]: unknown;
+    protected get context(): object
     {
-        return this[CONTEXT] || { };
+        return (this[CONTEXT] || { }) as object;
     }
 
     private readonly [SHADOW_ROOT]: ShadowRoot;
@@ -37,7 +37,7 @@ export default abstract class CustomElement extends HTMLElement
             this.applyTemplate(template);
         }
     }
-    protected static contextBind(context: Object, content: Node): void
+    protected static contextBind(context: object, content: Node): void
     {
         ElementBind.for(context, content);
     }

@@ -1,4 +1,4 @@
-import { Action1 } from ".";
+import { Action1 } from "@surface/core";
 
 export default class Observer
 {

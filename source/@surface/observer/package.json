@@ -4,32 +4,23 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/core": "0.0.4",
-        "@surface/custom-element": "0.0.5",
-        "@surface/enumerable": "0.0.0",
-        "@surface/expression": "0.0.0",
-        "@surface/observer": "0.0.0",
-        "@surface/reflection": "0.0.0",
+        "@surface/core": "0.0.3",
         "tslib": "1.9.3"
     },
-    "description": "Surface web components",
+    "description": "Observer module.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "@types/jsdom": "11.0.6",
-        "chai": "4.1.2",
-        "jsdom": "11.12.0"
+        "chai": "4.1.2"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "menu",
+        "enumerable",
         "surface",
-        "typescript",
-        "webcomponents"
+        "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/components",
+    "name": "@surface/observer",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

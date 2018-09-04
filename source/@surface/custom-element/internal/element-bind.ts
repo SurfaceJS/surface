@@ -15,15 +15,15 @@ import windowWrapper             from "./window-wrapper";
 export default class ElementBind
 {
     private readonly window:  Window;
-    private readonly context: Object;
+    private readonly context: object;
 
-    private constructor(context: Object)
+    private constructor(context: object)
     {
         this.context = context;
         this.window  = windowWrapper;
     }
 
-    public static for(context: Object, content: Node): void
+    public static for(context: object, content: Node): void
     {
         new ElementBind(context).traverseElement(content);
     }
@@ -82,7 +82,7 @@ export default class ElementBind
                             Type.from(element).getProperty(attributeName) :
                             Type.from(attribute).getProperty("value");
 
-                        const target = (expression as IMemberExpression).target.evaluate() as Object;
+                        const target = (expression as IMemberExpression).target.evaluate() as object;
                         const key    = `${(expression as IMemberExpression).key.evaluate()}`;
 
                         const rightProperty = (target instanceof Function) ?
@@ -136,7 +136,7 @@ export default class ElementBind
         }
     }
 
-    private createProxy(context: Object): Object
+    private createProxy(context: object): object
     {
         const handler: ProxyHandler<ObjectLiteral> =
         {

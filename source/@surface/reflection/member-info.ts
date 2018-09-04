@@ -1,5 +1,5 @@
 import { Nullable, ObjectLiteral } from "@surface/core";
-import Type                        from "./type";
+import Type         from "./type";
 
 export default abstract class MemberInfo
 {
@@ -15,8 +15,8 @@ export default abstract class MemberInfo
         return this._isStatic;
     }
 
-    private readonly _key: string;
-    public get key(): string
+    private readonly _key: string|symbol;
+    public get key(): string|symbol
     {
         return this._key;
     }

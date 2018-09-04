@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                   from "chai";
-import Observer                    from "../observer";
+import Observer                    from "..";
 
 @suite
 export default class ObserverSpec

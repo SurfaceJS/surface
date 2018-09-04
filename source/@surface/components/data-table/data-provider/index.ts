@@ -1,5 +1,5 @@
-import { }           from "@surface/core";
 import { element }   from "@surface/custom-element/decorators";
+import { notify }    from "@surface/observer/common";
 import IDataProvider from "../interfaces/data-provider";
 
 type Order = "asc"|"desc";
@@ -10,26 +10,18 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
     private orderDirection: Order  = "asc";
     private orderField:     string = "";
 
-    private _page: number = 1;
+    private _page:      number = 1;
+    private _pageCount: number = 0;
+    private _total: number = 0;
+
     public get page(): number
     {
         return this._page;
     }
 
-    public set page(value: number)
-    {
-        this._page = value;
-    }
-
-    private _pageCount: number = 0;
     public get pageCount(): number
     {
         return this._pageCount;
-    }
-
-    public set pageCount(value: number)
-    {
-        this._pageCount = value;
     }
 
     public get pageSize(): number
@@ -82,15 +74,18 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         super.setAttribute("update-url", value.toString());
     }
 
-    private _total: number = 0;
     public get total(): number
     {
         return this._total;
     }
 
-    public set total(value: number)
+    private calculatePageCount(): void
     {
-        this._total = value;
+        const total = this.total;
+
+        const pageCount = total / this.pageSize;
+
+        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
     }
 
     public create(data: T): Promise<void>
@@ -156,9 +151,16 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
             }
         );
 
-        const data = await response.json();
+        const json = await response.json();
 
-        return data || [];
+        this._total = json.total;
+
+        this.calculatePageCount();
+
+        notify(this, "total");
+        notify(this, "pageCount");
+
+        return json.data;
     }
 
     public update(data: T): Promise<void>

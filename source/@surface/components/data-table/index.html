@@ -1,3 +1,5 @@
+<require path="../for-each" />
+
 <div horizontal-align="center">Filters</div>
 <hr>
 <input type="button" value="New" on-click="{{host.addNew()}}" horizontal-align="left" />
@@ -5,4 +7,11 @@
     <slot></slot>
 </div>
 <hr>
-<div horizontal-align="center">Pagination</div>
+<div horizontal-align="center">
+    Pagination
+    <surface-for-each of="{{ window.Array(host.pageCount) }}">
+        <template>
+            <input type="button" value="{{ index + 1 }}" />
+        </template>
+    </surface-for-each>
+</div>
