@@ -1,16 +1,14 @@
-import { Action }   from "@surface/core";
-import { observe }  from "@surface/observer/common";
-import IObservable  from "@surface/observer/interfaces/observable";
-import { NOTIFIER } from "@surface/observer/symbols";
-import PropertyInfo from "@surface/reflection/property-info";
+import { Action }    from "@surface/core";
+import { observe }   from "@surface/observer/common";
+import IObservable   from "@surface/observer/interfaces/observable";
+import { NOTIFYING } from "@surface/observer/symbols";
+import PropertyInfo  from "@surface/reflection/property-info";
 
 export default class DataBind
 {
-    public static oneWay(target: object, property: PropertyInfo, action: Action): void;
-    public static oneWay(target: IObservable, property: PropertyInfo, action: Action): void;
     public static oneWay(target: IObservable, property: PropertyInfo, action: Action): void
     {
-        const observer = observe(target, property.key);
+        const observer = observe(target, property.key as keyof IObservable);
 
         observer.subscribe(action);
 
@@ -23,15 +21,15 @@ export default class DataBind
                 get: () => property.getter && property.getter.call(target),
                 set: (value: Object) =>
                 {
-                    if (!target[NOTIFIER] && property.setter)
+                    if (!target[NOTIFYING] && property.setter)
                     {
                         property.setter.call(target, value);
 
-                        target[NOTIFIER] = true;
+                        target[NOTIFYING] = true;
 
                         observer.notify();
 
-                        target[NOTIFIER] = false;
+                        target[NOTIFYING] = false;
                     }
                 }
             }
@@ -59,8 +57,6 @@ export default class DataBind
         }
     }
 
-    public static twoWay(left: object, leftProperty: PropertyInfo, right: object, rightProperty: PropertyInfo): void;
-    public static twoWay(left: IObservable, leftProperty: PropertyInfo, right: IObservable, rightProperty: PropertyInfo): void;
     public static twoWay(left: IObservable, leftProperty: PropertyInfo, right: IObservable, rightProperty: PropertyInfo): void
     {
         const rightKey = rightProperty.key as keyof IObservable;

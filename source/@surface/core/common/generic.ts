@@ -1,8 +1,10 @@
 import { Func1, Nullable } from "../";
 
-export function coalesce<T>(value: unknown, fallback: T): T
+export function coalesce<T, U extends T>(value: Nullable<T>, fallback: U): T;
+export function coalesce<T>(value: Nullable<T>, fallback: T): T;
+export function coalesce<T>(value: Nullable<T>, fallback: T): T
 {
-    return value !== null && value !== undefined ? value as T : fallback;
+    return value !== null && value !== undefined ? value : fallback;
 }
 
 export function hasValue<T>(value: Nullable<T>): value is NonNullable<T>

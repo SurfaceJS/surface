@@ -1,4 +1,3 @@
-import { Nullable } from "@surface/core";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
 import StatusCode   from "./status-code";
@@ -6,9 +5,9 @@ import { mymeType } from "./variables";
 
 export default class JsonResult extends ActionResult
 {
-    private readonly data: Nullable<object>;
+    private readonly data: unknown;
 
-    public constructor(httpContext: HttpContext, data: Nullable<object>)
+    public constructor(httpContext: HttpContext, data: unknown)
     {
         super(httpContext);
         this.data = data;

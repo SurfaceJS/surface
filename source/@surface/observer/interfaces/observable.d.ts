@@ -1,8 +1,8 @@
-import { NOTIFIER, OBSERVERS } from "../symbols";
-import Observer                from "..";
+import { NOTIFYING, OBSERVERS } from "../symbols";
+import Observer                 from "..";
 
-export default interface IObservable
+export default interface IObservable extends Object
 {
-    [NOTIFIER]?:  boolean;
+    [NOTIFYING]?: boolean;
     [OBSERVERS]?: Map<string|symbol, Observer>;
 }

@@ -1,6 +1,6 @@
-import * as common from "@surface/common";
-import fs          from "fs";
-import path        from "path";
+import * as io from "@surface/io";
+import fs      from "fs";
+import path    from "path";
 
 namespace CodeSplitter
 {
@@ -171,7 +171,7 @@ class CodeSplitter
 
         content += this.writeFooter();
 
-        common.makePath(path.dirname(output));
+        io.makePath(path.dirname(output));
         fs.writeFileSync(output, content);
 
         console.log(`Code split for the entries [${this.entries.reduce((a, b) => a + ", " + b)}] generated at ${output}`);

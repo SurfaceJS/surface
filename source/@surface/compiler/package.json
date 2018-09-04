@@ -7,10 +7,10 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/common": "0.0.8",
         "@surface/core": "0.0.3",
         "@surface/html-require-loader": "0.0.0",
         "@surface/html-template-plugin": "0.0.7",
+        "@surface/io": "0.0.0",
         "@surface/simbling-resolve-plugin": "0.0.0",
         "@types/node": "10.9.4",
         "@types/rimraf": "2.0.2",

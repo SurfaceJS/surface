@@ -102,8 +102,6 @@ export default class MvcRequestHandler extends RequestHandler
 
                         if (actionMethod)
                         {
-                            let actionResult: ActionResult;
-
                             const postData = await this.parseBody(httpContext);
 
                             const inbound = { ...routeData.search, ...postData } as ObjectLiteral;
@@ -113,7 +111,7 @@ export default class MvcRequestHandler extends RequestHandler
                                 inbound["id"] = id;
                             }
 
-                            actionResult = actionMethod.invoke.call(targetController, inbound);
+                            const actionResult = actionMethod.invoke.call(targetController, inbound) as ActionResult;
 
                             actionResult.executeResult();
 

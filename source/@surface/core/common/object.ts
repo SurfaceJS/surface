@@ -17,38 +17,38 @@ export function clone<T extends ObjectLiteral>(source: T): T
 {
     if (Array.isArray(source))
     {
-        const result = [];
+        const values = [];
         for (const value of source)
         {
             if (value instanceof Object)
             {
-                result.push(clone(value));
+                values.push(clone(value));
             }
             else
             {
-                result.push(value);
+                values.push(value);
             }
         }
 
-        return result as object as T;
+        return values as object as T;
     }
     else
     {
-        const result: ObjectLiteral = Object.create(Object.getPrototypeOf(source));
+        const prototype: ObjectLiteral = Object.create(Object.getPrototypeOf(source));
         for (const key of Object.getOwnPropertyNames(source))
         {
             const value = source[key];
 
             if (value instanceof Object)
             {
-                result[key] = clone(value);
+                prototype[key] = clone(value);
             }
             else
             {
-                result[key] = value;
+                prototype[key] = value;
             }
         }
-        return result as T;
+        return prototype as T;
     }
 }
 

@@ -1,22 +1,19 @@
-import Observer                from ".";
-import IObservable             from "./interfaces/observable";
-import { NOTIFIER, OBSERVERS } from "./symbols";
+import Observer                 from ".";
+import IObservable              from "./interfaces/observable";
+import { NOTIFYING, OBSERVERS } from "./symbols";
 
-export function notify<T extends object, K extends keyof T>(target: T, key: K): void;
-export function notify(target: IObservable, key: string|symbol): void;
-export function notify(target: IObservable, key: string|symbol): void
+export function notify<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): void
 {
-    const observer = observe(target, key);
+    const observer = observe(target, key as keyof IObservable);
 
-    target[NOTIFIER] = true;
+    target[NOTIFYING] = true;
 
     observer.notify();
 
-    target[NOTIFIER] = false;
+    target[NOTIFYING] = false;
 }
 
-export function observe<T extends object, K extends keyof T>(target: T, key: K): Observer;
-export function observe(target: IObservable, key: string|symbol): Observer;
+export function observe<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): Observer;
 export function observe(target: IObservable, key: string|symbol): Observer
 {
     const observers = target[OBSERVERS] = target[OBSERVERS] || new Map<string|symbol, Observer>();

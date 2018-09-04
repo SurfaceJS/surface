@@ -14,14 +14,13 @@
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "common",
         "io",
         "surface",
         "typescrypt"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/common",
+    "name": "@surface/io",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
@@ -30,5 +29,5 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "types": "index.d.ts",
-    "version": "0.0.8"
+    "version": "0.0.0"
 }

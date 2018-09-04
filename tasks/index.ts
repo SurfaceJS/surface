@@ -88,11 +88,6 @@ export default class Tasks
         console.log("Compiling done!");
     }
 
-    public static async publish(): Promise<void>
-    {
-        await Publisher.publish();
-    }
-
     public static link(): void
     {
         for (const $package of packages)
@@ -117,6 +112,24 @@ export default class Tasks
         console.log("Linking done!");
     }
 
+    public static async publish(): Promise<void>
+    {
+        await Publisher.publish();
+    }
+
+    public static relink(): void
+    {
+        Tasks.unlink();
+        Tasks.link();
+    }
+
+    public static async setup(): Promise<void>
+    {
+        await Tasks.install("false");
+        Tasks.clean();
+        await Tasks.build();
+    }
+
     public static unlink(): void
     {
         for (const $package of packages)
@@ -131,18 +144,5 @@ export default class Tasks
         }
 
         console.log("Unlinking done!");
-    }
-
-    public static relink(): void
-    {
-        Tasks.unlink();
-        Tasks.link();
-    }
-
-    public static async setup(): Promise<void>
-    {
-        await Tasks.install("false");
-        Tasks.clean();
-        await Tasks.build();
     }
 }

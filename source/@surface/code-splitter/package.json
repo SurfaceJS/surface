@@ -7,8 +7,8 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/common": "0.0.8",
         "@surface/core": "0.0.3",
+        "@surface/io": "0.0.0",
         "commander": "2.17.1",
         "tslib": "1.9.3"
     },

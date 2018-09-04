@@ -1,8 +1,8 @@
-import { resolveFile }            from "@surface/common";
 import { ObjectLiteral }          from "@surface/core";
 import { coalesce }               from "@surface/core/common/generic";
 import { merge }                  from "@surface/core/common/object";
 import HtmlTemplatePlugin         from "@surface/html-template-plugin";
+import { resolveFile }            from "@surface/io";
 import SimblingResolvePlugin      from "@surface/simbling-resolve-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import fs                         from "fs";
@@ -17,7 +17,7 @@ import * as enums                 from "./enums";
 
 export async function execute(task?: enums.TasksType, config?: string, enviroment?: enums.EnviromentType, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
 {
-    task       = coalesce<enums.TasksType>(task, enums.TasksType.build);
+    task       = coalesce(task, enums.TasksType.build);
     config     = coalesce(config, "./");
     enviroment = coalesce(enviroment, enums.EnviromentType.development);
     watch      = coalesce(watch, false);

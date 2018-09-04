@@ -66,7 +66,8 @@ export default class DataTable extends Component
     public set datasource(value: Iterable<object>)
     {
         this.dataProvider = new DataProvider(value, this.pageSize);
-        runAsync(() => this.dataBind());
+
+        runAsync(this.dataBind.bind(this)).then(this.onDatasourceChange.notify.bind(this));
     }
 
     public get infinityScroll(): boolean
@@ -132,17 +133,6 @@ export default class DataTable extends Component
         this.prepareFooters();
     }
 
-    private async dataBind(): Promise<void>
-    {
-        if (this.columnDefinitions.any())
-        {
-            this.checkDefinitions();
-
-            const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
-            this.prepareRows(datasource);
-        }
-    }
-
     private checkDefinitions(): void
     {
         if (!this.proxyConstructor)
@@ -175,7 +165,7 @@ export default class DataTable extends Component
         for (const columnDefinition of this.columnDefinitions)
         {
             const field = columnDefinition.field;
-            const value = field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field];
+            const value = (field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field]) as Nullable<string>;
 
             const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
             row.appendChild(cell);
@@ -249,6 +239,17 @@ export default class DataTable extends Component
         }
 
         return row;
+    }
+
+    private async dataBind(): Promise<void>
+    {
+        if (this.columnDefinitions.any())
+        {
+            this.checkDefinitions();
+
+            const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
+            this.prepareRows(datasource);
+        }
     }
 
     private prepareFooters(): void
