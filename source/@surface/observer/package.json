@@ -14,7 +14,7 @@
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "enumerable",
+        "observer",
         "surface",
         "typescript"
     ],

@@ -9,7 +9,7 @@
     "dependencies": {
         "@surface/common": "0.0.8",
         "@surface/core": "0.0.3",
-        "commander": "2.16.0",
+        "commander": "2.17.1",
         "tslib": "1.9.3"
     },
     "description": "Generate lazy loading module.",
