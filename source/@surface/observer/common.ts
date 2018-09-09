@@ -1,6 +1,41 @@
+import Type                     from "@surface/reflection";
+import PropertyInfo             from "@surface/reflection/property-info";
 import Observer                 from ".";
 import IObservable              from "./interfaces/observable";
 import { NOTIFYING, OBSERVERS } from "./symbols";
+
+export function listen<T extends IObservable, K extends keyof T>(target: T, key: K, observer: Observer): void;
+export function listen(target: IObservable, property: PropertyInfo, observer: Observer): void;
+export function listen(target: IObservable, keyOrproperty: string|PropertyInfo, observer: Observer): void
+{
+    const property = keyOrproperty instanceof PropertyInfo ? keyOrproperty : Type.from(target).getProperty(keyOrproperty)!;
+
+    Object.defineProperty
+    (
+        target,
+        property.key,
+        {
+            configurable: true,
+            get: function (this: typeof target)
+            {
+                return property.getter && property.getter.call(this);
+            },
+            set: function (this: typeof target, value: Object)
+            {
+                if (!this[NOTIFYING] && property.setter)
+                {
+                    property.setter.call(this, value);
+
+                    this[NOTIFYING] = true;
+
+                    observer.notify();
+
+                    this[NOTIFYING] = false;
+                }
+            }
+        }
+    );
+}
 
 export function notify<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): void
 {

@@ -1,4 +1,5 @@
 import List          from "@surface/collection/list";
+import { notify }    from "@surface/observer/common";
 import IDataProvider from "../interfaces/data-provider";
 
 export default class DataProvider<T> implements IDataProvider<T>
@@ -46,7 +47,7 @@ export default class DataProvider<T> implements IDataProvider<T>
 
         this._pageSize = value;
 
-        this.calculatePageCount();
+        this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
     public get total(): number
@@ -58,28 +59,39 @@ export default class DataProvider<T> implements IDataProvider<T>
     {
         this.datasource = new List(source);
         this._pageSize  = pageSize;
-        this.calculatePageCount();
+        this._pageCount = this.calculatePageCount(this.total);
     }
 
-    private calculatePageCount(): void
+    private assign<K extends keyof this>(key: K, value: this[K]): void
     {
-        const total = this.total;
+        if (this[key] != value)
+        {
+            this[`_${key}` as K] = value;
+            notify(this, key);
+        }
+    }
 
+    private calculatePageCount(total: number): number
+    {
         const pageCount = total / this.pageSize;
 
-        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
+        return Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
     }
 
     public async create(data: T): Promise<void>
     {
         this.datasource.add(data);
-        this.calculatePageCount();
+
+        notify(this, "total");
+        this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
     public async delete(data: T): Promise<void>
     {
         this.datasource.remove(data);
-        this.calculatePageCount();
+
+        notify(this, "total");
+        this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
     public firstPage(): void
@@ -87,17 +99,17 @@ export default class DataProvider<T> implements IDataProvider<T>
         this._page = 1;
     }
 
-    public nextPage(): void
-    {
-        if (this._page + 1 < this.pageCount)
-        {
-            this._page++;
-        }
-    }
-
     public lastPage(): void
     {
         this._page = this.pageCount;
+    }
+
+    public nextPage(): void
+    {
+        if (this._page + 1 <= this.pageCount)
+        {
+            this._page++;
+        }
     }
 
     public order(field: string, direction: "asc" | "desc"): void
@@ -107,7 +119,7 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public previousPage(): void
     {
-        if (this._page - 1 > 1)
+        if (this._page - 1 > 0)
         {
             this._page--;
         }
@@ -115,6 +127,9 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public async read(): Promise<Iterable<T>>
     {
+        notify(this, "total");
+        notify(this, "pageCount");
+
         return await Promise.resolve(this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
     }
 

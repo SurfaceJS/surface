@@ -1,0 +1,18 @@
+<require path="../for-each" />
+<require path="../stack-panel" />
+
+<surface-stack-panel orientation="horizontal">
+    <input type="button" value="&lt;&lt;" on-click="{{ host.firstPage() }}" />
+    &nbsp;
+    <input type="button" value="&lt;" on-click="{{ host.previousPage() }}"/>
+    &nbsp;
+    <surface-for-each start="{{ host.startRange }}" end="{{ host.endRange }}" >
+        <template>
+            <input type="button" disabled="{{ host.page == index }}" value="{{ index }}" on-click="{{ host.setPage(index) }}" />
+        </template>
+    </surface-for-each>
+    &nbsp;
+    <input type="button" value="&gt;" on-click="{{ host.nextPage() }}" />
+    &nbsp;
+    <input type="button" value="&gt;&gt;" on-click="{{ host.lastPage() }}" />
+</surface-stack-panel>

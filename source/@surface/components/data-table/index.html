@@ -1,17 +1,16 @@
 <require path="../for-each" />
+<require path="../pager" />
+<require path="../stack-panel" />
+<require path="../switch" />
 
 <div horizontal-align="center">Filters</div>
 <hr>
-<input type="button" value="New" on-click="{{host.addNew()}}" horizontal-align="left" />
+<input type="button" value="New" on-click="{{ host.addNew() }}" horizontal-align="left" />
 <div id="container">
     <slot></slot>
 </div>
 <hr>
 <div horizontal-align="center">
     Pagination
-    <surface-for-each of="{{ window.Array(host.pageCount) }}">
-        <template>
-            <input type="button" value="{{ index + 1 }}" />
-        </template>
-    </surface-for-each>
+    <surface-pager page-count="{{ host.pageCount }}" on-change="{{ host.setPage(this.page) }}"></surface-pager>
 </div>

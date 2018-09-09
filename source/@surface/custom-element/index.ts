@@ -16,7 +16,7 @@ export default abstract class CustomElement extends HTMLElement
 
     private readonly [SHADOW_ROOT]: ShadowRoot;
 
-    public onAfterBind?: Action;
+    public bindedCallback?: Action;
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);

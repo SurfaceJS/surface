@@ -1,43 +1,50 @@
-import { Constructor, Nullable, ObjectLiteral }            from "@surface/core";
-import { coalesce }                                        from "@surface/core/common/generic";
-import { clone, objectFactory, proxyFactory, ProxyObject } from "@surface/core/common/object";
-import { runAsync }                                        from "@surface/core/common/promise";
-import CustomElement                                       from "@surface/custom-element";
-import Enumerable                                          from "@surface/enumerable";
-import Expression                                          from "@surface/expression";
-import Observer                                            from "@surface/observer";
-import { notify, observe }                                 from "@surface/observer/common";
-import Component                                           from "..";
-import { element }                                         from "../decorators";
-import DataCell                                            from "./data-cell";
-import DataFooter                                          from "./data-footer";
-import DataHeader                                          from "./data-header";
-import DataRow                                             from "./data-row";
-import DataRowGroup                                        from "./data-row-group";
-import template                                            from "./index.html";
-import style                                               from "./index.scss";
-import IDataProvider                                       from "./interfaces/data-provider";
-import ColumnDefinition                                    from "./internal/column-definition";
-import DataProvider                                        from "./internal/data-provider";
-import arrayTemplate                                       from "./templates/array.html";
-import booleanTemplate                                     from "./templates/boolean.html";
-import numberTemplate                                      from "./templates/number.html";
-import stringTemplate                                      from "./templates/string.html";
+import { Constructor, Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
+import { coalesce }                                             from "@surface/core/common/generic";
+import { clone, objectFactory, proxyFactory, ProxyObject }      from "@surface/core/common/object";
+import { runAsync }                                             from "@surface/core/common/promise";
+import CustomElement                                            from "@surface/custom-element";
+import Enumerable                                               from "@surface/enumerable";
+import Expression                                               from "@surface/expression";
+import Observer                                                 from "@surface/observer";
+import { notify, observe }                                      from "@surface/observer/common";
+import Component                                                from "..";
+import { element }                                              from "../decorators";
+import DataCell                                                 from "./data-cell";
+import DataFooter                                               from "./data-footer";
+import DataHeader                                               from "./data-header";
+import DataRow                                                  from "./data-row";
+import DataRowGroup                                             from "./data-row-group";
+import template                                                 from "./index.html";
+import style                                                    from "./index.scss";
+import IDataProvider                                            from "./interfaces/data-provider";
+import ColumnDefinition                                         from "./internal/column-definition";
+import DataProvider                                             from "./internal/data-provider";
+import arrayTemplate                                            from "./templates/array.html";
+import booleanTemplate                                          from "./templates/boolean.html";
+import numberTemplate                                           from "./templates/number.html";
+import stringTemplate                                           from "./templates/string.html";
+
+type Nullable<T> = __Nullable__<T>;
 
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
-    private initialized = false;
+    private rowGroup!:        DataRowGroup;
+    private proxyConstructor: Constructor<ProxyObject<object>>;
 
-    private rowGroup!:         DataRowGroup;
-    private proxyConstructor!: Constructor<ProxyObject<object>>;
+    private readonly _onDatasourceChange: Observer = new Observer();
 
     private _dataDefinition: object = { };
-    private dataProvider!: IDataProvider<object>;
 
-    public readonly _onDatasourceChange: Observer = new Observer();
+    protected dataProvider: IDataProvider<object>;
+
+    protected get pageCount(): number
+    {
+        return this.dataProvider.pageCount;
+    }
+
     public get dataDefinition(): object
     {
         return this._dataDefinition;
@@ -67,7 +74,11 @@ export default class DataTable extends Component
     {
         this.dataProvider = new DataProvider(value, this.pageSize);
 
-        runAsync(this.dataBind.bind(this)).then(this.onDatasourceChange.notify.bind(this));
+        const observer = observe(this.dataProvider, "pageCount");
+
+        observer.subscribe(() => notify(this, "pageCount" as keyof this));
+
+        runAsync(this.refresh.bind(this)).then(() => this.onDatasourceChange.notify());
     }
 
     public get infinityScroll(): boolean
@@ -85,11 +96,6 @@ export default class DataTable extends Component
         return this._onDatasourceChange;
     }
 
-    public get pageCount(): number
-    {
-        return this.dataProvider.pageCount;
-    }
-
     public get pageSize(): number
     {
         return Number.parseInt(super.getAttribute("page-size") || "10");
@@ -100,9 +106,35 @@ export default class DataTable extends Component
         super.setAttribute("page-size", value.toString());
     }
 
-    public constructor()
+    public constructor(dataProvider?: Nullable<IDataProvider<object>>)
     {
         super();
+
+        if (!dataProvider)
+        {
+            dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider<object>>;
+
+            if (dataProvider instanceof HTMLElement)
+            {
+                const clone = dataProvider.cloneNode() as HTMLElement & IDataProvider<object>;
+
+                super.replaceChild(clone, dataProvider);
+
+                this.dataProvider = clone as IDataProvider<object>;
+            }
+            else
+            {
+                this.dataProvider = new DataProvider([], this.pageSize);
+            }
+        }
+        else
+        {
+            this.dataProvider = dataProvider;
+        }
+
+        const observer = observe(this.dataProvider, "pageCount");
+
+        observer.subscribe(() => notify(this, "pageCount" as keyof this));
 
         const dataTemplate = super.query<HTMLTemplateElement>("template");
 
@@ -114,47 +146,25 @@ export default class DataTable extends Component
             super.removeChild(dataTemplate);
         }
 
-        const dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider<object>>;
-
-        if (dataProvider)
+        const primitives =
         {
-            this.dataProvider = dataProvider;
-        }
-        else
-        {
-            this.dataProvider = new DataProvider([], this.pageSize);
-        }
+            "array":   [],
+            "boolean": false,
+            "number":  0,
+            "string":  "",
+        };
 
-        const observer = observe(this.dataProvider, "pageCount");
+        this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, unknown]).toArray());
 
-        observer.subscribe(() => notify(this, "pageCount"));
+        this.proxyConstructor = proxyFactory(this.dataDefinition);
 
         this.prepareHeaders();
+        this.prepareRows();
         this.prepareFooters();
-    }
-
-    private checkDefinitions(): void
-    {
-        if (!this.proxyConstructor)
-        {
-            const primitives =
-            {
-                "array":   [],
-                "boolean": false,
-                "number":  0,
-                "string":  "",
-            };
-
-            this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, unknown]).toArray());
-
-            this.proxyConstructor = proxyFactory(this.dataDefinition);
-        }
     }
 
     private createData(): ProxyObject<object>
     {
-        this.checkDefinitions();
-
         return new this.proxyConstructor(clone(this.dataDefinition));
     }
 
@@ -241,17 +251,6 @@ export default class DataTable extends Component
         return row;
     }
 
-    private async dataBind(): Promise<void>
-    {
-        if (this.columnDefinitions.any())
-        {
-            this.checkDefinitions();
-
-            const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
-            this.prepareRows(datasource);
-        }
-    }
-
     private prepareFooters(): void
     {
         if (this.columnDefinitions.any(x => !!x.footer))
@@ -329,7 +328,7 @@ export default class DataTable extends Component
         }
     }
 
-    private prepareRows(datasource: Iterable<ProxyObject<object>>): void
+    private prepareRows(): void
     {
         if (!this.rowGroup)
         {
@@ -348,20 +347,27 @@ export default class DataTable extends Component
                 super.appendChild(rowGroup);
             }
         }
-
-        for (const item of datasource)
-        {
-            const row = this.createRow(item, false);
-            this.rowGroup.appendChild(row);
-        }
     }
 
     private async updateRows(): Promise<void>
     {
         const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
 
-        this.rowGroup.queryAll<DataRow>("surface-data-row")
-            .zip(datasource, (row, data) => ({ row, data }))
+        const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
+
+        const dataCount = datasource.count();
+        const rowsCount = rows.count();
+
+        if (rowsCount > dataCount)
+        {
+            rows.skip(dataCount).forEach(x => this.rowGroup.removeChild(x));
+        }
+        else if (rowsCount < dataCount)
+        {
+            datasource.skip(rowsCount).forEach(x => this.rowGroup.appendChild(this.createRow(x, false)));
+        }
+
+        rows.zip(datasource, (row, data) => ({ row, data }))
             .forEach(x => x.row.data = x.data);
     }
 
@@ -380,11 +386,7 @@ export default class DataTable extends Component
 
     public connectedCallback(): void
     {
-        if (!this.initialized)
-        {
-            this.dataBind();
-            this.initialized = true;
-        }
+        this.refresh();
     }
 
     public deleteRow(row: DataRow): void
@@ -397,10 +399,34 @@ export default class DataTable extends Component
         }
     }
 
+    public async firstPage(): Promise<void>
+    {
+        this.dataProvider.firstPage();
+        await this.refresh();
+    }
+
+    public async lastPage(): Promise<void>
+    {
+        this.dataProvider.lastPage();
+        await this.refresh();
+    }
+
+    public async nextPage(): Promise<void>
+    {
+        this.dataProvider.nextPage();
+        await this.refresh();
+    }
+
     public order(field: string, direction: "asc" | "desc"): void
     {
         this.dataProvider.order(field, direction);
         this.refresh();
+    }
+
+    public async previousPage(): Promise<void>
+    {
+        this.dataProvider.previousPage();
+        await this.refresh();
     }
 
     public async refresh(): Promise<void>
@@ -422,6 +448,12 @@ export default class DataTable extends Component
                 this.refresh();
             }
         }
+    }
+
+    public async setPage(page: number): Promise<void>
+    {
+        this.dataProvider.page = page;
+        await this.refresh();
     }
 
     public undoRow(row: DataRow): void

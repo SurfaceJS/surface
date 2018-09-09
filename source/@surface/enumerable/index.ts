@@ -30,6 +30,11 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public static range(start: number, end: number): Enumerable<number>
     {
+        if (start > end)
+        {
+            throw new TypeError("start cannot be greater than end");
+        }
+
         return new RangeIterator(start, end);
     }
 

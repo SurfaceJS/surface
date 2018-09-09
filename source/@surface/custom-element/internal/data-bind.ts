@@ -1,8 +1,7 @@
-import { Action }    from "@surface/core";
-import { observe }   from "@surface/observer/common";
-import IObservable   from "@surface/observer/interfaces/observable";
-import { NOTIFYING } from "@surface/observer/symbols";
-import PropertyInfo  from "@surface/reflection/property-info";
+import { Action }          from "@surface/core";
+import { listen, observe } from "@surface/observer/common";
+import IObservable         from "@surface/observer/interfaces/observable";
+import PropertyInfo        from "@surface/reflection/property-info";
 
 export default class DataBind
 {
@@ -12,28 +11,7 @@ export default class DataBind
 
         observer.subscribe(action);
 
-        Object.defineProperty
-        (
-            target,
-            property.key,
-            {
-                configurable: true,
-                get: () => property.getter && property.getter.call(target),
-                set: (value: Object) =>
-                {
-                    if (!target[NOTIFYING] && property.setter)
-                    {
-                        property.setter.call(target, value);
-
-                        target[NOTIFYING] = true;
-
-                        observer.notify();
-
-                        target[NOTIFYING] = false;
-                    }
-                }
-            }
-        );
+        listen(target, property, observer);
 
         if (target instanceof HTMLElement)
         {
@@ -59,8 +37,8 @@ export default class DataBind
 
     public static twoWay(left: IObservable, leftProperty: PropertyInfo, right: IObservable, rightProperty: PropertyInfo): void
     {
+        const leftKey  = leftProperty.key  as keyof IObservable;
         const rightKey = rightProperty.key as keyof IObservable;
-        const leftKey  = rightProperty.key as keyof IObservable;
 
         DataBind.oneWay(left,  leftProperty,  () => right[rightKey] = left[leftKey]);
         DataBind.oneWay(right, rightProperty, () => left[leftKey]   = right[rightKey]);

@@ -30,6 +30,7 @@ export default class ElementBind
 
     private bindAttribute(element: Element): void
     {
+        const notifications: Array<Action> = [];
         for (const attribute of Array.from(element.attributes))
         {
             if (attribute.value.includes("{{") && attribute.value.includes("}}") || attribute.value.includes("[[") && attribute.value.includes("]]"))
@@ -60,7 +61,7 @@ export default class ElementBind
                 {
                     const attributeName = dashedToCamel(attribute.name);
 
-                    let notify = () =>
+                    let notification = () =>
                     {
                         const value = expression.type == ExpressionType.Array && interpolation ?
                             (expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`) :
@@ -91,30 +92,33 @@ export default class ElementBind
 
                         if (leftProperty && rightProperty)
                         {
-                            notify = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
+                            notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
-                            if (leftProperty.setter)
-                            {
-                                leftProperty.setter.call(source, expression.evaluate());
-                            }
+                            // Quarantine
+                            //if (leftProperty.setter)
+                            //{
+                            //    leftProperty.setter!.call(source, expression.evaluate());
+                            //}
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
                         else if (rightProperty)
                         {
-                            DataBind.oneWay(target, rightProperty, notify);
+                            DataBind.oneWay(target, rightProperty, notification);
                         }
                     }
                     else
                     {
-                        const visitor = new ObserverVisitor(notify);
+                        const visitor = new ObserverVisitor(notification);
                         visitor.visit(expression);
                     }
 
-                    notify();
+                    notifications.push(notification);
                 }
             }
         }
+
+        notifications.forEach(notification => notification());
     }
 
     private bindTextNode(element: Element): void

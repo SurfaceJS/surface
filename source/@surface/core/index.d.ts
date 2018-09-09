@@ -17,11 +17,11 @@ export type Func2<T1, T2, TResult>                = (arg1: T1, arg2: T2) => TRes
 export type Func3<T1, T2, T3, TResult>            = (arg1: T1, arg2: T2, arg3: T3) => TResult;
 export type IgnoreKeysOfType<T extends object, U> = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>     = { [K in IgnoreKeysOfType<T, U>]: T[K] };
+export type KeysOfType<T extends object, U>       = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type MethodsOf<T extends object>           = KeysOfType<T, Function>;
 export type Nullable<T = Object>                  = T|null|undefined;
 export type ObjectLiteral<T = unknown>            = { [key: string]: T; [key: number]: T; };
 export type Omit<T, U extends keyof T>            = { [K in Exclude<keyof T, U>]: T[K] };
-export type KeysOfType<T extends object, U>       = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type OnlyOfType<T extends object, U>       = Pick<T, KeysOfType<T, U>>;
 export type Overwrite<T, U>                       = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] }; 
 export type Required<T>                           = { [K in keyof T]-?: NonNullable<T[K]> };

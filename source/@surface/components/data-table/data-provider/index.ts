@@ -12,27 +12,7 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
 
     private _page:      number = 1;
     private _pageCount: number = 0;
-    private _total: number = 0;
-
-    public get page(): number
-    {
-        return this._page;
-    }
-
-    public get pageCount(): number
-    {
-        return this._pageCount;
-    }
-
-    public get pageSize(): number
-    {
-        return Number.parseInt(super.getAttribute("page-size") || "10");
-    }
-
-    public set pageSize(value: number)
-    {
-        super.setAttribute("page-size", value.toString());
-    }
+    private _total:     number = 0;
 
     public get createUrl(): string
     {
@@ -52,6 +32,41 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
     public set deleteUrl(value: string)
     {
         super.setAttribute("delete-url", value.toString());
+    }
+
+    public get page(): number
+    {
+        return this._page;
+    }
+
+    public set page(value: number)
+    {
+        if (value < 1)
+        {
+            throw new Error("Value cannot be lesser than 1");
+        }
+        else if (value > this.pageCount)
+        {
+            throw new Error("Value exceed total of pages");
+        }
+
+        this._page = value;
+    }
+
+    public get pageCount(): number
+    {
+        return this._pageCount;
+    }
+
+    public get pageSize(): number
+    {
+        return Number.parseInt(super.getAttribute("page-size") || "10");
+    }
+
+    public set pageSize(value: number)
+    {
+        super.setAttribute("page-size", value.toString());
+        this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
     public get readUrl(): string
@@ -79,13 +94,20 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         return this._total;
     }
 
-    private calculatePageCount(): void
+    private assign<K extends keyof this>(key: K, value: this[K]): void
     {
-        const total = this.total;
+        if (this[key] != value)
+        {
+            this[`_${key}` as K] = value;
+            notify(this, key);
+        }
+    }
 
+    private calculatePageCount(total: number): number
+    {
         const pageCount = total / this.pageSize;
 
-        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
+        return Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
     }
 
     public create(data: T): Promise<void>
@@ -100,17 +122,20 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
 
     public firstPage(): void
     {
-        throw new Error("Method not implemented.");
-    }
-
-    public nextPage(): void
-    {
-        throw new Error("Method not implemented.");
+        this._page = 1;
     }
 
     public lastPage(): void
     {
-        throw new Error("Method not implemented.");
+        this._page = this.pageCount;
+    }
+
+    public nextPage(): void
+    {
+        if (this._page + 1 <= this.pageCount)
+        {
+            this._page++;
+        }
     }
 
     public order(field: string, direction: Order): void
@@ -121,7 +146,10 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
 
     public previousPage(): void
     {
-        throw new Error("Method not implemented.");
+        if (this._page - 1 > 0)
+        {
+            this._page--;
+        }
     }
 
     public async read(): Promise<Iterable<T>>
@@ -153,12 +181,8 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
 
         const json = await response.json();
 
-        this._total = json.total;
-
-        this.calculatePageCount();
-
-        notify(this, "total");
-        notify(this, "pageCount");
+        this.assign("total",     json.total);
+        this.assign("pageCount", this.calculatePageCount(this.total));
 
         return json.data;
     }
