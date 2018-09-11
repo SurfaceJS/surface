@@ -1,37 +1,49 @@
-import { Action }          from "@surface/core";
-import { listen, observe } from "@surface/observer/common";
-import IObservable         from "@surface/observer/interfaces/observable";
-import PropertyInfo        from "@surface/reflection/property-info";
+import { Action1 }  from "@surface/core";
+import Observer     from "@surface/observer";
+import IObservable  from "@surface/observer/interfaces/observable";
+import PropertyInfo from "@surface/reflection/property-info";
+
+const HOOKS = Symbol("data-bind:hooks");
+type Hookable = IObservable & { [HOOKS]?: Array<string|symbol> };
 
 export default class DataBind
 {
-    public static oneWay(target: IObservable, property: PropertyInfo, action: Action): void
+    public static oneWay(target: Hookable, property: PropertyInfo, action: Action1<IObservable>): void
     {
-        const observer = observe(target, property.key as keyof IObservable);
+        const hooks = target[HOOKS] || [];
 
-        observer.subscribe(action);
+        const observer = Observer.observe(target, property.key as keyof Hookable);
 
-        listen(target, property, observer);
+        observer.subscribe(action as Action1<unknown>);
 
-        if (target instanceof HTMLElement)
+        if (!hooks.includes(property.key))
         {
-            const setAttribute = target.setAttribute;
+            Observer.inject(target, property, observer);
 
-            target.setAttribute = function (qualifiedName: string, value: string)
+            if (target instanceof HTMLElement)
             {
-                setAttribute.call(this, qualifiedName, value);
+                const setAttribute = target.setAttribute;
 
-                if (qualifiedName == property.key)
+                target.setAttribute = function (qualifiedName: string, value: string)
                 {
-                    observer.notify();
-                }
-            };
+                    setAttribute.call(this, qualifiedName, value);
 
-            if (target instanceof HTMLInputElement)
-            {
-                target.addEventListener("change", () => observer.notify());
-                target.addEventListener("keyup", () => observer.notify());
+                    if (qualifiedName == property.key)
+                    {
+                        observer.notify(this);
+                    }
+                };
+
+                if (target instanceof HTMLInputElement)
+                {
+                    target.addEventListener("change", function () { observer.notify(this); });
+                    target.addEventListener("keyup",  function () { observer.notify(this); });
+                }
             }
+
+            hooks.push(property.key);
+
+            target[HOOKS] = hooks;
         }
     }
 
@@ -40,7 +52,7 @@ export default class DataBind
         const leftKey  = leftProperty.key  as keyof IObservable;
         const rightKey = rightProperty.key as keyof IObservable;
 
-        DataBind.oneWay(left,  leftProperty,  () => right[rightKey] = left[leftKey]);
-        DataBind.oneWay(right, rightProperty, () => left[leftKey]   = right[rightKey]);
+        DataBind.oneWay(left,  leftProperty,  source => right[rightKey] = source[leftKey]);
+        DataBind.oneWay(right, rightProperty, source => left[leftKey]   = source[rightKey]);
     }
 }

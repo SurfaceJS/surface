@@ -1,4 +1,4 @@
-import { notify }  from "@surface/observer/common";
+import Observer    from "@surface/observer";
 import Component   from "..";
 import { element } from "../decorators";
 import template    from "./index.html";
@@ -57,9 +57,9 @@ export default class Pager extends Component
 
     private pageChanged(): void
     {
-        notify(this, "page");
-        notify(this, "startRange" as keyof this);
-        notify(this, "endRange" as keyof this);
+        Observer.notify(this, "page");
+        Observer.notify(this, "startRange" as keyof this);
+        Observer.notify(this, "endRange" as keyof this);
 
         super.dispatchEvent(new Event("change"));
     }

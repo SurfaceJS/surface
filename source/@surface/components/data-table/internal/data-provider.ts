@@ -1,5 +1,5 @@
 import List          from "@surface/collection/list";
-import { notify }    from "@surface/observer/common";
+import Observer      from "@surface/observer";
 import IDataProvider from "../interfaces/data-provider";
 
 export default class DataProvider<T> implements IDataProvider<T>
@@ -67,7 +67,7 @@ export default class DataProvider<T> implements IDataProvider<T>
         if (this[key] != value)
         {
             this[`_${key}` as K] = value;
-            notify(this, key);
+            Observer.notify(this, key);
         }
     }
 
@@ -82,7 +82,7 @@ export default class DataProvider<T> implements IDataProvider<T>
     {
         this.datasource.add(data);
 
-        notify(this, "total");
+        Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
@@ -90,7 +90,7 @@ export default class DataProvider<T> implements IDataProvider<T>
     {
         this.datasource.remove(data);
 
-        notify(this, "total");
+        Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
     }
 
@@ -127,8 +127,8 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public async read(): Promise<Iterable<T>>
     {
-        notify(this, "total");
-        notify(this, "pageCount");
+        Observer.notify(this, "total");
+        Observer.notify(this, "pageCount");
 
         return await Promise.resolve(this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
     }

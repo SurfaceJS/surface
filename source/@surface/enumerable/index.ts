@@ -216,14 +216,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         if (predicate)
         {
-            return this.where(predicate).count();
+            return Array.from(this.where(predicate)).length;
         }
 
-        let count = 0;
-
-        this.forEach(() => count++);
-
-        return count;
+        return Array.from(this).length;
     }
 
     /**

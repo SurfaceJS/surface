@@ -1,5 +1,5 @@
 import { element }   from "@surface/custom-element/decorators";
-import { notify }    from "@surface/observer/common";
+import Observer      from "@surface/observer";
 import IDataProvider from "../interfaces/data-provider";
 
 type Order = "asc"|"desc";
@@ -99,7 +99,7 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         if (this[key] != value)
         {
             this[`_${key}` as K] = value;
-            notify(this, key);
+            Observer.notify(this, key);
         }
     }
 

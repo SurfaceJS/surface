@@ -6,7 +6,6 @@ import CustomElement                                            from "@surface/c
 import Enumerable                                               from "@surface/enumerable";
 import Expression                                               from "@surface/expression";
 import Observer                                                 from "@surface/observer";
-import { notify, observe }                                      from "@surface/observer/common";
 import Component                                                from "..";
 import { element }                                              from "../decorators";
 import DataCell                                                 from "./data-cell";
@@ -74,9 +73,9 @@ export default class DataTable extends Component
     {
         this.dataProvider = new DataProvider(value, this.pageSize);
 
-        const observer = observe(this.dataProvider, "pageCount");
+        const observer = Observer.observe(this.dataProvider, "pageCount");
 
-        observer.subscribe(() => notify(this, "pageCount" as keyof this));
+        observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
 
         runAsync(this.refresh.bind(this)).then(() => this.onDatasourceChange.notify());
     }
@@ -132,9 +131,9 @@ export default class DataTable extends Component
             this.dataProvider = dataProvider;
         }
 
-        const observer = observe(this.dataProvider, "pageCount");
+        const observer = Observer.observe(this.dataProvider, "pageCount");
 
-        observer.subscribe(() => notify(this, "pageCount" as keyof this));
+        observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
 
         const dataTemplate = super.query<HTMLTemplateElement>("template");
 
