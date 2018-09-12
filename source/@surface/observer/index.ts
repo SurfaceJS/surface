@@ -16,40 +16,46 @@ export default class Observer
             keyOrproperty
             : Type.from(target).getProperty(keyOrproperty)!;
 
-        Object.defineProperty
-        (
-            target,
-            property.key,
-            {
-                configurable: true,
-                get: function (this: typeof target)
+        if (!property.readonly)
+        {
+            Object.defineProperty
+            (
+                target,
+                property.key,
                 {
-                    return property.getter && property.getter.call(this);
-                },
-                set: function (this: typeof target, value: Object)
-                {
-                    if (!this[NOTIFYING] && property.setter)
+                    configurable: true,
+                    get: property.getter && property.getter.bind(target),
+                    set: function (this: typeof target, value: Object)
                     {
-                        property.setter.call(this, value);
+                        if (!this[NOTIFYING])
+                        {
+                            property.setter!.call(this, value);
 
-                        this[NOTIFYING] = true;
+                            this[NOTIFYING] = true;
 
-                        observer.notify(this);
+                            observer.notify(value);
 
-                        this[NOTIFYING] = false;
+                            this[NOTIFYING] = false;
+                        }
                     }
                 }
-            }
-        );
+            );
+        }
+        else
+        {
+            throw new Error(`Cannot bind readonly property ${property.key.toString()} on type ${target.constructor.name}`);
+        }
     }
 
     public static notify<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): void
     {
-        const observer = Observer.observe(target, key as keyof IObservable);
+        type Key = keyof IObservable;
+
+        const observer = Observer.observe(target, key as Key);
 
         target[NOTIFYING] = true;
 
-        observer.notify(target);
+        observer.notify(target[key as Key]);
 
         target[NOTIFYING] = false;
     }

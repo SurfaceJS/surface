@@ -36,11 +36,11 @@ export default class ObserverVisitor extends ExpressionVisitor
             throw new TypeError("Can't bind to non initialized object");
         }
 
-        const member = Type.from(target as object).getProperty(key);
+        const property = Type.from(target as object).getProperty(key);
 
-        if (member)
+        if (property)
         {
-            DataBind.oneWay(target as object, member, this.notify);
+            DataBind.oneWay(target as object, property, this.notify);
         }
         else
         {

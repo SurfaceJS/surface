@@ -8,17 +8,20 @@ type Hookable = IObservable & { [HOOKS]?: Array<string|symbol> };
 
 export default class DataBind
 {
-    public static oneWay(target: Hookable, property: PropertyInfo, action: Action1<IObservable>): void
+    public static oneWay(target: Hookable, property: PropertyInfo, action: Action1<unknown>): void
     {
         const hooks = target[HOOKS] || [];
 
         const observer = Observer.observe(target, property.key as keyof Hookable);
 
-        observer.subscribe(action as Action1<unknown>);
+        observer.subscribe(action);
 
         if (!hooks.includes(property.key))
         {
-            Observer.inject(target, property, observer);
+            if (!property.readonly)
+            {
+                Observer.inject(target, property, observer);
+            }
 
             if (target instanceof HTMLElement)
             {
@@ -30,14 +33,16 @@ export default class DataBind
 
                     if (qualifiedName == property.key)
                     {
-                        observer.notify(this);
+                        observer.notify(value);
                     }
                 };
 
                 if (target instanceof HTMLInputElement)
                 {
-                    target.addEventListener("change", function () { observer.notify(this); });
-                    target.addEventListener("keyup",  function () { observer.notify(this); });
+                    type Key = keyof HTMLInputElement;
+
+                    target.addEventListener("change", function () { observer.notify(this[property.key as Key]); });
+                    target.addEventListener("keyup",  function () { observer.notify(this[property.key as Key]); });
                 }
             }
 
@@ -49,10 +54,13 @@ export default class DataBind
 
     public static twoWay(left: IObservable, leftProperty: PropertyInfo, right: IObservable, rightProperty: PropertyInfo): void
     {
-        const leftKey  = leftProperty.key  as keyof IObservable;
-        const rightKey = rightProperty.key as keyof IObservable;
+        type Key   = keyof IObservable;
+        type Value = IObservable[Key];
 
-        DataBind.oneWay(left,  leftProperty,  source => right[rightKey] = source[leftKey]);
-        DataBind.oneWay(right, rightProperty, source => left[leftKey]   = source[rightKey]);
+        const leftKey  = leftProperty.key  as Key;
+        const rightKey = rightProperty.key as Key;
+
+        DataBind.oneWay(left,  leftProperty,  value => right[rightKey] = value as Value);
+        DataBind.oneWay(right, rightProperty, value => left[leftKey]   = value as Value);
     }
 }

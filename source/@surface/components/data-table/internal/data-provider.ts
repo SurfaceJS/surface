@@ -1,10 +1,23 @@
-import List          from "@surface/collection/list";
-import Observer      from "@surface/observer";
-import IDataProvider from "../interfaces/data-provider";
+import List                     from "@surface/collection/list";
+import { Func1 }                from "@surface/core";
+import Observer                 from "@surface/observer";
+import IDataProvider, { Order } from "../interfaces/data-provider";
 
-export default class DataProvider<T> implements IDataProvider<T>
+
+
+export default class DataProvider<T extends Object> implements IDataProvider<T>
 {
     private readonly datasource: List<T>;
+    private _order: Order;
+    public get order(): Order
+    {
+        return this._order;
+    }
+
+    public set order(value: Order)
+    {
+        this._order = value;
+    }
 
     private _pageCount: number = 0;
     public get pageCount(): number
@@ -52,12 +65,13 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public get total(): number
     {
-        return this.datasource.length;
+        return this.datasource.count();
     }
 
     public constructor(source: Iterable<T>, pageSize: number)
     {
         this.datasource = new List(source);
+        this._order     = { field: "0", direction: "asc" };
         this._pageSize  = pageSize;
         this._pageCount = this.calculatePageCount(this.total);
     }
@@ -80,7 +94,7 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public async create(data: T): Promise<void>
     {
-        this.datasource.add(data);
+        (this.datasource as List<T>).add(data);
 
         Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
@@ -88,7 +102,7 @@ export default class DataProvider<T> implements IDataProvider<T>
 
     public async delete(data: T): Promise<void>
     {
-        this.datasource.remove(data);
+        (this.datasource as List<T>).remove(data);
 
         Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
@@ -112,11 +126,6 @@ export default class DataProvider<T> implements IDataProvider<T>
         }
     }
 
-    public order(field: string, direction: "asc" | "desc"): void
-    {
-        throw new Error("Method not implemented.");
-    }
-
     public previousPage(): void
     {
         if (this._page - 1 > 0)
@@ -130,7 +139,15 @@ export default class DataProvider<T> implements IDataProvider<T>
         Observer.notify(this, "total");
         Observer.notify(this, "pageCount");
 
-        return await Promise.resolve(this.datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
+        const predicate = this._order.field.includes(".") ?
+            Function("x", `return x.${this.order.field}`) as Func1<T, T[keyof T]> :
+            (element: T) => element[this._order.field as keyof T];
+
+        const datasource = this._order.direction == "asc" ?
+            this.datasource.orderBy(predicate)
+            : this.datasource.orderByDescending(predicate);
+
+        return await Promise.resolve(datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
     }
 
     public async update(data: T): Promise<void>

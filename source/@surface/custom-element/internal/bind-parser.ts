@@ -1,12 +1,10 @@
-import Expression      from "@surface/expression";
-import ExpressionType  from "@surface/expression/expression-type";
-import SyntaxError     from "@surface/expression/syntax-error";
-import BindingMode     from "./binding-mode";
-import IExpressionBind from "./interfaces/expression-bind";
+import Expression  from "@surface/expression";
+import IExpression from "@surface/expression/interfaces/expression";
+import SyntaxError from "@surface/expression/syntax-error";
 
 export default class BindParser
 {
-    private readonly expressions: Array<IExpressionBind> = [];
+    private readonly expressions: Array<IExpression> = [];
 
     private readonly context: Object;
     private readonly source:  string;
@@ -19,7 +17,7 @@ export default class BindParser
         this.context = context;
     }
 
-    public static scan(context: Object, source: string): IExpressionBind
+    public static scan(context: Object, source: string): IExpression
     {
         return new BindParser(source, context).scan();
     }
@@ -34,8 +32,7 @@ export default class BindParser
     {
         try
         {
-            let bindingMode = BindingMode.oneWay;
-            let scaped      = false;
+            let scaped = false;
 
             while (!this.eof() && (this.source.substring(this.index, this.index + 2) != "{{" && this.source.substring(this.index, this.index + 2) != "[[") || scaped)
             {
@@ -52,16 +49,11 @@ export default class BindParser
                     .replace(/\\\[/g, "[")
                     .replace(/\\\]/g, "]");
 
-                this.expressions.push({ bindingMode: BindingMode.oneWay, expression: Expression.constant(textFragment) });
+                this.expressions.push(Expression.constant(textFragment));
             }
 
             if (!this.eof())
             {
-                if (this.source[this.index] == "{")
-                {
-                    bindingMode = BindingMode.twoWay;
-                }
-
                 let start = this.index + 2;
                 let stack = 0;
 
@@ -83,12 +75,7 @@ export default class BindParser
 
                 const expression = Expression.from(this.source.substring(start, this.index - 2), this.context);
 
-                if (expression.type != ExpressionType.Member)
-                {
-                    bindingMode = BindingMode.oneWay;
-                }
-
-                this.expressions.push({ bindingMode, expression });
+                this.expressions.push(expression);
 
                 if (!this.eof())
                 {
@@ -114,7 +101,7 @@ export default class BindParser
         return this.index == this.source.length;
     }
 
-    private scan(): IExpressionBind
+    private scan(): IExpression
     {
         this.parse(0);
 
@@ -124,7 +111,7 @@ export default class BindParser
         }
         else
         {
-            return { bindingMode: BindingMode.oneWay, expression: Expression.array(this.expressions.map(x => x.expression)) };
+            return Expression.array(this.expressions);
         }
     }
 }

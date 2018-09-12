@@ -1,12 +1,12 @@
 import { Action, ObjectLiteral } from "@surface/core";
-import { coalesce }              from "@surface/core/common/generic";
+import { coalesce, typeGuard }   from "@surface/core/common/generic";
 import { dashedToCamel }         from "@surface/core/common/string";
 import ExpressionType            from "@surface/expression/expression-type";
+import IExpression               from "@surface/expression/interfaces/expression";
 import IMemberExpression         from "@surface/expression/interfaces/member-expression";
 import Type                      from "@surface/reflection";
 import IArrayExpression          from "../../expression/interfaces/array-expression";
 import BindParser                from "./bind-parser";
-import BindingMode               from "./binding-mode";
 import DataBind                  from "./data-bind";
 import ObserverVisitor           from "./observer-visitor";
 import { BINDED, CONTEXT }       from "./symbols";
@@ -28,6 +28,7 @@ export default class ElementBind
         new ElementBind(context).traverseElement(content);
     }
 
+    // tslint:disable-next-line:cyclomatic-complexity
     private bindAttribute(element: Element): void
     {
         const notifications: Array<Action> = [];
@@ -35,24 +36,20 @@ export default class ElementBind
         {
             if (attribute.value.includes("{{") && attribute.value.includes("}}") || attribute.value.includes("[[") && attribute.value.includes("]]"))
             {
-                const interpolation = !(attribute.value.startsWith("{{") && attribute.value.endsWith("}}"))
-                    && !(attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));
+                const isOneWay = (attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));
+                const isTwoWay = (attribute.value.startsWith("{{") && attribute.value.endsWith("}}"));
+
+                const interpolation = !(isOneWay || isTwoWay);
 
                 const context = this.createProxy({ this: element, ...this.context });
 
-                const { bindingMode, expression } = BindParser.scan(context, attribute.value);
+                const expression = BindParser.scan(context, attribute.value);
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    let action: Action;
-                    if (expression.type == ExpressionType.Member)
-                    {
-                        action = expression.evaluate() as Action;
-                    }
-                    else
-                    {
-                        action = () => expression.evaluate();
-                    }
+                    const action = expression.type == ExpressionType.Member ?
+                        expression.evaluate() as Action
+                        : () => expression.evaluate();
 
                     element.addEventListener(attribute.name.replace(/^on-/, ""), action);
                     attribute.value = `[binding ${action.name || "expression"}]`;
@@ -63,47 +60,43 @@ export default class ElementBind
 
                     let notification = () =>
                     {
-                        const value = expression.type == ExpressionType.Array && interpolation ?
-                            (expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`) :
+                        const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
+                            expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
                             expression.evaluate();
-
-                        attribute.value = `${coalesce(value, "")}`;
 
                         if (attributeName in element)
                         {
                             (element as ObjectLiteral)[attributeName] = value;
                         }
+
+                        attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                     };
 
-                    if (bindingMode == BindingMode.twoWay)
+                    if (isTwoWay && typeGuard<IExpression, IMemberExpression>(expression, x => x.type == ExpressionType.Member))
                     {
-                        const source = attributeName in element ? element : attribute;
+                        const { leftHand, leftHandKey } = attributeName in element ?
+                            { leftHand: element, leftHandKey: attributeName }
+                            : { leftHand: attribute, leftHandKey: "value" };
 
-                        const leftProperty = attributeName in element ?
-                            Type.from(element).getProperty(attributeName) :
-                            Type.from(attribute).getProperty("value");
+                        const leftProperty = Type.from(leftHand).getProperty(leftHandKey);
 
-                        const target = (expression as IMemberExpression).target.evaluate() as object;
-                        const key    = `${(expression as IMemberExpression).key.evaluate()}`;
+                        const rightHand    = expression.target.evaluate() as object;
+                        const rightHandKey = `${expression.key.evaluate()}`;
 
-                        const rightProperty = (target instanceof Function) ?
-                            Type.of(target).getStaticProperty(attributeName) :
-                            Type.from(target).getProperty(key);
+                        const rightProperty = (rightHand instanceof Function) ?
+                            Type.of(rightHand).getStaticProperty(rightHandKey) :
+                            Type.from(rightHand).getProperty(rightHandKey);
 
-                        if (leftProperty && rightProperty)
+                        if (leftProperty && !leftProperty.readonly && rightProperty && !rightProperty.readonly)
                         {
                             notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
-                            if (leftProperty.setter)
-                            {
-                                leftProperty.setter!.call(source, expression.evaluate());
-                            }
-
-                            DataBind.twoWay(source, leftProperty, target, rightProperty);
+                            leftProperty.setter!.call(leftHand, expression.evaluate());
+                            DataBind.twoWay(leftHand, leftProperty, rightHand, rightProperty);
                         }
                         else if (rightProperty)
                         {
-                            DataBind.oneWay(target, rightProperty, notification);
+                            DataBind.oneWay(rightHand, rightProperty, notification);
                         }
                     }
                     else
@@ -126,10 +119,10 @@ export default class ElementBind
         {
             const context = this.createProxy({ this: element, ...this.context });
 
-            let expression = BindParser.scan(context, element.nodeValue).expression;
+            const expression = BindParser.scan(context, element.nodeValue);
 
-            const notify = expression.type == ExpressionType.Array ?
-                () => element.nodeValue = `${coalesce((expression as IArrayExpression).evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
+            const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
+                () => element.nodeValue = `${coalesce(expression.evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
                 () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
             const visitor = new ObserverVisitor(notify);

@@ -3,7 +3,6 @@ import "./fixtures/dom";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import BindParser                              from "../internal/bind-parser";
-import BindingMode                             from "../internal/binding-mode";
 
 class Mock
 {
@@ -38,9 +37,8 @@ export default class BindParserSpec
     {
         const context = { this: new Mock() };
 
-        const { bindingMode, expression } = BindParser.scan(context, "[[ this.value ]]");
+        const expression = BindParser.scan(context, "[[ this.value ]]");
 
-        expect(bindingMode).to.equal(BindingMode.oneWay);
         expect(expression.evaluate()).to.equal(0);
 
         context.this.value = 1;
@@ -50,9 +48,8 @@ export default class BindParserSpec
     @test @shouldPass
     public oneWayScapedExpression(): void
     {
-        const { bindingMode, expression } = BindParser.scan({ }, "This is an scaped expression \\[[ this.value ]]");
+        const expression = BindParser.scan({ }, "This is an scaped expression \\[[ this.value ]]");
 
-        expect(bindingMode).to.equal(BindingMode.oneWay);
         expect(expression.evaluate()).to.equal("This is an scaped expression [[ this.value ]]");
     }
 
@@ -61,9 +58,8 @@ export default class BindParserSpec
     {
         const context = { this: new Mock() };
 
-        const { bindingMode, expression } = BindParser.scan(context, "The value is: [[ this.value ]]");
+        const expression = BindParser.scan(context, "The value is: [[ this.value ]]");
 
-        expect(bindingMode).to.equal(BindingMode.oneWay);
         expect(expression.evaluate()).to.deep.equal(["The value is: ", 0]);
 
         context.this.value = 1;
@@ -89,9 +85,8 @@ export default class BindParserSpec
 
         const context = { this: new Mock() };
 
-        const { bindingMode, expression } = BindParser.scan(context, "{{ this.value }}");
+        const expression = BindParser.scan(context, "{{ this.value }}");
 
-        expect(bindingMode).to.equal(BindingMode.twoWay);
         expect(expression.evaluate()).to.equal(0);
 
         context.this.value = 1;
@@ -117,9 +112,8 @@ export default class BindParserSpec
 
         const context = { this: new Mock() };
 
-        const { bindingMode, expression } = BindParser.scan(context, "{{ this.value > 0 }}");
+        const expression = BindParser.scan(context, "{{ this.value > 0 }}");
 
-        expect(bindingMode).to.equal(BindingMode.oneWay);
         expect(expression.evaluate()).to.equal(false);
 
         context.this.value = 1;
@@ -131,9 +125,8 @@ export default class BindParserSpec
     {
         const context = { this: new Mock() };
 
-        const { bindingMode, expression } = BindParser.scan(context, "Value: {{ this.value }}; Text: {{ this.text }}");
+        const expression = BindParser.scan(context, "Value: {{ this.value }}; Text: {{ this.text }}");
 
-        expect(bindingMode).to.equal(BindingMode.oneWay);
         expect(expression.evaluate()).to.deep.equal(["Value: ", 0, "; Text: ", "Hello World!!!"]);
 
         context.this.value = 1;
@@ -146,8 +139,8 @@ export default class BindParserSpec
     @test @shouldPass
     public twoWayScapedExpression(): void
     {
-        const expressionBind = BindParser.scan({ }, "This is an scaped expression \\{{ this.value }}");
-        expect(expressionBind.expression.evaluate()).to.equal("This is an scaped expression {{ this.value }}");
+        const expression = BindParser.scan({ }, "This is an scaped expression \\{{ this.value }}");
+        expect(expression.evaluate()).to.equal("This is an scaped expression {{ this.value }}");
     }
 
     @test @shouldFail

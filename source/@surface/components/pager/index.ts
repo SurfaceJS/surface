@@ -1,8 +1,8 @@
-import Observer    from "@surface/observer";
-import Component   from "..";
-import { element } from "../decorators";
-import template    from "./index.html";
-import style       from "./index.scss";
+import Observer               from "@surface/observer";
+import Component              from "..";
+import { attribute, element } from "../decorators";
+import template               from "./index.html";
+import style                  from "./index.scss";
 
 @element("surface-pager", template, style)
 export default class Pager extends Component
@@ -24,6 +24,7 @@ export default class Pager extends Component
         return this._page;
     }
 
+    @attribute
     public get pageCount(): number
     {
         return Number.parseInt(super.getAttribute("page-count") || "0") || 0;
@@ -62,6 +63,11 @@ export default class Pager extends Component
         Observer.notify(this, "endRange" as keyof this);
 
         super.dispatchEvent(new Event("change"));
+    }
+
+    protected attributeChangedCallback(): void
+    {
+        this.pageChanged();
     }
 
     public firstPage(): void

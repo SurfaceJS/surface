@@ -1,15 +1,11 @@
-import { element }   from "@surface/custom-element/decorators";
-import Observer      from "@surface/observer";
-import IDataProvider from "../interfaces/data-provider";
-
-type Order = "asc"|"desc";
+import { element }              from "@surface/custom-element/decorators";
+import Observer                 from "@surface/observer";
+import IDataProvider, { Order } from "../interfaces/data-provider";
 
 @element("surface-data-provider")
 export default class DataProvider<T extends object> extends HTMLElement implements IDataProvider<T>
 {
-    private orderDirection: Order  = "asc";
-    private orderField:     string = "";
-
+    private _order:     Order  = { field: "0", direction: "asc" };
     private _page:      number = 1;
     private _pageCount: number = 0;
     private _total:     number = 0;
@@ -32,6 +28,16 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
     public set deleteUrl(value: string)
     {
         super.setAttribute("delete-url", value.toString());
+    }
+
+    public get order(): Order
+    {
+        return this._order;
+    }
+
+    public set order(value: Order)
+    {
+        this._order = value;
     }
 
     public get page(): number
@@ -138,12 +144,6 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         }
     }
 
-    public order(field: string, direction: Order): void
-    {
-        this.orderField     = field;
-        this.orderDirection = direction;
-    }
-
     public previousPage(): void
     {
         if (this._page - 1 > 0)
@@ -158,11 +158,7 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         {
             page:     this.page,
             pageSize: this.pageSize,
-            order:
-            {
-                direction: this.orderDirection,
-                field:     this.orderField
-            }
+            order:    this.order
         };
 
         const response = await fetch

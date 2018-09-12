@@ -97,7 +97,7 @@ export default class DataTable extends Component
 
     public get pageSize(): number
     {
-        return Number.parseInt(super.getAttribute("page-size") || "10");
+        return Number.parseInt(super.getAttribute("page-size") || "10") || 10;
     }
 
     public set pageSize(value: number)
@@ -418,7 +418,7 @@ export default class DataTable extends Component
 
     public order(field: string, direction: "asc" | "desc"): void
     {
-        this.dataProvider.order(field, direction);
+        this.dataProvider.order = { field, direction };
         this.refresh();
     }
 
