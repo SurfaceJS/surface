@@ -26,7 +26,7 @@ export default class Pager extends Component
 
     public get pageCount(): number
     {
-        return Number.parseInt(super.getAttribute("page-count") || "0");
+        return Number.parseInt(super.getAttribute("page-count") || "0") || 0;
     }
 
     public set pageCount(value: number)

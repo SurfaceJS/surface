@@ -94,11 +94,10 @@ export default class ElementBind
                         {
                             notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
-                            // Quarantine
-                            //if (leftProperty.setter)
-                            //{
-                            //    leftProperty.setter!.call(source, expression.evaluate());
-                            //}
+                            if (leftProperty.setter)
+                            {
+                                leftProperty.setter!.call(source, expression.evaluate());
+                            }
 
                             DataBind.twoWay(source, leftProperty, target, rightProperty);
                         }
