@@ -36,7 +36,7 @@ export default abstract class MemberInfo
         return this._metadata;
     }
 
-    protected constructor(key: string, declaringType: Type, isStatic: boolean)
+    protected constructor(key: string|symbol, declaringType: Type, isStatic: boolean)
     {
         this._key           = key;
         this._declaringType = declaringType;

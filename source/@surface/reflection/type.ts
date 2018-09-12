@@ -6,7 +6,7 @@ import MemberInfo                  from "./member-info";
 import MethodInfo                  from "./method-info";
 import PropertyInfo                from "./property-info";
 
-type Member = { key: string, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean };
+type Member = { key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean };
 
 export default class Type
 {
@@ -190,7 +190,7 @@ export default class Type
         }
     }
 
-    public getMember(key: string): Nullable<MemberInfo>
+    public getMember(key: string|symbol): Nullable<MemberInfo>
     {
         let prototype = this.targetConstructor.prototype;
 
@@ -215,7 +215,7 @@ export default class Type
         }
     }
 
-    public getMethod(key: string): Nullable<MethodInfo>
+    public getMethod(key: string|symbol): Nullable<MethodInfo>
     {
         const memberInfo = this.getMember(key);
 
@@ -249,7 +249,7 @@ export default class Type
         }
     }
 
-    public getProperty(key: string): Nullable<PropertyInfo>
+    public getProperty(key: string|symbol): Nullable<PropertyInfo>
     {
         const memberInfo = this.getMember(key);
 
@@ -266,7 +266,7 @@ export default class Type
         return this.targetConstructor.prototype;
     }
 
-    public getStaticField(key: string): Nullable<FieldInfo>
+    public getStaticField(key: string|symbol): Nullable<FieldInfo>
     {
         const memberInfo = this.getStaticMember(key);
 
@@ -289,7 +289,7 @@ export default class Type
         }
     }
 
-    public getStaticMember(key: string): Nullable<MemberInfo>
+    public getStaticMember(key: string|symbol): Nullable<MemberInfo>
     {
         let targetConstructor = this.targetConstructor;
 
@@ -337,7 +337,7 @@ export default class Type
         }
     }
 
-    public getStaticMethod(key: string): Nullable<MethodInfo>
+    public getStaticMethod(key: string|symbol): Nullable<MethodInfo>
     {
         const memberInfo = this.getStaticMember(key);
 
@@ -371,7 +371,7 @@ export default class Type
         }
     }
 
-    public getStaticProperty(key: string): Nullable<PropertyInfo>
+    public getStaticProperty(key: string|symbol): Nullable<PropertyInfo>
     {
         const memberInfo = this.getStaticMember(key);
 

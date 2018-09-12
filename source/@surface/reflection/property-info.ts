@@ -19,7 +19,7 @@ export default class PropertyInfo extends FieldInfo
         return this.descriptor.set;
     }
 
-    public constructor(key: string, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean)
+    public constructor(key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean)
     {
         super(key, descriptor, declaringType, isStatic);
         this.descriptor = descriptor;

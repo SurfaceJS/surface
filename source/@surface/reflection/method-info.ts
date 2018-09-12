@@ -41,7 +41,7 @@ export default class MethodInfo extends MemberInfo
         return this._parameters;
     }
 
-    public constructor(key: string, invoke: Function, declaringType: Type, isStatic: boolean)
+    public constructor(key: string|symbol, invoke: Function, declaringType: Type, isStatic: boolean)
     {
         super(key, declaringType, isStatic);
 
