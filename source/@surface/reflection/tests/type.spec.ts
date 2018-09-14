@@ -20,7 +20,17 @@ export default class TypeSpec
     @test @shouldPass
     public getTypeFrom(): void
     {
-        expect(Type.from(new Mock())).to.deep.equal(Type.from(new Mock()));
+        expect(Type.from(new Mock())).to.deep.equal(Type.of(Mock));
+    }
+
+    @test @shouldPass
+    public getTypeFromObjectLiteral(): void
+    {
+        const type = Type.from({ foo: 1, bar: "two" });
+
+        expect(Array.from(type.getFields()!).length).to.equal(2);
+        expect(type.getField("foo")!.value).to.equal(1);
+        expect(type.getField("bar")!.value).to.equal("two");
     }
 
     @test @shouldPass

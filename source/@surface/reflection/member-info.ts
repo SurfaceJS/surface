@@ -1,5 +1,5 @@
 import { Nullable, ObjectLiteral } from "@surface/core";
-import Type         from "./type";
+import Type                        from "./type";
 
 export default abstract class MemberInfo
 {

@@ -10,14 +10,14 @@ type Member = { key: string|symbol, descriptor: PropertyDescriptor, declaringTyp
 
 export default class Type
 {
-    private readonly targetConstructor: Function;
+    private readonly prototype: object;
 
     private _baseType: Nullable<Type> = null;
     public get baseType(): Nullable<Type>
     {
-        if (!this._baseType && (this.targetConstructor as Object) != Object)
+        if (!this._baseType && this.prototype.constructor != Object)
         {
-            this._baseType = new Type(Reflect.getPrototypeOf(this.targetConstructor.prototype).constructor) as Nullable<Type>;
+            this._baseType = new Type(Reflect.getPrototypeOf(this.prototype).constructor.prototype) as Nullable<Type>;
         }
 
         return this._baseType;
@@ -25,17 +25,17 @@ export default class Type
 
     public get extensible(): boolean
     {
-        return Object.isExtensible(this.targetConstructor.prototype);
+        return Object.isExtensible(this.prototype);
     }
 
     public get frozen(): boolean
     {
-        return Object.isFrozen(this.targetConstructor.prototype);
+        return Object.isFrozen(this.prototype);
     }
 
     public get sealed(): boolean
     {
-        return Object.isSealed(this.targetConstructor.prototype);
+        return Object.isSealed(this.prototype);
     }
 
     private _metadata: Nullable<ObjectLiteral>;
@@ -45,8 +45,8 @@ export default class Type
         {
             const metadata: ObjectLiteral = { };
 
-            Reflect.getMetadataKeys(this.targetConstructor)
-                .forEach(/* istanbul ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.targetConstructor));
+            Reflect.getMetadataKeys(this.prototype)
+                .forEach(/* istanbul ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.prototype));
 
             this._metadata = metadata;
         }
@@ -56,27 +56,27 @@ export default class Type
 
     public get name(): string
     {
-        return this.targetConstructor.name;
+        return this.prototype.constructor.name;
     }
 
-    private constructor(target: Function)
+    private constructor(prototype: object)
     {
-        this.targetConstructor = target;
+        this.prototype = prototype;
     }
 
-    public static from(target: Object)
+    public static from(instance: object)
     {
-        return new Type(target.constructor);
+        return new Type(instance.constructor != Object ? instance.constructor.prototype : instance);
     }
 
-    public static of(target: Function): Type
+    public static of(constructor: Function): Type
     {
-        return new Type(target);
+        return new Type(constructor.prototype);
     }
 
     private *enumerateMembers(): IterableIterator<Member>
     {
-        let prototype = this.targetConstructor.prototype;
+        let prototype = this.prototype;
 
         do
         {
@@ -94,20 +94,20 @@ export default class Type
 
     private *enumerateStaticMembers(): IterableIterator<Member>
     {
-        let targetConstructor = this.targetConstructor;
+        let constructor = this.prototype.constructor;
 
         do
         {
-            for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(targetConstructor)))
+            for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(constructor)))
             {
-                yield { key, descriptor, declaringType: Type.of(targetConstructor), isStatic: true };
+                yield { key, descriptor, declaringType: Type.of(constructor), isStatic: true };
             }
 
-            const prototype = Object.getPrototypeOf(targetConstructor.prototype) as Nullable<ObjectLiteral>;
+            const prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<ObjectLiteral>;
 
             if (prototype)
             {
-                targetConstructor = prototype.constructor;
+                constructor = prototype.constructor;
             }
             else
             {
@@ -133,16 +133,16 @@ export default class Type
         }
     }
 
-    public equals(target: Function): boolean;
-    public equals(target: Type): boolean;
-    public equals(target: Function|Type): boolean
+    public equals(type: Type): boolean;
+    public equals(constructor: Function): boolean;
+    public equals(typeOrConstructor: Function|Type): boolean
     {
-        if (target instanceof Type)
+        if (typeOrConstructor instanceof Type)
         {
-            return this.targetConstructor == target.getConstructor();
+            return this.prototype.constructor == typeOrConstructor.getConstructor();
         }
 
-        return this.targetConstructor == target;
+        return this.prototype.constructor == typeOrConstructor;
     }
 
     public extends(target: Function): boolean;
@@ -164,7 +164,7 @@ export default class Type
 
     public getConstructor(): Function
     {
-        return this.targetConstructor;
+        return this.prototype.constructor;
     }
 
     public getField(key: string): Nullable<FieldInfo>
@@ -181,18 +181,18 @@ export default class Type
 
     public *getFields(): IterableIterator<FieldInfo>
     {
-        for (const x of this.enumerateMembers())
+        for (const member of this.enumerateMembers())
         {
-            if (!(x.descriptor.value instanceof Function) && !x.descriptor.get && !x.descriptor.set)
+            if (!(member.descriptor.value instanceof Function) && !member.descriptor.get && !member.descriptor.set)
             {
-                yield new FieldInfo(x.key, x.descriptor, x.declaringType, false);
+                yield new FieldInfo(member.key, member.descriptor, member.declaringType, false);
             }
         }
     }
 
     public getMember(key: string|symbol): Nullable<MemberInfo>
     {
-        let prototype = this.targetConstructor.prototype;
+        let prototype = this.prototype;
 
         do
         {
@@ -229,11 +229,11 @@ export default class Type
 
     public *getMethods(): IterableIterator<MethodInfo>
     {
-        for (const x of this.enumerateMembers())
+        for (const member of this.enumerateMembers())
         {
-            if (x.descriptor.value instanceof Function)
+            if (member.descriptor.value instanceof Function)
             {
-                yield new MethodInfo(x.key, x.descriptor.value, x.declaringType, false);
+                yield new MethodInfo(member.key, member.descriptor.value, member.declaringType, false);
             }
         }
     }
@@ -263,7 +263,7 @@ export default class Type
 
     public getPrototype(): Object
     {
-        return this.targetConstructor.prototype;
+        return this.prototype;
     }
 
     public getStaticField(key: string|symbol): Nullable<FieldInfo>
@@ -291,33 +291,33 @@ export default class Type
 
     public getStaticMember(key: string|symbol): Nullable<MemberInfo>
     {
-        let targetConstructor = this.targetConstructor;
+        let constructor = this.prototype.constructor;
 
         do
         {
-            const descriptor = Object.getOwnPropertyDescriptor(targetConstructor, key);
+            const descriptor = Object.getOwnPropertyDescriptor(constructor, key);
 
             if (descriptor)
             {
                 if (descriptor.value instanceof Function)
                 {
-                    return new MethodInfo(key, descriptor.value, Type.of(targetConstructor), true);
+                    return new MethodInfo(key, descriptor.value, Type.of(constructor), true);
                 }
                 else if (!(descriptor.value instanceof Function) && (!!descriptor.set || !!descriptor.get))
                 {
-                    return new PropertyInfo(key, descriptor, Type.of(targetConstructor), true);
+                    return new PropertyInfo(key, descriptor, Type.of(constructor), true);
                 }
                 else
                 {
-                    return new FieldInfo(key, descriptor, Type.of(targetConstructor), true);
+                    return new FieldInfo(key, descriptor, Type.of(constructor), true);
                 }
             }
 
-            let prototype = Object.getPrototypeOf(targetConstructor.prototype) as Nullable<ObjectLiteral>;
+            let prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<ObjectLiteral>;
 
             if (prototype)
             {
-                targetConstructor = prototype.constructor;
+                constructor = prototype.constructor;
             }
             else
             {
