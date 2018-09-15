@@ -27,8 +27,8 @@ export default class List<TSource> extends Enumerable<TSource>
 
         const handler: ProxyHandler<List<TSource>> =
         {
-            has: (target, key) => Number.isInteger(parseInt(key.toString())) ? key in this[SOURCE] : key in this,
-            get: (target, key) =>
+            has: (_, key) => Number.isInteger(parseInt(key.toString())) ? key in this[SOURCE] : key in this,
+            get: (_, key) =>
             {
                 const index = parseInt(key.toString());
 
@@ -50,7 +50,7 @@ export default class List<TSource> extends Enumerable<TSource>
                     return this[key as keyof this];
                 }
             },
-            set: (target, key, value) =>
+            set: (_, key, value) =>
             {
                 const index = parseInt(key.toString());
 

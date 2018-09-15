@@ -77,7 +77,7 @@ export default class Type
     private *enumerateMembers(): IterableIterator<Member>
     {
         let prototype = this.prototype;
-
+        let type      = this as Type;
         do
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(prototype)))
@@ -87,20 +87,21 @@ export default class Type
                     continue;
                 }
 
-                yield { key, descriptor, declaringType: Type.from(prototype), isStatic: false };
+                yield { key, descriptor, declaringType: type, isStatic: false };
             }
-        } while (prototype = Object.getPrototypeOf(prototype));
+        } while ((type = Type.from(prototype)) && (prototype = Object.getPrototypeOf(prototype)));
     }
 
     private *enumerateStaticMembers(): IterableIterator<Member>
     {
         let constructor = this.prototype.constructor;
+        let type        = this as Type;
 
         do
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(constructor)))
             {
-                yield { key, descriptor, declaringType: Type.of(constructor), isStatic: true };
+                yield { key, descriptor, declaringType: type, isStatic: true };
             }
 
             const prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<ObjectLiteral>;
@@ -108,6 +109,7 @@ export default class Type
             if (prototype)
             {
                 constructor = prototype.constructor;
+                type        = Type.of(constructor);
             }
             else
             {
@@ -193,6 +195,7 @@ export default class Type
     public getMember(key: string|symbol): Nullable<MemberInfo>
     {
         let prototype = this.prototype;
+        let type      = this as Type;
 
         do
         {
@@ -200,9 +203,9 @@ export default class Type
 
             if (descriptor)
             {
-                return this.getMemberType({ key, descriptor, declaringType: Type.from(prototype), isStatic: false });
+                return this.getMemberType({ key, descriptor, declaringType: type, isStatic: false });
             }
-        } while (prototype = Object.getPrototypeOf(prototype));
+        } while ((type = Type.from(prototype)) && (prototype = Object.getPrototypeOf(prototype)));
 
         return null;
     }
@@ -292,7 +295,7 @@ export default class Type
     public getStaticMember(key: string|symbol): Nullable<MemberInfo>
     {
         let constructor = this.prototype.constructor;
-
+        let type        = this as Type;
         do
         {
             const descriptor = Object.getOwnPropertyDescriptor(constructor, key);
@@ -301,15 +304,15 @@ export default class Type
             {
                 if (descriptor.value instanceof Function)
                 {
-                    return new MethodInfo(key, descriptor.value, Type.of(constructor), true);
+                    return new MethodInfo(key, descriptor.value, type, true);
                 }
                 else if (!(descriptor.value instanceof Function) && (!!descriptor.set || !!descriptor.get))
                 {
-                    return new PropertyInfo(key, descriptor, Type.of(constructor), true);
+                    return new PropertyInfo(key, descriptor, type, true);
                 }
                 else
                 {
-                    return new FieldInfo(key, descriptor, Type.of(constructor), true);
+                    return new FieldInfo(key, descriptor, type, true);
                 }
             }
 
@@ -318,6 +321,7 @@ export default class Type
             if (prototype)
             {
                 constructor = prototype.constructor;
+                type        = Type.of(constructor);
             }
             else
             {

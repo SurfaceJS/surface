@@ -1,5 +1,6 @@
-import { Action1 }              from "@surface/core";
+import { Action, Action1 }      from "@surface/core";
 import Type                     from "@surface/reflection";
+import FieldInfo                from "@surface/reflection/field-info";
 import PropertyInfo             from "@surface/reflection/property-info";
 import IObservable              from "./interfaces/observable";
 import { NOTIFYING, OBSERVERS } from "./symbols";
@@ -8,28 +9,99 @@ export default class Observer
 {
     private listeners: Array<Action1<unknown>> = [];
 
-    public static inject<T extends IObservable, K extends keyof T>(target: T, key: K, observer: Observer): void;
-    public static inject(target: IObservable, property: PropertyInfo, observer: Observer): void;
-    public static inject(target: IObservable, keyOrproperty: string|PropertyInfo, observer: Observer): void
+    public static inject<T extends IObservable, K extends keyof T>(target: T, key: K, observer: Observer): boolean;
+    public static inject(target: IObservable, field:      FieldInfo,        observer: Observer): boolean;
+    public static inject(target: IObservable, keyOrField: string|FieldInfo, observer: Observer): boolean
     {
-        const property = keyOrproperty instanceof PropertyInfo ?
-            keyOrproperty
-            : Type.from(target).getProperty(keyOrproperty)!;
+        type Key   = keyof IObservable;
+        type Value = IObservable[Key];
 
-        if (!property.readonly)
+        const member = keyOrField instanceof FieldInfo ?
+            keyOrField
+            : Type.from(target).getMember(keyOrField)!;
+
+        if (member instanceof PropertyInfo)
         {
+            if (!member.readonly)
+            {
+                Object.defineProperty
+                (
+                    target,
+                    member.key,
+                    {
+                        get: member.getter as Action|undefined,
+                        set: function (this: typeof target, value: Object)
+                        {
+                            if (!this[NOTIFYING])
+                            {
+                                member.setter!.call(this, value);
+
+                                this[NOTIFYING] = true;
+
+                                observer.notify(value);
+
+                                this[NOTIFYING] = false;
+                            }
+                        }
+                    }
+                );
+            }
+            else if (`_${member.key.toString()}` in target)
+            {
+                const privateKey = `__${member.key.toString()}__` as Key;
+                target[privateKey] = target[member.key as Key];
+
+                Object.defineProperty
+                (
+                    target,
+                    `_${member.key.toString()}`,
+                    {
+                        get: function(this: IObservable)
+                        {
+                            return this[privateKey];
+                        },
+                        set: function (this: IObservable, value: Value)
+                        {
+                            if (!this[NOTIFYING])
+                            {
+                                this[privateKey] = value;
+
+                                this[NOTIFYING] = true;
+
+                                observer.notify(value);
+
+                                this[NOTIFYING] = false;
+                            }
+                        }
+                    }
+                );
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (member instanceof FieldInfo)
+        {
+            const privateKey = typeof member.key == "symbol" ?
+                Symbol(`_${member.key.toString()}`) as Key
+                : `_${member.key.toString()}` as Key;
+
+            target[privateKey] = member.value as Value;
             Object.defineProperty
             (
                 target,
-                property.key,
+                member.key,
                 {
-                    configurable: true,
-                    get: property.getter && property.getter.bind(target),
-                    set: function (this: typeof target, value: Object)
+                    get: function(this: IObservable)
+                    {
+                        return this[privateKey];
+                    },
+                    set: function (this: IObservable, value: Value)
                     {
                         if (!this[NOTIFYING])
                         {
-                            property.setter!.call(this, value);
+                            this[privateKey] = value;
 
                             this[NOTIFYING] = true;
 
@@ -43,8 +115,10 @@ export default class Observer
         }
         else
         {
-            throw new Error(`Cannot bind readonly property ${property.key.toString()} on type ${target.constructor.name}`);
+            return false;
         }
+
+        return true;
     }
 
     public static notify<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): void

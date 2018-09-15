@@ -1,14 +1,14 @@
 import { Action1 }  from "@surface/core";
 import Observer     from "@surface/observer";
 import IObservable  from "@surface/observer/interfaces/observable";
-import PropertyInfo from "@surface/reflection/property-info";
+import FieldInfo    from "@surface/reflection/field-info";
 
 const HOOKS = Symbol("data-bind:hooks");
 type Hookable = IObservable & { [HOOKS]?: Array<string|symbol> };
 
 export default class DataBind
 {
-    public static oneWay(target: Hookable, property: PropertyInfo, action: Action1<unknown>): void
+    public static oneWay(target: Hookable, property: FieldInfo, action: Action1<unknown>): void
     {
         const hooks = target[HOOKS] || [];
 
@@ -18,10 +18,7 @@ export default class DataBind
 
         if (!hooks.includes(property.key))
         {
-            if (!property.readonly)
-            {
-                Observer.inject(target, property, observer);
-            }
+            Observer.inject(target, property, observer);
 
             if (target instanceof HTMLElement)
             {
@@ -52,7 +49,7 @@ export default class DataBind
         }
     }
 
-    public static twoWay(left: IObservable, leftProperty: PropertyInfo, right: IObservable, rightProperty: PropertyInfo): void
+    public static twoWay(left: IObservable, leftProperty: FieldInfo, right: IObservable, rightProperty: FieldInfo): void
     {
         type Key   = keyof IObservable;
         type Value = IObservable[Key];

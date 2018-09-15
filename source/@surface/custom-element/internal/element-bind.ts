@@ -5,6 +5,8 @@ import ExpressionType            from "@surface/expression/expression-type";
 import IExpression               from "@surface/expression/interfaces/expression";
 import IMemberExpression         from "@surface/expression/interfaces/member-expression";
 import Type                      from "@surface/reflection";
+import FieldInfo                 from "@surface/reflection/field-info";
+import PropertyInfo              from "@surface/reflection/property-info";
 import IArrayExpression          from "../../expression/interfaces/array-expression";
 import BindParser                from "./bind-parser";
 import DataBind                  from "./data-bind";
@@ -78,25 +80,32 @@ export default class ElementBind
                             { leftHand: element, leftHandKey: attributeName }
                             : { leftHand: attribute, leftHandKey: "value" };
 
-                        const leftProperty = Type.from(leftHand).getProperty(leftHandKey);
+                        const leftMember = Type.from(leftHand).getProperty(leftHandKey);
 
                         const rightHand    = expression.target.evaluate() as object;
                         const rightHandKey = `${expression.key.evaluate()}`;
 
-                        const rightProperty = (rightHand instanceof Function) ?
-                            Type.of(rightHand).getStaticProperty(rightHandKey) :
-                            Type.from(rightHand).getProperty(rightHandKey);
+                        const rightMember = (rightHand instanceof Function) ?
+                            Type.of(rightHand).getStaticMember(rightHandKey) :
+                            Type.from(rightHand).getMember(rightHandKey);
 
-                        if (leftProperty && !leftProperty.readonly && rightProperty && !rightProperty.readonly)
+                        if (rightMember instanceof FieldInfo)
                         {
-                            notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
+                            if (leftMember && !(leftMember instanceof PropertyInfo && leftMember.readonly || rightMember instanceof PropertyInfo && rightMember.readonly))
+                            {
+                                notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
 
-                            leftProperty.setter!.call(leftHand, expression.evaluate());
-                            DataBind.twoWay(leftHand, leftProperty, rightHand, rightProperty);
+                                leftMember.setter!.call(leftHand, expression.evaluate());
+                                DataBind.twoWay(leftHand, leftMember, rightHand, rightMember);
+                            }
+                            else
+                            {
+                                DataBind.oneWay(rightHand, rightMember, notification);
+                            }
                         }
-                        else if (rightProperty)
+                        else
                         {
-                            DataBind.oneWay(rightHand, rightProperty, notification);
+                            throw new Error("Cant apply two way databings on function memmber");
                         }
                     }
                     else

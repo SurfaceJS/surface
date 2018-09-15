@@ -1,27 +1,26 @@
-import { Constructor, Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
-import { coalesce }                                             from "@surface/core/common/generic";
-import { clone, objectFactory, proxyFactory, ProxyObject }      from "@surface/core/common/object";
-import { runAsync }                                             from "@surface/core/common/promise";
-import CustomElement                                            from "@surface/custom-element";
-import Enumerable                                               from "@surface/enumerable";
-import Expression                                               from "@surface/expression";
-import Observer                                                 from "@surface/observer";
-import Component                                                from "..";
-import { element }                                              from "../decorators";
-import DataCell                                                 from "./data-cell";
-import DataFooter                                               from "./data-footer";
-import DataHeader                                               from "./data-header";
-import DataRow                                                  from "./data-row";
-import DataRowGroup                                             from "./data-row-group";
-import template                                                 from "./index.html";
-import style                                                    from "./index.scss";
-import IDataProvider                                            from "./interfaces/data-provider";
-import ColumnDefinition                                         from "./internal/column-definition";
-import DataProvider                                             from "./internal/data-provider";
-import arrayTemplate                                            from "./templates/array.html";
-import booleanTemplate                                          from "./templates/boolean.html";
-import numberTemplate                                           from "./templates/number.html";
-import stringTemplate                                           from "./templates/string.html";
+import { Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
+import { coalesce }                                from "@surface/core/common/generic";
+import { clone, objectFactory }                    from "@surface/core/common/object";
+import { runAsync }                                from "@surface/core/common/promise";
+import CustomElement                               from "@surface/custom-element";
+import Enumerable                                  from "@surface/enumerable";
+import Observer                                    from "@surface/observer";
+import Component                                   from "..";
+import { element }                                 from "../decorators";
+import DataCell                                    from "./data-cell";
+import DataFooter                                  from "./data-footer";
+import DataHeader                                  from "./data-header";
+import DataRow                                     from "./data-row";
+import DataRowGroup                                from "./data-row-group";
+import template                                    from "./index.html";
+import style                                       from "./index.scss";
+import IDataProvider                               from "./interfaces/data-provider";
+import ColumnDefinition                            from "./internal/column-definition";
+import DataProvider                                from "./internal/data-provider";
+import arrayTemplate                               from "./templates/array.html";
+import booleanTemplate                             from "./templates/boolean.html";
+import numberTemplate                              from "./templates/number.html";
+import stringTemplate                              from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
 
@@ -30,11 +29,11 @@ export default class DataTable extends Component
 {
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
-    private rowGroup!:        DataRowGroup;
-    private proxyConstructor: Constructor<ProxyObject<object>>;
+    private rowGroup!: DataRowGroup;
 
     private readonly _onDatasourceChange: Observer = new Observer();
 
+    private _datasource:     Iterable<object> = [];
     private _dataDefinition: object = { };
 
     protected dataProvider: IDataProvider<object>;
@@ -71,13 +70,17 @@ export default class DataTable extends Component
 
     public set datasource(value: Iterable<object>)
     {
-        this.dataProvider = new DataProvider(value, this.pageSize);
+        if (value != this._datasource)
+        {
+            this._datasource = value;
+            this.dataProvider = new DataProvider(value, this.pageSize);
 
-        const observer = Observer.observe(this.dataProvider, "pageCount");
+            const observer = Observer.observe(this.dataProvider, "pageCount");
 
-        observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
+            observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
 
-        runAsync(this.refresh.bind(this)).then(() => this.onDatasourceChange.notify());
+            runAsync(this.refresh.bind(this)).then(() => this.onDatasourceChange.notify());
+        }
     }
 
     public get infinityScroll(): boolean
@@ -155,26 +158,26 @@ export default class DataTable extends Component
 
         this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, unknown]).toArray());
 
-        this.proxyConstructor = proxyFactory(this.dataDefinition);
-
         this.prepareHeaders();
         this.prepareRows();
         this.prepareFooters();
     }
 
-    private createData(): ProxyObject<object>
+    private createData(): object
     {
-        return new this.proxyConstructor(clone(this.dataDefinition));
+        return clone(this.dataDefinition);
     }
 
-    private createRow(data: ProxyObject<ObjectLiteral>, isNew: boolean): DataRow
+    private createRow(data: ObjectLiteral, isNew: boolean): DataRow
     {
         const row = new DataRow(isNew, data);
+
         let index = 0;
+
         for (const columnDefinition of this.columnDefinitions)
         {
             const field = columnDefinition.field;
-            const value = (field.indexOf(".") > -1 ? Expression.from(field, data).evaluate() : data[field]) as Nullable<string>;
+            const value = (field.indexOf(".") > -1 ? Function("data", `data.${field}`)(data) : data[field]) as Nullable<string>;
 
             const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
             row.appendChild(cell);
@@ -350,7 +353,7 @@ export default class DataTable extends Component
 
     private async updateRows(): Promise<void>
     {
-        const datasource = Enumerable.from(await this.dataProvider.read()).select(x => new this.proxyConstructor(x));
+        const datasource = Enumerable.from(await this.dataProvider.read());
 
         const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
 
@@ -379,7 +382,7 @@ export default class DataTable extends Component
 
     public addRow(row: DataRow): void
     {
-        this.dataProvider.create(row.data.getSource());
+        this.dataProvider.create(row.data);
         this.rowGroup.appendChild(row);
     }
 
@@ -390,7 +393,7 @@ export default class DataTable extends Component
 
     public deleteRow(row: DataRow): void
     {
-        this.dataProvider.delete(row.data.getSource());
+        this.dataProvider.delete(row.data);
         this.rowGroup.removeChild(row);
         if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
         {
@@ -435,13 +438,13 @@ export default class DataTable extends Component
 
     public saveRow(row: DataRow): void
     {
-        row.data.save();
+        row.save();
         row.isNew    = false;
         row.editMode = false;
 
         if (row.isNew)
         {
-            this.dataProvider.create(row.data.getSource());
+            this.dataProvider.create(row.data);
             if (this.rowGroup.childNodes.length > this.pageSize)
             {
                 this.refresh();
@@ -451,8 +454,11 @@ export default class DataTable extends Component
 
     public async setPage(page: number): Promise<void>
     {
-        this.dataProvider.page = page;
-        await this.refresh();
+        if (page != this.dataProvider.page)
+        {
+            this.dataProvider.page = page;
+            await this.refresh();
+        }
     }
 
     public undoRow(row: DataRow): void
@@ -463,7 +469,7 @@ export default class DataTable extends Component
         }
         else
         {
-            row.data.undo();
+            row.undo();
         }
 
         row.editMode = false;

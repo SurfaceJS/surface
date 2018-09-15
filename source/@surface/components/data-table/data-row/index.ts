@@ -1,28 +1,32 @@
-import { coalesce }                       from "@surface/core/common/generic";
-import { ProxyObject as __ProxyObject__ } from "@surface/core/common/object";
-import CustomElement                      from "@surface/custom-element";
-import Type                               from "@surface/reflection";
-import { element }                        from "../../decorators";
-import template                           from "./index.html";
-import style                              from "./index.scss";
-
-type ProxyObject<T extends object> = __ProxyObject__<T>;
+import { coalesce }  from "@surface/core/common/generic";
+import { clone }     from "@surface/core/common/object";
+import CustomElement from "@surface/custom-element";
+import Type          from "@surface/reflection";
+import MethodInfo    from "@surface/reflection/method-info";
+import PropertyInfo  from "@surface/reflection/property-info";
+import { element }   from "../../decorators";
+import template      from "./index.html";
+import style         from "./index.scss";
 
 @element("surface-data-row", template, style)
 export default class DataRow extends CustomElement
 {
-    private _data: ProxyObject<object>;
-    public get data(): ProxyObject<object>
+    private backup: object;
+
+    private _data:     object;
+    private _editMode: boolean = false;
+    private _isNew:    boolean;
+
+    public get data(): object
     {
         return this._data;
     }
 
-    public set data(value: ProxyObject<object>)
+    public set data(value: object)
     {
         this.setData(this._data, value);
     }
 
-    private _editMode: boolean = false;
     public get editMode(): boolean
     {
         return this._editMode;
@@ -33,7 +37,6 @@ export default class DataRow extends CustomElement
         this._editMode = value;
     }
 
-    private _isNew: boolean;
     public get isNew(): boolean
     {
         return this._isNew;
@@ -44,28 +47,33 @@ export default class DataRow extends CustomElement
         this._isNew = value;
     }
 
-    public constructor(isNew?: boolean, data?: ProxyObject<object>)
+    public constructor(isNew?: boolean, data?: object)
     {
         super();
         this._isNew    = coalesce(isNew, true);
         this._editMode = this._isNew;
-        this._data     = data || { getSource: () => ({ }), save: () => undefined, undo: () => undefined };
+        this._data     = data || { };
+        this.backup    = clone(this._data);
     }
 
     private setData(target: object, source: object): void
     {
-        for (const property of Type.from(target).getProperties())
+        type Key   = keyof Object;
+        type Value = Object[Key];
+
+        for (const member of Type.from(target).getMembers())
         {
-            const value = source[property.key as keyof Object];
-            if (value instanceof Object)
+            if (!(member instanceof MethodInfo) && member.key in source)
             {
-                this.setData(target[property.key as keyof Object], value);
-            }
-            else
-            {
-                if (!property.readonly)
+                const value = source[member.key as Key] as Value;
+
+                if (value instanceof Object)
                 {
-                    target[property.key as keyof Object] = source[property.key as keyof Object];
+                    this.setData(target[member.key as Key], value);
+                }
+                else if (!(member instanceof PropertyInfo && member.readonly))
+                {
+                    target[member.key as Key] = source[member.key as Key];
                 }
             }
         }
@@ -79,5 +87,15 @@ export default class DataRow extends CustomElement
     public leaveEdit(): void
     {
         this.editMode = false;
+    }
+
+    public save(): void
+    {
+        this.backup = this._data;
+    }
+
+    public undo(): void
+    {
+        this.setData(this._data, this.backup);
     }
 }

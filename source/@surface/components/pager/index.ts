@@ -1,4 +1,3 @@
-import Observer               from "@surface/observer";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import template               from "./index.html";
@@ -7,16 +6,13 @@ import style                  from "./index.scss";
 @element("surface-pager", template, style)
 export default class Pager extends Component
 {
-    private _page: number = 1;
+    private _page:       number = 1;
+    private _endRange:   number = 0;
+    private _startRange: number = 0;
 
     protected get endRange(): number
     {
-        // FIXME
-        const pageCount = this.pageCount;
-
-        const startRange = this.startRange;
-
-        return startRange + 4 > pageCount ? pageCount : startRange + 4;
+        return this._endRange;
     }
 
     public get page(): number
@@ -46,21 +42,20 @@ export default class Pager extends Component
 
     protected get startRange(): number
     {
-        // FIXME
-        const pageCount = this.pageCount;
-
-        return this.page > 2 ?
-            pageCount - this.page < 2 && pageCount - 4 > 0 ?
-                pageCount - 4
-                : this.page - 2
-            : 1;
+        return this._startRange;
     }
 
     private pageChanged(): void
     {
-        Observer.notify(this, "page");
-        Observer.notify(this, "startRange" as keyof this);
-        Observer.notify(this, "endRange" as keyof this);
+        const pageCount = this.pageCount;
+
+        this._startRange = this.page > 2 ?
+            pageCount - this.page < 2 && pageCount - 4 > 0 ?
+                pageCount - 4
+                : this.page - 2
+            : 1;
+
+        this._endRange = this.startRange + 4 > pageCount ? pageCount : this.startRange + 4;
 
         super.dispatchEvent(new Event("change"));
     }

@@ -4,6 +4,7 @@ import ICallExpression   from "@surface/expression/interfaces/call-expression";
 import IExpression       from "@surface/expression/interfaces/expression";
 import IMemberExpression from "@surface/expression/interfaces/member-expression";
 import Type              from "@surface/reflection";
+import FieldInfo         from "@surface/reflection/field-info";
 import DataBind          from "./data-bind";
 
 export default class ObserverVisitor extends ExpressionVisitor
@@ -36,11 +37,11 @@ export default class ObserverVisitor extends ExpressionVisitor
             throw new TypeError("Can't bind to non initialized object");
         }
 
-        const property = Type.from(target as object).getProperty(key);
+        const member = Type.from(target as object).getMember(key);
 
-        if (property)
+        if (member instanceof FieldInfo)
         {
-            DataBind.oneWay(target as object, property, this.notify);
+            DataBind.oneWay(target as object, member, this.notify);
         }
         else
         {

@@ -3,12 +3,15 @@ import { Func1 }                from "@surface/core";
 import Observer                 from "@surface/observer";
 import IDataProvider, { Order } from "../interfaces/data-provider";
 
-
-
 export default class DataProvider<T extends Object> implements IDataProvider<T>
 {
     private readonly datasource: List<T>;
-    private _order: Order;
+
+    private _order:     Order;
+    private _page:      number = 1;
+    private _pageCount: number = 0;
+    private _pageSize:  number = 0;
+
     public get order(): Order
     {
         return this._order;
@@ -19,13 +22,6 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
         this._order = value;
     }
 
-    private _pageCount: number = 0;
-    public get pageCount(): number
-    {
-        return this._pageCount;
-    }
-
-    private _page: number = 1;
     public get page(): number
     {
         return this._page;
@@ -45,7 +41,11 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
         this._page = value;
     }
 
-    private _pageSize: number = 0;
+    public get pageCount(): number
+    {
+        return this._pageCount;
+    }
+
     public get pageSize(): number
     {
         return this._pageSize;
@@ -71,7 +71,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
     public constructor(source: Iterable<T>, pageSize: number)
     {
         this.datasource = new List(source);
-        this._order     = { field: "0", direction: "asc" };
+        this._order     = { field: "", direction: "asc" };
         this._pageSize  = pageSize;
         this._pageCount = this.calculatePageCount(this.total);
     }
@@ -80,7 +80,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
     {
         if (this[key] != value)
         {
-            this[`_${key}` as K] = value;
+            this["_" + key as K] = value;
             Observer.notify(this, key);
         }
     }
@@ -94,7 +94,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
 
     public async create(data: T): Promise<void>
     {
-        (this.datasource as List<T>).add(data);
+        this.datasource.add(data);
 
         Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
@@ -102,7 +102,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
 
     public async delete(data: T): Promise<void>
     {
-        (this.datasource as List<T>).remove(data);
+        this.datasource.remove(data);
 
         Observer.notify(this, "total");
         this.assign("pageCount", this.calculatePageCount(this.total));
@@ -139,13 +139,19 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
         Observer.notify(this, "total");
         Observer.notify(this, "pageCount");
 
-        const predicate = this._order.field.includes(".") ?
-            Function("x", `return x.${this.order.field}`) as Func1<T, T[keyof T]> :
-            (element: T) => element[this._order.field as keyof T];
+        const predicate = this.order.field.includes(".") ?
+            Function("x", "return x." + this.order.field) as Func1<T, T[keyof T]> :
+            (element: T) => element[this.order.field as keyof T];
+
+        console.log("sort", this.order);
+
+        console.log("before", this.datasource.toArray());
 
         const datasource = this._order.direction == "asc" ?
             this.datasource.orderBy(predicate)
             : this.datasource.orderByDescending(predicate);
+
+        console.log("after", datasource.toArray());
 
         return await Promise.resolve(datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
     }

@@ -9,7 +9,37 @@ import DataBind                    from "../internal/data-bind";
 export default class DataBindSpec
 {
     @test @shouldPass
-    public oneWayObjectDataBind(): void
+    public oneWayFieldDataBind(): void
+    {
+        const target = { value: 1 };
+
+        let changed = false;
+
+        DataBind.oneWay(target, Type.from(target).getField("value")!, () => changed = true);
+
+        target.value = 2;
+
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayReadonlyFieldDataBind(): void
+    {
+        const target = { value: 1 };
+
+        Object.defineProperty(target, "value", { value: target.value, writable: false });
+
+        let changed = false;
+
+        DataBind.oneWay(target, Type.from(target).getField("value")!, () => changed = true);
+
+        target.value = 2;
+
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayPropertyDataBind(): void
     {
         class Mock
         {
@@ -32,6 +62,34 @@ export default class DataBindSpec
         DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
 
         target.value = 2;
+
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayReadonlyPropertyDataBind(): void
+    {
+        class Mock
+        {
+            private _value: number = 1;
+            public get value(): number
+            {
+                return this._value;
+            }
+
+            public setValue(value: number): void
+            {
+                this._value = value;
+            }
+        }
+
+        const target = new Mock();
+
+        let changed = false;
+
+        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
+
+        target.setValue(2);
 
         chai.expect(changed).to.equal(true);
     }
