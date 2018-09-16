@@ -6,38 +6,36 @@ export default function (this: any, content: string): string
     // tslint:disable-next-line:no-unused-expression
     this.cacheable && this.cacheable();
 
-    let expression = /<!--(?:(?!<!--).)*?-->|(?:<require\s+path\s*=\s*(\\?[""])((?:(?!\1).|\\\1)+?)\1\s*\/>((?:\s|\\[rn])*))/g;
+    const expression = /(<!--(?:(?!<!--).)*?-->)|(?:<surface-(import|require)\s+from\s*=\s*(\\?["'])((?:(?!\3).|\\\3)+?)\3\s*\/>((?:\s|\\[rn])*))/g;
+    const requires   = [] as Array<string>;
+    let   esmodule   = false;
 
-    let match:    Nullable<RegExpExecArray>;
-    let requires: Array<string> = [];
+    let raw = content;
 
-    let cleanContent = content;
-
-    const groups =
-    {
-        full:         0,
-        path:         2,
-        leadingSpace: 3
-    };
+    let match: Nullable<RegExpExecArray>;
 
     while (match = expression.exec(content))
     {
-        if (!match[groups.path])
+        const [full, comments, method, , from] = match;
+
+        if (comments)
         {
             continue;
         }
 
-        let requireExpression = `require("${match[groups.path]}");`;
+        esmodule = esmodule || method == "import";
+
+        const requireExpression = esmodule ? `import "${from}";` : `require("${from}");`;
 
         if (!requires.includes(requireExpression))
         {
             requires.push(requireExpression);
         }
 
-        cleanContent = cleanContent.replace(match[groups.full], "");
+        raw = raw.replace(full, "");
     }
 
-    let stringModule = requires.concat(["", cleanContent]).join("\n");
+    const stringModule = requires.concat(["", esmodule ? raw.replace("module.exports =", "export default") : raw]).join("\n");
 
     return stringModule;
 }
