@@ -59,6 +59,7 @@ export default class ElementBind
                 else
                 {
                     const attributeName = dashedToCamel(attribute.name);
+                    const elementMember = Type.from(element).getMember(attributeName);
 
                     let notification = () =>
                     {
@@ -66,7 +67,7 @@ export default class ElementBind
                             expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
                             expression.evaluate();
 
-                        if (attributeName in element)
+                        if (elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly))
                         {
                             (element as ObjectLiteral)[attributeName] = value;
                         }
@@ -74,39 +75,34 @@ export default class ElementBind
                         attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                     };
 
-                    if (isTwoWay && typeGuard<IExpression, IMemberExpression>(expression, x => x.type == ExpressionType.Member))
+                    if (attributeName in element && isTwoWay && typeGuard<IExpression, IMemberExpression>(expression, x => x.type == ExpressionType.Member))
                     {
-                        const { leftHand, leftHandKey } = attributeName in element ?
-                            { leftHand: element, leftHandKey: attributeName }
-                            : { leftHand: attribute, leftHandKey: "value" };
+                        const target = expression.target.evaluate() as object;
+                        const key    = `${expression.key.evaluate()}`;
 
-                        const leftMember = Type.from(leftHand).getProperty(leftHandKey);
+                        const targeMember = (target instanceof Function) ?
+                            Type.of(target).getStaticMember(key) :
+                            Type.from(target).getMember(key);
 
-                        const rightHand    = expression.target.evaluate() as object;
-                        const rightHandKey = `${expression.key.evaluate()}`;
-
-                        const rightMember = (rightHand instanceof Function) ?
-                            Type.of(rightHand).getStaticMember(rightHandKey) :
-                            Type.from(rightHand).getMember(rightHandKey);
-
-                        if (rightMember instanceof FieldInfo)
+                        if (targeMember instanceof FieldInfo)
                         {
-                            if (leftMember && !(leftMember instanceof PropertyInfo && leftMember.readonly || rightMember instanceof PropertyInfo && rightMember.readonly))
+                            if (elementMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targeMember instanceof PropertyInfo && targeMember.readonly))
                             {
-                                notification = () => attribute.value = `${coalesce(expression.evaluate(), "")}`;
+                                notification = () => attribute.value = `${coalesce((target as ObjectLiteral)[key], "")}`;
 
-                                leftMember.setter!.call(leftHand, expression.evaluate());
-                                DataBind.twoWay(leftHand, leftMember, rightHand, rightMember);
+                                (element as ObjectLiteral)[attributeName] = expression.evaluate();
+
+                                DataBind.twoWay(element, elementMember, target, targeMember);
                             }
                             else
                             {
-                                DataBind.oneWay(rightHand, rightMember, notification);
+                                DataBind.oneWay(target, targeMember, notification);
                             }
                         }
                         else
                         {
-                            const typeName = rightHand instanceof Function ? rightHand.name : rightHand.constructor.name;
-                            throw new Error(`Member ${rightHandKey} does not exist in type ${typeName}`);
+                            const typeName = target instanceof Function ? target.name : target.constructor.name;
+                            throw new Error(`Member ${key} does not exist in type ${typeName}`);
                         }
                     }
                     else

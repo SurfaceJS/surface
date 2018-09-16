@@ -13,7 +13,7 @@ export default class DataRow<T extends object = object> extends Component
 {
     private _data:     T;
     private _editMode: boolean = false;
-    private _isNew:    boolean;
+    private _new:      boolean;
 
     private _reference: T;
 
@@ -34,9 +34,9 @@ export default class DataRow<T extends object = object> extends Component
         return this._editMode;
     }
 
-    public get isNew(): boolean
+    public get new(): boolean
     {
-        return this._isNew;
+        return this._new;
     }
 
     public get reference(): T
@@ -47,11 +47,16 @@ export default class DataRow<T extends object = object> extends Component
     public constructor(isNew?: boolean, data?: T)
     {
         super();
-        this._isNew    = coalesce(isNew, true);
-        this._editMode = this._isNew;
+        this._new    = coalesce(isNew, true);
+        this._editMode = this._new;
         this._data     = clone(data || { }) as T;
 
         this._reference = data || { } as T;
+
+        if (this.new)
+        {
+            super.setAttribute("new", "true");
+        }
     }
 
     private setData(target: object, source: object): void
@@ -92,7 +97,12 @@ export default class DataRow<T extends object = object> extends Component
     public save(): void
     {
         this.setData(this._reference, this._data);
-        this._isNew = false;
+
+        if (this.new)
+        {
+            super.removeAttribute("new");
+            this._new = false;
+        }
     }
 
     public undo(): void

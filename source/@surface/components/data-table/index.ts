@@ -1,7 +1,6 @@
 import { Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
 import { coalesce }                                from "@surface/core/common/generic";
 import { clone, objectFactory }                    from "@surface/core/common/object";
-import { runAsync }                                from "@surface/core/common/promise";
 import CustomElement                               from "@surface/custom-element";
 import Enumerable                                  from "@surface/enumerable";
 import Observer                                    from "@surface/observer";
@@ -30,8 +29,9 @@ export default class DataTable extends Component
     private readonly _onDatasourceChange: Observer = new Observer();
 
     private _datasource:     Iterable<object> = [];
-    private _dataDefinition: object = { };
-    private _editing:        boolean = false;
+    private _dataDefinition: object           = { };
+    private _editing:        boolean          = false;
+    private _page:           number           = 1;
 
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
@@ -39,14 +39,25 @@ export default class DataTable extends Component
 
     protected dataProvider: IDataProvider;
 
-    protected get pageCount(): number
-    {
-        return this.dataProvider.pageCount;
-    }
-
     protected get editing(): boolean
     {
         return this._editing;
+    }
+
+    public get page(): number
+    {
+        return this._page;
+    }
+
+    public set page(value: number)
+    {
+        this._page = value;
+        this.setPage(value);
+    }
+
+    protected get pageCount(): number
+    {
+        return this.dataProvider.pageCount;
     }
 
     public get dataDefinition(): object
@@ -74,6 +85,11 @@ export default class DataTable extends Component
         return super.queryAll("surface-data-row-group");
     }
 
+    public get datasource(): Iterable<object>
+    {
+        return this._datasource;
+    }
+
     public set datasource(value: Iterable<object>)
     {
         if (value != this._datasource)
@@ -85,7 +101,7 @@ export default class DataTable extends Component
 
             observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
 
-            runAsync(this.refresh.bind(this)).then(() => this.onDatasourceChange.notify());
+            this.refresh().then(() => this.onDatasourceChange.notify());
         }
     }
 
@@ -368,9 +384,24 @@ export default class DataTable extends Component
         }
     }
 
-    public addNew(): void
+    private async setPage(page: number): Promise<void>
     {
+        if (page != this.dataProvider.page)
+        {
+            this.dataProvider.page = this.page;
+            await this.refresh();
+        }
+    }
+
+    public async addNew(): Promise<void>
+    {
+        this._page = this.dataProvider.pageCount;
         this._editing = true;
+
+        await this.setPage(this._page);
+
+        Observer.notify(this, "page");
+
 
         const data = this.createData();
         const row  = this.createRow(data, true);
@@ -378,10 +409,10 @@ export default class DataTable extends Component
         this.rowGroup.appendChild(row);
     }
 
-    public addRow(row: DataRow): void
+    public async addRow(row: DataRow): Promise<void>
     {
         this.dataProvider.create(row.reference);
-        this.refresh();
+        await this.refresh();
     }
 
     public connectedCallback(): void
@@ -389,10 +420,10 @@ export default class DataTable extends Component
         this.refresh();
     }
 
-    public deleteRow(row: DataRow): void
+    public async deleteRow(row: DataRow): Promise<void>
     {
         this.dataProvider.delete(row.reference);
-        this.refresh();
+        await this.refresh();
     }
 
     public async firstPage(): Promise<void>
@@ -413,10 +444,10 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    public order(field: string, direction: "asc" | "desc"): void
+    public async order(field: string, direction: "asc" | "desc"): Promise<void>
     {
         this.dataProvider.order = { field, direction };
-        this.refresh();
+        await this.refresh();
     }
 
     public async previousPage(): Promise<void>
@@ -447,13 +478,18 @@ export default class DataTable extends Component
             .forEach(x => x.row.data = x.data);
     }
 
-    public saveRow(row: DataRow): void
+    public async saveRow(row: DataRow): Promise<void>
     {
-        row.save();
-        if (row.isNew)
+        if (row.new)
         {
+            row.save();
             this.dataProvider.create(row.reference);
-            this.refresh();
+            await this.refresh();
+        }
+        else
+        {
+            row.save();
+            this.dataProvider.update(row.reference);
         }
 
         row.leaveEdit();
@@ -461,20 +497,11 @@ export default class DataTable extends Component
         this._editing = false;
     }
 
-    public async setPage(page: number): Promise<void>
-    {
-        if (page != this.dataProvider.page)
-        {
-            this.dataProvider.page = page;
-            await this.refresh();
-        }
-    }
-
     public undoRow(row: DataRow): void
     {
-        if (row.isNew)
+        if (row.new)
         {
-            this.deleteRow(row);
+            this.rowGroup.removeChild(row);
         }
         else
         {

@@ -20,6 +20,25 @@ export default class Pager extends Component
         return this._page;
     }
 
+    public set page(value: number)
+    {
+        if (value != this.page)
+        {
+            if (value < 1)
+            {
+                throw new Error("Page cannot be lesser than 1");
+            }
+            else if (value > this.pageCount)
+            {
+                throw new Error("Page exceed total of pages");
+            }
+
+            this._page = value;
+
+            this.pageChanged();
+        }
+    }
+
     @attribute
     public get pageCount(): number
     {
@@ -32,7 +51,7 @@ export default class Pager extends Component
         {
             if (value < this.page || this.pageCount > 0 && value > this.pageCount)
             {
-                this._page = value;
+                this.page = value;
             }
 
             super.setAttribute("page-count", value.toString());
@@ -56,11 +75,11 @@ export default class Pager extends Component
             : 1;
 
         this._endRange = this.startRange + 4 > pageCount ? pageCount : this.startRange + 4;
+    }
 
-        if (pageCount > 0)
-        {
-            super.dispatchEvent(new Event("change"));
-        }
+    protected setPage(page: number): void
+    {
+        this.page = page;
     }
 
     protected attributeChangedCallback(): void
@@ -72,7 +91,7 @@ export default class Pager extends Component
     {
         if (this.page != 1)
         {
-            this._page = 1;
+            this.page = 1;
             this.pageChanged();
         }
     }
@@ -81,7 +100,7 @@ export default class Pager extends Component
     {
         if (this.page != this.pageCount)
         {
-            this._page = this.pageCount;
+            this.page = this.pageCount;
             this.pageChanged();
         }
     }
@@ -90,7 +109,7 @@ export default class Pager extends Component
     {
         if (this.page + 1 <= this.pageCount)
         {
-            this._page++;
+            this.page++;
             this.pageChanged();
         }
     }
@@ -99,26 +118,7 @@ export default class Pager extends Component
     {
         if (this.page - 1 > 0)
         {
-            this._page--;
-            this.pageChanged();
-        }
-    }
-
-    public setPage(page: number): void
-    {
-        if (page != this.page)
-        {
-            if (page < 1)
-            {
-                throw new Error("Page cannot be lesser than 1");
-            }
-            else if (page > this.pageCount)
-            {
-                throw new Error("Page exceed total of pages");
-            }
-
-            this._page = page;
-
+            this.page--;
             this.pageChanged();
         }
     }

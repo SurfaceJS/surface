@@ -5,11 +5,11 @@
 
 <div horizontal-align="center">Filters</div>
 <hr>
-<input type="button" disabled="{{host.editing}}" value="New" on-click="{{ host.addNew() }}" horizontal-align="left" />
+<input type="button" disabled="[[ host.editing ]]" value="New" on-click="[[ host.addNew() ]]" horizontal-align="left" />
 <div id="container">
     <slot></slot>
 </div>
 <hr>
 <div horizontal-align="center">
-    <surface-pager page-count="{{host.pageCount}}" disabled="{{host.editing}}" on-change="{{ host.setPage(this.page) }}"></surface-pager>
+    <surface-pager page="{{ host.page }}" page-count="[[ host.pageCount ]]" disabled="[[ host.editing ]]"></surface-pager>
 </div>
