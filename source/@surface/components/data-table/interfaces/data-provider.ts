@@ -1,6 +1,6 @@
 export type Order = { field: string, direction: "asc"|"desc" };
 
-export default interface IDataProvider<T>
+export default interface IDataProvider<T extends object = object>
 {
     page:                                          number;
     pageCount:                                     number;

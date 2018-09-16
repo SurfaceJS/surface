@@ -8,7 +8,7 @@ export default class ColumnDefinition
 
     public get editable(): boolean
     {
-        return this.element.getAttribute("editable") == "true";
+        return (this.element.getAttribute("editable") || "true") == "true";
     }
 
     public set editable(value: boolean)

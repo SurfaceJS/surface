@@ -23,7 +23,7 @@ export default class ForEach extends Component
         {
             super.setAttribute("end", value.toString());
 
-            if (this.end > this.start)
+            if (this.end >= this.start)
             {
                 this.changed();
             }
@@ -58,7 +58,7 @@ export default class ForEach extends Component
         {
             super.setAttribute("start", value.toString());
 
-            if (this.end > this.start)
+            if (this.end >= this.start)
             {
                 this.changed();
             }
@@ -129,7 +129,7 @@ export default class ForEach extends Component
 
     protected attributeChangedCallback(): void
     {
-        if (this.end > this.start)
+        if (this.end >= this.start)
         {
             this.changed();
         }

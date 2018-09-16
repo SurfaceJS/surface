@@ -3,6 +3,16 @@ import CustomElement              from "@surface/custom-element";
 
 abstract class Component extends CustomElement
 {
+    public get disabled(): boolean
+    {
+        return super.getAttribute("disabled") == "true";
+    }
+
+    public set disabled(value: boolean)
+    {
+        super.setAttribute("disabled", value.toString());
+    }
+
     public get horizontalAlign(): Component.HorizontalAlign
     {
         return Component.HorizontalAlign[toTitle(super.getAttribute("horizontal-align") || "") as keyof typeof Component.HorizontalAlign] || Component.HorizontalAlign.Left;

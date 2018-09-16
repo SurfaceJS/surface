@@ -27,20 +27,26 @@ type Nullable<T> = __Nullable__<T>;
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
-    private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
-
-    private rowGroup!: DataRowGroup;
-
     private readonly _onDatasourceChange: Observer = new Observer();
 
     private _datasource:     Iterable<object> = [];
     private _dataDefinition: object = { };
+    private _editing:        boolean = false;
 
-    protected dataProvider: IDataProvider<object>;
+    private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
+
+    private rowGroup!: DataRowGroup;
+
+    protected dataProvider: IDataProvider;
 
     protected get pageCount(): number
     {
         return this.dataProvider.pageCount;
+    }
+
+    protected get editing(): boolean
+    {
+        return this._editing;
     }
 
     public get dataDefinition(): object
@@ -108,21 +114,21 @@ export default class DataTable extends Component
         super.setAttribute("page-size", value.toString());
     }
 
-    public constructor(dataProvider?: Nullable<IDataProvider<object>>)
+    public constructor(dataProvider?: Nullable<IDataProvider>)
     {
         super();
 
         if (!dataProvider)
         {
-            dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider<object>>;
+            dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider>;
 
             if (dataProvider instanceof HTMLElement)
             {
-                const clone = dataProvider.cloneNode() as HTMLElement & IDataProvider<object>;
+                const clone = dataProvider.cloneNode() as HTMLElement & IDataProvider;
 
                 super.replaceChild(clone, dataProvider);
 
-                this.dataProvider = clone as IDataProvider<object>;
+                this.dataProvider = clone as IDataProvider;
             }
             else
             {
@@ -170,7 +176,10 @@ export default class DataTable extends Component
 
     private createRow(data: ObjectLiteral, isNew: boolean): DataRow
     {
-        const row = new DataRow(isNew, data);
+        const row = new DataRow(isNew, clone(data));
+
+        row.addEventListener("enter-edit", event => this.onRowChange((event as CustomEvent<DataRow>).detail, true));
+        row.addEventListener("leave-edit", event => this.onRowChange((event as CustomEvent<DataRow>).detail, false));
 
         let index = 0;
 
@@ -199,12 +208,12 @@ export default class DataTable extends Component
                 {
                     if (columnDefinition.editButtom)
                     {
-                        innerHTML = "<input type='button' value='edit' on-click='{{row.enterEdit()}}' />";
+                        innerHTML = "<input type='button' disabled={{row.disabled}} value='edit' on-click='{{row.enterEdit()}}' />";
                     }
 
                     if (columnDefinition.deleteButtom)
                     {
-                        innerHTML = innerHTML + "<input type='button' value='delete' on-click='{{dataTable.deleteRow(row)}}' />";
+                        innerHTML = innerHTML + "<input type='button' disabled={{row.disabled}} value='delete' on-click='{{dataTable.deleteRow(row)}}' />";
                     }
 
                     innerHTML =
@@ -251,6 +260,14 @@ export default class DataTable extends Component
         }
 
         return row;
+    }
+
+    private onRowChange(row: DataRow, entering: boolean): void
+    {
+        const rows = Array.from(this.rowGroup.querySelectorAll("surface-data-row"));
+
+        this._editing = entering;
+        Enumerable.from(rows).cast<DataRow>().where(x => x != row).forEach(x => x.disabled = entering);
     }
 
     private prepareFooters(): void
@@ -351,39 +368,20 @@ export default class DataTable extends Component
         }
     }
 
-    private async updateRows(): Promise<void>
-    {
-        const datasource = Enumerable.from(await this.dataProvider.read());
-
-        const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
-
-        const dataCount = datasource.count();
-        const rowsCount = rows.count();
-
-        if (rowsCount > dataCount)
-        {
-            rows.skip(dataCount).forEach(x => this.rowGroup.removeChild(x));
-        }
-        else if (rowsCount < dataCount)
-        {
-            datasource.skip(rowsCount).forEach(x => this.rowGroup.appendChild(this.createRow(x, false)));
-        }
-
-        rows.zip(datasource, (row, data) => ({ row, data }))
-            .forEach(x => x.row.data = x.data);
-    }
-
     public addNew(): void
     {
+        this._editing = true;
+
         const data = this.createData();
         const row  = this.createRow(data, true);
+
         this.rowGroup.appendChild(row);
     }
 
     public addRow(row: DataRow): void
     {
-        this.dataProvider.create(row.data);
-        this.rowGroup.appendChild(row);
+        this.dataProvider.create(row.reference);
+        this.refresh();
     }
 
     public connectedCallback(): void
@@ -393,12 +391,8 @@ export default class DataTable extends Component
 
     public deleteRow(row: DataRow): void
     {
-        this.dataProvider.delete(row.data);
-        this.rowGroup.removeChild(row);
-        if (this.dataProvider.total >= this.pageSize && this.rowGroup.childNodes.length < this.pageSize)
-        {
-            this.refresh();
-        }
+        this.dataProvider.delete(row.reference);
+        this.refresh();
     }
 
     public async firstPage(): Promise<void>
@@ -433,23 +427,38 @@ export default class DataTable extends Component
 
     public async refresh(): Promise<void>
     {
-        await this.updateRows();
+        const datasource = Enumerable.from(await this.dataProvider.read());
+
+        const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
+
+        const dataCount = datasource.count();
+        const rowsCount = rows.count();
+
+        if (rowsCount > dataCount)
+        {
+            rows.skip(dataCount).forEach(x => this.rowGroup.removeChild(x));
+        }
+        else if (rowsCount < dataCount)
+        {
+            datasource.skip(rowsCount).forEach(x => this.rowGroup.appendChild(this.createRow(x, false)));
+        }
+
+        rows.zip(datasource, (row, data) => ({ row, data }))
+            .forEach(x => x.row.data = x.data);
     }
 
     public saveRow(row: DataRow): void
     {
         row.save();
-        row.isNew    = false;
-        row.editMode = false;
-
         if (row.isNew)
         {
-            this.dataProvider.create(row.data);
-            if (this.rowGroup.childNodes.length > this.pageSize)
-            {
-                this.refresh();
-            }
+            this.dataProvider.create(row.reference);
+            this.refresh();
         }
+
+        row.leaveEdit();
+
+        this._editing = false;
     }
 
     public async setPage(page: number): Promise<void>
@@ -472,6 +481,7 @@ export default class DataTable extends Component
             row.undo();
         }
 
-        row.editMode = false;
+        row.leaveEdit();
+        this._editing = false;
     }
 }

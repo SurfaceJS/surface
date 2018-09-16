@@ -105,7 +105,8 @@ export default class ElementBind
                         }
                         else
                         {
-                            throw new Error("Cant apply two way databings on function memmber");
+                            const typeName = rightHand instanceof Function ? rightHand.name : rightHand.constructor.name;
+                            throw new Error(`Member ${rightHandKey} does not exist in type ${typeName}`);
                         }
                     }
                     else

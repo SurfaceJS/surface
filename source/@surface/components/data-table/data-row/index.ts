@@ -1,29 +1,31 @@
 import { coalesce }  from "@surface/core/common/generic";
 import { clone }     from "@surface/core/common/object";
-import CustomElement from "@surface/custom-element";
 import Type          from "@surface/reflection";
 import MethodInfo    from "@surface/reflection/method-info";
 import PropertyInfo  from "@surface/reflection/property-info";
+import Component     from "../..";
 import { element }   from "../../decorators";
 import template      from "./index.html";
 import style         from "./index.scss";
 
 @element("surface-data-row", template, style)
-export default class DataRow extends CustomElement
+export default class DataRow<T extends object = object> extends Component
 {
-    private backup: object;
-
-    private _data:     object;
+    private _data:     T;
     private _editMode: boolean = false;
     private _isNew:    boolean;
 
-    public get data(): object
+    private _reference: T;
+
+    public get data(): T
     {
         return this._data;
     }
 
-    public set data(value: object)
+    public set data(value: T)
     {
+        this._reference = value;
+
         this.setData(this._data, value);
     }
 
@@ -32,34 +34,30 @@ export default class DataRow extends CustomElement
         return this._editMode;
     }
 
-    public set editMode(value: boolean)
-    {
-        this._editMode = value;
-    }
-
     public get isNew(): boolean
     {
         return this._isNew;
     }
 
-    public set isNew(value: boolean)
+    public get reference(): T
     {
-        this._isNew = value;
+        return this._reference;
     }
 
-    public constructor(isNew?: boolean, data?: object)
+    public constructor(isNew?: boolean, data?: T)
     {
         super();
         this._isNew    = coalesce(isNew, true);
         this._editMode = this._isNew;
-        this._data     = data || { };
-        this.backup    = clone(this._data);
+        this._data     = clone(data || { }) as T;
+
+        this._reference = data || { } as T;
     }
 
     private setData(target: object, source: object): void
     {
-        type Key   = keyof Object;
-        type Value = Object[Key];
+        type Key   = keyof object;
+        type Value = object;
 
         for (const member of Type.from(target).getMembers())
         {
@@ -81,21 +79,24 @@ export default class DataRow extends CustomElement
 
     public enterEdit(): void
     {
-        this.editMode = true;
+        this._editMode = true;
+        super.dispatchEvent(new CustomEvent("enter-edit", { detail: this }));
     }
 
     public leaveEdit(): void
     {
-        this.editMode = false;
+        this._editMode = false;
+        super.dispatchEvent(new CustomEvent("leave-edit", { detail: this }));
     }
 
     public save(): void
     {
-        this.backup = this._data;
+        this.setData(this._reference, this._data);
+        this._isNew = false;
     }
 
     public undo(): void
     {
-        this.setData(this._data, this.backup);
+        this.setData(this._data, this._reference);
     }
 }

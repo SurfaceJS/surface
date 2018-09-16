@@ -1,5 +1,6 @@
 import List                     from "@surface/collection/list";
 import { Func1 }                from "@surface/core";
+import { Enumerable }           from "@surface/enumerable";
 import Observer                 from "@surface/observer";
 import IDataProvider, { Order } from "../interfaces/data-provider";
 
@@ -8,6 +9,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
     private readonly datasource: List<T>;
 
     private _order:     Order;
+    private _lastOrder: Order;
     private _page:      number = 1;
     private _pageCount: number = 0;
     private _pageSize:  number = 0;
@@ -72,6 +74,7 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
     {
         this.datasource = new List(source);
         this._order     = { field: "", direction: "asc" };
+        this._lastOrder = { field: "", direction: "asc" };
         this._pageSize  = pageSize;
         this._pageCount = this.calculatePageCount(this.total);
     }
@@ -139,19 +142,21 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
         Observer.notify(this, "total");
         Observer.notify(this, "pageCount");
 
-        const predicate = this.order.field.includes(".") ?
-            Function("x", "return x." + this.order.field) as Func1<T, T[keyof T]> :
-            (element: T) => element[this.order.field as keyof T];
+        let datasource = this.datasource as Enumerable<T>;
 
-        console.log("sort", this.order);
+        if (this.order.field != this._lastOrder.field || this.order.direction != this._lastOrder.direction)
+        {
+            const predicate = this.order.field.includes(".") ?
+                Function("x", "return x." + this.order.field) as Func1<T, T[keyof T]> :
+                (element: T) => element[this.order.field as keyof T];
 
-        console.log("before", this.datasource.toArray());
+            datasource = this._order.direction == "asc" ?
+                datasource.orderBy(predicate)
+                : datasource.orderByDescending(predicate);
 
-        const datasource = this._order.direction == "asc" ?
-            this.datasource.orderBy(predicate)
-            : this.datasource.orderByDescending(predicate);
-
-        console.log("after", datasource.toArray());
+            this._lastOrder.field     = this.order.field;
+            this._lastOrder.direction = this.order.direction;
+        }
 
         return await Promise.resolve(datasource.skip((this.page - 1) * this.pageSize).take(this.pageSize));
     }

@@ -87,6 +87,7 @@ export default class MenuItem extends CustomElement
         }
         else
         {
+            this.container.style.top  = "0";
             this.container.style.left = bounding.left + (bounding.width + containerBounding.width) <= window.innerWidth ? `${bounding.width}px` : `${-containerBounding.width}px`;
         }
     }

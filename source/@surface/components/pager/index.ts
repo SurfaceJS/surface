@@ -30,7 +30,7 @@ export default class Pager extends Component
     {
         if (value != this.pageCount)
         {
-            if (value < this.page)
+            if (value < this.page || this.pageCount > 0 && value > this.pageCount)
             {
                 this._page = value;
             }
@@ -57,7 +57,10 @@ export default class Pager extends Component
 
         this._endRange = this.startRange + 4 > pageCount ? pageCount : this.startRange + 4;
 
-        super.dispatchEvent(new Event("change"));
+        if (pageCount > 0)
+        {
+            super.dispatchEvent(new Event("change"));
+        }
     }
 
     protected attributeChangedCallback(): void
