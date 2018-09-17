@@ -49,12 +49,13 @@ export default class Pager extends Component
     {
         if (value != this.pageCount)
         {
+            super.setAttribute("page-count", value.toString());
+
             if (value < this.page || this.pageCount > 0 && value > this.pageCount)
             {
                 this.page = value;
             }
 
-            super.setAttribute("page-count", value.toString());
             this.pageChanged();
         }
     }

@@ -1,9 +1,9 @@
-import { Nullable }           from "@surface/core";
-import CustomElement          from "@surface/custom-element";
-import Enumerable             from "@surface/enumerable";
-import Component              from "..";
-import { attribute, element } from "../decorators";
-import template               from "./index.html";
+import { Nullable }  from "@surface/core";
+import CustomElement from "@surface/custom-element";
+import Enumerable    from "@surface/enumerable";
+import Component     from "..";
+import { element }   from "../decorators";
+import template      from "./index.html";
 
 @element("surface-for-each", template)
 export default class ForEach extends Component
@@ -13,10 +13,9 @@ export default class ForEach extends Component
 
     public get end(): number
     {
-        return Number.parseInt(super.getAttribute("end") || "0");
+        return Number.parseInt(super.getAttribute("end") || "0") || 0;
     }
 
-    @attribute
     public set end(value: number)
     {
         if (value != this.end)
@@ -35,7 +34,6 @@ export default class ForEach extends Component
         return this._of;
     }
 
-    @attribute
     public set of(value: Iterable<unknown>)
     {
         if (value != this.of)
@@ -48,10 +46,9 @@ export default class ForEach extends Component
 
     public get start(): number
     {
-        return Number.parseInt(super.getAttribute("start") || "0");
+        return Number.parseInt(super.getAttribute("start") || "0") || 0;
     }
 
-    @attribute
     public set start(value: number)
     {
         if (value != this.start)
@@ -91,6 +88,7 @@ export default class ForEach extends Component
     {
         if (this.template)
         {
+            CustomElement.contextUnbind(this);
             super.innerHTML = "";
 
             let sequence = Enumerable.from(this.of);
@@ -109,6 +107,7 @@ export default class ForEach extends Component
             }
             else if (this.end > 0)
             {
+                console.log("changed");
                 sequence = Enumerable.range(this.start, this.end) as Enumerable<unknown>;
             }
 
@@ -127,11 +126,8 @@ export default class ForEach extends Component
         }
     }
 
-    protected attributeChangedCallback(): void
+    protected connectedCallback(): void
     {
-        if (this.end >= this.start)
-        {
-            this.changed();
-        }
+        this.changed();
     }
 }

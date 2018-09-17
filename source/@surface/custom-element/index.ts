@@ -6,7 +6,7 @@ import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/
 export default abstract class CustomElement extends HTMLElement
 {
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
-    public static readonly [TEMPLATE]:           Nullable<HTMLTemplateElement>;
+    public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
 
     private [CONTEXT]: unknown;
     protected get context(): object
@@ -37,9 +37,24 @@ export default abstract class CustomElement extends HTMLElement
             this.applyTemplate(template);
         }
     }
+
+    /**
+     * Apply binds to node tree
+     * @param context Context utilized to resolve expressions
+     * @param content Node tree to be binded
+     */
     protected static contextBind(context: object, content: Node): void
     {
         ElementBind.for(context, content);
+    }
+
+    /**
+     * Remove binds reference of node tree.
+     * @param content Node tree to be unbinded
+     */
+    protected static contextUnbind(content: Node): void
+    {
+        ElementBind.unbind(content);
     }
 
     private applyTemplate(template: HTMLTemplateElement): void

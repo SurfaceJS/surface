@@ -9,12 +9,14 @@ import DataBind          from "./data-bind";
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly notify: Action;
+    private readonly notify:     Action;
+    private readonly observator: object;
 
-    public constructor(notify: Action)
+    public constructor(observator: object, notify: Action)
     {
         super();
-        this.notify = notify;
+        this.notify     = notify;
+        this.observator = observator;
     }
 
     protected visitCallExpression(expression: ICallExpression)
@@ -41,7 +43,7 @@ export default class ObserverVisitor extends ExpressionVisitor
 
         if (member instanceof FieldInfo)
         {
-            DataBind.oneWay(target as object, member, this.notify);
+            DataBind.oneWay(target as object, member, this.observator, this.notify);
         }
         else
         {

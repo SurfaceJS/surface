@@ -197,6 +197,11 @@ export default class DataTable extends Component
         row.addEventListener("enter-edit", event => this.onRowChange((event as CustomEvent<DataRow>).detail, true));
         row.addEventListener("leave-edit", event => this.onRowChange((event as CustomEvent<DataRow>).detail, false));
 
+        if(row.new)
+        {
+            row.enterEdit();
+        }
+
         let index = 0;
 
         for (const columnDefinition of this.columnDefinitions)
@@ -467,7 +472,11 @@ export default class DataTable extends Component
 
         if (rowsCount > dataCount)
         {
-            rows.skip(dataCount).forEach(x => this.rowGroup.removeChild(x));
+            for (const row of rows.skip(dataCount))
+            {
+                CustomElement.contextUnbind(row);
+                this.rowGroup.removeChild(row);
+            }
         }
         else if (rowsCount < dataCount)
         {

@@ -14,6 +14,8 @@ import ObserverVisitor           from "./observer-visitor";
 import { BINDED, CONTEXT }       from "./symbols";
 import windowWrapper             from "./window-wrapper";
 
+type Bindable<T> = Array<T & { [BINDED]?: boolean, [CONTEXT]?: object }>;
+
 export default class ElementBind
 {
     private readonly window:  Window;
@@ -28,6 +30,22 @@ export default class ElementBind
     public static for(context: object, content: Node): void
     {
         new ElementBind(context).traverseElement(content);
+    }
+
+    public static unbind(content: Node)
+    {
+        for (const element of Array.from(content.childNodes) as Bindable<Element>)
+        {
+            if (element[BINDED])
+            {
+                DataBind.unbind(element);
+
+                ElementBind.unbind(element);
+
+                element[CONTEXT] = undefined;
+                element[BINDED]  = false;
+            }
+        }
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -80,23 +98,23 @@ export default class ElementBind
                         const target = expression.target.evaluate() as object;
                         const key    = `${expression.key.evaluate()}`;
 
-                        const targeMember = (target instanceof Function) ?
+                        const targetMember = (target instanceof Function) ?
                             Type.of(target).getStaticMember(key) :
                             Type.from(target).getMember(key);
 
-                        if (targeMember instanceof FieldInfo)
+                        if (targetMember)
                         {
-                            if (elementMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targeMember instanceof PropertyInfo && targeMember.readonly))
+                            if (elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                             {
                                 notification = () => attribute.value = `${coalesce((target as ObjectLiteral)[key], "")}`;
 
                                 (element as ObjectLiteral)[attributeName] = expression.evaluate();
 
-                                DataBind.twoWay(element, elementMember, target, targeMember);
+                                DataBind.twoWay(element, elementMember, target, targetMember);
                             }
                             else
                             {
-                                DataBind.oneWay(target, targeMember, notification);
+                                DataBind.oneWay(target, targetMember, element, notification);
                             }
                         }
                         else
@@ -107,7 +125,7 @@ export default class ElementBind
                     }
                     else
                     {
-                        const visitor = new ObserverVisitor(notification);
+                        const visitor = new ObserverVisitor(element, notification);
                         visitor.visit(expression);
                     }
 
@@ -131,7 +149,7 @@ export default class ElementBind
                 () => element.nodeValue = `${coalesce(expression.evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
                 () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            const visitor = new ObserverVisitor(notify);
+            const visitor = new ObserverVisitor(element, notify);
             visitor.visit(expression);
 
             notify();

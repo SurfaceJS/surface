@@ -47,9 +47,8 @@ export default class DataRow<T extends object = object> extends Component
     public constructor(isNew?: boolean, data?: T)
     {
         super();
-        this._new    = coalesce(isNew, true);
-        this._editMode = this._new;
-        this._data     = clone(data || { }) as T;
+        this._new  = coalesce(isNew, true);
+        this._data = clone(data || { }) as T;
 
         this._reference = data || { } as T;
 

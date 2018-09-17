@@ -33,6 +33,8 @@ export default class Switch extends CustomElement
 
         if (template)
         {
+            CustomElement.contextUnbind(this);
+
             super.innerHTML = "";
             super.appendChild(document.importNode(template.content, true));
 
