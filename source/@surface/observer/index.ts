@@ -1,21 +1,22 @@
-import { Action, Action1 }      from "@surface/core";
-import Type                     from "@surface/reflection";
-import FieldInfo                from "@surface/reflection/field-info";
-import PropertyInfo             from "@surface/reflection/property-info";
-import IObservable              from "./interfaces/observable";
-import { NOTIFYING, OBSERVERS } from "./symbols";
+import { Action, Action1 } from "@surface/core";
+import Type                from "@surface/reflection";
+import FieldInfo           from "@surface/reflection/field-info";
+import PropertyInfo        from "@surface/reflection/property-info";
+
+export const OBSERVERS = Symbol("observer:observers");
+
+type Observable = Object & { [OBSERVERS]?: Map<keyof Observable, Observer> };
+type Key        = keyof Observable;
+type Value      = Observable[Key];
 
 export default class Observer
 {
-    private listeners: Array<Action1<unknown>> = [];
+    private readonly listeners: Array<Action1<unknown>> = [];
 
-    public static inject<T extends IObservable, K extends keyof T>(target: T, key: K, observer: Observer): boolean;
-    public static inject(target: IObservable, field:      FieldInfo,        observer: Observer): boolean;
-    public static inject(target: IObservable, keyOrField: string|FieldInfo, observer: Observer): boolean
+    public static inject<T extends Observable, K extends keyof T>(target: T, key: K, observer: Observer): boolean;
+    public static inject(target: Observable, field:      FieldInfo,        observer: Observer): boolean;
+    public static inject(target: Observable, keyOrField: string|FieldInfo, observer: Observer): boolean
     {
-        type Key   = keyof IObservable;
-        type Value = IObservable[Key];
-
         const member = keyOrField instanceof FieldInfo ?
             keyOrField
             : Type.from(target).getMember(keyOrField)!;
@@ -32,15 +33,11 @@ export default class Observer
                         get: member.getter as Action|undefined,
                         set: function (this: typeof target, value: Object)
                         {
-                            if (!this[NOTIFYING])
+                            if (!member.getter || !Object.is(member.getter.call(this), value))
                             {
                                 member.setter!.call(this, value);
 
-                                this[NOTIFYING] = true;
-
                                 observer.notify(value);
-
-                                this[NOTIFYING] = false;
                             }
                         }
                     }
@@ -56,21 +53,17 @@ export default class Observer
                     target,
                     `_${member.key.toString()}`,
                     {
-                        get: function(this: IObservable)
+                        get: function(this: Observable)
                         {
                             return this[privateKey];
                         },
-                        set: function (this: IObservable, value: Value)
+                        set: function (this: Observable, value: Value)
                         {
-                            if (!this[NOTIFYING])
+                            if (!Object.is(value, this[privateKey]))
                             {
                                 this[privateKey] = value;
 
-                                this[NOTIFYING] = true;
-
                                 observer.notify(value);
-
-                                this[NOTIFYING] = false;
                             }
                         }
                     }
@@ -93,21 +86,17 @@ export default class Observer
                 target,
                 member.key,
                 {
-                    get: function(this: IObservable)
+                    get: function(this: Observable)
                     {
                         return this[privateKey];
                     },
-                    set: function (this: IObservable, value: Value)
+                    set: function (this: Observable, value: Value)
                     {
-                        if (!this[NOTIFYING])
+                        if (!Object.is(value, this[privateKey]))
                         {
                             this[privateKey] = value;
 
-                            this[NOTIFYING] = true;
-
                             observer.notify(value);
-
-                            this[NOTIFYING] = false;
                         }
                     }
                 }
@@ -121,23 +110,15 @@ export default class Observer
         return true;
     }
 
-    public static notify<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): void
+    public static notify<T extends Observable, K extends keyof T>(target: T, key: K): void
     {
-        type Key = keyof IObservable;
-
-        const observer = Observer.observe(target, key as Key);
-
-        target[NOTIFYING] = true;
-
-        observer.notify(target[key as Key]);
-
-        target[NOTIFYING] = false;
+        Observer.observe(target, key).notify(target[key]);
     }
 
-    public static observe<T extends IObservable, K extends keyof T>(target: T, key: K|symbol): Observer;
-    public static observe(target: IObservable, key: string|symbol): Observer
+    public static observe<T extends Observable, K extends keyof T>(target: T, key: K): Observer;
+    public static observe(target: Observable, key: Key): Observer
     {
-        const observers = target[OBSERVERS] = target[OBSERVERS] || new Map<string|symbol, Observer>();
+        const observers = target[OBSERVERS] = target[OBSERVERS] || new Map();
 
         if (!observers.has(key))
         {
@@ -159,6 +140,6 @@ export default class Observer
 
     public unsubscribe(action: Action1<unknown>): void
     {
-        this.listeners = this.listeners.filter(x => x != action);
+        this.listeners.splice(this.listeners.findIndex(x => x == action), 1);
     }
 }

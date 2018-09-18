@@ -51,7 +51,7 @@ export default class Pager extends Component
         {
             super.setAttribute("page-count", value.toString());
 
-            if (value < this.page || this.pageCount > 0 && value > this.pageCount)
+            if (value != 0 && value < this.page || this.pageCount > 0 && value > this.pageCount)
             {
                 this.page = value;
             }
@@ -68,14 +68,17 @@ export default class Pager extends Component
     private pageChanged(): void
     {
         const pageCount = this.pageCount;
+        const page      = this.page;
 
-        this._startRange = this.page > 2 ?
-            pageCount - this.page < 2 && pageCount - 4 > 0 ?
+        this._startRange = page <= pageCount && page > 2 ?
+            pageCount - page < 2 && pageCount - 4 > 0 ?
                 pageCount - 4
-                : this.page - 2
+                : page - 2
             : 1;
 
-        this._endRange = this.startRange + 4 > pageCount ? pageCount : this.startRange + 4;
+        const startRange = this.startRange;
+
+        this._endRange = startRange + 4 > pageCount ? pageCount : startRange + 4;
     }
 
     protected setPage(page: number): void

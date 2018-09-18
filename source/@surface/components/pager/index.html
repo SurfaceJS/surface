@@ -12,7 +12,7 @@
         </template>
     </surface-for-each>
     &nbsp;
-    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount ]]" value="&gt;" on-click="[[ host.nextPage() ]]" />
+    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;" on-click="[[ host.nextPage() ]]" />
     &nbsp;
-    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount ]]" value="&gt;&gt;" on-click="[[ host.lastPage() ]]" />
+    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;&gt;" on-click="[[ host.lastPage() ]]" />
 </surface-stack-panel>

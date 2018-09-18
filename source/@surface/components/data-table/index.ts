@@ -400,13 +400,15 @@ export default class DataTable extends Component
 
     public async addNew(): Promise<void>
     {
-        this._page = this.dataProvider.pageCount;
-        this._editing = true;
-
-        await this.setPage(this._page);
-
-        Observer.notify(this, "page");
-
+        if (this.dataProvider.pageCount > 0)
+        {
+            this._page = this.dataProvider.pageCount;
+            this._editing = true;
+    
+            await this.setPage(this._page);
+    
+            Observer.notify(this, "page");
+        }
 
         const data = this.createData();
         const row  = this.createRow(data, true);
@@ -493,7 +495,13 @@ export default class DataTable extends Component
         {
             row.save();
             this.dataProvider.create(row.reference);
-            await this.refresh();
+
+            this._page = this.dataProvider.pageCount;
+            this._editing = true;
+
+            await this.setPage(this._page);
+
+            Observer.notify(this, "page");
         }
         else
         {

@@ -110,7 +110,7 @@ export default class ElementBind
 
                                 (element as ObjectLiteral)[attributeName] = expression.evaluate();
 
-                                DataBind.twoWay(element, elementMember, target, targetMember);
+                                DataBind.twoWay(element, elementMember, target, targetMember, notification);
                             }
                             else
                             {
