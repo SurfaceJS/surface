@@ -65,10 +65,6 @@ export default class Observer
                     }
                 );
             }
-            else
-            {
-                throw new Error(`Cannot inject observer on conputed property ${member.key.toString()} on type ${target.constructor.name}.`);
-            }
         }
         else if (member instanceof FieldInfo)
         {

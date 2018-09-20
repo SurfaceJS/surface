@@ -90,7 +90,6 @@ export default class Pager extends Component
         const key   = dashedToCamel(name) as "page"|"pageCount";
         const value = Number.parseInt(`${newValue}`) || (name == "page" ? 1 : 0);
 
-        console.log(key, _, newValue);
         if (value != this[key])
         {
             this[key] = value;

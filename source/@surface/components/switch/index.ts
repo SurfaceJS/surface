@@ -1,9 +1,9 @@
-import { Nullable }            from "@surface/core";
-import { coalesce, typeGuard } from "@surface/core/common/generic";
-import CustomElement           from "@surface/custom-element";
-import Component               from "..";
-import { attribute, element }  from "../decorators";
-import style                   from "./index.scss";
+import { Nullable }           from "@surface/core";
+import { typeGuard }          from "@surface/core/common/generic";
+import CustomElement          from "@surface/custom-element";
+import Component              from "..";
+import { attribute, element } from "../decorators";
+import style                  from "./index.scss";
 
 @element("surface-switch", "", style)
 export default class Switch extends Component
@@ -49,11 +49,11 @@ export default class Switch extends Component
         }
     }
 
-    protected attributeChangedCallback(name: "value", _: Nullable<string>, newValue: Nullable<string>)
+    protected attributeChangedCallback(name: "value", _: Nullable<string>, newValue: string)
     {
         if (newValue != this[name])
         {
-            this[name] = coalesce(newValue, "");
+            this[name] = newValue;
         }
     }
 
