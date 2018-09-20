@@ -1,26 +1,29 @@
-import { Nullable }  from "@surface/core";
-import CustomElement from "@surface/custom-element";
-import Enumerable    from "@surface/enumerable";
-import Component     from "..";
-import { element }   from "../decorators";
-import template      from "./index.html";
+import { Nullable }           from "@surface/core";
+import CustomElement          from "@surface/custom-element";
+import Enumerable             from "@surface/enumerable";
+import Component              from "..";
+import { attribute, element } from "../decorators";
+import template               from "./index.html";
 
 @element("surface-for-each", template)
 export default class ForEach extends Component
 {
     private _of:       Iterable<unknown> = [];
+    private _end:      number = 0;
+    private _start:    number = 0;
     private _template: Nullable<HTMLTemplateElement>;
 
+    @attribute
     public get end(): number
     {
-        return Number.parseInt(super.getAttribute("end") || "0") || 0;
+        return this._end;
     }
 
     public set end(value: number)
     {
         if (value != this.end)
         {
-            super.setAttribute("end", value.toString());
+            this._end = value;
 
             if (this.end >= this.start)
             {
@@ -44,16 +47,17 @@ export default class ForEach extends Component
         }
     }
 
+    @attribute
     public get start(): number
     {
-        return Number.parseInt(super.getAttribute("start") || "0") || 0;
+        return this._start;
     }
 
     public set start(value: number)
     {
         if (value != this.start)
         {
-            super.setAttribute("start", value.toString());
+            this._start = value;
 
             if (this.end >= this.start)
             {
@@ -107,7 +111,6 @@ export default class ForEach extends Component
             }
             else if (this.end > 0)
             {
-                console.log("changed");
                 sequence = Enumerable.range(this.start, this.end) as Enumerable<unknown>;
             }
 
@@ -126,8 +129,13 @@ export default class ForEach extends Component
         }
     }
 
-    protected connectedCallback(): void
+    protected attributeChangedCallback(name: "start"|"end", _: Nullable<string>, newValue: Nullable<string>)
     {
-        this.changed();
+        const value = Number.parseInt(`${newValue}`) || 0;
+
+        if (value != this[name])
+        {
+            this[name] = value;
+        }
     }
 }

@@ -1,25 +1,25 @@
-import { Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
-import { coalesce }                                from "@surface/core/common/generic";
-import { clone, objectFactory }                    from "@surface/core/common/object";
-import CustomElement                               from "@surface/custom-element";
-import Enumerable                                  from "@surface/enumerable";
-import Observer                                    from "@surface/observer";
-import Component                                   from "..";
-import { element }                                 from "../decorators";
-import DataCell                                    from "./data-cell";
-import DataFooter                                  from "./data-footer";
-import DataHeader                                  from "./data-header";
-import DataRow                                     from "./data-row";
-import DataRowGroup                                from "./data-row-group";
-import template                                    from "./index.html";
-import style                                       from "./index.scss";
-import IDataProvider                               from "./interfaces/data-provider";
-import ColumnDefinition                            from "./internal/column-definition";
-import DataProvider                                from "./internal/data-provider";
-import arrayTemplate                               from "./templates/array.html";
-import booleanTemplate                             from "./templates/boolean.html";
-import numberTemplate                              from "./templates/number.html";
-import stringTemplate                              from "./templates/string.html";
+import { Func1, KeyValue, Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
+import { coalesce }                                                 from "@surface/core/common/generic";
+import { clone, objectFactory }                                     from "@surface/core/common/object";
+import CustomElement                                                from "@surface/custom-element";
+import Enumerable                                                   from "@surface/enumerable";
+import Observer                                                     from "@surface/observer";
+import Component                                                    from "..";
+import { attribute, element }                                       from "../decorators";
+import DataCell                                                     from "./data-cell";
+import DataFooter                                                   from "./data-footer";
+import DataHeader                                                   from "./data-header";
+import DataRow                                                      from "./data-row";
+import DataRowGroup                                                 from "./data-row-group";
+import template                                                     from "./index.html";
+import style                                                        from "./index.scss";
+import IDataProvider                                                from "./interfaces/data-provider";
+import ColumnDefinition                                             from "./internal/column-definition";
+import DataProvider                                                 from "./internal/data-provider";
+import arrayTemplate                                                from "./templates/array.html";
+import booleanTemplate                                              from "./templates/boolean.html";
+import numberTemplate                                               from "./templates/number.html";
+import stringTemplate                                               from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
 
@@ -28,10 +28,19 @@ export default class DataTable extends Component
 {
     private readonly _onDatasourceChange: Observer = new Observer();
 
-    private _datasource:     Iterable<object> = [];
-    private _dataDefinition: object           = { };
-    private _editing:        boolean          = false;
-    private _page:           number           = 1;
+    private _datasource:     Array<object> = [];
+    private _dataDefinition: object        = { };
+    private _editing:        boolean       = false;
+    private _infinityScroll: boolean       = false;
+    private _page:           number        = 1;
+    private _pageCount:      number        = 0;
+    private _pageSize:       number        = 10;
+
+    private attributeParse: ObjectLiteral<Func1<string, KeyValue<DataTable, "pageSize"|"infinityScroll">>> =
+    {
+        "page-size":       (value: string) => ["pageSize",       Number.parseInt(value) || 0],
+        "infinity-scroll": (value: string) => ["infinityScroll", value == "true"]
+    };
 
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
@@ -57,7 +66,7 @@ export default class DataTable extends Component
 
     protected get pageCount(): number
     {
-        return this.dataProvider.pageCount;
+        return this._pageCount;
     }
 
     public get dataDefinition(): object
@@ -85,34 +94,35 @@ export default class DataTable extends Component
         return super.queryAll("surface-data-row-group");
     }
 
-    public get datasource(): Iterable<object>
+    public get datasource(): Array<object>
     {
         return this._datasource;
     }
 
-    public set datasource(value: Iterable<object>)
+    public set datasource(value: Array<object>)
     {
         if (value != this._datasource)
         {
-            this._datasource = value;
+            this._datasource  = value;
             this.dataProvider = new DataProvider(value, this.pageSize);
 
             const observer = Observer.observe(this.dataProvider, "pageCount");
 
-            observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
+            observer.subscribe(value => this._pageCount = value as number);
 
             this.refresh().then(() => this.onDatasourceChange.notify());
         }
     }
 
+    @attribute
     public get infinityScroll(): boolean
     {
-        return this.getAttribute("infinity-scroll") == "true";
+        return this._infinityScroll;
     }
 
     public set infinityScroll(value: boolean)
     {
-        this.setAttribute("infinity-scroll", value.toString());
+        this._infinityScroll = value;
     }
 
     public get onDatasourceChange(): Observer
@@ -120,14 +130,15 @@ export default class DataTable extends Component
         return this._onDatasourceChange;
     }
 
+    @attribute
     public get pageSize(): number
     {
-        return Number.parseInt(super.getAttribute("page-size") || "10") || 10;
+        return this._pageSize;
     }
 
     public set pageSize(value: number)
     {
-        super.setAttribute("page-size", value.toString());
+        this._pageSize = value;
     }
 
     public constructor(dataProvider?: Nullable<IDataProvider>)
@@ -158,7 +169,7 @@ export default class DataTable extends Component
 
         const observer = Observer.observe(this.dataProvider, "pageCount");
 
-        observer.subscribe(() => Observer.notify(this, "pageCount" as keyof this));
+        observer.subscribe(value => this._pageCount = value as number);
 
         const dataTemplate = super.query<HTMLTemplateElement>("template");
 
@@ -398,15 +409,30 @@ export default class DataTable extends Component
         }
     }
 
+    protected attributeChangedCallback(name: "page-size"|"infinity-scroll", __: Nullable<string>, newValue: string)
+    {
+        const [key, value] = this.attributeParse[name](newValue);
+
+        if (value != this[key])
+        {
+            this[key] = value;
+        }
+    }
+
+    protected connectedCallback(): void
+    {
+        this.refresh();
+    }
+
     public async addNew(): Promise<void>
     {
         if (this.dataProvider.pageCount > 0)
         {
             this._page = this.dataProvider.pageCount;
             this._editing = true;
-    
+
             await this.setPage(this._page);
-    
+
             Observer.notify(this, "page");
         }
 
@@ -422,44 +448,15 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    public connectedCallback(): void
-    {
-        this.refresh();
-    }
-
     public async deleteRow(row: DataRow): Promise<void>
     {
         this.dataProvider.delete(row.reference);
         await this.refresh();
     }
 
-    public async firstPage(): Promise<void>
-    {
-        this.dataProvider.firstPage();
-        await this.refresh();
-    }
-
-    public async lastPage(): Promise<void>
-    {
-        this.dataProvider.lastPage();
-        await this.refresh();
-    }
-
-    public async nextPage(): Promise<void>
-    {
-        this.dataProvider.nextPage();
-        await this.refresh();
-    }
-
     public async order(field: string, direction: "asc" | "desc"): Promise<void>
     {
         this.dataProvider.order = { field, direction };
-        await this.refresh();
-    }
-
-    public async previousPage(): Promise<void>
-    {
-        this.dataProvider.previousPage();
         await this.refresh();
     }
 

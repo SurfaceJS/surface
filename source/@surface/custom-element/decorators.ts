@@ -1,6 +1,7 @@
-import CustomElement from ".";
-import ElementBind   from "./internal/element-bind";
-import * as symbols  from "./internal/symbols";
+import { camelToDashed } from "@surface/core/common/string";
+import CustomElement     from ".";
+import ElementBind       from "./internal/element-bind";
+import * as symbols      from "./internal/symbols";
 
 type Observable =
 {
@@ -17,18 +18,20 @@ function isHTMLElement(source: Function): source is typeof HTMLElement
     return source.prototype instanceof HTMLElement;
 }
 
-export function attribute(target: Object, propertyKey: string | symbol): void
+export function attribute(target: Object, propertyKey: string|symbol): void
 {
-    if (target instanceof HTMLElement)
+    if (target instanceof HTMLElement && typeof propertyKey == "string")
     {
-        if (!(target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES])
+        const constructor = target.constructor as Observable;
+
+        if (!constructor[symbols.OBSERVED_ATTRIBUTES])
         {
             const values: Array<string> = [];
             Object.defineProperty(target.constructor, symbols.OBSERVED_ATTRIBUTES, { get: () => values } );
-            Object.defineProperty(target.constructor, "observedAttributes", { get: () => (target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES] });
+            Object.defineProperty(target.constructor, "observedAttributes", { get: () => constructor[symbols.OBSERVED_ATTRIBUTES] });
         }
 
-        (target.constructor as Observable)[symbols.OBSERVED_ATTRIBUTES]!.push(propertyKey);
+        constructor[symbols.OBSERVED_ATTRIBUTES]!.push(camelToDashed(propertyKey));
     }
     else
     {

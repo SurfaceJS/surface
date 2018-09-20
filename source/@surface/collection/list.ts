@@ -156,7 +156,7 @@ export default class List<TSource> extends Enumerable<TSource>
         }
         else
         {
-            this[SOURCE].splice(this[SOURCE].findIndex(x => Object.is(x, indexOritem)), 1);
+            this[SOURCE].splice(this[SOURCE].indexOf(indexOritem), 1);
         }
     }
 }

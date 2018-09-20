@@ -126,32 +126,6 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         throw new Error("Method not implemented.");
     }
 
-    public firstPage(): void
-    {
-        this._page = 1;
-    }
-
-    public lastPage(): void
-    {
-        this._page = this.pageCount;
-    }
-
-    public nextPage(): void
-    {
-        if (this._page + 1 <= this.pageCount)
-        {
-            this._page++;
-        }
-    }
-
-    public previousPage(): void
-    {
-        if (this._page - 1 > 0)
-        {
-            this._page--;
-        }
-    }
-
     public async read(): Promise<Iterable<T>>
     {
         const body =

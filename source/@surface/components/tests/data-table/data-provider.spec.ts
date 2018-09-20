@@ -21,38 +21,6 @@ export default class DataProviderSpec
     }
 
     @test @shouldPass
-    public async nextPage(): Promise<void>
-    {
-        this.dataProvider.nextPage();
-
-        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([4, 5, 6]);
-    }
-
-    @test @shouldPass
-    public async lastPage(): Promise<void>
-    {
-        this.dataProvider.lastPage();
-
-        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([10]);
-    }
-
-    @test @shouldPass
-    public async previousPage(): Promise<void>
-    {
-        this.dataProvider.previousPage();
-
-        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([7, 8, 9]);
-    }
-
-    @test @shouldPass
-    public async firstPage(): Promise<void>
-    {
-        this.dataProvider.firstPage();
-
-        chai.expect(Array.from(await this.dataProvider.read())).to.deep.equal([1, 2, 3]);
-    }
-
-    @test @shouldPass
     public async changePageSize(): Promise<void>
     {
         this.dataProvider.pageSize = 5;
@@ -68,24 +36,6 @@ export default class DataProviderSpec
 
         chai.expect(this.dataProvider.pageCount, "page size 4 - page count").to.equal(3);
         chai.expect(Array.from(await this.dataProvider.read()), "page size 2 - iteration").to.deep.equal([5, 6, 7, 8]);
-    }
-
-    @test @shouldPass
-    public firstPageAndPreviousPage(): void
-    {
-        this.dataProvider.firstPage();
-        this.dataProvider.previousPage();
-
-        chai.expect(this.dataProvider.page).to.equal(1);
-    }
-
-    @test @shouldPass
-    public lastPageAndNextPage(): void
-    {
-        this.dataProvider.lastPage();
-        this.dataProvider.nextPage();
-
-        chai.expect(this.dataProvider.page).to.equal(3);
     }
 
     @test @shouldFail

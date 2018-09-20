@@ -1,3 +1,5 @@
+import { Nullable }           from "@surface/core";
+import { dashedToCamel }      from "@surface/core/common/string";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import template               from "./index.html";
@@ -8,6 +10,7 @@ export default class Pager extends Component
 {
     private _page:       number = 1;
     private _endRange:   number = 0;
+    private _pageCount:  number = 0;
     private _startRange: number = 0;
 
     protected get endRange(): number
@@ -15,6 +18,7 @@ export default class Pager extends Component
         return this._endRange;
     }
 
+    @attribute
     public get page(): number
     {
         return this._page;
@@ -35,28 +39,28 @@ export default class Pager extends Component
 
             this._page = value;
 
-            this.pageChanged();
+            this.changed();
         }
     }
 
     @attribute
     public get pageCount(): number
     {
-        return Number.parseInt(super.getAttribute("page-count") || "0") || 0;
+        return this._pageCount;
     }
 
     public set pageCount(value: number)
     {
         if (value != this.pageCount)
         {
-            super.setAttribute("page-count", value.toString());
-
-            if (value != 0 && value < this.page || this.pageCount > 0 && value > this.pageCount)
+            if (value > 0 && value < this.page)
             {
                 this.page = value;
             }
 
-            this.pageChanged();
+            this._pageCount = value;
+
+            this.changed();
         }
     }
 
@@ -65,13 +69,13 @@ export default class Pager extends Component
         return this._startRange;
     }
 
-    private pageChanged(): void
+    private changed(): void
     {
         const pageCount = this.pageCount;
         const page      = this.page;
 
-        this._startRange = page <= pageCount && page > 2 ?
-            pageCount - page < 2 && pageCount - 4 > 0 ?
+        this._startRange = pageCount - 4 > 0 && page > 2 ?
+            pageCount - page < 2 ?
                 pageCount - 4
                 : page - 2
             : 1;
@@ -81,14 +85,21 @@ export default class Pager extends Component
         this._endRange = startRange + 4 > pageCount ? pageCount : startRange + 4;
     }
 
+    protected attributeChangedCallback(name: "page"|"page-count", _: Nullable<string>, newValue: string)
+    {
+        const key   = dashedToCamel(name) as "page"|"pageCount";
+        const value = Number.parseInt(`${newValue}`) || (name == "page" ? 1 : 0);
+
+        console.log(key, _, newValue);
+        if (value != this[key])
+        {
+            this[key] = value;
+        }
+    }
+
     protected setPage(page: number): void
     {
         this.page = page;
-    }
-
-    protected attributeChangedCallback(): void
-    {
-        this.pageChanged();
     }
 
     public firstPage(): void
@@ -96,7 +107,7 @@ export default class Pager extends Component
         if (this.page != 1)
         {
             this.page = 1;
-            this.pageChanged();
+            this.changed();
         }
     }
 
@@ -105,7 +116,7 @@ export default class Pager extends Component
         if (this.page != this.pageCount)
         {
             this.page = this.pageCount;
-            this.pageChanged();
+            this.changed();
         }
     }
 
@@ -114,7 +125,7 @@ export default class Pager extends Component
         if (this.page + 1 <= this.pageCount)
         {
             this.page++;
-            this.pageChanged();
+            this.changed();
         }
     }
 
@@ -123,7 +134,7 @@ export default class Pager extends Component
         if (this.page - 1 > 0)
         {
             this.page--;
-            this.pageChanged();
+            this.changed();
         }
     }
 }

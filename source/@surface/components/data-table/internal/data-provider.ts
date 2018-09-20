@@ -1,18 +1,17 @@
-import List                     from "@surface/collection/list";
 import { Func1 }                from "@surface/core";
 import { Enumerable }           from "@surface/enumerable";
-import Observer                 from "@surface/observer";
 import IDataProvider, { Order } from "../interfaces/data-provider";
 
 export default class DataProvider<T extends Object> implements IDataProvider<T>
 {
-    private readonly datasource: List<T>;
+    private readonly datasource: Array<T>;
 
     private _order:     Order;
     private _lastOrder: Order;
     private _page:      number = 1;
     private _pageCount: number = 0;
     private _pageSize:  number = 0;
+    private _total:     number = 0;
 
     public get order(): Order
     {
@@ -62,30 +61,20 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
 
         this._pageSize = value;
 
-        this.assign("pageCount", this.calculatePageCount(this.total));
+        this._pageCount = this.calculatePageCount(this.total);
     }
 
     public get total(): number
     {
-        return this.datasource.count();
+        return this._total;
     }
 
-    public constructor(source: Iterable<T>, pageSize: number)
+    public constructor(source: Array<T>, pageSize: number)
     {
-        this.datasource = new List(source);
+        this.datasource = source;
         this._order     = { field: "", direction: "asc" };
         this._lastOrder = { field: "", direction: "asc" };
         this._pageSize  = pageSize;
-        this._pageCount = this.calculatePageCount(this.total);
-    }
-
-    private assign<K extends keyof this>(key: K, value: this[K]): void
-    {
-        if (this[key] != value)
-        {
-            this["_" + key as K] = value;
-            Observer.notify(this, key);
-        }
     }
 
     private calculatePageCount(total: number): number
@@ -97,52 +86,26 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
 
     public async create(data: T): Promise<void>
     {
-        this.datasource.add(data);
+        this.datasource.push(data);
 
-        Observer.notify(this, "total");
-        this.assign("pageCount", this.calculatePageCount(this.total));
+        this._total     = this.datasource.length;
+        this._pageCount = this.calculatePageCount(this.total);
     }
 
     public async delete(data: T): Promise<void>
     {
-        this.datasource.remove(data);
+        this.datasource.splice(this.datasource.indexOf(data), 1);
 
-        Observer.notify(this, "total");
-        this.assign("pageCount", this.calculatePageCount(this.total));
-    }
-
-    public firstPage(): void
-    {
-        this._page = 1;
-    }
-
-    public lastPage(): void
-    {
-        this._page = this.pageCount;
-    }
-
-    public nextPage(): void
-    {
-        if (this._page + 1 <= this.pageCount)
-        {
-            this._page++;
-        }
-    }
-
-    public previousPage(): void
-    {
-        if (this._page - 1 > 0)
-        {
-            this._page--;
-        }
+        this._total     = this.datasource.length;
+        this._pageCount = this.calculatePageCount(this.total);
     }
 
     public async read(): Promise<Iterable<T>>
     {
-        Observer.notify(this, "total");
-        Observer.notify(this, "pageCount");
+        this._total     = this.datasource.length;
+        this._pageCount = this.calculatePageCount(this.total);
 
-        let datasource = this.datasource as Enumerable<T>;
+        let datasource = Enumerable.from(this.datasource);
 
         if (this.order.field != this._lastOrder.field || this.order.direction != this._lastOrder.direction)
         {

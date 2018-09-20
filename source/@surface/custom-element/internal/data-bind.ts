@@ -1,9 +1,10 @@
 import { Action, Action1 } from "@surface/core";
+import { dashedToCamel }   from "@surface/core/common/string";
 import Observer            from "@surface/observer";
 import FieldInfo           from "@surface/reflection/field-info";
 import MemberInfo          from "@surface/reflection/member-info";
 
-const HOOKS    = Symbol("data-bind:hooks");
+const HOOKS     = Symbol("data-bind:hooks");
 const LISTENERS = Symbol("data-bind:observed");
 
 type Hookable = object & { [HOOKS]?: Array<string|symbol> };
@@ -15,7 +16,7 @@ export default class DataBind
     {
         const hooks = target[HOOKS] = target[HOOKS] || [];
 
-        const observer = Observer.observe(target, member.key as keyof Hookable);
+        const observer = Observer.observe(target, member);
 
         observer.subscribe(action);
 
@@ -25,8 +26,6 @@ export default class DataBind
 
         if (!hooks.includes(member.key) && member instanceof FieldInfo)
         {
-            Observer.inject(target, member, observer);
-
             if (target instanceof HTMLElement)
             {
                 const setAttribute = target.setAttribute;
@@ -35,7 +34,7 @@ export default class DataBind
                 {
                     setAttribute.call(this, qualifiedName, value);
 
-                    if (qualifiedName == member.key)
+                    if (dashedToCamel(qualifiedName) == member.key)
                     {
                         observer.notify(value);
                     }

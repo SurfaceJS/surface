@@ -1,11 +1,13 @@
 import { Action, Action1 } from "@surface/core";
 import Type                from "@surface/reflection";
 import FieldInfo           from "@surface/reflection/field-info";
+import MemberInfo          from "@surface/reflection/member-info";
+import MethodInfo          from "@surface/reflection/method-info";
 import PropertyInfo        from "@surface/reflection/property-info";
 
 export const OBSERVERS = Symbol("observer:observers");
 
-type Observable = Object & { [OBSERVERS]?: Map<keyof Observable, Observer> };
+type Observable = Object & { [OBSERVERS]?: Map<string|symbol, Observer> };
 type Key        = keyof Observable;
 type Value      = Observable[Key];
 
@@ -13,14 +15,8 @@ export default class Observer
 {
     private readonly listeners: Array<Action1<unknown>> = [];
 
-    public static inject<T extends Observable, K extends keyof T>(target: T, key: K, observer: Observer): boolean;
-    public static inject(target: Observable, field:      FieldInfo,        observer: Observer): boolean;
-    public static inject(target: Observable, keyOrField: string|FieldInfo, observer: Observer): boolean
+    private static inject(target: Observable, member: MemberInfo, observer: Observer): void
     {
-        const member = keyOrField instanceof FieldInfo ?
-            keyOrField
-            : Type.from(target).getMember(keyOrField)!;
-
         if (member instanceof PropertyInfo)
         {
             if (!member.readonly)
@@ -71,7 +67,7 @@ export default class Observer
             }
             else
             {
-                return false;
+                throw new Error(`Cannot inject observer on conputed property ${member.key.toString()} on type ${target.constructor.name}.`);
             }
         }
         else if (member instanceof FieldInfo)
@@ -102,12 +98,13 @@ export default class Observer
                 }
             );
         }
-        else
+        else if (member instanceof MethodInfo)
         {
-            return false;
+            target[member.key as Key] = function(...args: Array<unknown>)
+            {
+                observer.notify(member.invoke.call(target, args));
+            };
         }
-
-        return true;
     }
 
     public static notify<T extends Observable, K extends keyof T>(target: T, key: K): void
@@ -116,13 +113,29 @@ export default class Observer
     }
 
     public static observe<T extends Observable, K extends keyof T>(target: T, key: K): Observer;
-    public static observe(target: Observable, key: Key): Observer
+    public static observe(target: Observable, member: MemberInfo): Observer;
+    public static observe(target: Observable, keyOrMember: string|MemberInfo): Observer
     {
         const observers = target[OBSERVERS] = target[OBSERVERS] || new Map();
 
+        const [key, getMember] = typeof keyOrMember == "string" ?
+            [keyOrMember, () => Type.from(target).getMember(keyOrMember)]
+            : [keyOrMember.key, () => keyOrMember];
+
         if (!observers.has(key))
         {
-            observers.set(key, new Observer());
+            const member = getMember();
+
+            if (!member)
+            {
+                throw new Error(`Member ${key.toString()} does not exists on type ${target.constructor.name}`);
+            }
+
+            const observer = new Observer();
+
+            Observer.inject(target, member, observer);
+
+            observers.set(key, observer);
         }
 
         return observers.get(key)!;
@@ -140,6 +153,6 @@ export default class Observer
 
     public unsubscribe(action: Action1<unknown>): void
     {
-        this.listeners.splice(this.listeners.findIndex(x => x == action), 1);
+        this.listeners.splice(this.listeners.indexOf(action), 1);
     }
 }

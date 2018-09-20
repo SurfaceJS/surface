@@ -3,6 +3,13 @@ export function camelToText(value: string): string
     return value.split(/(?=[A-Z])/g).join(" ").toLowerCase();
 }
 
+export function camelToDashed(value: string): string
+{
+    return value.split(/(?=[A-Z])/g).join("-").toLowerCase();
+}
+
+export function dashedToCamel<T extends string>(value: T): T;
+export function dashedToCamel(value: string): string;
 export function dashedToCamel(value: string): string
 {
     return value.replace(/-([a-z])/g, (value, group) => group.toUpperCase());

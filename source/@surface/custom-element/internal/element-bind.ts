@@ -79,13 +79,15 @@ export default class ElementBind
                     const attributeName = dashedToCamel(attribute.name);
                     const elementMember = Type.from(element).getMember(attributeName);
 
+                    const canWrite = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly);
+
                     let notification = () =>
                     {
                         const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
                             expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
                             expression.evaluate();
 
-                        if (elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly))
+                        if (canWrite)
                         {
                             (element as ObjectLiteral)[attributeName] = value;
                         }

@@ -1,23 +1,30 @@
-import { typeGuard }          from "@surface/core/common/generic";
-import CustomElement          from "@surface/custom-element";
-import { attribute, element } from "../decorators";
-import style                  from "./index.scss";
+import { Nullable }            from "@surface/core";
+import { coalesce, typeGuard } from "@surface/core/common/generic";
+import CustomElement           from "@surface/custom-element";
+import Component               from "..";
+import { attribute, element }  from "../decorators";
+import style                   from "./index.scss";
 
 @element("surface-switch", "", style)
-export default class Switch extends CustomElement
+export default class Switch extends Component
 {
     private readonly templates: Map<string, HTMLTemplateElement> = new Map();
+
+    private _value: string = "";
 
     @attribute
     public get value(): string
     {
-        return super.getAttribute("value") || "" as string;
+        return this._value;
     }
 
     public set value(value: string)
     {
-        super.setAttribute("value", value);
-        this.changed();
+        if (value != this.value)
+        {
+            this._value = value;
+            this.changed();
+        }
     }
 
     public constructor()
@@ -42,9 +49,12 @@ export default class Switch extends CustomElement
         }
     }
 
-    protected attributeChangedCallback()
+    protected attributeChangedCallback(name: "value", _: Nullable<string>, newValue: Nullable<string>)
     {
-        this.changed();
+        if (newValue != this[name])
+        {
+            this[name] = coalesce(newValue, "");
+        }
     }
 
     public appendChild<T extends Node>(element: T): T

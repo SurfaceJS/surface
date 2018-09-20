@@ -216,7 +216,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         if (predicate)
         {
-            return Array.from(this.where(predicate)).length;
+            return this.where(predicate).count();
         }
 
         return Array.from(this).length;
@@ -1037,6 +1037,16 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
         {
             yield element;
         }
+    }
+
+    public count(): number
+    {
+        if (Array.isArray(this.source))
+        {
+            return this.source.length;
+        }
+
+        return super.count();
     }
 }
 
