@@ -116,15 +116,20 @@ export default class ForEach extends Component
 
             let index = this.start;
 
-            for (const item of sequence)
+            if (sequence.any())
             {
-                const fragment = document.importNode(this.template.content, true);
+                for (const item of sequence)
+                {
+                    const fragment = document.importNode(this.template.content, true);
 
-                CustomElement.contextBind({ ...super.context, index, item } as object, fragment); //TODO - Review binding order
+                    CustomElement.contextBind({ ...super.context, index, item } as object, fragment); //TODO - Review binding order
 
-                super.appendChild(fragment);
+                    super.appendChild(fragment);
 
-                index++;
+                    index++;
+                }
+
+                super.dispatchEvent(new Event("change"));
             }
         }
     }

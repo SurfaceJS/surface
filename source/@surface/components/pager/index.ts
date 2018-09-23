@@ -83,6 +83,8 @@ export default class Pager extends Component
         const startRange = this.startRange;
 
         this._endRange = startRange + 4 > pageCount ? pageCount : startRange + 4;
+
+        super.dispatchEvent(new Event("change"));
     }
 
     protected attributeChangedCallback(name: "page"|"page-count", _: Nullable<string>, newValue: string)

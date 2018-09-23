@@ -15,7 +15,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.from(target).getField("value")!, () => changed = true);
+        DataBind.oneWay(target, Type.from(target).getField("value")!, { }, () => changed = true);
 
         target.value = 2;
 
@@ -31,7 +31,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.from(target).getField("value")!, () => changed = true);
+        DataBind.oneWay(target, Type.from(target).getField("value")!, { }, () => changed = true);
 
         target.value = 2;
 
@@ -59,7 +59,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
+        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, { }, () => changed = true);
 
         target.value = 2;
 
@@ -87,7 +87,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
+        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, { }, () => changed = true);
 
         target.setValue(2);
 
@@ -101,7 +101,7 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target, Type.from(target).getProperty("value")!, () => changed = true);
+        DataBind.oneWay(target, Type.from(target).getProperty("value")!, { }, () => changed = true);
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
@@ -118,7 +118,7 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, () => value = attribute.value);
+        DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, { }, () => value = attribute.value);
 
         attribute.value = "2";
         chai.expect(value).to.equal("2");
@@ -131,7 +131,7 @@ export default class DataBindSpec
         target.lang = "pt-br";
 
         let value = target.lang;
-        DataBind.oneWay(target, Type.from(target).getProperty("lang")!, () => value = target.lang);
+        DataBind.oneWay(target, Type.from(target).getProperty("lang")!, { }, () => value = target.lang);
 
         target.setAttribute("lang", "en-us");
         target.setAttribute("lang1", "en-us");
@@ -159,7 +159,7 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left, Type.from(left).getProperty("value")!, right, Type.from(right).getProperty("value")!);
+        DataBind.twoWay(left, Type.from(left).getProperty("value")!, right, Type.from(right).getProperty("value")!, () => undefined);
 
         left.value = 2;
 

@@ -46,6 +46,8 @@ export default class Switch extends Component
             super.appendChild(document.importNode(template.content, true));
 
             CustomElement.contextBind(super.context, this);
+
+            super.dispatchEvent(new Event("change"));
         }
     }
 
