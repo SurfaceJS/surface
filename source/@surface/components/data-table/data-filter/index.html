@@ -1,37 +1,25 @@
+<surface-import from="../../list" />
 <surface-import from="../../switch" />
 <surface-import from="../../dropdown" />
 <surface-import from="../../stack-panel" />
 <surface-import from="./data-filter-item" />
 
 <fieldset style="width: 100%;">
-    <surface-switch value="[[ host.type == 'boolean' ]]">
-        <template when="true">
-            <surface-stack-panel orientation="horizontal">
-                <div horizontal-align="left">
-                    <input type="radio" name="boolean-filter" />
-                    <label for="boolean-filter">true</label>
-                </div>
-                <div horizontal-align="left">
-                    <input type="radio" name="boolean-filter" />
-                    <label for="boolean-filter">false</label>
-                </div>
-            </surface-stack-panel>
-        </template>
-        <template when="false">
-            <surface-stack-panel distribuition="justify">
-                <div id="container">
-                    <surface-data-filter-item type="[[ host.type ]]" fixed="true"></surface-data-filter-item>
-                </div>
-                <surface-stack-panel id="add-filters" orientation="horizontal">
+    <surface-stack-panel distribuition="justify">
+        <surface-data-filter-item type="[[ host.type ]]" fixed="true"></surface-data-filter-item>
+        <surface-list hide-add-button="true"></surface-list>
+        <surface-switch value="[[ host.type != 'boolean' ]]">
+            <template when="true">
+                <surface-stack-panel id="add-filters" orientation="horizontal" distribuition="justify">
                     <surface-dropdown source="[[ host.operators ]]"></surface-dropdown>
                     &nbsp;
-                    <input type="button" value="+" horizontal-align="left" on-click="{{ host.add(host.shadowQuery('surface-dropdown').value) }}">
+                    <input type="button" value="+" on-click="{{ host.add(host.shadowQuery('surface-dropdown').value) }}">
                 </surface-stack-panel>
-            </surface-stack-panel>
-        </template>
-    </surface-switch>
+            </template>
+        </surface-switch>
+    </surface-stack-panel>
     <div id="footer">
         <input type="button" value="Apply" horizontal-align="left" />
-        <input type="button" value="Clear" horizontal-align="left" />
+        <input type="button" value="Clear" horizontal-align="left" on-click="{{ host.clear() }}"/>
     </div>
 </fieldset>

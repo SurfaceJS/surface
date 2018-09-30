@@ -17,5 +17,14 @@ $button-size: 22px;
         margin-top: 2px;
         @include exact-height($button-size);
         @include exact-width($button-size);
+
+    }
+
+    @at-root #{&}([hide-add-button=true])
+    {
+        input
+        {
+            display: none;
+        }
     }
 }

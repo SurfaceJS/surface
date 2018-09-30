@@ -1,6 +1,7 @@
 import { Nullable }                             from "@surface/core";
 import Component                                from "../..";
 import { attribute, element }                   from "../../decorators";
+import List                                     from "../../list";
 import DataFilterItem                           from "./data-filter-item";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
@@ -13,10 +14,17 @@ type KeyValue = { key: string, value: string };
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
+    private _list: Nullable<List>;
     private _type: Type = "string";
-    private get container(): Nullable<HTMLDivElement>
+
+    private get list(): Nullable<List>
     {
-        return super.shadowQuery("#container");
+        if (!this._list)
+        {
+            this._list = super.shadowQuery<List>("surface-list")!;
+        }
+
+        return this._list;
     }
 
     protected get operators(): Array<KeyValue>
@@ -47,9 +55,21 @@ export default class DataFilter extends Component
 
     protected add(value: Operator): void
     {
-        if (this.type != "boolean" && this.container)
+        if (this.type != "boolean" && this.list)
         {
-            this.container.appendChild(new DataFilterItem(this.type, value));
+            this.list.add(new DataFilterItem(this.type, value));
         }
+    }
+
+    protected clear(): void
+    {
+        if (this.type != "boolean" && this.list)
+        {
+            this.list.clear();
+
+        }
+
+        const dataFilterItem = super.shadowQuery<DataFilterItem>("surface-data-filter-item")!;
+        dataFilterItem.clear();
     }
 }

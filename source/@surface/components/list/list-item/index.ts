@@ -6,13 +6,13 @@ import style       from "./index.scss";
 @element("surface-list-item", template, style)
 export default class ListItem extends Component
 {
-    public constructor(content?: DocumentFragment)
+    public constructor(node?: Node)
     {
         super();
 
-        if (content)
+        if (node)
         {
-            super.appendChild(content);
+            super.appendChild(node);
         }
     }
 

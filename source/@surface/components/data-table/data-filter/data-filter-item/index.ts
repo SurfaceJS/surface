@@ -1,6 +1,7 @@
 import { Nullable }                             from "@surface/core";
 import Component                                from "../../../";
 import { attribute, element }                   from "../../../decorators";
+import DropDown                                 from "../../../dropdown";
 import { Operator as _Operator, Type as _Type } from "../types";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
@@ -100,6 +101,32 @@ export default class DataFilterItem extends Component
         if (value != this[name])
         {
             this[name] = value;
+        }
+    }
+
+    public clear(): void
+    {
+        if (this.type == "boolean")
+        {
+            const [truthy, falsy] = super.shadowQueryAll<HTMLInputElement>("input[type=radio]");
+
+            truthy.checked = false;
+            falsy.checked  = false;
+        }
+        else
+        {
+            const [predicates, values] = super.shadowQueryAll<DropDown>("surface-dropdown") as object as [DropDown, Nullable<DropDown>];
+            predicates.selectedIndex = 0;
+
+            if (this.type == "array" && values)
+            {
+                values.selectedIndex = 0;
+            }
+            else
+            {
+                const field = super.shadowQuery<HTMLInputElement>("input")!;
+                field.value = "";
+            }
         }
     }
 }

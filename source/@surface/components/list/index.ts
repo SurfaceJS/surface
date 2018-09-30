@@ -11,13 +11,21 @@ export default class List extends Component
 
     private readonly _items: Array<ListItem> = [];
 
+    public get hideAddButton(): boolean
+    {
+        return super.getAttribute("hide-add-button") == "true";
+    }
+
+    public set hideAddButton(value: boolean)
+    {
+        super.setAttribute("hide-add-button", value.toString());
+    }
+
     public get items(): Array<ListItem>
     {
         return this._items;
     }
 
-    public constructor();
-    public constructor(template: HTMLTemplateElement);
     public constructor(template?: HTMLTemplateElement)
     {
         super();
@@ -25,9 +33,9 @@ export default class List extends Component
         this.items.push(...super.queryAll("surface-list-item").cast<ListItem>().toArray());
     }
 
-    public add(): void
+    public add(node?: Node): void
     {
-        const item = new ListItem(document.importNode(this.template.content, true));
+        const item = new ListItem(node || document.importNode(this.template.content, true));
 
         item.addEventListener("remove", () => this.remove(item));
 
@@ -38,6 +46,14 @@ export default class List extends Component
         super.appendChild(item);
 
         super.dispatchEvent(new CustomEvent("add", { detail: item }));
+    }
+
+    public clear(): void
+    {
+        while (this.items.length > 0)
+        {
+            this.remove();
+        }
     }
 
     public remove(): void;
@@ -56,7 +72,7 @@ export default class List extends Component
             else
             {
                 item = this.items.pop()!;
-                Component.contextUnbind(this.items.pop()!);
+                Component.contextUnbind(item);
             }
 
             super.removeChild(item);

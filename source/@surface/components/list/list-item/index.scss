@@ -4,11 +4,12 @@ $button-size: 22px;
 
 :host
 {
-    slot
+    ::slotted(*)
     {
         margin-right: 2px;
         width:        100%;
     }
+
     input
     {
         margin-left: 2px;

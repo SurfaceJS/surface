@@ -36,19 +36,19 @@ export default class Switch extends Component
 
     private changed(): void
     {
-        const template = this.templates.get(this.value) || this.templates.get("default");
+        const template = this.templates.get(this.value);
+
+        CustomElement.contextUnbind(this);
+        super.innerHTML = "";
 
         if (template)
         {
-            CustomElement.contextUnbind(this);
-
-            super.innerHTML = "";
             super.appendChild(document.importNode(template.content, true));
 
             CustomElement.contextBind(super.context, this);
-
-            super.dispatchEvent(new Event("change"));
         }
+
+        super.dispatchEvent(new Event("change"));
     }
 
     protected attributeChangedCallback(name: "value", _: Nullable<string>, newValue: string)

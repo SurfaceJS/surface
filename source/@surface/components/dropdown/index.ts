@@ -10,14 +10,17 @@ export default class DropDown extends Component
 {
     private readonly select: HTMLSelectElement = super.shadowQuery<HTMLSelectElement>("select")!;
 
-    private _selectedIndex: number             = -1;
-    private _source:        Iterable<KeyValue> = [];
-    private _value:         string             = "";
+    private _source: Iterable<KeyValue> = [];
+    private _value:  string             = "";
 
     public get selectedIndex(): number
     {
-        console.log(this._selectedIndex);
-        return this._selectedIndex;
+        return this.select.options.selectedIndex;
+    }
+
+    public set selectedIndex(value: number)
+    {
+        this.select.options.selectedIndex = value;
     }
 
     public get source(): Iterable<KeyValue>
@@ -55,7 +58,6 @@ export default class DropDown extends Component
 
     protected changed(): void
     {
-        this.value          = this.select.value;
-        this._selectedIndex = this.select.options.selectedIndex;
+        this.value = this.select.value;
     }
 }
