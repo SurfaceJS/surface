@@ -214,12 +214,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public count(predicate: Func1<TSource, boolean>): number;
     public count(predicate?: Func1<TSource, boolean>): number
     {
-        if (predicate)
-        {
-            return this.where(predicate).count();
-        }
-
-        return Array.from(this).length;
+        return predicate? this.where(predicate).count() : Array.from(this).length;
     }
 
     /**
@@ -1039,14 +1034,19 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
         }
     }
 
-    public count(): number
+    public count(predicate?: Func1<TSource, boolean>): number
     {
         if (Array.isArray(this.source))
         {
+            if (predicate)
+            {
+                return this.source.filter(predicate).length;
+            }
+
             return this.source.length;
         }
 
-        return super.count();
+        return super.count(predicate!);
     }
 }
 

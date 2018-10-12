@@ -14,7 +14,7 @@ function ProxyHTMLElement() { }
 
 ProxyHTMLElement.prototype = window.HTMLElement.prototype;
 
-ProxyHTMLElement.prototype["attachShadow"] = () => window.document.createElement("div");
+ProxyHTMLElement.prototype.attachShadow = () => window.document.createElement("div") as unknown as ShadowRoot;
 
 (window.HTMLElement as Object) = ProxyHTMLElement;
 

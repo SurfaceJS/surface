@@ -240,15 +240,15 @@ export default class DataTable extends Component
                 {
                     if (columnDefinition.editButtom)
                     {
-                        innerHTML = "<input type='button' disabled={{row.disabled}} value='edit' on-click='{{row.enterEdit()}}' />";
+                        innerHTML = /*html*/ `<input type="button" disabled="{{ row.disabled }}" value="edit" on-click="{{ row.enterEdit() }}" />`;
                     }
 
                     if (columnDefinition.deleteButtom)
                     {
-                        innerHTML = innerHTML + "<input type='button' disabled={{row.disabled}} value='delete' on-click='{{dataTable.deleteRow(row)}}' />";
+                        innerHTML = innerHTML + /*html*/ `<input type="button" disabled="{{row.disabled}}" value="delete" on-click="{{ dataTable.deleteRow(row) }}" />`;
                     }
 
-                    innerHTML =
+                    innerHTML = //html
                     `
                         <surface-switch value="{{row.editMode}}">
                             <template when="true">
