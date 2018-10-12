@@ -5,11 +5,11 @@ import { UnaryOperator } from "../../types";
 
 const unaryFunctions =
 {
-    "+":      (value: Object) => +value,
-    "-":      (value: Object) => -value,
-    "~":      (value: Object) => ~value,
-    "!":      (value: Object) => !value,
-    "typeof": (value: Object) => typeof value,
+    "+":      (value: IExpression) => +(value.evaluate() as Object),
+    "-":      (value: IExpression) => -(value.evaluate() as Object),
+    "~":      (value: IExpression) => ~(value.evaluate() as Object),
+    "!":      (value: IExpression) => !value.evaluate(),
+    "typeof": (value: IExpression) => typeof value.evaluate(),
 };
 
 export default class UnaryExpression implements IExpression
@@ -42,6 +42,6 @@ export default class UnaryExpression implements IExpression
 
     public evaluate(): Object
     {
-        return this.operation(this.expression.evaluate());
+        return this.operation(this.expression);
     }
 }

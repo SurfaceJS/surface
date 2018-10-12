@@ -3,15 +3,16 @@ import ExpressionType           from "../../expression-type";
 import IExpression              from "../../interfaces/expression";
 import { UpdateOperator }       from "../../types";
 import TypeGuard                from "../type-guard";
+import ConstantExpression       from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
 const updateFunctions =
 {
-    "++*": (target: ObjectLiteral<number>, key: string) => ++target[key],
-    "--*": (target: ObjectLiteral<number>, key: string) => --target[key],
-    "*++": (target: ObjectLiteral<number>, key: string) => target[key]++,
-    "*--": (target: ObjectLiteral<number>, key: string) => target[key]--,
+    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string],
+    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string],
+    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string]++,
+    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string]--,
 };
 
 export default class UpdateExpression implements IExpression
@@ -54,11 +55,11 @@ export default class UpdateExpression implements IExpression
         /* istanbul ignore else  */
         if (TypeGuard.isIdentifierExpression(this.expression))
         {
-            return this.operation(this.expression.context, this.expression.name);
+            return this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
         }
         else if (TypeGuard.isMemberExpression(this.expression))
         {
-            return this.operation(this.expression.target.evaluate(), this.expression.key.evaluate());
+            return this.operation(this.expression.target, this.expression.key);
         }
         else
         {

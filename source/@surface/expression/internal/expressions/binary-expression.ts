@@ -6,30 +6,30 @@ import { BinaryOperator } from "../../types";
 
 const binaryFunctions =
 {
-    "+":          (left: number, right: number)   => left +          right,
-    "-":          (left: number, right: number)   => left -          right,
-    "*":          (left: number, right: number)   => left *          right,
-    "/":          (left: number, right: number)   => left /          right,
-    "%":          (left: number, right: number)   => left %          right,
-    "**":         (left: number, right: number)   => left **         right,
-    "&":          (left: number, right: number)   => left &          right,
-    "|":          (left: number, right: number)   => left |          right,
-    "^":          (left: number, right: number)   => left ^          right,
-    "<<":         (left: number, right: number)   => left <<         right,
-    ">>":         (left: number, right: number)   => left >>         right,
-    ">>>":        (left: number, right: number)   => left >>>        right,
-    "&&":         (left: Object, right: Object)   => left &&         right,
-    "||":         (left: Object, right: Object)   => left ||         right,
-    "==":         (left: Object, right: Object)   => left ==         right,
-    "===":        (left: Object, right: Object)   => left ===        right,
-    "!=":         (left: Object, right: Object)   => left !=         right,
-    "!==":        (left: Object, right: Object)   => left !==        right,
-    "<=":         (left: Object, right: Object)   => left <=         right,
-    ">=":         (left: Object, right: Object)   => left >=         right,
-    "<":          (left: Object, right: Object)   => left <          right,
-    ">":          (left: Object, right: Object)   => left >          right,
-    "in":         (left: string, right: Function) => left in         right,
-    "instanceof": (left: Object, right: Function) => left instanceof right,
+    "+":          (left: IExpression, right: IExpression) => (left.evaluate() as number) +          (right.evaluate() as number),
+    "-":          (left: IExpression, right: IExpression) => (left.evaluate() as number) -          (right.evaluate() as number),
+    "*":          (left: IExpression, right: IExpression) => (left.evaluate() as number) *          (right.evaluate() as number),
+    "/":          (left: IExpression, right: IExpression) => (left.evaluate() as number) /          (right.evaluate() as number),
+    "%":          (left: IExpression, right: IExpression) => (left.evaluate() as number) %          (right.evaluate() as number),
+    "**":         (left: IExpression, right: IExpression) => (left.evaluate() as number) **         (right.evaluate() as number),
+    "&":          (left: IExpression, right: IExpression) => (left.evaluate() as number) &          (right.evaluate() as number),
+    "|":          (left: IExpression, right: IExpression) => (left.evaluate() as number) |          (right.evaluate() as number),
+    "^":          (left: IExpression, right: IExpression) => (left.evaluate() as number) ^          (right.evaluate() as number),
+    "<<":         (left: IExpression, right: IExpression) => (left.evaluate() as number) <<         (right.evaluate() as number),
+    ">>":         (left: IExpression, right: IExpression) => (left.evaluate() as number) >>         (right.evaluate() as number),
+    ">>>":        (left: IExpression, right: IExpression) => (left.evaluate() as number) >>>        (right.evaluate() as number),
+    "&&":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) &&         (right.evaluate() as Object),
+    "||":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ||         (right.evaluate() as Object),
+    "==":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ==         (right.evaluate() as Object),
+    "===":        (left: IExpression, right: IExpression) => (left.evaluate() as Object) ===        (right.evaluate() as Object),
+    "!=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) !=         (right.evaluate() as Object),
+    "!==":        (left: IExpression, right: IExpression) => (left.evaluate() as Object) !==        (right.evaluate() as Object),
+    "<=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) <=         (right.evaluate() as Object),
+    ">=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) >=         (right.evaluate() as Object),
+    "<":          (left: IExpression, right: IExpression) => (left.evaluate() as Object) <          (right.evaluate() as Object),
+    ">":          (left: IExpression, right: IExpression) => (left.evaluate() as Object) >          (right.evaluate() as Object),
+    "in":         (left: IExpression, right: IExpression) => (left.evaluate() as string) in         (right.evaluate() as Function),
+    "instanceof": (left: IExpression, right: IExpression) => (left.evaluate() as Object) instanceof (right.evaluate() as Function),
 };
 
 export default class BinaryExpression implements IExpression
@@ -69,6 +69,6 @@ export default class BinaryExpression implements IExpression
 
     public evaluate(): unknown
     {
-        return this.operation(this.left.evaluate(), this.right.evaluate());
+        return this.operation(this.left, this.right);
     }
 }
