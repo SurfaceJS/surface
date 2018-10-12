@@ -10,7 +10,7 @@
     "description": "Common modules used by @surface's projects.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "chai": "4.1.2"
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

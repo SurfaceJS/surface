@@ -6,7 +6,6 @@ export default class HashEncode
     {
         const value = source[key];
 
-        // Todo - Typescript narrow bug, cast should be unnecessary
         return `${key}:${typeof value == "symbol" ? value.toString() : value}#${value != null && value != undefined ? (value as object).constructor.name : "?"}`;
     }
 
@@ -41,7 +40,7 @@ export default class HashEncode
 
         const signature = typeof source != "object" || typeof source == "object" && source == null ?
             HashEncode.getSignature({ __value__: source })
-            : HashEncode.getSignature(source as object); // Todo - Typescript narrow bug, cast should be unnecessary
+            : HashEncode.getSignature(source);
 
         return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
     }

@@ -12,7 +12,7 @@
     "description": "Base class used to define views.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "chai": "4.1.2"
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
