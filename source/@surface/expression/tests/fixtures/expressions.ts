@@ -27,6 +27,10 @@ const context =
         increment: (value: number) => ++value,
         getObject: () => ({ value: "Hello World!!!" }),
         getValue:  () => 42
+    },
+    noop(value: unknown)
+    {
+        return value;
     }
 };
 
@@ -80,6 +84,12 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:     "{ }",
         value:   { },
         type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "noop(true)",
+        value:   true,
+        type:    CallExpression,
     },
     {
         context: context,

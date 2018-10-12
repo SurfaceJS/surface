@@ -317,7 +317,21 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).key.evaluate() as string, this.argumentsExpression());
+                let context: IExpression;
+                let name:    string;
+
+                if (expression instanceof IdentifierExpression)
+                {
+                    context = new ConstantExpression(expression.context);
+                    name    = expression.name;
+                }
+                else
+                {
+                    context = parentExpression;
+                    name    = (expression as MemberExpression).key.evaluate() as string;
+                }
+
+                expression = new CallExpression(context, name, this.argumentsExpression());
             }
             else if (this.match("["))
             {
