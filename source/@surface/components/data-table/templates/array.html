@@ -1,8 +1,8 @@
-<surface-switch value="{{cell.editable && row.editMode}}">
+<surface-switch value="{{ cell.editable && row.editMode }}">
     <template when="true">
-        <select style="width: 100%;" />
+        <select style="width: 100%;"></select>
     </template>
     <template when="false">
-        <span>{{row.data.${field}}}</span>
+        <span>{{ row.data.${field} }}</span>
     </template>
 </surface-switch>

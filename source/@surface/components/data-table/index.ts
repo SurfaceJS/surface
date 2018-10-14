@@ -6,7 +6,9 @@ import Enumerable                                                   from "@surfa
 import Observer                                                     from "@surface/observer";
 import Component                                                    from "..";
 import { attribute, element }                                       from "../decorators";
+import Modal                                                        from "../modal";
 import DataCell                                                     from "./data-cell";
+import DataFilter                                                   from "./data-filter";
 import DataFooter                                                   from "./data-footer";
 import DataHeader                                                   from "./data-header";
 import DataRow                                                      from "./data-row";
@@ -220,7 +222,7 @@ export default class DataTable extends Component
             const field = columnDefinition.field;
             const value = (field.indexOf(".") > -1 ? Function("data", `data.${field}`)(data) : data[field]) as Nullable<string>;
 
-            const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
+            const cell = new DataCell(columnDefinition.editable, columnDefinition.sortable, index, coalesce(value, ""), value);
             row.appendChild(cell);
 
             if (columnDefinition.style)
@@ -250,10 +252,10 @@ export default class DataTable extends Component
 
                     innerHTML = //html
                     `
-                        <surface-switch value="{{row.editMode}}">
+                        <surface-switch value="{{ row.editMode }}">
                             <template when="true">
-                                <input type='button' value='save'   horizontal-align="center" on-click='{{dataTable.saveRow(row)}}' />
-                                <input type='button' value='cancel' horizontal-align="center" on-click='{{dataTable.undoRow(row)}}' />
+                                <input type="button" value="save"   horizontal-align="center" on-click="{{ dataTable.saveRow(row) }}" />
+                                <input type="button" value="cancel" horizontal-align="center" on-click="{{ dataTable.undoRow(row) }}" />
                             </template>
                             <template when="false">
                                 <surface-stack-panel distribuition="center" orientation="horizontal">
@@ -333,7 +335,7 @@ export default class DataTable extends Component
                     cell.setAttribute("style", columnDefinition.style);
                 }
 
-                cell.innerHTML = `<span horizontal-align='center'><b>${columnDefinition.header}</b></span>`;
+                cell.innerHTML = /*html*/ `<span horizontal-align="center"><b>${columnDefinition.header}</b></span>`;
             }
         }
     }
@@ -356,25 +358,79 @@ export default class DataTable extends Component
             }
 
             const row = new DataRow();
+
             headerGroup.appendChild(row);
 
             const order = { true: "asc", false: "desc" };
 
+            let index = 0;
+
             for (const columnDefinition of this.columnDefinitions)
             {
-                const cell = new DataCell();
+                const cell = new DataCell(false, columnDefinition.sortable, index);
+
                 row.appendChild(cell);
-
-                let asc = false;
-
-                cell.addEventListener("click", () => this.order(columnDefinition.field, order[(asc = !asc).toString() as "true"|"false"] as "asc"|"desc"));
 
                 if (columnDefinition.style)
                 {
                     cell.setAttribute("style", columnDefinition.style);
                 }
 
-                cell.innerHTML = `<span horizontal-align='center'><b>${columnDefinition.header}</b></span>`;
+                cell.innerHTML = //html
+                `
+                    <div on-click="{{ cell.sortable && table.sort(field, order[toogle()]) }}" style="width: 100%;">
+                        <span horizontal-align="center"><b>${columnDefinition.header}</b></span>
+                    </div>
+                    ${
+                        columnDefinition.filterable && !columnDefinition.editButtom && !columnDefinition.deleteButtom ?
+                            /*html*/ `<input type="button" value="F" on-click="{{ showFilters }}" />`
+                            : ""
+                    }
+                `;
+
+                let showFilters = function(this: HTMLInputElement, event: Event) { return; };
+
+                if (columnDefinition.filterable)
+                {
+                    const modal  = new Modal();
+                    const filter = new DataFilter(columnDefinition.fieldType);
+
+                    modal.appendChild(filter);
+
+                    let showing = false;
+
+                    showFilters = function(this: HTMLInputElement, event: Event)
+                    {
+                        if (showing)
+                        {
+                            modal.hide();
+                        }
+                        else
+                        {
+                            const bounding   = this.getBoundingClientRect();
+                            const x = bounding.left + bounding.width;
+                            const y = bounding.top  + bounding.height;
+
+                            modal.show({ x, y, align: { horizontal: "right",  vertical: "top" }});
+
+                            //modal.style.marginLeft = -(modal.getBoundingClientRect().width - 6) + "px";
+                        }
+
+                        showing = !showing;
+                    };
+
+                    filter.addEventListener("apply", () => { modal.hide(); showing = false; });
+                }
+
+                let asc = false;
+
+                const toogle = () => asc = !asc;
+
+                const context = { ...super.context, cell, field: columnDefinition.field, order, showFilters, table: this, toogle };
+
+                CustomElement.contextBind(context, cell);
+
+                index++;
             }
         }
     }
@@ -384,6 +440,7 @@ export default class DataTable extends Component
         if (!this.rowGroup)
         {
             const rowGroup = new DataRowGroup();
+
             this.rowGroup = rowGroup;
 
             const simbling = super.query("surface-data-table > surface-data-row-group:last-of-type")
@@ -454,7 +511,7 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    public async order(field: string, direction: "asc" | "desc"): Promise<void>
+    public async sort(field: string, direction: "asc" | "desc"): Promise<void>
     {
         this.dataProvider.order = { field, direction };
         await this.refresh();
@@ -493,7 +550,7 @@ export default class DataTable extends Component
             row.save();
             this.dataProvider.create(row.reference);
 
-            this._page = this.dataProvider.pageCount;
+            this._page    = this.dataProvider.pageCount;
             this._editing = true;
 
             await this.setPage(this._page);

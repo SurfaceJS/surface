@@ -43,6 +43,12 @@ export default class DataFilter extends Component
         this._type = value;
     }
 
+    public constructor(type?: Type)
+    {
+        super();
+        this.type = type || "string";
+    }
+
     protected attributeChangedCallback(__: "type", _: Nullable<string>, newValue: string)
     {
         const value = (["array", "boolean", "number", "string"].includes(newValue) ? newValue : "string") as Type;
@@ -71,5 +77,12 @@ export default class DataFilter extends Component
 
         const dataFilterItem = super.shadowQuery<DataFilterItem>("surface-data-filter-item")!;
         dataFilterItem.clear();
+        super.dispatchEvent(new Event("clear"));
+    }
+
+    protected apply(): void
+    {
+        super.dispatchEvent(new Event("apply"));
+        this.clear();
     }
 }

@@ -58,7 +58,7 @@ export default class ColumnDefinition
 
     public get filterable(): boolean
     {
-        return this.element.getAttribute("filterable") == "true";
+        return (this.element.getAttribute("filterable") || "true") == "true";
     }
 
     public set filterable(value: boolean)
@@ -94,6 +94,16 @@ export default class ColumnDefinition
     public set required(value: boolean)
     {
         this.element.setAttribute("required", value.toString());
+    }
+
+    public get sortable(): boolean
+    {
+        return (this.element.getAttribute("sortable") || "true") == "true";
+    }
+
+    public set sortable(value: boolean)
+    {
+        this.element.setAttribute("sortable", value.toString());
     }
 
     public get style(): string

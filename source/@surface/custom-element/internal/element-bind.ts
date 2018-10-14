@@ -67,7 +67,7 @@ export default class ElementBind
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    const action = expression.type == ExpressionType.Member ?
+                    const action = expression.type == ExpressionType.Identifier || expression.type ==  ExpressionType.Member ?
                         expression.evaluate() as Action
                         : () => expression.evaluate();
 

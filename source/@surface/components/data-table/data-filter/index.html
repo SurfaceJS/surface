@@ -19,7 +19,7 @@
         </surface-switch>
     </surface-stack-panel>
     <div id="footer">
-        <input type="button" value="Apply" horizontal-align="left" />
+        <input type="button" value="Apply" horizontal-align="left" on-click="{{ host.apply() }}"/>
         <input type="button" value="Clear" horizontal-align="left" on-click="{{ host.clear() }}"/>
     </div>
 </fieldset>
