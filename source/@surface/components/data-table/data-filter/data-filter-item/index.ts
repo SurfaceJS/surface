@@ -1,56 +1,65 @@
 import { Nullable }                             from "@surface/core";
+import { coalesce }                             from "@surface/core/common/generic";
 import Component                                from "../../../";
 import { attribute, element }                   from "../../../decorators";
-import DropDown                                 from "../../../dropdown";
 import { Operator as _Operator, Type as _Type } from "../types";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
 
+type Condition = "none"|"contains"|"not-in"|"lesser-then"|"greater-than";
 type Operator = _Operator;
 type Type     = _Type;
 
 type KeyValue = { key: string, value: string };
+
+export type Filter =
+{
+    condition: string,
+    operator:  Operator,
+    value:     unknown,
+};
 
 @element("surface-data-filter-item", template, style)
 export default class DataFilterItem extends Component
 {
     private static attributeParse =
     {
-        "fixed":    (value: string) => value == "true",
-        "operator": (value: string) => ["and", "or"].includes(value) ? value as Operator : "and",
+        "operator": (value: string) => ["and", "or"].includes(value) ? value as Operator : null,
         "type":     (value: string) => ["array", "boolean", "number", "string"].includes(value) ? value as Type : "string",
     };
 
     private static predicates: Array<KeyValue> =
     [
-        { key: "no" , value: " - select - " },
-        { key: "in" , value: "contains"     },
-        { key: "nin", value: "not contains" },
-        { key: "lt" , value: "lesser than"  },
-        { key: "gt" , value: "greater than" },
+        { key: "none" ,         value: " - select - " },
+        { key: "contains" ,     value: "contains"     },
+        { key: "equal" ,        value: "equal"        },
+        { key: "not-equal" ,    value: "not equal"    },
+        { key: "not-in",        value: "not contains" },
+        { key: "lesser-then" ,  value: "lesser than"  },
+        { key: "greater-than" , value: "greater than" },
     ];
 
     private static stringPredicates: Array<KeyValue> = DataFilterItem.predicates.concat
     ([
-        { key: "sw" , value: "starts with"  },
-        { key: "en" , value: "ends with"    }
+        { key: "starts-with", value: "starts with" },
+        { key: "ends-with",   value: "ends with"   }
     ]);
 
-    private _fixed:    boolean  = false;
-    private _type:     Type     = "string";
-    private _operator: Operator = "and";
+    private _condition: Condition = "none";
+    private _type:      Type      = "string";
+    private _operator:  Operator  = null;
+    private _value:     unknown   = null;
 
     protected operatorMap = { "and": "And", "or": "Or", "bt": "Between" };
 
-    @attribute
-    public get fixed(): boolean
+    public get condition(): Condition
     {
-        return this._fixed;
+        return this._condition;
     }
 
-    public set fixed(value: boolean)
+    public set condition(value: Condition)
     {
-        this._fixed = value;
+        this._condition = value;
     }
 
     @attribute
@@ -75,6 +84,16 @@ export default class DataFilterItem extends Component
         this._type = value;
     }
 
+    public get value(): unknown
+    {
+        return this._value;
+    }
+
+    public set value(value: unknown)
+    {
+        this._value = value;
+    }
+
     public get predicates(): Array<KeyValue>
     {
         return DataFilterItem.predicates;
@@ -90,8 +109,8 @@ export default class DataFilterItem extends Component
     public constructor(type?: Type, operator?: Operator)
     {
         super();
-        this.type     = type     || "string";
-        this.operator = operator || this.operator;
+        this.type     = type || "string";
+        this.operator = coalesce(operator, null);
     }
 
     protected attributeChangedCallback(name: "operator"|"type", _: Nullable<string>, newValue: string)
@@ -104,29 +123,19 @@ export default class DataFilterItem extends Component
         }
     }
 
+    protected setValue(value: unknown): void
+    {
+        this.value = value;
+    }
+
     public clear(): void
     {
-        if (this.type == "boolean")
-        {
-            const [truthy, falsy] = super.shadowQueryAll<HTMLInputElement>("input[type=radio]");
+        this.value     = null;
+        this.condition = "none";
+    }
 
-            truthy.checked = false;
-            falsy.checked  = false;
-        }
-        else
-        {
-            const [predicates, values] = super.shadowQueryAll<DropDown>("surface-dropdown") as object as [DropDown, Nullable<DropDown>];
-            predicates.selectedIndex = 0;
-
-            if (this.type == "array" && values)
-            {
-                values.selectedIndex = 0;
-            }
-            else
-            {
-                const field = super.shadowQuery<HTMLInputElement>("input")!;
-                field.value = "";
-            }
-        }
+    public getFilter(): Filter
+    {
+      return { condition: this.condition, operator: this.operator, value: this.value as unknown };
     }
 }

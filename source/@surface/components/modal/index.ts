@@ -4,41 +4,22 @@ import { attribute, element } from "../decorators";
 import template               from "./index.html";
 import style                  from "./index.scss";
 
-export type Position =
-{
-    x: number,
-    y: number,
-    align:
-    {
-        horizontal: "left"|"center"|"right",
-        vertical:   "top"|"center"|"bottom"
-    }
-};
+export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
 
 @element("surface-modal", template, style)
 export default class Modal extends Component
 {
-    private _centered!: boolean;
+    private _startPosition: StartPosition = "none";
 
     @attribute
-    public get centered(): boolean
+    public get startPosition(): StartPosition
     {
-        return this._centered;
+        return this._startPosition;
     }
 
-    public set centered(value: boolean)
+    public set startPosition(value: StartPosition)
     {
-        this._centered = value;
-    }
-
-    public get visible(): boolean
-    {
-        return super.style.display == "flex";
-    }
-
-    public set visible(value: boolean)
-    {
-        super.style.display = value ? "flex" : "none";
+        this._startPosition = value;
     }
 
     public constructor(template?: HTMLTemplateElement)
@@ -49,22 +30,23 @@ export default class Modal extends Component
         {
             super.appendChild(document.importNode(template.content, true));
         }
-        this.centered = true;
+
+        this.visible = false;
     }
 
-    protected attributeChangedCallback(name: "centered", _: Nullable<string>, newValue: string)
+    protected attributeChangedCallback(name: "start-position", _: Nullable<string>, newValue: string)
     {
-        const value = newValue == "true";
+        const value = (["center-screen", "center-parent", "manual", "none"].includes(newValue) ? newValue : "none") as StartPosition;
 
-        if (value != this[name])
+        if (value != this.startPosition)
         {
-            this[name] = value;
+            this.startPosition = value;
         }
     }
 
     public hide()
     {
-        this.visible = false;
+        super.visible = false;
 
         if (this.parentNode == document.body)
         {
@@ -72,7 +54,7 @@ export default class Modal extends Component
         }
     }
 
-    public show(position?: Position)
+    public show()
     {
         if (!this.parentNode)
         {
@@ -81,12 +63,24 @@ export default class Modal extends Component
 
         this.visible = true;
 
-        if (position)
-        {
-            super.style.position = "absolute";
+        super.style.position = this.startPosition == "none" ?
+            "relative"
+            : this.startPosition == "center-screen" ?
+                "fixed"
+                : "absolute";
 
+        if (this.startPosition == "center-screen" || this.startPosition == "center-parent")
+        {
             const bounding = super.getBoundingClientRect();
-            this.centered  = false;
+
+            super.style.top        = "50%";
+            super.style.left       = "50%";
+            super.style.marginTop  = -(bounding.height / 2) + "px";
+            super.style.marginLeft = -(bounding.width / 2) + "px";
+        }
+        else if (this.startPosition != "none")
+        {
+            const bounding = super.getBoundingClientRect();
 
             const offset =
             {
@@ -104,31 +98,11 @@ export default class Modal extends Component
                 }
             };
 
-            const left = position.x + offset.horizontal[position.align.horizontal];
-            const top  = position.y + offset.vertical[position.align.vertical];
+            const left = Number.parseFloat(super.style.left || "0") + offset.horizontal[this.horizontalAlign];
+            const top  = Number.parseFloat(super.style.top  || "0") + offset.vertical[this.verticalAlign];
 
-            //super.style.left = `${left > 0 ? left < window.innerWidth  - bounding.width  ? left : window.innerWidth  - bounding.width  : 0}px`;
             super.style.left = `${(left > 0 ? left < window.outerWidth  - bounding.width  ? left : window.outerWidth  - bounding.width  : 0) + window.scrollX}px`;
             super.style.top  = `${(top  > 0 ? top  < window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0) + window.scrollY}px`;
-        }
-        else if (this.centered)
-        {
-            super.style.position = "fixed";
-
-            const bounding = super.getBoundingClientRect();
-
-            super.style.top        = "50%";
-            super.style.left       = "50%";
-            super.style.marginTop  = -(bounding.height / 2) + "px";
-            super.style.marginLeft = -(bounding.width / 2) + "px";
-        }
-        else
-        {
-            super.style.position   = "relative";
-            super.style.top        = "0";
-            super.style.left       = "0";
-            super.style.marginTop  = "0";
-            super.style.marginLeft = "0";
         }
     }
 }

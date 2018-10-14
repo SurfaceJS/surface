@@ -388,18 +388,20 @@ export default class DataTable extends Component
                     }
                 `;
 
-                let showFilters = function(this: HTMLInputElement, event: Event) { return; };
+                let showFilters = function(this: HTMLInputElement) { return; };
 
                 if (columnDefinition.filterable)
                 {
-                    const modal  = new Modal();
-                    const filter = new DataFilter(columnDefinition.fieldType);
+                    const modal = new Modal();
+                    modal.startPosition = "manual";
+
+                    const filter = new DataFilter(columnDefinition.field, columnDefinition.fieldType);
 
                     modal.appendChild(filter);
 
                     let showing = false;
 
-                    showFilters = function(this: HTMLInputElement, event: Event)
+                    showFilters = function(this: HTMLInputElement)
                     {
                         if (showing)
                         {
@@ -407,13 +409,14 @@ export default class DataTable extends Component
                         }
                         else
                         {
-                            const bounding   = this.getBoundingClientRect();
-                            const x = bounding.left + bounding.width;
-                            const y = bounding.top  + bounding.height;
+                            const bounding = this.getBoundingClientRect();
 
-                            modal.show({ x, y, align: { horizontal: "right",  vertical: "top" }});
+                            modal.style.left      = `${bounding.left + bounding.width}px`;
+                            modal.style.top       = `${bounding.top  + bounding.height}px`;
+                            modal.horizontalAlign = Component.HorizontalAlign.Right;
+                            modal.verticalAlign   = Component.VerticalAlign.Top;
 
-                            //modal.style.marginLeft = -(modal.getBoundingClientRect().width - 6) + "px";
+                            modal.show();
                         }
 
                         showing = !showing;

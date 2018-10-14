@@ -52,7 +52,6 @@ export default class DropDown extends Component
 
     public set value(value: string)
     {
-        console.log(value);
         this._value = value;
     }
 

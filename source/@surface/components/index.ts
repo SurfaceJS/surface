@@ -1,8 +1,10 @@
-import { dashedToCamel, toTitle } from "@surface/core/common/string";
-import CustomElement              from "@surface/custom-element";
+import { toTitle }       from "@surface/core/common/string";
+import CustomElement     from "@surface/custom-element";
 
 abstract class Component extends CustomElement
 {
+    private storedDisplay: string|null = null;
+
     public get disabled(): boolean
     {
         return super.getAttribute("disabled") == "true";
@@ -20,7 +22,7 @@ abstract class Component extends CustomElement
 
     public set horizontalAlign(value: Component.HorizontalAlign)
     {
-        super.setAttribute("horizontal-align", dashedToCamel(Component.HorizontalAlign[value as string as keyof typeof Component.HorizontalAlign]));
+        super.setAttribute("horizontal-align", value);
     }
 
     public get verticalAlign(): Component.VerticalAlign
@@ -30,7 +32,25 @@ abstract class Component extends CustomElement
 
     public set verticalAlign(value: Component.VerticalAlign)
     {
-        super.setAttribute("vertical-align", dashedToCamel(Component.VerticalAlign[value as string as keyof typeof Component.VerticalAlign]));
+        super.setAttribute("vertical-align", value);
+    }
+
+    public get visible(): boolean
+    {
+        return super.style.display != "none";
+    }
+
+    public set visible(value: boolean)
+    {
+        if (!value && this.style.display != "none")
+        {
+            this.storedDisplay = super.style.display;
+            this.style.display = "none";
+        }
+        else if (value && this.style.display == "none")
+        {
+            super.style.display = this.storedDisplay;
+        }
     }
 }
 
