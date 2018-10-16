@@ -1,4 +1,5 @@
 import { Action, Action1 } from "@surface/core";
+import ActionQueue         from "@surface/core/action-queue";
 import { dashedToCamel }   from "@surface/core/common/string";
 import Observer            from "@surface/observer";
 import FieldInfo           from "@surface/reflection/field-info";
@@ -8,7 +9,7 @@ const HOOKS         = Symbol("data-bind:hooks");
 const UNSUBSCRIBERS = Symbol("data-bind:unsubscribers");
 
 type Hookable = object & { [HOOKS]?:         Array<string|symbol> };
-type Observed = object & { [UNSUBSCRIBERS]?: Observer };
+type Observed = object & { [UNSUBSCRIBERS]?: ActionQueue };
 
 export default class DataBind
 {
@@ -20,9 +21,9 @@ export default class DataBind
 
         observer.subscribe(action);
 
-        const unsubscribers = observed[UNSUBSCRIBERS] = observed[UNSUBSCRIBERS] || new Observer();
+        const unsubscribers = observed[UNSUBSCRIBERS] = observed[UNSUBSCRIBERS] || new ActionQueue();
 
-        unsubscribers.subscribe(() => observer.unsubscribe(action));
+        unsubscribers.add(() => observer.unsubscribe(action));
 
         if (!hooks.includes(member.key) && member instanceof FieldInfo)
         {
@@ -71,7 +72,7 @@ export default class DataBind
 
         if (unsubscribers)
         {
-            unsubscribers.notify().clear();
+            unsubscribers.executeAsync();
         }
     }
 }

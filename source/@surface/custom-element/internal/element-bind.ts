@@ -40,10 +40,10 @@ export default class ElementBind
             {
                 DataBind.unbind(element);
 
-                ElementBind.unbind(element);
-
                 element[CONTEXT] = undefined;
                 element[BINDED]  = false;
+
+                ElementBind.unbind(element);
             }
         }
     }

@@ -1,8 +1,8 @@
-import { Action, Nullable }                                  from "@surface/core";
-import Enumerable                                            from "@surface/enumerable";
-import ElementBind                                           from "./internal/element-bind";
+import { Action, Nullable }                                    from "@surface/core";
+import Enumerable                                              from "@surface/enumerable";
+import Observer                                                from "../observer";
+import ElementBind                                             from "./internal/element-bind";
 import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
-import Observer from '../observer';
 
 export default abstract class CustomElement extends HTMLElement
 {

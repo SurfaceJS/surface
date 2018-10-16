@@ -1,4 +1,5 @@
 import { ObjectLiteral } from "@surface/core";
+import ActionQueue       from "@surface/core/action-queue";
 import { coalesce }      from "@surface/core/common/generic";
 import { clone }         from "@surface/core/common/object";
 import Type              from "@surface/reflection";
@@ -13,7 +14,7 @@ import style             from "./index.scss";
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component
 {
-    private readonly unsubscriber: Observer = new Observer();
+    private readonly unsubscribers: ActionQueue = new ActionQueue();
 
     private _data:     T;
     private _editMode: boolean = false;
@@ -30,7 +31,7 @@ export default class DataRow<T extends object = object> extends Component
     {
         this._reference = value;
 
-        this.unsubscriber.notify().clear();
+        this.unsubscribers.executeAsync();
 
         this.setData(this._data, value);
     }
@@ -86,7 +87,7 @@ export default class DataRow<T extends object = object> extends Component
                         .subscribe(listener)
                         .notify(value);
 
-                    this.unsubscriber.subscribe(() => observer.unsubscribe(listener));
+                    this.unsubscribers.add(() => observer.unsubscribe(listener));
                 }
             }
         }
