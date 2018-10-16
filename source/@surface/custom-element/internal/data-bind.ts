@@ -4,11 +4,11 @@ import Observer            from "@surface/observer";
 import FieldInfo           from "@surface/reflection/field-info";
 import MemberInfo          from "@surface/reflection/member-info";
 
-const HOOKS     = Symbol("data-bind:hooks");
-const LISTENERS = Symbol("data-bind:listeners");
+const HOOKS         = Symbol("data-bind:hooks");
+const UNSUBSCRIBERS = Symbol("data-bind:unsubscribers");
 
-type Hookable = object & { [HOOKS]?:     Array<string|symbol> };
-type Observed = object & { [LISTENERS]?: Observer };
+type Hookable = object & { [HOOKS]?:         Array<string|symbol> };
+type Observed = object & { [UNSUBSCRIBERS]?: Observer };
 
 export default class DataBind
 {
@@ -20,9 +20,9 @@ export default class DataBind
 
         observer.subscribe(action);
 
-        const listeners = observed[LISTENERS] = observed[LISTENERS] || new Observer();
+        const unsubscribers = observed[UNSUBSCRIBERS] = observed[UNSUBSCRIBERS] || new Observer();
 
-        listeners.subscribe(() => observer.unsubscribe(action));
+        unsubscribers.subscribe(() => observer.unsubscribe(action));
 
         if (!hooks.includes(member.key) && member instanceof FieldInfo)
         {
@@ -65,13 +65,13 @@ export default class DataBind
         DataBind.oneWay(right, rightMember, left,  value => { left[leftKey]   = value as Value; notification(); });
     }
 
-    public static unbind(observator: Observed): void
+    public static unbind(observed: Observed): void
     {
-        const listeners = observator[LISTENERS];
+        const unsubscribers = observed[UNSUBSCRIBERS];
 
-        if (listeners)
+        if (unsubscribers)
         {
-            listeners.notify().clear();
+            unsubscribers.notify().clear();
         }
     }
 }
