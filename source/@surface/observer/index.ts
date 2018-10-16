@@ -137,18 +137,27 @@ export default class Observer
         return observers.get(key)!;
     }
 
-    public notify(value?: unknown): void
+    public clear(): Observer
+    {
+        this.listeners.splice(0, this.listeners.length);
+        return this;
+    }
+
+    public notify(value?: unknown): Observer
     {
         this.listeners.forEach(listener => listener(value));
+        return this;
     }
 
-    public subscribe(action: Action1<unknown>): void
+    public subscribe(action: Action1<unknown>): Observer
     {
         this.listeners.push(action);
+        return this;
     }
 
-    public unsubscribe(action: Action1<unknown>): void
+    public unsubscribe(action: Action1<unknown>): Observer
     {
         this.listeners.splice(this.listeners.indexOf(action), 1);
+        return this;
     }
 }

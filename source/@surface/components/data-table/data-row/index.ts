@@ -1,16 +1,20 @@
-import { coalesce }  from "@surface/core/common/generic";
-import { clone }     from "@surface/core/common/object";
-import Type          from "@surface/reflection";
-import MethodInfo    from "@surface/reflection/method-info";
-import PropertyInfo  from "@surface/reflection/property-info";
-import Component     from "../..";
-import { element }   from "../../decorators";
-import template      from "./index.html";
-import style         from "./index.scss";
+import { ObjectLiteral } from "@surface/core";
+import { coalesce }      from "@surface/core/common/generic";
+import { clone }         from "@surface/core/common/object";
+import Type              from "@surface/reflection";
+import MethodInfo        from "@surface/reflection/method-info";
+import PropertyInfo      from "@surface/reflection/property-info";
+import Component         from "../..";
+import Observer          from "../../../observer";
+import { element }       from "../../decorators";
+import template          from "./index.html";
+import style             from "./index.scss";
 
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component
 {
+    private readonly unsubscriber: Observer = new Observer();
+
     private _data:     T;
     private _editMode: boolean = false;
     private _new:      boolean;
@@ -25,6 +29,8 @@ export default class DataRow<T extends object = object> extends Component
     public set data(value: T)
     {
         this._reference = value;
+
+        this.unsubscriber.notify().clear();
 
         this.setData(this._data, value);
     }
@@ -58,24 +64,29 @@ export default class DataRow<T extends object = object> extends Component
         }
     }
 
-    private setData(target: object, source: object): void
+    private setData(target: ObjectLiteral, source: ObjectLiteral): void
     {
-        type Key   = keyof object;
-        type Value = object;
-
         for (const member of Type.from(target).getMembers())
         {
             if (!(member instanceof MethodInfo) && member.key in source)
             {
-                const value = source[member.key as Key] as Value;
+                const key = member.key as string;
+
+                const value = source[key];
 
                 if (value instanceof Object)
                 {
-                    this.setData(target[member.key as Key], value);
+                    this.setData(target[key] as object, value);
                 }
                 else if (!(member instanceof PropertyInfo && member.readonly))
                 {
-                    target[member.key as Key] = source[member.key as Key];
+                    const listener = (x: unknown) => target[key] = x;
+
+                    const observer = Observer.observe(source, key)
+                        .subscribe(listener)
+                        .notify(value);
+
+                    this.unsubscriber.subscribe(() => observer.unsubscribe(listener));
                 }
             }
         }

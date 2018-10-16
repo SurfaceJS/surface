@@ -44,8 +44,8 @@
     align-items:    stretch;
 }
 
-:host([orientation=vertical][distribuition=justify]),
-:host([orientation=horizontal][distribuition=justify])
+:host([orientation=vertical][content=justify]),
+:host([orientation=horizontal][content=justify])
 {
     justify-content: space-between;
 }
@@ -55,8 +55,14 @@
     flex-direction: column-reverse;
 }
 
-:host([orientation=vertical][distribuition=center]),
-:host([orientation=horizontal][distribuition=center])
+:host([orientation=vertical][content=center]),
+:host([orientation=horizontal][content=center])
+{
+    justify-content: center;
+}
+
+:host([orientation=vertical][content=space]),
+:host([orientation=horizontal][content=space])
 {
     justify-content: space-evenly;
 }

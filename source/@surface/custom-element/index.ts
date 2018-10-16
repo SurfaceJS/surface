@@ -2,6 +2,7 @@ import { Action, Nullable }                                  from "@surface/core
 import Enumerable                                            from "@surface/enumerable";
 import ElementBind                                           from "./internal/element-bind";
 import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
+import Observer from '../observer';
 
 export default abstract class CustomElement extends HTMLElement
 {
@@ -62,6 +63,11 @@ export default abstract class CustomElement extends HTMLElement
         const content = document.importNode(template.content, true);
 
         this[SHADOW_ROOT].appendChild(content);
+    }
+
+    protected notify<K extends keyof this>(key: K)
+    {
+        Observer.notify(this, key);
     }
 
     /**

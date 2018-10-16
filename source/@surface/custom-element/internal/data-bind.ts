@@ -5,10 +5,10 @@ import FieldInfo           from "@surface/reflection/field-info";
 import MemberInfo          from "@surface/reflection/member-info";
 
 const HOOKS     = Symbol("data-bind:hooks");
-const LISTENERS = Symbol("data-bind:observed");
+const LISTENERS = Symbol("data-bind:listeners");
 
-type Hookable = object & { [HOOKS]?: Array<string|symbol> };
-type Observed = object & { [LISTENERS]?: Map<string|symbol, Action> };
+type Hookable = object & { [HOOKS]?:     Array<string|symbol> };
+type Observed = object & { [LISTENERS]?: Observer };
 
 export default class DataBind
 {
@@ -20,9 +20,9 @@ export default class DataBind
 
         observer.subscribe(action);
 
-        const listeners = observed[LISTENERS] = observed[LISTENERS] || new Map();
+        const listeners = observed[LISTENERS] = observed[LISTENERS] || new Observer();
 
-        listeners.set(member.key, () => observer.unsubscribe(action));
+        listeners.subscribe(() => observer.unsubscribe(action));
 
         if (!hooks.includes(member.key) && member instanceof FieldInfo)
         {
@@ -68,12 +68,10 @@ export default class DataBind
     public static unbind(observator: Observed): void
     {
         const listeners = observator[LISTENERS];
+
         if (listeners)
         {
-            for (const [, unsubscribe] of listeners)
-            {
-                unsubscribe();
-            }
+            listeners.notify().clear();
         }
     }
 }

@@ -126,6 +126,6 @@ export default class DataProvider<T extends Object> implements IDataProvider<T>
 
     public async update(data: T): Promise<void>
     {
-        throw new Error("Method not implemented.");
+        return await Promise.resolve();
     }
 }

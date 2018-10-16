@@ -258,7 +258,7 @@ export default class DataTable extends Component
                                 <input type="button" value="cancel" horizontal-align="center" on-click="{{ dataTable.undoRow(row) }}" />
                             </template>
                             <template when="false">
-                                <surface-stack-panel distribuition="center" orientation="horizontal">
+                                <surface-stack-panel content="center" orientation="horizontal">
                                     ${innerHTML}
                                 </surface-stack-panel>
                             </template>

@@ -7,14 +7,14 @@ import style                      from "./index.scss";
 @element("surface-stack-panel", template, style)
 export class StackPanel extends Component
 {
-    public get distribuition(): StackPanel.Distribuition
+    public get content(): StackPanel.Content
     {
-        return StackPanel.Distribuition[toTitle(super.getAttribute("distribuition") || "") as keyof typeof StackPanel.Distribuition] || StackPanel.Distribuition.None;
+        return StackPanel.Content[toTitle(super.getAttribute("content") || "") as keyof typeof StackPanel.Content] || StackPanel.Content.None;
     }
 
-    public set distribuition(value: StackPanel.Distribuition)
+    public set content(value: StackPanel.Content)
     {
-        super.setAttribute("distribuition", dashedToCamel(StackPanel.Distribuition[value].toLowerCase()));
+        super.setAttribute("content", dashedToCamel(StackPanel.Content[value].toLowerCase()));
     }
 
     public get orientation(): StackPanel.Orientation
@@ -30,10 +30,11 @@ export class StackPanel extends Component
 
 export namespace StackPanel
 {
-    export enum Distribuition
+    export enum Content
     {
         None,
         Center,
+        Space,
         Justify
     }
 

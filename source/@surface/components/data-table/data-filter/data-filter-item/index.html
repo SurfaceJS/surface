@@ -13,7 +13,7 @@
             </surface-stack-panel>
         </template>
         <template when="boolean">
-            <surface-stack-panel orientation="horizontal" distribuition="justify">
+            <surface-stack-panel orientation="horizontal" content="justify">
                 <div horizontal-align="left">
                     <input type="radio" name="boolean-filter" checked="{{ host.value != null && host.value }}" on-click="{{ host.setValue(this.checked) }}" />
                     <label for="boolean-filter">true</label>
@@ -25,14 +25,14 @@
             </surface-stack-panel>
         </template>
         <template when="number">
-            <surface-stack-panel orientation="horizontal" distribuition="justify">
+            <surface-stack-panel orientation="horizontal" content="justify">
                 <surface-dropdown source="[[ host.predicates ]]" value="{{ host.condition }}"></surface-dropdown>
                 &nbsp;
                 <input type="number" horizontal-align="left" value="{{ host.value }}"/>
             </surface-stack-panel>
         </template>
         <template when="string">
-            <surface-stack-panel orientation="horizontal" distribuition="justify">
+            <surface-stack-panel orientation="horizontal" content="justify">
                 <surface-dropdown source="[[ host.stringPredicates ]]" value="{{ host.condition }}"></surface-dropdown>
                 &nbsp;
                 <input type="text" horizontal-align="left" value="{{ host.value }}" />
