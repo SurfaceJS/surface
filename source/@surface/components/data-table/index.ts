@@ -390,10 +390,12 @@ export default class DataTable extends Component
 
                 let showFilters = function(this: HTMLInputElement) { return; };
 
-                if (columnDefinition.filterable)
+                if (columnDefinition.filterable && !columnDefinition.editButtom && !columnDefinition.deleteButtom)
                 {
                     const modal = new Modal();
                     modal.startPosition = "manual";
+
+                    cell.appendChild(modal);
 
                     const filter = new DataFilter(columnDefinition.field, columnDefinition.fieldType);
 
@@ -422,7 +424,19 @@ export default class DataTable extends Component
                         showing = !showing;
                     };
 
-                    filter.addEventListener("apply", () => { modal.hide(); showing = false; });
+                    filter.addEventListener
+                    (
+                        "apply", () =>
+                        {
+                            modal.hide();
+                            showing = false;
+                            const dataFilters = headerGroup.queryAll<DataFilter>("surface-data-filter")
+                                .select(x => x.getFilters())
+                                .where(x => x.filters.length > 0);
+
+                            console.log(dataFilters.toArray());
+                        }
+                    );
                 }
 
                 let asc = false;

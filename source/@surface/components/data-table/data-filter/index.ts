@@ -101,6 +101,7 @@ export default class DataFilter extends Component
         const filters = Enumerable.from([super.shadowQuery<DataFilterItem>("surface-data-filter-item")!])
             .concat(this.list.queryAll<DataFilterItem>("surface-data-filter-item"))
             .select(x => x.getFilter())
+            .where(x => x.condition != "none")
             .toArray();
 
         return { field: this.field, type: this.type, filters };
