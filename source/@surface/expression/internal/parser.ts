@@ -305,7 +305,7 @@ export default class Parser
                 parentExpression = expression;
                 this.expect(".");
 
-                if (this.lookahead.type == TokenType.Identifier)
+                if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
                     expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value));
                 }
@@ -405,10 +405,11 @@ export default class Parser
 
             switch (token.type)
             {
-                case TokenType.StringLiteral:
-                case TokenType.NumericLiteral:
                 case TokenType.BooleanLiteral:
+                case TokenType.Keyword:
                 case TokenType.NullLiteral:
+                case TokenType.NumericLiteral:
+                case TokenType.StringLiteral:
                     key = new ConstantExpression(this.nextToken().value);
                     break;
                 case TokenType.Punctuator:
@@ -430,7 +431,7 @@ export default class Parser
             }
         }
 
-        this.nextToken();
+        this.expect(":");
 
         value = this.assignmentExpression();
         return new PropertyExpression(key, value);
@@ -634,8 +635,10 @@ export default class Parser
                 break;
             case TokenType.NumericLiteral:
                 unexpected = "number";
+                break;
             case TokenType.EOF:
                 unexpected = "end of expression";
+                break;
             default:
                 break;
         }

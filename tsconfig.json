@@ -3,7 +3,6 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
-        //"baseUrl":                          "../../", /* Generating messy output */
         "declaration":                      false, /* false for dev */
         "esModuleInterop":                  true,
         "emitDecoratorMetadata":            true,
@@ -25,7 +24,6 @@
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
         "strictPropertyInitialization":     true,
-        //"suppressImplicitAnyIndexErrors":   true,
         "target":                           "esnext",
         "types":                            [],
         "typeRoots":

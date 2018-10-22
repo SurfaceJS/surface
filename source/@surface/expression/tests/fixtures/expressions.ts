@@ -23,6 +23,7 @@ const context =
     this:
     {
         id:        1,
+        new:       "new",
         greater:   (left: number, right: number) => left > right,
         increment: (value: number) => ++value,
         getObject: () => ({ value: "Hello World!!!" }),
@@ -81,8 +82,26 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context: context,
+        raw:     "this.new",
+        value:   "new",
+        type:    MemberExpression,
+    },
+    {
+        context: context,
         raw:     "{ }",
         value:   { },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ 1: 1 }",
+        value:   { 1: 1 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ new: 1 }",
+        value:   { new: 1 },
         type:    ObjectExpression,
     },
     {
@@ -490,7 +509,7 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     {
         context: context,
         raw:     "if",
-        error:   new SyntaxError("Unexpected token if.", 1, 0, 1)
+        error:   new SyntaxError("Unexpected token if", 1, 0, 1)
     },
     {
         context: context,
@@ -510,7 +529,7 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     {
         context: context,
         raw:     "{ new }",
-        error:   new SyntaxError("Unexpected token new", 1, 2, 3)
+        error:   new SyntaxError("Unexpected token }", 1, 6, 7)
     },
     {
         context: context,
