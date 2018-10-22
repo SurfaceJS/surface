@@ -1,6 +1,7 @@
 {
     "cancel": "Cancel",
     "delete": "Delete",
+    "edit":   "Edit",
     "insert": "Insert",
     "new":    "New",
     "save":   "Save"

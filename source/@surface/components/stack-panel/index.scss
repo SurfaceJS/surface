@@ -44,25 +44,23 @@
     align-items:    stretch;
 }
 
-:host([orientation=vertical][content=justify]),
-:host([orientation=horizontal][content=justify])
+:host([content=justify])
 {
     justify-content: space-between;
 }
 
-:host([orientation=vertical][reverse=true])
+:host([orientation=vertical][reverse=true]),
+:host(:not([orientation=horizontal])[reverse=true])
 {
     flex-direction: column-reverse;
 }
 
-:host([orientation=vertical][content=center]),
-:host([orientation=horizontal][content=center])
+:host([content=center])
 {
     justify-content: center;
 }
 
-:host([orientation=vertical][content=space]),
-:host([orientation=horizontal][content=space])
+:host([content=space])
 {
     justify-content: space-evenly;
 }

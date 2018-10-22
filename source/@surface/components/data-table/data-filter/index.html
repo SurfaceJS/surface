@@ -13,13 +13,13 @@
                 <surface-stack-panel id="add-filters" orientation="horizontal" content="justify">
                     <surface-dropdown source="[[ host.operators ]]"></surface-dropdown>
                     &nbsp;
-                    <input type="button" value="+" on-click="{{ host.add(host.shadowQuery('surface-dropdown').value) }}">
+                    <input type="button" value="+" on-click="[[ host.add(host.shadowQuery('surface-dropdown').value) ]]">
                 </surface-stack-panel>
             </template>
         </surface-switch>
     </surface-stack-panel>
-    <div id="footer">
-        <input type="button" value="Apply" horizontal-align="left" on-click="{{ host.apply() }}"/>
-        <input type="button" value="Clear" horizontal-align="left" on-click="{{ host.clear() }}"/>
-    </div>
+    <surface-stack-panel id="footer" orientation="horizontal" content="space">
+        <input type="button" value="Apply" on-click="[[ host.apply() ]]" />
+        <input type="button" value="Clear" on-click="[[ host.clear() ]]" />
+    </surface-stack-panel>
 </fieldset>

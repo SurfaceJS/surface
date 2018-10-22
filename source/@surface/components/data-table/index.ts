@@ -6,6 +6,7 @@ import Enumerable                                                   from "@surfa
 import Observer                                                     from "@surface/observer";
 import Component                                                    from "..";
 import { attribute, element }                                       from "../decorators";
+import localize, { Localization }                                   from "../locale";
 import Modal                                                        from "../modal";
 import DataCell                                                     from "./data-cell";
 import DataFilter                                                   from "./data-filter";
@@ -25,6 +26,7 @@ import stringTemplate                                               from "./temp
 
 type Nullable<T> = __Nullable__<T>;
 
+
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
@@ -32,6 +34,7 @@ export default class DataTable extends Component
 
     private refreshing: boolean = false;
 
+    private readonly _localization: Localization;
     private readonly _onDatasourceChange: Observer = new Observer();
 
     private _datasource:     Array<object> = [];
@@ -43,8 +46,9 @@ export default class DataTable extends Component
     private _pageSize:       number        = 10;
     private _total:          number        = 0;
 
-    private attributeParse: ObjectLiteral<Func1<string, KeyValue<DataTable, "pageSize"|"infinityScroll">>> =
+    private attributeParse: ObjectLiteral<Func1<string, KeyValue<DataTable, "page"|"pageSize"|"infinityScroll">>> =
     {
+        "page":            (value: string) => ["page",           Number.parseInt(value) || 0],
         "page-size":       (value: string) => ["pageSize",       Number.parseInt(value) || 0],
         "infinity-scroll": (value: string) => ["infinityScroll", value == "true"]
     };
@@ -60,25 +64,14 @@ export default class DataTable extends Component
         return this._editing;
     }
 
-    public get page(): number
+    protected get localization(): Localization
     {
-        return this._page;
-    }
-
-    public set page(value: number)
-    {
-        this._page = value;
-        this.setPage(value);
+        return this._localization;
     }
 
     protected get pageCount(): number
     {
         return this._pageCount;
-    }
-
-    protected get total(): number
-    {
-        return this._total;
     }
 
     public get dataDefinition(): object
@@ -139,6 +132,18 @@ export default class DataTable extends Component
     }
 
     @attribute
+    public get page(): number
+    {
+        return this._page;
+    }
+
+    public set page(value: number)
+    {
+        this._page = value;
+        this.setPage(value);
+    }
+
+    @attribute
     public get pageSize(): number
     {
         return this._pageSize;
@@ -147,6 +152,11 @@ export default class DataTable extends Component
     public set pageSize(value: number)
     {
         this._pageSize = value;
+    }
+
+    public get total(): number
+    {
+        return this._total;
     }
 
     public constructor(dataProvider?: Nullable<IDataProvider>)
@@ -206,12 +216,17 @@ export default class DataTable extends Component
             filters: [],
             sorting: []
         };
+
+        const lang = this.lang || (document.documentElement && document.documentElement.lang) || window.navigator.language;
+        this._localization = localize(lang);
     }
 
+    /*
     private applyCriteria(): void
     {
         const headers = this.queryAll("surface-data-table > surface-data-header > surface-data-cell");
     }
+    */
 
     private createData(): object
     {
@@ -257,20 +272,20 @@ export default class DataTable extends Component
                 {
                     if (columnDefinition.editButtom)
                     {
-                        innerHTML = /*html*/ `<input type="button" disabled="{{ row.disabled }}" value="edit" on-click="{{ row.enterEdit() }}" />`;
+                        innerHTML = /*html*/ `<input type="button" disabled="{{ row.disabled }}" value="${this._localization.edit}" on-click="{{ row.enterEdit() }}" />`;
                     }
 
                     if (columnDefinition.deleteButtom)
                     {
-                        innerHTML = innerHTML + /*html*/ `<input type="button" disabled="{{row.disabled}}" value="delete" on-click="{{ dataTable.deleteRow(row) }}" />`;
+                        innerHTML = innerHTML + /*html*/ `<input type="button" disabled="{{row.disabled}}" value="${this._localization.delete}" on-click="{{ dataTable.deleteRow(row) }}" />`;
                     }
 
                     innerHTML = //html
                     `
                         <surface-switch value="{{ row.editMode }}">
                             <template when="true">
-                                <input type="button" value="save"   horizontal-align="center" on-click="{{ dataTable.saveRow(row) }}" />
-                                <input type="button" value="cancel" horizontal-align="center" on-click="{{ dataTable.undoRow(row) }}" />
+                                <input type="button" value="${this._localization.save}"   horizontal-align="center" on-click="{{ dataTable.saveRow(row) }}" />
+                                <input type="button" value="${this._localization.cancel}" horizontal-align="center" on-click="{{ dataTable.undoRow(row) }}" />
                             </template>
                             <template when="false">
                                 <surface-stack-panel content="center" orientation="horizontal">

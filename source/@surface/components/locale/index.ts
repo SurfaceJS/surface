@@ -1,12 +1,14 @@
 import enus from "./en-us.json";
 import ptbr from "./pt-br.json";
 
-const locales = { default: enus, "en-us": enus, "pt-br": ptbr };
+const locales = { default: enus, "en-US": enus, "pt-BR": ptbr };
 
 type Locales = typeof locales;
-type Locale  = keyof  Locales;
+type Locale  = keyof Locales;
 
-export default function localize(locale: string): Locales[Locale]
+export type Localization = Locales["default"];
+
+export default function localize(locale: string): Localization
 {
     return locales[locale as Locale] || locales.default;
 }
