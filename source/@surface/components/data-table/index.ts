@@ -15,7 +15,7 @@ import DataRow                                                      from "./data
 import DataRowGroup                                                 from "./data-row-group";
 import template                                                     from "./index.html";
 import style                                                        from "./index.scss";
-import IDataProvider                                                from "./interfaces/data-provider";
+import IDataProvider, { Criteria }                                  from "./interfaces/data-provider";
 import ColumnDefinition                                             from "./internal/column-definition";
 import DataProvider                                                 from "./internal/data-provider";
 import arrayTemplate                                                from "./templates/array.html";
@@ -28,6 +28,10 @@ type Nullable<T> = __Nullable__<T>;
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
+    private readonly criteria: Criteria;
+
+    private refreshing: boolean = false;
+
     private readonly _onDatasourceChange: Observer = new Observer();
 
     private _datasource:     Array<object> = [];
@@ -37,6 +41,7 @@ export default class DataTable extends Component
     private _page:           number        = 1;
     private _pageCount:      number        = 0;
     private _pageSize:       number        = 10;
+    private _total:          number        = 0;
 
     private attributeParse: ObjectLiteral<Func1<string, KeyValue<DataTable, "pageSize"|"infinityScroll">>> =
     {
@@ -69,6 +74,11 @@ export default class DataTable extends Component
     protected get pageCount(): number
     {
         return this._pageCount;
+    }
+
+    protected get total(): number
+    {
+        return this._total;
     }
 
     public get dataDefinition(): object
@@ -106,11 +116,7 @@ export default class DataTable extends Component
         if (value != this._datasource)
         {
             this._datasource  = value;
-            this.dataProvider = new DataProvider(value, this.pageSize);
-
-            const observer = Observer.observe(this.dataProvider, "pageCount");
-
-            observer.subscribe(value => this._pageCount = value as number);
+            this.dataProvider = new DataProvider(value);
 
             this.refresh().then(() => this.onDatasourceChange.notify());
         }
@@ -161,17 +167,13 @@ export default class DataTable extends Component
             }
             else
             {
-                this.dataProvider = new DataProvider([], this.pageSize);
+                this.dataProvider = new DataProvider([]);
             }
         }
         else
         {
             this.dataProvider = dataProvider;
         }
-
-        const observer = Observer.observe(this.dataProvider, "pageCount");
-
-        observer.subscribe(value => this._pageCount = value as number);
 
         const dataTemplate = super.query<HTMLTemplateElement>("template");
 
@@ -196,6 +198,19 @@ export default class DataTable extends Component
         this.prepareHeaders();
         this.prepareRows();
         this.prepareFooters();
+
+        this.criteria =
+        {
+            skip:    0,
+            take:    this.pageSize,
+            filters: [],
+            sorting: []
+        };
+    }
+
+    private applyCriteria(): void
+    {
+        const headers = this.queryAll("surface-data-table > surface-data-header > surface-data-cell");
     }
 
     private createData(): object
@@ -476,11 +491,8 @@ export default class DataTable extends Component
 
     private async setPage(page: number): Promise<void>
     {
-        if (page != this.dataProvider.page)
-        {
-            this.dataProvider.page = this.page;
-            await this.refresh();
-        }
+        this.criteria.skip = (page - 1) * this.pageSize;
+        await this.refresh();
     }
 
     protected attributeChangedCallback(name: "page-size"|"infinity-scroll", __: Nullable<string>, newValue: string)
@@ -495,19 +507,22 @@ export default class DataTable extends Component
 
     protected connectedCallback(): void
     {
-        this.refresh();
+        if (!this.refreshing)
+        {
+            this.refresh();
+        }
     }
 
     public async addNew(): Promise<void>
     {
-        if (this.dataProvider.pageCount > 0)
+        if (this.total > 0)
         {
-            this._page = this.dataProvider.pageCount;
+            this._page    = this.pageCount;
             this._editing = true;
 
             await this.setPage(this._page);
 
-            Observer.notify(this, "page");
+            super.notify("page");
         }
 
         const data = this.createData();
@@ -528,17 +543,31 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
+    public async filter(): Promise<void>
+    {
+        await this.refresh();
+    }
+
     public async sort(field: string, direction: "asc" | "desc"): Promise<void>
     {
-        this.dataProvider.order = { field, direction };
+        this.criteria.sorting.push({ field, direction });
         await this.refresh();
+        this.criteria.sorting = [];
     }
 
     public async refresh(): Promise<void>
     {
-        const datasource = Enumerable.from(await this.dataProvider.read());
+        this.refreshing = true;
 
         const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
+
+        const result     = await this.dataProvider.read(this.criteria);
+        const datasource = Enumerable.from(result.data);
+
+        const pageCount = result.total / this.pageSize;
+        this._pageCount = Math.trunc(pageCount) + (pageCount % 1 == 0 ? 0 : 1);
+
+        this._total = result.total;
 
         const dataCount = datasource.count();
         const rowsCount = rows.count();
@@ -558,6 +587,8 @@ export default class DataTable extends Component
 
         rows.zip(datasource, (row, data) => ({ row, data }))
             .forEach(x => x.row.data = x.data);
+
+        this.refreshing = false;
     }
 
     public async saveRow(row: DataRow): Promise<void>
@@ -567,7 +598,7 @@ export default class DataTable extends Component
             row.save();
             this.dataProvider.create(row.reference);
 
-            this._page    = this.dataProvider.pageCount;
+            this._page    = this.pageCount;
             this._editing = true;
 
             await this.setPage(this._page);

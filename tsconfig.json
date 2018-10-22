@@ -20,6 +20,7 @@
         "noImplicitThis":                   true,
         "noUnusedLocals":                   true,        
         "pretty":                           true,
+        "resolveJsonModule":                true,
         "sourceMap":                        true,
         "strictFunctionTypes":              true,
         "strictNullChecks":                 true,
