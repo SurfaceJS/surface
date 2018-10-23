@@ -1,5 +1,18 @@
 :host
 {
-    display:        flex;
-    flex-direction: column;
+    box-sizing:    border-box;
+    flex-shrink:   0;      
+    overflow:      hidden;
+    text-align:    center;
+    text-overflow: ellipsis;
+    white-space:   nowrap;
+    
+    @at-root #{&}(:not([style]))
+    {
+        flex-grow:  1;
+        flex-basis: 0;
+    }
+
+    background-color: gray;
+    color:            white;
 }

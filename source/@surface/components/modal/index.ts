@@ -22,6 +22,18 @@ export default class Modal extends Component
         this._startPosition = value;
     }
 
+    public set visible(value: boolean)
+    {
+        if (value)
+        {
+            this.show();
+        }
+        else
+        {
+            this.hide();
+        }
+    }
+
     public constructor(template?: HTMLTemplateElement)
     {
         super();
@@ -61,7 +73,7 @@ export default class Modal extends Component
             document.body.appendChild(this);
         }
 
-        this.visible = true;
+        super.visible = true;
 
         super.style.position = this.startPosition == "none" ?
             "relative"

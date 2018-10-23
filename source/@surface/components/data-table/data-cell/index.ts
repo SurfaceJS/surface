@@ -9,7 +9,6 @@ export default class DataCell extends CustomElement
 {
     private _editable: boolean;
     private _index:    number;
-    private _sortable: boolean;
 
     public get editable(): boolean
     {
@@ -28,16 +27,6 @@ export default class DataCell extends CustomElement
     public set index(value: number)
     {
         this._index = value;
-    }
-
-    public get sortable(): boolean
-    {
-        return this._sortable;
-    }
-
-    public set sortable(value: boolean)
-    {
-        this._sortable = value;
     }
 
     public get text(): string
@@ -61,11 +50,10 @@ export default class DataCell extends CustomElement
         this._value = value;
     }
 
-    public constructor(editable?: boolean, sorteable?: boolean, index?: number, text?: string, value?: unknown)
+    public constructor(editable?: boolean, index?: number, text?: string, value?: unknown)
     {
         super();
         this._editable = coalesce(editable,  false);
-        this._sortable = coalesce(sorteable, false);
         this._index    = coalesce(index, 0);
         this._value    = value;
 

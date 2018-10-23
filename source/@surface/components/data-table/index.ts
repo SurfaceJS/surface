@@ -7,11 +7,10 @@ import Observer                                                     from "@surfa
 import Component                                                    from "..";
 import { attribute, element }                                       from "../decorators";
 import localize, { Localization }                                   from "../locale";
-import Modal                                                        from "../modal";
 import DataCell                                                     from "./data-cell";
-import DataFilter                                                   from "./data-filter";
-import DataFooter                                                   from "./data-footer";
+import DataFooterGroup                                              from "./data-footer-group";
 import DataHeader                                                   from "./data-header";
+import DataHeaderGroup                                              from "./data-header-group";
 import DataRow                                                      from "./data-row";
 import DataRowGroup                                                 from "./data-row-group";
 import template                                                     from "./index.html";
@@ -25,7 +24,6 @@ import numberTemplate                                               from "./temp
 import stringTemplate                                               from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
-
 
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
@@ -84,14 +82,14 @@ export default class DataTable extends Component
         this._dataDefinition = value;
     }
 
-    public get dataFooterGroups(): Enumerable<DataFooter>
+    public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
-        return super.queryAll("surface-data-footer");
+        return super.queryAll("surface-data-footer-group");
     }
 
-    public get dataHeaderGroups(): Enumerable<DataHeader>
+    public get dataHeaderGroups(): Enumerable<DataHeaderGroup>
     {
-        return super.queryAll("surface-data-header");
+        return super.queryAll("surface-data-header-group");
     }
 
     public get dataRowGroups(): Enumerable<DataRowGroup>
@@ -224,7 +222,7 @@ export default class DataTable extends Component
     /*
     private applyCriteria(): void
     {
-        const headers = this.queryAll("surface-data-table > surface-data-header > surface-data-cell");
+        const headers = this.queryAll("surface-data-table > surface-data-header-group > surface-data-cell");
     }
     */
 
@@ -252,7 +250,7 @@ export default class DataTable extends Component
             const field = columnDefinition.field;
             const value = (field.indexOf(".") > -1 ? Function("data", `data.${field}`)(data) : data[field]) as Nullable<string>;
 
-            const cell = new DataCell(columnDefinition.editable, columnDefinition.sortable, index, coalesce(value, ""), value);
+            const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
             row.appendChild(cell);
 
             if (columnDefinition.style)
@@ -338,10 +336,10 @@ export default class DataTable extends Component
     {
         if (this.columnDefinitions.any(x => !!x.footer))
         {
-            const footerGroup = new DataFooter();
+            const footerGroup = new DataFooterGroup();
 
-            const simbling = super.query("surface-data-table > surface-data-footer:last-of-type")
-                || super.query("surface-data-table > surface-data-header:last-of-type");
+            const simbling = super.query("surface-data-table > surface-data-footer-group:last-of-type")
+                || super.query("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -374,9 +372,9 @@ export default class DataTable extends Component
     {
         if (this.columnDefinitions.any(x => !!x.header))
         {
-            const headerGroup = new DataHeader();
+            const headerGroup = new DataHeaderGroup();
 
-            const simbling = super.query("surface-data-table > surface-data-header:last-of-type");
+            const simbling = super.query("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -391,91 +389,19 @@ export default class DataTable extends Component
 
             headerGroup.appendChild(row);
 
-            const order = { true: "asc", false: "desc" };
-
             let index = 0;
 
             for (const columnDefinition of this.columnDefinitions)
             {
-                const cell = new DataCell(false, columnDefinition.sortable, index);
-
-                row.appendChild(cell);
+                const actionColumn = columnDefinition.deleteButtom || columnDefinition.editButtom;
+                const header = new DataHeader(columnDefinition.header, columnDefinition.sortable && !actionColumn, columnDefinition.filterable && !actionColumn, index);
 
                 if (columnDefinition.style)
                 {
-                    cell.setAttribute("style", columnDefinition.style);
+                    header.setAttribute("style", columnDefinition.style);
                 }
 
-                cell.innerHTML = //html
-                `
-                    <div on-click="{{ cell.sortable && table.sort(field, order[toogle()]) }}" style="width: 100%;">
-                        <span horizontal-align="center"><b>${columnDefinition.header}</b></span>
-                    </div>
-                    ${
-                        columnDefinition.filterable && !columnDefinition.editButtom && !columnDefinition.deleteButtom ?
-                            /*html*/ `<input type="button" value="F" on-click="{{ showFilters }}" />`
-                            : ""
-                    }
-                `;
-
-                let showFilters = function(this: HTMLInputElement) { return; };
-
-                if (columnDefinition.filterable && !columnDefinition.editButtom && !columnDefinition.deleteButtom)
-                {
-                    const modal = new Modal();
-                    modal.startPosition = "manual";
-
-                    cell.appendChild(modal);
-
-                    const filter = new DataFilter(columnDefinition.field, columnDefinition.fieldType);
-
-                    modal.appendChild(filter);
-
-                    let showing = false;
-
-                    showFilters = function(this: HTMLInputElement)
-                    {
-                        if (showing)
-                        {
-                            modal.hide();
-                        }
-                        else
-                        {
-                            const bounding = this.getBoundingClientRect();
-
-                            modal.style.left      = `${bounding.left + bounding.width}px`;
-                            modal.style.top       = `${bounding.top  + bounding.height}px`;
-                            modal.horizontalAlign = Component.HorizontalAlign.Right;
-                            modal.verticalAlign   = Component.VerticalAlign.Top;
-
-                            modal.show();
-                        }
-
-                        showing = !showing;
-                    };
-
-                    filter.addEventListener
-                    (
-                        "apply", () =>
-                        {
-                            modal.hide();
-                            showing = false;
-                            const dataFilters = headerGroup.queryAll<DataFilter>("surface-data-filter")
-                                .select(x => x.getFilters())
-                                .where(x => x.filters.length > 0);
-
-                            console.log(dataFilters.toArray());
-                        }
-                    );
-                }
-
-                let asc = false;
-
-                const toogle = () => asc = !asc;
-
-                const context = { ...super.context, cell, field: columnDefinition.field, order, showFilters, table: this, toogle };
-
-                CustomElement.contextBind(context, cell);
+                row.appendChild(header);
 
                 index++;
             }
@@ -491,7 +417,7 @@ export default class DataTable extends Component
             this.rowGroup = rowGroup;
 
             const simbling = super.query("surface-data-table > surface-data-row-group:last-of-type")
-                || super.query("surface-data-table > surface-data-header:last-of-type");
+                || super.query("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {

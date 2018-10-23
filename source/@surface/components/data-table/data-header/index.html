@@ -1,1 +1,19 @@
-<slot></slot>
+<surface-import from="../../modal" />
+<surface-import from="../../switch" />
+
+<div on-click="{{ host.sortable && host.sort() }}" style="width: 100%;">
+    <span horizontal-align="center"><b>[[ host.header ]]</b></span>
+</div>
+<surface-switch value="[[ host.sortable ]]">
+    <template when="true">
+        <input type="button" value="P" on-click="{{ host.tooglePin() }}" />
+    </template>
+</surface-switch>
+<surface-switch value="[[ host.filterable ]]">
+    <template when="true">
+        <input type="button" value="F" on-click="{{ host.toogleFilters() }}" />
+        <surface-modal start-position="manual">
+            <surface-data-filter field="[[ host.field ]]" field-type="[[ host.fieldType ]]"></surface-data-filter>
+        </surface-modal>
+    </template>
+</surface-switch>
