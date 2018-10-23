@@ -1,5 +1,5 @@
-import { toTitle }       from "@surface/core/common/string";
-import CustomElement     from "@surface/custom-element";
+import { toTitle }   from "@surface/core/common/string";
+import CustomElement from "@surface/custom-element";
 
 abstract class Component extends CustomElement
 {
@@ -13,6 +13,11 @@ abstract class Component extends CustomElement
     public set disabled(value: boolean)
     {
         super.setAttribute("disabled", value.toString());
+    }
+
+    public get height(): number
+    {
+        return super.getBoundingClientRect().height;
     }
 
     public get horizontalAlign(): Component.HorizontalAlign
@@ -42,15 +47,70 @@ abstract class Component extends CustomElement
 
     public set visible(value: boolean)
     {
-        if (!value && this.style.display != "none")
+        if (!value && super.style.display != "none")
         {
             this.storedDisplay = super.style.display;
-            this.style.display = "none";
+            super.style.display = "none";
         }
-        else if (value && this.style.display == "none")
+        else if (value && super.style.display == "none")
         {
             super.style.display = this.storedDisplay;
         }
+    }
+
+    public get width(): number
+    {
+        return super.getBoundingClientRect().width;
+    }
+
+    public get x(): number
+    {
+        switch (super.style.position)
+        {
+            case "absolute":
+                return super.offsetLeft;//super.getBoundingClientRect().left + window.scrollX;
+            case "fixed":
+                return super.getBoundingClientRect().left;
+            default:
+                return super.parentElement ?
+                    super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
+                    : super.getBoundingClientRect().left;
+        }
+    }
+
+    public set x(value: number)
+    {
+        if (super.style.position != "")
+        {
+            super.style.position = "relative";
+        }
+
+        super.style.left = value + "px";
+    }
+
+    public get y(): number
+    {
+        switch (super.style.position)
+        {
+            case "absolute":
+                return super.offsetTop;//super.getBoundingClientRect().top + window.scrollY;
+            case "fixed":
+                return super.getBoundingClientRect().top;
+            default:
+                return super.parentElement ?
+                    super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
+                    : super.getBoundingClientRect().top;
+        }
+    }
+
+    public set y(value: number)
+    {
+        if (super.style.position != "")
+        {
+            super.style.position = "relative";
+        }
+
+        super.style.left = value + "px";
     }
 }
 

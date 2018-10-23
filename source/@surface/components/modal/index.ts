@@ -1,4 +1,5 @@
 import { Nullable }           from "@surface/core";
+import ResizeObserver         from "resize-observer-polyfill";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import template               from "./index.html";
@@ -9,6 +10,11 @@ export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
 @element("surface-modal", template, style)
 export default class Modal extends Component
 {
+    private readonly observer: ResizeObserver;
+
+    private _x: number = 0;
+    private _y: number = 0;
+
     private _startPosition: StartPosition = "none";
 
     @attribute
@@ -34,6 +40,28 @@ export default class Modal extends Component
         }
     }
 
+    public get x(): number
+    {
+        return this._x || super.x;
+    }
+
+    public set x(value: number)
+    {
+        this._x = value;
+        super.x = value;
+    }
+
+    public get y(): number
+    {
+        return this._y || super.y;
+    }
+
+    public set y(value: number)
+    {
+        this._y = value;
+        super.y = value;
+    }
+
     public constructor(template?: HTMLTemplateElement)
     {
         super();
@@ -44,37 +72,12 @@ export default class Modal extends Component
         }
 
         this.visible = false;
+        this.observer = new ResizeObserver(x => super.visible && this.update()); //this.visible && this.update());
+        this.observer.observe(this);
     }
 
-    protected attributeChangedCallback(name: "start-position", _: Nullable<string>, newValue: string)
+    private update(): void
     {
-        const value = (["center-screen", "center-parent", "manual", "none"].includes(newValue) ? newValue : "none") as StartPosition;
-
-        if (value != this.startPosition)
-        {
-            this.startPosition = value;
-        }
-    }
-
-    public hide()
-    {
-        super.visible = false;
-
-        if (this.parentNode == document.body)
-        {
-            document.body.removeChild(this);
-        }
-    }
-
-    public show()
-    {
-        if (!this.parentNode)
-        {
-            document.body.appendChild(this);
-        }
-
-        super.visible = true;
-
         super.style.position = this.startPosition == "none" ?
             "relative"
             : this.startPosition == "center-screen" ?
@@ -110,11 +113,43 @@ export default class Modal extends Component
                 }
             };
 
-            const left = Number.parseFloat(super.style.left || "0") + offset.horizontal[this.horizontalAlign];
-            const top  = Number.parseFloat(super.style.top  || "0") + offset.vertical[this.verticalAlign];
+            const left = /*Number.parseFloat(super.style.left || "0")*/ this.x + offset.horizontal[this.horizontalAlign];
+            const top  = /*Number.parseFloat(super.style.top  || "0")*/ this.y + offset.vertical[this.verticalAlign];
 
-            super.style.left = `${(left > 0 ? left < window.outerWidth  - bounding.width  ? left : window.outerWidth  - bounding.width  : 0) + window.scrollX}px`;
-            super.style.top  = `${(top  > 0 ? top  < window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0) + window.scrollY}px`;
+            super.style.left = `${(left > 0 ? left < window.outerWidth  - bounding.width  ? left : window.outerWidth  - bounding.width  : 0)}px`;
+            super.style.top  = `${(top  > 0 ? top  < window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0)}px`;
         }
+    }
+
+    protected attributeChangedCallback(name: "start-position", _: Nullable<string>, newValue: string)
+    {
+        const value = (["center-screen", "center-parent", "manual", "none"].includes(newValue) ? newValue : "none") as StartPosition;
+
+        if (value != this.startPosition)
+        {
+            this.startPosition = value;
+        }
+    }
+
+    public hide()
+    {
+        super.visible = false;
+
+        if (this.parentNode == document.body)
+        {
+            document.body.removeChild(this);
+        }
+    }
+
+    public show()
+    {
+        if (!this.parentNode)
+        {
+            document.body.appendChild(this);
+        }
+
+        super.visible = true;
+
+        this.update();
     }
 }

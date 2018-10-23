@@ -110,8 +110,9 @@ export default class DataHeader extends Component
         {
             const bounding = this.getBoundingClientRect();
 
-            this.modal.style.left      = `${bounding.left + bounding.width}px`;
-            this.modal.style.top       = `${bounding.top  + bounding.height}px`;
+            this.modal.style.position = "absolute";
+            this.modal.x = super.offsetLeft + bounding.width;
+            this.modal.y = super.offsetTop  + bounding.height;
             this.modal.horizontalAlign = Component.HorizontalAlign.Right;
             this.modal.verticalAlign   = Component.VerticalAlign.Top;
 
