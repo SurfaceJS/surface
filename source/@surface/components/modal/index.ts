@@ -2,29 +2,38 @@ import { Nullable }           from "@surface/core";
 import ResizeObserver         from "resize-observer-polyfill";
 import Component              from "..";
 import { attribute, element } from "../decorators";
+import { AttributeParse }     from "../types";
 import template               from "./index.html";
 import style                  from "./index.scss";
 
 export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
 
+type PropertyMap =
+{
+   "horizontal-align": "horizontalAlign",
+   "start-position":   "startPosition",
+   "stick":            "stick",
+   "vertical-align":   "verticalAlign"
+};
+
+type Attributes = keyof PropertyMap;
+
 @element("surface-modal", template, style)
 export default class Modal extends Component
 {
-    private _left: number = 0;
-    private _top:  number = 0;
+    private readonly attributeParse: AttributeParse<Modal, PropertyMap> =
+    {
+        "start-position":   value => (["center-screen", "center-parent", "manual", "none"].includes(value) ? value : "none") as StartPosition,
+        "stick":            value => value,
+        "horizontal-align": value => value as Component.HorizontalAlign,
+        "vertical-align":   value => value as Component.VerticalAlign
+    };
+
+    private _left:  number = 0;
+    private _stick: string = "";
+    private _top:   number = 0;
 
     private _startPosition: StartPosition = "none";
-
-    @attribute
-    public get startPosition(): StartPosition
-    {
-        return this._startPosition;
-    }
-
-    public set startPosition(value: StartPosition)
-    {
-        this._startPosition = value;
-    }
 
     @attribute
     public get horizontalAlign(): Component.HorizontalAlign
@@ -46,6 +55,27 @@ export default class Modal extends Component
     {
         this._left = value;
         super.left = value;
+    }
+
+    public get stick(): string
+    {
+        return this._stick;
+    }
+
+    public set stick(value: string)
+    {
+        this._stick = value;
+    }
+
+    @attribute
+    public get startPosition(): StartPosition
+    {
+        return this._startPosition;
+    }
+
+    public set startPosition(value: StartPosition)
+    {
+        this._startPosition = value;
     }
 
     public get top(): number
@@ -147,6 +177,7 @@ export default class Modal extends Component
         {
             super.style.left = "0";
             super.style.top  = "0";
+
             const bounding = super.getBoundingClientRect();
 
             const offset =
@@ -173,13 +204,11 @@ export default class Modal extends Component
         }
     }
 
-    protected attributeChangedCallback(name: "start-position"|"horizontal-align"|"vertical-align", _: Nullable<string>, newValue: string)
+    protected attributeChangedCallback(name: Attributes, _: Nullable<string>, newValue: string)
     {
-        const value = (["center-screen", "center-parent", "manual", "none"].includes(newValue) ? newValue : "none") as StartPosition;
-
-        if (name == "start-position" && value != this.startPosition)
+        if (!["horizontal-align", "vertical-align"].includes(name))
         {
-            this.startPosition = value;
+            Component.setPropertyAttribute(this as Modal, this.attributeParse, name, newValue);
         }
 
         if (this.visible)

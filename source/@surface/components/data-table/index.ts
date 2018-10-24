@@ -1,33 +1,50 @@
-import { Func1, KeyValue, Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
-import { coalesce }                                                 from "@surface/core/common/generic";
-import { clone, objectFactory }                                     from "@surface/core/common/object";
-import CustomElement                                                from "@surface/custom-element";
-import Enumerable                                                   from "@surface/enumerable";
-import Observer                                                     from "@surface/observer";
-import Component                                                    from "..";
-import { attribute, element }                                       from "../decorators";
-import localize, { Localization }                                   from "../locale";
-import DataCell                                                     from "./data-cell";
-import DataFooterGroup                                              from "./data-footer-group";
-import DataHeader                                                   from "./data-header";
-import DataHeaderGroup                                              from "./data-header-group";
-import DataRow                                                      from "./data-row";
-import DataRowGroup                                                 from "./data-row-group";
-import template                                                     from "./index.html";
-import style                                                        from "./index.scss";
-import IDataProvider, { Criteria }                                  from "./interfaces/data-provider";
-import ColumnDefinition                                             from "./internal/column-definition";
-import DataProvider                                                 from "./internal/data-provider";
-import arrayTemplate                                                from "./templates/array.html";
-import booleanTemplate                                              from "./templates/boolean.html";
-import numberTemplate                                               from "./templates/number.html";
-import stringTemplate                                               from "./templates/string.html";
+import { Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
+import { coalesce }                                from "@surface/core/common/generic";
+import { clone, objectFactory }                    from "@surface/core/common/object";
+import CustomElement                               from "@surface/custom-element";
+import Enumerable                                  from "@surface/enumerable";
+import Observer                                    from "@surface/observer";
+import Component                                   from "..";
+import { attribute, element }                      from "../decorators";
+import localize, { Localization }                  from "../locale";
+import { AttributeParse }                          from "../types";
+import DataCell                                    from "./data-cell";
+import DataFooterGroup                             from "./data-footer-group";
+import DataHeader                                  from "./data-header";
+import DataHeaderGroup                             from "./data-header-group";
+import DataRow                                     from "./data-row";
+import DataRowGroup                                from "./data-row-group";
+import template                                    from "./index.html";
+import style                                       from "./index.scss";
+import IDataProvider, { Criteria }                 from "./interfaces/data-provider";
+import ColumnDefinition                            from "./internal/column-definition";
+import DataProvider                                from "./internal/data-provider";
+import arrayTemplate                               from "./templates/array.html";
+import booleanTemplate                             from "./templates/boolean.html";
+import numberTemplate                              from "./templates/number.html";
+import stringTemplate                              from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
+
+type PropertyMap =
+{
+    "page":            "page",
+    "page-size":       "pageSize",
+    "infinity-scroll": "infinityScroll"
+};
+
+type Attributes = keyof PropertyMap;
 
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
+    private readonly attributeParse: AttributeParse<DataTable, PropertyMap> =
+    {
+        "page":            (value: string) => Number.parseInt(value) || 0,
+        "page-size":       (value: string) => Number.parseInt(value) || 0,
+        "infinity-scroll": (value: string) => value == "true"
+    };
+
     private readonly criteria: Criteria;
 
     private refreshing: boolean = false;
@@ -43,13 +60,6 @@ export default class DataTable extends Component
     private _pageCount:      number        = 0;
     private _pageSize:       number        = 10;
     private _total:          number        = 0;
-
-    private attributeParse: ObjectLiteral<Func1<string, KeyValue<DataTable, "page"|"pageSize"|"infinityScroll">>> =
-    {
-        "page":            (value: string) => ["page",           Number.parseInt(value) || 0],
-        "page-size":       (value: string) => ["pageSize",       Number.parseInt(value) || 0],
-        "infinity-scroll": (value: string) => ["infinityScroll", value == "true"]
-    };
 
     private readonly columnDefinitions: Enumerable<ColumnDefinition> = Enumerable.empty();
 
@@ -436,14 +446,9 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    protected attributeChangedCallback(name: "page-size"|"infinity-scroll", __: Nullable<string>, newValue: string)
+    protected attributeChangedCallback(name: Attributes, __: Nullable<string>, newValue: string)
     {
-        const [key, value] = this.attributeParse[name](newValue);
-
-        if (value != this[key])
-        {
-            this[key] = value;
-        }
+        Component.setPropertyAttribute(this as DataTable, this.attributeParse, name, newValue);
     }
 
     protected connectedCallback(): void

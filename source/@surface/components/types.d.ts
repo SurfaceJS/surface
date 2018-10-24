@@ -1,0 +1,2 @@
+import { Func1, KeyValue, MappedIndex } from "@surface/core";
+export type AttributeParse<T, M extends MappedIndex<string, keyof T>> = { [K in keyof M]: M[K] extends keyof T ? Func1<string, T[M[K]]> : never };

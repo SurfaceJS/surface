@@ -1,5 +1,7 @@
-import { toTitle }   from "@surface/core/common/string";
-import CustomElement from "@surface/custom-element";
+import { MappedIndex }            from "@surface/core";
+import { dashedToCamel, toTitle } from "@surface/core/common/string";
+import CustomElement              from "@surface/custom-element";
+import { AttributeParse }         from "./types";
 
 abstract class Component extends CustomElement
 {
@@ -111,6 +113,41 @@ abstract class Component extends CustomElement
     public get width(): number
     {
         return super.getBoundingClientRect().width;
+    }
+
+    public static setPropertyAttribute
+    <
+        TTarget         extends Object,
+        TAttribute      extends string,
+        TPropertyMap    extends MappedIndex<TAttribute, keyof TTarget>,
+        TAttributeParse extends AttributeParse<TTarget, TPropertyMap>,
+    >
+    (target: TTarget, parser: TAttributeParse, attribute: TAttribute, raw: string): void
+    {
+        const key   = dashedToCamel(attribute) as keyof TTarget;
+        const value = parser[attribute](raw);
+
+        if (value != target[key])
+        {
+            target[key] = value;
+        }
+    }
+
+    public setPropertyAttribute
+    <
+        TAttribute   extends string,
+        TPropertyMap extends MappedIndex<TAttribute, keyof this>,
+        TParser      extends AttributeParse<this, TPropertyMap>
+    >
+    (parser: TParser, attribute: TAttribute, raw: string): void
+    {
+        const key   = dashedToCamel(attribute) as keyof this;
+        const value = parser[attribute](raw);
+
+        if (value != this[key])
+        {
+            this[key] = value;
+        }
     }
 }
 

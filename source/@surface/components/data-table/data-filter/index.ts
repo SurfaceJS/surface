@@ -3,6 +3,7 @@ import Component                                from "../..";
 import Enumerable                               from "../../../enumerable";
 import { attribute, element }                   from "../../decorators";
 import List                                     from "../../list";
+import { AttributeParse }                       from "../../types";
 import DataFilterItem, { Filter }               from "./data-filter-item";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
@@ -14,10 +15,19 @@ type KeyValue = { key: string, value: string };
 
 export type Filters = { field: string, type: string, filters: Array<Filter> };
 
+type PropertyMap = { "field": "field", "type": "type" };
+type Attributes  = keyof PropertyMap;
+
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
     private readonly list = super.shadowQuery<List>("surface-list")!;
+
+    private readonly attributeParse: AttributeParse<DataFilter, PropertyMap> =
+    {
+        "field": value => value,
+        "type":  value => (["array", "boolean", "number", "string"].includes(value) ? value : "string") as Type
+    };
 
     private _field: string = "";
     private _type:  Type   = "string";
@@ -56,18 +66,9 @@ export default class DataFilter extends Component
         this.type  = type  || "string";
     }
 
-    protected attributeChangedCallback(name: "field"|"type", _: Nullable<string>, newValue: string)
+    protected attributeChangedCallback(name: Attributes, _: Nullable<string>, newValue: string)
     {
-        const value = name == "field" ?
-            newValue
-            : name == "type" && ["array", "boolean", "number", "string"].includes(newValue) ?
-                newValue :
-                "string";
-
-        if (value != this[name])
-        {
-            this[name] = value;
-        }
+        Component.setPropertyAttribute(this as DataFilter, this.attributeParse, name, newValue);
     }
 
     protected add(value: Operator): void
