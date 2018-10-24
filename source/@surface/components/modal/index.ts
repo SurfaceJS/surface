@@ -10,10 +10,8 @@ export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
 @element("surface-modal", template, style)
 export default class Modal extends Component
 {
-    private readonly observer: ResizeObserver;
-
-    private _x: number = 0;
-    private _y: number = 0;
+    private _left: number = 0;
+    private _top:  number = 0;
 
     private _startPosition: StartPosition = "none";
 
@@ -28,6 +26,55 @@ export default class Modal extends Component
         this._startPosition = value;
     }
 
+    @attribute
+    public get horizontalAlign(): Component.HorizontalAlign
+    {
+        return super.horizontalAlign;
+    }
+
+    public set horizontalAlign(value: Component.HorizontalAlign)
+    {
+        super.horizontalAlign = value;
+    }
+
+    public get left(): number
+    {
+        return this._left || super.left;
+    }
+
+    public set left(value: number)
+    {
+        this._left = value;
+        super.left = value;
+    }
+
+    public get top(): number
+    {
+        return this._top || super.top;
+    }
+
+    public set top(value: number)
+    {
+        this._top = value;
+        super.top = value;
+    }
+
+    @attribute
+    public get verticalAlign(): Component.VerticalAlign
+    {
+        return super.verticalAlign;
+    }
+
+    public set verticalAlign(value: Component.VerticalAlign)
+    {
+        super.verticalAlign = value;
+    }
+
+    public get visible(): boolean
+    {
+        return super.visible;
+    }
+
     public set visible(value: boolean)
     {
         if (value)
@@ -40,28 +87,6 @@ export default class Modal extends Component
         }
     }
 
-    public get x(): number
-    {
-        return this._x || super.x;
-    }
-
-    public set x(value: number)
-    {
-        this._x = value;
-        super.x = value;
-    }
-
-    public get y(): number
-    {
-        return this._y || super.y;
-    }
-
-    public set y(value: number)
-    {
-        this._y = value;
-        super.y = value;
-    }
-
     public constructor(template?: HTMLTemplateElement)
     {
         super();
@@ -71,12 +96,14 @@ export default class Modal extends Component
             super.appendChild(document.importNode(template.content, true));
         }
 
+        this.horizontalAlign = Component.HorizontalAlign.Center;
+        this.verticalAlign   = Component.VerticalAlign.Center;
+
         this.visible = false;
-        this.observer = new ResizeObserver(x => super.visible && this.update()); //this.visible && this.update());
-        this.observer.observe(this);
+        new ResizeObserver(() => super.visible && this.refresh()).observe(this);
     }
 
-    private update(): void
+    private refresh(): void
     {
         super.style.position = this.startPosition == "none" ?
             "relative"
@@ -88,13 +115,38 @@ export default class Modal extends Component
         {
             const bounding = super.getBoundingClientRect();
 
-            super.style.top        = "50%";
-            super.style.left       = "50%";
-            super.style.marginTop  = -(bounding.height / 2) + "px";
-            super.style.marginLeft = -(bounding.width / 2) + "px";
+            switch (super.horizontalAlign)
+            {
+                case Component.HorizontalAlign.Left:
+                    super.left = 0;
+                    break;
+                case Component.HorizontalAlign.Center:
+                default:
+                    super.style.left = `calc(50% - ${bounding.width / 2}px)`;
+                    break;
+                case Component.HorizontalAlign.Right:
+                    super.style.left = `calc(100% - ${bounding.width}px)`;
+                    break;
+            }
+
+            switch (super.verticalAlign)
+            {
+                case Component.VerticalAlign.Top:
+                    super.top = 0;
+                    break;
+                case Component.VerticalAlign.Center:
+                default:
+                    super.style.top = `calc(50% - ${bounding.height / 2}px)`;
+                    break;
+                case Component.VerticalAlign.Bottom:
+                    super.style.top = `calc(100% - ${bounding.height}px)`;
+                    break;
+            }
         }
         else if (this.startPosition != "none")
         {
+            super.style.left = "0";
+            super.style.top  = "0";
             const bounding = super.getBoundingClientRect();
 
             const offset =
@@ -113,21 +165,26 @@ export default class Modal extends Component
                 }
             };
 
-            const left = /*Number.parseFloat(super.style.left || "0")*/ this.x + offset.horizontal[this.horizontalAlign];
-            const top  = /*Number.parseFloat(super.style.top  || "0")*/ this.y + offset.vertical[this.verticalAlign];
+            const left = this.left + offset.horizontal[super.horizontalAlign];
+            const top  = this.top  + offset.vertical[super.verticalAlign]    ;
 
-            super.style.left = `${(left > 0 ? left < window.outerWidth  - bounding.width  ? left : window.outerWidth  - bounding.width  : 0)}px`;
-            super.style.top  = `${(top  > 0 ? top  < window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0)}px`;
+            super.style.left = `${(left > 0 ? left <= window.innerWidth  - bounding.width  ? left : window.innerWidth  - bounding.width  : 0) + window.scrollX}px`;
+            super.style.top  = `${(top  > 0 ? top  <= window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0) + window.scrollY}px`;
         }
     }
 
-    protected attributeChangedCallback(name: "start-position", _: Nullable<string>, newValue: string)
+    protected attributeChangedCallback(name: "start-position"|"horizontal-align"|"vertical-align", _: Nullable<string>, newValue: string)
     {
         const value = (["center-screen", "center-parent", "manual", "none"].includes(newValue) ? newValue : "none") as StartPosition;
 
-        if (value != this.startPosition)
+        if (name == "start-position" && value != this.startPosition)
         {
             this.startPosition = value;
+        }
+
+        if (this.visible)
+        {
+            this.refresh();
         }
     }
 
@@ -150,6 +207,6 @@ export default class Modal extends Component
 
         super.visible = true;
 
-        this.update();
+        this.refresh();
     }
 }

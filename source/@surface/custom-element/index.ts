@@ -1,4 +1,4 @@
-import { Action, Nullable }                                    from "@surface/core";
+import { Action, KeyValue, Nullable }                          from "@surface/core";
 import Enumerable                                              from "@surface/enumerable";
 import Observer                                                from "../observer";
 import ElementBind                                             from "./internal/element-bind";
@@ -65,9 +65,40 @@ export default abstract class CustomElement extends HTMLElement
         this[SHADOW_ROOT].appendChild(content);
     }
 
+    /**
+     * Notify property change.
+     * @param key Property key
+     */
     protected notify<K extends keyof this>(key: K)
     {
         Observer.notify(this, key);
+    }
+
+    /**
+     * Set value to especified object property.
+     * @param target Object instance
+     * @param key    Property key
+     * @param value  Value to set
+     */
+    protected set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): void;
+    /**
+     * Set value to this intance property.
+     * @param key   Property key
+     * @param value Value to set
+     */
+    protected set<K extends keyof this>(key: K, value: this[K]): void;
+    protected set<T extends object, K extends keyof T>(...args: KeyValue<this>|[T, K, T[K]]): void
+    {
+        if (args.length == 2)
+        {
+            const [key, value] = args;
+            this[key] = value;
+        }
+        else
+        {
+            const [target, key, value] = args;
+            target[key] = value;
+        }
     }
 
     /**

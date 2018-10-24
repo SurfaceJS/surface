@@ -1,4 +1,3 @@
-import { Nullable }  from "@surface/core";
 import { coalesce }  from "@surface/core/common/generic";
 import Component     from "../..";
 import { element }   from "../../decorators";
@@ -9,7 +8,7 @@ import style         from "./index.scss";
 @element("surface-data-header", template, style)
 export default class DataHeader extends Component
 {
-    private _modal: Nullable<Modal>;
+    private readonly modal: Modal = super.shadowQuery<Modal>("surface-modal")!;
 
     private _field:       string  = "";
     private _fieldType:   string  = "";
@@ -19,11 +18,6 @@ export default class DataHeader extends Component
     private _pinned:      boolean = false;
     private _showFilters: boolean = false;
     private _sortable:    boolean = true;
-
-    private get modal(): Nullable<Modal>
-    {
-        return this._modal || (this._modal = super.shadowQuery<Modal>("surface-modal"));
-    }
 
     protected get showFilters(): boolean
     {
@@ -97,24 +91,26 @@ export default class DataHeader extends Component
         this.sortable   = coalesce(sortable, true);
         this.filterable = coalesce(filterable, true);
         this._index     = coalesce(index, 0);
+
+        window.addEventListener("scroll", () => this.modal.visible && this.refreshModal());
+        window.addEventListener("resize", () => this.modal.visible && this.refreshModal());
+    }
+
+    private refreshModal(): void
+    {
+        const bounding = this.getBoundingClientRect();
+
+        this.modal.left            = bounding.left + bounding.width;
+        this.modal.top             = bounding.top  + bounding.height;
+        this.modal.horizontalAlign = Component.HorizontalAlign.Right;
+        this.modal.verticalAlign   = Component.VerticalAlign.Top;
     }
 
     protected toogleFilters(): void
     {
-        if (!this.modal)
-        {
-            throw new Error();
-        }
-
         if (!this.showFilters)
         {
-            const bounding = this.getBoundingClientRect();
-
-            this.modal.style.position = "absolute";
-            this.modal.x = super.offsetLeft + bounding.width;
-            this.modal.y = super.offsetTop  + bounding.height;
-            this.modal.horizontalAlign = Component.HorizontalAlign.Right;
-            this.modal.verticalAlign   = Component.VerticalAlign.Top;
+            this.refreshModal();
 
             this.modal.show();
         }

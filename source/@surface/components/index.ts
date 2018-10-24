@@ -30,6 +30,56 @@ abstract class Component extends CustomElement
         super.setAttribute("horizontal-align", value);
     }
 
+    public get left(): number
+    {
+        switch (super.style.position)
+        {
+            case "absolute":
+                return super.offsetLeft;
+            case "fixed":
+                return super.getBoundingClientRect().left;
+            default:
+                return super.parentElement ?
+                    super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
+                    : super.getBoundingClientRect().left;
+        }
+    }
+
+    public set left(value: number)
+    {
+        if (!super.style.position)
+        {
+            super.style.position = "relative";
+        }
+
+        super.style.left = value + "px";
+    }
+
+    public get top(): number
+    {
+        switch (super.style.position)
+        {
+            case "absolute":
+                return super.offsetTop;
+            case "fixed":
+                return super.getBoundingClientRect().top;
+            default:
+                return super.parentElement ?
+                    super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
+                    : super.getBoundingClientRect().top;
+        }
+    }
+
+    public set top(value: number)
+    {
+        if (!super.style.position)
+        {
+            super.style.position = "relative";
+        }
+
+        super.style.top = value + "px";
+    }
+
     public get verticalAlign(): Component.VerticalAlign
     {
         return Component.VerticalAlign[toTitle(super.getAttribute("vertical-align") || "") as keyof typeof Component.VerticalAlign] || Component.VerticalAlign.Top;
@@ -61,56 +111,6 @@ abstract class Component extends CustomElement
     public get width(): number
     {
         return super.getBoundingClientRect().width;
-    }
-
-    public get x(): number
-    {
-        switch (super.style.position)
-        {
-            case "absolute":
-                return super.offsetLeft;//super.getBoundingClientRect().left + window.scrollX;
-            case "fixed":
-                return super.getBoundingClientRect().left;
-            default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
-                    : super.getBoundingClientRect().left;
-        }
-    }
-
-    public set x(value: number)
-    {
-        if (super.style.position != "")
-        {
-            super.style.position = "relative";
-        }
-
-        super.style.left = value + "px";
-    }
-
-    public get y(): number
-    {
-        switch (super.style.position)
-        {
-            case "absolute":
-                return super.offsetTop;//super.getBoundingClientRect().top + window.scrollY;
-            case "fixed":
-                return super.getBoundingClientRect().top;
-            default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
-                    : super.getBoundingClientRect().top;
-        }
-    }
-
-    public set y(value: number)
-    {
-        if (super.style.position != "")
-        {
-            super.style.position = "relative";
-        }
-
-        super.style.left = value + "px";
     }
 }
 
