@@ -39,6 +39,18 @@ export function clone<T extends ObjectLiteral>(source: T): T
     }
 }
 
+export function *enumerateObjectkeys(target: object): IterableIterator<string>
+{
+    let prototype = target;
+    do
+    {
+        for (const key of Object.keys(prototype))
+        {
+            yield key;
+        }
+    } while ((prototype = Object.getPrototypeOf(prototype)));
+}
+
 /**
  * Deeply merges two or more objects.
  * @param target Object to receive merge.
@@ -106,7 +118,12 @@ export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiter
     return target as TTarget & TSource;
 }
 
-export function objectFactory(keys: Array<[string, unknown]>, target?: ObjectLiteral): object
+/**
+ * Create an object using the provided keys.
+ * @param keys   Object keys
+ * @param target If provided, all keys will inserted on target object
+ */
+export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer): object
 {
     target = target || { };
     for (const entries of keys)
@@ -123,4 +140,61 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: ObjectLit
         }
     }
     return target;
+}
+
+/**
+ * Performs deep comparision between values.
+ * @param left  Left  value
+ * @param right Right value
+ */
+export function structuralEqual(left: unknown, right: unknown): boolean
+{
+    if (!Object.is(left, right))
+    {
+        if (Array.isArray(left) && Array.isArray(right) && left.length == right.length)
+        {
+            for (let i = 0; i < left.length; i++)
+            {
+                if (structuralEqual(left[i], right[i]))
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+        else if ((left instanceof Object && right instanceof Object))
+        {
+            const leftKeys  = Array.from(enumerateObjectkeys(left)).sort();
+            const rightKeys = Array.from(enumerateObjectkeys(right)).sort();
+
+            if (!structuralEqual(leftKeys, rightKeys))
+            {
+                return false;
+            }
+
+            for (const key of leftKeys)
+            {
+                const leftValue  = (left  as Indexer)[key];
+                const rightValue = (right as Indexer)[key];
+
+                if (structuralEqual(leftValue, rightValue))
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

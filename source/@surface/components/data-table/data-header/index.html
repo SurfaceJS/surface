@@ -6,7 +6,7 @@
 <input style="display: [[ host.sortable ? '' : 'none' ]];" type="button" value="P" on-click="{{ host.tooglePin() }}" />
 <div style="display: [[ host.filterable ? '' : 'none' ]];">
     <input type="button" value="F" on-click="{{ host.toogleFilters() }}" />
-    <surface-modal start-position="manual">
+    <surface-modal start-position="manual" stick="left">
         <surface-data-filter field="[[ host.field ]]" field-type="[[ host.fieldType ]]"></surface-data-filter>
     </surface-modal>
 </div>

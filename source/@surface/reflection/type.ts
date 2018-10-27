@@ -82,7 +82,7 @@ export default class Type
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(prototype)))
             {
-                if (key == "__proto__")
+                if (key.startsWith("_"))
                 {
                     continue;
                 }

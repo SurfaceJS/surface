@@ -257,7 +257,7 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
             mangle:   { keep_classnames: true }
         };
 
-        primaryConfig.plugins.push(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions }));
+        primaryConfig.plugins!.push(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions }));
     }
 
     const webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);

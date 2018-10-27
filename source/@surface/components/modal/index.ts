@@ -7,6 +7,7 @@ import template               from "./index.html";
 import style                  from "./index.scss";
 
 export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
+export type Sticky        = MappedIndex<"left"|"top"|"right"|"bottom", boolean>;
 
 type PropertyMap =
 {
@@ -24,13 +25,18 @@ export default class Modal extends Component
     private readonly attributeParse: AttributeParse<Modal, PropertyMap> =
     {
         "start-position":   value => (["center-screen", "center-parent", "manual", "none"].includes(value) ? value : "none") as StartPosition,
-        "stick":            value => value,
+        "stick":            value => ({ left: value.includes("left"), top: value.includes("top"), right: value.includes("right"), bottom: value.includes("bottom") }),
         "horizontal-align": value => value as Component.HorizontalAlign,
         "vertical-align":   value => value as Component.VerticalAlign
     };
 
+    private readonly propertyStringfy: PropertyStringfy<Modal, "stick"> =
+    {
+        stick: (value: Sticky) => Enumerable.from(Object.entries(value)).where(x => x[1]).select(x => x[0]).aggregate((x, y) => x + " " + y)
+    };
+
     private _left:  number = 0;
-    private _stick: string = "";
+    private _stick: Sticky = { left: false, top: false, right: false, bottom: false };
     private _top:   number = 0;
 
     private _startPosition: StartPosition = "none";
@@ -57,14 +63,19 @@ export default class Modal extends Component
         super.left = value;
     }
 
-    public get stick(): string
+    @attribute
+    public get stick(): Sticky
     {
         return this._stick;
     }
 
-    public set stick(value: string)
+    public set stick(value: Sticky)
     {
-        this._stick = value;
+        if (value != this._stick)
+        {
+            Object.assign(this._stick, value);
+            super.setAttribute("stick", this.propertyStringfy["stick"](value));
+        }
     }
 
     @attribute
@@ -107,14 +118,7 @@ export default class Modal extends Component
 
     public set visible(value: boolean)
     {
-        if (value)
-        {
-            this.show();
-        }
-        else
-        {
-            this.hide();
-        }
+        value ? this.show() : this.hide();
     }
 
     public constructor(template?: HTMLTemplateElement)
