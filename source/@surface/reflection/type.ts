@@ -1,10 +1,10 @@
 import "reflect-metadata";
 
-import { Nullable, ObjectLiteral } from "@surface/core";
-import FieldInfo                   from "./field-info";
-import MemberInfo                  from "./member-info";
-import MethodInfo                  from "./method-info";
-import PropertyInfo                from "./property-info";
+import { Indexer, Nullable } from "@surface/core";
+import FieldInfo             from "./field-info";
+import MemberInfo            from "./member-info";
+import MethodInfo            from "./method-info";
+import PropertyInfo          from "./property-info";
 
 type Member = { key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean };
 
@@ -38,12 +38,12 @@ export default class Type
         return Object.isSealed(this.prototype);
     }
 
-    private _metadata: Nullable<ObjectLiteral>;
-    public get metadata(): ObjectLiteral
+    private _metadata: Nullable<Indexer>;
+    public get metadata(): Indexer
     {
         if (!this._metadata)
         {
-            const metadata: ObjectLiteral = { };
+            const metadata: Indexer = { };
 
             Reflect.getMetadataKeys(this.prototype)
                 .forEach(/* istanbul ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.prototype));
@@ -104,7 +104,7 @@ export default class Type
                 yield { key, descriptor, declaringType: type, isStatic: true };
             }
 
-            const prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<ObjectLiteral>;
+            const prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<Indexer>;
 
             if (prototype)
             {
@@ -316,7 +316,7 @@ export default class Type
                 }
             }
 
-            let prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<ObjectLiteral>;
+            let prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<Indexer>;
 
             if (prototype)
             {

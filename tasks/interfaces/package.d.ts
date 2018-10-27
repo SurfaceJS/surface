@@ -1,9 +1,9 @@
-import { ObjectLiteral } from "../types";
+import { Indexer } from "../types";
 
 export default interface IPackage
 {
-    dependencies:    ObjectLiteral<string>;
-    devDependencies: ObjectLiteral<string>;
+    dependencies:    Indexer<string>;
+    devDependencies: Indexer<string>;
     name:            string;
     path:            string;
     version:         string;

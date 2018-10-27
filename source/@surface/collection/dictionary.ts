@@ -1,6 +1,6 @@
-import { Nullable, ObjectLiteral } from "@surface/core";
-import Enumerable                  from "@surface/enumerable";
-import KeyValuePair                from "./key-value-pair";
+import { Indexer, Nullable } from "@surface/core";
+import Enumerable            from "@surface/enumerable";
+import KeyValuePair          from "./key-value-pair";
 
 const SOURCE = Symbol("dictionary:source");
 
@@ -29,7 +29,7 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
         }
     }
 
-    public static of<TValue>(source: ObjectLiteral<TValue>): Dictionary<string, TValue>
+    public static of<TValue>(source: Indexer<TValue>): Dictionary<string, TValue>
     {
         return new Dictionary(Enumerable.from(Object.keys(source)).select(x => new KeyValuePair(x, source[x])).toArray());
     }

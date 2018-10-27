@@ -1,11 +1,11 @@
-import { ObjectLiteral } from "@surface/core";
-import ExpressionType    from "../../expression-type";
-import IExpression       from "../../interfaces/expression";
+import { Indexer }    from "@surface/core";
+import ExpressionType from "../../expression-type";
+import IExpression    from "../../interfaces/expression";
 
 export default class IdentifierExpression implements IExpression
 {
-    private readonly _context: ObjectLiteral;
-    public get context(): ObjectLiteral
+    private readonly _context: Indexer;
+    public get context(): Indexer
     {
         return this._context;
     }

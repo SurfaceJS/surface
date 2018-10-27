@@ -1,4 +1,4 @@
-import { ObjectLiteral }          from "@surface/core";
+import { Indexer }                from "@surface/core";
 import { coalesce }               from "@surface/core/common/generic";
 import { merge }                  from "@surface/core/common/object";
 import HtmlTemplatePlugin         from "@surface/html-template-plugin";
@@ -346,7 +346,7 @@ function resolveEntries(context: string, entries: Entry): Entry
  * @param key    Key of the object.
  * @param value  Value to be setted or pushed.
  */
-function setOrPush(source: ObjectLiteral<string|Array<string>>, key: string, value: string): void
+function setOrPush(source: Indexer<string|Array<string>>, key: string, value: string): void
 {
     const target = source[key];
 

@@ -1,6 +1,6 @@
-import { ObjectLiteral } from "@surface/core";
-import ExpressionType    from "../../expression-type";
-import IExpression       from "../../interfaces/expression";
+import { Indexer }    from "@surface/core";
+import ExpressionType from "../../expression-type";
+import IExpression    from "../../interfaces/expression";
 
 export default class CallExpression implements IExpression
 {
@@ -36,7 +36,7 @@ export default class CallExpression implements IExpression
 
     public evaluate(): unknown
     {
-        const context = this.context.evaluate() as ObjectLiteral<Function>;
+        const context = this.context.evaluate() as Indexer<Function>;
         return context[this.name].apply(context, this.args.map(x => x.evaluate()));
     }
 }

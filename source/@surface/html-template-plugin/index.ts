@@ -1,7 +1,7 @@
-import { Nullable, ObjectLiteral } from "@surface/core";
-import fs                          from "fs";
-import path                        from "path";
-import webpack                     from "webpack";
+import { Indexer, Nullable } from "@surface/core";
+import fs                    from "fs";
+import path                  from "path";
+import webpack               from "webpack";
 
 type Chunk =
 {
@@ -53,7 +53,7 @@ class HtmlTemplatePlugin implements webpack.Plugin
         }
     }
 
-    private templateParse(template: string, keys: ObjectLiteral<string>): string
+    private templateParse(template: string, keys: Indexer<string>): string
     {
         for (let key in keys)
         {
@@ -63,7 +63,7 @@ class HtmlTemplatePlugin implements webpack.Plugin
         return template;
     }
 
-    private filenameParse(filename: string, keys: ObjectLiteral<string>): string
+    private filenameParse(filename: string, keys: Indexer<string>): string
     {
         for (let key in keys)
         {
@@ -114,7 +114,7 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                 if (Array.isArray(entries))
                 {
-                    const tmp: ObjectLiteral<string> = { };
+                    const tmp: Indexer<string> = { };
                     for (const entry of entries)
                     {
                         tmp[path.dirname(entry)] = entry;

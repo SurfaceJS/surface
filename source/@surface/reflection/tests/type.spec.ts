@@ -24,7 +24,7 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getTypeFromObjectLiteral(): void
+    public getTypeFromIndexer(): void
     {
         const type = Type.from({ foo: 1, bar: "two" });
 

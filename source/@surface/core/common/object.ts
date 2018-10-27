@@ -1,6 +1,6 @@
-import { ObjectLiteral } from "..";
+import { Indexer } from "..";
 
-export function clone<T extends ObjectLiteral>(source: T): T
+export function clone<T extends Indexer>(source: T): T
 {
     if (Array.isArray(source))
     {
@@ -21,7 +21,7 @@ export function clone<T extends ObjectLiteral>(source: T): T
     }
     else
     {
-        const prototype: ObjectLiteral = Object.create(Object.getPrototypeOf(source));
+        const prototype: Indexer = Object.create(Object.getPrototypeOf(source));
         for (const key of Object.getOwnPropertyNames(source))
         {
             const value = source[key];
@@ -56,28 +56,28 @@ export function *enumerateObjectkeys(target: object): IterableIterator<string>
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiteral>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: Array<TSource>): TTarget & TSource;
 /**
  * Deeply merges two or more objects, and optionally concatenate array values.
  * @param target        Object to receive merge.
  * @param source        Object to merge to the target.
  * @param combineArrays Specify to combine or not arrays.
  */
-export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiteral>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
 /**
  * Deeply merges two objects.
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiteral>(target: TTarget, source: TSource): TTarget & TSource;
+export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource): TTarget & TSource;
 /**
  * Deeply merges two objects, and optionally concatenate array values.
  * @param target Object to receive merge.
  * @param source Object to merge to the target.
  * @param combineArrays
  */
-export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiteral>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
-export function merge<TTarget extends ObjectLiteral, TSource extends ObjectLiteral>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
 {
     combineArrays = !!combineArrays;
 

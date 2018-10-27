@@ -1,15 +1,15 @@
-import { ObjectLiteral } from "@surface/core";
-import ActionQueue       from "@surface/core/action-queue";
-import { coalesce }      from "@surface/core/common/generic";
-import { clone }         from "@surface/core/common/object";
-import Type              from "@surface/reflection";
-import MethodInfo        from "@surface/reflection/method-info";
-import PropertyInfo      from "@surface/reflection/property-info";
-import Component         from "../..";
-import Observer          from "../../../observer";
-import { element }       from "../../decorators";
-import template          from "./index.html";
-import style             from "./index.scss";
+import { Indexer }  from "@surface/core";
+import ActionQueue  from "@surface/core/action-queue";
+import { coalesce } from "@surface/core/common/generic";
+import { clone }    from "@surface/core/common/object";
+import Type         from "@surface/reflection";
+import MethodInfo   from "@surface/reflection/method-info";
+import PropertyInfo from "@surface/reflection/property-info";
+import Component    from "../..";
+import Observer     from "../../../observer";
+import { element }  from "../../decorators";
+import template     from "./index.html";
+import style        from "./index.scss";
 
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component
@@ -65,7 +65,7 @@ export default class DataRow<T extends object = object> extends Component
         }
     }
 
-    private setData(target: ObjectLiteral, source: ObjectLiteral): void
+    private setData(target: Indexer, source: Indexer): void
     {
         for (const member of Type.from(target).getMembers())
         {

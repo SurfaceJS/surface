@@ -1,13 +1,14 @@
-import { Nullable }           from "@surface/core";
-import ResizeObserver         from "resize-observer-polyfill";
-import Component              from "..";
-import { attribute, element } from "../decorators";
-import { AttributeParse }     from "../types";
-import template               from "./index.html";
-import style                  from "./index.scss";
+import { MappedIndexer, Nullable }          from "@surface/core";
+import ResizeObserver                       from "resize-observer-polyfill";
+import Component                            from "..";
+import Enumerable                           from "../../enumerable";
+import { attribute, element }               from "../decorators";
+import { AttributeParse, PropertyStringfy } from "../types";
+import template                             from "./index.html";
+import style                                from "./index.scss";
 
 export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
-export type Sticky        = MappedIndex<"left"|"top"|"right"|"bottom", boolean>;
+export type Sticky        = MappedIndexer<"left"|"top"|"right"|"bottom", boolean>;
 
 type PropertyMap =
 {

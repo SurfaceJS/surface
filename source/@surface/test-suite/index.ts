@@ -1,6 +1,6 @@
-import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
-import { camelToText }                                         from "@surface/core/common/string";
-import mocha                                                   from "./internal/mocha";
+import { Action, Constructor, Func1, Indexer, Nullable } from "@surface/core";
+import { camelToText }                                   from "@surface/core/common/string";
+import mocha                                             from "./internal/mocha";
 
 import
 {
@@ -153,7 +153,7 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
     const decorator = (target: Function, description: string) =>
     {
         const tests:       Array<Test>                = [];
-        const catergories: ObjectLiteral<Array<Test>> = { };
+        const catergories: Indexer<Array<Test>> = { };
 
         let afterCallback:      Nullable<TestMethod> = null;
         let afterEachCallback:  Nullable<TestMethod> = null;

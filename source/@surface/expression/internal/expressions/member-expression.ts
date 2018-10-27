@@ -1,6 +1,6 @@
-import { ObjectLiteral } from "@surface/core";
-import ExpressionType    from "../../expression-type";
-import IExpression       from "../../interfaces/expression";
+import { Indexer }    from "@surface/core";
+import ExpressionType from "../../expression-type";
+import IExpression    from "../../interfaces/expression";
 
 export default class MemberExpression implements IExpression
 {
@@ -29,6 +29,6 @@ export default class MemberExpression implements IExpression
 
     public evaluate(): unknown
     {
-        return (this.target.evaluate() as ObjectLiteral)[`${this.key.evaluate()}`];
+        return (this.target.evaluate() as Indexer)[`${this.key.evaluate()}`];
     }
 }

@@ -1,8 +1,8 @@
-import { ObjectLiteral } from "@surface/core";
+import { Indexer } from "@surface/core";
 
 export default class HashEncode
 {
-    private static getEntrySignature(key: string, source: ObjectLiteral): string
+    private static getEntrySignature(key: string, source: Indexer): string
     {
         const value = source[key];
 

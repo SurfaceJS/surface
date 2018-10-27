@@ -1,4 +1,4 @@
-import { ObjectLiteral }        from "@surface/core";
+import { Indexer }              from "@surface/core";
 import HtmlTemplatePlugin       from "@surface/html-template-plugin";
 import SimblingResolvePlugin    from "@surface/simbling-resolve-plugin";
 import { Configuration, Stats } from "webpack"

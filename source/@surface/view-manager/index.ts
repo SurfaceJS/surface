@@ -1,10 +1,10 @@
-import Dictionary                       from "@surface/collection/dictionary";
-import { Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
-import Enumerable                       from "@surface/enumerable";
-import Type                             from "@surface/reflection";
-import Router                           from "@surface/router";
-import View                             from "@surface/view";
-import ViewHost                         from "@surface/view-host";
+import Dictionary                                from "@surface/collection/dictionary";
+import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
+import Enumerable                                from "@surface/enumerable";
+import Type                                      from "@surface/reflection";
+import Router                                    from "@surface/router";
+import View                                      from "@surface/view";
+import ViewHost                                  from "@surface/view-host";
 
 /**
  * Handles web client navigation.
@@ -17,7 +17,7 @@ export default class ViewManager
         return this._instance;
     }
 
-    private readonly moduleLoader: Func1<string, Promise<Object>>;
+    private readonly moduleLoader: Func1<string, Promise<object>>;
     private readonly router:       Router;
     private readonly views:        Dictionary<string, View>;
 
@@ -27,7 +27,7 @@ export default class ViewManager
         return this._viewHost;
     }
 
-    private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>)
+    private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<object>>)
     {
         this._viewHost    = viewHost;
         this.moduleLoader = moduleLoader;
@@ -38,14 +38,14 @@ export default class ViewManager
         window.onpopstate = async () => await this.routeTo(window.location.pathname + window.location.search);
     }
 
-    public static configure(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>): ViewManager
+    public static configure(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<object>>): ViewManager
     {
         return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router, moduleLoader);
     }
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        const esmodule = await this.moduleLoader(path) as ObjectLiteral<Nullable<Constructor<View>>>;
+        const esmodule = await this.moduleLoader(path) as Indexer<Nullable<Constructor<View>>>;
 
         let constructor: Nullable<Constructor<View>>;
 

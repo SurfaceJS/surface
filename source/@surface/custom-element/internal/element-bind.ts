@@ -1,18 +1,18 @@
-import { Action, ObjectLiteral } from "@surface/core";
-import { coalesce, typeGuard }   from "@surface/core/common/generic";
-import { dashedToCamel }         from "@surface/core/common/string";
-import ExpressionType            from "@surface/expression/expression-type";
-import IExpression               from "@surface/expression/interfaces/expression";
-import IMemberExpression         from "@surface/expression/interfaces/member-expression";
-import Type                      from "@surface/reflection";
-import FieldInfo                 from "@surface/reflection/field-info";
-import PropertyInfo              from "@surface/reflection/property-info";
-import IArrayExpression          from "../../expression/interfaces/array-expression";
-import BindParser                from "./bind-parser";
-import DataBind                  from "./data-bind";
-import ObserverVisitor           from "./observer-visitor";
-import { BINDED, CONTEXT }       from "./symbols";
-import windowWrapper             from "./window-wrapper";
+import { Action, Indexer }     from "@surface/core";
+import { coalesce, typeGuard } from "@surface/core/common/generic";
+import { dashedToCamel }       from "@surface/core/common/string";
+import ExpressionType          from "@surface/expression/expression-type";
+import IExpression             from "@surface/expression/interfaces/expression";
+import IMemberExpression       from "@surface/expression/interfaces/member-expression";
+import Type                    from "@surface/reflection";
+import FieldInfo               from "@surface/reflection/field-info";
+import PropertyInfo            from "@surface/reflection/property-info";
+import IArrayExpression        from "../../expression/interfaces/array-expression";
+import BindParser              from "./bind-parser";
+import DataBind                from "./data-bind";
+import ObserverVisitor         from "./observer-visitor";
+import { BINDED, CONTEXT }     from "./symbols";
+import windowWrapper           from "./window-wrapper";
 
 type Bindable<T> = Array<T & { [BINDED]?: boolean, [CONTEXT]?: object }>;
 
@@ -89,7 +89,7 @@ export default class ElementBind
 
                         if (canWrite)
                         {
-                            (element as ObjectLiteral)[attributeName] = value;
+                            (element as Indexer)[attributeName] = value;
                         }
 
                         attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
@@ -108,9 +108,9 @@ export default class ElementBind
                         {
                             if (elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                             {
-                                notification = () => attribute.value = `${coalesce((target as ObjectLiteral)[key], "")}`;
+                                notification = () => attribute.value = `${coalesce((target as Indexer)[key], "")}`;
 
-                                (element as ObjectLiteral)[attributeName] = expression.evaluate();
+                                (element as Indexer)[attributeName] = expression.evaluate();
 
                                 DataBind.twoWay(element, elementMember, target, targetMember, notification);
                             }
@@ -160,9 +160,9 @@ export default class ElementBind
 
     private createProxy(context: object): object
     {
-        const handler: ProxyHandler<ObjectLiteral> =
+        const handler: ProxyHandler<Indexer> =
         {
-            get: (target, key) => key in target ? target[key as string] : (this.window as ObjectLiteral)[key as string],
+            get: (target, key) => key in target ? target[key as string] : (this.window as Indexer)[key as string],
             has: (target, key) => key in target || key in this.window
         };
 

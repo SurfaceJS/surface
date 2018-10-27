@@ -1,28 +1,28 @@
-import { Nullable as __Nullable__, ObjectLiteral } from "@surface/core";
-import { coalesce }                                from "@surface/core/common/generic";
-import { clone, objectFactory }                    from "@surface/core/common/object";
-import CustomElement                               from "@surface/custom-element";
-import Enumerable                                  from "@surface/enumerable";
-import Observer                                    from "@surface/observer";
-import Component                                   from "..";
-import { attribute, element }                      from "../decorators";
-import localize, { Localization }                  from "../locale";
-import { AttributeParse }                          from "../types";
-import DataCell                                    from "./data-cell";
-import DataFooterGroup                             from "./data-footer-group";
-import DataHeader                                  from "./data-header";
-import DataHeaderGroup                             from "./data-header-group";
-import DataRow                                     from "./data-row";
-import DataRowGroup                                from "./data-row-group";
-import template                                    from "./index.html";
-import style                                       from "./index.scss";
-import IDataProvider, { Criteria }                 from "./interfaces/data-provider";
-import ColumnDefinition                            from "./internal/column-definition";
-import DataProvider                                from "./internal/data-provider";
-import arrayTemplate                               from "./templates/array.html";
-import booleanTemplate                             from "./templates/boolean.html";
-import numberTemplate                              from "./templates/number.html";
-import stringTemplate                              from "./templates/string.html";
+import { Indexer, Nullable as __Nullable__ } from "@surface/core";
+import { coalesce }                          from "@surface/core/common/generic";
+import { clone, objectFactory }              from "@surface/core/common/object";
+import CustomElement                         from "@surface/custom-element";
+import Enumerable                            from "@surface/enumerable";
+import Observer                              from "@surface/observer";
+import Component                             from "..";
+import { attribute, element }                from "../decorators";
+import localize, { Localization }            from "../locale";
+import { AttributeParse }                    from "../types";
+import DataCell                              from "./data-cell";
+import DataFooterGroup                       from "./data-footer-group";
+import DataHeader                            from "./data-header";
+import DataHeaderGroup                       from "./data-header-group";
+import DataRow                               from "./data-row";
+import DataRowGroup                          from "./data-row-group";
+import template                              from "./index.html";
+import style                                 from "./index.scss";
+import IDataProvider, { Criteria }           from "./interfaces/data-provider";
+import ColumnDefinition                      from "./internal/column-definition";
+import DataProvider                          from "./internal/data-provider";
+import arrayTemplate                         from "./templates/array.html";
+import booleanTemplate                       from "./templates/boolean.html";
+import numberTemplate                        from "./templates/number.html";
+import stringTemplate                        from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
 
@@ -241,7 +241,7 @@ export default class DataTable extends Component
         return clone(this.dataDefinition);
     }
 
-    private createRow(data: ObjectLiteral, isNew: boolean): DataRow
+    private createRow(data: Indexer, isNew: boolean): DataRow
     {
         const row = new DataRow(isNew, clone(data));
 

@@ -1,4 +1,4 @@
-import { MappedIndex }            from "@surface/core";
+import { MappedIndexer }          from "@surface/core";
 import { structuralEqual }        from "@surface/core/common/object";
 import { dashedToCamel, toTitle } from "@surface/core/common/string";
 import CustomElement              from "@surface/custom-element";
@@ -120,7 +120,7 @@ abstract class Component extends CustomElement
     <
         TTarget         extends Object,
         TAttribute      extends string,
-        TPropertyMap    extends MappedIndex<TAttribute, keyof TTarget>,
+        TPropertyMap    extends MappedIndexer<TAttribute, keyof TTarget>,
         TAttributeParse extends AttributeParse<TTarget, TPropertyMap>,
     >
     (target: TTarget, parser: TAttributeParse, attribute: TAttribute, raw: string): void
@@ -137,7 +137,7 @@ abstract class Component extends CustomElement
     public setPropertyAttribute
     <
         TAttribute   extends string,
-        TPropertyMap extends MappedIndex<TAttribute, keyof this>,
+        TPropertyMap extends MappedIndexer<TAttribute, keyof this>,
         TParser      extends AttributeParse<this, TPropertyMap>
     >
     (parser: TParser, attribute: TAttribute, raw: string): void

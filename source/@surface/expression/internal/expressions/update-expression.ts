@@ -1,18 +1,18 @@
-import { Func2, ObjectLiteral } from "@surface/core";
-import ExpressionType           from "../../expression-type";
-import IExpression              from "../../interfaces/expression";
-import { UpdateOperator }       from "../../types";
-import TypeGuard                from "../type-guard";
-import ConstantExpression       from "./constant-expression";
+import { Func2, Indexer } from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import { UpdateOperator } from "../../types";
+import TypeGuard          from "../type-guard";
+import ConstantExpression from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
 const updateFunctions =
 {
-    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string],
-    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string],
-    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string]++,
-    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as ObjectLiteral<number>)[key.evaluate() as string]--,
+    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as Indexer<number>)[key.evaluate() as string],
+    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as Indexer<number>)[key.evaluate() as string],
+    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]++,
+    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]--,
 };
 
 export default class UpdateExpression implements IExpression
