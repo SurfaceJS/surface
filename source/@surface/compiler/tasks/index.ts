@@ -184,38 +184,53 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
         plugins.push(new HtmlTemplatePlugin(config.htmlTemplate));
     }
 
-    const primaryConfig =
+    const isProduction = enviroment == enums.EnviromentType.production;
+
+    const primaryConfig: webpack.Configuration =
     {
         context: config.context,
+        devtool: isProduction ? false : "#source-map",
         entry:   config.entry,
         mode:    enums.EnviromentType.development,
         output:
         {
             path:       config.output,
             filename:   config.filename,
-            publicPath: "/"
+            publicPath: "/",
+            pathinfo:   !isProduction
         },
         resolve:
         {
             modules: [config.context],
             plugins: resolvePlugins
         },
+        performance:
+        {
+            hints: isProduction ? "warning" : false
+        },
         plugins: plugins,
         optimization:
         {
+            concatenateModules:   isProduction,
+            flagIncludedChunks:   isProduction,
+            mergeDuplicateChunks: isProduction,
+            minimize:             false,
+            namedChunks:          !isProduction,
+            namedModules:         !isProduction,
+            noEmitOnErrors:       true,
+            occurrenceOrder:      true,
             splitChunks:
             {
-                chunks:                 "async",
-                minSize:                30000,
-                maxSize:                0,
-                minChunks:              1,
-                maxAsyncRequests:       5,
-                maxInitialRequests:     3,
-                automaticNameDelimiter: "~",
-                name:                   true,
+                chunks:             "async",
+                maxAsyncRequests:   5,
+                maxInitialRequests: 3,
+                minSize:            30000,
+                maxSize:            0,
+                minChunks:          1,
+                name:               true,
                 cacheGroups:
                 {
-                    default:
+                    common:
                     {
                         minChunks:          2,
                         priority:           -20,
@@ -227,11 +242,12 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
                         priority: -10
                     }
                 }
-            }
+            },
+            usedExports: isProduction
         }
-    } as webpack.Configuration;
+    };
 
-    if (primaryConfig.plugins && enviroment == enums.EnviromentType.production)
+    if (isProduction)
     {
         primaryConfig.devtool = false;
 
