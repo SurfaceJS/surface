@@ -72,11 +72,8 @@ export default class Modal extends Component
 
     public set stick(value: Sticky)
     {
-        if (value != this._stick)
-        {
-            Object.assign(this._stick, value);
-            super.setAttribute("stick", this.propertyStringfy["stick"](value));
-        }
+        Object.assign(this._stick, value);
+        super.setAttribute("stick", this.propertyStringfy["stick"](value));
     }
 
     @attribute
@@ -202,10 +199,10 @@ export default class Modal extends Component
             };
 
             const left = this.left + offset.horizontal[super.horizontalAlign];
-            const top  = this.top  + offset.vertical[super.verticalAlign]    ;
+            const top  = this.top  + offset.vertical[super.verticalAlign];
 
-            super.style.left = `${(left > 0 ? left <= window.innerWidth  - bounding.width  ? left : window.innerWidth  - bounding.width  : 0) + window.scrollX}px`;
-            super.style.top  = `${(top  > 0 ? top  <= window.innerHeight - bounding.height ? top  : window.innerHeight - bounding.height : 0) + window.scrollY}px`;
+            super.style.left = `${(this.stick.left && left < 0 ? 0 : this.stick.right  && left >= window.innerWidth  - bounding.width  ? window.innerWidth  - bounding.width  : left) + window.scrollX}px`;
+            super.style.top  = `${(this.stick.top  && top  < 0 ? 0 : this.stick.bottom && top  >= window.innerHeight - bounding.height ? window.innerHeight - bounding.height : top)  + window.scrollY}px`;
         }
     }
 

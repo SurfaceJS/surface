@@ -128,7 +128,7 @@ abstract class Component extends CustomElement
         const key   = dashedToCamel(attribute) as keyof TTarget;
         const value = parser[attribute](raw);
 
-        if (value != target[key])
+        if (!structuralEqual(value, target[key]))
         {
             target[key] = value;
         }
