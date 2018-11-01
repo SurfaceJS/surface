@@ -50,12 +50,18 @@ export default class HashEncodeSpec
     @test @shouldPass
     public getHashFromObject(): void
     {
-        expect(HashEncode.getHashCode({ foo: 1, bar: 2 })).to.equal(1808461511);
+        expect(HashEncode.getHashCode({ foo: 1, bar: 2 })).to.equal(1800467206);
+    }
+
+    @test @shouldPass
+    public getHashFromWithNestedObject(): void
+    {
+        expect(HashEncode.getHashCode({ foo: 1, bar: { baz: 2 } })).to.equal(522101385);
     }
 
     @test @shouldPass
     public getHashFromDerivedObject(): void
     {
-        expect(HashEncode.getHashCode(new Date())).to.equal(569750639);
+        expect(HashEncode.getHashCode(new Date())).to.equal(1050263709);
     }
 }
