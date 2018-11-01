@@ -1,4 +1,6 @@
-import { Indexer } from "@surface/core";
+import { Indexer }             from "@surface/core";
+import { hasValue }            from "@surface/core/common/generic";
+import { enumerateObjectkeys } from "@surface/core/common/object";
 
 export default class HashEncode
 {
@@ -9,27 +11,33 @@ export default class HashEncode
         return `${key}:${typeof value == "symbol" ? value.toString() : value}#${value != null && value != undefined ? (value as object).constructor.name : "?"}`;
     }
 
-    private static getSignature(source: Object): string
+    private static getSignature(source: unknown): string
     {
-        const entries = source.constructor == Object ?
-            Object.getOwnPropertyNames(source) :
-            Object.getOwnPropertyNames(source).concat(Object.getOwnPropertyNames(source.constructor.prototype));
-
         let signature = "";
 
-        for (const key of entries)
+        if (source instanceof Object && typeof source != "function")
         {
-            if (signature)
+            for (const key of enumerateObjectkeys(source))
             {
-                signature = `${signature},${HashEncode.getEntrySignature(key, source)}`;
+                if (signature)
+                {
+                    signature = `${signature},${HashEncode.getEntrySignature(key, source)}`;
+                }
+                else
+                {
+                    signature = HashEncode.getEntrySignature(key, source);
+                }
             }
-            else
-            {
-                signature = HashEncode.getEntrySignature(key, source);
-            }
+
+            return `${signature}[${source.constructor.name}]`;
+        }
+        else if (hasValue(source))
+        {
+            return `${source.toString()}#${source.constructor.name}`;
         }
 
-        return `${signature}[${source.constructor.name}]`;
+        return `${source}#?`;
+
     }
 
     public static getHashCode(source: unknown): number
@@ -38,9 +46,7 @@ export default class HashEncode
         const max          = 0x7FFFFFFF;
         const bits         = 32;
 
-        const signature = typeof source != "object" || typeof source == "object" && source == null ?
-            HashEncode.getSignature({ __value__: source })
-            : HashEncode.getSignature(source);
+        const signature = HashEncode.getSignature(source);
 
         return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
     }

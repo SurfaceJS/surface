@@ -7,6 +7,7 @@ export function coalesce<T>(value: Nullable<T>, fallback: T): T
     return value !== null && value !== undefined ? value : fallback;
 }
 
+export function hasValue(value: unknown): value is Object;
 export function hasValue<T>(value: Nullable<T>): value is NonNullable<T>
 {
     return value !== null && value !== undefined;

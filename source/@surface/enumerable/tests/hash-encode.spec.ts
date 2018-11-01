@@ -8,43 +8,43 @@ export default class HashEncodeSpec
     @test @shouldPass
     public getHashFromUndefined(): void
     {
-        expect(HashEncode.getHashCode(undefined)).to.equal(1888486230);
+        expect(HashEncode.getHashCode(undefined)).to.equal(956602377);
     }
 
     @test @shouldPass
     public getHashFromNull(): void
     {
-        expect(HashEncode.getHashCode(null)).to.equal(1214179014);
+        expect(HashEncode.getHashCode(null)).to.equal(1024074667);
     }
 
     @test @shouldPass
     public getHashFromBoolean(): void
     {
-        expect(HashEncode.getHashCode(true)).to.equal(298838900);
+        expect(HashEncode.getHashCode(true)).to.equal(424951169);
     }
 
     @test @shouldPass
     public getHashFromNumber(): void
     {
-        expect(HashEncode.getHashCode(0)).to.equal(1472339776);
+        expect(HashEncode.getHashCode(0)).to.equal(187269643);
     }
 
     @test @shouldPass
     public getHashFromString(): void
     {
-        expect(HashEncode.getHashCode("string")).to.equal(1567235361);
+        expect(HashEncode.getHashCode("string")).to.equal(1455515299);
     }
 
     @test @shouldPass
     public getHashFromFunction(): void
     {
-        expect(HashEncode.getHashCode(() => null)).to.equal(1520974635);
+        expect(HashEncode.getHashCode(() => null)).to.equal(1945135874);
     }
 
     @test @shouldPass
     public getHashFromSymbol(): void
     {
-        expect(HashEncode.getHashCode(Symbol())).to.equal(1249970917);
+        expect(HashEncode.getHashCode(Symbol())).to.equal(1494357202);
     }
 
     @test @shouldPass

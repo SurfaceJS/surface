@@ -44,11 +44,11 @@ export function *enumerateObjectkeys(target: object): IterableIterator<string>
     let prototype = target;
     do
     {
-        for (const key of Object.keys(prototype))
+        for (const key of Object.getOwnPropertyNames(prototype))
         {
             yield key;
         }
-    } while ((prototype = Object.getPrototypeOf(prototype)));
+    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
 
 /**
