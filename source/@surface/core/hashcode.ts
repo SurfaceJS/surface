@@ -1,8 +1,8 @@
-import { Indexer }             from "@surface/core";
-import { hasValue }            from "@surface/core/common/generic";
-import { enumerateObjectkeys } from "@surface/core/common/object";
+import { Indexer }             from ".";
+import { hasValue }            from "./common/generic";
+import { enumerateObjectkeys } from "./common/object";
 
-export default class HashEncode
+export default class Hashcode
 {
     private static getSignature(source: unknown): string
     {
@@ -14,7 +14,7 @@ export default class HashEncode
             {
                 const value = (source as Indexer)[key];
 
-                signature = signature ? `${signature},${key}:${HashEncode.getSignature(value)}` : `${key}:${HashEncode.getSignature(value)}`;
+                signature = signature ? `${signature},${key}:${Hashcode.getSignature(value)}` : `${key}:${Hashcode.getSignature(value)}`;
             }
 
             return `{${signature}}[${source.constructor.name}]`;
@@ -27,13 +27,13 @@ export default class HashEncode
         return `${source}#?`;
     }
 
-    public static getHashCode(source: unknown): number
+    public static encode(source: unknown): number
     {
         const initialValue = 7;
         const max          = 0x7FFFFFFF;
         const bits         = 32;
 
-        const signature = HashEncode.getSignature(source);
+        const signature = Hashcode.getSignature(source);
 
         return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
     }
