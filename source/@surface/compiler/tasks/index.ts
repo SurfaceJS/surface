@@ -8,7 +8,7 @@ import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import fs                         from "fs";
 import path                       from "path";
 import rimraf                     from "rimraf";
-import UglifyJsPlugin             from "uglifyjs-webpack-plugin";
+import TerserWebpackPlugin        from "terser-webpack-plugin";
 import webpack                    from "webpack";
 import IConfiguration             from "../interfaces/configuration";
 import { Entry }                  from "../interfaces/types";
@@ -186,6 +186,18 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
 
     const isProduction = enviroment == enums.EnviromentType.production;
 
+    const tersePlugin = new TerserWebpackPlugin
+    ({
+        cache:           true,
+        extractComments: true,
+        parallel:        true,
+        terserOptions:
+        {
+            compress: true,
+            mangle:   true,
+        }
+    });
+
     const primaryConfig: webpack.Configuration =
     {
         context: config.context,
@@ -214,20 +226,15 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
             concatenateModules:   isProduction,
             flagIncludedChunks:   isProduction,
             mergeDuplicateChunks: isProduction,
-            minimize:             false,
+            minimize:             isProduction,
+            minimizer:            [tersePlugin],
             namedChunks:          !isProduction,
             namedModules:         !isProduction,
             noEmitOnErrors:       true,
             occurrenceOrder:      true,
+            providedExports:      true,
             splitChunks:
             {
-                chunks:             "async",
-                maxAsyncRequests:   5,
-                maxInitialRequests: 3,
-                minSize:            30000,
-                maxSize:            0,
-                minChunks:          1,
-                name:               true,
                 cacheGroups:
                 {
                     common:
@@ -241,24 +248,18 @@ function getConfig(filepath: string, enviroment: enums.EnviromentType): webpack.
                         test:     /[\\/]node_modules[\\/]/,
                         priority: -10
                     }
-                }
+                },
+                chunks:             "async",
+                maxAsyncRequests:   5,
+                maxInitialRequests: 3,
+                maxSize:            0,
+                minSize:            30000,
+                minChunks:          1,
+                name:               true,
             },
             usedExports: isProduction
         }
     };
-
-    if (isProduction)
-    {
-        primaryConfig.devtool = false;
-
-        const uglifyOptions =
-        {
-            compress: { keep_classnames: true },
-            mangle:   { keep_classnames: true }
-        };
-
-        primaryConfig.plugins!.push(new UglifyJsPlugin({ parallel: true, extractComments: true, uglifyOptions }));
-    }
 
     const webpackConfig = merge({ }, [defaults.webpackConfig, userWebpack, primaryConfig], true);
 

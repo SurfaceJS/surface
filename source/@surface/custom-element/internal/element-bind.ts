@@ -14,7 +14,7 @@ import ObserverVisitor         from "./observer-visitor";
 import { BINDED, CONTEXT }     from "./symbols";
 import windowWrapper           from "./window-wrapper";
 
-type Bindable<T> = Array<T & { [BINDED]?: boolean, [CONTEXT]?: object }>;
+type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: object };
 
 export default class ElementBind
 {
@@ -34,7 +34,7 @@ export default class ElementBind
 
     public static unbind(content: Node)
     {
-        for (const element of Array.from(content.childNodes) as Bindable<Element>)
+        for (const element of content.childNodes as unknown as Iterable<Bindable<Element>>)
         {
             if (element[BINDED])
             {
@@ -52,7 +52,7 @@ export default class ElementBind
     private bindAttribute(element: Element): void
     {
         const notifications: Array<Action> = [];
-        for (const attribute of Array.from(element.attributes))
+        for (const attribute of (element.attributes as unknown as Iterable<Attr>))
         {
             if (attribute.value.includes("{{") && attribute.value.includes("}}") || attribute.value.includes("[[") && attribute.value.includes("]]"))
             {
@@ -171,7 +171,7 @@ export default class ElementBind
 
     private traverseElement(node: Node): void
     {
-        for (const element of Array.from(node.childNodes) as Array<Element & { [BINDED]?: boolean, [CONTEXT]?: object }>)
+        for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
         {
             if (!element[BINDED] && element.tagName != "TEMPLATE")
             {
