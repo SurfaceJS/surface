@@ -6,7 +6,7 @@ export default function (this: any, content: string): string
     // tslint:disable-next-line:no-unused-expression
     this.cacheable && this.cacheable();
 
-    const expression = /(<!--(?:(?!<!--).)*?-->)|(?:<surface-(import|require)\s+from\s*=\s*(\\?["'])((?:(?!\3).|\\\3)+?)\3\s*\/>((?:\s|\\[rn])*))/g;
+    const expression = /(<!--(?:(?!<!--).)*?-->)|(?:<surface-(import|require)\s+from\s*=(?:(?:\s*(\\?["'])((?:(?!\3).|\\\3)+?)\3)|([^ ]+))\s*\/>((?:\s|\\[rn])*))/g;
     const requires   = [] as Array<string>;
     let   esmodule   = false;
 
@@ -16,7 +16,9 @@ export default function (this: any, content: string): string
 
     while (match = expression.exec(content))
     {
-        const [full, comments, method, , from] = match;
+        const [full, comments, method, , from1, from2] = match;
+
+        const from = from1 || from2;
 
         if (comments)
         {

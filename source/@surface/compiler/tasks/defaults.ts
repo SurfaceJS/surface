@@ -25,8 +25,8 @@ export const loaders =
         loader: "html-loader",
         options:
         {
-            attrs: ["img:src", "link:href", "script:src"],
-            minify: true
+            attrs:    ["img:src", "link:href", "script:src"],
+            minimize: true
         }
     },
     htmlRequire:
