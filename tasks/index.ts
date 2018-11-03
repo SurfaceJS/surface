@@ -30,7 +30,7 @@ export default class Tasks
 
         await Promise.all(commands);
 
-        console.log("Building done!");
+        console.log("Building modules done!");
     }
 
     public static clean(): void

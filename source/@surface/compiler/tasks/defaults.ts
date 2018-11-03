@@ -123,6 +123,7 @@ export const webpackConfig: webpack.Configuration =
                 [
                     loaders.cache,
                     loaders.thread,
+                    //loaders.istanbul,
                     loaders.ts
                 ],
             },
