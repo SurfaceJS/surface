@@ -89,7 +89,7 @@ export default class Type
 
                 yield { key, descriptor, declaringType: type, isStatic: false };
             }
-        } while ((type = Type.from(prototype)) && (prototype = Object.getPrototypeOf(prototype)));
+        } while ((prototype = Object.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
     }
 
     private *enumerateStaticMembers(): IterableIterator<Member>
@@ -205,7 +205,7 @@ export default class Type
             {
                 return this.getMemberType({ key, descriptor, declaringType: type, isStatic: false });
             }
-        } while ((type = Type.from(prototype)) && (prototype = Object.getPrototypeOf(prototype)));
+        } while ((prototype = Object.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
 
         return null;
     }
