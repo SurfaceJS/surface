@@ -1,5 +1,5 @@
-import { Indexer } from "@surface/core";
+import { MappedIndexer } from "@surface/core";
 
-type EntryType = string|Array<string>|Indexer<string>|Indexer<Array<string>>;
+type EntryType = string|Array<string>|MappedIndexer<string, string|Array<string>>;
 
 export type Entry = EntryType|(() => EntryType|Promise<EntryType>);

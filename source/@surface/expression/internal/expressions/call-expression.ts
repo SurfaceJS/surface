@@ -37,6 +37,6 @@ export default class CallExpression implements IExpression
     public evaluate(): unknown
     {
         const context = this.context.evaluate() as Indexer<Function>;
-        return context[this.name].apply(context, this.args.map(x => x.evaluate()));
+        return context[this.name]!.apply(context, this.args.map(x => x.evaluate()));
     }
 }

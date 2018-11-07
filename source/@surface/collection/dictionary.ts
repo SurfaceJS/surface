@@ -1,6 +1,6 @@
-import { Indexer, Nullable } from "@surface/core";
-import Enumerable            from "@surface/enumerable";
-import KeyValuePair          from "./key-value-pair";
+import { MappedIndexer, Nullable } from "@surface/core";
+import Enumerable                  from "@surface/enumerable";
+import KeyValuePair                from "./key-value-pair";
 
 const SOURCE = Symbol("dictionary:source");
 
@@ -29,16 +29,16 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
         }
     }
 
-    public static of<TValue>(source: Indexer<TValue>): Dictionary<string, TValue>
+    public static of<TSouce extends MappedIndexer<TKey, TValue>, TKey extends keyof TSouce, TValue>(source: TSouce): Dictionary<string, TValue>
     {
-        return new Dictionary(Enumerable.from(Object.keys(source)).select(x => new KeyValuePair(x, source[x])).toArray());
+        return new Dictionary(Enumerable.from(Object.keys(source)).select(x => new KeyValuePair(x, source[x])));
     }
 
     public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>
     {
         for (const element of this[SOURCE])
         {
-            let [ key, value ] = element;
+            const [key, value] = element;
             yield new KeyValuePair(key, value);
         }
     }

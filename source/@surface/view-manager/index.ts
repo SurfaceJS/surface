@@ -78,8 +78,14 @@ export default class ViewManager
 
         if (routeData)
         {
-            window.history.pushState(null, routeData.params["view"], route);
             const { view, action } = routeData.params;
+
+            if (!view)
+            {
+                throw new Error("View not found");
+            }
+
+            window.history.pushState(null, view, route);
 
             let path = `views/${view}`;
 

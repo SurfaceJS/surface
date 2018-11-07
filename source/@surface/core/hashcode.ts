@@ -27,7 +27,7 @@ export default class Hashcode
     {
         let signature = "";
 
-        if (source instanceof Object && typeof source != "function")
+        if (typeof source == "object" && source)
         {
             const cache = this.cache.get(source);
 

@@ -55,9 +55,9 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
     private templateParse(template: string, keys: Indexer<string>): string
     {
-        for (let key in keys)
+        for (const key in keys)
         {
-            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key]);
+            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key] || "");
         }
 
         return template;
@@ -65,9 +65,9 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
     private filenameParse(filename: string, keys: Indexer<string>): string
     {
-        for (let key in keys)
+        for (const key in keys)
         {
-            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key]);
+            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key] || "");
         }
 
         return filename;
@@ -82,7 +82,6 @@ class HtmlTemplatePlugin implements webpack.Plugin
         compiler.hooks.emit.tap
         (
             HtmlTemplatePlugin.name,
-            // tslint:disable-next-line:no-any
             function (compilation: webpack.compilation.Compilation)
             {
                 if (!compiler.options.entry)
@@ -114,7 +113,7 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                 if (Array.isArray(entries))
                 {
-                    const tmp: Indexer<string> = { };
+                    const tmp: webpack.Entry = { };
                     for (const entry of entries)
                     {
                         tmp[path.dirname(entry)] = entry;

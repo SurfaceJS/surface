@@ -19,7 +19,7 @@ export type Func3<T1, T2, T3, TResult>                       = (arg1: T1, arg2: 
 export type KeyValue<T, K extends keyof T = keyof T>         = [K, T[K]];
 export type IgnoreKeysOfType<T extends object, U>            = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>                = { [K in IgnoreKeysOfType<T, U>]: T[K] };
-export type Indexer<T = unknown>                             = { [key: string]: T; [key: number]: T; };
+export type Indexer<T = unknown>                             = { [key: string]: T|undefined; [key: number]: T|undefined; };
 export type KeysOfType<T extends object, U>                  = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type MappedIndexer<K extends string|number|symbol, T> = { [P in K]: T };
 export type MethodsOf<T extends object>                      = KeysOfType<T, Function>;
