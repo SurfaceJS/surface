@@ -72,7 +72,7 @@ export default class Tasks
 
             const targets = Object.keys(dependencies)
                 .filter(x => !x.startsWith("@surface/") || full == "true")
-                .map(key => `${key}@${dependencies[key].replace(/^(\^|\~)/, "")}`)
+                .map(key => `${key}@${dependencies[key]!.replace(/^(\^|\~)/, "")}`)
                 .join(" ");
 
             if (targets)

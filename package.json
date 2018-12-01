@@ -4,9 +4,7 @@
     "devDependencies": {
         "@types/chai": "4.1.7",
         "@types/mocha": "5.2.5",
-        "@types/node": "10.12.2",
-        "@types/tapable": "1.0.4",
-        "@types/webpack": "4.4.17",
+        "@types/node": "10.12.11",
         "mocha": "5.2.0",
         "nyc": "13.1.0"
     },

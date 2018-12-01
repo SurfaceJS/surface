@@ -2,6 +2,10 @@
     "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "types": ["node", "webpack"]
+        "compilerOptions":
+        {
+            "typeRoots": ["../compiler/node_modules/@types"],
+            "types":     ["node", "webpack"]
+        }
     }
 }

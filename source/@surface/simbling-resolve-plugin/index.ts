@@ -1,6 +1,6 @@
-import fs         from "fs";
-import path       from "path";
-import { Plugin } from "webpack";
+import fs                from "fs";
+import path              from "path";
+import { ResolvePlugin } from "webpack";
 
 namespace SimblingPriorityPlugin
 {
@@ -13,7 +13,7 @@ namespace SimblingPriorityPlugin
     }
 }
 
-class SimblingPriorityPlugin implements Plugin
+class SimblingPriorityPlugin implements ResolvePlugin
 {
     private exclude: Array<string>;
     private from:    string;
@@ -69,7 +69,7 @@ class SimblingPriorityPlugin implements Plugin
     }
 
     // tslint:disable-next-line:no-any
-    public apply (resolver: any): void
+    public apply(resolver: any): void
     {
         // tslint:disable-next-line:no-this-assignment
         const self = this;

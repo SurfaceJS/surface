@@ -9,8 +9,7 @@ Object.assign
     }
 );
 
-// tslint:disable-next-line:no-empty
-function ProxyHTMLElement() { }
+function ProxyHTMLElement() { return; }
 
 ProxyHTMLElement.prototype = window.HTMLElement.prototype;
 

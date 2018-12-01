@@ -7,7 +7,6 @@
         "@surface/collection": "0.0.0",
         "@surface/core": "0.0.3",
         "@surface/enumerable": "0.0.5",
-        "@types/reflect-metadata": "0.1.0",
         "reflect-metadata": "0.1.12",
         "tslib": "1.9.3"
     },
