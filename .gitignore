@@ -62,7 +62,7 @@ typings/
 *.js
 *.js.map
 *.d.ts
-cache
+.cache
 package-lock.json
 !source/@surface/code-splitter/tests/fixtures/**/*.js
 !types.d.ts

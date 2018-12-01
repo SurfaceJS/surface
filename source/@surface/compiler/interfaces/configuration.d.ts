@@ -9,11 +9,11 @@ export default interface IConfiguration
     context:          string;
     entry:            Entry;
     filename:         string;
-    output:           string;
     htmlTemplate?:    HtmlTemplatePlugin.IOptions;
+    output:           string;
     simblingResolve?: SimblingResolvePlugin.IOptions|Array<SimblingResolvePlugin.IOptions>;
+    statsLevel?:      Stats.ToStringOptions;
     tsconfig?:        string;
     tslint?:          string;
     webpackConfig?:   string|Configuration;
-    statsLevel?:      Stats.ToStringOptions;
 }

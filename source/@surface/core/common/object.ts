@@ -150,5 +150,5 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
  */
 export function structuralEqual(left: unknown, right: unknown): boolean
 {
-    return Hashcode.encode(left) == Hashcode.encode(right);
+    return left === right || Hashcode.encode(left) == Hashcode.encode(right);
 }
