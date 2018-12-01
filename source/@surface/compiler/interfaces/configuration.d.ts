@@ -1,7 +1,7 @@
 import { Indexer }              from "@surface/core";
-import HtmlTemplatePlugin       from "@surface/html-template-plugin";
-import SimblingResolvePlugin    from "@surface/simbling-resolve-plugin";
 import { Configuration, Stats } from "webpack"
+import HtmlTemplatePlugin       from "../plugins/html-template-plugin";
+import SimblingResolvePlugin    from "../plugins/simbling-priority-plugin";
 import { Entry }                from "./types";
 
 export default interface IConfiguration

@@ -48,7 +48,7 @@ export function resolveFile(context: string, filepaths: Array<string>): string
         {
             const resolved = path.resolve(context, filepath);
 
-            if (fs.existsSync(resolved))
+            if (fs.existsSync(resolved) && fs.lstatSync(resolved).isFile())
             {
                 return resolved;
             }
