@@ -112,7 +112,7 @@ export default class Observer
     public static observe(target: Observable, member: MemberInfo): Observer;
     public static observe(target: Observable, keyOrMember: string|MemberInfo): Observer
     {
-        const observers = target[OBSERVERS] = target[OBSERVERS] || new Map();
+        const observers = target[OBSERVERS] = (target[OBSERVERS] || new Map<string|symbol, Observer>());
 
         const [key, getMember] = typeof keyOrMember == "string" ?
             [keyOrMember, () => Type.from(target).getMember(keyOrMember)]

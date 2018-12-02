@@ -280,12 +280,23 @@ export default class DataTable extends Component
                 {
                     if (columnDefinition.editButtom)
                     {
-                        innerHTML = /*html*/ `<input type="button" disabled="{{ row.disabled }}" value="${this._localization.edit}" on-click="{{ row.enterEdit() }}" />`;
+                        innerHTML = //html
+                        `
+                            <button type="button" disabled="{{ row.disabled }}" value="${this._localization.edit}" on-click="{{ row.enterEdit() }}">
+                                <surface-icon name="create"></surface-icon>
+                            </button>
+                        `;
                     }
 
                     if (columnDefinition.deleteButtom)
                     {
-                        innerHTML = innerHTML + /*html*/ `<input type="button" disabled="{{row.disabled}}" value="${this._localization.delete}" on-click="{{ dataTable.deleteRow(row) }}" />`;
+                        innerHTML = //html
+                        `
+                            ${innerHTML}
+                            <button type="button" disabled="{{row.disabled}}" value="${this._localization.delete}" on-click="{{ dataTable.deleteRow(row) }}">
+                                <surface-icon name="delete"></surface-icon>
+                            </button>
+                        `;
                     }
 
                     innerHTML = //html

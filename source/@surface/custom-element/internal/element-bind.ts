@@ -52,12 +52,12 @@ export default class ElementBind
     private bindAttribute(element: Element): void
     {
         const notifications: Array<Action> = [];
-        for (const attribute of (element.attributes as unknown as Iterable<Attr>))
+        for (const attribute of this.wrapAttribute(element))
         {
-            if (attribute.value.includes("{{") && attribute.value.includes("}}") || attribute.value.includes("[[") && attribute.value.includes("]]"))
+            if (/\{\{.*\}\}/.test(attribute.value) || /\[\[.*\]\]/.test(attribute.value))
             {
-                const isOneWay = (attribute.value.startsWith("[[") && attribute.value.endsWith("]]"));
-                const isTwoWay = (attribute.value.startsWith("{{") && attribute.value.endsWith("}}"));
+                const isOneWay = /^\[\[.*\]\]$/.test(attribute.value);
+                const isTwoWay = /^\{\{.*\}\}$/.test(attribute.value);
 
                 const interpolation = !(isOneWay || isTwoWay);
 
@@ -79,7 +79,7 @@ export default class ElementBind
                     const attributeName = dashedToCamel(attribute.name);
                     const elementMember = Type.from(element).getMember(attributeName);
 
-                    const canWrite = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly);
+                    const canWrite = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
 
                     let notification = () =>
                     {
@@ -189,6 +189,27 @@ export default class ElementBind
                 }
 
                 this.traverseElement(element);
+            }
+        }
+    }
+
+    private *wrapAttribute(element: Element): IterableIterator<Attr>
+    {
+        for (const attribute of (element.attributes as unknown as Iterable<Attr>))
+        {
+            if (attribute.name.startsWith("*"))
+            {
+                const wrapper = document.createAttribute(attribute.name.replace(/^\*/, ""));
+
+                wrapper.value = attribute.value;
+                element.removeAttributeNode(attribute);
+                element.setAttributeNode(wrapper);
+
+                yield wrapper;
+            }
+            else
+            {
+                yield attribute;
             }
         }
     }

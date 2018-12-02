@@ -21,7 +21,6 @@ export type IgnoreKeysOfType<T extends object, U>            = { [K in keyof T]:
 export type IgnoreOfType<T extends object, U>                = { [K in IgnoreKeysOfType<T, U>]: T[K] };
 export type Indexer<T = unknown>                             = { [key: string]: T|undefined; [key: number]: T|undefined; };
 export type KeysOfType<T extends object, U>                  = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
-export type MappedIndexer<K extends string|number|symbol, T> = { [P in K]: T };
 export type MethodsOf<T extends object>                      = KeysOfType<T, Function>;
 export type Nullable<T = Object>                             = T|null|undefined;
 export type Omit<T, U extends keyof T>                       = { [K in Exclude<keyof T, U>]: T[K] };

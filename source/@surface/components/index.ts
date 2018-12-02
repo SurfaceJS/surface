@@ -1,4 +1,3 @@
-import { MappedIndexer }          from "@surface/core";
 import { structuralEqual }        from "@surface/core/common/object";
 import { dashedToCamel, toTitle } from "@surface/core/common/string";
 import CustomElement              from "@surface/custom-element";
@@ -55,7 +54,7 @@ abstract class Component extends CustomElement
             super.style.position = "relative";
         }
 
-        super.style.left = value + "px";
+        super.style.left = `${value}px`;
     }
 
     public get top(): number
@@ -80,7 +79,7 @@ abstract class Component extends CustomElement
             super.style.position = "relative";
         }
 
-        super.style.top = value + "px";
+        super.style.top = `${value}px`;
     }
 
     public get verticalAlign(): Component.VerticalAlign
@@ -120,7 +119,7 @@ abstract class Component extends CustomElement
     <
         TTarget         extends Object,
         TAttribute      extends string,
-        TPropertyMap    extends MappedIndexer<TAttribute, keyof TTarget>,
+        TPropertyMap    extends Record<TAttribute, keyof TTarget>,
         TAttributeParse extends AttributeParse<TTarget, TPropertyMap>,
     >
     (target: TTarget, parser: TAttributeParse, attribute: TAttribute, raw: string): void
@@ -137,7 +136,7 @@ abstract class Component extends CustomElement
     public setPropertyAttribute
     <
         TAttribute   extends string,
-        TPropertyMap extends MappedIndexer<TAttribute, keyof this>,
+        TPropertyMap extends Record<TAttribute, keyof this>,
         TParser      extends AttributeParse<this, TPropertyMap>
     >
     (parser: TParser, attribute: TAttribute, raw: string): void

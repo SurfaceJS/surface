@@ -1,4 +1,4 @@
-import { MappedIndexer, Nullable }          from "@surface/core";
+import { Nullable }                         from "@surface/core";
 import ResizeObserver                       from "resize-observer-polyfill";
 import Component                            from "..";
 import Enumerable                           from "../../enumerable";
@@ -8,7 +8,7 @@ import template                             from "./index.html";
 import style                                from "./index.scss";
 
 export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
-export type Sticky        = MappedIndexer<"left"|"top"|"right"|"bottom", boolean>;
+export type Sticky        = Record<"left"|"top"|"right"|"bottom", boolean>;
 
 type PropertyMap =
 {

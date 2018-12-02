@@ -136,6 +136,6 @@ export default class DataFilterItem extends Component
 
     public getFilter(): Filter
     {
-      return { condition: this.condition, operator: this.operator, value: this.value as unknown };
+      return { condition: this.condition, operator: this.operator, value: this.value };
     }
 }

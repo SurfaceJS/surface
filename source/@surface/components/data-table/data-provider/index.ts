@@ -44,12 +44,12 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         super.setAttribute("update-url", value.toString());
     }
 
-    public create(data: T): Promise<void>
+    public async create(data: T): Promise<void>
     {
         throw new Error("Method not implemented.");
     }
 
-    public delete(data: T): Promise<void>
+    public async delete(data: T): Promise<void>
     {
         throw new Error("Method not implemented.");
     }
@@ -73,7 +73,7 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         return await response.json();
     }
 
-    public update(data: T): Promise<void>
+    public async update(data: T): Promise<void>
     {
         throw new Error("Method not implemented.");
     }

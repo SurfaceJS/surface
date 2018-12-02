@@ -5,7 +5,7 @@
         font-family:    'Material Icons';
         font-weight:    normal;
         font-style:     normal;
-        font-size:      var(--font-size, 24px);
+        font-size:      inherit;//var(--font-size, 24px);
         display:        inline-block;
         line-height:    1;
         text-transform: none;
@@ -23,9 +23,9 @@
         font-feature-settings: 'liga';
 
         font-display: block;
-        &:hover
-        {
-            color: var(--hover-color, gray);
-        }
+        //&:hover
+        //{
+        //    color: var(--hover-color, gray);
+        //}
     }
 }

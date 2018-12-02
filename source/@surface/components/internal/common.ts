@@ -1,6 +1,6 @@
 export function setGlobalStyle(id: string, style: string): void
 {
-    let styleElement = document.head!.querySelector(`style#${id}`);
+    let styleElement = document.head.querySelector(`style#${id}`);
 
     if (!styleElement)
     {
@@ -8,7 +8,7 @@ export function setGlobalStyle(id: string, style: string): void
         styleElement.id        = id;
         styleElement.innerHTML = style;
 
-        document.head!.appendChild(styleElement);
+        document.head.appendChild(styleElement);
     }
     else
     {

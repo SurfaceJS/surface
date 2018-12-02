@@ -1,10 +1,9 @@
 import { dashedToCamel, toTitle } from "@surface/core/common/string";
 import Component                  from "..";
 import { element }                from "../decorators";
-import template                   from "./index.html";
 import style                      from "./index.scss";
 
-@element("surface-stack-panel", template, style)
+@element("surface-stack-panel", "", style)
 export class StackPanel extends Component
 {
     public get content(): StackPanel.Content
