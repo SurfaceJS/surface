@@ -8,12 +8,12 @@ import MemberInfo          from "@surface/reflection/member-info";
 const HOOKS         = Symbol("data-bind:hooks");
 const UNSUBSCRIBERS = Symbol("data-bind:unsubscribers");
 
-type Hookable   = object & { [HOOKS]?:         Array<string|symbol> };
-type Observator = object & { [UNSUBSCRIBERS]?: ActionQueue };
+type Hookable  = object & { [HOOKS]?:         Array<string|symbol> };
+type Observant = object & { [UNSUBSCRIBERS]?: ActionQueue };
 
 export default class DataBind
 {
-    public static oneWay(target: Hookable, member: MemberInfo, observator: Observator, action: Action1<unknown>): void
+    public static oneWay(target: Hookable, member: MemberInfo, observant: Observant, action: Action1<unknown>): void
     {
         const hooks = target[HOOKS] = target[HOOKS] || [];
 
@@ -21,7 +21,7 @@ export default class DataBind
 
         observer.subscribe(action);
 
-        const unsubscribers = observator[UNSUBSCRIBERS] = observator[UNSUBSCRIBERS] || new ActionQueue();
+        const unsubscribers = observant[UNSUBSCRIBERS] = observant[UNSUBSCRIBERS] || new ActionQueue();
 
         unsubscribers.add(() => observer.unsubscribe(action));
 
@@ -66,9 +66,9 @@ export default class DataBind
         DataBind.oneWay(right, rightMember, left,  value => { left[leftKey]   = value as Value; notification(); });
     }
 
-    public static unbind(observator: Observator): void
+    public static unbind(observant: Observant): void
     {
-        const unsubscribers = observator[UNSUBSCRIBERS];
+        const unsubscribers = observant[UNSUBSCRIBERS];
 
         if (unsubscribers)
         {

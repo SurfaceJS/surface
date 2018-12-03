@@ -371,7 +371,7 @@ export default class Compiler
 
         if (typeof entries == "function")
         {
-            entries = [entries.call(undefined)];
+            entries = entries.call(undefined) as Entry;
         }
 
         if (typeof entries == "string")
@@ -392,7 +392,8 @@ export default class Compiler
 
         for (const key in entries)
         {
-            const value   = entries[key];
+            // Open issue for broken narrowing
+            const value   = (entries as Record<string, string|Array<string>>)[key];
             const sources = Array.isArray(value) ? value : [value];
 
             for (const source of sources.map(x => x.replace(/\/\*$/, "")))

@@ -1,15 +1,14 @@
-import { Action, Action1 } from "@surface/core";
-import Type                from "@surface/reflection";
-import FieldInfo           from "@surface/reflection/field-info";
-import MemberInfo          from "@surface/reflection/member-info";
-import MethodInfo          from "@surface/reflection/method-info";
-import PropertyInfo        from "@surface/reflection/property-info";
+import { Action, Action1, Indexer } from "@surface/core";
+import Type                         from "@surface/reflection";
+import FieldInfo                    from "@surface/reflection/field-info";
+import MemberInfo                   from "@surface/reflection/member-info";
+import MethodInfo                   from "@surface/reflection/method-info";
+import PropertyInfo                 from "@surface/reflection/property-info";
 
 export const OBSERVERS = Symbol("observer:observers");
 
-type Observable = Object & { [OBSERVERS]?: Map<string|symbol, Observer> };
+type Observable = Indexer & { [OBSERVERS]?: Map<string|symbol, Observer> };
 type Key        = keyof Observable;
-type Value      = Observable[Key];
 
 export default class Observer
 {
@@ -27,7 +26,7 @@ export default class Observer
                     member.key,
                     {
                         get: member.getter as Action|undefined,
-                        set: function (this: typeof target, value: Object)
+                        set: function (this: typeof target, value: unknown)
                         {
                             if (!member.getter || !Object.is(member.getter.call(this), value))
                             {
@@ -53,7 +52,7 @@ export default class Observer
                         {
                             return this[privateKey];
                         },
-                        set: function (this: Observable, value: Value)
+                        set: function (this: Observable, value: unknown)
                         {
                             if (!Object.is(value, this[privateKey]))
                             {
@@ -72,7 +71,7 @@ export default class Observer
                 Symbol(`_${member.key.toString()}`) as Key
                 : `_${member.key.toString()}` as Key;
 
-            target[privateKey] = member.value as Value;
+            target[privateKey] = member.value;
             Object.defineProperty
             (
                 target,
@@ -82,7 +81,7 @@ export default class Observer
                     {
                         return this[privateKey];
                     },
-                    set: function (this: Observable, value: Value)
+                    set: function (this: Observable, value: unknown)
                     {
                         if (!Object.is(value, this[privateKey]))
                         {

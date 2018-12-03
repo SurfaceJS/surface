@@ -1,6 +1,5 @@
-import { Nullable } from "@surface/core";
-import MemberInfo   from "./member-info";
-import Type         from "./type";
+import MemberInfo from "./member-info";
+import Type       from "./type";
 
 export default class FieldInfo extends MemberInfo
 {
@@ -21,7 +20,7 @@ export default class FieldInfo extends MemberInfo
         return !!this.descriptor.writable;
     }
 
-    public get value(): Nullable<Object>
+    public get value(): unknown
     {
         return this.descriptor.value;
     }

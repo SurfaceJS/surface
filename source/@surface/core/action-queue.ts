@@ -1,6 +1,6 @@
-import { ArgumentsOf, ReturnOf } from ".";
 
-export default class ActionQueue<T extends (...args: ArgumentsOf<T>) => unknown = () => unknown>
+// tslint:disable-next-line:no-any
+export default class ActionQueue<T extends (...args: any) => any = () => void>
 {
     private readonly actions: Array<T> = [];
 
@@ -9,9 +9,9 @@ export default class ActionQueue<T extends (...args: ArgumentsOf<T>) => unknown 
         this.actions.push(action);
     }
 
-    public execute(...args: ArgumentsOf<T>): Array<ReturnOf<T>>
+    public execute(...args: Parameters<T>): Array<ReturnType<T>>
     {
-        const values = [] as Array<ReturnOf<T>>;
+        const values = [] as Array<ReturnType<T>>;
 
         while (this.actions.length > 0)
         {
@@ -21,9 +21,9 @@ export default class ActionQueue<T extends (...args: ArgumentsOf<T>) => unknown 
         return values;
     }
 
-    public async executeAsync(...args: ArgumentsOf<T>): Promise<Array<ReturnOf<T>>>
+    public async executeAsync(...args: Parameters<T>): Promise<Array<ReturnType<T>>>
     {
-        const values = [] as Array<ReturnOf<T>>;
+        const values = [] as Array<ReturnType<T>>;
 
         while (this.actions.length > 0)
         {

@@ -2,6 +2,7 @@ import { Indexer, Nullable } from "@surface/core";
 import fs                    from "fs";
 import path                  from "path";
 import webpack               from "webpack";
+import { Entry } from '../interfaces/types';
 
 type Chunk =
 {
@@ -98,7 +99,8 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                 if (typeof entries == "function")
                 {
-                    entries = [entries.call(undefined)];
+                    entries = entries.call(undefined) as Entry;
+
                     if (entries instanceof Promise)
                     {
                         // Todo - Add support to promises

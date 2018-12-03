@@ -41,7 +41,7 @@ export default class CallExpression implements IExpression
 
         if (!fn)
         {
-            throw new TypeError(`${this.name} is not defined`);
+            throw new ReferenceError(`${this.name} is not defined`);
         }
         else if (typeof fn != "function")
         {
