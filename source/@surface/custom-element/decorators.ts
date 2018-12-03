@@ -1,15 +1,11 @@
-//import { Func1, Indexer, Nullable }     from "@surface/core";
-//import { structuralEqual }              from "@surface/core/common/object";
-//import { camelToDashed, dashedToCamel } from "@surface/core/common/string";
+import { Func1, Indexer, Nullable }     from "@surface/core";
+import { structuralEqual }              from "@surface/core/common/object";
+import { camelToDashed, dashedToCamel } from "@surface/core/common/string";
+import CustomElement                    from ".";
+import ElementBind                      from "./internal/element-bind";
+import * as symbols                     from "./internal/symbols";
 
-import { Func1 }         from "@surface/core";
-import { camelToDashed } from "@surface/core/common/string";
-import CustomElement     from ".";
-import ElementBind       from "./internal/element-bind";
-import * as symbols      from "./internal/symbols";
-
-//type AttributeChangedCallback = (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
-type Converter<T>             = { attribute?: Func1<T, string>, property?: Func1<string, T> };
+type AttributeChangedCallback = (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
 type Observable               = { [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>; };
 
 function isCustomElement(source: Function): source is typeof CustomElement
@@ -22,9 +18,9 @@ function isHTMLElement(source: Function): source is typeof HTMLElement
     return source.prototype instanceof HTMLElement;
 }
 
-export function attribute<T>(converter: Converter<T>): PropertyDecorator;
+export function attribute<T>(converter: Func1<string, T>): PropertyDecorator;
 export function attribute<T extends object>(target: object, propertyKey: string|symbol): void;
-export function attribute(...args: [Converter<unknown>]|[object, string|symbol]): PropertyDecorator|void
+export function attribute(...args: [Func1<string, unknown>]|[object, string|symbol]): PropertyDecorator|void
 {
     const decorator = (target: object, propertyKey: string|symbol) =>
     {
@@ -43,9 +39,6 @@ export function attribute(...args: [Converter<unknown>]|[object, string|symbol])
 
             constructor[symbols.OBSERVED_ATTRIBUTES]!.push(attributeName);
 
-            /* Holding implementation of property attribute reflection */
-
-            /*
             const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey)!;
 
             if (descriptor.get && descriptor.set)
@@ -59,9 +52,7 @@ export function attribute(...args: [Converter<unknown>]|[object, string|symbol])
                     {
                         setter.call(this, value);
 
-                        const converter = args.length == 1 && args[0].attribute ? args[0].attribute : (x: unknown) => `${x}`;
-
-                        this.setAttribute(attributeName, converter(value));
+                        this.setAttribute(attributeName, `${value}`);
                     }
                 };
 
@@ -71,9 +62,10 @@ export function attribute(...args: [Converter<unknown>]|[object, string|symbol])
                 {
                     const property = dashedToCamel(name);
 
-                    const converter = args.length == 1 && args[0].property ? args[0].property : (x: unknown) => x;
+                    const converter = args.length == 1 ? args[0] : (x: unknown) => x;
+                    const value     = getter.call(this);
 
-                    if (!structuralEqual(getter.call(this), converter(newValue)))
+                    if (!structuralEqual(value, converter(newValue)))
                     {
                         (this as Indexer)[property] = newValue;
                     }
@@ -84,7 +76,6 @@ export function attribute(...args: [Converter<unknown>]|[object, string|symbol])
                     }
                 };
             }
-            */
         }
         else
         {

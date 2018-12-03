@@ -1,41 +1,36 @@
-import { Nullable }                         from "@surface/core";
-import ResizeObserver                       from "resize-observer-polyfill";
-import Component                            from "..";
-import Enumerable                           from "../../enumerable";
-import { attribute, element }               from "../decorators";
-import { AttributeParse, PropertyStringfy } from "../types";
-import template                             from "./index.html";
-import style                                from "./index.scss";
+import ResizeObserver         from "resize-observer-polyfill";
+import Component              from "..";
+import Enumerable             from "../../enumerable";
+import { attribute, element } from "../decorators";
+import { AttributeConverter } from "../types";
+import template               from "./index.html";
+import style                  from "./index.scss";
 
 export type StartPosition = "center-screen"|"center-parent"|"manual"|"none";
 export type Sticky        = Record<"left"|"top"|"right"|"bottom", boolean>;
 
-type PropertyMap =
+const converters: AttributeConverter<Modal, "stick"|"startPosition"> =
 {
-   "horizontal-align": "horizontalAlign",
-   "start-position":   "startPosition",
-   "stick":            "stick",
-   "vertical-align":   "verticalAlign"
+    startPosition: value => (["center-screen", "center-parent", "manual", "none"].includes(value) ? value : "none") as StartPosition,
+    stick:         value =>
+    ({
+        left:   value.includes("left"),
+        top:    value.includes("top"),
+        right:  value.includes("right"),
+        bottom: value.includes("bottom"),
+        toString(): string
+        {
+            return Enumerable.from(Object.entries(this))
+                .where(x => typeof x[1] != "function" && x[1])
+                .select(x => x[0])
+                .aggregate((x, y) => x + " " + y);
+        }
+    }) as Sticky
 };
-
-type Attributes = keyof PropertyMap;
 
 @element("surface-modal", template, style)
 export default class Modal extends Component
 {
-    private readonly attributeParse: AttributeParse<Modal, PropertyMap> =
-    {
-        "start-position":   value => (["center-screen", "center-parent", "manual", "none"].includes(value) ? value : "none") as StartPosition,
-        "stick":            value => ({ left: value.includes("left"), top: value.includes("top"), right: value.includes("right"), bottom: value.includes("bottom") }),
-        "horizontal-align": value => value as Component.HorizontalAlign,
-        "vertical-align":   value => value as Component.VerticalAlign
-    };
-
-    private readonly propertyStringfy: PropertyStringfy<Modal, "stick"> =
-    {
-        stick: (value: Sticky) => Enumerable.from(Object.entries(value)).where(x => x[1]).select(x => x[0]).aggregate((x, y) => x + " " + y)
-    };
-
     private _left:  number = 0;
     private _stick: Sticky = { left: false, top: false, right: false, bottom: false };
     private _top:   number = 0;
@@ -64,7 +59,7 @@ export default class Modal extends Component
         super.left = value;
     }
 
-    @attribute
+    @attribute(converters.stick)
     public get stick(): Sticky
     {
         return this._stick;
@@ -73,10 +68,9 @@ export default class Modal extends Component
     public set stick(value: Sticky)
     {
         Object.assign(this._stick, value);
-        super.setAttribute("stick", this.propertyStringfy["stick"](value));
     }
 
-    @attribute
+    @attribute(converters.startPosition)
     public get startPosition(): StartPosition
     {
         return this._startPosition;
@@ -206,13 +200,8 @@ export default class Modal extends Component
         }
     }
 
-    protected attributeChangedCallback(name: Attributes, _: Nullable<string>, newValue: string)
+    protected attributeChangedCallback()
     {
-        if (!["horizontal-align", "vertical-align"].includes(name))
-        {
-            Component.setPropertyAttribute(this as Modal, this.attributeParse, name, newValue);
-        }
-
         if (this.visible)
         {
             this.refresh();
