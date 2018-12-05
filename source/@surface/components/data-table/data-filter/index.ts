@@ -1,9 +1,8 @@
-import { Nullable }                             from "@surface/core";
 import Component                                from "../..";
 import Enumerable                               from "../../../enumerable";
 import { attribute, element }                   from "../../decorators";
 import List                                     from "../../list";
-import { AttributeParse }                       from "../../types";
+import { AttributeConverter }                   from "../../types";
 import DataFilterItem, { Filter }               from "./data-filter-item";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
@@ -15,19 +14,15 @@ type KeyValue = { key: string, value: string };
 
 export type Filters = { field: string, type: string, filters: Array<Filter> };
 
-type PropertyMap = { "field": "field", "type": "type" };
-type Attributes  = keyof PropertyMap;
+const attributeConverter: AttributeConverter<DataFilter, "type"> =
+{
+    type: value => (["array", "boolean", "number", "string"].includes(value) ? value : "string") as Type
+};
 
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
     private readonly list = super.shadowQuery<List>("surface-list")!;
-
-    private readonly attributeParse: AttributeParse<DataFilter, PropertyMap> =
-    {
-        "field": value => value,
-        "type":  value => (["array", "boolean", "number", "string"].includes(value) ? value : "string") as Type
-    };
 
     private _field: string = "";
     private _type:  Type   = "string";
@@ -37,7 +32,6 @@ export default class DataFilter extends Component
         return [{ key: "and", value: "And" }, { key: "or", value: "Or" }];
     }
 
-    @attribute
     public get field(): string
     {
         return this._field;
@@ -48,7 +42,7 @@ export default class DataFilter extends Component
         this._field = value;
     }
 
-    @attribute
+    @attribute(attributeConverter.type)
     public get type(): Type
     {
         return this._type;
@@ -64,11 +58,6 @@ export default class DataFilter extends Component
         super();
         this.field = field || "";
         this.type  = type  || "string";
-    }
-
-    protected attributeChangedCallback(name: Attributes, _: Nullable<string>, newValue: string)
-    {
-        Component.setPropertyAttribute(this as DataFilter, this.attributeParse, name, newValue);
     }
 
     protected add(value: Operator): void

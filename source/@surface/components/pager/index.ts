@@ -1,5 +1,3 @@
-import { Nullable }           from "@surface/core";
-import { dashedToCamel }      from "@surface/core/common/string";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import template               from "./index.html";
@@ -8,8 +6,8 @@ import style                  from "./index.scss";
 @element("surface-pager", template, style)
 export default class Pager extends Component
 {
-    private _page:       number = 1;
     private _endRange:   number = 0;
+    private _page:       number = 0;
     private _pageCount:  number = 0;
     private _startRange: number = 0;
 
@@ -26,17 +24,17 @@ export default class Pager extends Component
 
     public set page(value: number)
     {
+        if (value < 0)
+        {
+            value = 0;
+        }
+        else if (value > this.pageCount)
+        {
+            value = this.pageCount;
+        }
+
         if (value != this.page)
         {
-            if (value < 1)
-            {
-                throw new Error("Page cannot be lesser than 1");
-            }
-            else if (value > this.pageCount)
-            {
-                throw new Error("Page exceed total of pages");
-            }
-
             this._page = value;
 
             this.changed();
@@ -53,12 +51,17 @@ export default class Pager extends Component
     {
         if (value != this.pageCount)
         {
-            if (value > 0 && value < this.page)
+            this._pageCount = value;
+
+            if (value < this.page)
             {
                 this.page = value;
             }
 
-            this._pageCount = value;
+            if (value > 0 && this.page == 0)
+            {
+                this.page = 1;
+            }
 
             this.changed();
         }
@@ -85,17 +88,6 @@ export default class Pager extends Component
         this._endRange = startRange + 4 > pageCount ? pageCount : startRange + 4;
 
         super.dispatchEvent(new Event("change"));
-    }
-
-    protected attributeChangedCallback(name: "page"|"page-count", _: Nullable<string>, newValue: string)
-    {
-        const key   = dashedToCamel(name) as "page"|"pageCount";
-        const value = Number.parseInt(`${newValue}`) || (name == "page" ? 1 : 0);
-
-        if (value != this[key])
-        {
-            this[key] = value;
-        }
     }
 
     protected setPage(page: number): void

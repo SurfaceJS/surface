@@ -1,11 +1,12 @@
-import { structuralEqual }        from "@surface/core/common/object";
-import { dashedToCamel, toTitle } from "@surface/core/common/string";
-import CustomElement              from "@surface/custom-element";
-import { AttributeParse }         from "./types";
+import CustomElement from "@surface/custom-element";
+import { attribute } from "./decorators";
 
 abstract class Component extends CustomElement
 {
     private storedDisplay: string|null = null;
+
+    private _horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
+    private _verticalAlign:   Component.VerticalAlign   = Component.VerticalAlign.Top;
 
     public get disabled(): boolean
     {
@@ -22,14 +23,15 @@ abstract class Component extends CustomElement
         return super.getBoundingClientRect().height;
     }
 
+    @attribute
     public get horizontalAlign(): Component.HorizontalAlign
     {
-        return Component.HorizontalAlign[toTitle(super.getAttribute("horizontal-align") || "") as keyof typeof Component.HorizontalAlign] || Component.HorizontalAlign.Left;
+        return this._horizontalAlign;
     }
 
     public set horizontalAlign(value: Component.HorizontalAlign)
     {
-        super.setAttribute("horizontal-align", value);
+        this._horizontalAlign = value;
     }
 
     public get left(): number
@@ -82,14 +84,15 @@ abstract class Component extends CustomElement
         super.style.top = `${value}px`;
     }
 
+    @attribute
     public get verticalAlign(): Component.VerticalAlign
     {
-        return Component.VerticalAlign[toTitle(super.getAttribute("vertical-align") || "") as keyof typeof Component.VerticalAlign] || Component.VerticalAlign.Top;
+        return this._verticalAlign;
     }
 
     public set verticalAlign(value: Component.VerticalAlign)
     {
-        super.setAttribute("vertical-align", value);
+        this._verticalAlign = value;
     }
 
     public get visible(): boolean
@@ -113,41 +116,6 @@ abstract class Component extends CustomElement
     public get width(): number
     {
         return super.getBoundingClientRect().width;
-    }
-
-    public static setPropertyAttribute
-    <
-        TTarget         extends Object,
-        TAttribute      extends string,
-        TPropertyMap    extends Record<TAttribute, keyof TTarget>,
-        TAttributeParse extends AttributeParse<TTarget, TPropertyMap>,
-    >
-    (target: TTarget, parser: TAttributeParse, attribute: TAttribute, raw: string): void
-    {
-        const key   = dashedToCamel(attribute) as keyof TTarget;
-        const value = parser[attribute](raw);
-
-        if (!structuralEqual(value, target[key]))
-        {
-            target[key] = value;
-        }
-    }
-
-    public setPropertyAttribute
-    <
-        TAttribute   extends string,
-        TPropertyMap extends Record<TAttribute, keyof this>,
-        TParser      extends AttributeParse<this, TPropertyMap>
-    >
-    (parser: TParser, attribute: TAttribute, raw: string): void
-    {
-        const key   = dashedToCamel(attribute) as keyof this;
-        const value = parser[attribute](raw);
-
-        if (!structuralEqual(value, this[key]))
-        {
-            this[key] = value;
-        }
     }
 }
 

@@ -92,17 +92,6 @@ export default class Modal extends Component
         super.top = value;
     }
 
-    @attribute
-    public get verticalAlign(): Component.VerticalAlign
-    {
-        return super.verticalAlign;
-    }
-
-    public set verticalAlign(value: Component.VerticalAlign)
-    {
-        super.verticalAlign = value;
-    }
-
     public get visible(): boolean
     {
         return super.visible;

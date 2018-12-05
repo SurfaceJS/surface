@@ -1,9 +1,10 @@
-import { Func1, Indexer, Nullable }     from "@surface/core";
-import { structuralEqual }              from "@surface/core/common/object";
-import { camelToDashed, dashedToCamel } from "@surface/core/common/string";
-import CustomElement                    from ".";
-import ElementBind                      from "./internal/element-bind";
-import * as symbols                     from "./internal/symbols";
+import { Func1, Indexer, Nullable } from "@surface/core";
+import { structuralEqual }          from "@surface/core/common/object";
+import { camelToDashed }            from "@surface/core/common/string";
+import Type                         from "@surface/reflection";
+import CustomElement                from ".";
+import ElementBind                  from "./internal/element-bind";
+import * as symbols                 from "./internal/symbols";
 
 type AttributeChangedCallback = (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
 type Observable               = { [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>; };
@@ -58,16 +59,42 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
 
                 const attributeChangedCallback = (target as Indexer)["attributeChangedCallback"] as Nullable<AttributeChangedCallback>;
 
+                let converter: Func1<string, unknown>;
+
+                if (args.length == 1)
+                {
+                    converter = args[0];
+                }
+                else
+                {
+                    const fieldInfo = Type.from(target).getField(propertyKey)!;
+
+                    const type = fieldInfo.metadata["design:type"];
+
+                    switch (type)
+                    {
+                        case Boolean:
+                            converter = x => x == "true";
+                            break;
+                        case Number:
+                            converter = x => Number.parseFloat(x) || 0;
+                            break;
+                        default:
+                            converter = x => x;
+                    }
+                }
+
                 (target as Indexer)["attributeChangedCallback"] = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
                 {
-                    const property = dashedToCamel(name);
-
-                    const converter = args.length == 1 ? args[0] : (x: unknown) => x;
-                    const value     = getter.call(this);
-
-                    if (!structuralEqual(value, converter(newValue)))
+                    if (name == attributeName)
                     {
-                        (this as Indexer)[property] = newValue;
+                        const current   = getter.call(this);
+                        const converted = converter(newValue);
+
+                        if (!structuralEqual(current, converted))
+                        {
+                            (this as Indexer)[propertyKey] = converted;
+                        }
                     }
 
                     if (attributeChangedCallback)

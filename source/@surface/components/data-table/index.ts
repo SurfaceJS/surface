@@ -6,8 +6,7 @@ import Enumerable                            from "@surface/enumerable";
 import Observer                              from "@surface/observer";
 import Component                             from "..";
 import { attribute, element }                from "../decorators";
-import localize, { Localization }            from "../locale";
-import { AttributeParse }                    from "../types";
+import localize, { Localization }            from "../locales";
 import DataCell                              from "./data-cell";
 import DataFooterGroup                       from "./data-footer-group";
 import DataHeader                            from "./data-header";
@@ -26,25 +25,9 @@ import stringTemplate                        from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
 
-type PropertyMap =
-{
-    "page":            "page",
-    "page-size":       "pageSize",
-    "infinity-scroll": "infinityScroll"
-};
-
-type Attributes = keyof PropertyMap;
-
 @element("surface-data-table", template, style)
 export default class DataTable extends Component
 {
-    private readonly attributeParse: AttributeParse<DataTable, PropertyMap> =
-    {
-        "page":            (value: string) => Number.parseInt(value) || 0,
-        "page-size":       (value: string) => Number.parseInt(value) || 0,
-        "infinity-scroll": (value: string) => value == "true"
-    };
-
     private readonly criteria: Criteria;
 
     private refreshing: boolean = false;
@@ -455,11 +438,6 @@ export default class DataTable extends Component
     {
         this.criteria.skip = (page - 1) * this.pageSize;
         await this.refresh();
-    }
-
-    protected attributeChangedCallback(name: Attributes, __: Nullable<string>, newValue: string)
-    {
-        Component.setPropertyAttribute(this as DataTable, this.attributeParse, name, newValue);
     }
 
     protected connectedCallback(): void
