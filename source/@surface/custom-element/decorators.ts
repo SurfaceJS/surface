@@ -3,11 +3,11 @@ import { structuralEqual }          from "@surface/core/common/object";
 import { camelToDashed }            from "@surface/core/common/string";
 import Type                         from "@surface/reflection";
 import CustomElement                from ".";
+import { LifeCycle }                from "./interfaces/types";
 import ElementBind                  from "./internal/element-bind";
 import * as symbols                 from "./internal/symbols";
 
-type AttributeChangedCallback = (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
-type Observable               = { [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>; };
+type Observable = { [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>; };
 
 function isCustomElement(source: Function): source is typeof CustomElement
 {
@@ -47,17 +47,25 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
                 const getter = descriptor.get;
                 const setter = descriptor.set;
 
-                descriptor.set = function(this: HTMLElement, value: unknown)
-                {
-                    if (getter.call(this) == value)
+                Object.defineProperty
+                (
+                    target,
+                    propertyKey,
                     {
-                        setter.call(this, value);
+                        get: getter,
+                        set: function(this: HTMLElement, value: unknown)
+                        {
+                            if (getter.call(this) == value)
+                            {
+                                setter.call(this, value);
 
-                        this.setAttribute(attributeName, `${value}`);
+                                this.setAttribute(attributeName, `${value}`);
+                            }
+                        },
                     }
-                };
+                );
 
-                const attributeChangedCallback = (target as Indexer)["attributeChangedCallback"] as Nullable<AttributeChangedCallback>;
+                const attributeChangedCallback = (target as LifeCycle).attributeChangedCallback;
 
                 let converter: Func1<string, unknown>;
 
@@ -84,7 +92,7 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
                     }
                 }
 
-                (target as Indexer)["attributeChangedCallback"] = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+                (target as LifeCycle).attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
                 {
                     if (name == attributeName)
                     {

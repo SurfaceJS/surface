@@ -531,14 +531,16 @@ export default class DataTable extends Component
         if (row.new)
         {
             row.save();
-            this.dataProvider.create(row.reference);
 
-            this._page    = this.pageCount;
-            this._editing = true;
+            await this.dataProvider.create(row.reference);
 
-            await this.setPage(this._page);
+            await this.refresh();
 
-            Observer.notify(this, "page");
+            this._page = this.pageCount;
+
+            await this.setPage(this.pageCount);
+
+            super.notify("page");
         }
         else
         {

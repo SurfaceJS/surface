@@ -23,12 +23,4 @@ export default class Icon extends Component
         this._name = value;
         super.setAttribute("name", value);
     }
-
-    protected attributeChangedCallback(_: string, __: Nullable<string>, newValue: string)
-    {
-        if (this.name != newValue)
-        {
-            this.name = newValue;
-        }
-    }
 }

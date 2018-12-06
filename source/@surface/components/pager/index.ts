@@ -57,13 +57,14 @@ export default class Pager extends Component
             {
                 this.page = value;
             }
-
-            if (value > 0 && this.page == 0)
+            else if (value > 0 && this.page == 0)
             {
                 this.page = 1;
             }
-
-            this.changed();
+            else
+            {
+                this.changed();
+            }
         }
     }
 

@@ -5,6 +5,7 @@ import { attribute, element }                   from "../../../decorators";
 import { Operator as _Operator, Type as _Type } from "../types";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
+import { AttributeConverter } from '../../../types';
 
 type Condition = "none"|"contains"|"not-in"|"lesser-then"|"greater-than";
 type Operator = _Operator;
@@ -19,14 +20,15 @@ export type Filter =
     value:     unknown,
 };
 
+const attributeConverter: AttributeConverter<DataFilterItem, "operator"|"type"> =
+{
+    "operator": (value: string) => ["and", "or"].includes(value) ? value as Operator : null,
+    "type":     (value: string) => ["array", "boolean", "number", "string"].includes(value) ? value as Type : "string",
+};
+
 @element("surface-data-filter-item", template, style)
 export default class DataFilterItem extends Component
 {
-    private static attributeParse =
-    {
-        "operator": (value: string) => ["and", "or"].includes(value) ? value as Operator : null,
-        "type":     (value: string) => ["array", "boolean", "number", "string"].includes(value) ? value as Type : "string",
-    };
 
     private static predicates: Array<KeyValue> =
     [
@@ -62,7 +64,7 @@ export default class DataFilterItem extends Component
         this._condition = value;
     }
 
-    @attribute
+    @attribute(attributeConverter.operator)
     public get operator(): Operator
     {
         return this._operator;
@@ -73,7 +75,7 @@ export default class DataFilterItem extends Component
         this._operator = value;
     }
 
-    @attribute
+    @attribute(attributeConverter.type)
     public get type(): Type
     {
         return this._type;
@@ -111,16 +113,6 @@ export default class DataFilterItem extends Component
         super();
         this.type     = type || "string";
         this.operator = coalesce(operator, null);
-    }
-
-    protected attributeChangedCallback(name: "operator"|"type", _: Nullable<string>, newValue: string)
-    {
-        const value = DataFilterItem.attributeParse[name](newValue);
-
-        if (value != this[name])
-        {
-            this[name] = value;
-        }
     }
 
     protected setValue(value: unknown): void

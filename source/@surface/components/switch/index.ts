@@ -51,14 +51,6 @@ export default class Switch extends Component
         super.dispatchEvent(new Event("change"));
     }
 
-    protected attributeChangedCallback(name: "value", _: Nullable<string>, newValue: string)
-    {
-        if (newValue != this[name])
-        {
-            this[name] = newValue;
-        }
-    }
-
     public appendChild<T extends Node>(element: T): T
     {
         if (typeGuard<Node, HTMLTemplateElement>(element, x => x.nodeName == "template"))

@@ -133,14 +133,4 @@ export default class ForEach extends Component
             }
         }
     }
-
-    protected attributeChangedCallback(name: "start"|"end", _: Nullable<string>, newValue: Nullable<string>)
-    {
-        const value = Number.parseInt(`${newValue}`) || 0;
-
-        if (value != this[name])
-        {
-            this[name] = value;
-        }
-    }
 }
