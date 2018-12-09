@@ -1,9 +1,9 @@
-import { Action, Action1, Indexer } from "@surface/core";
-import Type                         from "@surface/reflection";
-import FieldInfo                    from "@surface/reflection/field-info";
-import MemberInfo                   from "@surface/reflection/member-info";
-import MethodInfo                   from "@surface/reflection/method-info";
-import PropertyInfo                 from "@surface/reflection/property-info";
+import { Action1, Func, Indexer } from "@surface/core";
+import Type                       from "@surface/reflection";
+import FieldInfo                  from "@surface/reflection/field-info";
+import MemberInfo                 from "@surface/reflection/member-info";
+import MethodInfo                 from "@surface/reflection/method-info";
+import PropertyInfo               from "@surface/reflection/property-info";
 
 export const OBSERVERS = Symbol("observer:observers");
 
@@ -25,8 +25,8 @@ export default class Observer
                     target,
                     member.key,
                     {
-                        get: member.getter as Action|undefined,
-                        set: function (this: typeof target, value: unknown)
+                        get: member.getter as Func<unknown>|undefined,
+                        set(this: typeof target, value: unknown)
                         {
                             if (!member.getter || !Object.is(member.getter.call(this), value))
                             {
@@ -48,11 +48,11 @@ export default class Observer
                     target,
                     `_${member.key.toString()}`,
                     {
-                        get: function(this: Observable)
+                        get(this: Observable)
                         {
                             return this[privateKey];
                         },
-                        set: function (this: Observable, value: unknown)
+                        set(this: Observable, value: unknown)
                         {
                             if (!Object.is(value, this[privateKey]))
                             {
@@ -77,11 +77,11 @@ export default class Observer
                 target,
                 member.key,
                 {
-                    get: function(this: Observable)
+                    get(this: Observable)
                     {
                         return this[privateKey];
                     },
-                    set: function (this: Observable, value: unknown)
+                    set(this: Observable, value: unknown)
                     {
                         if (!Object.is(value, this[privateKey]))
                         {

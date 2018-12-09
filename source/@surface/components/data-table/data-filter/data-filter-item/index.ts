@@ -1,11 +1,10 @@
-import { Nullable }                             from "@surface/core";
 import { coalesce }                             from "@surface/core/common/generic";
 import Component                                from "../../../";
 import { attribute, element }                   from "../../../decorators";
+import { AttributeConverter }                   from "../../../types";
 import { Operator as _Operator, Type as _Type } from "../types";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
-import { AttributeConverter } from '../../../types';
 
 type Condition = "none"|"contains"|"not-in"|"lesser-then"|"greater-than";
 type Operator = _Operator;

@@ -1,4 +1,3 @@
-import { Nullable }           from "@surface/core";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import { setGlobalStyle }     from "../internal/common";
@@ -12,6 +11,7 @@ setGlobalStyle("material-design", fontFace);
 export default class Icon extends Component
 {
     private _name: string = "";
+
     @attribute
     public get name(): string
     {
@@ -21,6 +21,5 @@ export default class Icon extends Component
     public set name(value: string)
     {
         this._name = value;
-        super.setAttribute("name", value);
     }
 }

@@ -1,6 +1,5 @@
 import { Action, Action1 } from "@surface/core";
 import ActionQueue         from "@surface/core/action-queue";
-import { dashedToCamel }   from "@surface/core/common/string";
 import Observer            from "@surface/observer";
 import FieldInfo           from "@surface/reflection/field-info";
 import MemberInfo          from "@surface/reflection/member-info";
@@ -27,27 +26,12 @@ export default class DataBind
 
         if (!hooks.includes(member.key) && member instanceof FieldInfo)
         {
-            if (target instanceof HTMLElement)
+            if (target instanceof HTMLInputElement)
             {
-                const setAttribute = target.setAttribute;
+                type Key = keyof HTMLInputElement;
 
-                target.setAttribute = function (qualifiedName: string, value: string)
-                {
-                    setAttribute.call(this, qualifiedName, value);
-
-                    if (dashedToCamel(qualifiedName) == member.key)
-                    {
-                        observer.notify(value);
-                    }
-                };
-
-                if (target instanceof HTMLInputElement)
-                {
-                    type Key = keyof HTMLInputElement;
-
-                    target.addEventListener("change", function () { observer.notify(this[member.key as Key]); });
-                    target.addEventListener("keyup",  function () { observer.notify(this[member.key as Key]); });
-                }
+                target.addEventListener("change", function () { observer.notify(this[member.key as Key]); });
+                target.addEventListener("keyup",  function () { observer.notify(this[member.key as Key]); });
             }
 
             hooks.push(member.key);

@@ -1,4 +1,3 @@
-import { Nullable }           from "@surface/core";
 import { typeGuard }          from "@surface/core/common/generic";
 import CustomElement          from "@surface/custom-element";
 import Component              from "..";

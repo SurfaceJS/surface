@@ -5,17 +5,19 @@ abstract class Component extends CustomElement
 {
     private storedDisplay: string|null = null;
 
+    private _disabled:        boolean                   = false;
     private _horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
     private _verticalAlign:   Component.VerticalAlign   = Component.VerticalAlign.Top;
 
+    @attribute
     public get disabled(): boolean
     {
-        return super.getAttribute("disabled") == "true";
+        return this._disabled;
     }
 
     public set disabled(value: boolean)
     {
-        super.setAttribute("disabled", value.toString());
+        this._disabled = value;
     }
 
     public get height(): number

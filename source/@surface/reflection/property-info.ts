@@ -1,10 +1,10 @@
-import { Nullable } from "@surface/core";
-import FieldInfo    from "./field-info";
-import Type         from "./type";
+import { Action1, Func, Nullable } from "@surface/core";
+import FieldInfo                   from "./field-info";
+import Type                        from "./type";
 
 export default class PropertyInfo extends FieldInfo
 {
-    public get getter(): Nullable<Function>
+    public get getter(): Nullable<Func<unknown>>
     {
         return this.descriptor.get;
     }
@@ -14,7 +14,7 @@ export default class PropertyInfo extends FieldInfo
         return super.readonly || (!!this.descriptor.get && !this.descriptor.set);
     }
 
-    public get setter(): Nullable<Function>
+    public get setter(): Nullable<Action1<unknown>>
     {
         return this.descriptor.set;
     }

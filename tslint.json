@@ -1,5 +1,13 @@
 {
     "defaultSeverity": "warning",
+    "linterOptions":
+    {
+        "exclude":
+        [
+          "*.json",
+          "**/*.json"
+        ]
+    },
     "rules":
     {
         "adjacent-overload-signatures": true,

@@ -1,8 +1,8 @@
-import Component   from "..";
-import { element } from "../decorators";
-import template    from "./index.html";
-import style       from "./index.scss";
-import ListItem    from "./list-item";
+import Component              from "..";
+import { attribute, element } from "../decorators";
+import template               from "./index.html";
+import style                  from "./index.scss";
+import ListItem               from "./list-item";
 
 @element("surface-list", template, style)
 export default class List extends Component
@@ -11,14 +11,17 @@ export default class List extends Component
 
     private readonly _items: Array<ListItem> = [];
 
+    private _hideAddButton: boolean = false;
+
+    @attribute
     public get hideAddButton(): boolean
     {
-        return super.getAttribute("hide-add-button") == "true";
+        return this._hideAddButton;
     }
 
     public set hideAddButton(value: boolean)
     {
-        super.setAttribute("hide-add-button", value.toString());
+        this._hideAddButton = value;
     }
 
     public get items(): Array<ListItem>

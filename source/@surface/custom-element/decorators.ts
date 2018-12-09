@@ -1,71 +1,68 @@
-import { Func1, Indexer, Nullable } from "@surface/core";
-import { structuralEqual }          from "@surface/core/common/object";
-import { camelToDashed }            from "@surface/core/common/string";
-import Type                         from "@surface/reflection";
-import CustomElement                from ".";
-import { LifeCycle }                from "./interfaces/types";
-import ElementBind                  from "./internal/element-bind";
-import * as symbols                 from "./internal/symbols";
+import { Func1, Func2, Indexer, Nullable } from "@surface/core";
+import { typeGuard }                       from "@surface/core/common/generic";
+import { structuralEqual }                 from "@surface/core/common/object";
+import { camelToDashed }                   from "@surface/core/common/string";
+import Type                                from "@surface/reflection";
+import CustomElement                       from ".";
+import { LifeCycle }                       from "./interfaces/types";
+import ElementBind                         from "./internal/element-bind";
+import * as symbols                        from "./internal/symbols";
 
-type Observable = { [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>; };
-
-function isCustomElement(source: Function): source is typeof CustomElement
+type ProxyFuncion          = Function & { [symbols.PROXY_FUNCION]?: boolean };
+type AttributteConvertable =
 {
-    return source.prototype instanceof CustomElement;
-}
-
-function isHTMLElement(source: Function): source is typeof HTMLElement
-{
-    return source.prototype instanceof HTMLElement;
-}
+    [symbols.CONVERTERS]?:          Record<string, Func2<Indexer, string, unknown>>;
+    [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>;
+    [symbols.REFLECTED_ATTRIBUTES]?: Array<string>;
+};
 
 export function attribute<T>(converter: Func1<string, T>): PropertyDecorator;
-export function attribute<T extends object>(target: object, propertyKey: string|symbol): void;
-export function attribute(...args: [Func1<string, unknown>]|[object, string|symbol]): PropertyDecorator|void
+export function attribute<T extends object>(target: object, propertyKey: string|symbol, descriptor: PropertyDescriptor): void;
+export function attribute(...args: [Func1<string, unknown>]|[object, string|symbol, PropertyDescriptor]): PropertyDecorator|void
 {
-    const decorator = (target: object, propertyKey: string|symbol) =>
+    const decorator = (target: object, propertyKey: string|symbol, descriptor: PropertyDescriptor) =>
     {
-        if (target instanceof HTMLElement && typeof propertyKey == "string")
+        if (typeGuard<object, LifeCycle<HTMLElement> & AttributteConvertable & Indexer>(target, x => x instanceof HTMLElement) && typeof propertyKey == "string")
         {
-            const constructor = target.constructor as Observable;
-
-            if (!constructor[symbols.OBSERVED_ATTRIBUTES])
-            {
-                const values: Array<string> = [];
-                Object.defineProperty(target.constructor, symbols.OBSERVED_ATTRIBUTES, { get: () => values } );
-                Object.defineProperty(target.constructor, "observedAttributes", { get: () => constructor[symbols.OBSERVED_ATTRIBUTES] });
-            }
-
             const attributeName = camelToDashed(propertyKey);
 
-            constructor[symbols.OBSERVED_ATTRIBUTES]!.push(attributeName);
+            const observedAttributes = target[symbols.OBSERVED_ATTRIBUTES] = target.hasOwnProperty(symbols.OBSERVED_ATTRIBUTES) ?
+                target[symbols.OBSERVED_ATTRIBUTES]!
+                : !!target[symbols.OBSERVED_ATTRIBUTES] ?
+                    [...(target[symbols.OBSERVED_ATTRIBUTES] || [])]
+                    : [];
 
-            const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey)!;
+            observedAttributes.push(attributeName);
+
+            if (!target.constructor.hasOwnProperty("observedAttributes"))
+            {
+                Object.defineProperty(target.constructor, "observedAttributes", { get: () => target[symbols.OBSERVED_ATTRIBUTES] });
+            }
 
             if (descriptor.get && descriptor.set)
             {
-                const getter = descriptor.get;
                 const setter = descriptor.set;
 
-                Object.defineProperty
-                (
-                    target,
-                    propertyKey,
+                descriptor.set = function(this: HTMLElement & AttributteConvertable, value: unknown)
+                {
+                    if (!Object.is(descriptor.get!.call(this), value))
                     {
-                        get: getter,
-                        set: function(this: HTMLElement, value: unknown)
-                        {
-                            if (getter.call(this) == value)
-                            {
-                                setter.call(this, value);
+                        const refletedAttributes = this[symbols.REFLECTED_ATTRIBUTES] = this[symbols.REFLECTED_ATTRIBUTES] || [];
 
-                                this.setAttribute(attributeName, `${value}`);
-                            }
-                        },
+                        setter.call(this, value);
+
+                        refletedAttributes.push(attributeName);
+
+                        this.setAttribute(attributeName, `${value}`);
+
+                        refletedAttributes.splice(refletedAttributes.indexOf(attributeName), 1);
                     }
-                );
+                };
 
-                const attributeChangedCallback = (target as LifeCycle).attributeChangedCallback;
+                const type = Type.from(target);
+
+                const methodInfo = type.getMethod("attributeChangedCallback");
+                const callback   = (methodInfo && methodInfo.invoke || null) as Nullable<ProxyFuncion>;
 
                 let converter: Func1<string, unknown>;
 
@@ -75,11 +72,7 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
                 }
                 else
                 {
-                    const fieldInfo = Type.from(target).getField(propertyKey)!;
-
-                    const type = fieldInfo.metadata["design:type"];
-
-                    switch (type)
+                    switch (type.getField(propertyKey)!.metadata["design:type"])
                     {
                         case Boolean:
                             converter = x => x == "true";
@@ -92,24 +85,51 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
                     }
                 }
 
-                (target as LifeCycle).attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+                const converters = target[symbols.CONVERTERS] = target.hasOwnProperty(symbols.CONVERTERS) ?
+                    target[symbols.CONVERTERS]!
+                    : !!target[symbols.CONVERTERS] ?
+                        {...target[symbols.CONVERTERS] }
+                        : { };
+
+                const conversionHandler = (target: Indexer, value: string) =>
                 {
-                    if (name == attributeName)
-                    {
-                        const current   = getter.call(this);
-                        const converted = converter(newValue);
+                    const current   = target[propertyKey];
+                    const converted = converter(value);
 
-                        if (!structuralEqual(current, converted))
-                        {
-                            (this as Indexer)[propertyKey] = converted;
-                        }
-                    }
-
-                    if (attributeChangedCallback)
+                    if (!structuralEqual(current, converted))
                     {
-                        attributeChangedCallback.call(this, name, oldValue, newValue, namespace);
+                        target[propertyKey] = converted;
                     }
                 };
+
+                converters[attributeName] = conversionHandler;
+
+                if (!callback || !callback[symbols.PROXY_FUNCION])
+                {
+                    target.attributeChangedCallback = function(this: HTMLElement & AttributteConvertable, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+                    {
+                        const reflectedAttributes = this[symbols.REFLECTED_ATTRIBUTES] || [];
+
+                        if (reflectedAttributes.includes(name))
+                        {
+                            return;
+                        }
+
+                        this[symbols.CONVERTERS]![name](this, newValue);
+
+                        if (callback)
+                        {
+                            callback.call(this, name, oldValue, newValue, namespace);
+                        }
+                    };
+
+                    if (callback)
+                    {
+                        callback[symbols.PROXY_FUNCION] = true;
+                    }
+
+                    (target.attributeChangedCallback as ProxyFuncion)[symbols.PROXY_FUNCION] = true;
+                }
             }
         }
         else
@@ -120,12 +140,12 @@ export function attribute(...args: [Func1<string, unknown>]|[object, string|symb
 
     if (args.length == 1)
     {
-        return decorator;
+        return decorator as Function as PropertyDecorator; // Waiting type definition fix;
     }
     else
     {
-        const [target, propertyKey] = args;
-        decorator(target, propertyKey);
+        const [target, propertyKey, descriptor] = args;
+        decorator(target, propertyKey, descriptor);
     }
 }
 
@@ -133,9 +153,9 @@ export function element(name: string, template?: string, style?: string, options
 {
     return <T extends Function>(target: T) =>
     {
-        if (isHTMLElement(target))
+        if (typeGuard<Function, typeof HTMLElement>(target, x => x.prototype instanceof HTMLElement))
         {
-            if (isCustomElement(target))
+            if (typeGuard<Function, typeof CustomElement>(target, x => x.prototype instanceof CustomElement))
             {
                 const templateElement = document.createElement("template");
 

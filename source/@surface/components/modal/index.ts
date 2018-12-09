@@ -37,17 +37,6 @@ export default class Modal extends Component
 
     private _startPosition: StartPosition = "none";
 
-    @attribute
-    public get horizontalAlign(): Component.HorizontalAlign
-    {
-        return super.horizontalAlign;
-    }
-
-    public set horizontalAlign(value: Component.HorizontalAlign)
-    {
-        super.horizontalAlign = value;
-    }
-
     public get left(): number
     {
         return this._left || super.left;
@@ -189,7 +178,7 @@ export default class Modal extends Component
         }
     }
 
-    protected attributeChangedCallback()
+    protected attributeChangedCallback(): void
     {
         if (this.visible)
         {

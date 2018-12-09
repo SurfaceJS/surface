@@ -1,29 +1,33 @@
-import { dashedToCamel, toTitle } from "@surface/core/common/string";
-import Component                  from "..";
-import { element }                from "../decorators";
-import style                      from "./index.scss";
+import Component              from "..";
+import { attribute, element } from "../decorators";
+import style                  from "./index.scss";
 
 @element("surface-stack-panel", "", style)
 export class StackPanel extends Component
 {
+    private _content:     StackPanel.Content     = StackPanel.Content.None;
+    private _orientation: StackPanel.Orientation = StackPanel.Orientation.Vertical;
+
+    @attribute
     public get content(): StackPanel.Content
     {
-        return StackPanel.Content[toTitle(super.getAttribute("content") || "") as keyof typeof StackPanel.Content] || StackPanel.Content.None;
+        return this._content;
     }
 
     public set content(value: StackPanel.Content)
     {
-        super.setAttribute("content", dashedToCamel(StackPanel.Content[value].toLowerCase()));
+        this._content = value;
     }
 
+    @attribute
     public get orientation(): StackPanel.Orientation
     {
-        return StackPanel.Orientation[toTitle(super.getAttribute("orientation") || "") as keyof typeof StackPanel.Orientation] || StackPanel.Orientation.Vertical;
+        return this._orientation;
     }
 
     public set orientation(value: StackPanel.Orientation)
     {
-        super.setAttribute("orientation", dashedToCamel(StackPanel.Orientation[value]));
+        this._orientation = value;
     }
 }
 
@@ -31,16 +35,16 @@ export namespace StackPanel
 {
     export enum Content
     {
-        None,
-        Center,
-        Space,
-        Justify
+        None    = "",
+        Center  = "center",
+        Space   = "space",
+        Justify = "justify"
     }
 
     export enum Orientation
     {
-        Vertical,
-        Horizontal
+        Vertical   = "vertical",
+        Horizontal = "horizontal",
     }
 }
 
