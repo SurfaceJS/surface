@@ -5,16 +5,21 @@ import MemberInfo                 from "@surface/reflection/member-info";
 import MethodInfo                 from "@surface/reflection/method-info";
 import PropertyInfo               from "@surface/reflection/property-info";
 
-export const OBSERVERS = Symbol("observer:observers");
+export const OBSERVERS     = Symbol("observer:observers");
+export const OBSERVED_PATH = Symbol("observer:observed-path");
 
-type Observable = Indexer & { [OBSERVERS]?: Map<string|symbol, Observer> };
-type Key        = keyof Observable;
+type Observable = Indexer &
+{
+    [OBSERVERS]?:     Map<string|symbol, Observer>
+    [OBSERVED_PATH]?: boolean
+};
+type ObservedKey = keyof Observable;
 
 export default class Observer
 {
     private readonly listeners: Array<Action1<unknown>> = [];
 
-    private static inject(target: Observable, member: MemberInfo, observer: Observer): void
+    private static inject(target: Observable, member: MemberInfo): void
     {
         if (member instanceof PropertyInfo)
         {
@@ -26,13 +31,25 @@ export default class Observer
                     member.key,
                     {
                         get: member.getter as Func<unknown>|undefined,
-                        set(this: typeof target, value: unknown)
+                        set(this: Observable, value: unknown)
                         {
-                            if (!member.getter || !Object.is(member.getter.call(this), value))
+                            let previous: unknown;
+
+                            if (!member.getter || !Object.is(previous = member.getter.call(this), value))
                             {
+                                if (Observer.isObserved(previous))
+                                {
+                                    Observer.migrate(previous, value);
+                                }
+
                                 member.setter!.call(this, value);
 
-                                observer.notify(value);
+                                const observer = this[OBSERVERS]!.get(member.key);
+
+                                if (observer)
+                                {
+                                    observer.notify(value);
+                                }
                             }
                         }
                     }
@@ -40,8 +57,8 @@ export default class Observer
             }
             else if (`_${member.key.toString()}` in target)
             {
-                const privateKey = `__${member.key.toString()}__` as Key;
-                target[privateKey] = target[member.key as Key];
+                const privateKey = `__${member.key.toString()}__` as ObservedKey;
+                target[privateKey] = target[member.key as ObservedKey];
 
                 Object.defineProperty
                 (
@@ -54,11 +71,24 @@ export default class Observer
                         },
                         set(this: Observable, value: unknown)
                         {
-                            if (!Object.is(value, this[privateKey]))
+                            let previous: unknown;
+
+                            if (!Object.is(value, previous = this[privateKey]))
                             {
+
+                                if (Observer.isObserved(previous))
+                                {
+                                   Observer.migrate(previous, value);
+                                }
+
                                 this[privateKey] = value;
 
-                                observer.notify(value);
+                                const observer = this[OBSERVERS]!.get(member.key);
+
+                                if (observer)
+                                {
+                                    observer.notify(value);
+                                }
                             }
                         }
                     }
@@ -68,10 +98,11 @@ export default class Observer
         else if (member instanceof FieldInfo)
         {
             const privateKey = typeof member.key == "symbol" ?
-                Symbol(`_${member.key.toString()}`) as Key
-                : `_${member.key.toString()}` as Key;
+                Symbol(`_${member.key.toString()}`) as ObservedKey
+                : `_${member.key.toString()}` as ObservedKey;
 
             target[privateKey] = member.value;
+
             Object.defineProperty
             (
                 target,
@@ -83,11 +114,23 @@ export default class Observer
                     },
                     set(this: Observable, value: unknown)
                     {
-                        if (!Object.is(value, this[privateKey]))
+                        let previous: unknown;
+
+                        if (!Object.is(value, previous = this[privateKey]))
                         {
+                            if (Observer.isObserved(previous))
+                            {
+                                Observer.migrate(previous, value);
+                            }
+
                             this[privateKey] = value;
 
-                            observer.notify(value);
+                            const observer = this[OBSERVERS]!.get(member.key);
+
+                            if (observer)
+                            {
+                                observer.notify(value);
+                            }
                         }
                     }
                 }
@@ -95,10 +138,53 @@ export default class Observer
         }
         else if (member instanceof MethodInfo)
         {
-            target[member.key as Key] = function(...args: Array<unknown>)
+            target[member.key as ObservedKey] = function(...args: Array<unknown>)
             {
-                observer.notify(member.invoke.call(target, args));
+                const observer = this[OBSERVERS]!.get(member.key);
+
+                if (observer)
+                {
+                    observer.notify(member.invoke.call(target, args));
+                }
             };
+        }
+    }
+
+    private static isObserved(target: unknown): boolean;
+    private static isObserved(target: Observable): boolean;
+    private static isObserved(target: Observable): boolean
+    {
+        return !!target[OBSERVED_PATH] || !!target[OBSERVERS];
+    }
+
+    private static migrate(source: unknown, target: unknown): void;
+    private static migrate(source: Observable, target: Observable): void;
+    private static migrate(source: Observable, target: Observable): void
+    {
+        for (const [observedKey, sourceObserver] of source[OBSERVERS]!.entries())
+        {
+            if (Observer.isObserved(source[observedKey as ObservedKey]))
+            {
+                Observer.migrate(source[observedKey as ObservedKey], target[observedKey as ObservedKey]);
+            }
+
+            const observers = target[OBSERVERS] = target[OBSERVERS] || new Map<string, Observer>();
+
+            if (observers.has(observedKey))
+            {
+                observers.get(observedKey)!.subscribe(...sourceObserver.listeners);
+            }
+            else
+            {
+                const observer = Observer
+                    .observe(target, observedKey as ObservedKey)
+                    .subscribe(...sourceObserver.listeners)
+                    .notify(target[observedKey as ObservedKey]);
+
+                observers.set(observedKey, observer);
+            }
+
+            sourceObserver.clear();
         }
     }
 
@@ -128,7 +214,7 @@ export default class Observer
 
             const observer = new Observer();
 
-            Observer.inject(target, member, observer);
+            Observer.inject(target, member);
 
             observers.set(key, observer);
         }
@@ -148,15 +234,35 @@ export default class Observer
         return this;
     }
 
-    public subscribe(action: Action1<unknown>): Observer
+    public subscribe(...actions: Array<Action1<unknown>>): Observer
     {
-        this.listeners.push(action);
+        for (const action of actions)
+        {
+            if (!this.listeners.includes(action))
+            {
+                this.listeners.push(action);
+            }
+        }
+
         return this;
     }
 
-    public unsubscribe(action: Action1<unknown>): Observer
+    public unsubscribe(...actions: Array<Action1<unknown>>): Observer
     {
-        this.listeners.splice(this.listeners.indexOf(action), 1);
+        for (const action of actions)
+        {
+            const index = this.listeners.indexOf(action);
+
+            if (index > -1)
+            {
+                this.listeners.splice(this.listeners.indexOf(action), 1);
+            }
+            else
+            {
+                throw new Error("Action not subscribed");
+            }
+        }
+
         return this;
     }
 }
