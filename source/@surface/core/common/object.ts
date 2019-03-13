@@ -52,6 +52,18 @@ export function *enumerateKeys(target: object): IterableIterator<string>
     } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
 
+export function getValue(target: Indexer, path: string): unknown
+{
+    const [key, ...keys] = path.split(".");
+
+    if (keys.length > 0)
+    {
+        return getValue(target[key] as Indexer, keys.join("."));
+    }
+
+    return target[key];
+}
+
 /**
  * Deeply merges two or more objects.
  * @param target Object to receive merge.

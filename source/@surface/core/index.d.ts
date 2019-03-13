@@ -1,7 +1,10 @@
+// tslint:disable:interface-name
+// tslint:disable:no-any
+
 export interface Constructor<T = Object> extends Function
 {
-    new (...args: Array<any>): T;
     readonly prototype: T;
+    new (...args: Array<any>): T;
 }
 
 export type Action                                   = () => void;
@@ -24,6 +27,6 @@ export type MethodsOf<T extends object>              = KeysOfType<T, Function>;
 export type Nullable<T = Object>                     = T|null|undefined;
 export type Omit<T, U extends keyof T>               = { [K in Exclude<keyof T, U>]: T[K] };
 export type OnlyOfType<T extends object, U>          = Pick<T, KeysOfType<T, U>>;
-export type Overwrite<T, U>                          = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] }; 
+export type Overwrite<T, U>                          = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] };
 export type Required<T>                              = { [K in keyof T]-?: NonNullable<T[K]> };
 export type TypesOf<T>                               = T[keyof T];
