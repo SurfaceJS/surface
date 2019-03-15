@@ -9,98 +9,169 @@ export default class ReactiveSpec
     @test
     public observeProperty(): void
     {
-        const A = { child: { name: "A.child", value: 1 }};
-        const B = { child: { name: "B.child", value: 2 }};
+        const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
+        const listener = { instance: { name: "Listener", value: 2 }};
 
-        Reactive.observeProperty(A.child, "value", x => B.child.value = x);
+        Reactive.observeProperty(emmiter.instance, "value", x => listener.instance.value = x);
 
-        chai.expect(A.child.value == B.child.value, "#1").to.equal(true);
+        chai.expect(emmiter.instance.value == listener.instance.value, "#1").to.equal(true);
 
-        A.child.value = 5;
+        emmiter.instance.value = 5;
 
-        chai.expect(A.child.value == B.child.value, "#2").to.equal(true);
+        chai.expect(emmiter.instance.value == listener.instance.value, "#2").to.equal(true);
 
-        B.child.value = 6;
+        listener.instance.value = 6;
 
-        chai.expect(A.child.value == B.child.value, "#3").to.equal(false);
+        chai.expect(emmiter.instance.value == listener.instance.value, "#3").to.equal(false);
     }
 
     @test
     public observePath(): void
     {
-        const A = { child: { name: "A.child", value: 1 }};
-        const B = { child: { name: "B.child", value: 2 }};
+        const emmiterA  = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
+        const emmiterB  = { instance: { name: "Emmiter B", deep: { path: { value: 2 } } } };
 
-        Reactive.observePath(A, "child.value", x => B.child.value = x as number);
+        const listenerA1 = { instance: { name: "Listener A", deep: { path: { value: 1 } } } };
+        const listenerA2 = { instance: { name: "Listener C", deep: { path: { value: 3 } } } };
+        const listenerB1 = { instance: { name: "Listener B", deep: { path: { value: 2 } } } };
+        const listenerB2 = { instance: { name: "Listener D", deep: { path: { value: 4 } } } };
 
-        chai.expect(A.child.value == B.child.value, "#1").to.equal(true);
+        Reactive.observePath(emmiterA, "instance.deep.path.value", x => listenerA1.instance.deep.path.value = x as number);
+        Reactive.observePath(emmiterA, "instance.deep",            x => listenerA2.instance.deep = x as typeof listenerA2["instance"]["deep"]);
+        Reactive.observePath(emmiterB, "instance.deep.path.value", x => listenerB1.instance.deep.path.value = x as number);
+        Reactive.observePath(emmiterB, "instance.deep",            x => listenerB2.instance.deep = x as typeof listenerA2["instance"]["deep"]);
 
-        A.child.value = 5;
+        chai.expect(listenerA1.instance.deep.path.value, "#01").to.equal(1);
+        chai.expect(listenerA2.instance.deep.path.value, "#02").to.equal(1);
 
-        chai.expect(A.child.value == B.child.value, "#2").to.equal(true);
+        chai.expect(listenerB1.instance.deep.path.value, "#03").to.equal(2);
+        chai.expect(listenerB2.instance.deep.path.value, "#04").to.equal(2);
 
-        B.child.value = 6;
+        emmiterA.instance.deep.path.value = 5;
 
-        chai.expect(A.child.value == B.child.value, "#3").to.equal(false);
+        chai.expect(listenerA1.instance.deep.path.value, "#05").to.equal(5);
 
-        A.child = { name: "new A.child", value: 10 };
+        listenerA1.instance.deep.path.value = 6;
 
-        chai.expect(A.child.value == B.child.value, "#4").to.equal(true);
+        chai.expect(emmiterA.instance.deep.path.value, "#06").to.equal(5);
+
+        listenerA2.instance.deep = { path: { value: 6 }};
+
+        chai.expect(emmiterA.instance.deep.path.value, "#07").to.equal(5);
+
+        emmiterA.instance = { name: "new A", deep: { path: { value: 10 } } };
+
+        chai.expect(listenerA1.instance.deep.path.value, "#08").to.equal(10);
+        chai.expect(listenerA2.instance.deep.path.value, "#09").to.equal(10);
+
+        emmiterA.instance.deep.path.value = 15;
+
+        chai.expect(listenerA1.instance.deep.path.value, "#10").to.equal(15);
+        chai.expect(listenerA2.instance.deep.path.value, "#11").to.equal(15);
+
+        emmiterB.instance = emmiterA.instance;
+
+        emmiterB.instance.name = "A to C";
+
+        chai.expect(listenerA1.instance.deep.path.value, "#11").to.equal(15);
+        chai.expect(listenerA2.instance.deep.path.value, "#12").to.equal(15);
+        chai.expect(listenerB1.instance.deep.path.value, "#13").to.equal(15);
+        chai.expect(listenerB2.instance.deep.path.value, "#14").to.equal(15);
+
+        emmiterB.instance = { name: "new C", deep: { path: { value: 20 } } };
+
+        chai.expect(listenerA1.instance.deep.path.value, "#15").to.equal(15);
+        chai.expect(listenerA2.instance.deep.path.value, "#16").to.equal(15);
+        chai.expect(listenerB1.instance.deep.path.value, "#17").to.equal(20);
+        chai.expect(listenerB2.instance.deep.path.value, "#18").to.equal(20);
+
+        emmiterA.instance.deep.path.value = 30;
+        emmiterB.instance.deep.path.value = 40;
+
+        chai.expect(listenerA1.instance.deep.path.value, "#19").to.equal(30);
+        chai.expect(listenerA2.instance.deep.path.value, "#20").to.equal(30);
+        chai.expect(listenerB1.instance.deep.path.value, "#21").to.equal(40);
+        chai.expect(listenerB2.instance.deep.path.value, "#22").to.equal(40);
+
+        (emmiterA.instance as Nullable) = null;
+
+        chai.expect(listenerA1.instance.deep.path.value, "#23").to.equal(30);
+        chai.expect(listenerA2.instance.deep.path.value, "#24").to.equal(30);
+
+        emmiterA.instance = { name: "new A old null", deep: { path: { value: 10 } } };
+
+        chai.expect(listenerA1.instance.deep.path.value, "#25").to.equal(10);
+        chai.expect(listenerA2.instance.deep.path.value, "#26").to.equal(10);
     }
 
     @test
     public observePathTwoWay(): void
     {
-        const A = { very: { deep: { path: { name: "A.child", value: 1 } } } };
-        const B = { very: { deep: { path: { name: "B.child", value: 2 } } } };
-        const C = { very: { deep: { path: { name: "C.child", value: 3 } } } };
-        const D = { very: { deep: { path: { name: "C.child", value: 4 } } } };
+        const leftA  = { instance: { name: "Left A",  deep: { path: { value: 1 } } } };
+        const rightA = { instance: { name: "Right B", deep: { path: { value: 2 } } } };
+        const leftB  = { instance: { name: "Left A",  deep: { path: { value: 3 } } } };
+        const rightB = { instance: { name: "Right B", deep: { path: { value: 4 } } } };
 
-        Reactive.observePath(A, "very.deep.path.value", x => B.very.deep.path.value = x as number);
-        Reactive.observePath(B, "very.deep.path.value", x => A.very.deep.path.value = x as number);
+        Reactive.observePath(leftA,  "instance.deep.path.value", x => rightA.instance.deep.path.value = x as number);
+        Reactive.observePath(rightA, "instance.deep.path.value", x => leftA.instance.deep.path.value = x as number);
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value, "#1").to.equal(true);
+        Reactive.observePath(leftB,  "instance.deep.path.value", x => rightB.instance.deep.path.value = x as number);
+        Reactive.observePath(rightB, "instance.deep.path.value", x => leftB.instance.deep.path.value = x as number);
 
-        A.very.deep.path.value = 5;
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02").to.equal(true);
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value, "#2").to.equal(true);
+        leftA.instance.deep.path.value = 5;
 
-        B.very.deep.path.value = 6;
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#03").to.equal(true);
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value, "#3").to.equal(true);
+        rightA.instance.deep.path.value = 6;
 
-        D.very = A.very;
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#04").to.equal(true);
 
-        A.very = { deep: { path: { name: "new A.child", value: 10 } } };
+        leftB.instance.deep.path.value = 7;
 
-        Reactive.observePath(D, "very.deep.path.value", x => C.very.deep.path.value = x as number);
-        Reactive.observePath(C, "very.deep.path.value", x => D.very.deep.path.value = x as number);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#05").to.equal(true);
 
-        D.very.deep.path.value = 5;
-        D.very.deep.path.name  = "replaced A.child";
+        rightB.instance.deep.path.value = 8;
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value, "#4").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#06").to.equal(true);
 
-        chai.expect(D.very.deep.path.value == C.very.deep.path.value, "#5").to.equal(true);
+        rightB.instance = leftA.instance;
 
-        A.very.deep.path = D.very.deep.path;
+        leftA.instance = { name: "new instance in left A", deep: { path: { value: 10 } } };
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value && A.very.deep.path.value == C.very.deep.path.value, "#6").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value, "#04").to.equal(10);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#05").to.equal(true);
 
-        D.very.deep.path = A.very.deep.path;
+        rightB.instance.deep.path.value = 5;
 
-        A.very.deep.path = { name: "new A.child", value: 10 };
+        chai.expect(leftB.instance.deep.path.value, "#06").to.equal(5);
+        chai.expect(rightB.instance.deep.path.value == leftB.instance.deep.path.value, "#07").to.equal(true);
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value && A.very.deep.path.value == C.very.deep.path.value, "#7").to.equal(true);
+        leftA.instance.deep.path = rightB.instance.deep.path;
 
-        (A.very as Nullable) = null;
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value, "#08").to.equal(true);
 
-        chai.expect(A.very, "#8").to.equal(null);
-        chai.expect(B.very.deep.path.value, "#9").to.equal(10);
-        chai.expect(C.very.deep.path.value, "#10").to.equal(10);
+        rightB.instance.deep.path = leftA.instance.deep.path;
 
-        A.very = { deep: { path: { name: "A.child", value: 20 } } };
+        leftA.instance.deep.path = { value: 15 };
+        rightB.instance = { name: "new instance in right B", deep: { path: { value: 20 } } };
 
-        chai.expect(A.very.deep.path.value == B.very.deep.path.value && A.very.deep.path.value == C.very.deep.path.value, "#7").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#09").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#10").to.equal(true);
+
+        (leftA.instance as Nullable) = null;
+
+        chai.expect(leftA.instance, "#09").to.equal(null);
+        chai.expect(rightA.instance.deep.path.value, "#11").to.equal(15);
+        chai.expect(leftB.instance.deep.path.value, "#12").to.equal(20);
+        chai.expect(rightB.instance.deep.path.value, "#13").to.equal(20);
+
+        leftA.instance.deep.path  = { value: 30 };
+        rightB.instance.deep.path = { value: 40 };
+
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#14").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#15").to.equal(true);
     }
 }

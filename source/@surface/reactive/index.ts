@@ -3,41 +3,46 @@ import { typeGuard }        from "@surface/core/common/generic";
 import Type                 from "@surface/reflection";
 import FieldInfo            from "@surface/reflection/field-info";
 import Observer             from "./internal/observer";
+import Reactor              from "./internal/reactor";
+import { KEYS, REACTOR }    from "./internal/symbols";
 
-const OBSERVER  = Symbol("reactive:observer");
-const UNTRACKEDS = Symbol("reactive:untracked");
-
-type Observeable = Indexer & { [OBSERVER]?: Observer, [UNTRACKEDS]?: Map<string, Observer> };
+type Reactiveable<T extends Indexer = Indexer> = T &
+{
+    [KEYS]?:    Array<string>;
+    [REACTOR]?: Reactor<T>;
+};
 
 export default class Reactive
 {
-    private static rebuildDependenceTree(target: Observeable, observer: Observer)
+    private static reactivate(target: Reactiveable, reactor: Reactor)
     {
-        if (target[OBSERVER])
-        {
-            observer.merge(target[OBSERVER]!);
-        }
-        else
-        {
-            observer.update(target);
+        const keys = new Set([...reactor.observers.keys(), ...reactor.dependencies.keys()]);
 
-            target[OBSERVER]   = observer;
-            target[UNTRACKEDS] = new Map();
-        }
-
-        for (const [key, dependency] of observer.dependencies)
+        for (const key of keys)
         {
+            const value = target[key];
+
             Reactive.makeReactive(target, key);
 
-            if (target[key])
+            if (value instanceof Object && reactor.dependencies.has(key))
             {
-                Reactive.rebuildDependenceTree(target[key] as Observeable, dependency);
+                Reactive.reactivate(value, reactor.dependencies.get(key)!);
             }
         }
     }
 
-    public static makeReactive<TTarget extends Indexer & Observeable, TKey extends keyof TTarget>(target: TTarget, key: TKey): void
+    public static makeReactive<TTarget extends Indexer, TKey extends keyof TTarget>(target: Reactiveable<TTarget>, key: TKey): void
     {
+        const keys   = target[KEYS] || [] as Array<string>;
+        target[KEYS] = keys;
+
+        if (keys.includes(key as string))
+        {
+            return;
+        }
+
+        keys.push(key as string);
+
         const member = Type.from(target).getMember(key as string);
 
         if (member instanceof FieldInfo)
@@ -55,48 +60,38 @@ export default class Reactive
                     {
                         return this[privateKey];
                     },
-                    set(this: TTarget, value: TTarget[TKey])
+                    set(this: Reactiveable<TTarget>, value: TTarget[TKey])
                     {
-                        const observer   = this[OBSERVER]!;
-                        const untrackeds = this[UNTRACKEDS]!;
-                        const oldValue   = this[privateKey];
+                        const reactor  = this[REACTOR]!;
+                        const oldValue = this[privateKey];
 
                         if (!Object.is(oldValue, value))
                         {
                             this[privateKey] = value;
 
-                            if (typeGuard<unknown, Observeable>(value, x => x instanceof Object))
+                            const dependency = reactor.dependencies.get(key)!;
+
+                            if (dependency && typeGuard<unknown, Reactiveable>(oldValue, x => x instanceof Object) && oldValue[REACTOR] && oldValue[REACTOR]!.registries.has(dependency))
                             {
-                                if (value[OBSERVER])
-                                {
-                                    if (oldValue != null && untrackeds.has(key as string))
-                                    {
-                                        const untracked = untrackeds.get(key as string)!;
-
-                                        const dependency = observer.dependencies.get(key as string)!;
-
-                                        dependency.exclude(untracked);
-
-                                        value[OBSERVER] = untracked;
-                                    }
-
-                                    const dependency = observer.dependencies.get(key as string)!;
-
-                                    dependency.merge(value[OBSERVER]!);
-
-                                    untrackeds.set(key as string, value[OBSERVER]!);
-
-                                    value[OBSERVER] = dependency;
-                                }
-                                else
-                                {
-                                    const dependency = observer.dependencies.get(key as string)!;
-
-                                    Reactive.rebuildDependenceTree(value, dependency);
-                                }
+                                oldValue[REACTOR]!.unregister(dependency);
                             }
 
-                            observer.notify();
+                            if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
+                            {
+                                if (!value[REACTOR])
+                                {
+                                    value[REACTOR] = new Reactor(value as Indexer);
+                                }
+
+                                value[REACTOR]!.register(dependency);
+
+                                value[REACTOR]!.update(value);
+                                value[REACTOR]!.notify();
+
+                                Reactive.reactivate(value, dependency as unknown as Reactor);
+                            }
+
+                            reactor.notify(key);
                         }
                     }
                 }
@@ -104,24 +99,38 @@ export default class Reactive
         }
     }
 
-    public static observePath(target: Indexer & Observeable, path: string, listener: Action1<unknown>): Observer
+    public static observe<TTarget extends Indexer & Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: Action1<TTarget[TKey]>): Reactor<TTarget>;
+    public static observe(target: Indexer & Reactiveable, path: string, listener: Action1<unknown>): Reactor;
+    public static observe(target: Indexer & Reactiveable, path: string, listener: Action1<unknown>): Reactor
+    {
+        return path.indexOf(".") > -1 ? Reactive.observePath(target, path, listener) : Reactive.observeProperty(target, path, listener);
+    }
+
+    public static observePath(target: Indexer & Reactiveable, path: string, listener: Action1<unknown>): Reactor
     {
         const [key, ...keys] = path.split(".");
 
         if (keys.length > 0)
         {
-            const observer = new Observer(target, key);
-
             Reactive.makeReactive(target, key);
+
+            const reactor = (target[REACTOR] || new Reactor(target)) as Reactor;
+
+            if (!reactor.observers.has(key))
+            {
+                reactor.observers.set(key, new Observer());
+            }
+
+            if (!(key in target))
+            {
+                throw new Error(`Property ${key} does not exist on ${target}`);
+            }
 
             const dependency = Reactive.observePath(target[key] as Indexer, keys.join("."), listener);
 
-            observer.dependencies.set(key, dependency);
+            reactor.dependencies.set(key, dependency);
 
-            target[OBSERVER]   = observer as unknown as Observer;
-            target[UNTRACKEDS] = new Map();
-
-            return observer;
+            return reactor;
         }
         else
         {
@@ -129,18 +138,22 @@ export default class Reactive
         }
     }
 
-    public static observeProperty<TTarget extends Indexer & Observeable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: Action1<TTarget[TKey]>): Observer<TTarget, TKey>
+    public static observeProperty<TTarget extends Indexer, TKey extends keyof TTarget>(target: Reactiveable<TTarget>, key: TKey, listener: Action1<TTarget[TKey]>): Reactor<TTarget>
     {
-        const observer = new Observer(target, key);
-
         Reactive.makeReactive(target, key);
 
-        observer.subscribe(listener);
-        observer.notify();
+        const reactor = target[REACTOR] || new Reactor<TTarget>(target);
 
-        target[OBSERVER]   = observer as unknown as Observer;
-        target[UNTRACKEDS] = new Map();
+        if (!reactor.observers.has(key))
+        {
+            reactor.observers.set(key, new Observer());
+        }
 
-        return observer;
+        const observer = reactor.observers.get(key as keyof TTarget)!;
+
+        observer.subscribe(listener as Action1<TTarget[keyof TTarget]>);
+        observer.notify(target[key]);
+
+        return reactor;
     }
 }

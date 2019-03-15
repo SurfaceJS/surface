@@ -1,107 +1,27 @@
-import { Action1, Indexer, Nullable } from "@surface/core";
+import { Action1 } from "@surface/core";
 
-export default class Observer<TTarget extends Indexer = Indexer, TKey extends keyof TTarget = string>
+export default class Observer<TValue = unknown>
 {
-    private readonly _dependencies: Map<string, Observer> = new Map();
-    private readonly _key:          TKey;
+    private readonly listeners: Set<Action1<TValue>> = new Set();
 
-    private readonly listeners:     Array<Action1<TTarget[TKey]>> = [];
-
-    private target: Nullable<TTarget>;
-
-    public get dependencies(): Map<keyof TTarget, Observer>
+    public subscribe(listerner: Action1<TValue>)
     {
-        return this._dependencies;
+        this.listeners.add(listerner);
     }
 
-    public get key(): TKey
+    public unsubscribe(listerner: Action1<TValue>)
     {
-        return this._key;
-    }
-
-    public constructor(target: TTarget, key: TKey)
-    {
-        this.target = target;
-        this._key   = key;
-    }
-
-    public exclude(observer: Observer): void
-    {
-        for (const listener of observer.listeners)
+        if (!this.listeners.delete(listerner))
         {
-            this.unsubscribe(listener);
-        }
-
-        for (const [key, dependency] of observer.dependencies)
-        {
-            if (this.dependencies.has(key))
-            {
-                this.dependencies.get(key)!.exclude(dependency);
-            }
-            else
-            {
-                this.dependencies.delete(key);
-            }
+            throw new Error("Listerner not subscribed");
         }
     }
 
-    public merge(observer: Observer): void
+    public notify(value: TValue): void
     {
-        for (const listener of observer.listeners)
+        for (const listerner of this.listeners)
         {
-            this.subscribe(listener);
-        }
-
-        for (const [key, dependency] of observer.dependencies)
-        {
-            if (this.dependencies.has(key))
-            {
-                this.dependencies.get(key)!.merge(dependency);
-            }
-            else
-            {
-                this.dependencies.set(key, dependency);
-            }
-        }
-    }
-
-    public subscribe(listerner: Action1<TTarget[TKey]>)
-    {
-        this.listeners.push(listerner);
-    }
-
-    public unsubscribe(listerner: Action1<TTarget[TKey]>)
-    {
-        const index = this.listeners.indexOf(listerner);
-
-        if (index > -1)
-        {
-            this.listeners.splice(index, 1);
-        }
-        else
-        {
-            throw new Error("Action not subscribed");
-        }
-    }
-
-    public update(target: Nullable<TTarget>): void
-    {
-        this.target = target;
-    }
-
-    public notify(): void
-    {
-        if (this.target)
-        {
-            for (const listerner of this.listeners)
-            {
-                listerner(this.target[this.key]);
-            }
-
-            for (const dependency of this.dependencies.values())
-            {
-                dependency.notify();
-            }
+            listerner(value);
         }
     }
 }
