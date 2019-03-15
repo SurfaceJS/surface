@@ -105,18 +105,15 @@ export default class ReactiveSpec
     }
 
     @test
-    public observePathTwoWay(): void
+    public observeTwoWay(): void
     {
         const leftA  = { instance: { name: "Left A",  deep: { path: { value: 1 } } } };
         const rightA = { instance: { name: "Right B", deep: { path: { value: 2 } } } };
         const leftB  = { instance: { name: "Left A",  deep: { path: { value: 3 } } } };
         const rightB = { instance: { name: "Right B", deep: { path: { value: 4 } } } };
 
-        Reactive.observePath(leftA,  "instance.deep.path.value", x => rightA.instance.deep.path.value = x as number);
-        Reactive.observePath(rightA, "instance.deep.path.value", x => leftA.instance.deep.path.value = x as number);
-
-        Reactive.observePath(leftB,  "instance.deep.path.value", x => rightB.instance.deep.path.value = x as number);
-        Reactive.observePath(rightB, "instance.deep.path.value", x => leftB.instance.deep.path.value = x as number);
+        Reactive.observeTwoWay(leftA, "instance.deep.path.value", rightA, "instance.deep.path.value");
+        Reactive.observeTwoWay(leftB, "instance.deep.path.value", rightB, "instance.deep.path.value");
 
         chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01").to.equal(true);
         chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02").to.equal(true);
@@ -141,13 +138,13 @@ export default class ReactiveSpec
 
         leftA.instance = { name: "new instance in left A", deep: { path: { value: 10 } } };
 
-        chai.expect(leftA.instance.deep.path.value, "#04").to.equal(10);
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#05").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value, "#07").to.equal(10);
+        chai.expect(rightA.instance.deep.path.value, "#08").to.equal(10);
 
         rightB.instance.deep.path.value = 5;
 
-        chai.expect(leftB.instance.deep.path.value, "#06").to.equal(5);
-        chai.expect(rightB.instance.deep.path.value == leftB.instance.deep.path.value, "#07").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value, "#09").to.equal(5);
+        chai.expect(rightB.instance.deep.path.value, "#10").to.equal(5);
 
         leftA.instance.deep.path = rightB.instance.deep.path;
 
@@ -158,20 +155,20 @@ export default class ReactiveSpec
         leftA.instance.deep.path = { value: 15 };
         rightB.instance = { name: "new instance in right B", deep: { path: { value: 20 } } };
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#09").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#10").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#11").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#12").to.equal(true);
 
         (leftA.instance as Nullable) = null;
 
-        chai.expect(leftA.instance, "#09").to.equal(null);
-        chai.expect(rightA.instance.deep.path.value, "#11").to.equal(15);
-        chai.expect(leftB.instance.deep.path.value, "#12").to.equal(20);
-        chai.expect(rightB.instance.deep.path.value, "#13").to.equal(20);
+        chai.expect(leftA.instance, "#13").to.equal(null);
+        chai.expect(rightA.instance.deep.path.value, "#14").to.equal(15);
+        chai.expect(leftB.instance.deep.path.value, "#15").to.equal(20);
+        chai.expect(rightB.instance.deep.path.value, "#16").to.equal(20);
 
         leftA.instance.deep.path  = { value: 30 };
         rightB.instance.deep.path = { value: 40 };
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#14").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#15").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#17").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#18").to.equal(true);
     }
 }

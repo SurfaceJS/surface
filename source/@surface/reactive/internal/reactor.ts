@@ -1,16 +1,18 @@
-import { Indexer }      from "@surface/core";
-import Observer         from "./observer";
-import PropertyObserver from "./property-observer";
+import { Indexer }     from "@surface/core";
+import Observer        from "./observer";
+import PropertySubject from "./property-subject";
+import { Subscription } from "./subscriber";
 import { REACTOR }      from "./symbols";
 
 export type Monitored<T = Indexer> = T & { [REACTOR]?: Reactor<T> };
 
 export default class Reactor<TTarget extends Indexer = Indexer>
 {
-    private readonly _dependencies:      Map<keyof TTarget, Reactor>                                  = new Map();
-    private readonly _observers:         Map<keyof TTarget, Observer<TTarget[keyof TTarget]>>         = new Map();
-    private readonly _propertyObservers: Map<keyof TTarget, PropertyObserver<TTarget, keyof TTarget>> = new Map();
-    private readonly _registries:        Set<Reactor<TTarget>>                                        = new Set();
+    private readonly _dependencies:  Map<keyof TTarget, Reactor>                          = new Map();
+    private readonly _observers:     Map<keyof TTarget, Observer<TTarget[keyof TTarget]>> = new Map();
+    private readonly _subjects:      Map<keyof TTarget, PropertySubject>                  = new Map();
+    private readonly _registries:    Set<Reactor<TTarget>>                                = new Set();
+    private readonly _subscriptions: Map<keyof TTarget, Subscription>                     = new Map();
 
     private target: Monitored<TTarget>;
 
@@ -24,14 +26,19 @@ export default class Reactor<TTarget extends Indexer = Indexer>
         return this._observers;
     }
 
-    public get propertyObservers(): Map<keyof TTarget, PropertyObserver<TTarget, keyof TTarget>>
+    public get subjects(): Map<keyof TTarget, PropertySubject>
     {
-        return this._propertyObservers;
+        return this._subjects;
     }
 
     public get registries(): Set<Reactor<TTarget>>
     {
         return this._registries;
+    }
+
+    public get subscriptions(): Map<keyof TTarget, Subscription>
+    {
+        return this._subscriptions;
     }
 
     public constructor(target: TTarget)
@@ -42,6 +49,16 @@ export default class Reactor<TTarget extends Indexer = Indexer>
 
     public notify(key?: keyof TTarget): void
     {
+        for (const dependency of this.dependencies.values())
+        {
+            dependency.notify();
+        }
+
+        for (const registry of this.registries.values())
+        {
+            registry.notify(key);
+        }
+
         if (key)
         {
             if (this.observers.has(key))
@@ -49,26 +66,21 @@ export default class Reactor<TTarget extends Indexer = Indexer>
                 this.observers.get(key)!.notify(this.target[key]);
             }
 
-            for (const registry of this.registries.values())
+            if (this.subjects.has(key))
             {
-                registry.notify(key);
+                this.subjects.get(key)!.notify(this.target[key]);
             }
         }
         else
         {
-            for (const dependency of this.dependencies.values())
-            {
-                dependency.notify();
-            }
-
-            for (const registry of this.registries.values())
-            {
-                registry.notify();
-            }
-
             for (const [key, observer] of this.observers)
             {
                 observer.notify(this.target[key]);
+            }
+
+            for (const [key, subject] of this.subjects)
+            {
+                subject.notify(this.target[key]);
             }
         }
     }
@@ -122,8 +134,6 @@ export default class Reactor<TTarget extends Indexer = Indexer>
 
     public update(target: TTarget): void
     {
-        this.target = target;
-
         for (const registry of this.registries)
         {
             registry.update(target);
@@ -133,5 +143,12 @@ export default class Reactor<TTarget extends Indexer = Indexer>
         {
             dependency.update(this.target[key] as Indexer);
         }
+
+        for (const subscription of this.subscriptions.values())
+        {
+            subscription.update(target);
+        }
+
+        this.target = target;
     }
 }
