@@ -7,7 +7,10 @@ export default class PropertyObserver<TTarget extends Indexer = Indexer, TKey ex
 
     public update(target: TTarget)
     {
-        this.target = target;
+        if (this.target != target)
+        {
+            this.target = target;
+        }
     }
 
     public notify(value: TTarget[TKey]): void

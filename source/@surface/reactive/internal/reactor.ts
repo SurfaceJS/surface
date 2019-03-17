@@ -9,10 +9,12 @@ export type Monitored<T = Indexer> = T & { [REACTOR]?: Reactor };
 
 export default class Reactor
 {
+    private static readonly stack: Array<Reactor> = [];
+
     private readonly _dependencies:  Map<string, Reactor>         = new Map();
     private readonly _observers:     Map<string, Observer>        = new Map();
-    private readonly _subjects:      Map<string, PropertySubject> = new Map();
     private readonly _registries:    Set<Reactor>                 = new Set();
+    private readonly _subjects:      Map<string, PropertySubject> = new Map();
     private readonly _subscriptions: Map<string, Subscription>    = new Map();
 
     public get dependencies(): Map<string, Reactor>
@@ -44,12 +46,19 @@ export default class Reactor
     public notify(target: Indexer, key: string): void;
     public notify(...args: [unknown]|[Indexer, string]): void
     {
+        if (Reactor.stack.includes(this))
+        {
+            return;
+        }
+
         const value = args.length == 1 ? args[0] : args[0][args[1]];
 
         if (!hasValue(value))
         {
             return;
         }
+
+        Reactor.stack.push(this);
 
         if (args.length == 1)
         {
@@ -78,6 +87,11 @@ export default class Reactor
         else
         {
             const [target, key] = args;
+
+            if (this.subscriptions.has(key))
+            {
+                this.subscriptions.get(key)!.update(target);
+            }
 
             if (this.dependencies.has(key))
             {
@@ -111,69 +125,48 @@ export default class Reactor
                 this.subjects.get(key)!.notify(value);
             }
         }
+
+        Reactor.stack.pop();
     }
 
-    public register(target: Monitored, reactor: Reactor): void
+    public register(target: Monitored, registry: Reactor): void
     {
-        if (reactor != this)
+        if (registry != this)
         {
-            for (const [key, dependency] of reactor.dependencies)
+            for (const [key, dependency] of this.dependencies)
             {
-                if (this.dependencies.has(key))
+                if (registry.dependencies.has(key))
                 {
-                    this.dependencies.get(key)!.register(target[key] as Indexer, dependency);
+                    dependency.register(target[key] as Indexer, registry.dependencies.get(key)!);
                 }
                 else
                 {
                     const value = target[key] as Monitored;
 
-                    const innerDependency = value[REACTOR] = value[REACTOR] || new Reactor();
+                    const reactor = value[REACTOR] = value[REACTOR] || new Reactor();
 
-                    innerDependency.register(value, dependency);
-
-                    //this.dependencies.set(key, innerDependency);
+                    registry.dependencies.set(key, reactor);
+                    dependency.register(value, reactor);
                 }
             }
 
-            this.registries.add(reactor);
+            registry.registries.add(this);
+            this.registries.add(registry);
         }
     }
 
-    public unregister(reactor: Reactor): void
+    public unregister(): void
     {
-        if (this.registries.delete(reactor))
+        for (const dependency of this.dependencies.values())
         {
-            for (const [key, dependency] of reactor.dependencies)
-            {
-                if (this.dependencies.has(key))
-                {
-                    this.dependencies.get(key)!.unregister(dependency);
-                }
-            }
+            dependency.unregister();
         }
-        else
+
+        for (const registry of this.registries)
         {
-            throw new Error("reactor not subscribed");
+            registry.registries.delete(this);
         }
+
+        this.registries.clear();
     }
-
-    // public update(target: TTarget): void
-    // {
-    //     for (const registry of this.registries)
-    //     {
-    //         registry.update(target);
-    //     }
-
-    //     for (const [key, dependency] of this.dependencies)
-    //     {
-    //         dependency.update(this.target[key] as Indexer);
-    //     }
-
-    //     for (const subscription of this.subscriptions.values())
-    //     {
-    //         subscription.update(target);
-    //     }
-
-    //     this.target = target;
-    // }
 }

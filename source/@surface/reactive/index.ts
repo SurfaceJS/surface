@@ -20,7 +20,7 @@ export default class Reactive
 {
     private static reactivate(target: Reactiveable, reactor: Reactor)
     {
-        const keys = new Set([...reactor.observers.keys(), ...reactor.dependencies.keys()]);
+        const keys = new Set([...reactor.observers.keys(), ...reactor.subjects.keys(), ...reactor.dependencies.keys()]);
 
         for (const key of keys)
         {
@@ -75,29 +75,21 @@ export default class Reactive
 
                             const dependency = reactor.dependencies.get(key as string);
 
-                            if (typeGuard<unknown, Reactiveable>(oldValue, x => x instanceof Object))
+                            if (dependency)
                             {
-                                if (dependency && oldValue[REACTOR] && oldValue[REACTOR]!.registries.has(dependency))
-                                {
-                                    oldValue[REACTOR]!.unregister(dependency);
-                                }
-                            }
+                                dependency.unregister();
 
-                            if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
-                            {
-                                if (!value[REACTOR])
+                                if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
                                 {
-                                    value[REACTOR] = new Reactor();
-                                }
+                                    if (!value[REACTOR])
+                                    {
+                                        value[REACTOR] = new Reactor();
+                                    }
 
-                                if (dependency)
-                                {
                                     Reactive.reactivate(value, dependency as unknown as Reactor);
 
-                                    value[REACTOR]!.register(value, dependency);
+                                    dependency.register(value, value[REACTOR]!);
                                 }
-
-                                //value[REACTOR]!.notify(value);
                             }
 
                             reactor.notify(this, key as string);

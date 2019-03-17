@@ -107,16 +107,16 @@ export default class ReactiveSpec
     @test
     public observeTwoWay(): void
     {
-        const leftA  = { instance: { name: "Left A",  deep: { path: { value: 1 } } } };
-        const rightA = { instance: { name: "Right B", deep: { path: { value: 2 } } } };
-        const leftB  = { instance: { name: "Left A",  deep: { path: { value: 3 } } } };
-        const rightB = { instance: { name: "Right B", deep: { path: { value: 4 } } } };
+        const leftA  = { instance: { name: "leftA.instance.deep.path.value: 1",  deep: { path: { id: 1, value: 1 } } } };
+        const rightA = { instance: { name: "rightA.instance.deep.path.value: 2", deep: { path: { id: 2, value: 2 } } } };
+        const leftB  = { instance: { name: "leftB.instance.deep.path.value: 3",  deep: { path: { id: 3, value: 3 } } } };
+        const rightB = { instance: { name: "rightB.instance.deep.path.value: 4", deep: { path: { id: 4, value: 4 } } } };
 
-        Reactive.observeTwoWay(leftA, "instance.deep.path.value", rightA, "instance.deep.path.value");
-        Reactive.observeTwoWay(leftB, "instance.deep.path.value", rightB, "instance.deep.path.value");
+        Reactive.observeTwoWay(leftA, "instance.deep.path.value", rightA.instance.deep, "path.value");
+        Reactive.observeTwoWay(leftB, "instance.deep.path.value", rightB.instance.deep, "path.value");
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01 - Left-A value should be equal to Right-A value").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02 - Left-B value should be equal to Right-B value").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01 - leftA.instance.deep.path.value should be equal to rightA.instance.deep.path.value").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02 - leftB.instance.deep.path.value should be equal to rightB.instance.deep.path.value").to.equal(true);
 
         leftA.instance.deep.path.value = 5;
 
@@ -134,29 +134,31 @@ export default class ReactiveSpec
 
         chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#06 - rightB.instance.deep.path.value changed. leftB.instance.deep.path.value should have same value").to.equal(true);
 
-        rightB.instance = leftA.instance;
+        leftB.instance = leftA.instance;
 
         chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value && leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#07 - Merged instance. Left A, Right A, Left B and Right B should have same value").to.equal(true);
 
-        leftA.instance = { name: "new instance in left A", deep: { path: { value: 10 } } };
+        leftA.instance = { name: "leftA[new instance].deep.path.value: 10", deep: { path: { id: 1, value: 10 } } };
 
         chai.expect(leftA.instance.deep.path.value, "#07").to.equal(10);
-        chai.expect(rightA.instance.deep.path.value, "#08 - rightA.instance.deep.path.value should be equal leftA[new instance].deep.path.value").to.equal(10);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#08 - rightA.instance.deep.path.value should be equal leftA[new instance].deep.path.value").to.equal(true);
 
-        rightB.instance.deep.path.value = 5;
+        //chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value && leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#09 - Merged instance. Left A, Right A, Left B and Right B should have same value").to.equal(true);
 
-        chai.expect(leftB.instance.deep.path.value, "#09 - leftB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value").to.equal(5);
-        chai.expect(rightB.instance.deep.path.value, "#10 - Right B should not be affected by Left A new instance").to.equal(5);
+        leftB.instance = { name: "leftB[new instance].deep.path.value: 10", deep: { path: { id: 3, value: 20 } } };
 
-        leftA.instance.deep.path = rightB.instance.deep.path;
+        chai.expect(leftB.instance.deep.path.value, "#10 - leftB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value").to.equal(20);
+        chai.expect(rightB.instance.deep.path.value, "#11 - rightB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value").to.equal(20);
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value, "#11 - Merged instance > deep > path. Left A, Right A, Left B and Right B should have same value").to.equal(true);
+        const oldRightAInstanceDeep = rightA.instance.deep.path;
 
-        rightA.instance.deep.path = { value: 15 };
-        rightB.instance = { name: "new instance in right B", deep: { path: { value: 20 } } };
+        chai.expect(oldRightAInstanceDeep);
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#12 - leftA.instance.deep.path.value should be equal to rightA.instance.deep[new path]").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#13 - leftB.instance.deep.path.value should be equal rightB[new instance].deep.path.value").to.equal(true);
+        rightA.instance.deep.path = { id: 2, value: 15 };
+        leftB.instance = { name: "leftB[new instance].deep.path.value: 20", deep: { path: { id: 4, value: 20 } } };
+
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#12 - leftA.instance.deep.path.value should be equal to rightA.instance.deep[new path].value").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#13 - rightB.instance.deep.path.value should be equal leftB[new instance].deep.path.value").to.equal(true);
 
         (leftA.instance as Nullable) = null;
 
@@ -165,8 +167,8 @@ export default class ReactiveSpec
         chai.expect(leftB.instance.deep.path.value, "#16 - leftB.instance.deep.path.value should not be affected by leftA[instance = null]").to.equal(20);
         chai.expect(rightB.instance.deep.path.value, "#17 - rightB.instance.deep.path.value should not be affected by leftA[instance = null]").to.equal(20);
 
-        leftA.instance = { name: "new instance from null", deep: { path: { value: 30 } } };
-        rightB.instance.deep.path = { value: 40 };
+        leftA.instance = { name: "leftA[old null, new instance].deep.path.value: 30", deep: { path: { id: 1, value: 30 } } };
+        rightB.instance.deep.path = { id: 4, value: 40 };
 
         chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#18 - rightA.instance.deep.path.value should be equal to leftA[old null, new instance].deep.path.value").to.equal(true);
         chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#19 - leftB.instance.deep.path.value should be equal to rightB.instance.deep[new path].value").to.equal(true);
