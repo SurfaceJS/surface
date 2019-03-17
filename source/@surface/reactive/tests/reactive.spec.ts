@@ -18,11 +18,11 @@ export default class ReactiveSpec
 
         emmiter.instance.value = 5;
 
-        chai.expect(emmiter.instance.value == listener.instance.value, "#2").to.equal(true);
+        chai.expect(listener.instance.value, "#2").to.equal(5);
 
         listener.instance.value = 6;
 
-        chai.expect(emmiter.instance.value == listener.instance.value, "#3").to.equal(false);
+        chai.expect(emmiter.instance.value, "#3").to.equal(5);
     }
 
     @test
@@ -115,60 +115,60 @@ export default class ReactiveSpec
         Reactive.observeTwoWay(leftA, "instance.deep.path.value", rightA, "instance.deep.path.value");
         Reactive.observeTwoWay(leftB, "instance.deep.path.value", rightB, "instance.deep.path.value");
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01 - Left-A value should be equal to Right-A value").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02 - Left-B value should be equal to Right-B value").to.equal(true);
 
         leftA.instance.deep.path.value = 5;
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#03").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#03 - leftA.instance.deep.path.value changed. rightA.instance.deep.path.value should have same value").to.equal(true);
 
         rightA.instance.deep.path.value = 6;
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#04").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#04 - rightA.instance.deep.path.value changed. leftA.instance.deep.path.value should have same value").to.equal(true);
 
         leftB.instance.deep.path.value = 7;
 
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#05").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#05 - leftB.instance.deep.path.value changed. rightB.instance.deep.path.value should have same value").to.equal(true);
 
         rightB.instance.deep.path.value = 8;
 
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#06").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#06 - rightB.instance.deep.path.value changed. leftB.instance.deep.path.value should have same value").to.equal(true);
 
         rightB.instance = leftA.instance;
+
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value && leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#07 - Merged instance. Left A, Right A, Left B and Right B should have same value").to.equal(true);
 
         leftA.instance = { name: "new instance in left A", deep: { path: { value: 10 } } };
 
         chai.expect(leftA.instance.deep.path.value, "#07").to.equal(10);
-        chai.expect(rightA.instance.deep.path.value, "#08").to.equal(10);
+        chai.expect(rightA.instance.deep.path.value, "#08 - rightA.instance.deep.path.value should be equal leftA[new instance].deep.path.value").to.equal(10);
 
         rightB.instance.deep.path.value = 5;
 
-        chai.expect(leftB.instance.deep.path.value, "#09").to.equal(5);
-        chai.expect(rightB.instance.deep.path.value, "#10").to.equal(5);
+        chai.expect(leftB.instance.deep.path.value, "#09 - leftB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value").to.equal(5);
+        chai.expect(rightB.instance.deep.path.value, "#10 - Right B should not be affected by Left A new instance").to.equal(5);
 
         leftA.instance.deep.path = rightB.instance.deep.path;
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value, "#08").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value, "#11 - Merged instance > deep > path. Left A, Right A, Left B and Right B should have same value").to.equal(true);
 
-        rightB.instance.deep.path = leftA.instance.deep.path;
-
-        leftA.instance.deep.path = { value: 15 };
+        rightA.instance.deep.path = { value: 15 };
         rightB.instance = { name: "new instance in right B", deep: { path: { value: 20 } } };
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#11").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#12").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#12 - leftA.instance.deep.path.value should be equal to rightA.instance.deep[new path]").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#13 - leftB.instance.deep.path.value should be equal rightB[new instance].deep.path.value").to.equal(true);
 
         (leftA.instance as Nullable) = null;
 
-        chai.expect(leftA.instance, "#13").to.equal(null);
-        chai.expect(rightA.instance.deep.path.value, "#14").to.equal(15);
-        chai.expect(leftB.instance.deep.path.value, "#15").to.equal(20);
-        chai.expect(rightB.instance.deep.path.value, "#16").to.equal(20);
+        chai.expect(leftA.instance, "#14").to.equal(null);
+        chai.expect(rightA.instance.deep.path.value, "#15 - rightA.instance.deep.path.value should not be affected by leftA[instance = null]").to.equal(15);
+        chai.expect(leftB.instance.deep.path.value, "#16 - leftB.instance.deep.path.value should not be affected by leftA[instance = null]").to.equal(20);
+        chai.expect(rightB.instance.deep.path.value, "#17 - rightB.instance.deep.path.value should not be affected by leftA[instance = null]").to.equal(20);
 
-        leftA.instance.deep.path  = { value: 30 };
+        leftA.instance = { name: "new instance from null", deep: { path: { value: 30 } } };
         rightB.instance.deep.path = { value: 40 };
 
-        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#17").to.equal(true);
-        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#18").to.equal(true);
+        chai.expect(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#18 - rightA.instance.deep.path.value should be equal to leftA[old null, new instance].deep.path.value").to.equal(true);
+        chai.expect(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#19 - leftB.instance.deep.path.value should be equal to rightB.instance.deep[new path].value").to.equal(true);
     }
 }

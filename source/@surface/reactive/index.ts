@@ -12,7 +12,7 @@ import { KEYS, REACTOR, SUBSCRIBER } from "./internal/symbols";
 type Reactiveable<T extends Indexer = Indexer> = T &
 {
     [KEYS]?:       Array<string>;
-    [REACTOR]?:    Reactor<T>;
+    [REACTOR]?:    Reactor;
     [SUBSCRIBER]?: Subscriber;
 };
 
@@ -73,7 +73,7 @@ export default class Reactive
                         {
                             this[privateKey] = value;
 
-                            const dependency = reactor.dependencies.get(key)!;
+                            const dependency = reactor.dependencies.get(key as string);
 
                             if (typeGuard<unknown, Reactiveable>(oldValue, x => x instanceof Object))
                             {
@@ -87,18 +87,20 @@ export default class Reactive
                             {
                                 if (!value[REACTOR])
                                 {
-                                    value[REACTOR] = new Reactor(value as Indexer);
+                                    value[REACTOR] = new Reactor();
                                 }
 
-                                Reactive.reactivate(value, dependency as unknown as Reactor);
+                                if (dependency)
+                                {
+                                    Reactive.reactivate(value, dependency as unknown as Reactor);
 
-                                value[REACTOR]!.register(dependency);
+                                    value[REACTOR]!.register(value, dependency);
+                                }
 
-                                value[REACTOR]!.update(value);
-                                value[REACTOR]!.notify();
+                                //value[REACTOR]!.notify(value);
                             }
 
-                            reactor.notify(key);
+                            reactor.notify(this, key as string);
                         }
                     }
                 }
@@ -106,9 +108,9 @@ export default class Reactive
         }
     }
 
-    public static observe<TTarget extends Indexer & Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: Action1<TTarget[TKey]>): Reactor<TTarget>;
+    public static observe<TTarget extends Indexer & Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: Action1<TTarget[TKey]>): Reactor;
     public static observe(target: Indexer & Reactiveable, path: string, listener: Action1<unknown>): Reactor;
-    public static observe<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor<TEmmiter>;
+    public static observe<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor;
     public static observe(...args: [Reactiveable, string, Action1<unknown>]|[Reactiveable, string, Indexer, string]): Reactor
     {
         const [target, path] = args;
@@ -123,7 +125,7 @@ export default class Reactive
     }
 
     public static observePath(target: Indexer & Reactiveable, path: string, listener: Action1<unknown>): Reactor;
-    public static observePath<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor<TEmmiter>;
+    public static observePath<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor;
     public static observePath(...args: [Reactiveable, string, Action1<unknown>]|[Reactiveable, string, Indexer, string]): Reactor
     {
         const [target, path] = args;
@@ -131,20 +133,28 @@ export default class Reactive
 
         if (keys.length > 0)
         {
-            Reactive.makeReactive(target, key);
-
-            const reactor = (target[REACTOR] || new Reactor(target)) as Reactor;
-
             if (!(key in target))
             {
                 throw new Error(`Property ${key} does not exist on ${target}`);
             }
 
-            const dependency = args.length == 3 ?
-                Reactive.observePath(target[key] as Indexer, keys.join("."), args[2])
-                : Reactive.observePath(target[key] as Indexer, keys.join("."), args[2], args[3]);
+            Reactive.makeReactive(target, key);
 
-            reactor.dependencies.set(key, dependency);
+            const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
+            const value   = target[key] as Indexer;
+
+            const dependency = args.length == 3 ?
+                Reactive.observePath(value, keys.join("."), args[2])
+                : Reactive.observePath(value, keys.join("."), args[2], args[3]);
+
+            if (!reactor.dependencies.has(key))
+            {
+                reactor.dependencies.set(key, dependency);
+            }
+            else
+            {
+                reactor.dependencies.get(key)!.register(value, dependency);
+            }
 
             return reactor;
         }
@@ -156,15 +166,15 @@ export default class Reactive
         }
     }
 
-    public static observeProperty<TTarget extends Indexer, TKey extends keyof TTarget>(target: Reactiveable<TTarget>, key: TKey, listener: Action1<TTarget[TKey]>): Reactor<TTarget>;
-    public static observeProperty<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor<TEmmiter>;
+    public static observeProperty<TTarget extends Indexer, TKey extends keyof TTarget>(target: Reactiveable<TTarget>, key: TKey, listener: Action1<TTarget[TKey]>): Reactor;
+    public static observeProperty<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): Reactor;
     public static observeProperty(...args: [Reactiveable, string, Action1<unknown>]|[Reactiveable, string, Reactiveable, string]): Reactor
     {
         const [target, key] = args;
 
         Reactive.makeReactive(target, key);
 
-        const reactor = target[REACTOR] || new Reactor(target);
+        const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
 
         if (args.length == 3)
         {
