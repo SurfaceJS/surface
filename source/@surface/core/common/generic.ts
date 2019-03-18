@@ -20,6 +20,12 @@ export function isIterable(source: { [Symbol.iterator]?: Function }): source is 
     return typeof source[Symbol.iterator] == "function";
 }
 
+// tslint:disable-next-line:no-any
+export function tuple<Targs extends Array<any>>(...args: Targs): Targs
+{
+    return args;
+}
+
 export function typeGuard<T, U extends T>(target: T, predicate: Func1<T, boolean>): target is U
 {
     return predicate(target);

@@ -1,15 +1,15 @@
 import { Indexer }      from "@surface/core";
-import PropertyObserver from "./property-observer";
+import IListener        from "../interfaces/listener";
+import PropertyListener from "./property-listener";
 import Reactor          from "./reactor";
-import { SUBSCRIBER }   from "./symbols";
 
-export class Subscription
+export default class Subscription
 {
-    private readonly _observers: Map<string, PropertyObserver> = new Map();
+    private readonly _listeners: Map<string, PropertyListener> = new Map();
 
-    public get observers(): Map<string, PropertyObserver>
+    public get listeners(): Map<string, IListener>
     {
-        return this._observers;
+        return this._listeners;
     }
 
     public constructor (private readonly reactor: Reactor)
@@ -17,40 +17,25 @@ export class Subscription
 
     public unsubscribe()
     {
-        for (const [key, observer] of this.observers)
+        for (const [key, observer] of this.listeners)
         {
-            this.reactor.subjects.get(key)!.unsubscribe(observer);
+            this.reactor.observers.get(key)!.unsubscribe(observer);
         }
     }
 
     public update(target: Indexer)
     {
-        for (const observer of this.observers.values())
+        for (const observer of this.listeners.values())
         {
-            observer.update(target);
+            if (observer instanceof PropertyListener)
+            {
+                observer.update(target);
+            }
         }
     }
-}
 
-export default class Subscriber
-{
-    private readonly _subscriptions: Map<Indexer, Subscription> = new Map();
-
-    public get subscriptions(): Map<Indexer, Subscription>
+    public toString(): string
     {
-        return this._subscriptions;
-    }
-
-    public constructor(private readonly target: Indexer & { [SUBSCRIBER]?: Subscriber })
-    {
-        this.target[SUBSCRIBER] = this;
-    }
-
-    public update(target: Indexer)
-    {
-        for (const subscription of this.subscriptions.values())
-        {
-            subscription.update(target);
-        }
+        return `{ "reactor": ${this.reactor}, "observers": { ${Array.from(this.listeners).map(([key, observer]) => `"${key}": ${observer.toString()}`).join(",")} } }`;
     }
 }

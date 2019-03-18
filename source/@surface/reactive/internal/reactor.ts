@@ -1,8 +1,8 @@
 import { Indexer }             from "@surface/core";
 import { hasValue, typeGuard } from "@surface/core/common/generic";
-import Observer                from "./observer";
-import PropertySubject         from "./property-subject";
-import { Subscription }        from "./subscriber";
+import { uuidv4 }              from "@surface/core/common/string";
+import IObserver               from "../interfaces/observer";
+import Subscription            from "./subscriber";
 import { REACTOR }             from "./symbols";
 
 export type Monitored<T = Indexer> = T & { [REACTOR]?: Reactor };
@@ -12,24 +12,25 @@ export default class Reactor
     private static readonly stack: Array<Reactor> = [];
 
     private readonly _dependencies:  Map<string, Reactor>         = new Map();
-    private readonly _observers:     Map<string, Observer>        = new Map();
+    private readonly _observers:     Map<string, IObserver>       = new Map();
     private readonly _registries:    Set<Reactor>                 = new Set();
-    private readonly _subjects:      Map<string, PropertySubject> = new Map();
     private readonly _subscriptions: Map<string, Subscription>    = new Map();
+
+    private _id: string = "";
 
     public get dependencies(): Map<string, Reactor>
     {
         return this._dependencies;
     }
 
-    public get observers(): Map<string, Observer>
+    public get id(): string
     {
-        return this._observers;
+        return this._id = this._id || uuidv4();
     }
 
-    public get subjects(): Map<string, PropertySubject>
+    public get observers(): Map<string, IObserver>
     {
-        return this._subjects;
+        return this._observers;
     }
 
     public get registries(): Set<Reactor>
@@ -69,14 +70,14 @@ export default class Reactor
 
             if (typeGuard<unknown, Indexer>(value, x => x instanceof Object))
             {
+                for (const subscription of this.subscriptions.values())
+                {
+                    subscription.update(value);
+                }
+
                 for (const [key, observer] of this.observers)
                 {
                     observer.notify(value[key]);
-                }
-
-                for (const [key, subject] of this.subjects)
-                {
-                    subject.notify(value[key]);
                 }
             }
             else
@@ -119,11 +120,6 @@ export default class Reactor
             {
                 this.observers.get(key)!.notify(value);
             }
-
-            if (this.subjects.has(key))
-            {
-                this.subjects.get(key)!.notify(value);
-            }
         }
 
         Reactor.stack.pop();
@@ -153,6 +149,58 @@ export default class Reactor
             registry.registries.add(this);
             this.registries.add(registry);
         }
+    }
+
+    public toString(): string
+    {
+        if (Reactor.stack.includes(this))
+        {
+            return `"[circular ${this.id}]"`;
+        }
+
+        Reactor.stack.push(this);
+
+        const keys = [`"id": "${this.id}"`];
+
+        if (this.dependencies.size > 0)
+        {
+            const dependencies =  Array.from(this.dependencies)
+                .map(([key, dependency]) => `"${key}": ${dependency.toString()}`)
+                .join(", ");
+
+            keys.push(`"dependencies": { ${dependencies} }`);
+        }
+
+        if (this.observers.size > 0)
+        {
+            const observers =  Array.from(this.observers)
+                .map(([key, observer]) => `"${key}": ${observer.toString()}`)
+                .join(", ");
+
+            keys.push(`"observers": { ${observers} }`);
+        }
+
+        if (this.registries.size > 0)
+        {
+            const registries =  Array.from(this.registries)
+                .map(x => x.toString())
+                .join(", ");
+
+            keys.push(`"registries": [${registries}]`);
+        }
+
+        if (this.subscriptions.size > 0)
+        {
+            const subscriptions =  Array.from(this.subscriptions)
+                .map(([key, subscription]) => `"${key}": ${subscription.toString()}`)
+                .join(", ");
+
+            keys.push(`"subscriptions": { ${subscriptions} }`);
+        }
+
+        Reactor.stack.pop();
+
+        return `{ ${keys.join(", ")} }`;
     }
 
     public unregister(): void

@@ -1,15 +1,16 @@
-import { Action1 } from "@surface/core";
+import IListener   from "../interfaces/listener";
+import IObserver   from "../interfaces/observer";
 
-export default class Observer<TValue = unknown>
+export default class Observer<TValue = unknown> implements IObserver<TValue>
 {
-    private readonly listeners: Set<Action1<TValue>> = new Set();
+    private readonly listeners: Set<IListener> = new Set();
 
-    public subscribe(listerner: Action1<TValue>)
+    public subscribe(listerner: IListener)
     {
         this.listeners.add(listerner);
     }
 
-    public unsubscribe(listerner: Action1<TValue>)
+    public unsubscribe(listerner: IListener)
     {
         if (!this.listeners.delete(listerner))
         {
@@ -21,7 +22,12 @@ export default class Observer<TValue = unknown>
     {
         for (const listerner of this.listeners)
         {
-            listerner(value);
+            listerner.notify(value);
         }
+    }
+
+    public toString(): string
+    {
+        return `[${Array.from(this.listeners).map(x => x.toString()).join(", ")}]`;
     }
 }
