@@ -1,25 +1,25 @@
 import { Indexer }      from "@surface/core";
 import IListener        from "../interfaces/listener";
+import IObserver        from "../interfaces/observer";
 import PropertyListener from "./property-listener";
-import Reactor          from "./reactor";
 
 export default class Subscription
 {
-    private readonly _listeners: Map<string, PropertyListener> = new Map();
+    private readonly _listeners: Set<IListener> = new Set();
 
-    public get listeners(): Map<string, IListener>
+    public get listeners(): Set<IListener>
     {
         return this._listeners;
     }
 
-    public constructor (private readonly reactor: Reactor)
+    public constructor (private readonly observer: IObserver)
     { }
 
     public unsubscribe()
     {
-        for (const [key, observer] of this.listeners)
+        for (const listener of this.listeners)
         {
-            this.reactor.observers.get(key)!.unsubscribe(observer);
+            this.observer.unsubscribe(listener);
         }
     }
 
@@ -36,6 +36,6 @@ export default class Subscription
 
     public toString(): string
     {
-        return `{ "reactor": ${this.reactor}, "observers": { ${Array.from(this.listeners).map(([key, observer]) => `"${key}": ${observer.toString()}`).join(",")} } }`;
+        return `{ "listeners": [${Array.from(this.listeners).map(x => x.toString()).join(", ")}], "observer": ${this.observer.toString()} }`;
     }
 }

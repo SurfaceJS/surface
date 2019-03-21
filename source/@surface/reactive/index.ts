@@ -119,14 +119,7 @@ export default class Reactive
 
             const [endpoint, dependency, observer] = Reactive.observePath(value, keys.join("."), listener);
 
-            if (!reactor.dependencies.has(key))
-            {
-                reactor.dependencies.set(key, dependency);
-            }
-            else
-            {
-                reactor.dependencies.get(key)!.register(value, dependency);
-            }
+            reactor.dependencies.set(key, dependency);
 
             reactor.toString();
 
@@ -146,12 +139,9 @@ export default class Reactive
 
         const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
 
-        if (!reactor.observers.has(key as string))
-        {
-            reactor.observers.set(key as string, new Observer());
-        }
+        const observer = reactor.observers.get(key as string) || new Observer();
 
-        const observer = reactor.observers.get(key as string)!;
+        reactor.observers.set(key as string, observer);
 
         observer.subscribe(listener);
         observer.notify(target[key]);
@@ -206,21 +196,19 @@ export default class Reactive
         const leftListener  = new PropertyListener(innerRight, innerRightKey);
         const rightListener = new PropertyListener(innerLeft, innerLeftKey);
 
-        const [leftReactor] = Reactive.observePath(left, leftKey, leftListener);
-        const [rightReactor] = Reactive.observePath(right, rightKey, rightListener);
+        const [leftReactor, , leftobserver] = Reactive.observePath(left, leftKey, leftListener);
+        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightKey, rightListener);
 
-        if (!leftReactor.subscriptions.has(innerRightKey))
-        {
-            leftReactor.subscriptions.set(innerRightKey, new Subscription(rightReactor));
-        }
+        const leftSubscription = leftReactor.subscriptions.get(innerRightKey) || new Subscription(rightObserver);
 
-        leftReactor.subscriptions.get(innerRightKey)!.listeners.set(innerLeftKey, rightListener);
+        leftSubscription.listeners.add(rightListener);
 
-        if (!rightReactor.subscriptions.has(innerLeftKey))
-        {
-            rightReactor.subscriptions.set(innerLeftKey, new Subscription(leftReactor));
-        }
+        leftReactor.subscriptions.set(innerRightKey, leftSubscription);
 
-        rightReactor.subscriptions.get(innerLeftKey)!.listeners.set(innerRightKey, leftListener);
+        const rightSubscription = rightReactor.subscriptions.get(innerLeftKey) || new Subscription(leftobserver);
+
+        rightSubscription.listeners.add(leftListener);
+
+        rightReactor.subscriptions.set(innerLeftKey, rightSubscription);
     }
 }
