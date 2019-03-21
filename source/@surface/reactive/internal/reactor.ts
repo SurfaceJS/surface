@@ -2,7 +2,7 @@ import { Indexer }             from "@surface/core";
 import { hasValue, typeGuard } from "@surface/core/common/generic";
 import { uuidv4 }              from "@surface/core/common/string";
 import IObserver               from "../interfaces/observer";
-import Subscription            from "./subscriber";
+import Subscription            from "./subscription";
 import { REACTOR }             from "./symbols";
 
 export type Monitored<T = Indexer> = T & { [REACTOR]?: Reactor };

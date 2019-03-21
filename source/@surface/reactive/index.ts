@@ -8,7 +8,7 @@ import ActionListener       from "./internal/action-listener";
 import Observer             from "./internal/observer";
 import PropertyListener     from "./internal/property-listener";
 import Reactor              from "./internal/reactor";
-import Subscription         from "./internal/subscriber";
+import Subscription         from "./internal/subscription";
 import { KEYS, REACTOR }    from "./internal/symbols";
 
 type Reactiveable<T extends Indexer = Indexer> = T &
