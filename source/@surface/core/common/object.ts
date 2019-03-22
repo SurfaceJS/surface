@@ -52,16 +52,33 @@ export function *enumerateKeys(target: object): IterableIterator<string>
     } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
 
-export function getValue(target: Indexer, path: string): unknown
+export function getKeyMember(target: Indexer, path: string): [string, Indexer]
 {
-    const [key, ...keys] = path.split(".");
-
-    if (keys.length > 0)
+    if (path.includes("."))
     {
-        return getValue(target[key] as Indexer, keys.join("."));
+        const [key, ...keys] = path.split(".");
+
+        const member = target[key];
+
+        if (member instanceof Object)
+        {
+            return getKeyMember(member, keys.join("."));
+        }
     }
 
-    return target[key];
+    return [path, target];
+}
+
+export function getKeyValue<T = unknown>(target: Indexer, path: string): [string, T]
+{
+    const [key, member] = getKeyMember(target, path);
+
+    return [key, member[key] as T];
+}
+
+export function getValue<T = unknown>(target: Indexer, path: string): T
+{
+    return getKeyValue<T>(target, path)[1];
 }
 
 /**

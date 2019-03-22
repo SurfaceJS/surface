@@ -1,4 +1,4 @@
-export default interface IListener
+export default interface IListener<T = unknown>
 {
-    notify(value: unknown): void;
+    notify(value: T): void;
 }

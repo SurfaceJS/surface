@@ -2,19 +2,20 @@ import { Indexer }             from "@surface/core";
 import { hasValue, typeGuard } from "@surface/core/common/generic";
 import { uuidv4 }              from "@surface/core/common/string";
 import IObserver               from "../interfaces/observer";
+import IReactor                from "../interfaces/reactor";
 import Subscription            from "./subscription";
 import { REACTOR }             from "./symbols";
 
 export type Monitored<T = Indexer> = T & { [REACTOR]?: Reactor };
 
-export default class Reactor
+export default class Reactor implements IReactor
 {
     private static readonly stack: Array<Reactor> = [];
 
-    private readonly _dependencies:  Map<string, Reactor>         = new Map();
-    private readonly _observers:     Map<string, IObserver>       = new Map();
-    private readonly _registries:    Set<Reactor>                 = new Set();
-    private readonly _subscriptions: Map<string, Subscription>    = new Map();
+    private readonly _dependencies:  Map<string, Reactor>      = new Map();
+    private readonly _observers:     Map<string, IObserver>    = new Map();
+    private readonly _registries:    Set<Reactor>              = new Set();
+    private readonly _subscriptions: Map<string, Subscription> = new Map();
 
     private _id: string = "";
 
@@ -44,7 +45,7 @@ export default class Reactor
     }
 
     public notify(value: unknown): void;
-    public notify(target: Indexer, key: string): void;
+    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
     public notify(...args: [unknown]|[Indexer, string]): void
     {
         if (Reactor.stack.includes(this))

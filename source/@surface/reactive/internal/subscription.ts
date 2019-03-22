@@ -1,9 +1,10 @@
 import { Indexer }      from "@surface/core";
 import IListener        from "../interfaces/listener";
 import IObserver        from "../interfaces/observer";
+import ISubscription    from "../interfaces/subscription";
 import PropertyListener from "./property-listener";
 
-export default class Subscription
+export default class Subscription implements ISubscription
 {
     private readonly _listeners: Set<IListener> = new Set();
 

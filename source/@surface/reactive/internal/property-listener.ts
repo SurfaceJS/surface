@@ -1,7 +1,7 @@
 import { Indexer }       from "@surface/core";
 import IPropertyListener from "../interfaces/notifier";
 
-export default class PropertyListener<TTarget extends Indexer = Indexer, TKey extends keyof TTarget = string> implements IPropertyListener
+export default class PropertyListener<TTarget extends Indexer = Indexer, TKey extends keyof TTarget = string> implements IPropertyListener<TTarget[TKey]>
 {
     public constructor(private target: TTarget, private readonly key: TKey)
     { }

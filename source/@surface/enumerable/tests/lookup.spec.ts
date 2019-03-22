@@ -63,15 +63,15 @@ export default class LookupSpec
         const data   = [1, 2, 3];
         const lookup = new Lookup(data, x => x, x => x, new Comparer());
 
-        const group1 = new Group<number, number>(787185639,  1);
+        const group1 = new Group<number, number>(683302763,  1);
         group1.add(1);
         group1["_hashNext"] = undefined;
 
-        const group2 = new Group<number, number>(102031502,  2);
+        const group2 = new Group<number, number>(1179335883,  2);
         group2.add(2);
         group2["_hashNext"] = undefined;
 
-        const group3 = new Group<number, number>(1564361012, 3);
+        const group3 = new Group<number, number>(1675369003, 3);
         group3.add(3);
         group3["_hashNext"] = undefined;
 
