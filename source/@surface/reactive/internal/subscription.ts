@@ -6,15 +6,15 @@ import PropertyListener from "./property-listener";
 
 export default class Subscription implements ISubscription
 {
-    private readonly _listeners: Set<IListener> = new Set();
-
-    public get listeners(): Set<IListener>
-    {
-        return this._listeners;
-    }
+    private readonly listeners: Set<IListener> = new Set();
 
     public constructor (private readonly observer: IObserver)
     { }
+
+    public addListener(listener: IListener)
+    {
+        this.listeners.add(listener);
+    }
 
     public unsubscribe()
     {
