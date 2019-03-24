@@ -9,7 +9,7 @@
         "@surface/custom-element": "0.0.5",
         "@surface/enumerable": "0.0.0",
         "@surface/expression": "0.0.0",
-        "@surface/observer": "0.0.0",
+        "@surface/reactive": "0.0.0",
         "@surface/reflection": "0.0.0",
         "material-design-icons-iconfont": "4.0.2",
         "resize-observer-polyfill": "1.5.0",

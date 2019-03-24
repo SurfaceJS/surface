@@ -1,6 +1,6 @@
 import { Action, KeyValue, Nullable }                          from "@surface/core";
 import Enumerable                                              from "@surface/enumerable";
-import Observer                                                from "../observer";
+import Reactive                                                from "@surface/reactive";
 import ElementBind                                             from "./internal/element-bind";
 import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
 
@@ -71,7 +71,12 @@ export default abstract class CustomElement extends HTMLElement
      */
     protected notify<K extends keyof this>(key: K)
     {
-        Observer.notify(this, key);
+        const reactor = Reactive.getReactor(this);
+
+        if (reactor)
+        {
+            reactor.notify(this, key);
+        }
     }
 
     /**

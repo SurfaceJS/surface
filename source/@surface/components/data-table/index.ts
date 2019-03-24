@@ -3,7 +3,6 @@ import { coalesce }                          from "@surface/core/common/generic"
 import { clone, objectFactory }              from "@surface/core/common/object";
 import CustomElement                         from "@surface/custom-element";
 import Enumerable                            from "@surface/enumerable";
-import Observer                              from "@surface/observer";
 import Component                             from "..";
 import { attribute, element }                from "../decorators";
 import localize, { Localization }            from "../locales";
@@ -33,7 +32,6 @@ export default class DataTable extends Component
     private refreshing: boolean = false;
 
     private readonly _localization: Localization;
-    private readonly _onDatasourceChange: Observer = new Observer();
 
     private _datasource:     Array<object> = [];
     private _dataDefinition: object        = { };
@@ -102,7 +100,7 @@ export default class DataTable extends Component
             this._datasource  = value;
             this.dataProvider = new DataProvider(value);
 
-            this.refresh().then(() => this.onDatasourceChange.notify());
+            this.refresh();
         }
     }
 
@@ -115,11 +113,6 @@ export default class DataTable extends Component
     public set infinityScroll(value: boolean)
     {
         this._infinityScroll = value;
-    }
-
-    public get onDatasourceChange(): Observer
-    {
-        return this._onDatasourceChange;
     }
 
     @attribute

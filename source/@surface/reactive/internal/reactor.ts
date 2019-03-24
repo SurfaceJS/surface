@@ -3,9 +3,12 @@ import { hasValue, typeGuard } from "@surface/core/common/generic";
 import { uuidv4 }              from "@surface/core/common/string";
 import Type                    from "@surface/reflection";
 import FieldInfo               from "@surface/reflection/field-info";
+import PropertyInfo            from "@surface/reflection/property-info";
 import IObserver               from "../interfaces/observer";
+import IPropertySubscription   from "../interfaces/property-subscription";
 import IReactor                from "../interfaces/reactor";
-import Subscription            from "./subscription";
+import ISubscription           from "../interfaces/subscription";
+import PropertySubscription    from "./property-subscription";
 import { KEYS, REACTOR }       from "./symbols";
 
 export type Reactiveable<T = Indexer> = T & { [KEYS]?: Array<string>, [REACTOR]?: Reactor };
@@ -14,10 +17,10 @@ export default class Reactor implements IReactor
 {
     private static readonly stack: Array<Reactor> = [];
 
-    private readonly dependencies:  Map<string, Reactor>      = new Map();
-    private readonly observers:     Map<string, IObserver>    = new Map();
-    private readonly registries:    Set<Reactor>              = new Set();
-    private readonly subscriptions: Map<string, Subscription> = new Map();
+    private readonly dependencies:  Map<string, Reactor>                                  = new Map();
+    private readonly observers:     Map<string, IObserver>                                = new Map();
+    private readonly registries:    Set<Reactor>                                          = new Set();
+    private readonly subscriptions: Map<string, Set<ISubscription|IPropertySubscription>> = new Map();
 
     private _id: string = "";
 
@@ -49,7 +52,66 @@ export default class Reactor implements IReactor
 
         const member = Type.from(target).getMember(key);
 
-        if (member instanceof FieldInfo)
+        if (member instanceof PropertyInfo)
+        {
+            const privateKey = `_${key}`;
+
+            if (member.readonly && privateKey in target)
+            {
+                const hiddenKey = `_${key}_`;
+
+                target[hiddenKey] = target[key];
+
+                Object.defineProperty
+                (
+                    target,
+                    privateKey,
+                    {
+                        get(this: Indexer)
+                        {
+                            return this[hiddenKey];
+                        },
+                        set(this: Indexer, value: unknown)
+                        {
+                            const oldValue = this[hiddenKey];
+
+                            if (!Object.is(oldValue, value))
+                            {
+                                this[hiddenKey] = value;
+
+                                Reactor.notify(this, key);
+                            }
+                        }
+                    }
+                );
+            }
+            else
+            {
+                Object.defineProperty
+                (
+                    target,
+                    key,
+                    {
+                        get(this: Indexer)
+                        {
+                            return member.getter!.call(this);
+                        },
+                        set(this: Indexer, value: unknown)
+                        {
+                            const oldValue = member.getter!.call(this);
+
+                            if (!Object.is(oldValue, value))
+                            {
+                                member.setter!.call(this, value);
+
+                                Reactor.notify(this, key);
+                            }
+                        }
+                    }
+                );
+            }
+        }
+        else if (member instanceof FieldInfo)
         {
             const privateKey = `_${key}`;
 
@@ -143,19 +205,9 @@ export default class Reactor implements IReactor
         return this.dependencies.get(key);
     }
 
-    public getKeys(): Array<string>
-    {
-        return Array.from(new Set([...this.observers.keys(), ...this.dependencies.keys()]));
-    }
-
     public getObserver(key: string): Nullable<IObserver>
     {
         return this.observers.get(key);
-    }
-
-    public getSubscription(key: string): Nullable<Subscription>
-    {
-        return this.subscriptions.get(key);
     }
 
     public notify(value: unknown): void;
@@ -185,9 +237,15 @@ export default class Reactor implements IReactor
 
             if (typeGuard<unknown, Indexer>(value, x => x instanceof Object))
             {
-                for (const subscription of this.subscriptions.values())
+                for (const subscriptions of this.subscriptions.values())
                 {
-                    subscription.update(value);
+                    for (const subscription of subscriptions)
+                    {
+                        if ("update" in subscription)
+                        {
+                            subscription.update(value);
+                        }
+                    }
                 }
 
                 for (const [key, observer] of this.observers)
@@ -206,7 +264,13 @@ export default class Reactor implements IReactor
 
             if (this.subscriptions.has(key))
             {
-                this.subscriptions.get(key)!.update(target);
+                for (const subscription of this.subscriptions.get(key)!)
+                {
+                    if ("update" in subscription)
+                    {
+                        subscription.update(target);
+                    }
+                }
             }
 
             if (this.dependencies.has(key))
@@ -250,9 +314,13 @@ export default class Reactor implements IReactor
         this.observers.set(key, observer);
     }
 
-    public setSubscription(key: string, subscription: Subscription): void
+    public setSubscription(key: string, subscription: PropertySubscription): void
     {
-        this.subscriptions.set(key, subscription);
+        const subscriptions = this.subscriptions.get(key) || new Set();
+
+        this.subscriptions.set(key, subscriptions);
+
+        subscriptions.add(subscription);
     }
 
     public toString(): string

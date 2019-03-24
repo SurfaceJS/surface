@@ -1,6 +1,6 @@
 import { Action1 }       from "@surface/core";
 import IListener         from "./listener";
-import IPropertyListener from "./notifier";
+import IPropertyListener from "./property-listener";
 import ISubscription     from "./subscription";
 
 export default interface IObserver<T = unknown>

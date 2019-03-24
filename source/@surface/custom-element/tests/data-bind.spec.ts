@@ -1,6 +1,5 @@
 import "./fixtures/dom";
 
-import Type                        from "@surface/reflection/type";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                   from "chai";
 import DataBind                    from "../internal/data-bind";
@@ -15,7 +14,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.from(target).getField("value")!, { }, () => changed = true);
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
 
         target.value = 2;
 
@@ -31,7 +30,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.from(target).getField("value")!, { }, () => changed = true);
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
 
         target.value = 2;
 
@@ -59,7 +58,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, { }, () => changed = true);
+        DataBind.oneWay(target,"value", { notify: () => changed = true });
 
         target.value = 2;
 
@@ -87,7 +86,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, { }, () => changed = true);
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
 
         target.setValue(2);
 
@@ -101,7 +100,7 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target, Type.from(target).getProperty("value")!, { }, () => changed = true);
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
@@ -118,26 +117,27 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, { }, () => value = attribute.value);
+        DataBind.oneWay(attribute, "value", { notify: () => value = attribute.value });
 
         attribute.value = "2";
         chai.expect(value).to.equal("2");
     }
 
-    @test @shouldPass
-    public oneWayPropertyAttributeDataBind(): void
-    {
-        const target = document.createElement("div");
-        target.lang = "pt-br";
+    // Deprecated
+    // @test @shouldPass
+    // public oneWayPropertyAttributeDataBind(): void
+    // {
+    //     const target = document.createElement("div");
+    //     target.lang = "pt-br";
 
-        let value = target.lang;
-        DataBind.oneWay(target, Type.from(target).getProperty("lang")!, { }, () => value = target.lang);
+    //     let value = target.lang;
+    //     DataBind.oneWay(target, "lang", { notify: () => value = target.lang });
 
-        target.setAttribute("lang", "en-us");
-        target.setAttribute("lang1", "en-us");
-        chai.expect(value, "value").to.equal("en-us");
-        chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
-    }
+    //     target.setAttribute("lang", "en-us");
+    //     target.setAttribute("lang1", "en-us");
+    //     chai.expect(value, "value").to.equal("en-us");
+    //     chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
+    // }
 
     @test @shouldPass
     public twoWayObjectDataBind(): void
@@ -159,7 +159,7 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left, Type.from(left).getProperty("value")!, right, Type.from(right).getProperty("value")!, () => undefined);
+        DataBind.twoWay(left, "value", right, "value");
 
         left.value = 2;
 

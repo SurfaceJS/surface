@@ -8,7 +8,7 @@
         "@surface/core": "0.0.3",
         "@surface/enumerable": "0.0.5",
         "@surface/expression": "0.0.0",
-        "@surface/observer": "0.0.0",
+        "@surface/reactive": "0.0.0",
         "@surface/reflection": "0.0.0",
         "tslib": "1.9.3"
     },

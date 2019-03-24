@@ -1,62 +1,99 @@
-import { Action, Action1 } from "@surface/core";
-import ActionQueue         from "@surface/core/action-queue";
-import Observer            from "@surface/observer";
-import FieldInfo           from "@surface/reflection/field-info";
-import MemberInfo          from "@surface/reflection/member-info";
+import { Indexer }       from "@surface/core";
+import { getKeyMember }  from "@surface/core/common/object";
+import Reactive          from "@surface/reactive";
+import IPropertyListener from "@surface/reactive/interfaces/property-listener";
+import IListener         from "../../reactive/interfaces/listener";
+import ISubscription     from "../../reactive/interfaces/subscription";
+import PropertyListener  from "./property-listener";
 
 const HOOKS         = Symbol("data-bind:hooks");
-const UNSUBSCRIBERS = Symbol("data-bind:unsubscribers");
+const SUBSCRIPTIONS = Symbol("data-bind:subscriptions");
 
-type Hookable  = object & { [HOOKS]?:         Array<string|symbol> };
-type Observant = object & { [UNSUBSCRIBERS]?: ActionQueue };
+type Hookable   = Indexer & { [HOOKS]?:         Array<string> };
+type Observable = Indexer & { [SUBSCRIPTIONS]?: Array<ISubscription> };
 
 export default class DataBind
 {
-    public static oneWay(target: Hookable, member: MemberInfo, observant: Observant, action: Action1<unknown>): void
+    public static oneWay(target: Indexer, path: string, listener: IListener|IPropertyListener): ISubscription
     {
-        const hooks = target[HOOKS] = target[HOOKS] || [];
+        const observer = Reactive.observe(target, path);
 
-        const observer = Observer.observe(target, member);
+        const subscriptions = [] as Array<ISubscription>;
 
-        observer.subscribe(action);
+        subscriptions.push(observer.subscribe(listener));
 
-        const unsubscribers = observant[UNSUBSCRIBERS] = observant[UNSUBSCRIBERS] || new ActionQueue();
+        const [key, member] = getKeyMember(target, path) as [string, Hookable];
 
-        unsubscribers.add(() => observer.unsubscribe(action));
+        const hooks = member[HOOKS] = member[HOOKS] || [];
 
-        if (!hooks.includes(member.key) && member instanceof FieldInfo)
+        if (!hooks.includes(key) && member instanceof HTMLInputElement)
         {
-            if (target instanceof HTMLInputElement)
+            type Key = keyof HTMLInputElement;
+
+            const action = function (this: HTMLInputElement)
             {
-                type Key = keyof HTMLInputElement;
+                observer.notify(this[key as Key]);
+            };
 
-                target.addEventListener("change", function () { observer.notify(this[member.key as Key]); });
-                target.addEventListener("keyup",  function () { observer.notify(this[member.key as Key]); });
-            }
+            member.addEventListener("change", action);
+            member.addEventListener("keyup",  action);
 
-            hooks.push(member.key);
+            hooks.push(key);
+
+            const subscription =
+            {
+                unsubscribe()
+                {
+                    member.removeEventListener("change", action);
+                    member.removeEventListener("keyup",  action);
+                }
+            };
+
+            subscriptions.push(subscription);
         }
+
+        const subscription = "update" in listener ?
+            { update: (target: Indexer) => listener.update(target), unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) }
+            : { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+
+        return subscription;
     }
 
-    public static twoWay(left: object, leftMember: FieldInfo, right: object, rightMember: FieldInfo, notification :Action): void
+    public static twoWay(left: Observable, leftPath: string, right: Observable, rightPath: string): void
     {
-        type Key   = keyof object;
-        type Value = object[Key];
+        const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
+        const [rightKey, rightMember] = getKeyMember(right, rightPath);
 
-        const leftKey  = leftMember.key  as Key;
-        const rightKey = rightMember.key as Key;
+        const leftListener  = new PropertyListener(rightMember, rightKey);
+        const rightListener = new PropertyListener(leftMember, leftKey);
 
-        DataBind.oneWay(left,  leftMember,  right, value => { right[rightKey] = value as Value; });
-        DataBind.oneWay(right, rightMember, left,  value => { left[leftKey]   = value as Value; notification(); });
+        const leftSubscription  = DataBind.oneWay(left, leftPath, leftListener);
+        const rightSubscription = DataBind.oneWay(right, rightPath, rightListener);
+
+        const leftReactor  = Reactive.getReactor(left)!;
+        const rightReactor = Reactive.getReactor(right)!;
+
+        leftListener.notify(leftMember[leftKey]);
+
+        leftReactor.setSubscription(leftKey, rightSubscription);
+        rightReactor.setSubscription(rightKey, leftSubscription);
+
+        const leftSubscriptionQueue = left[SUBSCRIPTIONS] = left[SUBSCRIPTIONS] || [];
+        leftSubscriptionQueue.push(leftSubscription);
+
+        const rightSubscriptionQueue = right[SUBSCRIPTIONS] = right[SUBSCRIPTIONS] || [];
+        rightSubscriptionQueue.push(rightSubscription);
     }
 
-    public static unbind(observant: Observant): void
+    public static unbind(target: Observable): void
     {
-        const unsubscribers = observant[UNSUBSCRIBERS];
+        const subscriptions = target[SUBSCRIPTIONS];
 
-        if (unsubscribers)
+        if (subscriptions)
         {
-            unsubscribers.executeAsync();
+            subscriptions.forEach(x => x.unsubscribe());
+
+            target[SUBSCRIPTIONS] = [];
         }
     }
 }

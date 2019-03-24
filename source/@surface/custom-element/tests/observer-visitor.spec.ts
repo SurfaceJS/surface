@@ -31,7 +31,7 @@ export class ObserverVisitorSpec
         const context = { this: new Mock() };
 
         const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ }, () => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value += 1;
@@ -62,7 +62,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new Mock() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ }, () => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value = 1;
@@ -94,7 +94,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new Mock() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ }, () => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
         context.this.value = 1;
@@ -114,7 +114,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new Mock() };
         const expression = Expression.from("this.increment(1)", context);
-        const visitor    = new ObserverVisitor({ }, () => undefined);
+        const visitor    = new ObserverVisitor(() => undefined);
 
         const invoker = ((expression as ICallExpression).context.evaluate() as Indexer)[(expression as ICallExpression).name];
 
@@ -136,7 +136,7 @@ export class ObserverVisitorSpec
 
         const context    = { this: new MockWithoutSetter() };
         const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ }, () => expect(context.this.value).to.equal(1));
+        const visitor    = new ObserverVisitor(() => expect(context.this.value).to.equal(1));
 
         visitor.visit(expression);
 
@@ -155,7 +155,7 @@ export class ObserverVisitorSpec
         };
 
         const expression = Expression.from("this.data['value']", context);
-        const visitor    = new ObserverVisitor({ }, () => undefined);
+        const visitor    = new ObserverVisitor(() => undefined);
 
         expect(() => visitor.visit(expression)).to.throw(Error, "Can't bind to non initialized object");
     }

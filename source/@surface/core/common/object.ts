@@ -58,11 +58,19 @@ export function getKeyMember(target: Indexer, path: string): [string, Indexer]
     {
         const [key, ...keys] = path.split(".");
 
-        const member = target[key];
-
-        if (member instanceof Object)
+        if (key in target)
         {
-            return getKeyMember(member, keys.join("."));
+            const member = target[key];
+
+            if (member instanceof Object)
+            {
+                return getKeyMember(member, keys.join("."));
+            }
+        }
+        else
+        {
+            const typeName = target instanceof Function ? target.name : target.constructor.name;
+            throw new Error(`Member ${key} does not exist in type ${typeName}`);
         }
     }
 

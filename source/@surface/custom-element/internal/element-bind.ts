@@ -1,13 +1,14 @@
 import { Action, Indexer }     from "@surface/core";
 import { coalesce, typeGuard } from "@surface/core/common/generic";
+import { getKeyMember }        from "@surface/core/common/object";
 import { dashedToCamel }       from "@surface/core/common/string";
 import ExpressionType          from "@surface/expression/expression-type";
 import IExpression             from "@surface/expression/interfaces/expression";
 import IMemberExpression       from "@surface/expression/interfaces/member-expression";
 import Type                    from "@surface/reflection";
-import FieldInfo               from "@surface/reflection/field-info";
 import PropertyInfo            from "@surface/reflection/property-info";
 import IArrayExpression        from "../../expression/interfaces/array-expression";
+import FieldInfo               from "../../reflection/field-info";
 import BindParser              from "./bind-parser";
 import DataBind                from "./data-bind";
 import ObserverVisitor         from "./observer-visitor";
@@ -20,6 +21,10 @@ export default class ElementBind
 {
     private readonly window:  Window;
     private readonly context: object;
+    private readonly expressions =
+    {
+        path: /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/
+    };
 
     private constructor(context: object)
     {
@@ -97,37 +102,32 @@ export default class ElementBind
 
                     if (attributeName in element && isTwoWay && typeGuard<IExpression, IMemberExpression>(expression, x => x.type == ExpressionType.Member))
                     {
-                        const target = expression.target.evaluate() as object;
-                        const key    = `${expression.key.evaluate()}`;
+                        const match = this.expressions.path.exec(attribute.value);
 
-                        const targetMember = (target instanceof Function) ?
-                            Type.of(target).getStaticMember(key) :
-                            Type.from(target).getMember(key);
+                        const pathExpressuion = match && match[1] || null;
 
-                        if (targetMember)
+                        const target = pathExpressuion ? context : expression.target.evaluate() as Indexer;
+                        const path   = pathExpressuion || `${expression.key.evaluate()}`;
+
+                        const [key, member] = getKeyMember(target, path);
+
+                        const targetMember = Type.from(member).getMember(key);
+
+                        if (elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                         {
-                            if (elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
-                            {
-                                notification = () => attribute.value = `${coalesce((target as Indexer)[key], "")}`;
+                            attribute.value = `${coalesce(member[key], "")}`;
 
-                                (element as Indexer)[attributeName] = expression.evaluate();
-
-                                DataBind.twoWay(element, elementMember, target, targetMember, notification);
-                            }
-                            else
-                            {
-                                DataBind.oneWay(target, targetMember, element, notification);
-                            }
+                            DataBind.oneWay(target, path, { notify: value => attribute.value = `${coalesce(value, "")}` });
+                            DataBind.twoWay(target, path, element, attributeName);
                         }
                         else
                         {
-                            const typeName = target instanceof Function ? target.name : target.constructor.name;
-                            throw new Error(`Member ${key} does not exist in type ${typeName}`);
+                            DataBind.oneWay(target, path, { notify: notification });
                         }
                     }
                     else
                     {
-                        const visitor = new ObserverVisitor(element, notification);
+                        const visitor = new ObserverVisitor(notification);
                         visitor.visit(expression);
                     }
 
@@ -151,14 +151,14 @@ export default class ElementBind
                 () => element.nodeValue = `${coalesce(expression.evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
                 () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            const visitor = new ObserverVisitor(element, notify);
+            const visitor = new ObserverVisitor(notify);
             visitor.visit(expression);
 
             notify();
         }
     }
 
-    private createProxy(context: object): object
+    private createProxy(context: Indexer): Indexer
     {
         const handler: ProxyHandler<Indexer> =
         {

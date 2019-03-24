@@ -1,19 +1,19 @@
-import { Action1, Indexer }       from "@surface/core";
-import { getKeyMember, getValue } from "@surface/core/common/object";
-import IListener                  from "./interfaces/listener";
-import IObserver                  from "./interfaces/observer";
-import ISubscription              from "./interfaces/subscription";
-import ActionListener             from "./internal/action-listener";
-import Observer                   from "./internal/observer";
-import PropertyListener           from "./internal/property-listener";
-import Reactor                    from "./internal/reactor";
-import Subscription               from "./internal/subscription";
-import { KEYS, REACTOR }          from "./internal/symbols";
+import { Action1, Indexer, Nullable } from "@surface/core";
+import { getKeyMember, getValue }     from "@surface/core/common/object";
+import IListener                      from "./interfaces/listener";
+import IObserver                      from "./interfaces/observer";
+import IReactor                       from "./interfaces/reactor";
+import ISubscription                  from "./interfaces/subscription";
+import ActionListener                 from "./internal/action-listener";
+import Observer                       from "./internal/observer";
+import PropertyListener               from "./internal/property-listener";
+import PropertySubscription           from "./internal/property-subscription";
+import Reactor                        from "./internal/reactor";
+import { REACTOR }                    from "./internal/symbols";
 
 type Reactiveable<T extends Indexer = Indexer> = T &
 {
-    [KEYS]?:    Array<string>;
-    [REACTOR]?: Reactor;
+    [REACTOR]?: IReactor;
 };
 
 export default class Reactive
@@ -31,7 +31,7 @@ export default class Reactive
 
             Reactor.makeReactive(target, key);
 
-            const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
+            const reactor = (target[REACTOR] = target[REACTOR] || new Reactor()) as Reactor;
             const value   = target[key] as Indexer;
 
             const [endpoint, dependency, observer] = Reactive.observePath(value, keys.join("."));
@@ -54,13 +54,18 @@ export default class Reactive
     {
         Reactor.makeReactive(target, key);
 
-        const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
+        const reactor = (target[REACTOR] = target[REACTOR] || new Reactor()) as Reactor;
 
         const observer = reactor.getObserver(key) || new Observer();
 
         reactor.setObserver(key, observer);
 
         return [reactor, observer];
+    }
+
+    public static getReactor(target: Reactiveable): Nullable<IReactor>
+    {
+        return target[REACTOR];
     }
 
     public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey): IObserver<TTarget[TKey]>;
@@ -114,35 +119,30 @@ export default class Reactive
     }
 
     public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: Reactiveable<TLeft>, leftKey: TLeftKey, right: Reactiveable<TRight>, rightKey: TRightKey): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Reactiveable, leftKey: string, right: Reactiveable, rightKey: string): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Reactiveable, leftKey: string, right: Reactiveable, rightKey: string): [ISubscription, ISubscription]
+    public static observeTwoWay(left: Reactiveable, leftPath: string, right: Reactiveable, rightPath: string): [ISubscription, ISubscription];
+    public static observeTwoWay(left: Reactiveable, leftPath: string, right: Reactiveable, rightPath: string): [ISubscription, ISubscription]
     {
-        const [innerLeftKey,  innerLeft]  = getKeyMember(left, leftKey);
-        const [innerRightKey, innerRight] = getKeyMember(right, rightKey);
+        const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
+        const [rightKey, rightMember] = getKeyMember(right, rightPath);
 
-        const leftListener  = new PropertyListener(innerRight, innerRightKey);
-        const rightListener = new PropertyListener(innerLeft, innerLeftKey);
+        const leftListener  = new PropertyListener(rightMember, rightKey);
+        const rightListener = new PropertyListener(leftMember, leftKey);
 
-        const [leftReactor, , leftObserver]   = Reactive.observePath(left, leftKey);
-        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightKey);
+        const [leftReactor, , leftObserver]   = Reactive.observePath(left, leftPath);
+        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightPath);
 
         leftObserver.subscribe(leftListener);
-        leftObserver.notify(innerLeft[innerLeftKey]);
+        leftListener.notify(leftMember[leftKey]);
+
+        const leftSubscription = new PropertySubscription(rightListener, rightObserver);
+
+        leftReactor.setSubscription(rightKey, leftSubscription);
 
         rightObserver.subscribe(rightListener);
-        rightObserver.notify(innerRight[innerRightKey]);
 
-        const leftSubscription = leftReactor.getSubscription(innerRightKey) || new Subscription(rightObserver);
+        const rightSubscription = new PropertySubscription(leftListener, leftObserver);
 
-        leftSubscription.addListener(rightListener);
-
-        leftReactor.setSubscription(innerRightKey, leftSubscription);
-
-        const rightSubscription = rightReactor.getSubscription(innerLeftKey) || new Subscription(leftObserver);
-
-        rightSubscription.addListener(leftListener);
-
-        rightReactor.setSubscription(innerLeftKey, rightSubscription);
+        rightReactor.setSubscription(leftKey, rightSubscription);
 
         return [leftSubscription, rightSubscription];
     }

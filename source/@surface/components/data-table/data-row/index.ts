@@ -1,12 +1,6 @@
-import { Indexer }  from "@surface/core";
-import ActionQueue  from "@surface/core/action-queue";
 import { coalesce } from "@surface/core/common/generic";
 import { clone }    from "@surface/core/common/object";
-import Type         from "@surface/reflection";
-import MethodInfo   from "@surface/reflection/method-info";
-import PropertyInfo from "@surface/reflection/property-info";
 import Component    from "../..";
-import Observer     from "../../../observer";
 import { element }  from "../../decorators";
 import template     from "./index.html";
 import style        from "./index.scss";
@@ -14,7 +8,6 @@ import style        from "./index.scss";
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component
 {
-    private readonly unsubscribers: ActionQueue = new ActionQueue();
 
     private _data:     T;
     private _editMode: boolean = false;
@@ -29,11 +22,7 @@ export default class DataRow<T extends object = object> extends Component
 
     public set data(value: T)
     {
-        this._reference = value;
-
-        this.unsubscribers.executeAsync();
-
-        this.setData(this._data, value);
+        this._data = value;
     }
 
     public get editMode(): boolean
@@ -65,34 +54,6 @@ export default class DataRow<T extends object = object> extends Component
         }
     }
 
-    private setData(target: Indexer, source: Indexer): void
-    {
-        for (const member of Type.from(target).getMembers())
-        {
-            if (!(member instanceof MethodInfo) && member.key in source)
-            {
-                const key = member.key as string;
-
-                const value = source[key];
-
-                if (value instanceof Object)
-                {
-                    this.setData(target[key] as object, value);
-                }
-                else if (!(member instanceof PropertyInfo && member.readonly))
-                {
-                    const listener = (x: unknown) => target[key] = x;
-
-                    const observer = Observer.observe(source, key)
-                        .subscribe(listener)
-                        .notify(value);
-
-                    this.unsubscribers.add(() => observer.unsubscribe(listener));
-                }
-            }
-        }
-    }
-
     public enterEdit(): void
     {
         this._editMode = true;
@@ -107,7 +68,7 @@ export default class DataRow<T extends object = object> extends Component
 
     public save(): void
     {
-        this.setData(this._reference, this._data);
+        this._reference = this._data;
 
         if (this.new)
         {
@@ -118,6 +79,6 @@ export default class DataRow<T extends object = object> extends Component
 
     public undo(): void
     {
-        this.setData(this._data, this._reference);
+        this._data = this._reference;
     }
 }
