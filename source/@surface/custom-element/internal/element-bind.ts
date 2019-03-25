@@ -4,7 +4,6 @@ import { getKeyMember }        from "@surface/core/common/object";
 import { dashedToCamel }       from "@surface/core/common/string";
 import ExpressionType          from "@surface/expression/expression-type";
 import IExpression             from "@surface/expression/interfaces/expression";
-import IMemberExpression       from "@surface/expression/interfaces/member-expression";
 import Type                    from "@surface/reflection";
 import PropertyInfo            from "@surface/reflection/property-info";
 import IArrayExpression        from "../../expression/interfaces/array-expression";
@@ -15,24 +14,27 @@ import ObserverVisitor         from "./observer-visitor";
 import { BINDED, CONTEXT }     from "./symbols";
 import windowWrapper           from "./window-wrapper";
 
-type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: object };
+type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: Indexer };
 
 export default class ElementBind
 {
     private readonly window:  Window;
-    private readonly context: object;
+    private readonly context: Indexer;
     private readonly expressions =
     {
-        path: /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/
+        databind: /\[\[.*\]\]|\{\{.*\}\}/,
+        oneWay:   /^\[\[.*\]\]$/,
+        path:     /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/,
+        twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
 
-    private constructor(context: object)
+    private constructor(context: Indexer)
     {
         this.context = context;
         this.window  = windowWrapper;
     }
 
-    public static for(context: object, content: Node): void
+    public static for(context: Indexer, content: Node): void
     {
         new ElementBind(context).traverseElement(content);
     }
@@ -56,22 +58,17 @@ export default class ElementBind
     // tslint:disable-next-line:cyclomatic-complexity
     private bindAttribute(element: Element): void
     {
-        const notifications: Array<Action> = [];
+        //const notifications: Array<Action> = [];
         for (const attribute of this.wrapAttribute(element))
         {
-            if (/\{\{.*\}\}/.test(attribute.value) || /\[\[.*\]\]/.test(attribute.value))
+            if (this.expressions.databind.test(attribute.value))
             {
-                const isOneWay = /^\[\[.*\]\]$/.test(attribute.value);
-                const isTwoWay = /^\{\{.*\}\}$/.test(attribute.value);
-
-                const interpolation = !(isOneWay || isTwoWay);
-
                 const context = this.createProxy({ this: element, ...this.context });
-
-                const expression = BindParser.scan(context, attribute.value);
 
                 if (attribute.name.startsWith("on-"))
                 {
+                    const expression = BindParser.scan(context, attribute.value);
+
                     const action = expression.type == ExpressionType.Identifier || expression.type ==  ExpressionType.Member ?
                         expression.evaluate() as Action
                         : () => expression.evaluate();
@@ -81,80 +78,95 @@ export default class ElementBind
                 }
                 else
                 {
-                    const attributeName = dashedToCamel(attribute.name);
-                    const elementMember = Type.from(element).getMember(attributeName);
+                    const isOneWay         = this.expressions.oneWay.test(attribute.value);
+                    const isTwoWay         = this.expressions.twoWay.test(attribute.value);
+                    const isPathExpression = this.expressions.path.test(attribute.value);
+                    const interpolation    = !(isOneWay || isTwoWay);
+                    const attributeName    = dashedToCamel(attribute.name);
+                    const elementMember    = Type.from(element).getMember(attributeName);
+                    const canWrite         = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
 
-                    const canWrite = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
-
-                    let notification = () =>
-                    {
-                        const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
-                            expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
-                            expression.evaluate();
-
-                        if (canWrite)
-                        {
-                            (element as Indexer)[attributeName] = value;
-                        }
-
-                        attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
-                    };
-
-                    if (attributeName in element && isTwoWay && typeGuard<IExpression, IMemberExpression>(expression, x => x.type == ExpressionType.Member))
+                    if (isPathExpression)
                     {
                         const match = this.expressions.path.exec(attribute.value);
 
-                        const pathExpressuion = match && match[1] || null;
-
-                        const target = pathExpressuion ? context : expression.target.evaluate() as Indexer;
-                        const path   = pathExpressuion || `${expression.key.evaluate()}`;
+                        const target = context;
+                        const path   = match![1];
 
                         const [key, member] = getKeyMember(target, path);
 
                         const targetMember = Type.from(member).getMember(key);
 
-                        if (elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
+                        const notification = (value: unknown) =>
                         {
-                            attribute.value = `${coalesce(member[key], "")}`;
+                            if (canWrite)
+                            {
+                                (element as Indexer)[attributeName] = value;
+                            }
 
-                            DataBind.oneWay(target, path, { notify: value => attribute.value = `${coalesce(value, "")}` });
-                            DataBind.twoWay(target, path, element, attributeName);
-                        }
-                        else
+                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
+                        };
+
+                        DataBind.oneWay(target, path, { notify: notification });
+
+                        if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                         {
-                            DataBind.oneWay(target, path, { notify: notification });
+                            DataBind.twoWay(target, path, element, attributeName);
                         }
                     }
                     else
                     {
+                        const expression = BindParser.scan(context, attribute.value);
+
+                        const notification = () =>
+                        {
+                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
+                                expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
+                                expression.evaluate();
+
+                            if (canWrite)
+                            {
+                                (element as Indexer)[attributeName] = value;
+                            }
+
+                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
+                        };
+
                         const visitor = new ObserverVisitor(notification);
                         visitor.visit(expression);
                     }
-
-                    notifications.push(notification);
                 }
             }
         }
 
-        notifications.forEach(notification => notification());
+        //notifications.forEach(notification => notification());
     }
 
     private bindTextNode(element: Element): void
     {
-        if (element.nodeValue && (element.nodeValue.indexOf("{{") > -1 || element.nodeValue.indexOf("[[") > -1))
+        if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
         {
             const context = this.createProxy({ this: element, ...this.context });
 
-            const expression = BindParser.scan(context, element.nodeValue);
+            const match = this.expressions.path.exec(element.nodeValue);
 
-            const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
-                () => element.nodeValue = `${coalesce(expression.evaluate().reduce((previous, current) => `${previous}${current}`), "")}` :
-                () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
+            if (match)
+            {
+                DataBind.oneWay(context, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
+            }
+            else
+            {
+                const expression = BindParser.scan(context, element.nodeValue);
 
-            const visitor = new ObserverVisitor(notify);
-            visitor.visit(expression);
+                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
+                    () => element.nodeValue = `${expression.evaluate().reduce((previous, current) => `${previous}${current}`)}` :
+                    () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-            notify();
+                const visitor = new ObserverVisitor(notify);
+                visitor.visit(expression);
+
+                notify();
+            }
         }
     }
 
@@ -195,7 +207,7 @@ export default class ElementBind
 
     private *wrapAttribute(element: Element): IterableIterator<Attr>
     {
-        for (const attribute of (element.attributes as unknown as Iterable<Attr>))
+        for (const attribute of Array.from(element.attributes))
         {
             if (attribute.name.startsWith("*"))
             {

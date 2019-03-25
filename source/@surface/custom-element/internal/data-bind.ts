@@ -16,15 +16,14 @@ export default class DataBind
 {
     public static oneWay(target: Indexer, path: string, listener: IListener|IPropertyListener): ISubscription
     {
-        const observer = Reactive.observe(target, path);
-
+        const [key, member] = getKeyMember(target, path) as [string, Hookable];
+        const hooks         = member[HOOKS] = member[HOOKS] || [];
+        const observer      = Reactive.observe(target, path);
         const subscriptions = [] as Array<ISubscription>;
 
         subscriptions.push(observer.subscribe(listener));
 
-        const [key, member] = getKeyMember(target, path) as [string, Hookable];
-
-        const hooks = member[HOOKS] = member[HOOKS] || [];
+        observer.notify(member[key]);
 
         if (!hooks.includes(key) && member instanceof HTMLInputElement)
         {
@@ -72,8 +71,6 @@ export default class DataBind
 
         const leftReactor  = Reactive.getReactor(left)!;
         const rightReactor = Reactive.getReactor(right)!;
-
-        leftListener.notify(leftMember[leftKey]);
 
         leftReactor.setSubscription(leftKey, rightSubscription);
         rightReactor.setSubscription(rightKey, leftSubscription);

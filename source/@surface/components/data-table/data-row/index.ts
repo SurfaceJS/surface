@@ -1,5 +1,9 @@
+import { Indexer }  from "@surface/core";
 import { coalesce } from "@surface/core/common/generic";
 import { clone }    from "@surface/core/common/object";
+import Type         from "@surface/reflection";
+import MethodInfo   from "@surface/reflection/method-info";
+import PropertyInfo from "@surface/reflection/property-info";
 import Component    from "../..";
 import { element }  from "../../decorators";
 import template     from "./index.html";
@@ -54,6 +58,28 @@ export default class DataRow<T extends object = object> extends Component
         }
     }
 
+    private copy(target: Indexer, source: Indexer): void
+    {
+        for (const member of Type.from(target).getMembers())
+        {
+            if (!(member instanceof MethodInfo) && member.key in source)
+            {
+                const key = member.key as string;
+
+                const value = source[key];
+
+                if (value instanceof Object)
+                {
+                    this.copy(target[key] as object, value);
+                }
+                else if (!(member instanceof PropertyInfo && member.readonly))
+                {
+                    target[key] = source[key];
+                }
+            }
+        }
+    }
+
     public enterEdit(): void
     {
         this._editMode = true;
@@ -68,7 +94,7 @@ export default class DataRow<T extends object = object> extends Component
 
     public save(): void
     {
-        this._reference = this._data;
+        this.copy(this._reference, this._data);
 
         if (this.new)
         {
@@ -79,6 +105,6 @@ export default class DataRow<T extends object = object> extends Component
 
     public undo(): void
     {
-        this._data = this._reference;
+        this.copy(this._data, this._reference);
     }
 }

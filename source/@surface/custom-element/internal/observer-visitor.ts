@@ -1,17 +1,17 @@
-import { Action }        from "@surface/core";
-import ExpressionVisitor from "@surface/expression/expression-visitor";
-import ICallExpression   from "@surface/expression/interfaces/call-expression";
-import IExpression       from "@surface/expression/interfaces/expression";
-import IMemberExpression from "@surface/expression/interfaces/member-expression";
-import Type              from "@surface/reflection";
-import FieldInfo         from "@surface/reflection/field-info";
-import DataBind          from "./data-bind";
+import { Action1, Indexer, Nullable } from "@surface/core";
+import ExpressionVisitor              from "@surface/expression/expression-visitor";
+import ICallExpression                from "@surface/expression/interfaces/call-expression";
+import IExpression                    from "@surface/expression/interfaces/expression";
+import IMemberExpression              from "@surface/expression/interfaces/member-expression";
+import Type                           from "@surface/reflection";
+import FieldInfo                      from "@surface/reflection/field-info";
+import DataBind                       from "./data-bind";
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly notify: Action;
+    private readonly notify: Action1<unknown>;
 
-    public constructor(notify: Action)
+    public constructor(notify: Action1<unknown>)
     {
         super();
         this.notify = notify;
@@ -29,25 +29,27 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): IExpression
     {
-        const target = expression.target.evaluate();
+        const target = expression.target.evaluate() as Nullable<Indexer>;
         const key    = `${expression.key.evaluate()}`;
 
-        if (!target)
+        if (target)
         {
-            throw new TypeError("Can't bind to non initialized object");
-        }
+            const member = Type.from(target).getMember(key);
 
-        const member = Type.from(target as object).getMember(key);
+            if (member instanceof FieldInfo)
+            {
+                DataBind.oneWay(target, key, { notify: this.notify });
+            }
+            else
+            {
+                this.notify(target[key]);
+            }
 
-        if (member instanceof FieldInfo)
-        {
-            DataBind.oneWay(target as object, key, { notify: this.notify });
+            return expression;
         }
         else
         {
-            this.notify();
+            throw new TypeError("Can't bind to non initialized object");
         }
-
-        return expression;
     }
 }
