@@ -1,7 +1,8 @@
-import { Func1 }         from "@surface/core";
-import ExpressionType    from "../../expression-type";
-import IExpression       from "../../interfaces/expression";
-import { UnaryOperator } from "../../types";
+import { Func1, Nullable } from "@surface/core";
+import { coalesce }        from "@surface/core/common/generic";
+import ExpressionType      from "../../expression-type";
+import IExpression         from "../../interfaces/expression";
+import { UnaryOperator }   from "../../types";
 
 const unaryFunctions =
 {
@@ -14,6 +15,12 @@ const unaryFunctions =
 
 export default class UnaryExpression implements IExpression
 {
+    private _cache: Nullable<Object>;
+    public get cache(): Object
+    {
+        return coalesce(this._cache, () => this.evaluate());
+    }
+
     private readonly operation: Func1<unknown, Object>;
 
     private readonly _operator: UnaryOperator;
@@ -42,6 +49,6 @@ export default class UnaryExpression implements IExpression
 
     public evaluate(): Object
     {
-        return this.operation(this.expression);
+        return this._cache = this.operation(this.expression);
     }
 }

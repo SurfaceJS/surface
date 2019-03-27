@@ -1,10 +1,12 @@
-import { Func1, Nullable } from "../";
+import { Func, Func1, Nullable } from "../";
 
 export function coalesce<T, U extends T>(value: Nullable<T>, fallback: U): T;
+export function coalesce<T, U extends T>(value: Nullable<T>, fallback: Func<U>): T;
 export function coalesce<T>(value: Nullable<T>, fallback: T): T;
-export function coalesce<T>(value: Nullable<T>, fallback: T): T
+export function coalesce<T>(value: Nullable<T>, fallback: Func<T>): T;
+export function coalesce<T>(value: Nullable<T>, fallback: T|Func<T>): T
 {
-    return value !== null && value !== undefined ? value : fallback;
+    return value !== null && value !== undefined ? value : fallback instanceof Function ? fallback() : fallback;
 }
 
 export function hasValue(value: unknown): value is Object;
@@ -26,7 +28,9 @@ export function tuple<Targs extends Array<any>>(...args: Targs): Targs
     return args;
 }
 
-export function typeGuard<T, U extends T>(target: T, predicate: Func1<T, boolean>): target is U
+export function typeGuard<T>(target: unknown, predicate: Func1<unknown, boolean>): target is T;
+export function typeGuard<T, U extends T>(target: T, predicate: Func1<T, boolean>): target is U;
+export function typeGuard(target: unknown, predicate: Func1<unknown, boolean>): boolean
 {
     return predicate(target);
 }

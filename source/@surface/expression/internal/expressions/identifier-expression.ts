@@ -1,9 +1,16 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import { Indexer, Nullable } from "@surface/core";
+import { coalesce }          from "@surface/core/common/generic";
+import ExpressionType        from "../../expression-type";
+import IExpression           from "../../interfaces/expression";
 
 export default class IdentifierExpression implements IExpression
 {
+    private _cache: Nullable<unknown>;
+    public get cache(): unknown
+    {
+        return coalesce(this._cache, () => this.evaluate());
+    }
+
     private readonly _context: Indexer;
     public get context(): Indexer
     {
@@ -34,6 +41,6 @@ export default class IdentifierExpression implements IExpression
 
     public evaluate(): unknown
     {
-        return this.context[this.name];
+        return this._cache = this.context[this.name];
     }
 }

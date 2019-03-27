@@ -29,9 +29,7 @@ export default class Reactive
                 throw new Error(`Property ${key} does not exist on ${target}`);
             }
 
-            Reactor.makeReactive(target, key);
-
-            const reactor = (target[REACTOR] = target[REACTOR] || new Reactor()) as Reactor;
+            const reactor = Reactor.makeReactive(target, key);
             const value   = target[key] as Indexer;
 
             const [endpoint, dependency, observer] = Reactive.observePath(value, keys.join("."));
@@ -52,9 +50,7 @@ export default class Reactive
 
     private static observeProperty(target: Reactiveable, key: string): [Reactor, IObserver]
     {
-        Reactor.makeReactive(target, key);
-
-        const reactor = (target[REACTOR] = target[REACTOR] || new Reactor()) as Reactor;
+        const reactor = Reactor.makeReactive(target, key);
 
         const observer = reactor.getObserver(key) || new Observer();
 

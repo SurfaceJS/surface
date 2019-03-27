@@ -1,9 +1,10 @@
-import { Func2, Indexer } from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
-import { UpdateOperator } from "../../types";
-import TypeGuard          from "../type-guard";
-import ConstantExpression from "./constant-expression";
+import { Func2, Indexer, Nullable } from "@surface/core";
+import { coalesce }                 from "@surface/core/common/generic";
+import ExpressionType               from "../../expression-type";
+import IExpression                  from "../../interfaces/expression";
+import { UpdateOperator }           from "../../types";
+import TypeGuard                    from "../type-guard";
+import ConstantExpression           from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
@@ -17,7 +18,13 @@ const updateFunctions =
 
 export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Func2<unknown, unknown, number>;
+    private _cache: Nullable<number>;
+    public get cache(): number
+    {
+        return coalesce(this._cache, () => this.evaluate());
+    }
+
+    private readonly operation: Func2<IExpression, IExpression, number>;
 
     private readonly _expression: IExpression;
     public get expression(): IExpression
@@ -47,7 +54,7 @@ export default class UpdateExpression implements IExpression
         this._expression = expression;
         this._prefix     = prefix;
         this._operator   = operator;
-        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]) as Func2<unknown, unknown, number>;
+        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
     }
 
     public evaluate(): number
@@ -55,11 +62,11 @@ export default class UpdateExpression implements IExpression
         /* istanbul ignore else  */
         if (TypeGuard.isIdentifierExpression(this.expression))
         {
-            return this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
+            return this._cache = this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
         }
         else if (TypeGuard.isMemberExpression(this.expression))
         {
-            return this.operation(this.expression.target, this.expression.key);
+            return this._cache = this.operation(this.expression.target, this.expression.key);
         }
         else
         {

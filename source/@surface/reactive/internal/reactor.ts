@@ -3,6 +3,7 @@ import { hasValue, typeGuard } from "@surface/core/common/generic";
 import { uuidv4 }              from "@surface/core/common/string";
 import Type                    from "@surface/reflection";
 import FieldInfo               from "@surface/reflection/field-info";
+import MethodInfo              from "@surface/reflection/method-info";
 import PropertyInfo            from "@surface/reflection/property-info";
 import IObserver               from "../interfaces/observer";
 import IPropertySubscription   from "../interfaces/property-subscription";
@@ -29,23 +30,27 @@ export default class Reactor implements IReactor
         return this._id = this._id || uuidv4();
     }
 
-    private static notify(target: Reactiveable, key: string): void
+    private static notify(target: Reactiveable, key: string): void;
+    private static notify(target: Reactiveable, key: string, value: unknown): void;
+    private static notify(...args: [Reactiveable, string]|[Reactiveable, string, unknown]): void
     {
+        const [target, key] = args;
+
         const reactor = target[REACTOR]!;
 
-        reactor.update(key, target[key]);
+        reactor.update(key, args.length == 3 ? args[2] : target[key]);
 
-        reactor.notify(target, key);
+        args.length == 2 ? reactor.notify(target, key) : reactor.notify(target, key, args[2]);
     }
 
-    public static makeReactive(target: Reactiveable, key: string): void
+    public static makeReactive(target: Reactiveable, key: string): Reactor
     {
-        const keys   = target[KEYS] || [] as Array<string>;
-        target[KEYS] = keys;
+        const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
+        const keys    = target[KEYS]    = target[KEYS]    || [] as Array<string>;
 
         if (keys.includes(key))
         {
-            return;
+            return reactor;
         }
 
         keys.push(key);
@@ -139,7 +144,35 @@ export default class Reactor implements IReactor
                     }
                 }
             );
+
         }
+        else if (member instanceof MethodInfo)
+        {
+            let cache     = null as unknown;
+            let notifying = false;
+
+            target[key] = function(this: Indexer, ...args: Array<unknown>)
+            {
+                if (!notifying)
+                {
+                    const result = cache = member.invoke.apply(this, args);
+
+                    notifying = true;
+
+                    Reactor.notify(this, key, result);
+
+                    notifying = false;
+
+                    return result;
+                }
+                else
+                {
+                    return cache;
+                }
+            };
+        }
+
+        return reactor;
     }
 
     private register(target: Reactiveable, registry: Reactor): void
@@ -154,16 +187,11 @@ export default class Reactor implements IReactor
                 }
                 else
                 {
+                    Reactor.makeReactive(target, key);
+
                     const value = target[key] as Reactiveable;
 
                     const reactor = value[REACTOR] = value[REACTOR] || new Reactor();
-
-                    const keys = value[KEYS] = value[KEYS] || [];
-
-                    if (!keys.includes(key))
-                    {
-                        Reactor.makeReactive(target, key);
-                    }
 
                     registry.dependencies.set(key, reactor);
                     dependency.register(value, reactor);
@@ -172,12 +200,7 @@ export default class Reactor implements IReactor
 
             for (const key of this.observers.keys())
             {
-                const keys = target[KEYS] = target[KEYS] || [];
-
-                if (!keys.includes(key))
-                {
-                    Reactor.makeReactive(target, key);
-                }
+                Reactor.makeReactive(target, key);
             }
 
             registry.registries.add(this);
@@ -212,14 +235,15 @@ export default class Reactor implements IReactor
 
     public notify(value: unknown): void;
     public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
-    public notify(...args: [unknown]|[Indexer, string]): void
+    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
+    public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
     {
         if (Reactor.stack.includes(this))
         {
             return;
         }
 
-        const value = args.length == 1 ? args[0] : args[0][args[1]];
+        const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
 
         if (!hasValue(value))
         {
@@ -292,7 +316,7 @@ export default class Reactor implements IReactor
 
             for (const registry of this.registries.values())
             {
-                registry.notify(target, key);
+                registry.notify(target, key, value);
             }
 
             if (this.observers.has(key))

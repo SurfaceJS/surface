@@ -3,6 +3,11 @@ import IExpression    from "../../interfaces/expression";
 
 export default class ConstantExpression implements IExpression
 {
+    public get cache(): unknown
+    {
+        return this.value;
+    }
+
     private readonly _value: unknown;
     public get value(): unknown
     {
