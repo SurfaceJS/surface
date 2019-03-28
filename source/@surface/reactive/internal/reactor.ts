@@ -1,18 +1,18 @@
-import { Indexer, Nullable }   from "@surface/core";
-import { hasValue, typeGuard } from "@surface/core/common/generic";
-import { uuidv4 }              from "@surface/core/common/string";
-import Type                    from "@surface/reflection";
-import FieldInfo               from "@surface/reflection/field-info";
-import MethodInfo              from "@surface/reflection/method-info";
-import PropertyInfo            from "@surface/reflection/property-info";
-import IObserver               from "../interfaces/observer";
-import IPropertySubscription   from "../interfaces/property-subscription";
-import IReactor                from "../interfaces/reactor";
-import ISubscription           from "../interfaces/subscription";
-import PropertySubscription    from "./property-subscription";
-import { KEYS, REACTOR }       from "./symbols";
+import { Indexer, Nullable }      from "@surface/core";
+import { hasValue, typeGuard }    from "@surface/core/common/generic";
+import { uuidv4 }                 from "@surface/core/common/string";
+import Type                       from "@surface/reflection";
+import FieldInfo                  from "@surface/reflection/field-info";
+import MethodInfo                 from "@surface/reflection/method-info";
+import PropertyInfo               from "@surface/reflection/property-info";
+import IObserver                  from "../interfaces/observer";
+import IPropertySubscription      from "../interfaces/property-subscription";
+import IReactor                   from "../interfaces/reactor";
+import ISubscription              from "../interfaces/subscription";
+import PropertySubscription       from "./property-subscription";
+import { KEYS, REACTOR, WRAPPED } from "./symbols";
 
-export type Reactiveable<T = Indexer> = T & { [KEYS]?: Array<string>, [REACTOR]?: Reactor };
+export type Reactiveable<T = Indexer> = T & { [KEYS]?: Array<string>, [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
 export default class Reactor implements IReactor
 {
@@ -43,6 +43,27 @@ export default class Reactor implements IReactor
         args.length == 2 ? reactor.notify(target, key) : reactor.notify(target, key, args[2]);
     }
 
+    private static wrapArray(target: Array<unknown> & Reactiveable, reactor: Reactor): void
+    {
+        const methods = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
+
+        for (const method of methods)
+        {
+            const fn = target[method] as Function;
+
+            target[method] = function(...args: Array<unknown>)
+            {
+                const elements = fn.apply(this, args);
+
+                reactor.notify(this);
+
+                return elements;
+            };
+        }
+
+        target[WRAPPED] = true;
+    }
+
     public static makeReactive(target: Reactiveable, key: string): Reactor
     {
         const reactor = target[REACTOR] = target[REACTOR] || new Reactor();
@@ -56,6 +77,11 @@ export default class Reactor implements IReactor
         keys.push(key);
 
         const member = Type.from(target).getMember(key);
+
+        if (!!!target[WRAPPED] && Array.isArray(target))
+        {
+            Reactor.wrapArray(target, reactor);
+        }
 
         if (member instanceof PropertyInfo)
         {
@@ -151,7 +177,7 @@ export default class Reactor implements IReactor
             let cache     = null as unknown;
             let notifying = false;
 
-            target[key] = function(this: Indexer, ...args: Array<unknown>)
+            target[key] = function(...args: Array<unknown>)
             {
                 if (!notifying)
                 {
@@ -173,6 +199,81 @@ export default class Reactor implements IReactor
         }
 
         return reactor;
+    }
+
+    private notifyValue(value: Indexer): void
+    {
+        for (const registry of this.registries.values())
+        {
+            registry.notify(value);
+        }
+
+        for (const subscriptions of this.subscriptions.values())
+        {
+            for (const subscription of subscriptions)
+            {
+                if ("update" in subscription)
+                {
+                    subscription.update(value);
+                }
+            }
+        }
+
+        for (const [key, dependency] of this.dependencies)
+        {
+            dependency.notify(value[key]);
+        }
+
+        for (const [key, observer] of this.observers)
+        {
+            observer.notify(value[key]);
+        }
+    }
+
+    private notifyTargetKey(target: Indexer, key: string): void
+    {
+        this.notifyTargetKeyValue(target, key, target[key] as Indexer);
+    }
+
+    private notifyTargetKeyValue(target: Indexer, key: string, value: Indexer): void
+    {
+        if (this.subscriptions.has(key))
+        {
+            for (const subscription of this.subscriptions.get(key)!)
+            {
+                if ("update" in subscription)
+                {
+                    subscription.update(target);
+                }
+            }
+        }
+
+        if (this.dependencies.has(key))
+        {
+            const dependency = this.dependencies.get(key)!;
+
+            if (dependency.dependencies.size > 0)
+            {
+                for (const dependencyKey of dependency.dependencies.keys())
+                {
+                    dependency.notify(value, dependencyKey);
+                }
+            }
+            else
+            {
+                dependency.notify(value);
+            }
+        }
+
+        for (const registry of this.registries.values())
+        {
+            registry.notify(target, key, value);
+        }
+
+        if (this.observers.has(key))
+        {
+            this.observers.get(key)!.notify(value);
+        }
     }
 
     private register(target: Reactiveable, registry: Reactor): void
@@ -254,74 +355,19 @@ export default class Reactor implements IReactor
 
         if (args.length == 1)
         {
-            for (const registry of this.registries.values())
-            {
-                registry.notify(value);
-            }
-
-            if (typeGuard<unknown, Indexer>(value, x => x instanceof Object))
-            {
-                for (const subscriptions of this.subscriptions.values())
-                {
-                    for (const subscription of subscriptions)
-                    {
-                        if ("update" in subscription)
-                        {
-                            subscription.update(value);
-                        }
-                    }
-                }
-
-                for (const [key, observer] of this.observers)
-                {
-                    observer.notify(value[key]);
-                }
-            }
-            else
-            {
-                this.notify(value);
-            }
+            this.notifyValue(value);
         }
         else
         {
             const [target, key] = args;
 
-            if (this.subscriptions.has(key))
+            if (args.length == 2)
             {
-                for (const subscription of this.subscriptions.get(key)!)
-                {
-                    if ("update" in subscription)
-                    {
-                        subscription.update(target);
-                    }
-                }
+                this.notifyTargetKey(target, key);
             }
-
-            if (this.dependencies.has(key))
+            else
             {
-                const dependency = this.dependencies.get(key)!;
-
-                if (dependency.dependencies.size > 0)
-                {
-                    for (const dependencyKey of dependency.dependencies.keys())
-                    {
-                        dependency.notify(value as Indexer, dependencyKey);
-                    }
-                }
-                else
-                {
-                    dependency.notify(value);
-                }
-            }
-
-            for (const registry of this.registries.values())
-            {
-                registry.notify(target, key, value);
-            }
-
-            if (this.observers.has(key))
-            {
-                this.observers.get(key)!.notify(value);
+                this.notifyTargetKeyValue(target, key, value);
             }
         }
 

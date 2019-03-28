@@ -1,8 +1,8 @@
-import Expression                              from "@surface/expression";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                               from "chai";
-import Reactive                                from "..";
-import ReactiveVisitor                         from "../internal/reactive-visitor";
+import Expression                  from "@surface/expression";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import * as chai                   from "chai";
+import Reactive                    from "..";
+import ReactiveVisitor             from "../internal/reactive-visitor";
 
 @suite
 export default class ReactiveVisitorSpec
@@ -88,9 +88,55 @@ export default class ReactiveVisitorSpec
         chai.expect(value).to.equal(4);
     }
 
-    @test @shouldFail
-    public invalidKey(): void
+    @test @shouldPass
+    public visitIndexAcessedExpression(): void
     {
-        chai.expect([]);
+        const context =
+        {
+            a:
+            {
+                instance:
+                {
+                    items:
+                    [
+                        { very: { deep: { path: { value: 1 } } } },
+                        { very: { deep: { path: { value: 2 } } } },
+                        { very: { deep: { path: { value: 3 } } } },
+                        { very: { deep: { path: { value: 4 } } } },
+                        { very: { deep: { path: { value: 5 } } } }
+                    ]
+                }
+            }
+        };
+
+        let value = 0;
+
+        const expression = Expression.from("a.instance.items[3].very.deep['path'].value", context);
+
+        const notification = (x: number) => value = x;
+
+        const visitor = new ReactiveVisitor({ notify: notification });
+
+        visitor.visit(expression);
+
+        const reactor = Reactive.getReactor(context);
+
+        chai.expect(reactor);
+
+        context.a.instance.items.splice(0, 1);
+
+        chai.expect(value).to.equal(5, "#01");
+
+        context.a.instance.items.reverse();
+
+        chai.expect(value).to.equal(2, "#02");
+
+        context.a.instance.items.pop();
+
+        context.a.instance.items.reverse();
+
+        context.a.instance.items.push({ very: { deep: { path: { value: 6 } } } },);
+
+        chai.expect(value).to.equal(6, "#03");
     }
 }

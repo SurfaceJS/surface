@@ -8,9 +8,9 @@ import IMemberExpression     from "../../expression/interfaces/member-expression
 import IListener             from "../interfaces/listener";
 import Observer              from "./observer";
 import Reactor               from "./reactor";
-import { REACTOR }           from "./symbols";
+import { REACTOR, WRAPPED }  from "./symbols";
 
-type Reactivable = Indexer & { [REACTOR]?: Reactor };
+type Reactivable = Indexer & { [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
 export default class ReactiveVisitor extends ExpressionVisitor
 {
@@ -33,8 +33,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
 
             reactor.setObserver(key, observer);
         }
-
-        if (this.dependency)
+        else
         {
             reactor.setDependency(key, this.dependency);
         }
