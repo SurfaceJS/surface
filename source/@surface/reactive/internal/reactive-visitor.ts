@@ -6,6 +6,8 @@ import ExpressionType        from "../../expression/expression-type";
 import IExpression           from "../../expression/interfaces/expression";
 import IMemberExpression     from "../../expression/interfaces/member-expression";
 import IListener             from "../interfaces/listener";
+import IObserver             from "../interfaces/observer";
+import ISubscription         from "../interfaces/subscription";
 import Observer              from "./observer";
 import Reactor               from "./reactor";
 import { REACTOR, WRAPPED }  from "./symbols";
@@ -14,14 +16,16 @@ type Reactivable = Indexer & { [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
 export default class ReactiveVisitor extends ExpressionVisitor
 {
-    private dependency: Nullable<Reactor> = null;
+    private dependency:    Nullable<Reactor>   = null;
+    private subscriptions: Array<ISubscription> = [];
+    private observers:     Array<IObserver>     = [];
 
     public constructor(private readonly listener: IListener)
     {
         super();
     }
 
-    private reactivate(target: Reactivable, key: string): Reactor
+    protected reactivate(target: Reactivable, key: string): Reactor
     {
         const reactor = Reactor.makeReactive(target, key);
 
@@ -29,7 +33,9 @@ export default class ReactiveVisitor extends ExpressionVisitor
         {
             const observer = reactor.getObserver(key) || new Observer();
 
-            observer.subscribe(this.listener);
+            this.observers.push(observer);
+
+            this.subscriptions.push(observer.subscribe(this.listener));
 
             reactor.setObserver(key, observer);
         }
@@ -70,7 +76,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
         return super.visitMemberExpression(expression);
     }
 
-    public visit(expression: IExpression): IExpression
+    protected visit(expression: IExpression): IExpression
     {
         if (expression.type != ExpressionType.Identifier && expression.type != ExpressionType.Member)
         {
@@ -78,5 +84,15 @@ export default class ReactiveVisitor extends ExpressionVisitor
         }
 
         return super.visit(expression);
+    }
+
+    public observe(expression: IExpression): [Array<IObserver>, Array<ISubscription>]
+    {
+        this.observers     = [];
+        this.subscriptions = [];
+
+        this.visit(expression);
+
+        return [this.observers, this.subscriptions];
     }
 }

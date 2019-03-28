@@ -14,7 +14,7 @@ export default class ReactiveSpec
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const listener = { instance: { name: "Listener", value: 2 }};
 
-        Reactive.observe(emmiter.instance, "value", x => listener.instance.value = x);
+        Reactive.observe(emmiter.instance, "value", { notify: x => listener.instance.value = x });
 
         chai.expect(emmiter.instance.value == listener.instance.value, "#1").to.equal(true);
 
@@ -52,7 +52,7 @@ export default class ReactiveSpec
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const listener = { instance: { name: "Listener", value: 2 }};
 
-        const observer = Reactive.observe(emmiter.instance, "value");
+        const observer = Reactive.observe(emmiter.instance, "value")[1];
 
         observer.subscribe({ notify: x => listener.instance.value = x });
 
@@ -82,10 +82,10 @@ export default class ReactiveSpec
         const listenerB1 = { instance: { name: "Listener B", deep: { path: { value: 2 } } } };
         const listenerB2 = { instance: { name: "Listener D", deep: { path: { value: 4 } } } };
 
-        Reactive.observe(emmiterA, "instance.deep.path.value", x => listenerA1.instance.deep.path.value = x as number);
-        Reactive.observe(emmiterA, "instance.deep",            x => listenerA2.instance.deep = x as typeof listenerA2["instance"]["deep"]);
-        Reactive.observe(emmiterB, "instance.deep.path.value", x => listenerB1.instance.deep.path.value = x as number);
-        Reactive.observe(emmiterB, "instance.deep",            x => listenerB2.instance.deep = x as typeof listenerA2["instance"]["deep"]);
+        Reactive.observe(emmiterA, "instance.deep.path.value", { notify: x => listenerA1.instance.deep.path.value = x as number });
+        Reactive.observe(emmiterA, "instance.deep",            { notify: x => listenerA2.instance.deep = x as typeof listenerA2["instance"]["deep"] });
+        Reactive.observe(emmiterB, "instance.deep.path.value", { notify: x => listenerB1.instance.deep.path.value = x as number });
+        Reactive.observe(emmiterB, "instance.deep",            { notify: x => listenerB2.instance.deep = x as typeof listenerA2["instance"]["deep"] });
 
         chai.expect(listenerA1.instance.deep.path.value, "#01").to.equal(1);
         chai.expect(listenerA2.instance.deep.path.value, "#02").to.equal(1);
@@ -263,7 +263,7 @@ export default class ReactiveSpec
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const listener = { instance: { name: "Listener", value: 2 }};
 
-        const [ , subscription] = Reactive.observe(emmiter.instance, "value", x => listener.instance.value = x);
+        const subscription = Reactive.observe(emmiter.instance, "value", { notify: x => listener.instance.value = x })[2];
 
         chai.expect(emmiter.instance.value == listener.instance.value, "#1").to.equal(true);
 
@@ -322,6 +322,6 @@ export default class ReactiveSpec
     {
         const emmiter = { instance: { name: "left.instance.deep.path.value: 1",  deep: { path: { id: 1, value: 1 } } } };
 
-        chai.expect(() => Reactive.observe(emmiter, "instance.deep1.path.value", () => null)).to.throw();
+        chai.expect(() => Reactive.observe(emmiter, "instance.deep1.path.value", { notify: () => null })).to.throw();
     }
 }

@@ -25,7 +25,7 @@ export default class ReactiveVisitorSpec
 
         const visitor = new ReactiveVisitor({ notify: notification });
 
-        visitor.visit(expression);
+        visitor.observe(expression);
 
         notification();
 
@@ -65,7 +65,7 @@ export default class ReactiveVisitorSpec
 
         const visitor = new ReactiveVisitor({ notify: notification });
 
-        visitor.visit(expression);
+        visitor.observe(expression);
 
         const reactor = Reactive.getReactor(context);
 
@@ -117,7 +117,7 @@ export default class ReactiveVisitorSpec
 
         const visitor = new ReactiveVisitor({ notify: notification });
 
-        visitor.visit(expression);
+        visitor.observe(expression);
 
         const reactor = Reactive.getReactor(context);
 

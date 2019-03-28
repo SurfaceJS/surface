@@ -7,14 +7,12 @@ import MethodInfo                 from "@surface/reflection/method-info";
 import PropertyInfo               from "@surface/reflection/property-info";
 import IObserver                  from "../interfaces/observer";
 import IPropertySubscription      from "../interfaces/property-subscription";
-import IReactor                   from "../interfaces/reactor";
 import ISubscription              from "../interfaces/subscription";
-import PropertySubscription       from "./property-subscription";
 import { KEYS, REACTOR, WRAPPED } from "./symbols";
 
 export type Reactiveable<T = Indexer> = T & { [KEYS]?: Array<string>, [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
-export default class Reactor implements IReactor
+export default class Reactor
 {
     private static readonly stack: Array<Reactor> = [];
 
@@ -384,7 +382,7 @@ export default class Reactor implements IReactor
         this.observers.set(key, observer);
     }
 
-    public setSubscription(key: string, subscription: PropertySubscription): void
+    public setSubscription(key: string, subscription: ISubscription): void
     {
         const subscriptions = this.subscriptions.get(key) || new Set();
 

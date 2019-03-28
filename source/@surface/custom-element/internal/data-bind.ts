@@ -3,6 +3,7 @@ import { getKeyMember }  from "@surface/core/common/object";
 import Reactive          from "@surface/reactive";
 import IPropertyListener from "@surface/reactive/interfaces/property-listener";
 import IListener         from "../../reactive/interfaces/listener";
+import IReactor          from "../../reactive/interfaces/reactor";
 import ISubscription     from "../../reactive/interfaces/subscription";
 import PropertyListener  from "./property-listener";
 
@@ -14,16 +15,14 @@ type Observable = Indexer & { [SUBSCRIPTIONS]?: Array<ISubscription> };
 
 export default class DataBind
 {
-    public static oneWay(target: Indexer, path: string, listener: IListener|IPropertyListener): ISubscription
+    public static oneWay(target: Indexer, path: string, listener: IListener|IPropertyListener): [IReactor, ISubscription]
     {
-        const [key, member] = getKeyMember(target, path) as [string, Hookable];
-        const hooks         = member[HOOKS] = member[HOOKS] || [];
-        const observer      = Reactive.observe(target, path);
-        const subscriptions = [] as Array<ISubscription>;
+        const [key, member]                     = getKeyMember(target, path) as [string, Hookable];
+        const hooks                             = member[HOOKS] = member[HOOKS] || [];
+        const [reactor, observer, subscription] = Reactive.observe(target, path, listener);
+        const subscriptions                     = [] as Array<ISubscription>;
 
-        subscriptions.push(observer.subscribe(listener));
-
-        observer.notify(member[key]);
+        subscriptions.push(subscription);
 
         if (!hooks.includes(key) && member instanceof HTMLInputElement)
         {
@@ -34,28 +33,20 @@ export default class DataBind
                 observer.notify(this[key as Key]);
             };
 
-            member.addEventListener("change", action);
-            member.addEventListener("keyup",  action);
+            member.addEventListener("input", action);
 
             hooks.push(key);
 
-            const subscription =
-            {
-                unsubscribe()
-                {
-                    member.removeEventListener("change", action);
-                    member.removeEventListener("keyup",  action);
-                }
-            };
+            const subscription = { unsubscribe: () => member.removeEventListener("input", action) };
 
             subscriptions.push(subscription);
         }
 
-        const subscription = "update" in listener ?
+        const subscriptionWrapper = "update" in listener ?
             { update: (target: Indexer) => listener.update(target), unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) }
             : { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
 
-        return subscription;
+        return [reactor, subscriptionWrapper];
     }
 
     public static twoWay(left: Observable, leftPath: string, right: Observable, rightPath: string): void
@@ -66,11 +57,8 @@ export default class DataBind
         const leftListener  = new PropertyListener(rightMember, rightKey);
         const rightListener = new PropertyListener(leftMember, leftKey);
 
-        const leftSubscription  = DataBind.oneWay(left, leftPath, leftListener);
-        const rightSubscription = DataBind.oneWay(right, rightPath, rightListener);
-
-        const leftReactor  = Reactive.getReactor(left)!;
-        const rightReactor = Reactive.getReactor(right)!;
+        const [leftReactor,  leftSubscription]  = DataBind.oneWay(left, leftPath, leftListener);
+        const [rightReactor, rightSubscription] = DataBind.oneWay(right, rightPath, rightListener);
 
         leftReactor.setSubscription(leftKey, rightSubscription);
         rightReactor.setSubscription(rightKey, leftSubscription);

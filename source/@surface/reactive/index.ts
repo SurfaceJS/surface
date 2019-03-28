@@ -1,15 +1,16 @@
-import { Action1, Indexer, Nullable } from "@surface/core";
-import { getKeyMember, getValue }     from "@surface/core/common/object";
-import IListener                      from "./interfaces/listener";
-import IObserver                      from "./interfaces/observer";
-import IReactor                       from "./interfaces/reactor";
-import ISubscription                  from "./interfaces/subscription";
-import ActionListener                 from "./internal/action-listener";
-import Observer                       from "./internal/observer";
-import PropertyListener               from "./internal/property-listener";
-import PropertySubscription           from "./internal/property-subscription";
-import Reactor                        from "./internal/reactor";
-import { REACTOR }                    from "./internal/symbols";
+import { Indexer, Nullable }      from "@surface/core";
+import { getKeyMember, getValue } from "@surface/core/common/object";
+import IExpression                from "@surface/expression/interfaces/expression";
+import IListener                  from "./interfaces/listener";
+import IObserver                  from "./interfaces/observer";
+import IReactor                   from "./interfaces/reactor";
+import ISubscription              from "./interfaces/subscription";
+import Observer                   from "./internal/observer";
+import PropertyListener           from "./internal/property-listener";
+import PropertySubscription       from "./internal/property-subscription";
+import ReactiveVisitor            from "./internal/reactive-visitor";
+import Reactor                    from "./internal/reactor";
+import { REACTOR }                from "./internal/symbols";
 
 type Reactiveable<T extends Indexer = Indexer> = T &
 {
@@ -18,7 +19,7 @@ type Reactiveable<T extends Indexer = Indexer> = T &
 
 export default class Reactive
 {
-    private static observePath(target: Reactiveable, path: string): [Reactor, Reactor, IObserver]
+    private static observePath(target: Reactiveable, path: string): [IReactor, IReactor, IObserver]
     {
         const [key, ...keys] = path.split(".");
 
@@ -48,7 +49,7 @@ export default class Reactive
         }
     }
 
-    private static observeProperty(target: Reactiveable, key: string): [Reactor, IObserver]
+    private static observeProperty(target: Reactiveable, key: string): [IReactor, IObserver]
     {
         const reactor = Reactor.makeReactive(target, key);
 
@@ -64,53 +65,55 @@ export default class Reactive
         return target[REACTOR];
     }
 
-    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey): IObserver<TTarget[TKey]>;
-    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: Action1<TTarget[TKey]>): [IObserver<TTarget[TKey]>, ISubscription];
-    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IObserver<TTarget[TKey]>, ISubscription];
-    public static observe<TEmmiter extends Indexer = Indexer, TEmmiterKey extends keyof TEmmiter = string, TListener extends Indexer = Indexer, TListenerKey extends keyof TListener = string>(emmiter: Reactiveable<TEmmiter>, emmiterKey: TEmmiterKey, listener: TListener, listenerKey: TListenerKey): [IObserver, ISubscription];
-    public static observe(target: Reactiveable, path: string): IObserver;
-    public static observe(target: Reactiveable, path: string, listener: Action1<unknown>): [IObserver, ISubscription];
-    public static observe(target: Reactiveable, path: string, listener: IListener): [IObserver, ISubscription];
-    public static observe(...args: [Reactiveable, string]|[Reactiveable, string, Action1<unknown>|IListener]|[Reactiveable, string, Indexer, string]): IObserver|[IObserver, ISubscription]
+    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
+    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
+    public static observe(target: Reactiveable, path: string): [IReactor, IObserver];
+    public static observe(target: Reactiveable, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
+    public static observe(expression: IExpression, listener: IListener): [Array<IObserver>, Array<ISubscription>];
+    public static observe(...args: [Reactiveable, string]|[IExpression, IListener]|[Reactiveable, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|[Array<IObserver>, Array<ISubscription>]
     {
-        const [target, path] = args;
-
-        const listener = args.length == 2
-            ? null
-            : args.length == 3 ?
-                typeof args[2] == "function" ?
-                    new ActionListener(args[2])
-                    : args[2]
-                : new PropertyListener(args[2], args[3]);
-
-        if (path.includes("."))
+        if (args.length == 2 && "evaluate" in args[0] && typeof args[1] != "string")
         {
-            const [ , , observer] = Reactive.observePath(target, path);
+            const [expression, listener] = args as [IExpression, IListener];
 
-            if (listener)
-            {
-                const subscription = observer.subscribe(listener);
-                observer.notify(getValue(target, path));
+            const visitor = new ReactiveVisitor(listener);
 
-                return [observer, subscription];
-            }
-
-            return observer;
+            return visitor.observe(expression);
         }
         else
         {
-            const [ , observer] = Reactive.observeProperty(target, path);
+            const [target, path, listener] = args as [Indexer, string, Nullable<IListener>];
 
-            if (listener)
+            if (path.includes("."))
             {
-                const subscription = observer.subscribe(listener);
+                const [reactor, , observer] = Reactive.observePath(target, path);
 
-                observer.notify(target[path]);
+                if (listener)
+                {
+                    const subscription = observer.subscribe(listener);
 
-                return [observer, subscription];
+                    observer.notify(getValue(target, path));
+
+                    return [reactor, observer, subscription];
+                }
+
+                return [reactor, observer];
             }
+            else
+            {
+                const [reactor, observer] = Reactive.observeProperty(target, path);
 
-            return observer;
+                if (listener)
+                {
+                    const subscription = observer.subscribe(listener);
+
+                    observer.notify(target[path]);
+
+                    return [reactor, observer, subscription];
+                }
+
+                return [reactor, observer];
+            }
         }
     }
 
