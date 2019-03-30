@@ -89,9 +89,11 @@ export default class ReactiveSpec
 
         chai.expect(listenerA1.instance.deep.path.value, "#01").to.equal(1);
         chai.expect(listenerA2.instance.deep.path.value, "#02").to.equal(1);
+        chai.expect(listenerA2.instance.deep, "#02").to.equal(emmiterA.instance.deep);
 
         chai.expect(listenerB1.instance.deep.path.value, "#03").to.equal(2);
         chai.expect(listenerB2.instance.deep.path.value, "#04").to.equal(2);
+        chai.expect(listenerB2.instance.deep, "#04").to.equal(emmiterB.instance.deep);
 
         emmiterA.instance.deep.path.value = 5;
 
@@ -108,7 +110,7 @@ export default class ReactiveSpec
         emmiterA.instance = { name: "new A", deep: { path: { value: 10 } } };
 
         chai.expect(listenerA1.instance.deep.path.value, "#08").to.equal(10);
-        chai.expect(listenerA2.instance.deep.path.value, "#09").to.equal(10);
+        chai.expect(listenerA2.instance.deep, "#09").to.equal(emmiterA.instance.deep);
 
         emmiterA.instance.deep.path.value = 15;
 
@@ -120,16 +122,16 @@ export default class ReactiveSpec
         emmiterB.instance.name = "A to C";
 
         chai.expect(listenerA1.instance.deep.path.value, "#11").to.equal(15);
-        chai.expect(listenerA2.instance.deep.path.value, "#12").to.equal(15);
+        chai.expect(listenerA2.instance.deep, "#12").to.equal(emmiterB.instance.deep);
         chai.expect(listenerB1.instance.deep.path.value, "#13").to.equal(15);
-        chai.expect(listenerB2.instance.deep.path.value, "#14").to.equal(15);
+        chai.expect(listenerB2.instance.deep, "#14").to.equal(emmiterB.instance.deep);
 
         emmiterB.instance = { name: "new C", deep: { path: { value: 20 } } };
 
         chai.expect(listenerA1.instance.deep.path.value, "#15").to.equal(15);
-        chai.expect(listenerA2.instance.deep.path.value, "#16").to.equal(15);
+        chai.expect(listenerA2.instance.deep, "#16").to.equal(emmiterA.instance.deep);
         chai.expect(listenerB1.instance.deep.path.value, "#17").to.equal(20);
-        chai.expect(listenerB2.instance.deep.path.value, "#18").to.equal(20);
+        chai.expect(listenerB2.instance.deep, "#18").to.equal(emmiterB.instance.deep);
 
         emmiterA.instance.deep.path.value = 30;
         emmiterB.instance.deep.path.value = 40;
@@ -147,7 +149,7 @@ export default class ReactiveSpec
         emmiterA.instance = { name: "new A old null", deep: { path: { value: 10 } } };
 
         chai.expect(listenerA1.instance.deep.path.value, "#25").to.equal(10);
-        chai.expect(listenerA2.instance.deep.path.value, "#26").to.equal(10);
+        chai.expect(listenerA2.instance.deep, "#26").to.equal(emmiterA.instance.deep);
     }
 
     @test @shouldPass

@@ -67,7 +67,9 @@ export default class ReactiveVisitor extends ExpressionVisitor
             }
         }
 
-        return super.visitMemberExpression(expression);
+        super.visit(expression.target);
+
+        return expression;
     }
 
     protected visit(expression: IExpression): IExpression
@@ -85,8 +87,6 @@ export default class ReactiveVisitor extends ExpressionVisitor
         this.subscriptions = [];
 
         this.visit(expression);
-
-        this.listener.notify(null);
 
         return { unsubscribe: () => this.subscriptions.forEach(x => x.unsubscribe()) } ;
     }

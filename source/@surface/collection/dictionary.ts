@@ -29,10 +29,9 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
         }
     }
 
-    public static of<TSouce extends Record<TKey, TValue>, TKey extends keyof TSouce, TValue extends TSouce[TKey]>(source: TSouce): Dictionary<TKey, TValue>
+    public static of<TSouce extends Record<TKey, TSouce[TKey]>, TKey extends keyof TSouce>(source: TSouce): Dictionary<TKey, TSouce[TKey]>
     {
-        return new Dictionary(Enumerable.from(Object.keys(source) as Array<TKey>)
-            .select(x => new KeyValuePair(x, source[x])));
+        return new Dictionary(Enumerable.from(Object.keys(source) as Array<TKey>).select(x => new KeyValuePair(x, source[x])));
     }
 
     public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>

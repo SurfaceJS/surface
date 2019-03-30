@@ -58,8 +58,6 @@ export default class DataBind
         leftReactor.setSubscription(leftKey, rightSubscription);
         rightReactor.setSubscription(rightKey, leftSubscription);
 
-        leftListener.notify(left[leftKey]);
-
         const leftSubscriptionQueue = left[SUBSCRIPTIONS] = left[SUBSCRIPTIONS] || [];
         leftSubscriptionQueue.push(leftSubscription);
 

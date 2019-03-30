@@ -58,7 +58,8 @@ export default class ElementBind
     // tslint:disable-next-line:cyclomatic-complexity
     private bindAttribute(element: Element): void
     {
-        //const notifications: Array<Action> = [];
+        const notifications: Array<Action> = [];
+
         for (const attribute of this.wrapAttribute(element))
         {
             if (this.expressions.databind.test(attribute.value))
@@ -134,12 +135,14 @@ export default class ElementBind
 
                         const visitor = new ObserverVisitor({ notify });
                         visitor.observe(expression);
+
+                        notifications.push(notify);
                     }
                 }
             }
         }
 
-        //notifications.forEach(notification => notification());
+        notifications.forEach(notification => notification());
     }
 
     private bindTextNode(element: Element): void

@@ -248,19 +248,7 @@ export default class Reactor
 
         if (this.dependencies.has(key))
         {
-            const dependency = this.dependencies.get(key)!;
-
-            if (dependency.dependencies.size > 0)
-            {
-                for (const dependencyKey of dependency.dependencies.keys())
-                {
-                    dependency.notify(value, dependencyKey);
-                }
-            }
-            else
-            {
-                dependency.notify(value);
-            }
+            this.dependencies.get(key)!.notify(value);
         }
 
         for (const registry of this.registries.values())
