@@ -67,7 +67,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
             }
         }
 
-        super.visit(expression.target);
+        this.visit(expression.target);
 
         return expression;
     }

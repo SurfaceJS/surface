@@ -15,9 +15,9 @@
     "description": "Base class used to define custom elements.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "@types/jsdom": "12.2.0",
+        "@types/jsdom": "12.2.3",
         "chai": "4.2.0",
-        "jsdom": "13.0.0"
+        "jsdom": "14.0.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

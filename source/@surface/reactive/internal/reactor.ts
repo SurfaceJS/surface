@@ -441,12 +441,9 @@ export default class Reactor
 
             if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
             {
-                if (!value[REACTOR])
-                {
-                    value[REACTOR] = new Reactor();
-                }
+                const reactor = value[REACTOR] || new Reactor();
 
-                dependency.register(value, value[REACTOR]!);
+                dependency.register(value, reactor);
             }
         }
     }

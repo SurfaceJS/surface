@@ -3,10 +3,10 @@
     "description": "Global modules and shared types",
     "devDependencies": {
         "@types/chai": "4.1.7",
-        "@types/mocha": "5.2.5",
-        "@types/node": "10.12.11",
-        "mocha": "5.2.0",
-        "nyc": "13.1.0"
+        "@types/mocha": "5.2.6",
+        "@types/node": "11.12.2",
+        "mocha": "6.0.2",
+        "nyc": "13.3.0"
     },
     "keywords": [
         "types",
@@ -15,6 +15,10 @@
     ],
     "license": "MIT",
     "name": "modules",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
     "scripts": {
         "task:build": "node ./tasks/cli build",
         "task:clean": "node ./tasks/cli clean",

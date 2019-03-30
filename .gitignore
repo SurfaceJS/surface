@@ -64,6 +64,7 @@ typings/
 *.d.ts
 .cache
 package-lock.json
+tsconfig.tsbuildinfo
 !source/@surface/code-splitter/tests/fixtures/**/*.js
 !types.d.ts
 !@types/**/*.d.ts
@@ -71,4 +72,3 @@ package-lock.json
 !source/@surface/*/@types/**/*.d.ts
 !source/@surface/**/interfaces/*.d.ts
 !source/@surface/core/**/*.d.ts
-
