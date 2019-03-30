@@ -1,10 +1,10 @@
-import { Func2, Indexer, Nullable } from "@surface/core";
-import { coalesce }                 from "@surface/core/common/generic";
-import ExpressionType               from "../../expression-type";
-import IExpression                  from "../../interfaces/expression";
-import { UpdateOperator }           from "../../types";
-import TypeGuard                    from "../type-guard";
-import ConstantExpression           from "./constant-expression";
+import { Func2, Indexer } from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import { UpdateOperator } from "../../types";
+import TypeGuard          from "../type-guard";
+import BaseExpression     from "./abstracts/base-expression";
+import ConstantExpression from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
@@ -16,14 +16,8 @@ const updateFunctions =
     "*--": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!--,
 };
 
-export default class UpdateExpression implements IExpression
+export default class UpdateExpression extends BaseExpression<number>
 {
-    private _cache: Nullable<number>;
-    public get cache(): number
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
-
     private readonly operation: Func2<IExpression, IExpression, number>;
 
     private readonly _expression: IExpression;
@@ -51,6 +45,8 @@ export default class UpdateExpression implements IExpression
 
     public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)
     {
+        super();
+
         this._expression = expression;
         this._prefix     = prefix;
         this._operator   = operator;

@@ -11,7 +11,7 @@ export default class PropertyInfo extends FieldInfo
 
     public get readonly(): boolean
     {
-        return super.readonly || (!!this.descriptor.get && !this.descriptor.set);
+        return (!!this.descriptor.get && !this.descriptor.set);
     }
 
     public get setter(): Nullable<Action1<unknown>>

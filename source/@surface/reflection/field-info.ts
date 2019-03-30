@@ -17,7 +17,7 @@ export default class FieldInfo extends MemberInfo
 
     public get readonly(): boolean
     {
-        return !!this.descriptor.writable;
+        return !(this.descriptor.writable == undefined ? true : this.descriptor.writable);
     }
 
     public get value(): unknown

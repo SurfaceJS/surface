@@ -1,13 +1,8 @@
 import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class ConstantExpression implements IExpression
+export default class ConstantExpression extends BaseExpression
 {
-    public get cache(): unknown
-    {
-        return this.value;
-    }
-
     private readonly _value: unknown;
     public get value(): unknown
     {
@@ -21,6 +16,8 @@ export default class ConstantExpression implements IExpression
 
     public constructor(value: unknown)
     {
+        super();
+
         this._value = value;
     }
 

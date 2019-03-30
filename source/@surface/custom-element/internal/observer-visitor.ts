@@ -1,55 +1,49 @@
-import { Action1, Indexer, Nullable } from "@surface/core";
-import ExpressionVisitor              from "@surface/expression/expression-visitor";
-import ICallExpression                from "@surface/expression/interfaces/call-expression";
-import IExpression                    from "@surface/expression/interfaces/expression";
-import IMemberExpression              from "@surface/expression/interfaces/member-expression";
-import Type                           from "@surface/reflection";
-import FieldInfo                      from "@surface/reflection/field-info";
-import DataBind                       from "./data-bind";
+import { Indexer }     from "@surface/core";
+import IListener       from "@surface/reactive/interfaces/listener";
+import ReactiveVisitor from "@surface/reactive/internal/reactive-visitor";
+import Reactive        from "../../reactive";
+import IReactor        from "../../reactive/interfaces/reactor";
 
-export default class ObserverVisitor extends ExpressionVisitor
+export default class ObserverVisitor extends ReactiveVisitor
 {
-    private readonly notify: Action1<unknown>;
-
-    public constructor(notify: Action1<unknown>)
+    public constructor(listener: IListener)
     {
-        super();
-        this.notify = notify;
+        super(listener);
     }
 
-    protected visitCallExpression(expression: ICallExpression)
+    protected reactivate(target: Indexer, key: string): IReactor
     {
-        for (const arg of expression.args)
+        if (!this.dependency)
         {
-            super.visit(arg);
-        }
+            const [reactor, observer] = Reactive.observe(target, key);
 
-        return expression;
-    }
+            this.subscriptions.push(observer.subscribe(this.listener));
 
-    protected visitMemberExpression(expression: IMemberExpression): IExpression
-    {
-        const target = expression.target.evaluate() as Nullable<Indexer>;
-        const key    = `${expression.key.evaluate()}`;
-
-        if (target)
-        {
-            const member = Type.from(target).getMember(key);
-
-            if (member instanceof FieldInfo)
+            if (target instanceof HTMLInputElement)
             {
-                DataBind.oneWay(target, key, { notify: this.notify });
-            }
-            else
-            {
-                this.notify(target[key]);
+                type Key = keyof HTMLInputElement;
+
+                const action = function (this: HTMLInputElement)
+                {
+                    observer.notify(this[key as Key]);
+                };
+
+                target.addEventListener("input", action);
+
+                const subscription = { unsubscribe: () => target.removeEventListener("input", action) };
+
+                this.subscriptions.push(subscription);
             }
 
-            return expression;
+            return reactor;
         }
         else
         {
-            throw new TypeError("Can't bind to non initialized object");
+            const reactor = Reactive.observe(target, key)[0];
+
+            reactor.setDependency(key, this.dependency);
+
+            return reactor;
         }
     }
 }

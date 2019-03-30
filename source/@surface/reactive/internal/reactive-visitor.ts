@@ -6,34 +6,28 @@ import ExpressionType        from "../../expression/expression-type";
 import IExpression           from "../../expression/interfaces/expression";
 import IMemberExpression     from "../../expression/interfaces/member-expression";
 import IListener             from "../interfaces/listener";
-import IObserver             from "../interfaces/observer";
+import IReactor              from "../interfaces/reactor";
 import ISubscription         from "../interfaces/subscription";
 import Observer              from "./observer";
 import Reactor               from "./reactor";
-import { REACTOR, WRAPPED }  from "./symbols";
-
-type Reactivable = Indexer & { [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
 export default class ReactiveVisitor extends ExpressionVisitor
 {
-    private dependency:    Nullable<Reactor>   = null;
-    private subscriptions: Array<ISubscription> = [];
-    private observers:     Array<IObserver>     = [];
+    protected dependency:    Nullable<IReactor>   = null;
+    protected subscriptions: Array<ISubscription> = [];
 
-    public constructor(private readonly listener: IListener)
+    public constructor(protected readonly listener: IListener)
     {
         super();
     }
 
-    protected reactivate(target: Reactivable, key: string): Reactor
+    protected reactivate(target: Indexer, key: string): IReactor
     {
         const reactor = Reactor.makeReactive(target, key);
 
         if (!this.dependency)
         {
             const observer = reactor.getObserver(key) || new Observer();
-
-            this.observers.push(observer);
 
             this.subscriptions.push(observer.subscribe(this.listener));
 
@@ -63,13 +57,13 @@ export default class ReactiveVisitor extends ExpressionVisitor
             const target = expression.target.cache;
             const key    = expression.key.cache;
 
-            if (typeGuard<Reactivable>(target, x => x instanceof Object))
+            if (typeGuard<Indexer>(target, x => x instanceof Object))
             {
                 this.dependency = this.reactivate(target, `${key}`);
             }
             else
             {
-                throw new Error("Target can't be null or undefined");
+                throw new Error("Can\'t make reactive a non initialized target");
             }
         }
 
@@ -86,13 +80,14 @@ export default class ReactiveVisitor extends ExpressionVisitor
         return super.visit(expression);
     }
 
-    public observe(expression: IExpression): [Array<IObserver>, Array<ISubscription>]
+    public observe(expression: IExpression): ISubscription
     {
-        this.observers     = [];
         this.subscriptions = [];
 
         this.visit(expression);
 
-        return [this.observers, this.subscriptions];
+        this.listener.notify(null);
+
+        return { unsubscribe: () => this.subscriptions.forEach(x => x.unsubscribe()) } ;
     }
 }

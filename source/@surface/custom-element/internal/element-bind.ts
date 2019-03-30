@@ -84,7 +84,7 @@ export default class ElementBind
                     const interpolation    = !(isOneWay || isTwoWay);
                     const attributeName    = dashedToCamel(attribute.name);
                     const elementMember    = Type.from(element).getMember(attributeName);
-                    const canWrite         = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
+                    const canWrite         = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
 
                     if (isPathExpression)
                     {
@@ -97,7 +97,7 @@ export default class ElementBind
 
                         const targetMember = Type.from(member).getMember(key);
 
-                        const notification = (value: unknown) =>
+                        const notify = (value: unknown) =>
                         {
                             if (canWrite)
                             {
@@ -107,7 +107,7 @@ export default class ElementBind
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        DataBind.oneWay(target, path, { notify: notification });
+                        DataBind.oneWay(target, path, { notify });
 
                         if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                         {
@@ -118,7 +118,7 @@ export default class ElementBind
                     {
                         const expression = BindParser.scan(context, attribute.value);
 
-                        const notification = () =>
+                        const notify = () =>
                         {
                             const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
                                 expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
@@ -132,8 +132,8 @@ export default class ElementBind
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        const visitor = new ObserverVisitor(notification);
-                        visitor.visit(expression);
+                        const visitor = new ObserverVisitor({ notify });
+                        visitor.observe(expression);
                     }
                 }
             }
@@ -162,8 +162,8 @@ export default class ElementBind
                     () => element.nodeValue = `${expression.evaluate().reduce((previous, current) => `${previous}${current}`)}` :
                     () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-                const visitor = new ObserverVisitor(notify);
-                visitor.visit(expression);
+                const visitor = new ObserverVisitor({ notify });
+                visitor.observe(expression);
 
                 notify();
             }

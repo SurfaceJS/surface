@@ -1,16 +1,9 @@
-import { Nullable }   from "@surface/core";
-import { coalesce }   from "@surface/core/common/generic";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class ConditionalExpression implements IExpression
+export default class ConditionalExpression extends BaseExpression
 {
-    private _cache: Nullable<unknown>;
-    public get cache(): unknown
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
-
     private _condition: IExpression;
     public get condition(): IExpression
     {
@@ -36,6 +29,8 @@ export default class ConditionalExpression implements IExpression
 
     public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)
     {
+        super();
+
         this._condition = condition;
         this._falsy     = falsy;
         this._truthy    = truthy;

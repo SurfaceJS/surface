@@ -85,7 +85,32 @@ export default class Reactor
         {
             const privateKey = `_${key}`;
 
-            if (member.readonly && privateKey in target)
+            if (!member.readonly)
+            {
+                Object.defineProperty
+                (
+                    target,
+                    key,
+                    {
+                        get(this: Indexer)
+                        {
+                            return member.getter!.call(this);
+                        },
+                        set(this: Indexer, value: unknown)
+                        {
+                            const oldValue = member.getter!.call(this);
+
+                            if (!Object.is(oldValue, value))
+                            {
+                                member.setter!.call(this, value);
+
+                                Reactor.notify(this, key);
+                            }
+                        }
+                    }
+                );
+            }
+            else if (privateKey in target)
             {
                 const hiddenKey = `_${key}_`;
 
@@ -114,33 +139,8 @@ export default class Reactor
                     }
                 );
             }
-            else
-            {
-                Object.defineProperty
-                (
-                    target,
-                    key,
-                    {
-                        get(this: Indexer)
-                        {
-                            return member.getter!.call(this);
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = member.getter!.call(this);
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                member.setter!.call(this, value);
-
-                                Reactor.notify(this, key);
-                            }
-                        }
-                    }
-                );
-            }
         }
-        else if (member instanceof FieldInfo)
+        else if (member instanceof FieldInfo && !member.readonly)
         {
             const privateKey = `_${key}`;
 

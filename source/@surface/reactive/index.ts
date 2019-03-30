@@ -12,14 +12,9 @@ import ReactiveVisitor            from "./internal/reactive-visitor";
 import Reactor                    from "./internal/reactor";
 import { REACTOR }                from "./internal/symbols";
 
-type Reactiveable<T extends Indexer = Indexer> = T &
-{
-    [REACTOR]?: IReactor;
-};
-
 export default class Reactive
 {
-    private static observePath(target: Reactiveable, path: string): [IReactor, IReactor, IObserver]
+    private static observePath(target: Indexer, path: string): [IReactor, IReactor, IObserver]
     {
         const [key, ...keys] = path.split(".");
 
@@ -31,6 +26,7 @@ export default class Reactive
             }
 
             const reactor = Reactor.makeReactive(target, key);
+
             const value   = target[key] as Indexer;
 
             const [endpoint, dependency, observer] = Reactive.observePath(value, keys.join("."));
@@ -49,7 +45,7 @@ export default class Reactive
         }
     }
 
-    private static observeProperty(target: Reactiveable, key: string): [IReactor, IObserver]
+    private static observeProperty(target: Indexer, key: string): [IReactor, IObserver]
     {
         const reactor = Reactor.makeReactive(target, key);
 
@@ -60,17 +56,17 @@ export default class Reactive
         return [reactor, observer];
     }
 
-    public static getReactor(target: Reactiveable): Nullable<IReactor>
+    public static getReactor(target: Indexer): Nullable<IReactor>
     {
-        return target[REACTOR];
+        return (target as { [REACTOR]?: IReactor })[REACTOR];
     }
 
-    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
-    public static observe<TTarget extends Reactiveable, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
-    public static observe(target: Reactiveable, path: string): [IReactor, IObserver];
-    public static observe(target: Reactiveable, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
-    public static observe(expression: IExpression, listener: IListener): [Array<IObserver>, Array<ISubscription>];
-    public static observe(...args: [Reactiveable, string]|[IExpression, IListener]|[Reactiveable, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|[Array<IObserver>, Array<ISubscription>]
+    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
+    public static observe(target: Indexer, path: string): [IReactor, IObserver];
+    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
+    public static observe(target: Indexer, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
+    public static observe(expression: IExpression, listener: IListener): ISubscription;
+    public static observe(...args: [Indexer, string]|[IExpression, IListener]|[Indexer, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|ISubscription
     {
         if (args.length == 2 && "evaluate" in args[0] && typeof args[1] != "string")
         {
@@ -86,7 +82,7 @@ export default class Reactive
 
             if (path.includes("."))
             {
-                const [reactor, , observer] = Reactive.observePath(target, path);
+                const [reactor, , observer] =  Reactive.observePath(target, path);
 
                 if (listener)
                 {
@@ -117,9 +113,9 @@ export default class Reactive
         }
     }
 
-    public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: Reactiveable<TLeft>, leftKey: TLeftKey, right: Reactiveable<TRight>, rightKey: TRightKey): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Reactiveable, leftPath: string, right: Reactiveable, rightPath: string): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Reactiveable, leftPath: string, right: Reactiveable, rightPath: string): [ISubscription, ISubscription]
+    public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: TLeft, leftKey: TLeftKey, right: TRight, rightKey: TRightKey): [ISubscription, ISubscription];
+    public static observeTwoWay(left: Indexer, leftPath: string, right: Indexer, rightPath: string): [ISubscription, ISubscription];
+    public static observeTwoWay(left: Indexer, leftPath: string, right: Indexer, rightPath: string): [ISubscription, ISubscription]
     {
         const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
         const [rightKey, rightMember] = getKeyMember(right, rightPath);

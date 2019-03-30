@@ -1,8 +1,8 @@
-import { Func2, Nullable } from "@surface/core";
-import { coalesce }        from "@surface/core/common/generic";
-import ExpressionType      from "../../expression-type";
-import IExpression         from "../../interfaces/expression";
-import { BinaryOperator }  from "../../types";
+import { Func2 }          from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import { BinaryOperator } from "../../types";
+import BaseExpression     from "./abstracts/base-expression";
 
 const binaryFunctions =
 {
@@ -32,15 +32,9 @@ const binaryFunctions =
     "instanceof": (left: IExpression, right: IExpression) => (left.evaluate() as Object) instanceof (right.evaluate() as Function),
 };
 
-export default class BinaryExpression implements IExpression
+export default class BinaryExpression extends BaseExpression
 {
     private readonly operation: Func2<IExpression, IExpression, unknown>;
-
-    private _cache: Nullable<unknown>;
-    public get cache(): unknown
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
 
     private readonly _left: IExpression;
     public get left(): IExpression
@@ -67,6 +61,8 @@ export default class BinaryExpression implements IExpression
 
     public constructor(left: IExpression, right: IExpression, operator: BinaryOperator)
     {
+        super();
+
         this._left     = left;
         this._operator = operator;
         this._right    = right;

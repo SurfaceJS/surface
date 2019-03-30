@@ -1,16 +1,9 @@
-import { Nullable }   from "@surface/core";
-import { coalesce }   from "@surface/core/common/generic";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class PropertyExpression implements IExpression
+export default class PropertyExpression extends BaseExpression
 {
-    private _cache: Nullable<unknown>;
-    public get cache(): unknown
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
-
     private readonly _key: IExpression;
     public get key(): IExpression
     {
@@ -30,6 +23,8 @@ export default class PropertyExpression implements IExpression
 
     public constructor(key: IExpression, value: IExpression)
     {
+        super();
+
         this._key   = key;
         this._value = value;
     }

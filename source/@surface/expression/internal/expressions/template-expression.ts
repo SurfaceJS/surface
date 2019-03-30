@@ -1,16 +1,9 @@
-import { Nullable }   from "@surface/core";
-import { coalesce }   from "@surface/core/common/generic";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class TemplateExpression implements IExpression
+export default class TemplateExpression extends BaseExpression<string>
 {
-    private _cache: Nullable<string>;
-    public get cache(): string
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
-
     private readonly _expressions: Array<IExpression>;
     public get expressions(): Array<IExpression>
     {
@@ -29,6 +22,8 @@ export default class TemplateExpression implements IExpression
 
     public constructor(quasis: Array<string>, expressions: Array<IExpression>)
     {
+        super();
+
         this._expressions = expressions;
         this._quasis      = quasis;
     }

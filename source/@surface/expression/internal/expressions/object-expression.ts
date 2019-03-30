@@ -1,17 +1,10 @@
-import { Indexer, Nullable } from "@surface/core";
-import { coalesce }          from "@surface/core/common/generic";
-import ExpressionType        from "../../expression-type";
-import IExpression           from "../../interfaces/expression";
-import PropertyExpression    from "./property-expression";
+import { Indexer }        from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import BaseExpression     from "./abstracts/base-expression";
+import PropertyExpression from "./property-expression";
 
-export default class ObjectExpression implements IExpression
+export default class ObjectExpression extends BaseExpression<Indexer>
 {
-    private _cache: Nullable<Indexer>;
-    public get cache(): Indexer
-    {
-        return coalesce(this._cache, () => this.evaluate());
-    }
-
     private readonly _properties: Array<PropertyExpression>;
     public get properties(): Array<PropertyExpression>
     {
@@ -25,6 +18,8 @@ export default class ObjectExpression implements IExpression
 
     public constructor(properties: Array<PropertyExpression>)
     {
+        super();
+
         this._properties = properties;
     }
 
