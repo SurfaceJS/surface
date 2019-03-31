@@ -8,7 +8,7 @@ import style         from "./index.scss";
 @element("surface-data-header", template, style)
 export default class DataHeader extends Component
 {
-    private readonly modal: Modal = super.shadowQuery<Modal>("surface-modal")!;
+    private readonly modal: Modal = super.references.modal as Modal;
 
     private _field:       string  = "";
     private _fieldType:   string  = "";

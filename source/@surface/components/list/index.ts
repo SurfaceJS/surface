@@ -1,4 +1,5 @@
 import Component              from "..";
+import Enumerable             from "../../enumerable";
 import { attribute, element } from "../decorators";
 import template               from "./index.html";
 import style                  from "./index.scss";
@@ -32,8 +33,9 @@ export default class List extends Component
     public constructor(template?: HTMLTemplateElement)
     {
         super();
-        this.template = template || super.query("template") || document.createElement("template");
-        this.items.push(...super.queryAll("surface-list-item").cast<ListItem>().toArray());
+        this.template = template || super.querySelector("template") || document.createElement("template");
+
+        this.items.push(...Enumerable.from([...Array.from(super.querySelectorAll<ListItem>("surface-list-item"))]));
     }
 
     public add(node?: Node): void

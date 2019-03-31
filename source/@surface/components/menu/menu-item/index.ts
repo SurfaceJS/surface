@@ -10,8 +10,6 @@ import style         from "./index.scss";
 @element("surface-menu-item", template, style)
 export default class MenuItem extends CustomElement
 {
-    private readonly container: HTMLElement;
-    private readonly root:      HTMLElement;
     private parentContainer: Nullable<HTMLElement>;
     public get icon(): string
     {
@@ -25,7 +23,7 @@ export default class MenuItem extends CustomElement
 
     public get items(): Enumerable<MenuItem>
     {
-        return super.queryAll<MenuItem>("surface-menu-item").where(x => x.parentElement == this);
+        return Enumerable.from(Array.from(super.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
     }
 
     public get label(): string
@@ -41,8 +39,6 @@ export default class MenuItem extends CustomElement
     public constructor()
     {
         super();
-        this.container = super.shadowQuery("#container")!;
-        this.root      = super.shadowQuery("#root")!;
     }
 
     private onClick(): void
@@ -71,24 +67,25 @@ export default class MenuItem extends CustomElement
 
     private onMouseOver(): void
     {
+        const container         = super.references.container!;
         const bounding          = this.getBoundingClientRect();
-        const containerBounding = this.container.getBoundingClientRect();
+        const containerBounding = container.getBoundingClientRect();
 
         let offset = 0;
         if (this.parentElement instanceof ContexMenu)
         {
-            this.container.style.top = "0";
+            container.style.top = "0";
             offset = bounding.width;
         }
 
         if (this.parentElement instanceof Menu)
         {
-            this.container.style.left = bounding.left + containerBounding.width <= window.innerWidth ? `${offset}px` : `${-(containerBounding.width -(window.innerWidth - bounding.left))}px`;
+            container.style.left = bounding.left + containerBounding.width <= window.innerWidth ? `${offset}px` : `${-(containerBounding.width -(window.innerWidth - bounding.left))}px`;
         }
         else
         {
-            this.container.style.top  = "0";
-            this.container.style.left = bounding.left + (bounding.width + containerBounding.width) <= window.innerWidth ? `${bounding.width}px` : `${-containerBounding.width}px`;
+            container.style.top  = "0";
+            container.style.left = bounding.left + (bounding.width + containerBounding.width) <= window.innerWidth ? `${bounding.width}px` : `${-containerBounding.width}px`;
         }
     }
 
@@ -98,7 +95,7 @@ export default class MenuItem extends CustomElement
 
         if (hasItems)
         {
-            this.root.setAttribute("has-items", "");
+            super.references.root!.setAttribute("has-items", "");
         }
 
         if (this.parentElement instanceof MenuItem)
@@ -107,7 +104,7 @@ export default class MenuItem extends CustomElement
 
             if (!hasItems)
             {
-                this.parentContainer = this.parentElement.shadowQuery("#container") as HTMLElement;
+                this.parentContainer = this.parentElement.references.container!;
 
                 super.addEventListener("click", this.onClick.bind(this));
                 super.addEventListener("mouseleave", this.onMouseLeave.bind(this));
@@ -130,6 +127,6 @@ export default class MenuItem extends CustomElement
         super.removeEventListener("click", this.onClick);
         super.removeEventListener("mouseleave", this.onMouseLeave);
         super.removeEventListener("mouseover", this.onMouseOver);
-        this.root.removeAttribute("has-items");
+        super.references.root!.removeAttribute("has-items");
     }
 }

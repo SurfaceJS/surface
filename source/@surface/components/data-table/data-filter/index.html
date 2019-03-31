@@ -6,8 +6,8 @@
 
 <fieldset style="width: 100%;">
     <surface-stack-panel content="justify">
-        <surface-data-filter-item type="[[ host.type ]]" fixed="true"></surface-data-filter-item>
-        <surface-list hide-add-button="true"></surface-list>
+        <surface-data-filter-item id="filterItem" type="[[ host.type ]]" fixed="true"></surface-data-filter-item>
+        <surface-list id="list" hide-add-button="true"></surface-list>
         <surface-switch value="[[ host.type != 'boolean' ]]">
             <template when="true">
                 <surface-stack-panel id="add-filters" orientation="horizontal" content="justify">

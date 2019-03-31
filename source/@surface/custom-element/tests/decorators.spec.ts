@@ -145,12 +145,6 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyleAndShadyCss(): void
     {
-        window.ShadyCSS =
-        {
-            prepareTemplate: (template: HTMLTemplateElement, name: string, element?: string) => { return; },
-            styleElement:    (element: HTMLElement) => { return; }
-        };
-
         @element("mock-element", "<div>Template</div>", "div { color: red; }", { extends: "div" })
         class Mock extends CustomElement
         {

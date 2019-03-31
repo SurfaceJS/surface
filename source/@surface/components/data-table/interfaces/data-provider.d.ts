@@ -5,7 +5,7 @@ export type Condition =
     type:     string,
     operator: string|null,
     value:    unknown
-}
+};
 
 export type Criteria =
 {
@@ -13,7 +13,7 @@ export type Criteria =
     sorting: Array<Order>,
     skip:    number;
     take:    number;
-}
+};
 
 export type Filter =
 {
@@ -29,14 +29,14 @@ export type Order =
 {
     direction: "asc"|"desc",
     field:     string,
-}
+};
 
 export type Result<T> =
 {
     data:     Iterable<T>,
     filtered: number,
     total:    number,
-}
+};
 
 export default interface IDataProvider<T extends object = object>
 {

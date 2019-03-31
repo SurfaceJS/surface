@@ -11,7 +11,7 @@ export class Menu extends CustomElement
 {
     public get items(): Enumerable<MenuItem>
     {
-        return super.queryAll<MenuItem>("surface-menu-item").where(x => x.parentElement == this);
+        return Enumerable.from(Array.from(super.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
     }
 
     public get type(): Menu.Type

@@ -2,6 +2,7 @@ import { Nullable }  from "@surface/core";
 import CustomElement from "@surface/custom-element";
 import { element }   from "@surface/custom-element/decorators";
 import View          from "@surface/view";
+import Enumerable    from "../enumerable";
 import template      from "./index.html";
 
 @element("surface-view-host", template)
@@ -23,7 +24,7 @@ export default class ViewHost extends CustomElement
     {
         if (!this._view)
         {
-            this._view = super.queryAll<View>("*").firstOrDefault(x => /^view-/.test(x.tagName));
+            this._view = Enumerable.from(Array.from(super.querySelectorAll<View>("*"))).firstOrDefault(x => /^view-/.test(x.tagName));
         }
 
         return this._view;

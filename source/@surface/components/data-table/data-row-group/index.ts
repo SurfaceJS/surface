@@ -10,6 +10,6 @@ export default class DataRowGroup extends CustomElement
 {
     public get rows(): Enumerable<DataRow>
     {
-        return super.queryAll("surface-data-row-group > surface-data-row");
+        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-row-group > surface-data-row")));
     }
 }

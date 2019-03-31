@@ -168,11 +168,6 @@ export function element(name: string, template?: string, style?: string, options
                     templateElement.content.appendChild(styleElement);
                 }
 
-                if (window.ShadyCSS)
-                {
-                    window.ShadyCSS.prepareTemplate(templateElement, name, options && options.extends);
-                }
-
                 Object.defineProperty(target, symbols.TEMPLATE, { get: () => templateElement } );
 
                 const proxy = function(this: CustomElement, ...args: Array<unknown>)

@@ -22,7 +22,7 @@ const attributeConverter: AttributeConverter<DataFilter, "type"> =
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
-    private readonly list = super.shadowQuery<List>("surface-list")!;
+    private readonly list = super.references.list as List;
 
     private _field: string = "";
     private _type:  Type   = "string";
@@ -75,7 +75,7 @@ export default class DataFilter extends Component
             this.list.clear();
         }
 
-        const dataFilterItem = super.shadowQuery<DataFilterItem>("surface-data-filter-item")!;
+        const dataFilterItem = super.references.filterItem as DataFilterItem;
         dataFilterItem.clear();
         super.dispatchEvent(new Event("clear"));
     }
@@ -88,8 +88,8 @@ export default class DataFilter extends Component
 
     public getFilters(): Filters
     {
-        const filters = Enumerable.from([super.shadowQuery<DataFilterItem>("surface-data-filter-item")!])
-            .concat(this.list.queryAll<DataFilterItem>("surface-data-filter-item"))
+        const filters = Enumerable.from([super.references.filterItem as DataFilterItem])
+            .concat(Array.from(this.list.querySelectorAll("surface-data-filter-item")))
             .select(x => x.getFilter())
             .where(x => x.condition != "none")
             .toArray();

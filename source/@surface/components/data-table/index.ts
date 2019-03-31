@@ -75,17 +75,17 @@ export default class DataTable extends Component
 
     public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
-        return super.queryAll("surface-data-footer-group");
+        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-footer-group")));
     }
 
     public get dataHeaderGroups(): Enumerable<DataHeaderGroup>
     {
-        return super.queryAll("surface-data-header-group");
+        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-header-group")));
     }
 
     public get dataRowGroups(): Enumerable<DataRowGroup>
     {
-        return super.queryAll("surface-data-row-group");
+        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-row-group")));
     }
 
     public get datasource(): Array<object>
@@ -149,7 +149,8 @@ export default class DataTable extends Component
 
         if (!dataProvider)
         {
-            dataProvider = super.queryAll("*").firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider>;
+            dataProvider = Enumerable.from(Array.from(super.querySelectorAll(("*"))))
+                .firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider>;
 
             if (dataProvider instanceof HTMLElement)
             {
@@ -169,7 +170,7 @@ export default class DataTable extends Component
             this.dataProvider = dataProvider;
         }
 
-        const dataTemplate = super.query<HTMLTemplateElement>("template");
+        const dataTemplate = super.querySelector<HTMLTemplateElement>("template");
 
         if (dataTemplate)
         {
@@ -335,8 +336,8 @@ export default class DataTable extends Component
         {
             const footerGroup = new DataFooterGroup();
 
-            const simbling = super.query("surface-data-table > surface-data-footer-group:last-of-type")
-                || super.query("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = super.querySelector("surface-data-table > surface-data-footer-group:last-of-type")
+                || super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -371,7 +372,7 @@ export default class DataTable extends Component
         {
             const headerGroup = new DataHeaderGroup();
 
-            const simbling = super.query("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -413,8 +414,8 @@ export default class DataTable extends Component
 
             this.rowGroup = rowGroup;
 
-            const simbling = super.query("surface-data-table > surface-data-row-group:last-of-type")
-                || super.query("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = super.querySelector("surface-data-table > surface-data-row-group:last-of-type")
+                || super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -487,7 +488,7 @@ export default class DataTable extends Component
     {
         this.refreshing = true;
 
-        const rows = this.rowGroup.queryAll<DataRow>("surface-data-row");
+        const rows = Enumerable.from(Array.from(this.rowGroup.querySelectorAll<DataRow>("surface-data-row")));
 
         const result     = await this.dataProvider.read(this.criteria);
         const datasource = Enumerable.from(result.data);

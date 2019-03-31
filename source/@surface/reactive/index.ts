@@ -33,8 +33,6 @@ export default class Reactive
 
             reactor.setDependency(key, dependency);
 
-            reactor.toString();
-
             return [endpoint, reactor, observer];
         }
         else

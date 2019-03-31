@@ -70,7 +70,7 @@ export default class ForEach extends Component
     {
         if (!this._template)
         {
-            this._template = this.query("template");
+            this._template = this.querySelector("template");
 
             if (this._template)
             {

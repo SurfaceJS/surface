@@ -29,7 +29,7 @@ export default class Switch extends Component
     public constructor()
     {
         super();
-        const templates = super.queryAll<HTMLTemplateElement>("template");
+        const templates = super.querySelectorAll<HTMLTemplateElement>("template");
         templates.forEach(x => { this.templates.set(x.getAttribute("when") || "default", x); super.removeChild(x); });
     }
 

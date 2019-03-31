@@ -8,7 +8,7 @@ type KeyValue = { key: string, value: string };
 @element("surface-dropdown", template, style)
 export default class DropDown extends Component
 {
-    private readonly select: HTMLSelectElement = super.shadowQuery<HTMLSelectElement>("select")!;
+    private readonly select: HTMLSelectElement = super.references.select as HTMLSelectElement;
 
     private _source: Iterable<KeyValue> = [];
     private _value:  string             = "";
