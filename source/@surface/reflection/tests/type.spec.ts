@@ -14,13 +14,13 @@ export default class TypeSpec
     @test @shouldPass
     public getTypeOf(): void
     {
-        expect(Type.of(Mock)).to.deep.equal(Type.from(new Mock()));
+        expect(Type.of(Mock).equals(Type.from(new Mock()))).to.equal(true);
     }
 
     @test @shouldPass
     public getTypeFrom(): void
     {
-        expect(Type.from(new Mock())).to.deep.equal(Type.of(Mock));
+        expect(Type.from(new Mock()).equals(Type.of(Mock))).to.equal(true);
     }
 
     @test @shouldPass
@@ -63,7 +63,21 @@ export default class TypeSpec
         const key = "instanceField";
 
         const actual   = Type.of(Mock).getField(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
+
+        expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldPass
+    public getOwnField(): void
+    {
+        const key  = "ownInstanceField";
+        const mock = new Mock();
+
+        Object.defineProperty(mock, key, { value: 1 });
+
+        const actual   = Type.from(mock).getField(key);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(mock, key)!, Type.from(mock), true, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -74,7 +88,7 @@ export default class TypeSpec
         const key = "instanceField";
 
         const actual   = Type.of(Mock).getMember(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -85,7 +99,7 @@ export default class TypeSpec
         const key = "staticField";
 
         const actual   = Type.of(Mock).getStaticField(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -96,7 +110,7 @@ export default class TypeSpec
         const key = "staticField";
 
         const actual   = Type.of(Mock).getStaticMember(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -107,7 +121,7 @@ export default class TypeSpec
         const key = "instanceMethod";
 
         const actual   = Type.of(Mock).getMethod(key);
-        const expected = new MethodInfo(key, Mock.prototype[key], Type.of(Mock), false);
+        const expected = new MethodInfo(key, Mock.prototype[key], Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -118,7 +132,7 @@ export default class TypeSpec
         const key = "instanceMethod";
 
         const actual   = Type.of(Mock).getMember(key);
-        const expected = new MethodInfo(key, Mock.prototype[key], Type.of(Mock), false);
+        const expected = new MethodInfo(key, Mock.prototype[key], Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -129,7 +143,7 @@ export default class TypeSpec
         const key = "staticMethod";
 
         const actual   = Type.of(Mock).getStaticMethod(key);
-        const expected = new MethodInfo(key, Mock[key], Type.of(Mock), true);
+        const expected = new MethodInfo(key, Mock[key], Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -140,7 +154,7 @@ export default class TypeSpec
         const key = "staticMethod";
 
         const actual   = Type.of(Mock).getStaticMember(key);
-        const expected = new MethodInfo(key, Mock[key], Type.of(Mock), true);
+        const expected = new MethodInfo(key, Mock[key], Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -151,7 +165,7 @@ export default class TypeSpec
         const key = "instanceProperty";
 
         const actual   = Type.of(Mock).getProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -162,7 +176,7 @@ export default class TypeSpec
         const key = "instanceProperty";
 
         const actual   = Type.of(Mock).getMember(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -173,7 +187,7 @@ export default class TypeSpec
         const key = "instanceReadonlyProperty";
 
         const actual   = Type.of(Mock).getProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false);
 
         expect(actual).to.deep.equal(expected);
         expect(actual!.readonly).to.equal(true);
@@ -185,7 +199,7 @@ export default class TypeSpec
         const key = "staticProperty";
 
         const actual   = Type.of(Mock).getStaticProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -196,7 +210,7 @@ export default class TypeSpec
         const key = "staticProperty";
 
         const actual   = Type.of(Mock).getStaticMember(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -207,7 +221,7 @@ export default class TypeSpec
         const key = "staticReadonlyProperty";
 
         const actual   = Type.of(Mock).getStaticProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(Mock, key)!, Type.of(Mock), true, true);
 
         expect(actual).to.deep.equal(expected);
         expect(actual!.readonly).to.equal(true);
@@ -277,7 +291,7 @@ export default class TypeSpec
         const key = "baseInstanceField";
 
         const actual   = Type.of(Mock).getField(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -288,7 +302,7 @@ export default class TypeSpec
         const key = "baseStaticField";
 
         const actual   = Type.of(Mock).getStaticField(key);
-        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true);
+        const expected = new FieldInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -299,7 +313,7 @@ export default class TypeSpec
         const key = "baseInstanceMethod";
 
         const actual   = Type.of(Mock).getMethod(key);
-        const expected = new MethodInfo(key, BaseMock.prototype[key], Type.of(BaseMock), false);
+        const expected = new MethodInfo(key, BaseMock.prototype[key], Type.of(BaseMock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -310,7 +324,7 @@ export default class TypeSpec
         const key = "baseStaticMethod";
 
         const actual   = Type.of(Mock).getStaticMethod(key);
-        const expected = new MethodInfo(key, Mock[key], Type.of(BaseMock), true);
+        const expected = new MethodInfo(key, Mock[key], Type.of(BaseMock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -321,7 +335,7 @@ export default class TypeSpec
         const key = "baseInstanceProperty";
 
         const actual   = Type.of(Mock).getProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock.prototype, key)!, Type.of(BaseMock), false, false);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -332,7 +346,7 @@ export default class TypeSpec
         const key = "baseStaticProperty";
 
         const actual   = Type.of(Mock).getStaticProperty(key);
-        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true);
+        const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
 
         expect(actual).to.deep.equal(expected);
     }
@@ -356,8 +370,8 @@ export default class TypeSpec
 
         const expected =
         [
-            new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false),
-            new FieldInfo(baseKey, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseKey)!, Type.of(BaseMock), false)
+            new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false),
+            new FieldInfo(baseKey, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseKey)!, Type.of(BaseMock), false, false)
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -378,16 +392,16 @@ export default class TypeSpec
 
         const expected =
         [
-            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(Mock,     length)!,                    Type.of(Mock),     true),
-            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(Mock,     prototype)!,                 Type.of(Mock),     true),
-            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(Mock,     name)!,                      Type.of(Mock),     true),
-            new FieldInfo(privateStaticProperty,     Object.getOwnPropertyDescriptor(Mock,     privateStaticProperty)!,     Type.of(Mock),     true),
-            new FieldInfo(staticField,               Object.getOwnPropertyDescriptor(Mock,     staticField)!,               Type.of(Mock),     true),
-            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(BaseMock, length)!,                    Type.of(BaseMock), true),
-            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(BaseMock, prototype)!,                 Type.of(BaseMock), true),
-            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(BaseMock, name)!,                      Type.of(BaseMock), true),
-            new FieldInfo(privateBaseStaticProperty, Object.getOwnPropertyDescriptor(BaseMock, privateBaseStaticProperty)!, Type.of(BaseMock), true),
-            new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true),
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(Mock,     length)!,                    Type.of(Mock),     true, true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(Mock,     prototype)!,                 Type.of(Mock),     true, true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(Mock,     name)!,                      Type.of(Mock),     true, true),
+            new FieldInfo(privateStaticProperty,     Object.getOwnPropertyDescriptor(Mock,     privateStaticProperty)!,     Type.of(Mock),     true, true),
+            new FieldInfo(staticField,               Object.getOwnPropertyDescriptor(Mock,     staticField)!,               Type.of(Mock),     true, true),
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(BaseMock, length)!,                    Type.of(BaseMock), true, true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(BaseMock, prototype)!,                 Type.of(BaseMock), true, true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(BaseMock, name)!,                      Type.of(BaseMock), true, true),
+            new FieldInfo(privateBaseStaticProperty, Object.getOwnPropertyDescriptor(BaseMock, privateBaseStaticProperty)!, Type.of(BaseMock), true, true),
+            new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -404,9 +418,9 @@ export default class TypeSpec
 
         const expected =
         [
-            new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype,     instanceProperty)!,         Type.of(Mock),     false),
-            new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype,     instanceReadonlyProperty)!, Type.of(Mock),     false),
-            new PropertyInfo(baseInstanceProperty,     Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!,     Type.of(BaseMock), false),
+            new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype,     instanceProperty)!,         Type.of(Mock),     false, false),
+            new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype,     instanceReadonlyProperty)!, Type.of(Mock),     false, false),
+            new PropertyInfo(baseInstanceProperty,     Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!,     Type.of(BaseMock), false, false),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -423,9 +437,9 @@ export default class TypeSpec
 
         const expected =
         [
-            new PropertyInfo(staticProperty,         Object.getOwnPropertyDescriptor(Mock,     staticProperty)!,         Type.of(Mock),     true),
-            new PropertyInfo(staticReadonlyProperty, Object.getOwnPropertyDescriptor(Mock,     staticReadonlyProperty)!, Type.of(Mock),     true),
-            new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,     Type.of(BaseMock), true),
+            new PropertyInfo(staticProperty,         Object.getOwnPropertyDescriptor(Mock,     staticProperty)!,         Type.of(Mock),     true, true),
+            new PropertyInfo(staticReadonlyProperty, Object.getOwnPropertyDescriptor(Mock,     staticReadonlyProperty)!, Type.of(Mock),     true, true),
+            new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,     Type.of(BaseMock), true, true),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -438,12 +452,12 @@ export default class TypeSpec
 
         const expected =
         [
-            new MethodInfo("constructor",                          Mock.prototype.constructor,                          Type.of(Mock),     false),
-            new MethodInfo("instanceMethod",                       Mock.prototype.instanceMethod,                       Type.of(Mock),     false),
-            new MethodInfo("instanceMethodWithParameters",         Mock.prototype.instanceMethodWithParameters,         Type.of(Mock),     false),
-            new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock),     false),
-            new MethodInfo("constructor",                          BaseMock.prototype.constructor,                      Type.of(BaseMock), false),
-            new MethodInfo("baseInstanceMethod",                   BaseMock.prototype.baseInstanceMethod,               Type.of(BaseMock), false),
+            new MethodInfo("constructor",                          Mock.prototype.constructor,                          Type.of(Mock),     false, false),
+            new MethodInfo("instanceMethod",                       Mock.prototype.instanceMethod,                       Type.of(Mock),     false, false),
+            new MethodInfo("instanceMethodWithParameters",         Mock.prototype.instanceMethodWithParameters,         Type.of(Mock),     false, false),
+            new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock),     false, false),
+            new MethodInfo("constructor",                          BaseMock.prototype.constructor,                      Type.of(BaseMock), false, false),
+            new MethodInfo("baseInstanceMethod",                   BaseMock.prototype.baseInstanceMethod,               Type.of(BaseMock), false, false),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -456,8 +470,8 @@ export default class TypeSpec
 
         const expected =
         [
-            new MethodInfo("staticMethod",     Mock.staticMethod,         Type.of(Mock),     false),
-            new MethodInfo("baseStaticMethod", BaseMock.baseStaticMethod, Type.of(BaseMock), false),
+            new MethodInfo("staticMethod",     Mock.staticMethod,         Type.of(Mock),     true, false),
+            new MethodInfo("baseStaticMethod", BaseMock.baseStaticMethod, Type.of(BaseMock), true, false),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -476,17 +490,17 @@ export default class TypeSpec
 
         const expected =
         [
-            new MethodInfo("constructor", Mock.prototype.constructor, Type.of(Mock), false),
-            new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype, instanceProperty)!,         Type.of(Mock), false),
-            new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype, instanceReadonlyProperty)!, Type.of(Mock), false),
-            new MethodInfo("instanceMethod",                       Mock.prototype.instanceMethod,                       Type.of(Mock), false),
-            new MethodInfo("instanceMethodWithParameters",         Mock.prototype.instanceMethodWithParameters,         Type.of(Mock), false),
-            new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false),
-            new FieldInfo(instanceField, Object.getOwnPropertyDescriptor(Mock.prototype, instanceField)!, Type.of(Mock), false),
-            new MethodInfo("constructor", BaseMock.prototype.constructor, Type.of(BaseMock), false),
-            new PropertyInfo(baseInstanceProperty, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!, Type.of(BaseMock), false),
-            new MethodInfo("baseInstanceMethod", BaseMock.prototype.baseInstanceMethod, Type.of(BaseMock), false),
-            new FieldInfo(baseInstanceField, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceField)!, Type.of(BaseMock), false),
+            new MethodInfo("constructor", Mock.prototype.constructor, Type.of(Mock), false, false),
+            new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype, instanceProperty)!,         Type.of(Mock), false, false),
+            new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype, instanceReadonlyProperty)!, Type.of(Mock), false, false),
+            new MethodInfo("instanceMethod",                       Mock.prototype.instanceMethod,                       Type.of(Mock), false, false),
+            new MethodInfo("instanceMethodWithParameters",         Mock.prototype.instanceMethodWithParameters,         Type.of(Mock), false, false),
+            new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false, false),
+            new FieldInfo(instanceField, Object.getOwnPropertyDescriptor(Mock.prototype, instanceField)!, Type.of(Mock), false, false),
+            new MethodInfo("constructor", BaseMock.prototype.constructor, Type.of(BaseMock), false, false),
+            new PropertyInfo(baseInstanceProperty, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!, Type.of(BaseMock), false, false),
+            new MethodInfo("baseInstanceMethod", BaseMock.prototype.baseInstanceMethod, Type.of(BaseMock), false, false),
+            new FieldInfo(baseInstanceField, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceField)!, Type.of(BaseMock), false, false),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -510,21 +524,21 @@ export default class TypeSpec
 
         const expected =
         [
-            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(Mock,     length)!,                    Type.of(Mock),     true),
-            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(Mock,     prototype)!,                 Type.of(Mock),     true),
-            new PropertyInfo(staticProperty,         Object.getOwnPropertyDescriptor(Mock,     staticProperty)!,         Type.of(Mock),     true),
-            new PropertyInfo(staticReadonlyProperty, Object.getOwnPropertyDescriptor(Mock,     staticReadonlyProperty)!, Type.of(Mock),     true),
-            new MethodInfo("staticMethod",     Mock.staticMethod,         Type.of(Mock),     true),
-            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(Mock,     name)!,                      Type.of(Mock),     true),
-            new FieldInfo(privateStaticProperty,     Object.getOwnPropertyDescriptor(Mock,     privateStaticProperty)!,     Type.of(Mock),     true),
-            new FieldInfo(staticField,               Object.getOwnPropertyDescriptor(Mock,     staticField)!,               Type.of(Mock),     true),
-            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(BaseMock, length)!,                    Type.of(BaseMock), true),
-            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(BaseMock, prototype)!,                 Type.of(BaseMock), true),
-            new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,     Type.of(BaseMock), true),
-            new MethodInfo("baseStaticMethod", BaseMock.baseStaticMethod, Type.of(BaseMock), true),
-            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(BaseMock, name)!,                      Type.of(BaseMock), true),
-            new FieldInfo(privateBaseStaticProperty, Object.getOwnPropertyDescriptor(BaseMock, privateBaseStaticProperty)!, Type.of(BaseMock), true),
-            new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true),
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(Mock,     length)!,                    Type.of(Mock),     true, true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(Mock,     prototype)!,                 Type.of(Mock),     true, true),
+            new PropertyInfo(staticProperty,         Object.getOwnPropertyDescriptor(Mock,     staticProperty)!,            Type.of(Mock),     true, true),
+            new PropertyInfo(staticReadonlyProperty, Object.getOwnPropertyDescriptor(Mock,     staticReadonlyProperty)!,    Type.of(Mock),     true, true),
+            new MethodInfo("staticMethod",           Mock.staticMethod,                        Type.of(Mock),                                  true, true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(Mock,     name)!,                      Type.of(Mock),     true, true),
+            new FieldInfo(privateStaticProperty,     Object.getOwnPropertyDescriptor(Mock,     privateStaticProperty)!,     Type.of(Mock),     true, true),
+            new FieldInfo(staticField,               Object.getOwnPropertyDescriptor(Mock,     staticField)!,               Type.of(Mock),     true, true),
+            new FieldInfo(length,                    Object.getOwnPropertyDescriptor(BaseMock, length)!,                    Type.of(BaseMock), true, true),
+            new FieldInfo(prototype,                 Object.getOwnPropertyDescriptor(BaseMock, prototype)!,                 Type.of(BaseMock), true, true),
+            new PropertyInfo(baseStaticProperty,     Object.getOwnPropertyDescriptor(BaseMock, baseStaticProperty)!,        Type.of(BaseMock), true, true),
+            new MethodInfo("baseStaticMethod",       BaseMock.baseStaticMethod, Type.of(BaseMock),                                             true, true),
+            new FieldInfo(name,                      Object.getOwnPropertyDescriptor(BaseMock, name)!,                      Type.of(BaseMock), true, true),
+            new FieldInfo(privateBaseStaticProperty, Object.getOwnPropertyDescriptor(BaseMock, privateBaseStaticProperty)!, Type.of(BaseMock), true, true),
+            new FieldInfo(baseStaticField,           Object.getOwnPropertyDescriptor(BaseMock, baseStaticField)!,           Type.of(BaseMock), true, true),
         ];
 
         expect(actual).to.deep.equal(expected);

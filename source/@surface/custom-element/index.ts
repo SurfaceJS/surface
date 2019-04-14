@@ -1,4 +1,4 @@
-import { Action, KeyValue, Nullable }                          from "@surface/core";
+import { Action, Indexer, KeyValue, Nullable }                 from "@surface/core";
 import Reactive                                                from "@surface/reactive";
 import ElementBind                                             from "./internal/element-bind";
 import References                                              from "./internal/references";
@@ -9,13 +9,13 @@ export default abstract class CustomElement extends HTMLElement
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
     public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
 
-    private [CONTEXT]: unknown;
+    private [CONTEXT]: Indexer = { };
     private readonly [SHADOW_ROOT]: ShadowRoot;
     private readonly _references:   References;
 
-    protected get context(): object
+    protected get context(): Indexer
     {
-        return (this[CONTEXT] || { }) as object;
+        return this[CONTEXT];
     }
 
     public get references(): References
@@ -23,7 +23,7 @@ export default abstract class CustomElement extends HTMLElement
         return this._references;
     }
 
-    public bindedCallback?: Action;
+    public onAfterBind?: Action;
 
     protected constructor();
     protected constructor(shadowRootInit: ShadowRootInit);
@@ -66,6 +66,38 @@ export default abstract class CustomElement extends HTMLElement
         const content = document.importNode(template.content, true);
 
         this[SHADOW_ROOT].appendChild(content);
+    }
+
+    protected applySlottedTemplate(name?: string): void
+    {
+        type ScopedHTMLSlotElement = HTMLSlotElement & { scope?: Indexer };
+
+        const slot = this[SHADOW_ROOT].querySelector<ScopedHTMLSlotElement>(`slot${name ? `[name=${name}]` : ""}`);
+
+        if (slot && "scope" in slot)
+        {
+            const element = slot.assignedElements()[0];
+
+            if (element && element.tagName == "TEMPLATE")
+            {
+                const content = document.importNode((element as HTMLTemplateElement).content, true);
+
+                const alias = element.getAttribute("scope") || "scope";
+
+                for (const element of Array.from(content.children) as Array<HTMLElement>)
+                {
+                    element.slot = name || "";
+                }
+
+                this.appendChild(content);
+
+                CustomElement.contextBind({ ...this.context, [alias]: slot.scope }, this);
+            }
+        }
+        else
+        {
+            throw new Error();
+        }
     }
 
     /**

@@ -56,7 +56,7 @@ export default class ElementBind
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private bindAttribute(element: Element): void
+    private bindAttributes(element: Element): void
     {
         const notifications: Array<Action> = [];
 
@@ -79,13 +79,22 @@ export default class ElementBind
                 }
                 else
                 {
+                    if (element.tagName == "SLOT" && attribute.name == "scope" && !("scope" in element))
+                    {
+                        Object.defineProperty(element, "scope", { configurable: true, value: null, writable: true });
+                    }
+                    else if (attribute.name == "scope")
+                    {
+                        context[attribute.value] = (element.assignedSlot! as Indexer).scope;
+                    }
+
                     const isOneWay         = this.expressions.oneWay.test(attribute.value);
                     const isTwoWay         = this.expressions.twoWay.test(attribute.value);
                     const isPathExpression = this.expressions.path.test(attribute.value);
                     const interpolation    = !(isOneWay || isTwoWay);
                     const attributeName    = dashedToCamel(attribute.name);
                     const elementMember    = Type.from(element).getMember(attributeName);
-                    const canWrite         = elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName);
+                    const canWrite         = !!(elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName));
 
                     if (isPathExpression)
                     {
@@ -195,7 +204,7 @@ export default class ElementBind
 
                 if (element.attributes && element.attributes.length > 0)
                 {
-                    this.bindAttribute(element);
+                    this.bindAttributes(element);
                 }
 
                 if (element.nodeType == Node.TEXT_NODE)

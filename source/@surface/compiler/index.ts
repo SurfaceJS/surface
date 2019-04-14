@@ -135,7 +135,7 @@ export default class Compiler
             const promises =
             [
                 new Promise(resolve => rimraf(outputPath, resolve)),
-                new Promise(resolve => rimraf(path.resolve(__dirname, "cache-loader"), resolve))
+                new Promise(resolve => rimraf(path.resolve(__dirname, ".cache"), resolve))
             ];
 
             await Promise.all(promises);
@@ -328,10 +328,11 @@ export default class Compiler
             },
             output:
             {
-                filename:   configuration.filename,
-                path:       configuration.output,
-                pathinfo:   !isProduction,
-                publicPath: "/",
+                //devtoolModuleFilenameTemplate: "webpack://source/[resource-path]?[loaders]",
+                filename:                      configuration.filename,
+                path:                          configuration.output,
+                pathinfo:                      !isProduction,
+                publicPath:                    "/",
             },
             plugins: plugins,
             performance:

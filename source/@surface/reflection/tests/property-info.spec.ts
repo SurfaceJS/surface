@@ -5,7 +5,7 @@ import Type                        from "../type";
 import Mock                        from "./fixtures/mock";
 
 // tslint:disable:no-non-null-assertion
-const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceProperty")!, Type.of(Mock), false);
+const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceProperty")!, Type.of(Mock), false, false);
 
 @suite
 export default class FieldInfoSpec
@@ -56,7 +56,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public staticPropertymetadata(): void
     {
-        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock ,"staticProperty")!, Type.of(Mock), true);
+        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock ,"staticProperty")!, Type.of(Mock), false, true);
 
         const metadata =
         {

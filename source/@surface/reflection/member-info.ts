@@ -9,6 +9,12 @@ export default abstract class MemberInfo
         return this._declaringType;
     }
 
+    private readonly _isOwn: boolean;
+    public get isOwn(): boolean
+    {
+        return this._isOwn;
+    }
+
     private readonly _isStatic: boolean;
     public get isStatic(): boolean
     {
@@ -36,10 +42,11 @@ export default abstract class MemberInfo
         return this._metadata;
     }
 
-    protected constructor(key: string|symbol, declaringType: Type, isStatic: boolean)
+    protected constructor(key: string|symbol, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
         this._key           = key;
         this._declaringType = declaringType;
+        this._isOwn         = isOwn;
         this._isStatic      = isStatic;
     }
 }

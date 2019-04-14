@@ -176,9 +176,9 @@ export function element(name: string, template?: string, style?: string, options
 
                     ElementBind.for({ host: instance }, instance[symbols.SHADOW_ROOT]);
 
-                    if (instance.bindedCallback)
+                    if (instance.onAfterBind)
                     {
-                        instance.bindedCallback();
+                        instance.onAfterBind();
                     }
 
                     return instance;
