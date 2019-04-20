@@ -85,14 +85,14 @@ export default class ForEach extends Component
     {
         super();
 
-        super.bindedCallback = this.changed.bind(this);
+        super.onAfterBind = this.changed.bind(this);
     }
 
     private changed(): void
     {
         if (this.template)
         {
-            CustomElement.contextUnbind(this);
+            CustomElement.clearDirectives(this);
             super.innerHTML = "";
 
             let sequence = Enumerable.from(this.of);
@@ -120,11 +120,13 @@ export default class ForEach extends Component
             {
                 for (const item of sequence)
                 {
-                    const fragment = document.importNode(this.template.content, true);
+                    const content = this.template.content.cloneNode(true);
 
-                    CustomElement.contextBind({ ...super.context, index, item } as object, fragment); //TODO - Review binding order
+                    content.normalize();
 
-                    super.appendChild(fragment);
+                    CustomElement.processDirectives(content, { ...super.context, index, item } as object); //TODO - Review binding order
+
+                    super.appendChild(content);
 
                     index++;
                 }

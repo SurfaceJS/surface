@@ -2,11 +2,12 @@ import { Action, Indexer }     from "@surface/core";
 import { coalesce, typeGuard } from "@surface/core/common/generic";
 import { getKeyMember }        from "@surface/core/common/object";
 import { dashedToCamel }       from "@surface/core/common/string";
+import Expression              from "@surface/expression";
 import ExpressionType          from "@surface/expression/expression-type";
+import IArrayExpression        from "@surface/expression/interfaces/array-expression";
 import IExpression             from "@surface/expression/interfaces/expression";
 import Type                    from "@surface/reflection";
 import PropertyInfo            from "@surface/reflection/property-info";
-import IArrayExpression        from "../../expression/interfaces/array-expression";
 import FieldInfo               from "../../reflection/field-info";
 import BindParser              from "./bind-parser";
 import DataBind                from "./data-bind";
@@ -16,7 +17,7 @@ import windowWrapper           from "./window-wrapper";
 
 type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: Indexer };
 
-export default class ElementBind
+export default class TemplateProcessor
 {
     private readonly window:  Window;
     private readonly context: Indexer;
@@ -34,12 +35,12 @@ export default class ElementBind
         this.window  = windowWrapper;
     }
 
-    public static for(context: Indexer, content: Node): void
+    public static process(node: Node, context: Indexer): void
     {
-        new ElementBind(context).traverseElement(content);
+        new TemplateProcessor(context).traverseElement(node);
     }
 
-    public static unbind(content: Node)
+    public static clear(content: Node)
     {
         for (const element of content.childNodes as unknown as Iterable<Bindable<Element>>)
         {
@@ -50,7 +51,7 @@ export default class ElementBind
                 element[CONTEXT] = undefined;
                 element[BINDED]  = false;
 
-                ElementBind.unbind(element);
+                TemplateProcessor.clear(element);
             }
         }
     }
@@ -193,11 +194,199 @@ export default class ElementBind
         return new Proxy(context, handler);
     }
 
+    private processDirectives(template: HTMLTemplateElement, context: Indexer): void
+    {
+        if (!template.parentNode)
+        {
+            throw new Error("Cannor process orphan templates");
+        }
+
+        const parent = template.parentNode;
+
+        const directive = template.getAttribute("directive");
+
+        if (directive == "if")
+        {
+            const start = document.createComment("start-if-directive");
+            const end   = document.createComment("end-if-directive");
+
+            const expressions: Array<[IExpression, HTMLTemplateElement]> = [];
+
+            let childs: Array<ChildNode> = [];
+
+            const notify = () =>
+            {
+                childs.forEach(x => x.remove());
+
+                for (const [expression, template] of expressions)
+                {
+                    if (expression.evaluate())
+                    {
+                        const content = template.content.cloneNode(true) as Element;
+
+                        content.normalize();
+
+                        TemplateProcessor.process(content, context);
+
+                        childs = Array.from(content.childNodes);
+
+                        parent.insertBefore(content, end);
+
+                        break;
+                    }
+                }
+            };
+
+            const visitor = new ObserverVisitor({ notify });
+
+            const expression = Expression.from(template.getAttribute("expression")!, context);
+
+            visitor.observe(expression);
+
+            expressions.push([expression, template]);
+
+            let simbling = template.nextElementSibling;
+
+            while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
+            {
+                if (simbling.getAttribute("directive") == "elseif")
+                {
+                    const expression = Expression.from(simbling.getAttribute("expression")!, context);
+
+                    visitor.observe(expression);
+
+                    expressions.push([expression, simbling]);
+
+                    const next = simbling.nextElementSibling;
+
+                    simbling.remove();
+
+                    simbling = next;
+                }
+                else if (simbling.getAttribute("directive") == "else")
+                {
+                    simbling.remove();
+
+                    expressions.push([Expression.constant(true), simbling]);
+
+                    break;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            parent.replaceChild(end, template);
+            parent.insertBefore(start, end);
+
+            notify();
+        }
+        else if (directive == "foreach")
+        {
+            const start = document.createComment("start-foreach-directive");
+            const end   = document.createComment("end-foreach-directive");
+
+            const expression = Expression.from(template.getAttribute("expression")!, context);
+
+            const scope = template.getAttribute("scope") || "scope";
+
+            let cache: Array<[unknown, Array<ChildNode>]> = [];
+
+            const notify = () =>
+            {
+                const elements = expression.evaluate() as Array<Element>;
+
+                if (elements.length < cache.length)
+                {
+                    for (const [, childs] of cache.splice(elements.length))
+                    {
+                        childs.forEach(x => x.remove());
+                    }
+                }
+
+                let changedTree = false;
+
+                if (elements.length > 0)
+                {
+                    for (let i = 0; i < elements.length; i++)
+                    {
+                        if (i >= cache.length || (i < cache.length && !Object.is(elements[i], cache[i][0])))
+                        {
+                            const element = elements[i];
+
+                            const content = template.content.cloneNode(true) as Element;
+
+                            content.normalize();
+
+                            TemplateProcessor.process(content, { ...context, [scope]: { item: element }});
+
+                            if (i < cache.length)
+                            {
+                                for (const child of cache[i][1])
+                                {
+                                    child.remove();
+                                }
+
+                                cache[i] = [element, Array.from(content.childNodes)];
+
+                                changedTree = true;
+                            }
+                            else
+                            {
+                                cache.push([element, Array.from(content.childNodes)]);
+                            }
+
+                            parent.insertBefore(content, end);
+                        }
+                        else if (changedTree)
+                        {
+                            for (const child of cache[i][1])
+                            {
+                                parent.insertBefore(child, end);
+                            }
+                        }
+                    }
+                }
+            };
+
+            new ObserverVisitor({ notify }).observe(expression);
+
+            parent.replaceChild(end, template);
+            parent.insertBefore(start, end);
+
+            notify();
+        }
+        else if (template.assignedSlot && typeGuard<HTMLSlotElement, HTMLSlotElement & { scope?: Indexer }>(template.assignedSlot, x => "scope" in x) && template.getAttribute("scope"))
+        {
+            const content = template.content.cloneNode(true) as DocumentFragment;
+
+            content.normalize();
+
+            const scope = template.getAttribute("scope") || "scope";
+
+            const childs = Array.from(content.children);
+
+            for (const element of childs)
+            {
+                element.slot = name || "";
+            }
+
+            parent.appendChild(content);
+
+            TemplateProcessor.process(parent, { ...this.context, [scope]: template.assignedSlot.scope });
+        }
+    }
+
     private traverseElement(node: Node): void
     {
         for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
         {
-            if (!element[BINDED] && element.tagName != "TEMPLATE")
+            if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
+            {
+                this.processDirectives(element, this.context);
+            }
+            else if (!element[BINDED])
             {
                 element[BINDED]  = true;
                 element[CONTEXT] = this.context;

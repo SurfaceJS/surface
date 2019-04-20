@@ -34,32 +34,69 @@ export default class Reactor
     {
         const [target, key] = args;
 
+        const value = args.length == 2 ? target[key] : args[2];
+
         const reactor = target[REACTOR]!;
 
-        reactor.update(key, args.length == 3 ? args[2] : target[key]);
+        if (Array.isArray(value) && !!!(value as Reactiveable)[WRAPPED])
+        {
+            Reactor.wrapArray(reactor, target, key);
+        }
 
-        args.length == 2 ? reactor.notify(target, key) : reactor.notify(target, key, args[2]);
+        reactor.update(key, value);
+
+        args.length == 2 ? reactor.notify(target, key) : reactor.notify(target, key, value);
     }
 
-    private static wrapArray(target: Array<unknown> & Reactiveable, reactor: Reactor): void
+    private static wrapArray(reactor: Reactor, target: Array<unknown> & Reactiveable, ): void;
+    private static wrapArray(reactor: Reactor, target: Reactiveable, key: string): void;
+    private static wrapArray(...args: [Reactor, Array<unknown> & Reactiveable]|[Reactor, Reactiveable, string]): void
     {
         const methods = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
-        for (const method of methods)
+        if (args.length == 2)
         {
-            const fn = target[method] as Function;
+            const [reactor, target] = args;
 
-            target[method] = function(...args: Array<unknown>)
+            for (const method of methods)
             {
-                const elements = fn.apply(this, args);
+                const fn = target[method] as Function;
 
-                reactor.notify(this);
+                target[method] = function(...args: Array<unknown>)
+                {
+                    const elements = fn.apply(this, args);
 
-                return elements;
-            };
+                    reactor.notify(this);
+
+                    return elements;
+                };
+            }
+
+            target[WRAPPED] = true;
         }
+        else
+        {
+            const [reactor, target, key] = args as [Reactor, Reactiveable, string];
 
-        target[WRAPPED] = true;
+            const member = target[key] as Array<unknown> & Reactiveable;
+
+            for (const method of methods)
+            {
+                const fn = member[method] as Function;
+
+                member[method] = function(...args: Array<unknown>)
+                {
+                    const elements = fn.apply(this, args);
+
+                    reactor.notify(target, key);
+
+                    return elements;
+                };
+
+            }
+
+            member[WRAPPED] = true;
+        }
     }
 
     public static makeReactive(target: Reactiveable, key: string): Reactor
@@ -78,7 +115,12 @@ export default class Reactor
 
         if (!!!target[WRAPPED] && Array.isArray(target))
         {
-            Reactor.wrapArray(target, reactor);
+            Reactor.wrapArray(reactor, target);
+        }
+
+        if (Array.isArray(target[key]) && !!!(target[key] as Reactiveable)[WRAPPED]) //Todo: Investigate context breaking
+        {
+            Reactor.wrapArray(reactor, target, key);
         }
 
         if (member instanceof PropertyInfo)

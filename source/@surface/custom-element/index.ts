@@ -1,8 +1,8 @@
 import { Action, Indexer, KeyValue, Nullable }                 from "@surface/core";
 import Reactive                                                from "@surface/reactive";
-import ElementBind                                             from "./internal/element-bind";
 import References                                              from "./internal/references";
 import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
+import TemplateProcessor                                       from "./internal/template-processor";
 
 export default abstract class CustomElement extends HTMLElement
 {
@@ -43,61 +43,31 @@ export default abstract class CustomElement extends HTMLElement
     }
 
     /**
-     * Apply binds to node tree
+     * Process node tree directives
+     * @param node Node tree to be processed
      * @param context Context utilized to resolve expressions
-     * @param content Node tree to be binded
      */
-    protected static contextBind(context: object, content: Node): void
+    protected static processDirectives(node: Node, context: object): void
     {
-        ElementBind.for(context, content);
+        TemplateProcessor.process(node, context);
     }
 
     /**
      * Remove binds reference of node tree.
      * @param content Node tree to be unbinded
      */
-    protected static contextUnbind(content: Node): void
+    protected static clearDirectives(content: Node): void
     {
-        ElementBind.unbind(content);
+        TemplateProcessor.clear(content);
     }
 
     private applyTemplate(template: HTMLTemplateElement): void
     {
-        const content = document.importNode(template.content, true);
+        const content = template.content.cloneNode(true);
+
+        content.normalize();
 
         this[SHADOW_ROOT].appendChild(content);
-    }
-
-    protected applySlottedTemplate(name?: string): void
-    {
-        type ScopedHTMLSlotElement = HTMLSlotElement & { scope?: Indexer };
-
-        const slot = this[SHADOW_ROOT].querySelector<ScopedHTMLSlotElement>(`slot${name ? `[name=${name}]` : ""}`);
-
-        if (slot && "scope" in slot)
-        {
-            const element = slot.assignedElements()[0];
-
-            if (element && element.tagName == "TEMPLATE")
-            {
-                const content = document.importNode((element as HTMLTemplateElement).content, true);
-
-                const alias = element.getAttribute("scope") || "scope";
-
-                for (const element of Array.from(content.children) as Array<HTMLElement>)
-                {
-                    element.slot = name || "";
-                }
-
-                this.appendChild(content);
-
-                CustomElement.contextBind({ ...this.context, [alias]: slot.scope }, this);
-            }
-        }
-        else
-        {
-            throw new Error();
-        }
     }
 
     /**

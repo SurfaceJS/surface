@@ -4,8 +4,10 @@
     {
         "exclude":
         [
-          "*.json",
-          "**/*.json"
+            "**/*.json",
+            "**/node_modules/*.d.ts",
+            "**/node_modules/*.ts",
+            "*.json"
         ]
     },
     "rules":

@@ -5,14 +5,14 @@ import { camelToDashed }                   from "@surface/core/common/string";
 import Type                                from "@surface/reflection";
 import CustomElement                       from ".";
 import { LifeCycle }                       from "./interfaces/types";
-import ElementBind                         from "./internal/element-bind";
 import * as symbols                        from "./internal/symbols";
+import TemplateProcessor                   from "./internal/template-processor";
 
 type ProxyFuncion          = Function & { [symbols.PROXY_FUNCION]?: boolean };
 type AttributteConvertable =
 {
-    [symbols.CONVERTERS]?:          Record<string, Func2<Indexer, string, unknown>>;
-    [symbols.OBSERVED_ATTRIBUTES]?: Array<string|symbol>;
+    [symbols.CONVERTERS]?:           Record<string, Func2<Indexer, string, unknown>>;
+    [symbols.OBSERVED_ATTRIBUTES]?:  Array<string|symbol>;
     [symbols.REFLECTED_ATTRIBUTES]?: Array<string>;
 };
 
@@ -174,7 +174,7 @@ export function element(name: string, template?: string, style?: string, options
                 {
                     const instance = Reflect.construct(target, args, new.target) as CustomElement;
 
-                    ElementBind.for({ host: instance }, instance[symbols.SHADOW_ROOT]);
+                    TemplateProcessor.process(instance[symbols.SHADOW_ROOT], { host: instance });
 
                     if (instance.onAfterBind)
                     {

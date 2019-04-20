@@ -37,14 +37,14 @@ export default class Switch extends Component
     {
         const template = this.templates.get(this.value);
 
-        CustomElement.contextUnbind(this);
+        CustomElement.clearDirectives(this);
         super.innerHTML = "";
 
         if (template)
         {
             super.appendChild(document.importNode(template.content, true));
 
-            CustomElement.contextBind(super.context, this);
+            CustomElement.processDirectives(this, super.context);
         }
 
         super.dispatchEvent(new Event("change"));

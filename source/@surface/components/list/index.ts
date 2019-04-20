@@ -44,7 +44,7 @@ export default class List extends Component
 
         item.addEventListener("remove", () => this.remove(item));
 
-        Component.contextBind({ ...super.context, list: this, item }, item);
+        Component.processDirectives(item, { ...super.context, list: this, item });
 
         this.items.push(item);
 
@@ -71,13 +71,13 @@ export default class List extends Component
 
             if (item)
             {
-                Component.contextUnbind(item);
+                Component.clearDirectives(item);
                 this.items.splice(this.items.indexOf(item), 1);
             }
             else
             {
                 item = this.items.pop()!;
-                Component.contextUnbind(item);
+                Component.clearDirectives(item);
             }
 
             super.removeChild(item);

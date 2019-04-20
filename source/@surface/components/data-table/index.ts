@@ -314,7 +314,7 @@ export default class DataTable extends Component
 
             cell.innerHTML = innerHTML;
 
-            CustomElement.contextBind({ ...super.context, dataTable: this, row, cell }, cell);
+            CustomElement.processDirectives(cell, { ...super.context, dataTable: this, row, cell });
 
             index++;
         }
@@ -505,7 +505,7 @@ export default class DataTable extends Component
         {
             for (const row of rows.skip(dataCount))
             {
-                CustomElement.contextUnbind(row);
+                CustomElement.clearDirectives(row);
                 this.rowGroup.removeChild(row);
             }
         }
