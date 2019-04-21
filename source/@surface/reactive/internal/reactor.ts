@@ -62,7 +62,7 @@ export default class Reactor
             {
                 const fn = target[method] as Function;
 
-                target[method] = function(...args: Array<unknown>)
+                const wrappedFn = function(this: Array<unknown>, ...args: Array<unknown>)
                 {
                     const elements = fn.apply(this, args);
 
@@ -70,6 +70,8 @@ export default class Reactor
 
                     return elements;
                 };
+
+                Object.defineProperty(target, method, { value: wrappedFn, configurable: true, enumerable: false });
             }
 
             target[WRAPPED] = true;
@@ -84,7 +86,7 @@ export default class Reactor
             {
                 const fn = member[method] as Function;
 
-                member[method] = function(...args: Array<unknown>)
+                const wrappedFn = function(this: Array<unknown>, ...args: Array<unknown>)
                 {
                     const elements = fn.apply(this, args);
 
@@ -93,6 +95,7 @@ export default class Reactor
                     return elements;
                 };
 
+                Object.defineProperty(member, method, { value: wrappedFn, configurable: true, enumerable: false });
             }
 
             member[WRAPPED] = true;
@@ -217,7 +220,7 @@ export default class Reactor
             let cache     = null as unknown;
             let notifying = false;
 
-            target[key] = function(...args: Array<unknown>)
+            const wrappedFn = function(this: Indexer, ...args: Array<unknown>)
             {
                 if (!notifying)
                 {
@@ -236,6 +239,8 @@ export default class Reactor
                     return cache;
                 }
             };
+
+            Object.defineProperty(target, key, { value: wrappedFn, configurable: true, enumerable: false });
         }
 
         return reactor;
