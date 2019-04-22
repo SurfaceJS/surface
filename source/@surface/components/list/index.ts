@@ -44,6 +44,7 @@ export default class List extends Component
 
         item.addEventListener("remove", () => this.remove(item));
 
+        debugger;
         Component.processDirectives(item, { ...super.context, list: this, item });
 
         this.items.push(item);

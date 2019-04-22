@@ -20,7 +20,6 @@ type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: Indexer };
 
 export default class TemplateProcessor
 {
-    private readonly window:  Window;
     private readonly context: Indexer;
     private readonly expressions =
     {
@@ -29,16 +28,19 @@ export default class TemplateProcessor
         path:     /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
+    //private readonly root:    Node;
+    private readonly window:  Window;
 
-    private constructor(context: Indexer)
+    private constructor(root: Node, context: Indexer)
     {
+        //this.root    = root;
         this.context = context;
         this.window  = windowWrapper;
     }
 
     public static process(node: Node, context: Indexer): void
     {
-        new TemplateProcessor(context).traverseElement(node);
+        new TemplateProcessor(node, context).traverseElement(node);
     }
 
     public static clear(node: Bindable<Node>)
@@ -197,6 +199,39 @@ export default class TemplateProcessor
         return new Proxy(context, handler);
     }
 
+    private decomposeDirectives(template: HTMLTemplateElement): void
+    {
+        if (template.hasAttribute("#slot-scope") && (template.hasAttribute("#if") || template.hasAttribute("#else-if") || template.hasAttribute("#else") || template.hasAttribute("#for")))
+        {
+            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+            template.removeAttribute("#if");
+            template.removeAttribute("#else-if");
+            template.removeAttribute("#else");
+            template.removeAttribute("#for");
+
+            innerTemplate.removeAttribute("#slot-scope");
+
+            Array.from(template.content.childNodes).forEach(x => x.remove());
+
+            template.content.appendChild(innerTemplate);
+        }
+        else if ((template.hasAttribute("#if") || template.hasAttribute("#else-if") || template.hasAttribute("#else")) && template.hasAttribute("#for"))
+        {
+            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+            template.removeAttribute("#for");
+
+            innerTemplate.removeAttribute("#if");
+            innerTemplate.removeAttribute("#else-if");
+            innerTemplate.removeAttribute("#else");
+
+            Array.from(template.content.childNodes).forEach(x => x.remove());
+
+            template.content.appendChild(innerTemplate);
+        }
+    }
+
     private processDirectives(template: HTMLTemplateElement, context: Indexer): void
     {
         if (!template.parentNode)
@@ -204,28 +239,32 @@ export default class TemplateProcessor
             throw new Error("Cannor process orphan templates");
         }
 
+        this.decomposeDirectives(template);
+
         const parent = template.parentNode;
 
-        if (template.hasAttribute("#if"))
+        if (template.hasAttribute("#slot-scope"))
         {
-            const checkForDirective = (template: HTMLTemplateElement) =>
+            console.log("template.assignedSlot", template.assignedSlot);
+            const content = template.content.cloneNode(true) as DocumentFragment;
+
+            template.remove();
+
+            content.normalize();
+
+            TemplateProcessor.process(content, { ...context });
+
+            const childs = Array.from(content.children);
+
+            for (const element of childs)
             {
-                if (template.hasAttribute("#for"))
-                {
-                    const forTemplate = template.cloneNode(true) as HTMLTemplateElement;
+                element.slot = template.slot;
+            }
 
-                    forTemplate.removeAttribute("#if");
-
-                    template.removeAttribute("#for");
-
-                    Array.from(template.content.childNodes).forEach(x => x.remove());
-
-                    template.content.appendChild(forTemplate);
-                }
-            };
-
-            checkForDirective(template);
-
+            parent.appendChild(content);
+        }
+        else if (template.hasAttribute("#if"))
+        {
             const start = document.createComment("start-if-directive");
             const end   = document.createComment("end-if-directive");
 
@@ -280,8 +319,6 @@ export default class TemplateProcessor
             {
                 if (simbling.hasAttribute("#else-if"))
                 {
-                    checkForDirective(simbling);
-
                     const expression = Expression.from(simbling.getAttribute("#else-if")!, context);
 
                     subscriptions.push(visitor.observe(expression));
@@ -296,8 +333,6 @@ export default class TemplateProcessor
                 }
                 else if (simbling.hasAttribute("#else"))
                 {
-                    checkForDirective(simbling);
-
                     simbling.remove();
 
                     expressions.push([Expression.constant(true), simbling]);
@@ -434,25 +469,6 @@ export default class TemplateProcessor
             parent.insertBefore(start, end);
 
             notify();
-        }
-        else if (template.assignedSlot && typeGuard<HTMLSlotElement, HTMLSlotElement & { scope?: Indexer }>(template.assignedSlot, x => "scope" in x) && template.getAttribute("scope"))
-        {
-            const content = template.content.cloneNode(true) as DocumentFragment;
-
-            content.normalize();
-
-            const scope = template.getAttribute("scope") || "scope";
-
-            const childs = Array.from(content.children);
-
-            for (const element of childs)
-            {
-                element.slot = name || "";
-            }
-
-            parent.appendChild(content);
-
-            TemplateProcessor.process(parent, { ...this.context, [scope]: template.assignedSlot.scope });
         }
     }
 

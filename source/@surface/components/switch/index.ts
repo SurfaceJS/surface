@@ -37,7 +37,11 @@ export default class Switch extends Component
     {
         const template = this.templates.get(this.value);
 
-        CustomElement.clearDirectives(this);
+        for (const child of Array.from(this.childNodes))
+        {
+            CustomElement.clearDirectives(child);
+        }
+
         super.innerHTML = "";
 
         if (template)

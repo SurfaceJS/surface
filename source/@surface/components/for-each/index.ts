@@ -92,7 +92,11 @@ export default class ForEach extends Component
     {
         if (this.template)
         {
-            CustomElement.clearDirectives(this);
+            for (const child of Array.from(this.childNodes))
+            {
+                CustomElement.clearDirectives(child);
+            }
+
             super.innerHTML = "";
 
             let sequence = Enumerable.from(this.of);
