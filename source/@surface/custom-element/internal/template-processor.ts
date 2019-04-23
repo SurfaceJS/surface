@@ -51,8 +51,6 @@ export default class TemplateProcessor
 
             node[CONTEXT] = undefined;
             node[BINDED]  = false;
-
-            TemplateProcessor.clear(node);
         }
 
         for (const element of node.childNodes as unknown as Iterable<Bindable<Element>>)

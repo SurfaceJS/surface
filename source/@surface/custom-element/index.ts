@@ -56,9 +56,18 @@ export default abstract class CustomElement extends HTMLElement
      * Remove binds reference of node tree.
      * @param content Node tree to be unbinded
      */
-    protected static clearDirectives(content: Node): void
+    protected static clearDirectives(node: Node): void;
+    protected static clearDirectives(childNodes: NodeListOf<ChildNode>): void;
+    protected static clearDirectives(nodeOrChildNodes: Node|NodeListOf<ChildNode>): void
     {
-        TemplateProcessor.clear(content);
+        if (nodeOrChildNodes instanceof NodeList)
+        {
+            nodeOrChildNodes.forEach(x => TemplateProcessor.clear(x));
+        }
+        else
+        {
+            TemplateProcessor.clear(nodeOrChildNodes);
+        }
     }
 
     private applyTemplate(template: HTMLTemplateElement): void

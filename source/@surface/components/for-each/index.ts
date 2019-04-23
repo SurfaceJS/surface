@@ -92,10 +92,7 @@ export default class ForEach extends Component
     {
         if (this.template)
         {
-            for (const child of Array.from(this.childNodes))
-            {
-                CustomElement.clearDirectives(child);
-            }
+            CustomElement.clearDirectives(this.childNodes);
 
             super.innerHTML = "";
 
