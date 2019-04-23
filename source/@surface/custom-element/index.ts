@@ -63,7 +63,7 @@ export default abstract class CustomElement extends HTMLElement
 
     private applyTemplate(template: HTMLTemplateElement): void
     {
-        const content = template.content.cloneNode(true);
+        const content = document.importNode(template.content, true);
 
         content.normalize();
 
