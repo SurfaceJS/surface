@@ -1,26 +1,39 @@
-import { Action, Action2, Indexer, Nullable } from "@surface/core";
-import { coalesce, typeGuard }                from "@surface/core/common/generic";
-import { getKeyMember }                       from "@surface/core/common/object";
-import { dashedToCamel }                      from "@surface/core/common/string";
-import Expression                             from "@surface/expression";
-import ExpressionType                         from "@surface/expression/expression-type";
-import IArrayExpression                       from "@surface/expression/interfaces/array-expression";
-import IExpression                            from "@surface/expression/interfaces/expression";
-import Type                                   from "@surface/reflection";
-import PropertyInfo                           from "@surface/reflection/property-info";
-import ISubscription                          from "../../reactive/interfaces/subscription";
-import FieldInfo                              from "../../reflection/field-info";
-import BindParser                             from "./bind-parser";
-import DataBind                               from "./data-bind";
-import ObserverVisitor                        from "./observer-visitor";
-import { BINDED, CONTEXT }                    from "./symbols";
-import windowWrapper                          from "./window-wrapper";
+import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
+import { contains }                                            from "@surface/core/common/array";
+import { coalesce, typeGuard }                                 from "@surface/core/common/generic";
+import { getKeyMember }                                        from "@surface/core/common/object";
+import { dashedToCamel }                                       from "@surface/core/common/string";
+import Expression                                              from "@surface/expression";
+import ExpressionType                                          from "@surface/expression/expression-type";
+import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
+import IExpression                                             from "@surface/expression/interfaces/expression";
+import Type                                                    from "@surface/reflection";
+import PropertyInfo                                            from "@surface/reflection/property-info";
+import ISubscription                                           from "../../reactive/interfaces/subscription";
+import FieldInfo                                               from "../../reflection/field-info";
+import BindParser                                              from "./bind-parser";
+import DataBind                                                from "./data-bind";
+import ObserverVisitor                                         from "./observer-visitor";
+import { BINDED, CONTEXT, ON_AFTER_BINDED, SLOTTED_TEMPLATES } from "./symbols";
+import windowWrapper                                           from "./window-wrapper";
 
-type Bindable<T> = T & { [BINDED]?: boolean, [CONTEXT]?: Indexer };
+type Bindable<T> = T &
+{
+    [BINDED]?:            boolean,
+    [CONTEXT]?:           Indexer,
+    [SLOTTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>
+    [ON_AFTER_BINDED]?:   Action1<Context>;
+};
+
+type Context =
+{
+    [key: string]: unknown,
+    host:          Node|Element
+};
 
 export default class TemplateProcessor
 {
-    private readonly context: Indexer;
+    private readonly context: Context;
     private readonly expressions =
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
@@ -28,19 +41,19 @@ export default class TemplateProcessor
         path:     /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
-    //private readonly root:    Node;
-    private readonly window:  Window;
+    private readonly window: Window;
 
-    private constructor(root: Node, context: Indexer)
+    private constructor(context: Context)
     {
-        //this.root    = root;
         this.context = context;
         this.window  = windowWrapper;
     }
 
-    public static process(node: Node, context: Indexer): void
+    public static process(node: Node, context: Context): void
     {
-        new TemplateProcessor(node, context).traverseElement(node);
+        const processor = new TemplateProcessor(context);
+
+        processor.traverseElement(node);
     }
 
     public static clear(node: Bindable<Node>)
@@ -162,7 +175,7 @@ export default class TemplateProcessor
     {
         if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
         {
-            const context = this.createProxy({ this: element, ...this.context });
+            const context = this.createProxy({ this: element.parentElement, ...this.context });
 
             const match = this.expressions.path.exec(element.nodeValue);
 
@@ -199,7 +212,9 @@ export default class TemplateProcessor
 
     private decomposeDirectives(template: HTMLTemplateElement): void
     {
-        if (template.hasAttribute("#slot-scope") && (template.hasAttribute("#if") || template.hasAttribute("#else-if") || template.hasAttribute("#else") || template.hasAttribute("#for")))
+        const attributes = template.getAttributeNames();
+
+        if (contains(attributes, "#slot-scope") && contains(attributes, "#if", "#else-if", "#else", "#for", "#slot"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
@@ -207,6 +222,7 @@ export default class TemplateProcessor
             template.removeAttribute("#else-if");
             template.removeAttribute("#else");
             template.removeAttribute("#for");
+            template.removeAttribute("#slot");
 
             innerTemplate.removeAttribute("#slot-scope");
 
@@ -214,11 +230,12 @@ export default class TemplateProcessor
 
             template.content.appendChild(innerTemplate);
         }
-        else if ((template.hasAttribute("#if") || template.hasAttribute("#else-if") || template.hasAttribute("#else")) && template.hasAttribute("#for"))
+        else if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#slot"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
             template.removeAttribute("#for");
+            template.removeAttribute("#slot");
 
             innerTemplate.removeAttribute("#if");
             innerTemplate.removeAttribute("#else-if");
@@ -228,9 +245,21 @@ export default class TemplateProcessor
 
             template.content.appendChild(innerTemplate);
         }
+        else if (attributes.includes("#for") && attributes.includes("#slot"))
+        {
+            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+            template.removeAttribute("#slot");
+
+            innerTemplate.removeAttribute("#for");
+
+            Array.from(template.content.childNodes).forEach(x => x.remove());
+
+            template.content.appendChild(innerTemplate);
+        }
     }
 
-    private processDirectives(template: HTMLTemplateElement, context: Indexer): void
+    private processDirectives(template: HTMLTemplateElement, context: Context): void
     {
         if (!template.parentNode)
         {
@@ -241,9 +270,62 @@ export default class TemplateProcessor
 
         const parent = template.parentNode;
 
-        if (template.hasAttribute("#slot-scope"))
+        const host = context.host as Bindable<Node|Element>;
+
+        if (template.hasAttribute("#slot") && "querySelector" in host)
         {
-            console.log("template.assignedSlot", template.assignedSlot);
+            const reference = document.createComment("directive-injection");
+
+            const slotName  = template.getAttribute("#slot") || "";
+
+            const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
+
+            if (!slottedTemplates.has(slotName))
+            {
+                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[slot=${slotName}]`);
+                slottedTemplates.set(slotName, outterTemplate);
+
+                if (outterTemplate)
+                {
+                    outterTemplate.remove();
+                }
+            }
+
+            const content = document.importNode((slottedTemplates.get(slotName) || template).content, true);
+
+            content.normalize();
+
+            parent.replaceChild(reference, template);
+
+            const ctx = context;
+
+            const apply = (outterContext: Context) =>
+            {
+                const merged = { ...ctx, host: outterContext.host };
+
+                TemplateProcessor.process(content, merged);
+
+                reference.parentNode!.insertBefore(content, reference);
+                reference.remove();
+            };
+
+            const onAfterBinded = host[ON_AFTER_BINDED];
+
+            host[ON_AFTER_BINDED] = function(outterContext: Context)
+            {
+                if (onAfterBinded)
+                {
+                    onAfterBinded.call(this, outterContext);
+                }
+
+                apply(outterContext);
+
+                host[ON_AFTER_BINDED] = onAfterBinded;
+            };
+
+        }
+        else if (template.hasAttribute("#slot-scope"))
+        {
             const content = template.content.cloneNode(true) as DocumentFragment;
 
             template.remove();
@@ -480,9 +562,6 @@ export default class TemplateProcessor
             }
             else if (!element[BINDED])
             {
-                element[BINDED]  = true;
-                element[CONTEXT] = this.context;
-
                 if (element.attributes && element.attributes.length > 0)
                 {
                     this.bindAttributes(element);
@@ -494,6 +573,14 @@ export default class TemplateProcessor
                 }
 
                 this.traverseElement(element);
+
+                if (element[ON_AFTER_BINDED])
+                {
+                    element[ON_AFTER_BINDED]!(this.context);
+                }
+
+                element[CONTEXT] = this.context;
+                element[BINDED]  = true;
             }
         }
     }

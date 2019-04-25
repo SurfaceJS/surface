@@ -47,7 +47,7 @@ export default abstract class CustomElement extends HTMLElement
      * @param node Node tree to be processed
      * @param context Context utilized to resolve expressions
      */
-    protected static processDirectives(node: Node, context: object): void
+    protected static processDirectives(node: Node, context: { host: Node|Element, [key: string]: unknown }): void
     {
         TemplateProcessor.process(node, context);
     }
