@@ -1,26 +1,29 @@
-import { Action, Indexer, KeyValue, Nullable }                 from "@surface/core";
-import Reactive                                                from "@surface/reactive";
-import References                                              from "./internal/references";
-import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
-import TemplateProcessor                                       from "./internal/template-processor";
+import { Action, Indexer, KeyValue, Nullable }                             from "@surface/core";
+import Reactive                                                            from "@surface/reactive";
+import { CONTEXT, OBSERVED_ATTRIBUTES, REFERENCES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
+import TemplateProcessor                                                   from "./internal/template-processor";
+import References                                                          from "./internal/References";
+
+
 
 export default abstract class CustomElement extends HTMLElement
 {
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
     public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
 
-    private [CONTEXT]: Indexer = { };
-    private readonly [SHADOW_ROOT]: ShadowRoot;
-    private readonly _references:   References;
+    protected readonly [SHADOW_ROOT]: ShadowRoot;
+
+    protected [CONTEXT]!:    Indexer;
+    protected [REFERENCES]!: References;
 
     protected get context(): Indexer
     {
         return this[CONTEXT];
     }
 
-    public get references(): References
+    public get references(): Record<string, Nullable<HTMLElement>>
     {
-        return this._references;
+        return this[REFERENCES] as unknown as Record<string, HTMLElement|null>;
     }
 
     public onAfterBind?: Action;
@@ -32,24 +35,22 @@ export default abstract class CustomElement extends HTMLElement
         super();
         this[SHADOW_ROOT] = this.attachShadow(shadowRootInit || { mode: "closed" });
 
-        const template = (this.constructor as typeof CustomElement)[TEMPLATE];
+        //const template = (this.constructor as typeof CustomElement)[TEMPLATE];
 
-        if (template)
-        {
-            this.applyTemplate(template);
-        }
-
-        this._references = new References(this[SHADOW_ROOT]);
+        //if (template)
+        //{
+        //    this.applyTemplate(template);
+        //}
     }
 
     /**
      * Process node tree directives
-     * @param node Node tree to be processed
+     * @param content Node tree to be processed
      * @param context Context utilized to resolve expressions
      */
-    protected static processDirectives(node: Node, context: { host: Node|Element, [key: string]: unknown }): void
+    protected static processDirectives(host: Node|Element, content: Node, context: Indexer): void
     {
-        TemplateProcessor.process(node, context);
+        TemplateProcessor.process(host, content, context);
     }
 
     /**
@@ -70,14 +71,14 @@ export default abstract class CustomElement extends HTMLElement
         }
     }
 
-    private applyTemplate(template: HTMLTemplateElement): void
-    {
-        const content = document.importNode(template.content, true);
+    // private applyTemplate(template: HTMLTemplateElement): void
+    // {
+    //     const content = document.importNode(template.content, true);
 
-        content.normalize();
+    //     content.normalize();
 
-        this[SHADOW_ROOT].appendChild(content);
-    }
+    //     this[SHADOW_ROOT].appendChild(content);
+    // }
 
     /**
      * Notify property change.

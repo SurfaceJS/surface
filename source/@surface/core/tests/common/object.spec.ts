@@ -1,10 +1,80 @@
 import { shouldPass, suite, test }               from "@surface/test-suite";
 import * as chai                                 from "chai";
-import { merge, objectFactory, structuralEqual } from "../../common/object";
+import { destruct, merge, objectFactory, structuralEqual } from "../../common/object";
 
 @suite
 export default class CommonObjectSpec
 {
+    @test @shouldPass
+    public destructArray(): void
+    {
+        const source = [1, false, "some value"];
+
+        const target = destruct("[a, b]", source);
+
+        chai.expect(target.a).to.equal(1);
+        chai.expect(target.b).to.equal(false);
+        chai.expect(target.c).to.equal(undefined);
+    }
+
+    @test @shouldPass
+    public destructArrayWithAlias(): void
+    {
+        const source = [1, false, "some value"];
+
+        const target = destruct("[a: A, b, c: alias]", source);
+
+        chai.expect(target.A).to.equal(1);
+        chai.expect(target.b).to.equal(false);
+        chai.expect(target.alias).to.equal("some value");
+    }
+
+    @test @shouldPass
+    public destructArrayWithRest(): void
+    {
+        const source = [1, false, "some value"];
+
+        const target = destruct("[a, ...rest]", source);
+
+        chai.expect(target.a).to.equal(1);
+        chai.expect(target.rest).to.deep.equal([false, "some value"]);
+    }
+
+    @test @shouldPass
+    public destructObject(): void
+    {
+        const source = { a: 1, b: false, c: "some value" };
+
+        const target = destruct("{ a, b }", source);
+
+        chai.expect(target.a).to.equal(1);
+        chai.expect(target.b).to.equal(false);
+        chai.expect(target.c).to.equal(undefined);
+    }
+
+    @test @shouldPass
+    public destructObjectWithAlias(): void
+    {
+        const source = { a: 1, b: false, c: "some value" };
+
+        const target = destruct("{ a: A, b, c: alias }", source);
+
+        chai.expect(target.A).to.equal(1);
+        chai.expect(target.b).to.equal(false);
+        chai.expect(target.alias).to.equal("some value");
+    }
+
+    @test @shouldPass
+    public destructObjectWithRest(): void
+    {
+        const source = { a: 1, b: false, c: "some value" };
+
+        const target = destruct("{ a, ...rest }", source);
+
+        chai.expect(target.a).to.equal(1);
+        chai.expect(target.rest).to.deep.equal({ b: false, c: "some value" });
+    }
+
     @test @shouldPass
     public mergeObjects(): void
     {

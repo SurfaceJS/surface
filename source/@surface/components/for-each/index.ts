@@ -125,7 +125,7 @@ export default class ForEach extends Component
 
                     content.normalize();
 
-                    CustomElement.processDirectives(content, { ...super.context, index, item } as object); //TODO - Review binding order
+                    CustomElement.processDirectives(this, content, { ...super.context, index, item } as object); //TODO - Review binding order
 
                     super.appendChild(content);
 

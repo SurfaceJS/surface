@@ -1,7 +1,7 @@
 import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
 import { contains }                                            from "@surface/core/common/array";
 import { coalesce, typeGuard }                                 from "@surface/core/common/generic";
-import { getKeyMember }                                        from "@surface/core/common/object";
+import { destruct, getKeyMember }                              from "@surface/core/common/object";
 import { dashedToCamel }                                       from "@surface/core/common/string";
 import Expression                                              from "@surface/expression";
 import ExpressionType                                          from "@surface/expression/expression-type";
@@ -22,18 +22,12 @@ type Bindable<T> = T &
     [BINDED]?:            boolean,
     [CONTEXT]?:           Indexer,
     [SLOTTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>
-    [ON_AFTER_BINDED]?:   Action1<Context>;
-};
-
-type Context =
-{
-    [key: string]: unknown,
-    host:          Node|Element
+    [ON_AFTER_BINDED]?:   Action1<Indexer>;
 };
 
 export default class TemplateProcessor
 {
-    private readonly context: Context;
+    private readonly context: Indexer;
     private readonly expressions =
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
@@ -41,17 +35,19 @@ export default class TemplateProcessor
         path:     /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
+    private readonly host:   Node|Element;
     private readonly window: Window;
 
-    private constructor(context: Context)
+    private constructor(host: Node|Element, context: Indexer)
     {
-        this.context = context;
+        this.host    = host;
+        this.context = { host, ...context };
         this.window  = windowWrapper;
     }
 
-    public static process(node: Node, context: Context): void
+    public static process(host: Node|Element, node: Node, context: Indexer): void
     {
-        const processor = new TemplateProcessor(context);
+        const processor = new TemplateProcessor(host, context);
 
         processor.traverseElement(node);
     }
@@ -214,7 +210,7 @@ export default class TemplateProcessor
     {
         const attributes = template.getAttributeNames();
 
-        if (contains(attributes, "#slot-scope") && contains(attributes, "#if", "#else-if", "#else", "#for", "#slot"))
+        /*if (contains(attributes, "#scope") && contains(attributes, "#if", "#else-if", "#else", "#for"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
@@ -222,20 +218,23 @@ export default class TemplateProcessor
             template.removeAttribute("#else-if");
             template.removeAttribute("#else");
             template.removeAttribute("#for");
-            template.removeAttribute("#slot");
 
-            innerTemplate.removeAttribute("#slot-scope");
+            innerTemplate.removeAttribute("#scope");
 
             Array.from(template.content.childNodes).forEach(x => x.remove());
 
+            this.decomposeDirectives(innerTemplate);
+
             template.content.appendChild(innerTemplate);
         }
-        else if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#slot"))
+        else*/
+        if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#content", "#scope"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
             template.removeAttribute("#for");
-            template.removeAttribute("#slot");
+            template.removeAttribute("#content");
+            template.removeAttribute("#scope");
 
             innerTemplate.removeAttribute("#if");
             innerTemplate.removeAttribute("#else-if");
@@ -243,23 +242,29 @@ export default class TemplateProcessor
 
             Array.from(template.content.childNodes).forEach(x => x.remove());
 
+            this.decomposeDirectives(innerTemplate);
+
             template.content.appendChild(innerTemplate);
         }
-        else if (attributes.includes("#for") && attributes.includes("#slot"))
+        else if (attributes.includes("#for") && contains(attributes, "#content", "#scope"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
-            template.removeAttribute("#slot");
+            template.removeAttribute("#content");
+            template.removeAttribute("#scope");
 
             innerTemplate.removeAttribute("#for");
 
             Array.from(template.content.childNodes).forEach(x => x.remove());
 
+            this.decomposeDirectives(innerTemplate);
+
             template.content.appendChild(innerTemplate);
         }
     }
 
-    private processDirectives(template: HTMLTemplateElement, context: Context): void
+    // tslint:disable-next-line:cyclomatic-complexity
+    private processDirectives(template: HTMLTemplateElement, context: Indexer): void
     {
         if (!template.parentNode)
         {
@@ -270,19 +275,23 @@ export default class TemplateProcessor
 
         const parent = template.parentNode;
 
-        const host = context.host as Bindable<Node|Element>;
+        const host = this.host as Bindable<Node|Element>;
 
-        if (template.hasAttribute("#slot") && "querySelector" in host)
+        if (template.hasAttribute("#content") && "querySelector" in host)
         {
-            const reference = document.createComment("directive-injection");
+            const reference = document.createComment("directive-content");
 
-            const slotName  = template.getAttribute("#slot") || "";
+            const rawScope = template.getAttribute("#scope");
+
+            const contentScope: Indexer = rawScope ? Expression.from(rawScope, this.createProxy(context)).evaluate() as Indexer : { };
+
+            const slotName = template.getAttribute("#content") || "";
 
             const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
 
             if (!slottedTemplates.has(slotName))
             {
-                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[slot=${slotName}]`);
+                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${slotName}]`);
                 slottedTemplates.set(slotName, outterTemplate);
 
                 if (outterTemplate)
@@ -291,57 +300,54 @@ export default class TemplateProcessor
                 }
             }
 
-            const content = document.importNode((slottedTemplates.get(slotName) || template).content, true);
+            const outterTemplate = slottedTemplates.get(slotName) || template;
+
+            const scopeSpression = outterTemplate.getAttribute("scope") || "scope";
+
+            const destructuredScope = scopeSpression.startsWith("{");
+
+            const { scope, scopeAlias } = destructuredScope ?
+                { scope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
+                { scope: contentScope, scopeAlias: scopeSpression };
+
+            const content = document.importNode(outterTemplate.content, true);
 
             content.normalize();
 
             parent.replaceChild(reference, template);
 
-            const ctx = context;
-
-            const apply = (outterContext: Context) =>
+            const apply = (outterContext: Indexer) =>
             {
-                const merged = { ...ctx, host: outterContext.host };
+                const merged = destructuredScope ?
+                    { ...scope, ...outterContext }
+                    : { [scopeAlias]: scope, ...outterContext };
 
-                TemplateProcessor.process(content, merged);
+                TemplateProcessor.process(this.host, content, merged);
 
                 reference.parentNode!.insertBefore(content, reference);
                 reference.remove();
             };
 
-            const onAfterBinded = host[ON_AFTER_BINDED];
-
-            host[ON_AFTER_BINDED] = function(outterContext: Context)
+            if (!host[BINDED])
             {
-                if (onAfterBinded)
+                const onAfterBinded = host[ON_AFTER_BINDED];
+
+                host[ON_AFTER_BINDED] = function(outterContext: Indexer)
                 {
-                    onAfterBinded.call(this, outterContext);
-                }
+                    if (onAfterBinded)
+                    {
+                        onAfterBinded.call(this, outterContext);
+                    }
 
-                apply(outterContext);
+                    apply(outterContext);
 
-                host[ON_AFTER_BINDED] = onAfterBinded;
-            };
-
-        }
-        else if (template.hasAttribute("#slot-scope"))
-        {
-            const content = template.content.cloneNode(true) as DocumentFragment;
-
-            template.remove();
-
-            content.normalize();
-
-            TemplateProcessor.process(content, { ...context });
-
-            const childs = Array.from(content.children);
-
-            for (const element of childs)
-            {
-                element.slot = template.slot;
+                    host[ON_AFTER_BINDED] = onAfterBinded;
+                };
             }
-
-            parent.appendChild(content);
+            else
+            {
+                apply(host[CONTEXT] as Indexer);
+            }
         }
         else if (template.hasAttribute("#if"))
         {
@@ -376,7 +382,7 @@ export default class TemplateProcessor
 
                         content.normalize();
 
-                        TemplateProcessor.process(content, context);
+                        TemplateProcessor.process(this.host, content, context);
 
                         end.parentNode.insertBefore(content, end);
 
@@ -399,7 +405,7 @@ export default class TemplateProcessor
             {
                 if (simbling.hasAttribute("#else-if"))
                 {
-                    const expression = Expression.from(simbling.getAttribute("#else-if")!, context);
+                    const expression = Expression.from(simbling.getAttribute("#else-if")!, this.createProxy(context));
 
                     subscriptions.push(visitor.observe(expression));
 
@@ -443,9 +449,11 @@ export default class TemplateProcessor
                 throw new Error("Invalid expression");
             }
 
-            const [, alias, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
+            const [, aliasExpression, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
 
-            const expression = Expression.from(iterableExpression, context);
+            const destructured = aliasExpression.startsWith("[");
+
+            const expression = Expression.from(iterableExpression, this.createProxy(context));
 
             let cache: Array<[unknown, Array<ChildNode>]> = [];
 
@@ -473,6 +481,8 @@ export default class TemplateProcessor
             {
                 let changedTree = false;
 
+                const tree = document.createDocumentFragment();
+
                 const action = (element: unknown, index: number) =>
                 {
                     if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
@@ -481,7 +491,11 @@ export default class TemplateProcessor
 
                         content.normalize();
 
-                        TemplateProcessor.process(content, { ...context, [alias]: element });
+                        const mergedContext = destructured ?
+                            { ...destruct(aliasExpression, element as Array<unknown>), ...context }
+                            : { ...context, [aliasExpression]: element };
+
+                        TemplateProcessor.process(this.host, content, mergedContext);
 
                         if (index < cache.length)
                         {
@@ -500,13 +514,13 @@ export default class TemplateProcessor
                             cache.push([element, Array.from(content.childNodes)]);
                         }
 
-                        end.parentNode!.insertBefore(content, end);
+                        tree.appendChild(content);
                     }
                     else if (changedTree)
                     {
                         for (const child of cache[index][1])
                         {
-                            end.parentNode!.insertBefore(child, end);
+                            tree.appendChild(child);
                         }
                     }
                 };
@@ -538,6 +552,8 @@ export default class TemplateProcessor
                     {
                         iterator(elements, action);
                     }
+
+                    end.parentNode.insertBefore(tree, end);
                 };
             };
 
@@ -562,6 +578,8 @@ export default class TemplateProcessor
             }
             else if (!element[BINDED])
             {
+                element[CONTEXT] = this.context;
+
                 if (element.attributes && element.attributes.length > 0)
                 {
                     this.bindAttributes(element);
@@ -579,8 +597,7 @@ export default class TemplateProcessor
                     element[ON_AFTER_BINDED]!(this.context);
                 }
 
-                element[CONTEXT] = this.context;
-                element[BINDED]  = true;
+                element[BINDED] = true;
             }
         }
     }

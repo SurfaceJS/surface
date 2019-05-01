@@ -67,7 +67,7 @@ export default class MenuItem extends CustomElement
 
     private onMouseOver(): void
     {
-        const container         = super.references.container!;
+        const container         = super.references.container as HTMLElement;
         const bounding          = this.getBoundingClientRect();
         const containerBounding = container.getBoundingClientRect();
 

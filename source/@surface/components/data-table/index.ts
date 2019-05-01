@@ -314,7 +314,7 @@ export default class DataTable extends Component
 
             cell.innerHTML = innerHTML;
 
-            CustomElement.processDirectives(cell, { ...super.context, dataTable: this, row, cell });
+            CustomElement.processDirectives(this, cell, { ...super.context, dataTable: this, row, cell });
 
             index++;
         }

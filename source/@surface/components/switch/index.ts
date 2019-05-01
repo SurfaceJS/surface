@@ -43,9 +43,13 @@ export default class Switch extends Component
 
         if (template)
         {
-            super.appendChild(document.importNode(template.content, true));
+            const content = document.importNode(template.content, true);
 
-            CustomElement.processDirectives(this, super.context);
+            content.normalize();
+
+            CustomElement.processDirectives(content, super.context);
+
+            super.appendChild(content);
         }
 
         super.dispatchEvent(new Event("change"));

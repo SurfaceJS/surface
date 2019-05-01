@@ -14,7 +14,7 @@ export default class DirectivesProcessorSpec
         const host     = document.createElement("div");
         const element  = document.createElement("span");
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
     }
 
     @test @shouldPass
@@ -26,7 +26,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span value='1'>Text</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -44,7 +44,7 @@ export default class DirectivesProcessorSpec
         host.lang = "pt-br";
         element.innerHTML = "<input type='text' lang='{{ host.lang }}' parent='{{ host.tagName }}'>Text</input>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -76,7 +76,7 @@ export default class DirectivesProcessorSpec
         host.lang = "pt-br";
         element.innerHTML = "<span data-text='Tag name: {{ host.tagName }}'>Text</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
         chai.expect(element.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
     }
 
@@ -93,7 +93,7 @@ export default class DirectivesProcessorSpec
 
         span.foo = "";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         chai.expect(span.foo).to.equal("DIV");
     }
@@ -107,7 +107,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span lang='{{ Node.name }}'</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -125,7 +125,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span has-childs='[[ this.childNodes.length > 0 ]]'></span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -142,7 +142,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span id='{{ this.childNodes.length > 0 }}'></span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -164,7 +164,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span on-click='{{ host.click }}'>Text</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -183,7 +183,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span on-click='{{ host.method(true) }}'>Text</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -200,7 +200,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span>{{ host.foo }}</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -218,7 +218,7 @@ export default class DirectivesProcessorSpec
         host.id = "01";
         element.innerHTML = "<span>Host id: {{ host.id }}</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -239,7 +239,7 @@ export default class DirectivesProcessorSpec
         host.id = "01";
         element.innerHTML = "<span>{{ host.id == '01' }}</span>";
 
-        TemplateProcessor.process(element, { host });
+        TemplateProcessor.process(host, element, { });
 
         if (element.firstElementChild)
         {
@@ -261,7 +261,7 @@ export default class DirectivesProcessorSpec
 
         try
         {
-            TemplateProcessor.process(element, { host });
+            TemplateProcessor.process(host, element, { });
         }
         catch (error)
         {

@@ -1,5 +1,5 @@
-import { Indexer } from "..";
-import Hashcode    from "../hashcode";
+import { Constructor, Indexer } from "..";
+import Hashcode                 from "../hashcode";
 
 export function clone<T extends Indexer>(source: T): T
 {
@@ -38,6 +38,78 @@ export function clone<T extends Indexer>(source: T): T
         }
         return prototype as T;
     }
+}
+
+// tslint:disable-next-line:cyclomatic-complexity
+export function destruct(expression: string, source: Indexer|Array<unknown>): Indexer
+{
+    const result: Indexer = { };
+    const arrayPattern    = /\[([^\[\]}]*)\]/;
+    const objectPattern   = /\{([^\{\}}]*)\}/;
+
+    if (arrayPattern.test(expression))
+    {
+        if (Array.isArray(source))
+        {
+            let index = 0;
+
+            const keys = arrayPattern.exec(expression)![1].split(",").map(pairs => pairs.split(":").map(keys => keys.trim()));
+
+            for (const [key, alias] of keys)
+            {
+                if (index == keys.length - 1 && key.startsWith("..."))
+                {
+                    result[(alias || key).replace("...", "")] = source.slice(index);
+                }
+                else
+                {
+                    result[alias || key] = source[index];
+                }
+
+                index++;
+            }
+
+            return result;
+        }
+        else
+        {
+            throw new Error();
+        }
+    }
+    else if (objectPattern.test(expression))
+    {
+        if (!Array.isArray(source))
+        {
+            let index = 0;
+
+            const keys = objectPattern.exec(expression)![1].split(",").map(pairs => pairs.split(":").map(keys => keys.trim()));
+
+            for (const [key, alias] of keys)
+            {
+                if (index == keys.length - 1 && key.startsWith("..."))
+                {
+                    let rest: Indexer = { };
+
+                    for (const [key, value] of Object.entries(source).filter(([sourceKey]) => !keys.some(([key]) => key == sourceKey)))
+                    {
+                        rest[key] = value;
+                    }
+
+                    result[(alias || key).replace("...", "")] = rest;
+                }
+                else
+                {
+                    result[alias || key] = source[key];
+                }
+
+                index++;
+            }
+
+            return result;
+        }
+    }
+
+    throw new Error("Invalid expression");
 }
 
 export function *enumerateKeys(target: object): IterableIterator<string>
@@ -154,6 +226,18 @@ export function merge<TTarget extends Indexer, TSource extends Indexer>(target: 
     }
 
     return target as TTarget & TSource;
+}
+
+export function mixin<TBase extends Constructor, TConstructors extends Constructor>(first: TBase, second: TConstructors): TBase & TConstructors
+{
+    const name = `${first.name}${second.name}Mixin`;
+
+    const proxy = { [name]: function() { /* proxy */ }}[name];
+
+    Object.setPrototypeOf(proxy, Object.assign(Object.getPrototypeOf(first), Object.getPrototypeOf(second)));
+    Object.defineProperties(proxy, Object.assign(Object.getOwnPropertyDescriptors(first), Object.getOwnPropertyDescriptors(second)));
+
+    return proxy as unknown as TBase & TConstructors;
 }
 
 /**

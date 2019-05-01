@@ -4,6 +4,7 @@ export const CONVERTERS           = Symbol("custom-element:converters");
 export const OBSERVED_ATTRIBUTES  = Symbol("custom-element:observed-attributes");
 export const ON_AFTER_BINDED      = Symbol("custom-element:on-after-binded");
 export const PROXY_FUNCION        = Symbol("custom-element:proxy-callback");
+export const REFERENCES           = Symbol("custom-element:references");
 export const REFLECTED_ATTRIBUTES = Symbol("custom-element:refleting-attribute");
 export const SHADOW_ROOT          = Symbol("custom-element:shadowRoot");
 export const SLOTTED_TEMPLATES    = Symbol("custom-element:slotted-templates");

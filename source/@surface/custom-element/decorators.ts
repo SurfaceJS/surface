@@ -7,6 +7,7 @@ import CustomElement                       from ".";
 import { LifeCycle }                       from "./interfaces/types";
 import * as symbols                        from "./internal/symbols";
 import TemplateProcessor                   from "./internal/template-processor";
+import References                          from "./internal/References";
 
 type ProxyFuncion          = Function & { [symbols.PROXY_FUNCION]?: boolean };
 type AttributteConvertable =
@@ -174,7 +175,17 @@ export function element(name: string, template?: string, style?: string, options
                 {
                     const instance = Reflect.construct(target, args, new.target) as CustomElement;
 
-                    TemplateProcessor.process(instance[symbols.SHADOW_ROOT], { host: instance });
+                    const content = document.importNode(templateElement.content, true);
+
+                    content.normalize();
+
+                    instance[symbols.REFERENCES] = new References(content);
+
+                    TemplateProcessor.process(instance, content, { host: instance });
+
+                    instance[symbols.SHADOW_ROOT].appendChild(content);
+
+                    instance[symbols.REFERENCES].update(instance[symbols.SHADOW_ROOT]);
 
                     if (instance.onAfterBind)
                     {

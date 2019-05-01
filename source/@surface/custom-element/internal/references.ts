@@ -1,14 +1,17 @@
-import { Nullable } from "@surface/core";
+import { Nullable }    from "@surface/core";
+import { SHADOW_ROOT } from "./symbols";
 
 export default class References
 {
-    [key: string]: Nullable<HTMLElement>;
+    private [SHADOW_ROOT]: DocumentFragment;
 
-    public constructor(shadowRoot: ShadowRoot)
+    public constructor(root: DocumentFragment)
     {
+        this[SHADOW_ROOT] = root;
+
         const handler: ProxyHandler<References> =
         {
-            get(target, key)
+            get: (target, key) =>
             {
                 if (key in target)
                 {
@@ -16,7 +19,7 @@ export default class References
                 }
                 else if (typeof key != "symbol")
                 {
-                    return target[key] = shadowRoot.getElementById(`${key}`);
+                    return (target as unknown as Record<string, Nullable<HTMLElement>>)[key] = this[SHADOW_ROOT].getElementById(`${key}`);
                 }
                 else
                 {
@@ -35,5 +38,10 @@ export default class References
         };
 
         return new Proxy(this, handler);
+    }
+
+    public update(root: DocumentFragment): void
+    {
+        this[SHADOW_ROOT] = root;
     }
 }
