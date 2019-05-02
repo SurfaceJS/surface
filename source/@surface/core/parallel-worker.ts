@@ -1,55 +1,118 @@
-import { Action, Action1, Nullable } from ".";
+import { Action1, Func } from ".";
 
-declare function setTimeout(handler: () => void, timeout?: number): number;
-type Queue = [number, Action, Nullable<Action1<unknown>>];
+declare function setTimeout(action: () => void, timeout: number): number;
+
+class Task
+{
+    private readonly action:   Func<unknown>;
+    private readonly callback: Action1<unknown>;
+
+    public readonly id:       number;
+    public readonly priority: number;
+
+    public constructor(id: number, priority: number, action: Func<unknown>, callback: Action1<unknown>)
+    {
+        this.id       = id;
+        this.priority = priority;
+        this.action   = action;
+        this.callback = callback;
+    }
+
+    public run(): void
+    {
+        this.callback(this.action());
+    }
+}
+
+function sorter(left: Task, right: Task): number
+{
+    if (left.priority < right.priority)
+    {
+        return 1;
+    }
+    else if (left.priority > right.priority)
+    {
+        return -1;
+    }
+    else
+    {
+        if (left.id < right.id)
+        {
+            return -1;
+        }
+        else if (left.id > right.id)
+        {
+            return 1;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}
 
 export default class ParallelWorker
 {
-    private static id:      number        = 0;
-    private static queue:   Array<Queue>  = [];
-    private static running: boolean       = false;
-    private static pending: boolean       = false;
+    public static readonly default = new ParallelWorker(16.16);
 
-    private static run(): void
+    private readonly stack: Array<Task> = [];
+
+    private readonly interval: number;
+
+    private running: boolean = false;
+
+    private id = 0;
+
+    public constructor(interval?: number)
     {
-        if (ParallelWorker.queue.length > 0)
-        {
-            const queue = ParallelWorker.queue.splice(0);
-
-            queue.forEach(([, action, callback]) => callback ? callback(action()) : action());
-
-            if (ParallelWorker.pending)
-            {
-                ParallelWorker.run();
-            }
-            else
-            {
-                ParallelWorker.id      = 0;
-                ParallelWorker.running = false;
-            }
-        }
-        else
-        {
-            ParallelWorker.id      = 0;
-            ParallelWorker.running = false;
-            ParallelWorker.pending = false;
-        }
+        this.interval = interval || 0;
     }
 
-    public static enqueue(action: () => void): void;
-    public static enqueue<TAction extends () => unknown>(action: TAction, callback?: (value: ReturnType<TAction>) => void): void;
-    public static enqueue(action: Action, callback?: Action1<unknown>): void
+    private async execute(): Promise<void>
     {
-        ParallelWorker.queue.push([++ParallelWorker.id, action, callback]);
+        this.running = true;
 
-        if (!ParallelWorker.running)
+        do
         {
-            ParallelWorker.running = true;
-            setTimeout(() => ParallelWorker.run(), 0);
+            const timestamp = Date.now();
+
+            const stack = this.stack.splice(0).sort(sorter);
+
+            for (const task of stack)
+            {
+                task.run();
+
+                if (Date.now() - timestamp > this.interval)
+                {
+                    await this.release();
+                }
+            }
         }
-        else
+        while (this.stack.length > 0);
+
+        this.id      = 0;
+        this.running = false;
+    }
+
+    private async release(): Promise<void>
+    {
+        return await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    private async executeAsync(): Promise<void>
+    {
+        return await new Promise(resolve => setTimeout(() => this.execute().then(resolve), 0));
+    }
+
+    public async run<TAction extends () => unknown>(action: TAction, priority?: number): Promise<ReturnType<TAction>>
+    {
+        const promise = new Promise<ReturnType<TAction>>(resolve => this.stack.push(new Task(++this.id, priority || 0, action, resolve as Action1<unknown>)));
+
+        if (!this.running)
         {
-            ParallelWorker.pending = true;
+            this.executeAsync();
         }
+
+        return promise;
     }
 }
