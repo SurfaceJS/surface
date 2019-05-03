@@ -53,7 +53,7 @@ function sorter(left: Task, right: Task): number
 
 export default class ParallelWorker
 {
-    public static readonly default = new ParallelWorker(16.16);
+    public static readonly default = new ParallelWorker(2);
 
     private readonly stack: Array<Task> = [];
 
@@ -72,9 +72,23 @@ export default class ParallelWorker
     {
         this.running = true;
 
-        do
+        while (this.stack.length > 0)
         {
-            const timestamp = Date.now();
+            let timestamp = Date.now();
+
+            const task = this.stack.sort(sorter).shift()!;
+
+            task.run();
+
+            if (Date.now() - timestamp > this.interval)
+            {
+                await this.release();
+
+                timestamp = Date.now();
+            }
+
+            /*
+            let timestamp = Date.now();
 
             const stack = this.stack.splice(0).sort(sorter);
 
@@ -85,10 +99,12 @@ export default class ParallelWorker
                 if (Date.now() - timestamp > this.interval)
                 {
                     await this.release();
+
+                    timestamp = Date.now();
                 }
             }
+            */
         }
-        while (this.stack.length > 0);
 
         this.id      = 0;
         this.running = false;

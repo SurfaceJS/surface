@@ -8,7 +8,7 @@ import style         from "./index.scss";
 @element("surface-data-header", template, style)
 export default class DataHeader extends Component
 {
-    private readonly modal: Modal = super.references.modal as Modal;
+    private modal!: Modal;
 
     private _field:       string  = "";
     private _fieldType:   string  = "";
@@ -92,8 +92,14 @@ export default class DataHeader extends Component
         this.filterable = coalesce(filterable, true);
         this._index     = coalesce(index, 0);
 
-        window.addEventListener("scroll", () => this.modal.visible && this.refreshModal());
-        window.addEventListener("resize", () => this.modal.visible && this.refreshModal());
+        this.onAfterBind = () =>
+        {
+            this.modal = super.references.modal as Modal;
+
+            window.addEventListener("scroll", () => this.modal.visible && this.refreshModal());
+            window.addEventListener("resize", () => this.modal.visible && this.refreshModal());
+        }
+
     }
 
     private refreshModal(): void

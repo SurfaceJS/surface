@@ -181,16 +181,19 @@ export function element(name: string, template?: string, style?: string, options
 
                     instance[symbols.REFERENCES] = new References(content);
 
-                    TemplateProcessor.process(instance, content, { host: instance });
-
-                    instance[symbols.SHADOW_ROOT].appendChild(content);
-
-                    instance[symbols.REFERENCES].update(instance[symbols.SHADOW_ROOT]);
-
-                    if (instance.onAfterBind)
+                    const callback = () =>
                     {
-                        instance.onAfterBind();
-                    }
+                        instance[symbols.SHADOW_ROOT].appendChild(content);
+
+                        instance[symbols.REFERENCES].update(instance[symbols.SHADOW_ROOT]);
+
+                        if (instance.onAfterBind)
+                        {
+                            instance.onAfterBind();
+                        }
+                    };
+
+                    TemplateProcessor.process(instance, content, { host: instance }).then(callback);
 
                     return instance;
                 };

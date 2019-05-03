@@ -8,7 +8,7 @@ type KeyValue = { key: string, value: string };
 @element("surface-dropdown", template, style)
 export default class DropDown extends Component
 {
-    private readonly select: HTMLSelectElement = super.references.select as HTMLSelectElement;
+    private select!: HTMLSelectElement;
 
     private _source: Iterable<KeyValue> = [];
     private _value:  string             = "";
@@ -53,6 +53,13 @@ export default class DropDown extends Component
     public set value(value: string)
     {
         this._value = value;
+    }
+
+    public constructor()
+    {
+        super();
+
+        this.onAfterBind = () => this.select = super.references.select as HTMLSelectElement;
     }
 
     protected changed(): void

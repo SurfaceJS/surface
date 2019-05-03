@@ -3,6 +3,7 @@ import IListener       from "@surface/reactive/interfaces/listener";
 import ReactiveVisitor from "@surface/reactive/internal/reactive-visitor";
 import Reactive        from "../../reactive";
 import IReactor        from "../../reactive/interfaces/reactor";
+import ParallelWorker  from "./parallel-worker";
 
 export default class ObserverVisitor extends ReactiveVisitor
 {
@@ -25,7 +26,7 @@ export default class ObserverVisitor extends ReactiveVisitor
 
                 const action = function (this: HTMLInputElement)
                 {
-                    observer.notify(this[key as Key]);
+                    ParallelWorker.default.run(() => observer.notify(this[key as Key]));
                 };
 
                 target.addEventListener("input", action);

@@ -1,4 +1,4 @@
-import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
+import { Action, Action1, AsyncAction2, Indexer, Nullable }    from "@surface/core";
 import { contains }                                            from "@surface/core/common/array";
 import { coalesce, typeGuard }                                 from "@surface/core/common/generic";
 import { destruct, getKeyMember }                              from "@surface/core/common/object";
@@ -14,6 +14,7 @@ import FieldInfo                                               from "../../refle
 import BindParser                                              from "./bind-parser";
 import DataBind                                                from "./data-bind";
 import ObserverVisitor                                         from "./observer-visitor";
+import ParallelWorker                                          from "./parallel-worker";
 import { BINDED, CONTEXT, ON_AFTER_BINDED, SLOTTED_TEMPLATES } from "./symbols";
 import windowWrapper                                           from "./window-wrapper";
 
@@ -45,11 +46,11 @@ export default class TemplateProcessor
         this.window  = windowWrapper;
     }
 
-    public static process(host: Node|Element, node: Node, context: Indexer): void
+    public static async process(host: Node|Element, node: Node, context: Indexer): Promise<void>
     {
         const processor = new TemplateProcessor(host, context);
 
-        processor.traverseElement(node);
+        await ParallelWorker.default.run(() => processor.traverseElement(node));
     }
 
     public static clear(node: Bindable<Node>)
@@ -85,7 +86,7 @@ export default class TemplateProcessor
 
                     const action = expression.type == ExpressionType.Identifier || expression.type ==  ExpressionType.Member ?
                         expression.evaluate() as Action
-                        : () => expression.evaluate();
+                        : () => ParallelWorker.default.run(() => expression.evaluate());
 
                     element.addEventListener(attribute.name.replace(/^on-/, ""), action);
                     attribute.value = `[binding ${action.name || "expression"}]`;
@@ -130,7 +131,7 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        DataBind.oneWay(target, path, { notify });
+                        DataBind.oneWay(target, path, { notify: x => ParallelWorker.default.run(() => notify(x)) });
 
                         if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                         {
@@ -187,7 +188,7 @@ export default class TemplateProcessor
                     () => element.nodeValue = `${expression.evaluate().reduce((previous, current) => `${previous}${current}`)}` :
                     () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
 
-                const visitor = new ObserverVisitor({ notify });
+                const visitor = new ObserverVisitor({ notify: () => ParallelWorker.default.run(notify) });
                 visitor.observe(expression);
 
                 notify();
@@ -210,24 +211,6 @@ export default class TemplateProcessor
     {
         const attributes = template.getAttributeNames();
 
-        /*if (contains(attributes, "#scope") && contains(attributes, "#if", "#else-if", "#else", "#for"))
-        {
-            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
-
-            template.removeAttribute("#if");
-            template.removeAttribute("#else-if");
-            template.removeAttribute("#else");
-            template.removeAttribute("#for");
-
-            innerTemplate.removeAttribute("#scope");
-
-            Array.from(template.content.childNodes).forEach(x => x.remove());
-
-            this.decomposeDirectives(innerTemplate);
-
-            template.content.appendChild(innerTemplate);
-        }
-        else*/
         if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#content", "#scope"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
@@ -316,17 +299,19 @@ export default class TemplateProcessor
 
             parent.replaceChild(reference, template);
 
-            const apply = (outterContext: Indexer) =>
+            const apply = async (outterContext: Indexer) =>
             {
                 const merged = destructuredScope ?
                     { ...scope, ...outterContext }
                     : { [scopeAlias]: scope, ...outterContext };
 
-                TemplateProcessor.process(this.host, content, merged);
+                await TemplateProcessor.process(this.host, content, merged);
 
                 reference.parentNode!.insertBefore(content, reference);
                 reference.remove();
             };
+
+            const runApply = (context: Indexer) => ParallelWorker.default.run(() => apply(context));
 
             if (!host[BINDED])
             {
@@ -339,14 +324,14 @@ export default class TemplateProcessor
                         onAfterBinded.call(this, outterContext);
                     }
 
-                    apply(outterContext);
-
                     host[ON_AFTER_BINDED] = onAfterBinded;
+
+                    runApply(outterContext);
                 };
             }
             else
             {
-                apply(host[CONTEXT] as Indexer);
+                runApply(host[CONTEXT] as Indexer);
             }
         }
         else if (template.hasAttribute("#if"))
@@ -357,7 +342,7 @@ export default class TemplateProcessor
             const expressions:   Array<[IExpression, HTMLTemplateElement]> = [];
             const subscriptions: Array<ISubscription>                      = [];
 
-            const notify = () =>
+            const notify = async () =>
             {
                 if (!end.parentNode)
                 {
@@ -382,7 +367,7 @@ export default class TemplateProcessor
 
                         content.normalize();
 
-                        TemplateProcessor.process(this.host, content, context);
+                        await TemplateProcessor.process(this.host, content, context);
 
                         end.parentNode.insertBefore(content, end);
 
@@ -391,7 +376,7 @@ export default class TemplateProcessor
                 }
             };
 
-            const visitor = new ObserverVisitor({ notify });
+            const visitor = new ObserverVisitor({ notify: () => ParallelWorker.default.run(notify) });
 
             const expression = Expression.from(template.getAttribute("#if")!, context);
 
@@ -434,7 +419,7 @@ export default class TemplateProcessor
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);
 
-            notify();
+            ParallelWorker.default.run(notify);
         }
         else if (template.hasAttribute("#for"))
         {
@@ -457,33 +442,33 @@ export default class TemplateProcessor
 
             let cache: Array<[unknown, Array<ChildNode>]> = [];
 
-            const forInIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
+            const forInIterator = async (elements: Array<unknown>, action: AsyncAction2<unknown, number>) =>
             {
                 let index = 0;
                 for (const element in elements)
                 {
-                    action(element, index);
+                    await action(element, index);
                     index++;
                 }
             };
 
-            const forOfIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
+            const forOfIterator = async (elements: Array<unknown>, action: AsyncAction2<unknown, number>) =>
             {
                 let index = 0;
                 for (const element of elements)
                 {
-                    action(element, index);
+                    await action(element, index);
                     index++;
                 }
             };
 
-            const notifyFactory = (iterator: Action2<Array<unknown>, Action2<unknown, number>>) =>
+            const notifyFactory = (iterator: AsyncAction2<Array<unknown>, AsyncAction2<unknown, number>>) =>
             {
                 let changedTree = false;
 
                 const tree = document.createDocumentFragment();
 
-                const action = (element: unknown, index: number) =>
+                const action = async (element: unknown, index: number) =>
                 {
                     if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
                     {
@@ -495,7 +480,7 @@ export default class TemplateProcessor
                             { ...destruct(aliasExpression, element as Array<unknown>), ...context }
                             : { ...context, [aliasExpression]: element };
 
-                        TemplateProcessor.process(this.host, content, mergedContext);
+                        await TemplateProcessor.process(this.host, content, mergedContext);
 
                         if (index < cache.length)
                         {
@@ -525,7 +510,7 @@ export default class TemplateProcessor
                     }
                 };
 
-                return () =>
+                return async () =>
                 {
                     if (!end.parentNode)
                     {
@@ -550,7 +535,7 @@ export default class TemplateProcessor
 
                     if (elements.length > 0)
                     {
-                        iterator(elements, action);
+                        await iterator(elements, action);
                     }
 
                     end.parentNode.insertBefore(tree, end);
@@ -559,12 +544,12 @@ export default class TemplateProcessor
 
             const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-            const subscription = new ObserverVisitor({ notify }).observe(expression);
+            const subscription = new ObserverVisitor({ notify: () => ParallelWorker.default.run(notify) }).observe(expression);
 
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);
 
-            notify();
+            ParallelWorker.default.run(notify);
         }
     }
 
