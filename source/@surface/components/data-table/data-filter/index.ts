@@ -22,7 +22,7 @@ const attributeConverter: AttributeConverter<DataFilter, "type"> =
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
-    private list!: List;
+    private readonly list = super.references.list as List;
 
     private _field: string = "";
     private _type:  Type   = "string";
@@ -58,8 +58,6 @@ export default class DataFilter extends Component
         super();
         this.field = field || "";
         this.type  = type  || "string";
-
-        this.onAfterBind = () => this.list = super.references.list as List;
     }
 
     protected add(value: Operator): void

@@ -47,7 +47,7 @@ export default class Switch extends Component
 
             content.normalize();
 
-            CustomElement.processDirectives(content, super.context);
+            CustomElement.processDirectives(this, content, super.context);
 
             super.appendChild(content);
         }

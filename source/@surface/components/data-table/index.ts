@@ -190,6 +190,10 @@ export default class DataTable extends Component
 
         this.dataDefinition = objectFactory(this.columnDefinitions.select(x => [x.field, primitives[x.fieldType]] as [string, unknown]).toArray());
 
+        this.prepareHeaders();
+        this.prepareRows();
+        this.prepareFooters();
+
         this.criteria =
         {
             skip:    0,
@@ -200,13 +204,6 @@ export default class DataTable extends Component
 
         const lang = this.lang || (document.documentElement && document.documentElement.lang) || window.navigator.language;
         this._localization = localize(lang);
-
-        this.onAfterBind = () =>
-        {
-            this.prepareHeaders();
-            this.prepareRows();
-            this.prepareFooters();
-        };
     }
 
     /*
