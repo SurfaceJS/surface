@@ -22,7 +22,7 @@
     "main": "index.js",
     "name": "@surface/test-suite",
     "peerDependencies": {
-        "mocha": "5.2.0"
+        "mocha": "6.1.4"
     },
     "repository": {
         "type": "git",

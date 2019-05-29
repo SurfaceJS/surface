@@ -11,7 +11,7 @@
         "@surface/expression": "0.0.0",
         "@surface/reactive": "0.0.0",
         "@surface/reflection": "0.0.0",
-        "material-design-icons-iconfont": "4.0.5",
+        "material-design-icons-iconfont": "5.0.1",
         "resize-observer-polyfill": "1.5.1",
         "tslib": "1.9.3"
     },
@@ -20,7 +20,7 @@
         "@surface/test-suite": "0.0.0",
         "@types/jsdom": "12.2.3",
         "chai": "4.2.0",
-        "jsdom": "14.0.0"
+        "jsdom": "15.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

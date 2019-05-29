@@ -1,31 +1,27 @@
 {
     "author": "HitalloExiled",
-    "bin": {
-        "code-splitter": "cli.js"
-    },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
         "@surface/core": "0.0.3",
-        "@surface/io": "0.0.0",
-        "commander": "2.19.0",
+        "@surface/enumerable": "0.0.5",
         "tslib": "1.9.3"
     },
-    "description": "Generate lazy loading module.",
+    "description": "Surface cube.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "code-splitter",
+        "cube",
         "surface",
         "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/code-splitter",
+    "name": "@surface/cube",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
@@ -33,5 +29,6 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
+    "types": "index.d.ts",
     "version": "0.0.0"
 }
