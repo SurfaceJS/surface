@@ -16,6 +16,66 @@ import TypeGuard              from "./internal/type-guard";
 
 export default abstract class ExpressionVisitor
 {
+    protected visit(expression: IExpression): IExpression
+    {
+        if (TypeGuard.isArrayExpression(expression))
+        {
+            return this.visitArrayExpression(expression);
+        }
+        else if (TypeGuard.isBinaryExpression(expression))
+        {
+            return this.visitBinaryExpression(expression);
+        }
+        else if (TypeGuard.isCallExpression(expression))
+        {
+            return this.visitCallExpression(expression);
+        }
+        else if (TypeGuard.isConditionalExpression(expression))
+        {
+            return this.visitConditionalExpression(expression);
+        }
+        else if (TypeGuard.isConstantExpression(expression))
+        {
+            return this.visitConstantExpression(expression);
+        }
+        else if (TypeGuard.isIdentifierExpression(expression))
+        {
+            return this.visitIdentifierExpression(expression);
+        }
+        else if (TypeGuard.isMemberExpression(expression))
+        {
+            return this.visitMemberExpression(expression);
+        }
+        else if (TypeGuard.isObjectExpression(expression))
+        {
+            return this.visitObjectExpression(expression);
+        }
+        else if (TypeGuard.isPropertyExpression(expression))
+        {
+            return this.visitPropertyExpression(expression);
+        }
+        else if (TypeGuard.isRegexExpression(expression))
+        {
+            return this.visitRegexExpression(expression);
+        }
+        else if (TypeGuard.isTemplateExpression(expression))
+        {
+            return this.visitTemplateExpression(expression);
+        }
+        else if (TypeGuard.isUpdateExpression(expression))
+        {
+            return this.visitUpdateExpression(expression);
+        }
+        else if (TypeGuard.isUnaryExpression(expression))
+        {
+            return this.visitUnaryExpression(expression);
+        }
+        else
+        {
+            throw new Error("Invalid expression");
+        }
+    }
+
     protected visitArrayExpression(expression: IArrayExpression): IExpression
     {
         for (const element of expression.elements)
@@ -118,65 +178,5 @@ export default abstract class ExpressionVisitor
         this.visit(expression.expression);
 
         return expression;
-    }
-
-    public visit(expression: IExpression): IExpression
-    {
-        if (TypeGuard.isArrayExpression(expression))
-        {
-            return this.visitArrayExpression(expression);
-        }
-        else if (TypeGuard.isBinaryExpression(expression))
-        {
-            return this.visitBinaryExpression(expression);
-        }
-        else if (TypeGuard.isCallExpression(expression))
-        {
-            return this.visitCallExpression(expression);
-        }
-        else if (TypeGuard.isConditionalExpression(expression))
-        {
-            return this.visitConditionalExpression(expression);
-        }
-        else if (TypeGuard.isConstantExpression(expression))
-        {
-            return this.visitConstantExpression(expression);
-        }
-        else if (TypeGuard.isIdentifierExpression(expression))
-        {
-            return this.visitIdentifierExpression(expression);
-        }
-        else if (TypeGuard.isMemberExpression(expression))
-        {
-            return this.visitMemberExpression(expression);
-        }
-        else if (TypeGuard.isObjectExpression(expression))
-        {
-            return this.visitObjectExpression(expression);
-        }
-        else if (TypeGuard.isPropertyExpression(expression))
-        {
-            return this.visitPropertyExpression(expression);
-        }
-        else if (TypeGuard.isRegexExpression(expression))
-        {
-            return this.visitRegexExpression(expression);
-        }
-        else if (TypeGuard.isTemplateExpression(expression))
-        {
-            return this.visitTemplateExpression(expression);
-        }
-        else if (TypeGuard.isUpdateExpression(expression))
-        {
-            return this.visitUpdateExpression(expression);
-        }
-        else if (TypeGuard.isUnaryExpression(expression))
-        {
-            return this.visitUnaryExpression(expression);
-        }
-        else
-        {
-            throw new Error("Invalid expression");
-        }
     }
 }

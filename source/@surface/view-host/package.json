@@ -8,12 +8,12 @@
         "@surface/custom-element": "0.0.6",
         "@surface/reflection": "0.0.0",
         "@surface/view": "0.0.0",
-        "tslib": "1.9.0"
+        "tslib": "1.9.3"
     },
     "description": "Web component view host.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "chai": "4.1.2"
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

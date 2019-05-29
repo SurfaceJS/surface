@@ -1,0 +1,11 @@
+@mixin exact-height($value)
+{
+    max-height: $value;
+    min-height: $value;
+}
+
+@mixin exact-width($value)
+{
+    max-width: $value;
+    min-width: $value;
+}

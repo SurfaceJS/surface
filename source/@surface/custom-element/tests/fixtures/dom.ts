@@ -9,11 +9,11 @@ Object.assign
     }
 );
 
-// tslint:disable-next-line:no-empty
-function ProxyHTMLElement() { }
+function ProxyHTMLElement() { return; }
+
 ProxyHTMLElement.prototype = window.HTMLElement.prototype;
 
-ProxyHTMLElement.prototype["attachShadow"] = () => window.document.createElement("div");
+ProxyHTMLElement.prototype.attachShadow = () => window.document.createElement("div") as unknown as ShadowRoot;
 
 (window.HTMLElement as Object) = ProxyHTMLElement;
 
@@ -21,16 +21,17 @@ Object.assign
 (
     global,
     {
-        DOMTokenList:  window.DOMTokenList,
-        Window:        window.constructor,
-        window:        window,
-        HTMLElement:   window.HTMLElement,
-        Node:          window.Node,
-        document:      window.document,
-        navigator:     window.navigator,
-        location:      window.location,
-        NodeList:      window.NodeList,
-        NamedNodeMap:  window.NamedNodeMap,
-        Event:         window.Event
+        document:         window.document,
+        navigator:        window.navigator,
+        location:         window.location,
+        window:           window,
+        DOMTokenList:     window.DOMTokenList,
+        Event:            window.Event,
+        HTMLElement:      window.HTMLElement,
+        HTMLInputElement: window.HTMLInputElement,
+        NamedNodeMap:     window.NamedNodeMap,
+        Node:             window.Node,
+        NodeList:         window.NodeList,
+        Window:           window.constructor,
     }
 );

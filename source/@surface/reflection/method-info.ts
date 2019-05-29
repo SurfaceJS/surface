@@ -28,7 +28,7 @@ export default class MethodInfo extends MemberInfo
             {
                 const args = match[1].split(",").map(x => x.trim());
 
-                const paramTypes = this.metadata["design:paramtypes"] || [] as Array<Object>;
+                const paramTypes = (this.metadata["design:paramtypes"] || []) as Array<Object>;
 
                 this._parameters = args.map((name, index) => new ParameterInfo(name, index, this, paramTypes[index]));
             }
@@ -41,9 +41,9 @@ export default class MethodInfo extends MemberInfo
         return this._parameters;
     }
 
-    public constructor(key: string, invoke: Function, declaringType: Type, isStatic: boolean)
+    public constructor(key: string|symbol, invoke: Function, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
-        super(key, declaringType, isStatic);
+        super(key, declaringType, isOwn, isStatic);
 
         this._invoke        = invoke;
         this._isConstructor = !!invoke.prototype;

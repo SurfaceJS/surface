@@ -1,39 +1,40 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-
-import { Func2, Nullable } from "@surface/core";
+import { Func2 }          from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import { BinaryOperator } from "../../types";
+import BaseExpression     from "./abstracts/base-expression";
 
 const binaryFunctions =
 {
-    "+":          (left: number, right: number)   => left +          right,
-    "-":          (left: number, right: number)   => left -          right,
-    "*":          (left: number, right: number)   => left *          right,
-    "/":          (left: number, right: number)   => left /          right,
-    "%":          (left: number, right: number)   => left %          right,
-    "**":         (left: number, right: number)   => left **         right,
-    "&":          (left: number, right: number)   => left &          right,
-    "|":          (left: number, right: number)   => left |          right,
-    "^":          (left: number, right: number)   => left ^          right,
-    "<<":         (left: number, right: number)   => left <<         right,
-    ">>":         (left: number, right: number)   => left >>         right,
-    ">>>":        (left: number, right: number)   => left >>>        right,
-    "&&":         (left: Object, right: Object)   => left &&         right,
-    "||":         (left: Object, right: Object)   => left ||         right,
-    "==":         (left: Object, right: Object)   => left ==         right,
-    "===":        (left: Object, right: Object)   => left ===        right,
-    "!=":         (left: Object, right: Object)   => left !=         right,
-    "!==":        (left: Object, right: Object)   => left !==        right,
-    "<=":         (left: Object, right: Object)   => left <=         right,
-    ">=":         (left: Object, right: Object)   => left >=         right,
-    "<":          (left: Object, right: Object)   => left <          right,
-    ">":          (left: Object, right: Object)   => left >          right,
-    "in":         (left: string, right: Function) => left in         right,
-    "instanceof": (left: Object, right: Function) => left instanceof right,
+    "+":          (left: IExpression, right: IExpression) => (left.evaluate() as number) +          (right.evaluate() as number),
+    "-":          (left: IExpression, right: IExpression) => (left.evaluate() as number) -          (right.evaluate() as number),
+    "*":          (left: IExpression, right: IExpression) => (left.evaluate() as number) *          (right.evaluate() as number),
+    "/":          (left: IExpression, right: IExpression) => (left.evaluate() as number) /          (right.evaluate() as number),
+    "%":          (left: IExpression, right: IExpression) => (left.evaluate() as number) %          (right.evaluate() as number),
+    "**":         (left: IExpression, right: IExpression) => (left.evaluate() as number) **         (right.evaluate() as number),
+    "&":          (left: IExpression, right: IExpression) => (left.evaluate() as number) &          (right.evaluate() as number),
+    "|":          (left: IExpression, right: IExpression) => (left.evaluate() as number) |          (right.evaluate() as number),
+    "^":          (left: IExpression, right: IExpression) => (left.evaluate() as number) ^          (right.evaluate() as number),
+    "<<":         (left: IExpression, right: IExpression) => (left.evaluate() as number) <<         (right.evaluate() as number),
+    ">>":         (left: IExpression, right: IExpression) => (left.evaluate() as number) >>         (right.evaluate() as number),
+    ">>>":        (left: IExpression, right: IExpression) => (left.evaluate() as number) >>>        (right.evaluate() as number),
+    "&&":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) &&         (right.evaluate() as Object),
+    "||":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ||         (right.evaluate() as Object),
+    "==":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ==         (right.evaluate() as Object),
+    "===":        (left: IExpression, right: IExpression) => (left.evaluate() as Object) ===        (right.evaluate() as Object),
+    "!=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) !=         (right.evaluate() as Object),
+    "!==":        (left: IExpression, right: IExpression) => (left.evaluate() as Object) !==        (right.evaluate() as Object),
+    "<=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) <=         (right.evaluate() as Object),
+    ">=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) >=         (right.evaluate() as Object),
+    "<":          (left: IExpression, right: IExpression) => (left.evaluate() as Object) <          (right.evaluate() as Object),
+    ">":          (left: IExpression, right: IExpression) => (left.evaluate() as Object) >          (right.evaluate() as Object),
+    "in":         (left: IExpression, right: IExpression) => (left.evaluate() as string) in         (right.evaluate() as Function),
+    "instanceof": (left: IExpression, right: IExpression) => (left.evaluate() as Object) instanceof (right.evaluate() as Function),
 };
 
-export default class BinaryExpression implements IExpression
+export default class BinaryExpression extends BaseExpression
 {
-    private readonly operation: Func2<Nullable<Object>, Nullable<Object>, Nullable<Object>>;
+    private readonly operation: Func2<IExpression, IExpression, unknown>;
 
     private readonly _left: IExpression;
     public get left(): IExpression
@@ -41,8 +42,8 @@ export default class BinaryExpression implements IExpression
         return this._left;
     }
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: BinaryOperator;
+    public get operator(): BinaryOperator
     {
         return this._operator;
     }
@@ -58,16 +59,18 @@ export default class BinaryExpression implements IExpression
         return ExpressionType.Binary;
     }
 
-    public constructor(left: IExpression, right: IExpression, operator: string)
+    public constructor(left: IExpression, right: IExpression, operator: BinaryOperator)
     {
+        super();
+
         this._left     = left;
         this._operator = operator;
         this._right    = right;
         this.operation = binaryFunctions[this.operator];
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): unknown
     {
-        return this.operation(this.left.evaluate(), this.right.evaluate());
+        return this._cache = this.operation(this.left, this.right);
     }
 }

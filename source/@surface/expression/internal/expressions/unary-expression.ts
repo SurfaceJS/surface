@@ -1,23 +1,24 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-
-import { Func1, Nullable } from "@surface/core";
+import { Func1 }         from "@surface/core";
+import ExpressionType    from "../../expression-type";
+import IExpression       from "../../interfaces/expression";
+import { UnaryOperator } from "../../types";
+import BaseExpression    from "./abstracts/base-expression";
 
 const unaryFunctions =
 {
-    "+":      (value: Object) => +value,
-    "-":      (value: Object) => -value,
-    "~":      (value: Object) => ~value,
-    "!":      (value: Object) => !value,
-    "typeof": (value: Object) => typeof value,
+    "+":      (value: IExpression) => +(value.evaluate() as Object),
+    "-":      (value: IExpression) => -(value.evaluate() as Object),
+    "~":      (value: IExpression) => ~(value.evaluate() as Object),
+    "!":      (value: IExpression) => !value.evaluate(),
+    "typeof": (value: IExpression) => typeof value.evaluate(),
 };
 
-export default class UnaryExpression implements IExpression
+export default class UnaryExpression extends BaseExpression<Object>
 {
-    private readonly operation: Func1<Nullable<Object>, Object>;
+    private readonly operation: Func1<unknown, Object>;
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: UnaryOperator;
+    public get operator(): UnaryOperator
     {
         return this._operator;
     }
@@ -33,15 +34,17 @@ export default class UnaryExpression implements IExpression
         return ExpressionType.Unary;
     }
 
-    public constructor(expression: IExpression, operator: string)
+    public constructor(expression: IExpression, operator: UnaryOperator)
     {
+        super();
+
         this._operator   = operator;
         this._expression = expression;
-        this.operation   = unaryFunctions[this.operator];
+        this.operation   = unaryFunctions[this.operator] as Func1<unknown, Object>;
     }
 
     public evaluate(): Object
     {
-        return this.operation(this.expression.evaluate());
+        return this._cache = this.operation(this.expression);
     }
 }

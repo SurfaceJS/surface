@@ -138,6 +138,6 @@ export default class FixtureVisitor extends ExpressionVisitor
     {
         super.visit(expression);
 
-        return { type: -1, evaluate: () => this.visited.join(" > ") };
+        return { cache: "", type: -1, evaluate: () => this.visited.join(" > ") };
     }
 }

@@ -1,4 +1,3 @@
-import { Nullable } from "@surface/core";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
 import JsonResult   from "./json-result";
@@ -18,20 +17,18 @@ export default abstract class Controller
         this._httpContext  = httpContext;
     }
 
-    public json(data: Nullable<Object>): ActionResult
+    public json(data: unknown): ActionResult
     {
         return new JsonResult(this.httpContext, data);
     }
 
     public view(): ActionResult;
     public view(viewName:  string): ActionResult;
-    public view(viewName:  string, model: Nullable<Object>): ActionResult;
-    public view(viewName?: string, model?: Nullable<Object>): ActionResult
+    public view(viewName:  string, model: unknown): ActionResult;
+    public view(viewName?: string, model?: unknown): ActionResult
     {
-        let controllerName = this["__proto__"]["constructor"]["name"] as string;
+        const name = this["__proto__" as keyof this].constructor.name.replace(/controller$/i, "");
 
-        controllerName = controllerName.replace(/controller$/i, "");
-
-        return new ViewResult(this.httpContext, controllerName, viewName || "index", model, StatusCode.ok);
+        return new ViewResult(this.httpContext, name, viewName || "index", model, StatusCode.ok);
     }
 }

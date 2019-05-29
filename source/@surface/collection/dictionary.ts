@@ -1,16 +1,16 @@
-import { Nullable, ObjectLiteral } from "@surface/core";
-import Enumerable                  from "@surface/enumerable";
-import KeyValuePair                from "./key-value-pair";
+import { Nullable } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
+import KeyValuePair from "./key-value-pair";
 
-const source = Symbol("dictionary:source");
+const SOURCE = Symbol("dictionary:source");
 
 export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TKey, TValue>>
 {
-    private [source]: Map<TKey, TValue>;
+    private [SOURCE]: Map<TKey, TValue>;
 
     public get size(): number
     {
-        return this[source].size;
+        return this[SOURCE].size;
     }
 
     public constructor();
@@ -18,49 +18,49 @@ export default class Dictionary<TKey, TValue> extends Enumerable<KeyValuePair<TK
     public constructor(elements?: Iterable<KeyValuePair<TKey, TValue>>)
     {
         super();
-        this[source] = new Map();
+        this[SOURCE] = new Map();
 
         if (elements)
         {
             for (const element of elements)
             {
-                this[source].set(element.key, element.value);
+                this[SOURCE].set(element.key, element.value);
             }
         }
     }
 
-    public static of<TValue>(source: ObjectLiteral<TValue>): Dictionary<string, TValue>
+    public static of<TSouce extends Record<TKey, TSouce[TKey]>, TKey extends keyof TSouce>(source: TSouce): Dictionary<TKey, TSouce[TKey]>
     {
-        return new Dictionary(Enumerable.from(Object.keys(source)).select(x => new KeyValuePair(x, source[x])).toArray());
+        return new Dictionary(Enumerable.from(Object.keys(source) as Array<TKey>).select(x => new KeyValuePair(x, source[x])));
     }
 
     public *[Symbol.iterator](): Iterator<KeyValuePair<TKey, TValue>>
     {
-        for (const element of this[source])
+        for (const element of this[SOURCE])
         {
-            let [ key, value ] = element;
+            const [key, value] = element;
             yield new KeyValuePair(key, value);
         }
     }
 
     public delete(key: TKey): void
     {
-        this[source].delete(key);
+        this[SOURCE].delete(key);
     }
 
     public has(key: TKey): boolean
     {
-        return this[source].has(key);
+        return this[SOURCE].has(key);
     }
 
     public get(key: TKey): Nullable<TValue>
     {
-        return this[source].get(key);
+        return this[SOURCE].get(key);
     }
 
     public set(key: TKey, value: TValue): void
     {
-        this[source].set(key, value);
+        this[SOURCE].set(key, value);
     }
 }
 

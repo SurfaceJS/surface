@@ -1,5 +1,7 @@
-import Tasks from ".";
+import Tasks         from ".";
+import { MethodsOf } from "./types";
 
-const [action, parameter] = process.argv.slice(2) as  [string, string];
+const [action, parameters] = process.argv.slice(2) as [MethodsOf<typeof Tasks>, string];
 
-Tasks[action].apply(Tasks, (parameter || "").split(","));
+// tslint:disable-next-line:no-any
+Tasks[action].apply<any, any, any>(Tasks, (parameters || "").split(","));

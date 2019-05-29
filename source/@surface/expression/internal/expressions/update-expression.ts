@@ -1,19 +1,24 @@
-import { Func2, Nullable } from "@surface/core";
-import ExpressionType      from "../../expression-type";
-import IExpression         from "../../interfaces/expression";
-import TypeGuard           from "../type-guard";
+import { Func2, Indexer } from "@surface/core";
+import ExpressionType     from "../../expression-type";
+import IExpression        from "../../interfaces/expression";
+import { UpdateOperator } from "../../types";
+import TypeGuard          from "../type-guard";
+import BaseExpression     from "./abstracts/base-expression";
+import ConstantExpression from "./constant-expression";
+
+type Operators = "++*"|"--*"|"*++"|"*--";
 
 const updateFunctions =
 {
-    "++*": (target: Object, key: string) => ++target[key],
-    "--*": (target: Object, key: string) => --target[key],
-    "*++": (target: Object, key: string) => target[key]++,
-    "*--": (target: Object, key: string) => target[key]--,
+    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
+    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
+    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!++,
+    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!--,
 };
 
-export default class UpdateExpression implements IExpression
+export default class UpdateExpression extends BaseExpression<number>
 {
-    private readonly operation: Func2<Nullable<Object>, Nullable<Object>, number>;
+    private readonly operation: Func2<IExpression, IExpression, number>;
 
     private readonly _expression: IExpression;
     public get expression(): IExpression
@@ -21,8 +26,8 @@ export default class UpdateExpression implements IExpression
         return this._expression;
     }
 
-    private readonly _operator: string;
-    public get operator(): string
+    private readonly _operator: UpdateOperator;
+    public get operator(): UpdateOperator
     {
         return this._operator;
     }
@@ -38,12 +43,14 @@ export default class UpdateExpression implements IExpression
         return ExpressionType.Update;
     }
 
-    public constructor(expression: IExpression, operator: string, prefix: boolean)
+    public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)
     {
+        super();
+
         this._expression = expression;
         this._prefix     = prefix;
         this._operator   = operator;
-        this.operation   = this.prefix ? updateFunctions[`${this.operator}*`] : updateFunctions[`*${this.operator}`];
+        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
     }
 
     public evaluate(): number
@@ -51,11 +58,11 @@ export default class UpdateExpression implements IExpression
         /* istanbul ignore else  */
         if (TypeGuard.isIdentifierExpression(this.expression))
         {
-            return this.operation(this.expression.context, this.expression.name);
+            return this._cache = this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
         }
         else if (TypeGuard.isMemberExpression(this.expression))
         {
-            return this.operation(this.expression.target.evaluate(), this.expression.key.evaluate());
+            return this._cache = this.operation(this.expression.target, this.expression.key);
         }
         else
         {

@@ -1,15 +1,44 @@
 import "./fixtures/dom";
 
-import Type                        from "@surface/reflection/type";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
+import * as chai                   from "chai";
 import DataBind                    from "../internal/data-bind";
 
 @suite
 export default class DataBindSpec
 {
     @test @shouldPass
-    public oneWayObjectDataBind(): void
+    public oneWayFieldDataBind(): void
+    {
+        const target = { value: 1 };
+
+        let changed = false;
+
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
+
+        target.value = 2;
+
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayReadonlyFieldDataBind(): void
+    {
+        const target = { value: 1 };
+
+        Object.defineProperty(target, "value", { value: target.value, writable: false });
+
+        let changed = false;
+
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
+
+        target.value = 2;
+
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayPropertyDataBind(): void
     {
         class Mock
         {
@@ -29,11 +58,39 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, Type.of(Mock).getProperty("value")!, () => changed = true);
+        DataBind.oneWay(target,"value", { notify: () => changed = true });
 
         target.value = 2;
 
-        expect(changed).to.equal(true);
+        chai.expect(changed).to.equal(true);
+    }
+
+    @test @shouldPass
+    public oneWayReadonlyPropertyDataBind(): void
+    {
+        class Mock
+        {
+            private _value: number = 1;
+            public get value(): number
+            {
+                return this._value;
+            }
+
+            public setValue(value: number): void
+            {
+                this._value = value;
+            }
+        }
+
+        const target = new Mock();
+
+        let changed = false;
+
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
+
+        target.setValue(2);
+
+        chai.expect(changed).to.equal(true);
     }
 
     @test @shouldPass
@@ -43,12 +100,12 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target, Type.from(target).getProperty("value")!, () => changed = true);
+        DataBind.oneWay(target, "value", { notify: () => changed = true });
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
-        expect(changed).to.equal(true);
+        chai.expect(changed).to.equal(true);
     }
 
     @test @shouldPass
@@ -60,26 +117,27 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute, Type.from(attribute).getProperty("value")!, () => value = attribute.value);
+        DataBind.oneWay(attribute, "value", { notify: () => value = attribute.value });
 
         attribute.value = "2";
-        expect(value).to.equal("2");
+        chai.expect(value).to.equal("2");
     }
 
-    @test @shouldPass
-    public oneWayPropertyAttributeDataBind(): void
-    {
-        const target = document.createElement("div");
-        target.lang = "pt-br";
+    // Deprecated
+    // @test @shouldPass
+    // public oneWayPropertyAttributeDataBind(): void
+    // {
+    //     const target = document.createElement("div");
+    //     target.lang = "pt-br";
 
-        let value = target.lang;
-        DataBind.oneWay(target, Type.from(target).getProperty("lang")!, () => value = target.lang);
+    //     let value = target.lang;
+    //     DataBind.oneWay(target, "lang", { notify: () => value = target.lang });
 
-        target.setAttribute("lang", "en-us");
-        target.setAttribute("lang1", "en-us");
-        expect(value).to.equal("en-us");
-        expect(target.getAttribute("lang1")).to.equal("en-us");
-    }
+    //     target.setAttribute("lang", "en-us");
+    //     target.setAttribute("lang1", "en-us");
+    //     chai.expect(value, "value").to.equal("en-us");
+    //     chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
+    // }
 
     @test @shouldPass
     public twoWayObjectDataBind(): void
@@ -101,14 +159,14 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left, Type.from(left).getProperty("value")!, right, Type.from(right).getProperty("value")!);
+        DataBind.twoWay(left, "value", right, "value");
 
         left.value = 2;
 
-        expect(right.value).to.equal(2);
+        chai.expect(right.value).to.equal(2);
 
         right.value = 3;
 
-        expect(left.value).to.equal(3);
+        chai.expect(left.value).to.equal(3);
     }
 }

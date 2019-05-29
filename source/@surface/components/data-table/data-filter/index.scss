@@ -1,0 +1,21 @@
+:host
+{
+    surface-stack-panel
+    {
+        width:      100%;
+        surface-list surface-data-filter-item
+        {
+            margin-top: 4px
+        }
+    }
+
+    #add-filters
+    {
+        margin-top: 10px;
+    }
+
+    #footer
+    {
+        margin-top: 20px;
+    }
+}

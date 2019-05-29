@@ -4,7 +4,7 @@ import FieldInfo                   from "../field-info";
 import Type                        from "../type";
 import Mock                        from "./fixtures/mock";
 
-const fieldInfo = new FieldInfo("instanceField", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceField")!, Type.of(Mock), false);
+const fieldInfo = new FieldInfo("instanceField", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceField")!, Type.of(Mock), false, false);
 
 @suite
 export default class FieldInfoSpec

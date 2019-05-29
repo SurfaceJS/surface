@@ -1,8 +1,9 @@
-import { Nullable }   from "@surface/core";
+import { Indexer }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class MemberExpression implements IExpression
+export default class MemberExpression extends BaseExpression
 {
     private readonly _key: IExpression;
     public get key(): IExpression
@@ -23,12 +24,14 @@ export default class MemberExpression implements IExpression
 
     public constructor(target: IExpression, key: IExpression)
     {
+        super();
+
         this._key    = key;
         this._target = target;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): unknown
     {
-        return (this.target.evaluate() as Object)[`${this.key.evaluate()}`];
+        return this._cache = (this.target.evaluate() as Indexer)[`${this.key.evaluate()}`];
     }
 }

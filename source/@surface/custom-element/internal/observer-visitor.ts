@@ -1,52 +1,49 @@
-import { Action }        from "@surface/core";
-import ExpressionVisitor from "@surface/expression/expression-visitor";
-import ICallExpression   from "@surface/expression/interfaces/call-expression";
-import IExpression       from "@surface/expression/interfaces/expression";
-import IMemberExpression from "@surface/expression/interfaces/member-expression";
-import Type              from "@surface/reflection";
-import DataBind          from "./data-bind";
+import { Indexer }     from "@surface/core";
+import IListener       from "@surface/reactive/interfaces/listener";
+import ReactiveVisitor from "@surface/reactive/internal/reactive-visitor";
+import Reactive        from "../../reactive";
+import IReactor        from "../../reactive/interfaces/reactor";
 
-export default class ObserverVisitor extends ExpressionVisitor
+export default class ObserverVisitor extends ReactiveVisitor
 {
-    private readonly notify: Action;
-
-    public constructor(notify: Action)
+    public constructor(listener: IListener)
     {
-        super();
-        this.notify = notify;
+        super(listener);
     }
 
-    protected visitCallExpression(expression: ICallExpression)
+    protected reactivate(target: Indexer, key: string): IReactor
     {
-        for (const arg of expression.args)
+        if (!this.dependency)
         {
-            super.visit(arg);
-        }
+            const [reactor, observer] = Reactive.observe(target, key);
 
-        return expression;
-    }
+            this.subscriptions.push(observer.subscribe(this.listener));
 
-    protected visitMemberExpression(expression: IMemberExpression): IExpression
-    {
-        const target = expression.target.evaluate();
-        const key    = `${expression.key.evaluate()}`;
+            if (target instanceof HTMLInputElement)
+            {
+                type Key = keyof HTMLInputElement;
 
-        if (!target)
-        {
-            throw new TypeError("Can't bind to non initialized object");
-        }
+                const action = function (this: HTMLInputElement)
+                {
+                    observer.notify(this[key as Key]);
+                };
 
-        const member = Type.from(target).getProperty(key);
+                target.addEventListener("input", action);
 
-        if (member)
-        {
-            DataBind.oneWay(target, member, this.notify);
+                const subscription = { unsubscribe: () => target.removeEventListener("input", action) };
+
+                this.subscriptions.push(subscription);
+            }
+
+            return reactor;
         }
         else
         {
-            this.notify();
-        }
+            const reactor = Reactive.observe(target, key)[0];
 
-        return expression;
+            reactor.setDependency(key, this.dependency);
+
+            return reactor;
+        }
     }
 }

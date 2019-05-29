@@ -1,6 +1,6 @@
-import { Nullable, ObjectLiteral } from "@surface/core";
-import Enumerable                  from "@surface/enumerable";
-import IRouteData                  from "../interfaces/route-data";
+import { Indexer, Nullable } from "@surface/core";
+import Enumerable            from "@surface/enumerable";
+import IRouteData            from "../interfaces/route-data";
 
 export default class Route
 {
@@ -56,8 +56,8 @@ export default class Route
     {
         let [path, queryString] = route.split("?");
 
-        let params: ObjectLiteral<string>           = { };
-        let search: Nullable<ObjectLiteral<string>> = null;
+        let params: Indexer<string>           = { };
+        let search: Nullable<Indexer<string>> = null;
 
         let root = "/";
 

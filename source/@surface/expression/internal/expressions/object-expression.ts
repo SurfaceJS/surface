@@ -1,9 +1,9 @@
-import { Nullable }       from "@surface/core";
+import { Indexer }        from "@surface/core";
 import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
+import BaseExpression     from "./abstracts/base-expression";
 import PropertyExpression from "./property-expression";
 
-export default class ObjectExpression implements IExpression
+export default class ObjectExpression extends BaseExpression<Indexer>
 {
     private readonly _properties: Array<PropertyExpression>;
     public get properties(): Array<PropertyExpression>
@@ -18,18 +18,20 @@ export default class ObjectExpression implements IExpression
 
     public constructor(properties: Array<PropertyExpression>)
     {
+        super();
+
         this._properties = properties;
     }
 
-    public evaluate(): Object
+    public evaluate(): Indexer
     {
-        const $object: { [key: string]: Nullable<Object> } = { };
+        const $object: Indexer = { };
 
         for (const property of this.properties)
         {
             $object[property.key.evaluate() as string] = property.evaluate();
         }
 
-        return $object;
+        return this._cache = $object;
     }
 }

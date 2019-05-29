@@ -1,8 +1,8 @@
-import { Nullable }   from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class ConditionalExpression implements IExpression
+export default class ConditionalExpression extends BaseExpression
 {
     private _condition: IExpression;
     public get condition(): IExpression
@@ -29,13 +29,15 @@ export default class ConditionalExpression implements IExpression
 
     public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)
     {
+        super();
+
         this._condition = condition;
         this._falsy     = falsy;
         this._truthy    = truthy;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): unknown
     {
-        return this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
+        return this._cache = this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
     }
 }

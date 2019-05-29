@@ -1,11 +1,11 @@
-import { Constructor, Nullable } from "@surface/core";
-import Enumerable                from "@surface/enumerable";
-import Type                      from "@surface/reflection/type";
-import Router                    from "@surface/router";
-import ActionResult              from "./action-result";
-import Controller                from "./controller";
-import HttpContext               from "./http-context";
-import RequestHandler            from "./request-handler";
+import { Constructor, Indexer, Nullable } from "@surface/core";
+import Enumerable                         from "@surface/enumerable";
+import Type                               from "@surface/reflection/type";
+import Router                             from "@surface/router";
+import ActionResult                       from "./action-result";
+import Controller                         from "./controller";
+import HttpContext                        from "./http-context";
+import RequestHandler                     from "./request-handler";
 
 export default class MvcRequestHandler extends RequestHandler
 {
@@ -23,14 +23,24 @@ export default class MvcRequestHandler extends RequestHandler
 
     private getController(controller: string, filepath: string): Constructor<Controller>
     {
-        let esmodule = require(filepath) as object;
+        const esmodule = require(filepath) as Indexer<Nullable<Constructor<Controller>>>;
 
-        let constructor: Nullable<Constructor<Controller>> = esmodule["default"]
-            || Type.from(esmodule).extends(Controller) && esmodule
-            || Type.from(esmodule).equals(Object) && Enumerable.from(Object.keys(esmodule))
-                .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.from(esmodule[x]).extends(Controller))
-                .select(x => esmodule[x])
-                .firstOrDefault();
+        let constructor: Nullable<Constructor<Controller>>;
+
+        if (!(constructor = esmodule["default"]))
+        {
+            if (Type.from(esmodule).extends(Controller))
+            {
+                constructor = esmodule as object as Constructor<Controller>;
+            }
+            else if (Type.from(esmodule).equals(Object))
+            {
+                constructor = Enumerable.from(Object.keys(esmodule))
+                    .where(x => new RegExp(`^${controller}(controller)?$`, "i").test(x) && Type.of(esmodule[x] as Function).extends(Controller))
+                    .select(x => esmodule[x])
+                    .firstOrDefault();
+            }
+        }
 
         if (constructor)
         {
@@ -40,7 +50,27 @@ export default class MvcRequestHandler extends RequestHandler
         throw new TypeError("Can't find an valid subclass of Controller.");
     }
 
-    public handle(httpContext: HttpContext): boolean
+    private async parseBody(httpContext: HttpContext): Promise<Object>
+    {
+        let body = "";
+        httpContext.request.on
+        (
+            "data",
+            chunk =>
+            {
+                body += chunk.toString();
+
+                if (body.length > 1e6)
+                {
+                    httpContext.request.connection.destroy();
+                }
+            }
+        );
+
+        return await new Promise(resolve => httpContext.request.on("end", () => resolve(JSON.parse(body))));
+    }
+
+    public async handle(httpContext: HttpContext): Promise<boolean>
     {
         if (httpContext.request.url)
         {
@@ -68,20 +98,20 @@ export default class MvcRequestHandler extends RequestHandler
                         const targetController = new constructor(httpContext);
 
                         const actionMethod = Enumerable.from(Type.from(targetController).getMethods())
-                            .firstOrDefault(x => new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
+                            .firstOrDefault(x => typeof x.key == "string" && new RegExp(`^${httpContext.request.method}${action}|${action}$`, "i").test(x.key));
 
                         if (actionMethod)
                         {
-                            let actionResult: ActionResult;
+                            const postData = await this.parseBody(httpContext);
+
+                            const inbound = { ...routeData.search, ...postData } as Indexer;
 
                             if (id)
                             {
-                                actionResult = actionMethod.invoke.call(targetController, { id });
+                                inbound["id"] = id;
                             }
-                            else
-                            {
-                                actionResult = actionMethod.invoke.call(targetController, routeData.search);
-                            }
+
+                            const actionResult = actionMethod.invoke.call(targetController, inbound) as ActionResult;
 
                             actionResult.executeResult();
 

@@ -1,11 +1,11 @@
-import { Nullable }   from "@surface/core";
+import { Indexer }    from "@surface/core";
 import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class IdentifierExpression implements IExpression
+export default class IdentifierExpression extends BaseExpression
 {
-    private readonly _context: Object;
-    public get context(): Object
+    private readonly _context: Indexer;
+    public get context(): Indexer
     {
         return this._context;
     }
@@ -21,19 +21,16 @@ export default class IdentifierExpression implements IExpression
         return ExpressionType.Identifier;
     }
 
-    public constructor(context: Object, name: string)
+    public constructor(context: Indexer, name: string)
     {
-        if (!(name in context))
-        {
-            throw new Error(`The identifier ${name} does not exist in this context`);
-        }
+        super();
 
         this._context = context;
         this._name    = name;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): unknown
     {
-        return this.context[this.name];
+        return this._cache = this.context[this.name];
     }
 }

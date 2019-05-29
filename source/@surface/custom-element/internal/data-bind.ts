@@ -1,89 +1,79 @@
-import { Action, Unknown } from "@surface/core";
-import Observer            from "@surface/core/observer";
-import PropertyInfo        from "@surface/reflection/property-info";
+import { Indexer }       from "@surface/core";
+import { getKeyMember }  from "@surface/core/common/object";
+import Reactive          from "@surface/reactive";
+import IPropertyListener from "@surface/reactive/interfaces/property-listener";
+import IListener         from "../../reactive/interfaces/listener";
+import IReactor          from "../../reactive/interfaces/reactor";
+import ISubscription     from "../../reactive/interfaces/subscription";
+import PropertyListener  from "./property-listener";
 
-const caller   = Symbol("data-bind:caller");
-const observer = Symbol("data-bind:observer");
+const SUBSCRIPTIONS = Symbol("data-bind:subscriptions");
 
-type Observable =
-{
-    [key: string]: Unknown,
-    [caller]:      boolean,
-    [observer]:    Observer
-};
+type Observable = Indexer & { [SUBSCRIPTIONS]?: Array<ISubscription> };
 
 export default class DataBind
 {
-    public static oneWay(target: Object,     property: PropertyInfo, action: Action): void;
-    public static oneWay(target: Observable, property: PropertyInfo, action: Action): void
+    public static oneWay(target: Indexer, path: string, listener: IListener|IPropertyListener): [IReactor, ISubscription]
     {
-        target[observer] = target[observer] || new Observer();
+        const [key, member]                     = getKeyMember(target, path);
+        const [reactor, observer, subscription] = Reactive.observe(target, path, listener);
+        const subscriptions                     = [] as Array<ISubscription>;
 
-        target[observer].subscribe(action);
+        subscriptions.push(subscription);
 
-        Object.defineProperty
-        (
-            target,
-            property.key,
-            {
-                configurable: true,
-                get: () => property.getter && property.getter.call(target),
-                set: (value: Object) =>
-                {
-                    if (!target[caller] && property.setter)
-                    {
-                        property.setter.call(target, value);
-
-                        target[observer].notify();
-                    }
-                }
-            }
-        );
-
-        if (target instanceof HTMLElement)
+        if (member instanceof HTMLInputElement)
         {
-            const setAttribute = target.setAttribute;
+            type Key = keyof HTMLInputElement;
 
-            target.setAttribute = function (qualifiedName: string, value: string)
+            const action = function (this: HTMLInputElement)
             {
-                setAttribute.call(this, qualifiedName, value);
-
-                if (qualifiedName == property.key)
-                {
-                    target[observer].notify();
-                }
+                observer.notify(this[key as Key]);
             };
 
-            target.addEventListener("change", () => target[observer].notify());
-            target.addEventListener("keyup", () => target[observer].notify());
+            member.addEventListener("input", action);
+
+            const subscription = { unsubscribe: () => member.removeEventListener("input", action) };
+
+            subscriptions.push(subscription);
         }
+
+        const subscriptionWrapper = "update" in listener ?
+            { update: (target: Indexer) => listener.update(target), unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) }
+            : { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+
+        return [reactor, subscriptionWrapper];
     }
 
-    public static twoWay(left: Object,     leftProperty: PropertyInfo, right: Object,     rightProperty: PropertyInfo): void;
-    public static twoWay(left: Observable, leftProperty: PropertyInfo, right: Observable, rightProperty: PropertyInfo): void
+    public static twoWay(left: Observable, leftPath: string, right: Observable, rightPath: string): void
     {
-        DataBind.oneWay
-        (
-            left,
-            leftProperty,
-            () =>
-            {
-                left[caller]             = true;
-                right[rightProperty.key] = left[leftProperty.key];
-                left[caller]             = false;
-            }
-        );
+        const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
+        const [rightKey, rightMember] = getKeyMember(right, rightPath);
 
-        DataBind.oneWay
-        (
-            right,
-            rightProperty,
-            () =>
-            {
-                right[caller]          = true;
-                left[leftProperty.key] = right[rightProperty.key];
-                right[caller]          = false;
-            }
-        );
+        const leftListener  = new PropertyListener(rightMember, rightKey);
+        const rightListener = new PropertyListener(leftMember, leftKey);
+
+        const [leftReactor,  leftSubscription]  = DataBind.oneWay(left, leftPath, leftListener);
+        const [rightReactor, rightSubscription] = DataBind.oneWay(right, rightPath, rightListener);
+
+        leftReactor.setSubscription(leftKey, rightSubscription);
+        rightReactor.setSubscription(rightKey, leftSubscription);
+
+        const leftSubscriptionQueue = left[SUBSCRIPTIONS] = left[SUBSCRIPTIONS] || [];
+        leftSubscriptionQueue.push(leftSubscription);
+
+        const rightSubscriptionQueue = right[SUBSCRIPTIONS] = right[SUBSCRIPTIONS] || [];
+        rightSubscriptionQueue.push(rightSubscription);
+    }
+
+    public static unbind(target: Observable): void
+    {
+        const subscriptions = target[SUBSCRIPTIONS];
+
+        if (subscriptions)
+        {
+            subscriptions.forEach(x => x.unsubscribe());
+
+            target[SUBSCRIPTIONS] = [];
+        }
     }
 }

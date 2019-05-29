@@ -1,0 +1,128 @@
+$default-size:    28px;
+$only-icons-size: 60px;
+
+:host > #root
+{
+    --color:                   white;
+    --background-color:        rgb(125, 125, 125);
+    --background-color-hover:  rgb(150, 150, 150);
+    --background-color-active: rgb(175, 175, 175);
+
+    height:   $default-size;
+    position: relative;
+    width:    100%;
+
+    color:      var(--color);
+    background: var(--background-color);
+
+    > surface-stack-panel
+    {
+        min-height: $default-size;
+        background: inherit;
+        
+        #text
+        {
+            $padding: 10px;
+
+            //padding-left:  $padding;
+            padding-right: $padding;            
+            text-overflow: ellipsis;
+            user-select:   none;
+            white-space:   nowrap;
+        }
+
+        #inline-arrow
+        {
+            position: absolute;
+            right:    2px;
+            bottom:   2px;
+            fill:     var(--background-color-active);
+            display:  none;
+        }
+    }
+
+    > #container
+    {
+        display:          none;
+        flex-direction:   column;
+        position:         absolute;
+        height:           auto;
+        width:            inherit;
+        z-index:          999;
+        background-color: inherit;
+    }
+
+    ::slotted(surface-menu-separator)
+    {
+        &::before
+        {
+            width: 10px;
+        }
+
+        background-color: inherit;
+        border:           solid 1px var(--background-color-hover);
+        margin:           8px;
+    }
+}
+
+:host(:hover) > #root
+{
+    > surface-stack-panel
+    {
+        background-color: var(--background-color-hover);
+    }
+
+    > #container
+    {
+        display: flex;
+    }
+}
+
+:host(:active) > #root:not([has-items]) > surface-stack-panel
+{
+    background-color: var(--background-color-active);
+}
+
+:host-context(surface-context-menu),
+:host-context(surface-menu-item):host-context(#container)
+{
+    &:host > #root
+    {
+        background-color: var(--background-color);
+        
+        &[has-items] > surface-stack-panel
+        {
+            > #inline-arrow
+            {
+                display: block;
+            }
+        }
+
+        > surface-stack-panel
+        {
+            > #icon-holder
+            {
+                //background-color: var(--background-color-hover);
+                display:          flex;
+                height:           $default-size;
+                width:            $default-size;
+
+                #icon
+                {
+                    background-position: center center;
+                    background-repeat:   no-repeat;
+                    background-size:     cover;
+                    display:             block;
+                    height:              $default-size - 5;
+                    margin:              auto;
+                    width:               $default-size - 5;
+                }
+            }
+        }        
+
+        > #container
+        {
+            top: 0;
+        }
+    }
+}

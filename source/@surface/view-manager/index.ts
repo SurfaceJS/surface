@@ -1,10 +1,10 @@
-import "@surface/reflection/extensions";
-
-import Dictionary                       from "@surface/collection/dictionary";
-import { Constructor, Func1, Nullable } from "@surface/core";
-import Router                           from "@surface/router";
-import View                             from "@surface/view";
-import ViewHost                         from "@surface/view-host";
+import Dictionary                                from "@surface/collection/dictionary";
+import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
+import Enumerable                                from "@surface/enumerable";
+import Type                                      from "@surface/reflection";
+import Router                                    from "@surface/router";
+import View                                      from "@surface/view";
+import ViewHost                                  from "@surface/view-host";
 
 /**
  * Handles web client navigation.
@@ -17,7 +17,7 @@ export default class ViewManager
         return this._instance;
     }
 
-    private readonly moduleLoader: Func1<string, Promise<Object>>;
+    private readonly moduleLoader: Func1<string, Promise<object>>;
     private readonly router:       Router;
     private readonly views:        Dictionary<string, View>;
 
@@ -27,9 +27,9 @@ export default class ViewManager
         return this._viewHost;
     }
 
-    private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>)
+    private constructor(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<object>>)
     {
-        this._viewHost     = viewHost;
+        this._viewHost    = viewHost;
         this.moduleLoader = moduleLoader;
 
         this.views  = new Dictionary<string, View>();
@@ -38,39 +38,54 @@ export default class ViewManager
         window.onpopstate = async () => await this.routeTo(window.location.pathname + window.location.search);
     }
 
-    public static configure(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<Object>>): ViewManager
+    public static configure(viewHost: ViewHost, router: Router, moduleLoader: Func1<string, Promise<object>>): ViewManager
     {
         return ViewManager._instance = ViewManager._instance || new ViewManager(viewHost, router, moduleLoader);
     }
 
     private async getView(view: string, path: string): Promise<Constructor<View>>
     {
-        let esmodule = await this.moduleLoader(path);
+        const esmodule = await this.moduleLoader(path) as Indexer<Nullable<Constructor<View>>>;
 
-        let constructor: Nullable<Constructor<View>> = esmodule["default"]
-            || esmodule.getType().extends(View) && esmodule
-            || esmodule.getType().equals(Object) && Object.keys(esmodule)
-                .asEnumerable()
-                .where(x => new RegExp(`^${view}(view)?$`, "i").test(x) && (esmodule[x] as Object).getType().extends(View))
-                .select(x => esmodule[x])
-                .firstOrDefault();
+        let constructor: Nullable<Constructor<View>>;
+
+        if (!(constructor = esmodule["default"]))
+        {
+            if (Type.from(esmodule).extends(View))
+            {
+                constructor = esmodule as object as Constructor<View>;
+            }
+            else if (Type.from(esmodule).equals(Object))
+            {
+                constructor = Enumerable.from(Object.keys(esmodule))
+                    .where(x => new RegExp(`^${view}(controller)?$`, "i").test(x) && Type.of(esmodule[x] as Function).extends(View))
+                    .select(x => esmodule[x])
+                    .firstOrDefault();
+            }
+        }
 
         if (constructor)
         {
             return constructor;
         }
 
-        throw new TypeError("Can't find an valid subclass of View.");
+        throw new TypeError("can't find an valid subclass of View");
     }
 
     public async routeTo(route: string): Promise<void>
     {
-        let routeData = this.router.match(route);
+        const routeData = this.router.match(route);
 
         if (routeData)
         {
-            window.history.pushState(null, routeData.params["view"], route);
-            let { view, action } = routeData.params;
+            const { view, action } = routeData.params;
+
+            if (!view)
+            {
+                throw new Error("View not found");
+            }
+
+            window.history.pushState(null, view, route);
 
             let path = `views/${view}`;
 
@@ -81,15 +96,18 @@ export default class ViewManager
 
             if (!this.views.has(view))
             {
-                let viewConstructor = await this.getView(view, path);
-                this.views.set(view, new viewConstructor());
+                const viewConstructor = await this.getView(view, path);
+
+                const element = new viewConstructor();
+
+                this.views.set(view, element);
             }
 
             this._viewHost.view = this.views.get(view);
         }
         else
         {
-            throw new Error("Invalid route path");
+            throw new Error("invalid route path");
         }
     }
 }

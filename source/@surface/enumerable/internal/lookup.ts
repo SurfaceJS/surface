@@ -1,8 +1,8 @@
 import { Func1, Nullable } from "@surface/core";
+import Hashcode            from "@surface/core/hashcode";
 import IComparer           from "../interfaces/comparer";
 import ILookup             from "../interfaces/lookup";
 import Group               from "./group";
-import HashEncode          from "./hash-encode";
 
 export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<TKey, TElement>>, ILookup<TKey, TElement>
 {
@@ -27,7 +27,7 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
         for (const element of source)
         {
             const key  = keySelector(element);
-            const hash = HashEncode.getHashCode(key);
+            const hash = Hashcode.encode(key);
 
             let group = this.getGroup(key, hash);
 
@@ -121,12 +121,12 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
 
     public contains(key: TKey): boolean
     {
-        return !!this.getGroup(key, HashEncode.getHashCode(key));
+        return !!this.getGroup(key, Hashcode.encode(key));
     }
 
     public get(key: TKey): Array<TElement>
     {
-        const group = this.getGroup(key, HashEncode.getHashCode(key));
+        const group = this.getGroup(key, Hashcode.encode(key));
 
         if (group)
         {

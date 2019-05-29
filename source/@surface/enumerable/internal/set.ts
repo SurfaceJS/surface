@@ -1,6 +1,6 @@
-import { Nullable }  from "@surface/core";
-import IComparer     from "../interfaces/comparer";
-import HashEncode    from "./hash-encode";
+import { Nullable } from "@surface/core";
+import Hashcode     from "@surface/core/hashcode";
+import IComparer    from "../interfaces/comparer";
 
 type Slot<TElement> =
 {
@@ -80,7 +80,7 @@ export default class Set<TElement> implements Iterable<TElement>
 
     public add(element: TElement): boolean
     {
-        const hash = HashEncode.getHashCode(element);
+        const hash = Hashcode.encode(element);
 
         if (!this.find(element, hash))
         {
@@ -114,12 +114,12 @@ export default class Set<TElement> implements Iterable<TElement>
 
     public contains(element: TElement): boolean
     {
-        return this.find(element, HashEncode.getHashCode(element));
+        return this.find(element, Hashcode.encode(element));
     }
 
     public remove(element: TElement): boolean
     {
-        const hash = HashEncode.getHashCode(element);
+        const hash = Hashcode.encode(element);
         let lastIndex = -1;
 
         for (let index = this.buckets[hash % this.buckets.length] - 1; index >= 0; index = this.slots[index].next)

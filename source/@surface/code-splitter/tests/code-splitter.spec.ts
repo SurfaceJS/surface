@@ -1,4 +1,4 @@
-import * as common                                            from "@surface/common";
+import * as io                                                from "@surface/io";
 import { after, before, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                                   from "chai";
 import fs                                                     from "fs";
@@ -19,8 +19,8 @@ export default class CodeSplitterSpec
     {
         const actual = path.resolve(__dirname, "./fixtures/actual");
 
-        common.deletePath(actual);
-        common.makePath(actual);
+        io.deletePath(actual);
+        io.makePath(actual);
     }
 
     @test @shouldPass

@@ -65,7 +65,17 @@ export default class WebHost
                 this.startup.onBeginRequest(httpContext);
             }
 
-            if (this.handlers.any(x => x.handle(httpContext)))
+            let handled = false;
+
+            for (const handler of this.handlers)
+            {
+                if (handled = await handler.handle(httpContext))
+                {
+                    break;
+                }
+            }
+
+            if (!handled)
             {
                 response.writeHead(StatusCode.notFound, { "Content-Type": "text/plain" });
                 response.end("Resource not found.");

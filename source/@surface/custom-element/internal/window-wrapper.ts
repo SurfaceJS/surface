@@ -1,4 +1,4 @@
-const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as Object as typeof Window;
+const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
 wrapper.prototype = window;
 wrapper.prototype.constructor = wrapper;

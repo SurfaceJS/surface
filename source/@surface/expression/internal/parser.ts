@@ -1,20 +1,21 @@
-import IExpression           from "../interfaces/expression";
-import SyntaxError           from "../syntax-error";
-import ArrayExpression       from "./expressions/array-expression";
-import BinaryExpression      from "./expressions/binary-expression";
-import CallExpression        from "./expressions/call-expression";
-import ConditionalExpression from "./expressions/conditional-expression";
-import ConstantExpression    from "./expressions/constant-expression";
-import IdentifierExpression  from "./expressions/identifier-expression";
-import MemberExpression      from "./expressions/member-expression";
-import ObjectExpression      from "./expressions/object-expression";
-import PropertyExpression    from "./expressions/property-expression";
-import RegexExpression       from "./expressions/regex-expression";
-import TemplateExpression    from "./expressions/template-expression";
-import UnaryExpression       from "./expressions/unary-expression";
-import UpdateExpression      from "./expressions/update-expression";
-import Scanner, { Token }    from "./scanner";
-import TokenType             from "./token-type";
+import IExpression                                       from "../interfaces/expression";
+import SyntaxError                                       from "../syntax-error";
+import { BinaryOperator, UnaryOperator, UpdateOperator } from "../types";
+import ArrayExpression                                   from "./expressions/array-expression";
+import BinaryExpression                                  from "./expressions/binary-expression";
+import CallExpression                                    from "./expressions/call-expression";
+import ConditionalExpression                             from "./expressions/conditional-expression";
+import ConstantExpression                                from "./expressions/constant-expression";
+import IdentifierExpression                              from "./expressions/identifier-expression";
+import MemberExpression                                  from "./expressions/member-expression";
+import ObjectExpression                                  from "./expressions/object-expression";
+import PropertyExpression                                from "./expressions/property-expression";
+import RegexExpression                                   from "./expressions/regex-expression";
+import TemplateExpression                                from "./expressions/template-expression";
+import UnaryExpression                                   from "./expressions/unary-expression";
+import UpdateExpression                                  from "./expressions/update-expression";
+import Scanner, { Token }                                from "./scanner";
+import TokenType                                         from "./token-type";
 
 export default class Parser
 {
@@ -139,7 +140,7 @@ export default class Parser
                     const operator = stack.pop() as string;
                     left = stack.pop() as IExpression;
                     precedences.pop();
-                    stack.push(new BinaryExpression(left, right, operator));
+                    stack.push(new BinaryExpression(left, right, operator as BinaryOperator));
                 }
 
                 stack.push(this.nextToken().raw);
@@ -152,7 +153,7 @@ export default class Parser
 
             while (i > 1)
             {
-                expression = new BinaryExpression(stack[i - 2] as IExpression, expression, stack[i - 1] as string);
+                expression = new BinaryExpression(stack[i - 2] as IExpression, expression, stack[i - 1] as BinaryOperator);
                 i -= 2;
             }
         }
@@ -263,7 +264,7 @@ export default class Parser
         if (this.match("**"))
         {
             const operator = this.nextToken().raw;
-            return new BinaryExpression(expression, this.assignmentExpression(), operator);
+            return new BinaryExpression(expression, this.assignmentExpression(), operator as BinaryOperator);
         }
 
         return expression;
@@ -304,7 +305,7 @@ export default class Parser
                 parentExpression = expression;
                 this.expect(".");
 
-                if (this.lookahead.type == TokenType.Identifier)
+                if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
                     expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value));
                 }
@@ -316,7 +317,21 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                expression = new CallExpression(parentExpression, (expression as MemberExpression).key.evaluate() as string, this.argumentsExpression());
+                let context: IExpression;
+                let name:    string;
+
+                if (expression instanceof IdentifierExpression)
+                {
+                    context = new ConstantExpression(expression.context);
+                    name    = expression.name;
+                }
+                else
+                {
+                    context = parentExpression;
+                    name    = (expression as MemberExpression).key.evaluate() as string;
+                }
+
+                expression = new CallExpression(context, name, this.argumentsExpression());
             }
             else if (this.match("["))
             {
@@ -390,10 +405,11 @@ export default class Parser
 
             switch (token.type)
             {
-                case TokenType.StringLiteral:
-                case TokenType.NumericLiteral:
                 case TokenType.BooleanLiteral:
+                case TokenType.Keyword:
                 case TokenType.NullLiteral:
+                case TokenType.NumericLiteral:
+                case TokenType.StringLiteral:
                     key = new ConstantExpression(this.nextToken().value);
                     break;
                 case TokenType.Punctuator:
@@ -415,7 +431,7 @@ export default class Parser
             }
         }
 
-        this.nextToken();
+        this.expect(":");
 
         value = this.assignmentExpression();
         return new PropertyExpression(key, value);
@@ -561,7 +577,7 @@ export default class Parser
         if (this.match("+") || this.match("-") || this.match("~") || this.match("!") || this.matchKeyword("typeof"))
         {
             const token = this.nextToken();
-            return new UnaryExpression(this.updateExpression(), token.raw);
+            return new UnaryExpression(this.updateExpression(), token.raw as UnaryOperator);
         }
         else
         {
@@ -591,7 +607,7 @@ export default class Parser
     {
         if (this.match("++") || this.match("--"))
         {
-            const operator = this.nextToken().raw;
+            const operator = this.nextToken().raw as UpdateOperator;
             return new UpdateExpression(this.leftHandSideExpression(), operator, true);
         }
         else
@@ -600,7 +616,7 @@ export default class Parser
 
             if (this.match("++") || this.match("--"))
             {
-                const operator = this.nextToken().raw;
+                const operator = this.nextToken().raw as UpdateOperator;
                 return new UpdateExpression(expression, operator, false);
             }
 
@@ -619,8 +635,10 @@ export default class Parser
                 break;
             case TokenType.NumericLiteral:
                 unexpected = "number";
+                break;
             case TokenType.EOF:
                 unexpected = "end of expression";
+                break;
             default:
                 break;
         }

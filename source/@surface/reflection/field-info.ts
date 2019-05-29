@@ -1,6 +1,5 @@
-import { Nullable } from "@surface/core";
-import MemberInfo   from "./member-info";
-import Type         from "./type";
+import MemberInfo from "./member-info";
+import Type       from "./type";
 
 export default class FieldInfo extends MemberInfo
 {
@@ -18,17 +17,17 @@ export default class FieldInfo extends MemberInfo
 
     public get readonly(): boolean
     {
-        return !!this.descriptor.writable;
+        return !(this.descriptor.writable == undefined ? true : this.descriptor.writable);
     }
 
-    public get value(): Nullable<Object>
+    public get value(): unknown
     {
         return this.descriptor.value;
     }
 
-    public constructor(key: string, descriptor: PropertyDescriptor, declaringType: Type, isStatic: boolean)
+    public constructor(key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
-        super(key, declaringType, isStatic);
+        super(key, declaringType, isOwn, isStatic);
         this.descriptor = descriptor;
     }
 }

@@ -1,5 +1,15 @@
 {
     "defaultSeverity": "warning",
+    "linterOptions":
+    {
+        "exclude":
+        [
+            "**/*.json",
+            "**/node_modules/*.d.ts",
+            "**/node_modules/*.ts",
+            "*.json"
+        ]
+    },
     "rules":
     {
         "adjacent-overload-signatures": true,
@@ -111,7 +121,6 @@
         "restrict-plus-operands":          true,
         "semicolon":                       true,
         "switch-default":                  true,
-        "typeof-compare":                  true,
         "use-isnan":                       true,
         "variable-name":                   
         [

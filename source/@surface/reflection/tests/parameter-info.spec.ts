@@ -5,7 +5,7 @@ import ParameterInfo               from "../parameter-info";
 import Type                        from "../type";
 import Mock                        from "./fixtures/mock";
 
-const methodInfo    = new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false);
+const methodInfo    = new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false, false);
 const parameterInfo = new ParameterInfo("a", 0, methodInfo, Number);
 
 @suite
@@ -32,7 +32,7 @@ export default class ParameterInfoSpec
     @test @shouldPass
     public noMetadata(): void
     {
-        const methodInfo    = new MethodInfo("instanceMethodWithParameters", Mock.prototype.instanceMethodWithParameters, Type.of(Mock), false);
+        const methodInfo    = new MethodInfo("instanceMethodWithParameters", Mock.prototype.instanceMethodWithParameters, Type.of(Mock), false, false);
         const parameterInfo = new ParameterInfo("a", 0, methodInfo, undefined);
         expect(parameterInfo.metadata).to.deep.equal({ });
     }

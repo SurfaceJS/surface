@@ -1,7 +1,7 @@
 import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class RegexExpression implements IExpression
+export default class RegexExpression extends BaseExpression<RegExp>
 {
     private readonly _flags: string;
     public get flags(): string
@@ -22,12 +22,14 @@ export default class RegexExpression implements IExpression
 
     public constructor(pattern: string, flags: string)
     {
-        this._flags    = flags;
+        super();
+
+        this._flags   = flags;
         this._pattern = pattern;
     }
 
     public evaluate(): RegExp
     {
-        return new RegExp(this.pattern, this.flags);
+        return this._cache = new RegExp(this.pattern, this.flags);
     }
 }

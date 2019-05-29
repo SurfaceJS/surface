@@ -31,6 +31,7 @@ export default class ParserSpec
         }
         catch (error)
         {
+            expect(error.message).to.equal(expression.error.message);
             expect(error).to.includes(expression.error);
         }
     }

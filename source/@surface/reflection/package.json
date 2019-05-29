@@ -7,14 +7,13 @@
         "@surface/collection": "0.0.0",
         "@surface/core": "0.0.3",
         "@surface/enumerable": "0.0.5",
-        "@types/reflect-metadata": "0.1.0",
         "reflect-metadata": "0.1.12",
-        "tslib": "1.9.0"
+        "tslib": "1.9.3"
     },
     "description": "Module for reflection capability.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "chai": "4.1.2"
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

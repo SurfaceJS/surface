@@ -1,137 +1,149 @@
-import { Action, Constructor, Func1, Nullable, ObjectLiteral } from "@surface/core";
-import mocha                                                   from "./internal/mocha";
+import { Action, Constructor, Func1, Indexer, Nullable } from "@surface/core";
+import { camelToText }                                   from "@surface/core/common/string";
+import mocha                                             from "./internal/mocha";
 
 import
 {
-    afterEachToken,
-    afterToken,
-    batchTestToken,
-    beforeEachToken,
-    beforeToken,
-    categoryToken,
-    dataToken,
-    descriptionToken,
-    expectationToken,
-    testToken
+    AFTER,
+    AFTER_EACH,
+    BATCH,
+    BEFORE,
+    BEFORE_EACH,
+    CATEGORY,
+    DATA,
+    DESCRIPTION,
+    EXPECTATION,
+    TEST
 }
 from "./internal/symbols";
 
-type Test = { expectation: string, getMethod: (context: Object) => () => void };
-
-function textify(identifier: string): string
+export type TestMethod<T = unknown> = Function &
 {
-    return identifier.split(/(?=[A-Z])/).join(" ").toLowerCase();
-}
+    [AFTER]?:       boolean;
+    [AFTER_EACH]?:  boolean;
+    [BEFORE]?:      boolean;
+    [BEFORE_EACH]?: boolean;
+    [BATCH]?:       boolean;
+    [CATEGORY]?:    string;
+    [DATA]?:        { source: Array<T>, expectation: Func1<T, string> };
+    [DESCRIPTION]?: string;
+    [EXPECTATION]?: string;
+    [TEST]?:        boolean;
+};
+
+export type TestObject<T = unknown> = { [key: string]: TestMethod<T> };
+
+type Test = { expectation: string, getMethod: (context: object) => () => void };
 
 export function after(description: string): MethodDecorator;
-export function after<T>(target: Object, key: string|symbol): void;
-export function after(...args: Array<Object>): MethodDecorator|void
+export function after(target: object, key: string|symbol): void;
+export function after(...args: [string]|[object, string|symbol]): MethodDecorator|void
 {
-    const decorator = (target: Object, key: string|symbol, description: string) =>
+    const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key][afterToken]       = true;
-        target[key][descriptionToken] = description;
+        target[key as string][AFTER]       = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
     {
-        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+        return (target: object, key: string|symbol) => decorator(target as TestObject, key, args[0]);
     }
     else
     {
-        const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        const [target, key] = args;
+        decorator(target as TestObject, key, camelToText(key.toString()));
     }
 }
 
 export function afterEach(description: string): MethodDecorator;
-export function afterEach<T>(target: Object, key: string|symbol): void;
-export function afterEach(...args: Array<Object>): MethodDecorator|void
+export function afterEach(target: object, key: string|symbol): void;
+export function afterEach(...args: [string]|[object, string|symbol]): MethodDecorator|void
 {
-    const decorator = (target: Object, key: string|symbol, description: string) =>
+    const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key][afterEachToken]   = true;
-        target[key][descriptionToken] = description;
+        target[key as keyof TestObject][AFTER_EACH]  = true;
+        target[key as keyof TestObject][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
     {
-        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+        return (target: object, key: string|symbol) => decorator(target as TestObject, key, args[0]);
     }
     else
     {
-        const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        const [target, key] = args;
+        decorator(target as TestObject, key, camelToText(key.toString()));
     }
 }
 
-export function batchTest<T>(source: Array<T>, expectation: Func1<T, string>): MethodDecorator
+export function batchTest<T = unknown>(source: Array<T>, expectation: Func1<T, string>): MethodDecorator
 {
-    return (target: Object, key: string|symbol) =>
+    return (target: object, key: string|symbol) =>
     {
-        target[key][batchTestToken] = true;
-        target[key][dataToken]      = { source, expectation };
+        (target as TestObject<T>)[key as keyof TestObject<T>][BATCH] = true;
+        (target as TestObject<T>)[key as keyof TestObject<T>][DATA]  = { source: source, expectation: expectation };
     };
 }
 
 export function before(description: string): MethodDecorator;
-export function before<T>(target: Object, key: string|symbol): void;
-export function before(...args: Array<Object>): MethodDecorator|void
+export function before(target: object, key: string|symbol): void;
+export function before(...args: [string]|[object, string|symbol]): MethodDecorator|void
 {
-    const decorator = (target: Object, key: string|symbol, description: string) =>
+    const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key][beforeToken]      = true;
-        target[key][descriptionToken] = description;
+        target[key as string][BEFORE]      = true;
+        target[key as string][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
     {
-        return (target: Object, key: string|symbol) => decorator(target, key, args[0] as string);
+        return (target: object, key: string|symbol) => decorator(target as TestObject, key, args[0]);
     }
     else
     {
-        const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        const [target, key] = args;
+        decorator(target as TestObject, key, camelToText(key.toString()));
     }
 }
 
 export function beforeEach(description: string): MethodDecorator;
-export function beforeEach<T>(target: Object, propertyKey: string|symbol): void;
-export function beforeEach(...args: Array<Object>): MethodDecorator|void
+export function beforeEach(target: object, propertyKey: string|symbol): void;
+export function beforeEach(...args: [string]|[object, string|symbol]): MethodDecorator|void
 {
-    const decorator = (target: Object, key: string, description: string) =>
+    const decorator = (target: TestObject, key: string|symbol, description: string) =>
     {
-        target[key][beforeEachToken]  = true;
-        target[key][descriptionToken] = description;
+        target[key as keyof TestObject][BEFORE_EACH] = true;
+        target[key as keyof TestObject][DESCRIPTION] = description;
     };
 
     if (args.length == 1)
     {
-        return (target: Object, key: string|symbol) => decorator(target, key.toString(), args[0] as string);
+        return (target: object, key: string|symbol) => decorator(target as TestObject, key.toString(), args[0]);
     }
     else
     {
-        const [target, key] = args as [Object, string];
-        decorator(target, key, textify(key));
+        const [target, key] = args;
+        decorator(target as TestObject, key, camelToText(key.toString()));
     }
 }
 
 export function category(name: string): MethodDecorator
 {
-    return (target: Object, key: string|symbol) =>
+    return (target: object, key: string|symbol) =>
     {
-        target[key][categoryToken] = name;
+        (target as TestObject)[key as string][CATEGORY] = name;
     };
 }
 
-export function shouldPass(target: Object, propertyKey: string|symbol): void
+export function shouldPass(target: object, propertyKey: string|symbol): void
 {
-    category("should pass")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<Object>);
+    category("should pass")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<object>);
 }
 
-export function shouldFail(target: Object, propertyKey: string|symbol): void
+export function shouldFail(target: object, propertyKey: string|symbol): void
 {
-    category("should fail")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<Object>);
+    category("should fail")(target, propertyKey, Object.getOwnPropertyDescriptor(target, propertyKey) as TypedPropertyDescriptor<object>);
 }
 
 export function suite(target: Function): void;
@@ -140,47 +152,47 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
 {
     const decorator = (target: Function, description: string) =>
     {
-        const tests:       Array<Test>                = [];
-        const catergories: ObjectLiteral<Array<Test>> = { };
+        const tests:       Array<Test>          = [];
+        const catergories: Indexer<Array<Test>> = { };
 
-        let afterCallback:      Nullable<Action> = null;
-        let afterEachCallback:  Nullable<Action> = null;
-        let beforeCallback:     Nullable<Action> = null;
-        let beforeEachCallback: Nullable<Action> = null;
+        let afterCallback:      Nullable<TestMethod> = null;
+        let afterEachCallback:  Nullable<TestMethod> = null;
+        let beforeCallback:     Nullable<TestMethod> = null;
+        let beforeEachCallback: Nullable<TestMethod> = null;
 
         for (const name of Object.getOwnPropertyNames(target.prototype))
         {
-            const method = target.prototype[name] as Function;
-            if (method[afterToken])
+            const method = target.prototype[name] as TestMethod;
+            if (method[AFTER])
             {
                 afterCallback = method as Action;
             }
 
-            if (method[afterEachToken])
+            if (method[AFTER_EACH])
             {
                 afterEachCallback = method as Action;
             }
 
-            if (method[beforeToken])
+            if (method[BEFORE])
             {
                 beforeCallback = method as Action;
             }
 
-            if (method[beforeEachToken])
+            if (method[BEFORE_EACH])
             {
                 beforeEachCallback = method as Action;
             }
 
-            if (method[testToken])
+            if (method[TEST])
             {
-                const categoryName = method[categoryToken];
+                const categoryName = method[CATEGORY];
                 if (categoryName)
                 {
-                    catergories[categoryName] = catergories[categoryName] || [];
-                    catergories[categoryName].push
+                    const category = catergories[categoryName] = catergories[categoryName] || [];
+                    category.push
                     ({
-                        getMethod:   (context: Object) => method.bind(context),
-                        expectation: method[expectationToken],
+                        getMethod:   (context: object) => method.bind(context),
+                        expectation: method[EXPECTATION] || "",
                     });
                 }
                 else
@@ -188,24 +200,24 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                     tests.push
                     ({
                         getMethod:   context => method.bind(context),
-                        expectation: method[expectationToken],
+                        expectation: method[EXPECTATION] || "",
                     });
                 }
             }
 
-            if (method[batchTestToken])
+            if (method[BATCH])
             {
-                const batch = method[dataToken] as { source: Array<Object>, expectation: Func1<Object, string> };
+                const batch = method[DATA] as { source: Array<object>, expectation: Func1<object, string> };
                 for (const data of batch.source)
                 {
-                    const categoryName = method[categoryToken];
+                    const categoryName = method[CATEGORY];
                     if (categoryName)
                     {
-                        catergories[categoryName] = catergories[categoryName] || [];
-                        catergories[categoryName].push
+                        const category = catergories[categoryName] = catergories[categoryName] || [];
+                        category.push
                         ({
                             expectation: batch.expectation(data),
-                            getMethod:   (context: Object) => () => method.call(context, data),
+                            getMethod:   (context: object) => () => method.call(context, data),
                         });
                     }
                     else
@@ -225,19 +237,20 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
             description,
             () =>
             {
+                const context = new (target as Constructor<object>)();
+
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback[descriptionToken], beforeCallback);
+                    mocha.before(beforeCallback[DESCRIPTION] || "", beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback[descriptionToken], beforeEachCallback);
+                    mocha.beforeEach(beforeEachCallback[DESCRIPTION] || "", beforeEachCallback.bind(context));
                 }
 
                 for (const test of tests)
                 {
-                    const context = new (target as Constructor<Object>)();
                     mocha.test(test.expectation, test.getMethod(context));
                 }
 
@@ -250,7 +263,6 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
                         {
                             for (const test of tests)
                             {
-                                const context = new (target as Constructor<Object>)();
                                 mocha.test(test.expectation, test.getMethod(context));
                             }
                         }
@@ -259,12 +271,12 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback[descriptionToken], afterEachCallback);
+                    mocha.afterEach(afterEachCallback[DESCRIPTION] || "", afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback[descriptionToken], afterCallback);
+                    mocha.after(afterCallback[DESCRIPTION] || "", afterCallback.bind(context));
                 }
             }
         );
@@ -276,31 +288,27 @@ export function suite(targetOrDescription: Function|string): ClassDecorator|void
     }
     else
     {
-        decorator(targetOrDescription, textify(targetOrDescription.name));
+        decorator(targetOrDescription, camelToText(targetOrDescription.name));
     }
 }
 
-export function test(target: Object, key: string|symbol): void;
+export function test(target: object, key: string|symbol): void;
 export function test(expectation: string): MethodDecorator;
-export function test(...args: Array<Object>): MethodDecorator|void
+export function test(...args: [string]|[object, string|symbol]): MethodDecorator|void
 {
-    let expectation = "";
-
-    const decorator = (target: Object, key: string|symbol) =>
+    const decorator = (target: TestObject, key: string, expectation: string) =>
     {
-        target[key][testToken]        = true;
-        target[key][expectationToken] = expectation;
+        target[key][TEST]        = true;
+        target[key][EXPECTATION] = expectation;
     };
 
     if (args.length == 1)
     {
-        expectation = args[0] as string;
-        return decorator;
+        return (target: object, key: string|symbol) => decorator(target as TestObject, key.toString(), args[0]);
     }
     else
     {
-        const [target, key] = args as [Object, string];
-        expectation = key.split(/(?=[A-Z])/).join(" ").toLowerCase();
-        decorator(target, key);
+        const [target, key] = args;
+        decorator(target as TestObject, key.toString(), camelToText(key.toString()));
     }
 }

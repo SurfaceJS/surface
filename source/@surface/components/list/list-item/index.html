@@ -1,0 +1,6 @@
+<surface-import from="../../stack-panel" />
+
+<surface-stack-panel orientation="horizontal">
+    <slot></slot>
+    <input type="button" value="-" horizontal-align="right" vertical-align="bottom" on-click="[[ host.fireRemove() ]]" />
+</surface-stack-panel>

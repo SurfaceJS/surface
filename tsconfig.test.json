@@ -4,8 +4,7 @@
     {
         "baseUrl": ".",
         "lib":     ["dom", "esnext"],
-        "paths":   { "chai": ["node_modules/@types/chai/index.d.ts"] },
-        "types":   ["shady-css"]
+        "paths":   { "chai": ["node_modules/@types/chai/index.d.ts"] }
     },
     "include": ["source/@surface/*/tests/**/*.ts"]
 }

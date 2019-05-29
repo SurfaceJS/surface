@@ -1,5 +1,5 @@
-import { Nullable } from "@surface/core";
-import Type         from "./type";
+import { Indexer, Nullable } from "@surface/core";
+import Type                  from "./type";
 
 export default abstract class MemberInfo
 {
@@ -9,24 +9,30 @@ export default abstract class MemberInfo
         return this._declaringType;
     }
 
+    private readonly _isOwn: boolean;
+    public get isOwn(): boolean
+    {
+        return this._isOwn;
+    }
+
     private readonly _isStatic: boolean;
     public get isStatic(): boolean
     {
         return this._isStatic;
     }
 
-    private readonly _key: string;
-    public get key(): string
+    private readonly _key: string|symbol;
+    public get key(): string|symbol
     {
         return this._key;
     }
 
-    protected _metadata: Nullable<Object>;
-    public get metadata(): Object
+    protected _metadata: Nullable<Indexer>;
+    public get metadata(): Indexer
     {
         if (!this._metadata)
         {
-            const metadata = { };
+            const metadata: Indexer = { };
             Reflect.getMetadataKeys(this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key)
                 .forEach(key => metadata[key] = Reflect.getMetadata(key, this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key));
 
@@ -36,10 +42,11 @@ export default abstract class MemberInfo
         return this._metadata;
     }
 
-    protected constructor(key: string, declaringType: Type, isStatic: boolean)
+    protected constructor(key: string|symbol, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
         this._key           = key;
         this._declaringType = declaringType;
+        this._isOwn         = isOwn;
         this._isStatic      = isStatic;
     }
 }

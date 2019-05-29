@@ -8,6 +8,9 @@ import { attribute, element }                  from "../decorators";
 @suite
 export default class DecoratorsSpec
 {
+    /*
+    Non testable using jsdom
+
     @test @shouldPass
     public elementDecoratorHtmlElement(): void
     {
@@ -17,13 +20,16 @@ export default class DecoratorsSpec
 
         expect(() => new Mock()).to.not.throw();
     }
+    */
 
     @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
         @element("mock-element")
-        class Mock extends HTMLElement
+        class Mock extends CustomElement
         {
+            public static observedAttributes?: Array<string>;
+
             private _value: Object = 1;
 
             @attribute
@@ -36,19 +42,24 @@ export default class DecoratorsSpec
             {
                 this._value = value;
             }
+
+            public constructor()
+            {
+                super();
+            }
         }
 
         expect(() => new Mock()).to.not.throw();
-        expect(Mock["observedAttributes"]).to.deep.equal(["value"]);
+        expect(Mock.observedAttributes).to.deep.equal(["value"]);
     }
 
     @test @shouldPass
     public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
     {
         @element("mock-element")
-        class Mock extends HTMLElement
+        class Mock extends CustomElement
         {
-            private _value1: Object = 1;
+            public static observedAttributes?: Array<string>;
 
             @attribute
             public get value1(): Object
@@ -61,8 +72,6 @@ export default class DecoratorsSpec
                 this._value1 = value;
             }
 
-            private _value2: Object = 1;
-
             @attribute
             public get value2(): Object
             {
@@ -73,10 +82,19 @@ export default class DecoratorsSpec
             {
                 this._value2 = value;
             }
+
+            private _value1: Object = 1;
+
+            private _value2: Object = 1;
+
+            public constructor()
+            {
+                super();
+            }
         }
 
         expect(() => new Mock()).to.not.throw();
-        expect(Mock["observedAttributes"]).to.deep.equal(["value1", "value2"]);
+        expect(Mock.observedAttributes).to.deep.equal(["value1", "value2"]);
     }
 
     @test @shouldPass
@@ -127,12 +145,6 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyleAndShadyCss(): void
     {
-        window.ShadyCSS =
-        {
-            prepareTemplate: (template: HTMLTemplateElement, name: string, element?: string) => { return; },
-            styleElement:    (element: HTMLElement) => { return; }
-        };
-
         @element("mock-element", "<div>Template</div>", "div { color: red; }", { extends: "div" })
         class Mock extends CustomElement
         {
@@ -152,7 +164,7 @@ export default class DecoratorsSpec
         { }
 
         expect(() => element("mock-element")(Mock))
-            .to.throw(TypeError, "Constructor is not an valid subclass of HTMLElement");
+            .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
     }
 
     @test @shouldFail
@@ -173,8 +185,8 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => attribute(Mock.prototype, "value"))
-            .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
+        expect(() => attribute(Mock.prototype, "value", Object.getOwnPropertyDescriptor(Mock.prototype, "value")!))
+            .to.throw(TypeError, "Target is not an valid instance of HTMLElement");
     }
 
     @test @shouldFail
@@ -184,16 +196,6 @@ export default class DecoratorsSpec
         { }
 
         expect(() => element("mock-element")(Mock))
-            .to.throw(TypeError, "Constructor is not an valid subclass of HTMLElement");
-    }
-
-    @test @shouldFail
-    public decorateWithTemplateHtmlElementSubclass(): void
-    {
-        class Mock extends HTMLElement
-        { }
-
-        expect(() => element("mock-element", "<div>Template</div>")(Mock))
-            .to.throw(TypeError, "Constructor is not an valid subclass of CustomElement");
+            .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
     }
 }

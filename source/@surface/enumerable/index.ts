@@ -30,6 +30,11 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public static range(start: number, end: number): Enumerable<number>
     {
+        if (start > end)
+        {
+            throw new TypeError("start cannot be greater than end");
+        }
+
         return new RangeIterator(start, end);
     }
 
@@ -209,16 +214,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public count(predicate: Func1<TSource, boolean>): number;
     public count(predicate?: Func1<TSource, boolean>): number
     {
-        if (predicate)
-        {
-            return this.where(predicate).count();
-        }
-
-        let count = 0;
-
-        this.forEach(() => count++);
-
-        return count;
+        return predicate? this.where(predicate).count() : Array.from(this).length;
     }
 
     /**
@@ -1036,6 +1032,21 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
         {
             yield element;
         }
+    }
+
+    public count(predicate?: Func1<TSource, boolean>): number
+    {
+        if (Array.isArray(this.source))
+        {
+            if (predicate)
+            {
+                return this.source.filter(predicate).length;
+            }
+
+            return this.source.length;
+        }
+
+        return super.count(predicate!);
     }
 }
 

@@ -10,15 +10,15 @@ export default class StaticRequestHandler extends RequestHandler
         super();
     }
 
-    public handle(httpContext: HttpContext): boolean
+    public async handle(httpContext: HttpContext): Promise<boolean>
     {
         if (httpContext.request.url)
         {
-            let filepath = this.path.join(httpContext.host.root, httpContext.host.wwwroot, httpContext.request.url);
+            const filepath = this.path.join(httpContext.host.root, httpContext.host.wwwroot, httpContext.request.url);
             if (this.path.extname(filepath) && this.fs.existsSync(filepath))
             {
-                let extension = this.path.extname(filepath);
-                let data      = this.fs.readFileSync(filepath);
+                const extension = this.path.extname(filepath) as keyof typeof mymeType;
+                const data      = this.fs.readFileSync(filepath);
 
                 httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] || mymeType[".html"] });
                 httpContext.response.write(data);

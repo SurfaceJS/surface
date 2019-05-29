@@ -1,6 +1,6 @@
-import * as common from "@surface/common";
-import fs          from "fs";
-import path        from "path";
+import * as io from "@surface/io";
+import fs      from "fs";
+import path    from "path";
 
 namespace CodeSplitter
 {
@@ -144,7 +144,7 @@ class CodeSplitter
             " * Requires the module of the specified path.",
             ` * @param ${this.extension == ".ts" ? "" : "{string} "}path Path to the module.${this.extension == ".ts" ? "" : "\n * @returns {Promise}"}`,
             " */",
-            this.extension == ".ts" ? "export async function load(path: string): Promise<Object>" : "export async function load(path)",
+            this.extension == ".ts" ? "export async function load(path: string): Promise<object>" : "export async function load(path)",
             "{",
             "    switch (path)",
             "    {",
@@ -155,9 +155,7 @@ class CodeSplitter
 
     private execute()
     {
-        let output = this.output;
-
-        output = path.resolve(this.context, output);
+        const output = path.resolve(this.context, this.output);
 
         let content = this.writeHeader() + "\n";
 
@@ -173,7 +171,7 @@ class CodeSplitter
 
         content += this.writeFooter();
 
-        common.makePath(path.dirname(output));
+        io.makePath(path.dirname(output));
         fs.writeFileSync(output, content);
 
         console.log(`Code split for the entries [${this.entries.reduce((a, b) => a + ", " + b)}] generated at ${output}`);

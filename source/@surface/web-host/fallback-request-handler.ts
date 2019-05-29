@@ -18,7 +18,7 @@ export default class FallbackRequestHandler extends RequestHandler
         this._fallbackRoute = fallbackRoute;
     }
 
-    public handle(httpContext: HttpContext): boolean
+    public async handle(httpContext: HttpContext): Promise<boolean>
     {
         let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this.fallbackRoute.replace(/^\/|\/$/g, ""));
 
@@ -42,7 +42,7 @@ export default class FallbackRequestHandler extends RequestHandler
             throw new Error("The provided fallback path is invalid.");
         }
 
-        let extension = this.path.extname(filepath);
+        let extension = this.path.extname(filepath) as keyof typeof mymeType;
         let data      = this.fs.readFileSync(filepath);
 
         httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] });

@@ -1,7 +1,9 @@
+import { Indexer } from "../types";
+
 export default interface IPackage
 {
-    dependencies:    Object;
-    devDependencies: Object;
+    dependencies:    Indexer<string>;
+    devDependencies: Indexer<string>;
     name:            string;
     path:            string;
     version:         string;

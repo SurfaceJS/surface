@@ -1,7 +1,8 @@
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class TemplateExpression implements IExpression
+export default class TemplateExpression extends BaseExpression<string>
 {
     private readonly _expressions: Array<IExpression>;
     public get expressions(): Array<IExpression>
@@ -21,6 +22,8 @@ export default class TemplateExpression implements IExpression
 
     public constructor(quasis: Array<string>, expressions: Array<IExpression>)
     {
+        super();
+
         this._expressions = expressions;
         this._quasis      = quasis;
     }
@@ -34,6 +37,6 @@ export default class TemplateExpression implements IExpression
             result = this.quasis[i] + `${this.expressions[i].evaluate()}`;
         }
 
-        return result + this.quasis[this.quasis.length - 1];
+        return this._cache = result + this.quasis[this.quasis.length - 1];
     }
 }

@@ -1,0 +1,19 @@
+@import "../../mixins";
+
+$button-size: 22px;
+
+:host
+{
+    ::slotted(*)
+    {
+        margin-right: 2px;
+        width:        100%;
+    }
+
+    input
+    {
+        margin-left: 2px;
+        @include exact-height($button-size);
+        @include exact-width($button-size);
+    }
+}

@@ -1,48 +1,35 @@
+import { Func1 }               from "@surface/core";
 import ArgumentOutOfRangeError from "@surface/core/errors/argument-out-of-range-error";
 import Enumerable              from "@surface/enumerable";
 
-const source = Symbol("list:source");
+const SOURCE = Symbol("list:source");
 
-export default class List<TSource> extends Enumerable<TSource>
+export default class List<T> extends Enumerable<T>
 {
-    [index: number]:  TSource;
-    private [source]: Array<TSource>;
+    [index: number]:  T;
+    private [SOURCE]: Array<T>;
 
     /** Returns Length of the list. */
     public get length(): number
     {
-        return this[source].length;
+        return this[SOURCE].length;
     }
 
     public constructor();
     /**
-     * @param elements Array<TSource> used to create the list.
+     * @param elements Iterable<T> used to create the list.
      */
-    public constructor(elements: Array<TSource>);
-    /**
-     * @param elements Enumerable<TSource> used to create the list.
-     */
-    public constructor(elements: Enumerable<TSource>);
-    public constructor(elements?: Array<TSource>|Enumerable<TSource>)
+    public constructor(elements: Iterable<T>);
+    public constructor(elements?: Iterable<T>)
     {
         super();
-        if (elements && Array.isArray(elements))
-        {
-            this[source] = elements;
-        }
-        else if (elements instanceof Enumerable)
-        {
-            this[source] = elements.toArray();
-        }
-        else
-        {
-            this[source] = [];
-        }
 
-        const handler: ProxyHandler<List<TSource>> =
+        this[SOURCE] = elements ? Array.from(elements) : [];
+
+        const handler: ProxyHandler<List<T>> =
         {
-            has: (target, key) => Number.isInteger(parseInt(key.toString())) ? key in this[source] : key in this,
-            get: (target, key) =>
+            has: (_, key) => Number.isInteger(parseInt(key.toString())) ? key in this[SOURCE] : key in this,
+            get: (_, key) =>
             {
                 const index = parseInt(key.toString());
 
@@ -57,14 +44,14 @@ export default class List<TSource> extends Enumerable<TSource>
                         throw new ArgumentOutOfRangeError("index is equal to or greater than length");
                     }
 
-                    return this[source][index];
+                    return this[SOURCE][index];
                 }
                 else
                 {
-                    return this[key];
+                    return this[key as keyof this];
                 }
             },
-            set: (target, key, value) =>
+            set: (_, key, value) =>
             {
                 const index = parseInt(key.toString());
 
@@ -79,11 +66,11 @@ export default class List<TSource> extends Enumerable<TSource>
                         throw new ArgumentOutOfRangeError("index is equal to or greater than length");
                     }
 
-                    this[source][index] = value;
+                    this[SOURCE][index] = value;
                 }
                 else
                 {
-                    this[key] = value;
+                    this[key as keyof this] = value;
                 }
 
                 return true;
@@ -93,9 +80,9 @@ export default class List<TSource> extends Enumerable<TSource>
         return new Proxy(this, handler);
     }
 
-    public *[Symbol.iterator](): Iterator<TSource>
+    public *[Symbol.iterator](): Iterator<T>
     {
-        for (const element of this[source])
+        for (const element of this[SOURCE])
         {
             yield element;
         }
@@ -105,9 +92,9 @@ export default class List<TSource> extends Enumerable<TSource>
      * Adds provided item to the list.
      * @param item Item to insert.
      */
-    public add(item: TSource): void
+    public add(item: T): void
     {
-        this[source].push(item);
+        this[SOURCE].push(item);
     }
 
     /**
@@ -115,62 +102,80 @@ export default class List<TSource> extends Enumerable<TSource>
      * @param item Item to insert.
      * @param index Position from item to insert.
      */
-    public addAt(item: TSource, index: number): void;
+    public addAt(item: T, index: number): void;
     /**
-     * Adds to the list the provided Array<TSource> object at specified index.
+     * Adds to the list the provided Array<T> object at specified index.
      * @param items Items to insert.
      * @param index Position from items to insert.
      */
-    public addAt(items: Array<TSource>, index: number): void;
+    public addAt(items: Array<T>, index: number): void;
     /**
-     * Adds to the list the provided List<TSource> object at specified index.
+     * Adds to the list the provided List<T> object at specified index.
      * @param items Items to insert.
      * @param index Position from items to insert.
      */
-    public addAt(items: List<TSource>, index: number): void;
-    public addAt(itemOrItems: TSource|List<TSource>|Array<TSource>, index: number): void
+    public addAt(items: List<T>, index: number): void;
+    public addAt(itemOrItems: T|List<T>|Array<T>, index: number): void
     {
-        const remaining = this[source].splice(index);
+        const remaining = this[SOURCE].splice(index);
 
         if (Array.isArray(itemOrItems))
         {
-            this[source] = this[source].concat(itemOrItems).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat(itemOrItems).concat(remaining);
         }
         else if (itemOrItems instanceof List)
         {
-            this[source] = this[source].concat(itemOrItems.toArray()).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat(itemOrItems.toArray()).concat(remaining);
         }
         else
         {
-            this[source] = this[source].concat([itemOrItems]).concat(remaining);
+            this[SOURCE] = this[SOURCE].concat([itemOrItems]).concat(remaining);
         }
+    }
+
+    /**
+     * Returns the number of elements in a sequence.
+     */
+    public count(): number;
+    /**
+     * Returns a number that represents how many elements in the specified sequence satisfy a condition.
+     * @param predicate A function to test each element for a condition.
+     */
+    public count(predicate?: Func1<T, boolean>): number
+    {
+        if (predicate)
+        {
+            return this[SOURCE].filter(predicate).length;
+        }
+
+        return this[SOURCE].length;
     }
 
     /**
      * Removes from the list the specified item.
      * @param item Item to remove.
      */
-    public remove(item: TSource): void;
+    public remove(item: T): void;
     /**
      * Removes from the list the item in the specified index.
      * @param index Position from item to remove.
      */
-    public remove(index: number): void;
+    public remove(index: T): void;
     /**
      * Removes from the list the amount of items specified from the index.
      * @param index Position from item to remove.
      * @param count Quantity of items to remove.
      */
     public remove(index: number, count: number): void;
-    public remove(indexOritem: number|TSource, count?: number): void
+    public remove(indexOritem: number|T, count?: number): void
     {
         if (typeof indexOritem == "number")
         {
-            this[source].splice(indexOritem, count || 1);
+            this[SOURCE].splice(indexOritem, count || 1);
         }
         else
         {
-            this[source].splice(this[source].findIndex(x => Object.is(x, indexOritem)), 1);
+            this[SOURCE].splice(this[SOURCE].indexOf(indexOritem), 1);
         }
     }
 }

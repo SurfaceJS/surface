@@ -21,7 +21,7 @@ export default class ExpressionVisitorSpec
     public invalidExpression(): void
     {
         const visitor  = new FixtureVisitor();
-        let expression = { type: -1, evaluate: () => null };
+        let expression = { cache: null, type: -1, evaluate: () => null };
 
         expect(() => visitor.visit(expression).evaluate()).to.throw(Error, "Invalid expression");
     }

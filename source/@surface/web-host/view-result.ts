@@ -1,4 +1,3 @@
-import { Nullable } from "@surface/core";
 import fs           from "fs";
 import path         from "path";
 import ActionResult from "./action-result";
@@ -9,11 +8,11 @@ import { mymeType } from "./variables";
 export default class ViewResult extends ActionResult
 {
     private readonly controllerName: string;
-    private readonly model:          Nullable<object>;
+    private readonly model:          unknown;
     private readonly statusCode:     StatusCode;
     private readonly viewName:       string;
 
-    public constructor(httpContext: HttpContext, controllerName: string,  viewName: string, model:  Nullable<object>, statusCode: StatusCode)
+    public constructor(httpContext: HttpContext, controllerName: string,  viewName: string, model: unknown, statusCode: StatusCode)
     {
         super(httpContext);
 

@@ -1,0 +1,13 @@
+:host
+{
+    display:        flex;
+    flex-direction: column;
+    #container
+    {
+        overflow-x: auto;
+    }
+    > hr
+    {
+        width: 100%;
+    }
+}

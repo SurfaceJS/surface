@@ -1,4 +1,3 @@
-import { Unknown }                       from "@surface/core";
 import IArrayExpression                  from "./interfaces/array-expression";
 import ICallExpression                   from "./interfaces/call-expression";
 import IConditionalExpression            from "./interfaces/conditional-expression";
@@ -48,17 +47,17 @@ export default abstract class Expression
         return new ConditionalExpression(condition, thuthy, falsy);
     }
 
-    public static constant(value: Unknown): IConstantExpression
+    public static constant(value: unknown): IConstantExpression
     {
         return new ConstantExpression(value);
     }
 
-    public static from(source: string, context?: Object): IExpression
+    public static from(source: string, context?: object): IExpression
     {
         return Parser.parse(source, context || { });
     }
 
-    public static identifier(context: Object, name: string): IIdentifierExpression
+    public static identifier(context: object, name: string): IIdentifierExpression
     {
         return new IdentifierExpression(context, name);
     }

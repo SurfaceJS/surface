@@ -1,8 +1,9 @@
-import { Nullable }   from "@surface/core";
+import { Indexer }    from "@surface/core";
 import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import BaseExpression from "./abstracts/base-expression";
 
-export default class CallExpression implements IExpression
+export default class CallExpression extends BaseExpression
 {
     private readonly _context: IExpression;
     public get context(): IExpression
@@ -29,14 +30,27 @@ export default class CallExpression implements IExpression
 
     public constructor(context: IExpression, name: string, args: Array<IExpression>)
     {
+        super();
+
         this._args    = args;
         this._context = context;
         this._name    = name;
     }
 
-    public evaluate(): Nullable<Object>
+    public evaluate(): unknown
     {
-        const context = this.context.evaluate() as Object;
-        return context[this.name].apply(context, this.args.map(x => x.evaluate()));
+        const context = this.context.evaluate() as Indexer<Function>;
+        const fn      = context[this.name];
+
+        if (!fn)
+        {
+            throw new ReferenceError(`${this.name} is not defined`);
+        }
+        else if (typeof fn != "function")
+        {
+            throw new TypeError(`${this.name} is not a function`);
+        }
+
+        return this._cache = fn.apply(context, this.args.map(x => x.evaluate()));
     }
 }

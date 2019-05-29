@@ -30,7 +30,7 @@ export default class Tasks
 
         await Promise.all(commands);
 
-        console.log("Building done!");
+        console.log("Building modules done!");
     }
 
     public static clean(): void
@@ -48,6 +48,8 @@ export default class Tasks
 
     public static async cover(filepath: string): Promise<void>
     {
+        const bin = path.resolve(__dirname, "../node_modules/.bin");
+
         const file = path.parse(filepath);
 
         let alias = file.name.replace(".spec", "");
@@ -57,7 +59,7 @@ export default class Tasks
             alias = "index";
         }
 
-        await common.execute(`cover ${file.name} tests`, `nyc --include ./**/${alias}.js --exclude tests/* --reporter=text mocha --ui tdd ${file.name}.js`);
+        await common.execute(`cover ${file.name} tests`, `${bin}/nyc --include **/${alias}.js --exclude tests/* --reporter=text ${bin}/mocha --ui tdd ${file.name}.js`);
     }
 
     public static async install(full: "true"|"false"): Promise<void>
@@ -72,7 +74,7 @@ export default class Tasks
 
             const targets = Object.keys(dependencies)
                 .filter(x => !x.startsWith("@surface/") || full == "true")
-                .map(key => `${key}@${dependencies[key].replace(/^(\^|\~)/, "")}`)
+                .map(key => `${key}@${dependencies[key]!.replace(/^(\^|\~)/, "")}`)
                 .join(" ");
 
             if (targets)
@@ -86,11 +88,6 @@ export default class Tasks
         Tasks.link();
 
         console.log("Compiling done!");
-    }
-
-    public static async publish(): Promise<void>
-    {
-        await Publisher.publish();
     }
 
     public static link(): void
@@ -107,13 +104,32 @@ export default class Tasks
 
                 if (!fs.existsSync(symlink))
                 {
-                    console.log(`Linking ${$package.name} dependence[${key}]`);
-                    fs.symlinkSync(original, symlink);
+                    //console.log(`Linking ${$package.name} dependence[${key}]`);
+                    //fs.symlinkSync(original, symlink);
+                    common.execute(`Linking ${$package.name} dependence[${key}]`, `mklink /J ${symlink} ${original}`);
                 }
             }
         }
 
         console.log("Linking done!");
+    }
+
+    public static async publish(): Promise<void>
+    {
+        await Publisher.publish();
+    }
+
+    public static relink(): void
+    {
+        Tasks.unlink();
+        Tasks.link();
+    }
+
+    public static async setup(): Promise<void>
+    {
+        await Tasks.install("false");
+        Tasks.clean();
+        await Tasks.build();
     }
 
     public static unlink(): void
@@ -130,18 +146,5 @@ export default class Tasks
         }
 
         console.log("Unlinking done!");
-    }
-
-    public static relink(): void
-    {
-        Tasks.unlink();
-        Tasks.link();
-    }
-
-    public static async setup(): Promise<void>
-    {
-        await Tasks.install("false");
-        Tasks.clean();
-        await Tasks.build();
     }
 }
