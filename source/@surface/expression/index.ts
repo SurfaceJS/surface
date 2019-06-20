@@ -1,3 +1,4 @@
+import { Indexer } from "@surface/core";
 import IArrayExpression                  from "./interfaces/array-expression";
 import ICallExpression                   from "./interfaces/call-expression";
 import IConditionalExpression            from "./interfaces/conditional-expression";
@@ -59,7 +60,7 @@ export default abstract class Expression
 
     public static identifier(context: object, name: string): IIdentifierExpression
     {
-        return new IdentifierExpression(context, name);
+        return new IdentifierExpression(context as Indexer, name);
     }
 
     public static member(target: IExpression, key: IExpression): IMemberExpression

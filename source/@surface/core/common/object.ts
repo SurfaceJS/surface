@@ -1,7 +1,8 @@
 import { Constructor, Indexer } from "..";
 import Hashcode                 from "../hashcode";
 
-export function clone<T extends Indexer>(source: T): T
+export function clone<T extends object>(source: T): T;
+export function clone(source: Indexer): Indexer
 {
     if (Array.isArray(source))
     {
@@ -18,11 +19,12 @@ export function clone<T extends Indexer>(source: T): T
             }
         }
 
-        return values as object as T;
+        return values as Indexer;
     }
     else
     {
         const prototype: Indexer = Object.create(Object.getPrototypeOf(source));
+
         for (const key of Object.getOwnPropertyNames(source))
         {
             const value = source[key];
@@ -36,7 +38,7 @@ export function clone<T extends Indexer>(source: T): T
                 prototype[key] = value;
             }
         }
-        return prototype as T;
+        return prototype;
     }
 }
 
@@ -124,6 +126,7 @@ export function *enumerateKeys(target: object): IterableIterator<string>
     } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
 
+export function getKeyMember<T extends object>(target: T, path: string): [string, T];
 export function getKeyMember(target: Indexer, path: string): [string, Indexer]
 {
     if (path.includes("."))
@@ -136,7 +139,7 @@ export function getKeyMember(target: Indexer, path: string): [string, Indexer]
 
             if (member instanceof Object)
             {
-                return getKeyMember(member, keys.join("."));
+                return getKeyMember(member as Indexer, keys.join("."));
             }
         }
         else
@@ -166,28 +169,28 @@ export function getValue<T = unknown>(target: Indexer, path: string): T
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: Array<TSource>): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
 /**
  * Deeply merges two or more objects, and optionally concatenate array values.
  * @param target        Object to receive merge.
  * @param source        Object to merge to the target.
  * @param combineArrays Specify to combine or not arrays.
  */
-export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
 /**
  * Deeply merges two objects.
  * @param target Object to receive merge.
  * @param source Objects to merge to the target.
  */
-export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource): TTarget & TSource;
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource): TTarget & TSource;
 /**
  * Deeply merges two objects, and optionally concatenate array values.
  * @param target Object to receive merge.
  * @param source Object to merge to the target.
  * @param combineArrays
  */
-export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
-export function merge<TTarget extends Indexer, TSource extends Indexer>(target: TTarget, source: TSource|Array<TSource>, combineArrays?: boolean): TTarget & TSource
+export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
+export function merge(target: Indexer, source: Indexer|Array<Indexer>, combineArrays?: boolean): Indexer
 {
     combineArrays = !!combineArrays;
 
@@ -207,7 +210,7 @@ export function merge<TTarget extends Indexer, TSource extends Indexer>(target: 
             {
                 if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
                 {
-                    target[key] = targetValue.concat(currentValue);
+                    targetValue.push(...currentValue);
                 }
                 else if (currentValue instanceof Object)
                 {
@@ -225,7 +228,7 @@ export function merge<TTarget extends Indexer, TSource extends Indexer>(target: 
         }
     }
 
-    return target as TTarget & TSource;
+    return target;
 }
 
 export function mixin<TBase extends Constructor, TConstructors extends Constructor>(first: TBase, second: TConstructors): TBase & TConstructors
@@ -254,7 +257,7 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
         if (key.includes("."))
         {
             const [name, ...rest] = key.split(".");
-            target[name] = objectFactory([[rest.join("."), value]], target[name] as object);
+            target[name] = objectFactory([[rest.join("."), value]], target[name] as Indexer);
         }
         else
         {

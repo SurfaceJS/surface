@@ -1,3 +1,4 @@
+import { Indexer } from "@surface/core";
 import IExpression                                       from "../interfaces/expression";
 import SyntaxError                                       from "../syntax-error";
 import { BinaryOperator, UnaryOperator, UpdateOperator } from "../types";
@@ -396,7 +397,7 @@ export default class Parser
 
             if (!this.match(":"))
             {
-                return new PropertyExpression(key, new IdentifierExpression(this.context, token.raw));
+                return new PropertyExpression(key, new IdentifierExpression(this.context as Indexer, token.raw));
             }
         }
         else
@@ -514,7 +515,7 @@ export default class Parser
             case TokenType.Keyword:
                 if (this.matchKeyword("this"))
                 {
-                    return new IdentifierExpression(this.context, this.nextToken().raw);
+                    return new IdentifierExpression(this.context as Indexer, this.nextToken().raw);
                 }
                 break;
             case TokenType.Identifier:
@@ -523,7 +524,7 @@ export default class Parser
                     return new ConstantExpression(this.nextToken().value);
                 }
 
-                return new IdentifierExpression(this.context, this.nextToken().raw);
+                return new IdentifierExpression(this.context as Indexer, this.nextToken().raw);
 
             case TokenType.BooleanLiteral:
                 return new ConstantExpression(this.nextToken().value);

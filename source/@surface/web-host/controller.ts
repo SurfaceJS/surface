@@ -27,7 +27,7 @@ export default abstract class Controller
     public view(viewName:  string, model: unknown): ActionResult;
     public view(viewName?: string, model?: unknown): ActionResult
     {
-        const name = this["__proto__" as keyof this].constructor.name.replace(/controller$/i, "");
+        const name = (Object.getPrototypeOf(this).constructor as Function).name.replace(/controller$/i, "");
 
         return new ViewResult(this.httpContext, name, viewName || "index", model, StatusCode.ok);
     }

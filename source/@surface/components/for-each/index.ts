@@ -1,4 +1,4 @@
-import { Nullable }           from "@surface/core";
+import { Indexer, Nullable }  from "@surface/core";
 import CustomElement          from "@surface/custom-element";
 import Enumerable             from "@surface/enumerable";
 import Component              from "..";
@@ -125,7 +125,7 @@ export default class ForEach extends Component
 
                     content.normalize();
 
-                    CustomElement.processDirectives(this, content, { ...super.context, index, item } as object); //TODO - Review binding order
+                    CustomElement.processDirectives(this, content, { ...super.context, index, item } as Indexer); //TODO - Review binding order
 
                     super.appendChild(content);
 

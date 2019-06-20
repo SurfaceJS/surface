@@ -85,11 +85,11 @@ export default abstract class CustomElement extends HTMLElement
      */
     protected notify<K extends keyof this>(key: K)
     {
-        const reactor = Reactive.getReactor(this);
+        const reactor = Reactive.getReactor(this as unknown as Indexer);
 
         if (reactor)
         {
-            reactor.notify(this, key);
+            reactor.notify(this as unknown as Indexer, key as keyof Indexer);
         }
     }
 

@@ -8,7 +8,7 @@
         "@surface/expression": "0.0.0",
         "@surface/observer": "0.0.0",
         "@surface/reflection": "0.0.0",
-        "tslib": "1.9.3"
+        "tslib": "1.10.0"
     },
     "description": "Enumerable module the provides many methods to iterate through of collections.",
     "devDependencies": {

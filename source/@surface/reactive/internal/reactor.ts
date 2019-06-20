@@ -38,7 +38,7 @@ export default class Reactor
 
         const reactor = target[REACTOR]!;
 
-        if (Array.isArray(value) && !!!(value as Reactiveable)[WRAPPED])
+        if (Array.isArray(value) && !!!(value as unknown as Reactiveable)[WRAPPED])
         {
             Reactor.wrapArray(reactor, target, key);
         }
@@ -388,7 +388,7 @@ export default class Reactor
 
         if (args.length == 1)
         {
-            this.notifyValue(value);
+            this.notifyValue(value as Indexer);
         }
         else
         {
@@ -400,7 +400,7 @@ export default class Reactor
             }
             else
             {
-                this.notifyTargetKeyValue(target, key, value);
+                this.notifyTargetKeyValue(target, key, value as Indexer);
             }
         }
 

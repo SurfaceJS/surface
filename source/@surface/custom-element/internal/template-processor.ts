@@ -17,7 +17,7 @@ import ObserverVisitor                                         from "./observer-
 import { BINDED, CONTEXT, ON_AFTER_BINDED, SLOTTED_TEMPLATES } from "./symbols";
 import windowWrapper                                           from "./window-wrapper";
 
-type Bindable<T> = T &
+type Bindable<T extends object> = T &
 {
     [BINDED]?:            boolean,
     [CONTEXT]?:           Indexer,
@@ -134,7 +134,7 @@ export default class TemplateProcessor
 
                         if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
                         {
-                            DataBind.twoWay(target, path, element, attributeName);
+                            DataBind.twoWay(target, path, element as Indexer, attributeName);
                         }
                     }
                     else

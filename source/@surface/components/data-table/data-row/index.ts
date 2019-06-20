@@ -58,6 +58,7 @@ export default class DataRow<T extends object = object> extends Component
         }
     }
 
+    private copy<TTarget extends object, TSource extends object>(target: TTarget, source: TSource): void;
     private copy(target: Indexer, source: Indexer): void
     {
         for (const member of Type.from(target).getMembers())
@@ -70,11 +71,11 @@ export default class DataRow<T extends object = object> extends Component
 
                 if (value instanceof Object)
                 {
-                    this.copy(target[key] as object, value);
+                    this.copy(target[key] as Indexer, value as Indexer);
                 }
                 else if (!(member instanceof PropertyInfo && member.readonly))
                 {
-                    target[key] = source[key];
+                    (target)[key] = source[key];
                 }
             }
         }

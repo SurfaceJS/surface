@@ -218,6 +218,7 @@ export default class DataTable extends Component
         return clone(this.dataDefinition);
     }
 
+    private createRow<T extends object>(data: T, isNew: boolean): DataRow;
     private createRow(data: Indexer, isNew: boolean): DataRow
     {
         const row = new DataRow(isNew, clone(data));
@@ -511,7 +512,7 @@ export default class DataTable extends Component
         }
         else if (rowsCount < dataCount)
         {
-            datasource.skip(rowsCount).forEach(x => this.rowGroup.appendChild(this.createRow(x, false)));
+            datasource.skip(rowsCount).forEach(x => this.rowGroup.appendChild(this.createRow(x as Indexer, false)));
         }
 
         rows.zip(datasource, (row, data) => ({ row, data }))

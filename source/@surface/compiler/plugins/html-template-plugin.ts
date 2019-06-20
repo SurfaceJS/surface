@@ -2,7 +2,7 @@ import { Indexer, Nullable } from "@surface/core";
 import fs                    from "fs";
 import path                  from "path";
 import webpack               from "webpack";
-import { Entry } from '../interfaces/types';
+import { Entry }             from "../interfaces/types";
 
 type Chunk =
 {
