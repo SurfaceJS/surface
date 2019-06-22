@@ -1,7 +1,8 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable } from "@surface/core";
+import ExpressionType        from "../../expression-type";
+import IExpression           from "../../interfaces/expression";
+import TypeGuard             from "../type-guard";
+import BaseExpression        from "./abstracts/base-expression";
 
 export default class CallExpression extends BaseExpression
 {
@@ -11,10 +12,10 @@ export default class CallExpression extends BaseExpression
         return this._context;
     }
 
-    private readonly _name: string;
-    public get name(): string
+    private readonly _callee: IExpression;
+    public get callee(): IExpression
     {
-        return this._name;
+        return this._callee;
     }
 
     private readonly _args: Array<IExpression>;
@@ -28,27 +29,31 @@ export default class CallExpression extends BaseExpression
         return ExpressionType.Call;
     }
 
-    public constructor(context: IExpression, name: string, args: Array<IExpression>)
+    public constructor(context: IExpression, callee: IExpression, args: Array<IExpression>)
     {
         super();
 
         this._args    = args;
         this._context = context;
-        this._name    = name;
+        this._callee    = callee;
     }
 
     public evaluate(): unknown
     {
-        const context = this.context.evaluate() as Indexer<Function>;
-        const fn      = context[this.name];
+        let context = this.context.evaluate() as Indexer<Function>;
+        let fn      = TypeGuard.isIdentifierExpression(this.callee) ?
+            context[this.callee.name] as Nullable<Function>
+            : TypeGuard.isMemberExpression(this.callee) ?
+                context[this.callee.key.evaluate() as string|number] as Nullable<Function>
+                : this.callee.evaluate()  as Nullable<Function>;
 
         if (!fn)
         {
-            throw new ReferenceError(`${this.name} is not defined`);
+            throw new ReferenceError(`${this.callee.toString()} is not defined`);
         }
         else if (typeof fn != "function")
         {
-            throw new TypeError(`${this.name} is not a function`);
+            throw new TypeError(`${this.callee.toString()} is not a function`);
         }
 
         return this._cache = fn.apply(context, this.args.map(x => x.evaluate()));

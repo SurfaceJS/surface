@@ -1,12 +1,14 @@
 import ExpressionType        from "../expression-type";
 import IExpression           from "../interfaces/expression";
 import ArrayExpression       from "./expressions/array-expression";
+import AssignmentExpression  from "./expressions/assignment-expression";
 import BinaryExpression      from "./expressions/binary-expression";
 import CallExpression        from "./expressions/call-expression";
 import ConditionalExpression from "./expressions/conditional-expression";
 import ConstantExpression    from "./expressions/constant-expression";
 import IdentifierExpression  from "./expressions/identifier-expression";
 import MemberExpression      from "./expressions/member-expression";
+import NewExpression         from "./expressions/new-expression";
 import ObjectExpression      from "./expressions/object-expression";
 import PropertyExpression    from "./expressions/property-expression";
 import RegexExpression       from "./expressions/regex-expression";
@@ -19,6 +21,11 @@ export default class TypeGuard
     public static isArrayExpression(target: IExpression): target is ArrayExpression
     {
         return target.type == ExpressionType.Array;
+    }
+
+    public static isAssignmentExpression(target: IExpression): target is AssignmentExpression
+    {
+        return target.type == ExpressionType.Assignment;
     }
 
     public static isBinaryExpression(target: IExpression): target is BinaryExpression
@@ -49,6 +56,11 @@ export default class TypeGuard
     public static isMemberExpression(target: IExpression): target is MemberExpression
     {
         return target.type == ExpressionType.Member;
+    }
+
+    public static isNewExpression(target: IExpression): target is NewExpression
+    {
+        return target.type == ExpressionType.New;
     }
 
     public static isObjectExpression(target: IExpression): target is ObjectExpression

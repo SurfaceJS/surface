@@ -1,4 +1,5 @@
 import IArrayExpression       from "./interfaces/array-expression";
+import IAssignmentExpression  from "./interfaces/assignment-expression";
 import IBinaryExpression      from "./interfaces/binary-expression";
 import ICallExpression        from "./interfaces/call-expression";
 import IConditionalExpression from "./interfaces/conditional-expression";
@@ -6,6 +7,7 @@ import IConstantExpression    from "./interfaces/constant-expression";
 import IExpression            from "./interfaces/expression";
 import IIdentifierExpression  from "./interfaces/identifier-expression";
 import IMemberExpression      from "./interfaces/member-expression";
+import INewExpression         from "./interfaces/new-expression";
 import IObjectExpression      from "./interfaces/object-expression";
 import IPropertyExpression    from "./interfaces/property-expression";
 import IRegexExpression       from "./interfaces/regex-expression";
@@ -21,6 +23,10 @@ export default abstract class ExpressionVisitor
         if (TypeGuard.isArrayExpression(expression))
         {
             return this.visitArrayExpression(expression);
+        }
+        else if (TypeGuard.isAssignmentExpression(expression))
+        {
+            return this.visitAssignmentExpression(expression);
         }
         else if (TypeGuard.isBinaryExpression(expression))
         {
@@ -45,6 +51,10 @@ export default abstract class ExpressionVisitor
         else if (TypeGuard.isMemberExpression(expression))
         {
             return this.visitMemberExpression(expression);
+        }
+        else if (TypeGuard.isNewExpression(expression))
+        {
+            return this.visitNewExpression(expression);
         }
         else if (TypeGuard.isObjectExpression(expression))
         {
@@ -86,6 +96,14 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
+    protected visitAssignmentExpression(expression: IAssignmentExpression): IExpression
+    {
+        this.visit(expression.left);
+        this.visit(expression.right);
+
+        return expression;
+    }
+
     protected visitBinaryExpression(expression: IBinaryExpression): IExpression
     {
         this.visit(expression.left);
@@ -97,6 +115,7 @@ export default abstract class ExpressionVisitor
     protected visitCallExpression(expression: ICallExpression): IExpression
     {
         this.visit(expression.context);
+        this.visit(expression.callee);
 
         for (const arg of expression.args)
         {
@@ -129,6 +148,18 @@ export default abstract class ExpressionVisitor
     {
         this.visit(expression.target);
         this.visit(expression.key);
+
+        return expression;
+    }
+
+    protected visitNewExpression(expression: INewExpression): IExpression
+    {
+        this.visit(expression.callee);
+
+        for (const arg of expression.args)
+        {
+            this.visit(arg);
+        }
 
         return expression;
     }

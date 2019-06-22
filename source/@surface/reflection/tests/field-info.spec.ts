@@ -48,7 +48,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public readonly(): void
     {
-        expect(fieldInfo.readonly).to.equal(false);
+        expect(fieldInfo.readonly).to.equal(true);
     }
 
     @test @shouldPass

@@ -1,19 +1,20 @@
-import IExpression           from "../../interfaces/expression";
-import ArrayExpression       from "../../internal/expressions/array-expression";
-import BinaryExpression      from "../../internal/expressions/binary-expression" ;
-import CallExpression        from "../../internal/expressions/call-expression";
-import ConditionalExpression from "../../internal/expressions/conditional-expression";
-import ConstantExpression    from "../../internal/expressions/constant-expression";
-import IdentifierExpression  from "../../internal/expressions/identifier-expression";
-import MemberExpression      from "../../internal/expressions/member-expression";
-import ObjectExpression      from "../../internal/expressions/object-expression";
-import RegexExpression       from "../../internal/expressions/regex-expression";
-import TemplateExpression    from "../../internal/expressions/template-expression";
-import UnaryExpression       from "../../internal/expressions/unary-expression";
-import UpdateExpression      from "../../internal/expressions/update-expression";
-import SyntaxError           from "../../syntax-error";
-
 import { Constructor, Nullable } from "@surface/core";
+import IExpression               from "../../interfaces/expression";
+import ArrayExpression           from "../../internal/expressions/array-expression";
+import AssignmentExpression      from "../../internal/expressions/assignment-expression";
+import BinaryExpression          from "../../internal/expressions/binary-expression" ;
+import CallExpression            from "../../internal/expressions/call-expression";
+import ConditionalExpression     from "../../internal/expressions/conditional-expression";
+import ConstantExpression        from "../../internal/expressions/constant-expression";
+import IdentifierExpression      from "../../internal/expressions/identifier-expression";
+import MemberExpression          from "../../internal/expressions/member-expression";
+import NewExpression             from "../../internal/expressions/new-expression";
+import ObjectExpression          from "../../internal/expressions/object-expression";
+import RegexExpression           from "../../internal/expressions/regex-expression";
+import TemplateExpression        from "../../internal/expressions/template-expression";
+import UnaryExpression           from "../../internal/expressions/unary-expression";
+import UpdateExpression          from "../../internal/expressions/update-expression";
+import SyntaxError               from "../../syntax-error";
 
 export type ExpressionFixtureSpec        = { raw: string, value: Nullable<Object>, type: Constructor<IExpression>, context: Object };
 export type InvalidExpressionFixtureSpec = { raw: string, error: Error, context: Object };
@@ -23,12 +24,16 @@ const context =
     this:
     {
         id:        1,
+        value:     1,
+        value1:    0,
         new:       "new",
         greater:   (left: number, right: number) => left > right,
+        lesser:    (left: number, right: number) => left < right,
         increment: (value: number) => ++value,
         getObject: () => ({ value: "Hello World!!!" }),
         getValue:  () => 42
     },
+    MyClass: class MyClass { public id: number = 1; },
     noop(value: unknown)
     {
         return value;
@@ -38,108 +43,6 @@ const context =
 // tslint:disable-next-line:no-any
 export const validExpressions: Array<ExpressionFixtureSpec> =
 [
-    {
-        context: context,
-        raw:     "1",
-        value:   1,
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "\"double quotes\"",
-        value:   "double quotes",
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "'single quotes'",
-        value:   "single quotes",
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "true",
-        value:   true,
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:    "false",
-        value:  false,
-        type:   ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "null",
-        value:   null,
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "undefined",
-        value:   undefined,
-        type:    ConstantExpression,
-    },
-    {
-        context: context,
-        raw:     "this.new",
-        value:   "new",
-        type:    MemberExpression,
-    },
-    {
-        context: context,
-        raw:     "{ }",
-        value:   { },
-        type:    ObjectExpression,
-    },
-    {
-        context: context,
-        raw:     "{ 1: 1 }",
-        value:   { 1: 1 },
-        type:    ObjectExpression,
-    },
-    {
-        context: context,
-        raw:     "{ new: 1 }",
-        value:   { new: 1 },
-        type:    ObjectExpression,
-    },
-    {
-        context: context,
-        raw:     "noop(true)",
-        value:   true,
-        type:    CallExpression,
-    },
-    {
-        context: context,
-        raw:     "{ foo: 1, \"bar\": [1, ...[2, 3]], [{id: 1}.id]: 1 }",
-        value:   { foo: 1, "bar": [1, 2, 3], [{id: 1}.id]: 1 },
-        type:    ObjectExpression,
-    },
-    {
-        context: context,
-        raw:     "{ foo: 'bar', ...{ id: 2, value: 3 }}",
-        value:   { foo: "bar", id: 2, value: 3 },
-        type:    ObjectExpression,
-    },
-    {
-        context: context,
-        raw:     "{ foo: 'bar', ...[1, 2]}",
-        value:   { 0: 1, 1: 2, foo: "bar" },
-        type:    ObjectExpression,
-    },
-    {
-        context: { id: 1 },
-        raw:     "{ id }",
-        value:   { id: 1 },
-        type:    ObjectExpression,
-    },
-    {
-        context: { id: 1 },
-        raw:     "{ [id]: 2 }",
-        value:   { 1: 2 },
-        type:    ObjectExpression,
-    },
     {
         context: context,
         raw:     "[]",
@@ -166,15 +69,87 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context: context,
-        raw:     "/test/",
-        value:   /test/,
-        type:    RegexExpression,
+        raw:     "this.value = 0",
+        value:   0,
+        type:    AssignmentExpression
     },
     {
         context: context,
-        raw:     "/test/ig",
-        value:   /test/ig,
-        type:    RegexExpression,
+        raw:     "this.value = this.value1 += 2",
+        value:   2,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value *= 2",
+        value:   4,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value **= 2",
+        value:   16,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value /= 2",
+        value:   8,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value %= 2",
+        value:   0,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value += 2",
+        value:   2,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value -= 1",
+        value:   1,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value <<= 2",
+        value:   4,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value >>= 1",
+        value:   2,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value >>>= 1",
+        value:   1,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value &= 1",
+        value:   1,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value ^= 1",
+        value:   0,
+        type:    AssignmentExpression
+    },
+    {
+        context: context,
+        raw:     "this.value |= 1",
+        value:   1,
+        type:    AssignmentExpression
     },
     {
         context: context,
@@ -334,6 +309,216 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context: context,
+        raw:     "noop(true)",
+        value:   true,
+        type:    CallExpression,
+    },
+    {
+        context: context,
+        raw:     "this.getValue()",
+        value:   42,
+        type:    CallExpression,
+    },
+    {
+        context: context,
+        raw:     "this.increment(1)",
+        value:   2,
+        type:    CallExpression,
+    },
+    {
+        context: context,
+        raw:     "this.greater(1, 2)",
+        value:   false,
+        type:    CallExpression,
+    },
+    {
+        context: context,
+        raw:     "this.greater(...[1, 2],)",
+        value:   false,
+        type:    CallExpression,
+    },
+    {
+        context: context,
+        raw:     "/test/.test('test')",
+        value:   true,
+        type:    CallExpression
+    },
+    {
+        context: context,
+        raw:     "/test/i.test('TEST')",
+        value:   true,
+        type:    CallExpression
+    },
+    {
+        context: context,
+        raw:     "(true ? this.greater : this.lesser)(1, 2)",
+        value:   false,
+        type:    CallExpression
+    },
+    {
+        context: context,
+        raw:     "1 > 2 ? 'greater' : 'smaller'",
+        value:   "smaller",
+        type:    ConditionalExpression
+    },
+    {
+        context: context,
+        raw:     "2 > 1 ? 'greater' : 'smaller'",
+        value:   "greater",
+        type:    ConditionalExpression
+    },
+    {
+        context: context,
+        raw:     "1",
+        value:   1,
+        type:    ConstantExpression,
+    },
+    {
+        context: context,
+        raw:     "\"double quotes\"",
+        value:   "double quotes",
+        type:    ConstantExpression,
+    },
+    {
+        context: context,
+        raw:     "'single quotes'",
+        value:   "single quotes",
+        type:    ConstantExpression,
+    },
+    {
+        context: context,
+        raw:     "true",
+        value:   true,
+        type:    ConstantExpression,
+    },
+    {
+        context: context,
+        raw:    "false",
+        value:  false,
+        type:   ConstantExpression,
+    },
+    {
+        context: context,
+        raw:     "null",
+        value:   null,
+        type:    ConstantExpression,
+    },
+    {
+        context: context,
+        raw:     "undefined",
+        value:   undefined,
+        type:    ConstantExpression,
+    },
+    {
+        context: { this: { id: 1 } },
+        raw:     "this",
+        value:   { id: 1 },
+        type:    IdentifierExpression,
+    },
+    {
+        context: context,
+        raw:     "this.new",
+        value:   "new",
+        type:    MemberExpression,
+    },
+    {
+        context: { this: { id: 1 } },
+        raw:     "this.id",
+        value:   1,
+        type:    MemberExpression,
+    },
+    {
+        context: context,
+        raw:     "this.increment",
+        value:   context.this.increment,
+        type:    MemberExpression,
+    },
+    {
+        context: context,
+        raw:     "this['increment']",
+        value:   context.this.increment,
+        type:    MemberExpression,
+    },
+    {
+        context: context,
+        raw:     "this.getObject().value",
+        value:   "Hello World!!!",
+        type:    MemberExpression,
+    },
+    {
+        context: context,
+        raw:     "new MyClass()",
+        value:   { id: 1 },
+        type:    NewExpression,
+    },
+    {
+        context: context,
+        raw:     "{ }",
+        value:   { },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ 1: 1 }",
+        value:   { 1: 1 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ new: 1 }",
+        value:   { new: 1 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ foo: 1, \"bar\": [1, ...[2, 3]], [{id: 1}.id]: 1 }",
+        value:   { foo: 1, "bar": [1, 2, 3], [{id: 1}.id]: 1 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ foo: 'bar', ...{ id: 2, value: 3 }}",
+        value:   { foo: "bar", id: 2, value: 3 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "{ foo: 'bar', ...[1, 2]}",
+        value:   { 0: 1, 1: 2, foo: "bar" },
+        type:    ObjectExpression,
+    },
+    {
+        context: { id: 1 },
+        raw:     "{ id }",
+        value:   { id: 1 },
+        type:    ObjectExpression,
+    },
+    {
+        context: { id: 1 },
+        raw:     "{ [id]: 2 }",
+        value:   { 1: 2 },
+        type:    ObjectExpression,
+    },
+    {
+        context: context,
+        raw:     "/test/",
+        value:   /test/,
+        type:    RegexExpression,
+    },
+    {
+        context: context,
+        raw:     "/test/ig",
+        value:   /test/ig,
+        type:    RegexExpression,
+    },
+    {
+        context: context,
+        raw:     "`The id is: ${this.id}`",
+        value:   "The id is: 1",
+        type:    TemplateExpression
+    },
+    {
+        context: context,
         raw:     "+1",
         value:   1,
         type:    UnaryExpression
@@ -397,90 +582,6 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:     "this.value--",
         value:   1,
         type:    UpdateExpression
-    },
-    {
-        context: { this: { id: 1 } },
-        raw:     "this",
-        value:   { id: 1 },
-        type:    IdentifierExpression,
-    },
-    {
-        context: { this: { id: 1 } },
-        raw:     "this.id",
-        value:   1,
-        type:    MemberExpression,
-    },
-    {
-        context: context,
-        raw:     "this.increment",
-        value:   context.this.increment,
-        type:    MemberExpression,
-    },
-    {
-        context: context,
-        raw:     "this['increment']",
-        value:   context.this.increment,
-        type:    MemberExpression,
-    },
-    {
-        context: context,
-        raw:     "this.getValue()",
-        value:   42,
-        type:    CallExpression,
-    },
-    {
-        context: context,
-        raw:     "this.increment(1)",
-        value:   2,
-        type:    CallExpression,
-    },
-    {
-        context: context,
-        raw:     "this.greater(1, 2)",
-        value:   false,
-        type:    CallExpression,
-    },
-    {
-        context: context,
-        raw:     "this.greater(...[1, 2],)",
-        value:   false,
-        type:    CallExpression,
-    },
-    {
-        context: context,
-        raw:     "this.getObject().value",
-        value:   "Hello World!!!",
-        type:    MemberExpression,
-    },
-    {
-        context: context,
-        raw:     "/test/.test('test')",
-        value:   true,
-        type:    CallExpression
-    },
-    {
-        context: context,
-        raw:     "/test/i.test('TEST')",
-        value:   true,
-        type:    CallExpression
-    },
-    {
-        context: context,
-        raw:     "`The id is: ${this.id}`",
-        value:   "The id is: 1",
-        type:    TemplateExpression
-    },
-    {
-        context: context,
-        raw:     "1 > 2 ? 'greater' : 'smaller'",
-        value:   "smaller",
-        type:    ConditionalExpression
-    },
-    {
-        context: context,
-        raw:     "2 > 1 ? 'greater' : 'smaller'",
-        value:   "greater",
-        type:    ConditionalExpression
     },
 ];
 

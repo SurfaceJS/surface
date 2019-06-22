@@ -8,7 +8,7 @@ import ConstantExpression from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
-const updateFunctions =
+const updateFunctions: Record<Operators, Func2<IExpression, IExpression, number>> =
 {
     "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
     "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,

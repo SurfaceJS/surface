@@ -17,7 +17,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   false
     },
     {
-        factory: () => Expression.call(Expression.constant({ foo: (value: number) => ++value }), "foo", [Expression.constant(1)]),
+        factory: () => Expression.call(Expression.constant(null), Expression.constant((value: number) => ++value), [Expression.constant(1)]),
         type:    ExpressionType.Call,
         value:   2
     },

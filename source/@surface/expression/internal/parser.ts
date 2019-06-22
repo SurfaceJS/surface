@@ -1,22 +1,24 @@
-import { Indexer } from "@surface/core";
-import IExpression                                       from "../interfaces/expression";
-import SyntaxError                                       from "../syntax-error";
-import { BinaryOperator, UnaryOperator, UpdateOperator } from "../types";
-import ArrayExpression                                   from "./expressions/array-expression";
-import BinaryExpression                                  from "./expressions/binary-expression";
-import CallExpression                                    from "./expressions/call-expression";
-import ConditionalExpression                             from "./expressions/conditional-expression";
-import ConstantExpression                                from "./expressions/constant-expression";
-import IdentifierExpression                              from "./expressions/identifier-expression";
-import MemberExpression                                  from "./expressions/member-expression";
-import ObjectExpression                                  from "./expressions/object-expression";
-import PropertyExpression                                from "./expressions/property-expression";
-import RegexExpression                                   from "./expressions/regex-expression";
-import TemplateExpression                                from "./expressions/template-expression";
-import UnaryExpression                                   from "./expressions/unary-expression";
-import UpdateExpression                                  from "./expressions/update-expression";
-import Scanner, { Token }                                from "./scanner";
-import TokenType                                         from "./token-type";
+import { Indexer }                                                            from "@surface/core";
+import IExpression                                                            from "../interfaces/expression";
+import SyntaxError                                                            from "../syntax-error";
+import { AssignmentOpertaror, BinaryOperator, UnaryOperator, UpdateOperator } from "../types";
+import ArrayExpression                                                        from "./expressions/array-expression";
+import AssignmentExpression                                                   from "./expressions/assignment-expression";
+import BinaryExpression                                                       from "./expressions/binary-expression";
+import CallExpression                                                         from "./expressions/call-expression";
+import ConditionalExpression                                                  from "./expressions/conditional-expression";
+import ConstantExpression                                                     from "./expressions/constant-expression";
+import IdentifierExpression                                                   from "./expressions/identifier-expression";
+import MemberExpression                                                       from "./expressions/member-expression";
+import NewExpression                                                          from "./expressions/new-expression";
+import ObjectExpression                                                       from "./expressions/object-expression";
+import PropertyExpression                                                     from "./expressions/property-expression";
+import RegexExpression                                                        from "./expressions/regex-expression";
+import TemplateExpression                                                     from "./expressions/template-expression";
+import UnaryExpression                                                        from "./expressions/unary-expression";
+import UpdateExpression                                                       from "./expressions/update-expression";
+import Scanner, { Token }                                                     from "./scanner";
+import TokenType                                                              from "./token-type";
 
 export default class Parser
 {
@@ -108,7 +110,34 @@ export default class Parser
 
     private assignmentExpression(): IExpression
     {
-        return this.conditionalExpression();
+        const left = this.conditionalExpression();
+
+        const isAssignment = this.match("=")
+            || this.match("*=")
+            || this.match("**=")
+            || this.match("/=")
+            || this.match("%=")
+            || this.match("+=")
+            || this.match("-=")
+            || this.match("<<=")
+            || this.match(">>=")
+            || this.match(">>>=")
+            || this.match("&=")
+            || this.match("^=")
+            || this.match("|=");
+
+        if (isAssignment)
+        {
+            const token = this.nextToken();
+
+            const right = this.assignmentExpression();
+
+            return new AssignmentExpression(left, right, token.raw as AssignmentOpertaror);
+        }
+        else
+        {
+            return left;
+        }
     }
 
     private binaryExpression(): IExpression
@@ -294,9 +323,9 @@ export default class Parser
         return expression;
     }
 
-    private leftHandSideExpression(): IExpression
+    private leftHandSideExpression(allowCall: boolean): IExpression
     {
-        let expression = this.primaryExpression();
+        let expression = this.matchKeyword("new") ? this.newPrimaryExpression() : this.primaryExpression();
         let parentExpression = expression;
 
         while (true)
@@ -318,21 +347,16 @@ export default class Parser
             }
             else if (this.match("("))
             {
-                let context: IExpression;
-                let name:    string;
-
-                if (expression instanceof IdentifierExpression)
+                if (!allowCall)
                 {
-                    context = new ConstantExpression(expression.context);
-                    name    = expression.name;
-                }
-                else
-                {
-                    context = parentExpression;
-                    name    = (expression as MemberExpression).key.evaluate() as string;
+                    return expression;
                 }
 
-                expression = new CallExpression(context, name, this.argumentsExpression());
+                const context = expression instanceof IdentifierExpression ?
+                    new ConstantExpression(expression.context)
+                    : parentExpression;
+
+                expression = new CallExpression(context, expression, this.argumentsExpression());
             }
             else if (this.match("["))
             {
@@ -464,6 +488,22 @@ export default class Parser
         return token;
     }
 
+    private newPrimaryExpression(): IExpression
+    {
+        const token = this.nextToken();
+
+        if (token.type != TokenType.Identifier)
+        {
+            this.unexpectedTokenError(token);
+        }
+
+        const callee = this.leftHandSideExpression(false);
+
+        const args = this.match("(") ? this.argumentsExpression() : [];
+
+        return new NewExpression(callee, args);
+    }
+
     private parseExpression(): IExpression
     {
         switch (this.lookahead.type)
@@ -496,7 +536,7 @@ export default class Parser
                 }
                 break;
             case TokenType.Keyword:
-                if (this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
+                if (this.lookahead.raw == "new" || this.lookahead.raw == "this" || this.lookahead.raw == "typeof")
                 {
                     return this.expression();
                 }
@@ -609,11 +649,11 @@ export default class Parser
         if (this.match("++") || this.match("--"))
         {
             const operator = this.nextToken().raw as UpdateOperator;
-            return new UpdateExpression(this.leftHandSideExpression(), operator, true);
+            return new UpdateExpression(this.leftHandSideExpression(true), operator, true);
         }
         else
         {
-            const expression = this.leftHandSideExpression();
+            const expression = this.leftHandSideExpression(true);
 
             if (this.match("++") || this.match("--"))
             {
