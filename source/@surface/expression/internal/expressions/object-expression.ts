@@ -2,13 +2,20 @@ import { Indexer }        from "@surface/core";
 import ExpressionType     from "../../expression-type";
 import BaseExpression     from "./abstracts/base-expression";
 import PropertyExpression from "./property-expression";
+import SpreadExpression   from "./spread-expression";
 
 export default class ObjectExpression extends BaseExpression<Indexer>
 {
-    private readonly _properties: Array<PropertyExpression>;
+    private readonly elements: Array<PropertyExpression|SpreadExpression>;
+
     public get properties(): Array<PropertyExpression>
     {
-        return this._properties;
+        return this.elements.filter(x => x instanceof PropertyExpression) as Array<PropertyExpression>;
+    }
+
+    public get spreads(): Array<SpreadExpression>
+    {
+        return this.elements.filter(x => x instanceof SpreadExpression) as Array<SpreadExpression>;
     }
 
     public get type(): ExpressionType
@@ -16,22 +23,29 @@ export default class ObjectExpression extends BaseExpression<Indexer>
         return ExpressionType.Object;
     }
 
-    public constructor(properties: Array<PropertyExpression>)
+    public constructor(elements: Array<PropertyExpression|SpreadExpression>)
     {
         super();
 
-        this._properties = properties;
+        this.elements = elements;
     }
 
     public evaluate(): Indexer
     {
-        const $object: Indexer = { };
+        const evaluation: Indexer = { };
 
-        for (const property of this.properties)
+        for (const element of this.elements)
         {
-            $object[property.key.evaluate() as string] = property.evaluate();
+            if (element instanceof PropertyExpression)
+            {
+                evaluation[element.key.evaluate() as string] = element.evaluate();
+            }
+            else
+            {
+                Object.assign(evaluation, element.evaluate());
+            }
         }
 
-        return this._cache = $object;
+        return this._cache = evaluation;
     }
 }

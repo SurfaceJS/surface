@@ -12,6 +12,7 @@ enum ExpressionType
     Object,
     Property,
     Regex,
+    Spread,
     Template,
     Unary,
     Update,

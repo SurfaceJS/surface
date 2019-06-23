@@ -11,6 +11,7 @@ import INewExpression         from "./interfaces/new-expression";
 import IObjectExpression      from "./interfaces/object-expression";
 import IPropertyExpression    from "./interfaces/property-expression";
 import IRegexExpression       from "./interfaces/regex-expression";
+import ISpreadExpression      from "./interfaces/spread-expression";
 import ITemplateExpression    from "./interfaces/template-expression";
 import IUnaryExpression       from "./interfaces/unary-expression";
 import IUpdateExpression      from "./interfaces/update-expression";
@@ -184,6 +185,13 @@ export default abstract class ExpressionVisitor
 
     protected visitRegexExpression(expression: IRegexExpression): IExpression
     {
+        return expression;
+    }
+
+    protected visitSpreadExpression(expression: ISpreadExpression): IExpression
+    {
+        this.visit(expression.argument);
+
         return expression;
     }
 

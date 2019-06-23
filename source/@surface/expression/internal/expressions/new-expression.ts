@@ -1,6 +1,7 @@
-import ExpressionType  from "../../expression-type";
-import IExpression     from "../../interfaces/expression";
-import BaseExpression  from "./abstracts/base-expression";
+import ExpressionType   from "../../expression-type";
+import IExpression      from "../../interfaces/expression";
+import BaseExpression   from "./abstracts/base-expression";
+import SpreadExpression from "./spread-expression";
 
 export default class NewExpression extends BaseExpression
 {
@@ -42,6 +43,20 @@ export default class NewExpression extends BaseExpression
             throw new TypeError(`${this.callee.toString()} is not a constructor`);
         }
 
-        return this._cache = Reflect.construct(fn, this.args.map(x => x.evaluate()), fn);
+        const $arguments: Array<unknown> = [];
+
+        for (const argument of this.args)
+        {
+            if (argument instanceof SpreadExpression)
+            {
+                $arguments.push(...argument.evaluate() as Array<unknown>);
+            }
+            else
+            {
+                $arguments.push(argument.evaluate());
+            }
+        }
+
+        return this._cache = Reflect.construct(fn, $arguments, fn);
     }
 }

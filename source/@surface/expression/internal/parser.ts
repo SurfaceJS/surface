@@ -14,6 +14,7 @@ import NewExpression                                                          fr
 import ObjectExpression                                                       from "./expressions/object-expression";
 import PropertyExpression                                                     from "./expressions/property-expression";
 import RegexExpression                                                        from "./expressions/regex-expression";
+import SpreadExpression                                                       from "./expressions/spread-expression";
 import TemplateExpression                                                     from "./expressions/template-expression";
 import UnaryExpression                                                        from "./expressions/unary-expression";
 import UpdateExpression                                                       from "./expressions/update-expression";
@@ -48,9 +49,9 @@ export default class Parser
         {
             while (true)
             {
-                const expression = this.match("...") ? this.spreadExpression() : [this.assignmentExpression()];
+                const expression = this.match("...") ? this.spreadExpression() : this.assignmentExpression();
 
-                args.push(...expression);
+                args.push(expression);
 
                 if (this.match(")"))
                 {
@@ -87,7 +88,7 @@ export default class Parser
 
             if (this.match("..."))
             {
-                elements.push(...this.spreadExpression());
+                elements.push(this.spreadExpression());
             }
             else if (!this.match("]"))
             {
@@ -378,27 +379,13 @@ export default class Parser
     {
         this.expect("{");
 
-        const properties: Array<PropertyExpression> = [];
+        const properties: Array<PropertyExpression|SpreadExpression> = [];
 
         while (!this.match("}"))
         {
             if (this.match("..."))
             {
-                let index = 0;
-
-                for (const expression of this.spreadExpression())
-                {
-                    if (expression instanceof PropertyExpression)
-                    {
-                        properties.push(expression);
-                    }
-                    else
-                    {
-                        properties.push(new PropertyExpression(new ConstantExpression(index), expression));
-                    }
-
-                    index++;
-                }
+                properties.push(this.spreadExpression());
             }
             else
             {
@@ -616,20 +603,11 @@ export default class Parser
         return new RegexExpression(token.pattern as string, token.flags as string);
     }
 
-    private spreadExpression(): Array<IExpression>
+    private spreadExpression(): SpreadExpression
     {
         this.expect("...");
 
-        if (this.match("["))
-        {
-            return (this.assignmentExpression() as ArrayExpression).elements;
-        }
-        else if (this.match("{"))
-        {
-            return (this.assignmentExpression() as ObjectExpression).properties;
-        }
-
-        return [this.assignmentExpression()];
+        return new SpreadExpression(this.assignmentExpression());
     }
 
     private unaryExpression(): IExpression

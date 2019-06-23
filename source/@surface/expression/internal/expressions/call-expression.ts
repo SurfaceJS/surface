@@ -3,6 +3,7 @@ import ExpressionType        from "../../expression-type";
 import IExpression           from "../../interfaces/expression";
 import TypeGuard             from "../type-guard";
 import BaseExpression        from "./abstracts/base-expression";
+import SpreadExpression      from "./spread-expression";
 
 export default class CallExpression extends BaseExpression
 {
@@ -56,6 +57,20 @@ export default class CallExpression extends BaseExpression
             throw new TypeError(`${this.callee.toString()} is not a function`);
         }
 
-        return this._cache = fn.apply(context, this.args.map(x => x.evaluate()));
+        const $arguments: Array<unknown> = [];
+
+        for (const argument of this.args)
+        {
+            if (argument instanceof SpreadExpression)
+            {
+                $arguments.push(...argument.evaluate() as Array<unknown>);
+            }
+            else
+            {
+                $arguments.push(argument.evaluate());
+            }
+        }
+
+        return this._cache = fn.apply(context, $arguments);
     }
 }

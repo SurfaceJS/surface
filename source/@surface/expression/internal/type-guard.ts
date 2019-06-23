@@ -12,6 +12,7 @@ import NewExpression         from "./expressions/new-expression";
 import ObjectExpression      from "./expressions/object-expression";
 import PropertyExpression    from "./expressions/property-expression";
 import RegexExpression       from "./expressions/regex-expression";
+import SpreadExpression      from "./expressions/spread-expression";
 import TemplateExpression    from "./expressions/template-expression";
 import UnaryExpression       from "./expressions/unary-expression";
 import UpdateExpression      from "./expressions/update-expression";
@@ -76,6 +77,11 @@ export default class TypeGuard
     public static isRegexExpression(target: IExpression): target is RegexExpression
     {
         return target.type == ExpressionType.Regex;
+    }
+
+    public static isSpreadExpression(target: IExpression): target is SpreadExpression
+    {
+        return target.type == ExpressionType.Spread;
     }
 
     public static isTemplateExpression(target: IExpression): target is TemplateExpression
