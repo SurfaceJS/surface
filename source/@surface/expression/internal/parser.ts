@@ -48,9 +48,9 @@ export default class Parser
         {
             while (true)
             {
-                const expression = this.match("...") ? this.spreadExpression() : this.assignmentExpression();
+                const expression = this.match("...") ? this.spreadExpression() : [this.assignmentExpression()];
 
-                args.push(expression);
+                args.push(...expression);
 
                 if (this.match(")"))
                 {
@@ -87,10 +87,7 @@ export default class Parser
 
             if (this.match("..."))
             {
-                for (const value of this.spreadExpression().evaluate() as Iterable<Object>)
-                {
-                    elements.push(new ConstantExpression(value));
-                }
+                elements.push(...this.spreadExpression());
             }
             else if (!this.match("]"))
             {
@@ -382,13 +379,25 @@ export default class Parser
         this.expect("{");
 
         const properties: Array<PropertyExpression> = [];
+
         while (!this.match("}"))
         {
             if (this.match("..."))
             {
-                for (const [key, value] of Object.entries(this.spreadExpression().evaluate() as Object))
+                let index = 0;
+
+                for (const expression of this.spreadExpression())
                 {
-                    properties.push(new PropertyExpression(new ConstantExpression(key), new ConstantExpression(value)));
+                    if (expression instanceof PropertyExpression)
+                    {
+                        properties.push(expression);
+                    }
+                    else
+                    {
+                        properties.push(new PropertyExpression(new ConstantExpression(index), expression));
+                    }
+
+                    index++;
                 }
             }
             else
@@ -607,10 +616,20 @@ export default class Parser
         return new RegexExpression(token.pattern as string, token.flags as string);
     }
 
-    private spreadExpression(): IExpression
+    private spreadExpression(): Array<IExpression>
     {
         this.expect("...");
-        return this.assignmentExpression();
+
+        if (this.match("["))
+        {
+            return (this.assignmentExpression() as ArrayExpression).elements;
+        }
+        else if (this.match("{"))
+        {
+            return (this.assignmentExpression() as ObjectExpression).properties;
+        }
+
+        return [this.assignmentExpression()];
     }
 
     private unaryExpression(): IExpression
