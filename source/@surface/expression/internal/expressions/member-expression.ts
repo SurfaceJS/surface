@@ -1,7 +1,7 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }      from "@surface/core";
+import ExpressionType   from "../../expression-type";
+import IExpression      from "../../interfaces/expression";
+import BaseExpression   from "./abstracts/base-expression";
 
 export default class MemberExpression extends BaseExpression
 {
@@ -33,5 +33,12 @@ export default class MemberExpression extends BaseExpression
     public evaluate(): unknown
     {
         return this._cache = (this.target.evaluate() as Indexer)[`${this.key.evaluate()}`];
+    }
+
+    public toString(): string
+    {
+        const key = this.key.evaluate();
+
+        return `${this.target}${typeof key == "string" && /^[^\d][$\w]+$/.test(key) ? `.${key}` : `[\"${key}\"]`}`;
     }
 }

@@ -73,4 +73,9 @@ export default class BinaryExpression extends BaseExpression
     {
         return this._cache = this.operation(this.left, this.right);
     }
+
+    public toString(): string
+    {
+        return `${this.left.type == ExpressionType.Object && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+    }
 }

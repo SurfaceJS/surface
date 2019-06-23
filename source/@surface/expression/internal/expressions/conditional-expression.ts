@@ -40,4 +40,9 @@ export default class ConditionalExpression extends BaseExpression
     {
         return this._cache = this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
     }
+
+    public toString(): string
+    {
+        return `${this.condition} ? ${this.truthy} : ${this.falsy}`;
+    }
 }

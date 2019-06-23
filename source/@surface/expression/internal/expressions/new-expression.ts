@@ -59,4 +59,9 @@ export default class NewExpression extends BaseExpression
 
         return this._cache = Reflect.construct(fn, $arguments, fn);
     }
+
+    public toString(): string
+    {
+        return `new ${this.callee}(${this.args.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")})`;
+    }
 }

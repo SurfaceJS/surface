@@ -25,4 +25,9 @@ export default class SpreadExpression extends BaseExpression
     {
         return this.argument.evaluate();
     }
+
+    public toString(): string
+    {
+        return this.argument.toString();
+    }
 }

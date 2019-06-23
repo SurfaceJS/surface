@@ -69,4 +69,9 @@ export default class UpdateExpression extends BaseExpression<number>
             throw new TypeError("Invalid target expression");
         }
     }
+
+    public toString(): string
+    {
+        return this.prefix ? `${this.operator}${this.expression}` : `${this.expression}${this.operator}`;
+    }
 }

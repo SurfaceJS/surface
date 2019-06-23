@@ -33,4 +33,9 @@ export default class IdentifierExpression extends BaseExpression
     {
         return this._cache = this.context[this.name];
     }
+
+    public toString(): string
+    {
+        return this.name;
+    }
 }

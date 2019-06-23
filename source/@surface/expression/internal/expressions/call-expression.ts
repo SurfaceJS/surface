@@ -73,4 +73,9 @@ export default class CallExpression extends BaseExpression
 
         return this._cache = fn.apply(context, $arguments);
     }
+
+    public toString(): string
+    {
+        return `${[ExpressionType.Conditional, ExpressionType.Binary].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")})`;
+    }
 }

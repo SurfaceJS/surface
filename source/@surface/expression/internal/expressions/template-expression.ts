@@ -39,4 +39,16 @@ export default class TemplateExpression extends BaseExpression<string>
 
         return this._cache = result + this.quasis[this.quasis.length - 1];
     }
+
+    public toString(): string
+    {
+        let result = "";
+
+        for (let i = 0; i < this.expressions.length; i++)
+        {
+            result = this.quasis[i] + `\$\{${this.expressions[i]}\}`;
+        }
+
+        return `\`${result + this.quasis[this.quasis.length - 1]}\``;
+    }
 }

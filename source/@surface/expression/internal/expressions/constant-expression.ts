@@ -25,4 +25,13 @@ export default class ConstantExpression extends BaseExpression
     {
         return this.value;
     }
+
+    public toString(): string
+    {
+        return typeof this.value == "string" ?
+            `\"${this.value}\"`
+            : typeof this.value == "symbol" ?
+                this.value.toString()
+                : `${this.value}`;
+    }
 }

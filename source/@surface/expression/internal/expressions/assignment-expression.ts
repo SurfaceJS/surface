@@ -76,4 +76,9 @@ export default class AssignmentExpression extends BaseExpression
             throw new TypeError("Invalid left expression");
         }
     }
+
+    public toString(): string
+    {
+        return `${this.left} ${this.operator} ${this.right}`;
+    }
 }

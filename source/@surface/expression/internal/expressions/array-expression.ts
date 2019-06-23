@@ -1,6 +1,7 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import ExpressionType   from "../../expression-type";
+import IExpression      from "../../interfaces/expression";
+import BaseExpression   from "./abstracts/base-expression";
+import SpreadExpression from "./spread-expression";
 
 export default class ArrayExpression extends BaseExpression<Array<unknown>>
 {
@@ -24,6 +25,25 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
     public evaluate(): Array<unknown>
     {
-        return this._cache = this.elements.map(x => x.evaluate());
+        const evaluation: Array<unknown> = [];
+
+        for (const element of this.elements)
+        {
+            if (element instanceof SpreadExpression)
+            {
+                evaluation.push(...element.evaluate() as Array<unknown>);
+            }
+            else
+            {
+                evaluation.push(element.evaluate());
+            }
+        }
+
+        return this._cache = evaluation;
+    }
+
+    public toString(): string
+    {
+        return `[${this.elements.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")}]`;
     }
 }

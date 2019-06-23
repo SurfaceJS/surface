@@ -47,4 +47,9 @@ export default class UnaryExpression extends BaseExpression<Object>
     {
         return this._cache = this.operation(this.expression);
     }
+
+    public toString(): string
+    {
+        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.expression}`;
+    }
 }

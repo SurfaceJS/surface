@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { expect }                                   from "chai";
+import * as chai                                    from "chai";
 import Parser                                       from "../internal/parser";
 import
 {
@@ -17,8 +17,10 @@ export default class ParserSpec
     public expressionsShouldWork(expression: ExpressionFixtureSpec): void
     {
         const result = Parser.parse(expression.raw, expression.context);
-        expect(result.evaluate()).to.deep.equal(expression.value);
-        expect(result).instanceof(expression.type);
+
+        chai.expect(result.evaluate(), "evaluate").to.deep.equal(expression.value);
+        chai.expect(result, "instanceof").instanceof(expression.type);
+        chai.expect(result.toString(), "toString").to.equal(expression.toString);
     }
 
     @shouldFail
@@ -31,8 +33,8 @@ export default class ParserSpec
         }
         catch (error)
         {
-            expect(error.message).to.equal(expression.error.message);
-            expect(error).to.includes(expression.error);
+            chai.expect(error.message).to.equal(expression.error.message);
+            chai.expect(error).to.includes(expression.error);
         }
     }
 }

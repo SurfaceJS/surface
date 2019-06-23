@@ -5,4 +5,5 @@ export default interface IExpression
     type:       ExpressionType;
     cache:      unknown;
     evaluate(): unknown;
+    toString(): string;
 }

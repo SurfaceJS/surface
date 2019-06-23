@@ -48,4 +48,9 @@ export default class ObjectExpression extends BaseExpression<Indexer>
 
         return this._cache = evaluation;
     }
+
+    public toString(): string
+    {
+        return this.elements.length > 0 ? `{ ${this.elements.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")} }` : "{ }";
+    }
 }

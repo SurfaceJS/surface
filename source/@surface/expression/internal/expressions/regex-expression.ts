@@ -32,4 +32,9 @@ export default class RegexExpression extends BaseExpression<RegExp>
     {
         return this._cache = new RegExp(this.pattern, this.flags);
     }
+
+    public toString(): string
+    {
+        return `/${this.pattern}/${this.flags}`;
+    }
 }

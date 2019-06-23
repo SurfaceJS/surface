@@ -33,4 +33,11 @@ export default class PropertyExpression extends BaseExpression
     {
         return this._cache = this.value.evaluate();
     }
+
+    public toString(): string
+    {
+        const key = this.key.evaluate();
+
+        return `${this.key.type != ExpressionType.Constant ? `[${this.key}]` : key != null && ["object", "symbol"].includes(typeof key) ? `[${key}]` : `"${key}"` }: ${this.value}`;
+    }
 }
