@@ -167,9 +167,9 @@ export default abstract class ExpressionVisitor
 
     protected visitObjectExpression(expression: IObjectExpression): IExpression
     {
-        for (const property of expression.properties)
+        for (const entry of expression.entries)
         {
-            this.visit(property);
+            this.visit(entry);
         }
 
         return expression;

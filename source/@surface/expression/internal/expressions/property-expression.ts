@@ -4,6 +4,12 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class PropertyExpression extends BaseExpression
 {
+    private readonly _computed: boolean;
+    public get computed(): boolean
+    {
+        return this._computed;
+    }
+
     private readonly _key: IExpression;
     public get key(): IExpression
     {
@@ -21,12 +27,13 @@ export default class PropertyExpression extends BaseExpression
         return ExpressionType.Property;
     }
 
-    public constructor(key: IExpression, value: IExpression)
+    public constructor(key: IExpression, value: IExpression, computed: boolean)
     {
         super();
 
-        this._key   = key;
-        this._value = value;
+        this._key      = key;
+        this._value    = value;
+        this._computed = computed;
     }
 
     public evaluate(): unknown
@@ -36,8 +43,6 @@ export default class PropertyExpression extends BaseExpression
 
     public toString(): string
     {
-        const key = this.key.evaluate();
-
-        return `${this.key.type != ExpressionType.Constant ? `[${this.key}]` : key != null && ["object", "symbol"].includes(typeof key) ? `[${key}]` : `"${key}"` }: ${this.value}`;
+        return `${this.computed ? `[${this.key}]` : `"${this.key.evaluate()}"` }: ${this.value}`;
     }
 }

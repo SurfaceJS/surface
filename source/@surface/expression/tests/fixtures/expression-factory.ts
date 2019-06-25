@@ -37,17 +37,17 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   1
     },
     {
-        factory: () => Expression.member(Expression.constant({ value: 1 }), Expression.constant("value")),
+        factory: () => Expression.member(Expression.constant({ value: 1 }), Expression.constant("value"), false),
         type:    ExpressionType.Member,
         value:   1
     },
     {
-        factory: () => Expression.object([Expression.property(Expression.constant("value"), Expression.constant(1))]),
+        factory: () => Expression.object([Expression.property(Expression.constant("value"), Expression.constant(1), false)]),
         type:    ExpressionType.Object,
         value:   { value: 1 }
     },
     {
-        factory: () => Expression.property(Expression.constant("value"), Expression.constant(1)),
+        factory: () => Expression.property(Expression.constant("value"), Expression.constant(1), false),
         type:    ExpressionType.Property,
         value:   1
     },

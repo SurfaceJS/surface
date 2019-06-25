@@ -335,13 +335,23 @@ export default class Parser
 
                 if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
-                    expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value));
+                    expression = new MemberExpression(parentExpression, new ConstantExpression(this.nextToken().value), false);
                 }
                 else
                 {
                     throw this.unexpectedTokenError(this.nextToken());
                 }
 
+            }
+            else if (this.match("["))
+            {
+                this.expect("[");
+
+                const propertyExpression = this.assignmentExpression();
+
+                this.expect("]");
+
+                expression = new MemberExpression(expression, propertyExpression, true);
             }
             else if (this.match("("))
             {
@@ -355,16 +365,6 @@ export default class Parser
                     : parentExpression;
 
                 expression = new CallExpression(context, expression, this.argumentsExpression());
-            }
-            else if (this.match("["))
-            {
-                this.expect("[");
-
-                const propertyExpression = this.assignmentExpression();
-
-                this.expect("]");
-
-                expression = new MemberExpression(expression, propertyExpression);
             }
             else
             {
@@ -410,6 +410,8 @@ export default class Parser
         let key:   IExpression;
         let value: IExpression;
 
+        let computed = false;
+
         if (token.type == TokenType.Identifier)
         {
             key = new ConstantExpression(token.raw);
@@ -417,7 +419,7 @@ export default class Parser
 
             if (!this.match(":"))
             {
-                return new PropertyExpression(key, new IdentifierExpression(this.context as Indexer, token.raw));
+                return new PropertyExpression(key, new IdentifierExpression(this.context as Indexer, token.raw), false);
             }
         }
         else
@@ -441,6 +443,8 @@ export default class Parser
                         key = this.assignmentExpression();
 
                         this.expect("]");
+
+                        computed = true;
                     }
                     else
                     {
@@ -455,7 +459,7 @@ export default class Parser
         this.expect(":");
 
         value = this.assignmentExpression();
-        return new PropertyExpression(key, value);
+        return new PropertyExpression(key, value, computed);
     }
 
     private match(value: string): boolean

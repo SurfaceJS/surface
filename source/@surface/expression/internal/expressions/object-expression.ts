@@ -6,16 +6,11 @@ import SpreadExpression   from "./spread-expression";
 
 export default class ObjectExpression extends BaseExpression<Indexer>
 {
-    private readonly elements: Array<PropertyExpression|SpreadExpression>;
+    private readonly _entries: Array<PropertyExpression|SpreadExpression>;
 
-    public get properties(): Array<PropertyExpression>
+    public get entries(): Array<PropertyExpression|SpreadExpression>
     {
-        return this.elements.filter(x => x instanceof PropertyExpression) as Array<PropertyExpression>;
-    }
-
-    public get spreads(): Array<SpreadExpression>
-    {
-        return this.elements.filter(x => x instanceof SpreadExpression) as Array<SpreadExpression>;
+        return this._entries;
     }
 
     public get type(): ExpressionType
@@ -23,26 +18,26 @@ export default class ObjectExpression extends BaseExpression<Indexer>
         return ExpressionType.Object;
     }
 
-    public constructor(elements: Array<PropertyExpression|SpreadExpression>)
+    public constructor(entries: Array<PropertyExpression|SpreadExpression>)
     {
         super();
 
-        this.elements = elements;
+        this._entries = entries;
     }
 
     public evaluate(): Indexer
     {
         const evaluation: Indexer = { };
 
-        for (const element of this.elements)
+        for (const entry of this.entries)
         {
-            if (element instanceof PropertyExpression)
+            if (entry instanceof PropertyExpression)
             {
-                evaluation[element.key.evaluate() as string] = element.evaluate();
+                evaluation[entry.key.evaluate() as string] = entry.evaluate();
             }
             else
             {
-                Object.assign(evaluation, element.evaluate());
+                Object.assign(evaluation, entry.evaluate());
             }
         }
 
@@ -51,6 +46,6 @@ export default class ObjectExpression extends BaseExpression<Indexer>
 
     public toString(): string
     {
-        return this.elements.length > 0 ? `{ ${this.elements.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")} }` : "{ }";
+        return this.entries.length > 0 ? `{ ${this.entries.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")} }` : "{ }";
     }
 }

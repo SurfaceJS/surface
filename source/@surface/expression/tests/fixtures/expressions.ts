@@ -539,7 +539,7 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         context:  context,
         raw:      "this['increment']",
         value:    context.this.increment,
-        toString: "this.increment",
+        toString: "this[\"increment\"]",
         type:     MemberExpression,
     },
     {

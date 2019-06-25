@@ -75,9 +75,9 @@ export default abstract class Expression
         return new IdentifierExpression(context as Indexer, name);
     }
 
-    public static member(target: IExpression, key: IExpression): IMemberExpression
+    public static member(target: IExpression, key: IExpression, computed: boolean): IMemberExpression
     {
-        return new MemberExpression(target, key);
+        return new MemberExpression(target, key, computed);
     }
 
     public static new(callee: IExpression, args: Array<IExpression>): INewExpression
@@ -90,9 +90,9 @@ export default abstract class Expression
         return new ObjectExpression(properties);
     }
 
-    public static property(key: IExpression, value: IExpression): IPropertyExpression
+    public static property(key: IExpression, value: IExpression, computed: boolean): IPropertyExpression
     {
-        return new PropertyExpression(key, value);
+        return new PropertyExpression(key, value, computed);
     }
 
     public static regex(pattern: string, flags: string): IRegexExpression
