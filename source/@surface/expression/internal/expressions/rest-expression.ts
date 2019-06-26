@@ -2,7 +2,7 @@ import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
 import BaseExpression from "./abstracts/base-expression";
 
-export default class SpreadExpression extends BaseExpression
+export default class RestExpression extends BaseExpression
 {
     private readonly _argument: IExpression;
     public get argument(): IExpression
@@ -12,7 +12,7 @@ export default class SpreadExpression extends BaseExpression
 
     public get type(): ExpressionType
     {
-        return ExpressionType.Spread;
+        return ExpressionType.Rest;
     }
 
     public constructor(argument: IExpression)

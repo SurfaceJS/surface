@@ -1,42 +1,58 @@
-import { Indexer }                                                            from "@surface/core";
-import IExpression                                                            from "../interfaces/expression";
-import SyntaxError                                                            from "../syntax-error";
-import { AssignmentOpertaror, BinaryOperator, UnaryOperator, UpdateOperator } from "../types";
-import ArrayExpression                                                        from "./expressions/array-expression";
-import AssignmentExpression                                                   from "./expressions/assignment-expression";
-import BinaryExpression                                                       from "./expressions/binary-expression";
-import CallExpression                                                         from "./expressions/call-expression";
-import ConditionalExpression                                                  from "./expressions/conditional-expression";
-import ConstantExpression                                                     from "./expressions/constant-expression";
-import IdentifierExpression                                                   from "./expressions/identifier-expression";
-import MemberExpression                                                       from "./expressions/member-expression";
-import NewExpression                                                          from "./expressions/new-expression";
-import ObjectExpression                                                       from "./expressions/object-expression";
-import PropertyExpression                                                     from "./expressions/property-expression";
-import RegexExpression                                                        from "./expressions/regex-expression";
-import SpreadExpression                                                       from "./expressions/spread-expression";
-import TemplateExpression                                                     from "./expressions/template-expression";
-import UnaryExpression                                                        from "./expressions/unary-expression";
-import UpdateExpression                                                       from "./expressions/update-expression";
-import Scanner, { Token }                                                     from "./scanner";
-import TokenType                                                              from "./token-type";
+import { Indexer }    from "@surface/core";
+import ExpressionType from "../expression-type";
+import IExpression    from "../interfaces/expression";
+import SyntaxError    from "../syntax-error";
+import
+{
+    AssignmentOpertaror,
+    BinaryOperator,
+    DestructureElement,
+    ParameterElement,
+    UnaryOperator,
+    UpdateOperator
+} from "../types";
+import ArrayDestructureExpression  from "./expressions/array-destructure-expression";
+import ArrayExpression             from "./expressions/array-expression";
+import AssignmentExpression        from "./expressions/assignment-expression";
+import BinaryExpression            from "./expressions/binary-expression";
+import CallExpression              from "./expressions/call-expression";
+import ConditionalExpression       from "./expressions/conditional-expression";
+import ConstantExpression          from "./expressions/constant-expression";
+import IdentifierExpression        from "./expressions/identifier-expression";
+import LambdaExpression            from "./expressions/lambda-expression";
+import MemberExpression            from "./expressions/member-expression";
+import NewExpression               from "./expressions/new-expression";
+import ObjectDestructureExpression from "./expressions/object-destructure-expression";
+import ObjectExpression            from "./expressions/object-expression";
+import ParameterExpression         from "./expressions/parameter-expression";
+import PropertyExpression          from "./expressions/property-expression";
+import RegexExpression             from "./expressions/regex-expression";
+import RestExpression              from "./expressions/rest-expression";
+import SequenceExpression          from "./expressions/sequence-expression";
+import SpreadExpression            from "./expressions/spread-expression";
+import TemplateExpression          from "./expressions/template-expression";
+import UnaryExpression             from "./expressions/unary-expression";
+import UpdateExpression            from "./expressions/update-expression";
+import Messages                    from "./messages";
+import Scanner, { Token }          from "./scanner";
+import TokenType                   from "./token-type";
 
 export default class Parser
 {
-    private readonly context: Object;
+    private readonly context: Indexer;
     private readonly scanner: Scanner;
     private lookahead: Token;
 
-    private constructor(source: string, context: Object)
+    private constructor(source: string, context: Indexer)
     {
         this.context   = context;
         this.scanner   = new Scanner(source);
         this.lookahead = this.scanner.nextToken();
     }
 
-    public static parse(source: string, context: Object): IExpression
+    public static parse(source: string, context: object): IExpression
     {
-        return new Parser(source, context).parseExpression();
+        return new Parser(source, context as Indexer).parseExpression();
     }
 
     private argumentsExpression(): Array<IExpression>
@@ -314,11 +330,91 @@ export default class Parser
     {
         this.expect("(");
 
-        const expression = this.assignmentExpression();
+        if (this.match(")"))
+        {
+            this.expect(")");
 
-        this.expect(")");
+            if (this.match("=>"))
+            {
+                this.expect("=>");
 
-        return expression;
+                const body = this.assignmentExpression();
+
+                return new LambdaExpression(this.context, [], body);
+            }
+
+            throw this.unexpectedTokenError(this.lookahead);
+        }
+        else
+        {
+            const expressions: Array<IExpression> = [];
+
+            if (this.match("..."))
+            {
+                this.expect("...");
+
+                expressions.push(new RestExpression(this.reinterpretParameter(this.assignmentExpression())));
+
+                if (!this.match(")"))
+                {
+                    throw this.syntaxError(Messages.parameterAfterRestParameter);
+                }
+
+                this.expect(")");
+            }
+            else
+            {
+                expressions.push(this.assignmentExpression());
+
+                if (this.match(","))
+                {
+                    while (true)
+                    {
+                        if (this.match(","))
+                        {
+                            this.expect(",");
+
+                            if (this.match("..."))
+                            {
+                                this.expect("...");
+
+                                expressions.push(new RestExpression(this.reinterpretParameter(this.assignmentExpression())));
+
+                                this.expect(")");
+                            }
+                            else
+                            {
+                                expressions.push(this.assignmentExpression());
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                this.expect(")");
+            }
+
+            if (this.match("=>"))
+            {
+                const parameters = expressions.map(x => new ParameterExpression(this.reinterpretParameter(x) as ParameterElement));
+
+                this.expect("=>");
+
+                const body = this.assignmentExpression();
+
+                return new LambdaExpression(this.context, parameters, body);
+
+            }
+            else if (expressions.length > 1)
+            {
+                return new SequenceExpression(expressions);
+            }
+
+            return expressions[0];
+        }
     }
 
     private leftHandSideExpression(allowCall: boolean): IExpression
@@ -339,7 +435,7 @@ export default class Parser
                 }
                 else
                 {
-                    throw this.unexpectedTokenError(this.nextToken());
+                    throw this.unexpectedTokenError(this.lookahead);
                 }
 
             }
@@ -410,7 +506,7 @@ export default class Parser
         let key:   IExpression;
         let value: IExpression;
 
-        let computed = false;
+        let computed   = false;
 
         if (token.type == TokenType.Identifier)
         {
@@ -419,7 +515,7 @@ export default class Parser
 
             if (!this.match(":"))
             {
-                return new PropertyExpression(key, new IdentifierExpression(this.context as Indexer, token.raw), false);
+                return new PropertyExpression(key, new IdentifierExpression(this.context, token.raw), false, true);
             }
         }
         else
@@ -459,7 +555,7 @@ export default class Parser
         this.expect(":");
 
         value = this.assignmentExpression();
-        return new PropertyExpression(key, value, computed);
+        return new PropertyExpression(key, value, computed, false);
     }
 
     private match(value: string): boolean
@@ -555,7 +651,7 @@ export default class Parser
             case TokenType.Keyword:
                 if (this.matchKeyword("this"))
                 {
-                    return new IdentifierExpression(this.context as Indexer, this.nextToken().raw);
+                    return new IdentifierExpression(this.context, this.nextToken().raw);
                 }
                 break;
             case TokenType.Identifier:
@@ -564,7 +660,7 @@ export default class Parser
                     return new ConstantExpression(this.nextToken().value);
                 }
 
-                return new IdentifierExpression(this.context as Indexer, this.nextToken().raw);
+                return new IdentifierExpression(this.context, this.nextToken().raw);
 
             case TokenType.BooleanLiteral:
                 return new ConstantExpression(this.nextToken().value);
@@ -588,7 +684,7 @@ export default class Parser
                         this.scanner.backtrack(1);
                         return this.regexExpression();
                     default:
-                        throw this.unexpectedTokenError(this.nextToken());
+                        throw this.unexpectedTokenError(this.lookahead);
                 }
 
             case TokenType.Template:
@@ -598,7 +694,40 @@ export default class Parser
                 break;
         }
 
-        throw this.unexpectedTokenError(this.nextToken());
+        throw this.unexpectedTokenError(this.lookahead);
+    }
+
+    private reinterpretParameter(expression: IExpression): IExpression
+    {
+        switch (expression.type)
+        {
+            case ExpressionType.Assignment:
+            case ExpressionType.Identifier:
+            case ExpressionType.Rest:
+                return expression;
+            case ExpressionType.Property:
+                if (!(expression as PropertyExpression).shorthand && (expression as PropertyExpression).value.type != ExpressionType.Object)
+                {
+                    break;
+                }
+                else if ((expression as PropertyExpression).value.type == ExpressionType.Object)
+                {
+                    (expression as PropertyExpression).update(this.reinterpretParameter((expression as PropertyExpression).value));
+                }
+
+                return expression;
+
+            case ExpressionType.Array:
+                return new ArrayDestructureExpression((expression as ArrayExpression).elements.map(this.reinterpretParameter.bind(this)) as Array<DestructureElement>);
+            case ExpressionType.Object:
+                return new ObjectDestructureExpression((expression as ObjectExpression).entries.map(this.reinterpretParameter.bind(this)) as Array<PropertyExpression>);
+            case ExpressionType.Spread:
+                return this.reinterpretParameter((expression as SpreadExpression).argument);
+            default:
+                break;
+        }
+
+        throw this.unexpectedTokenError(this.lookahead);
     }
 
     private regexExpression(): IExpression
@@ -612,6 +741,11 @@ export default class Parser
         this.expect("...");
 
         return new SpreadExpression(this.assignmentExpression());
+    }
+
+    private syntaxError(message: string): Error
+    {
+        return new SyntaxError(message, this.lookahead.lineNumber, this.lookahead.start, this.lookahead.start - this.lookahead.lineStart + 1);
     }
 
     private unaryExpression(): IExpression

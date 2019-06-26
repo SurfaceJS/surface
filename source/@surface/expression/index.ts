@@ -92,7 +92,7 @@ export default abstract class Expression
 
     public static property(key: IExpression, value: IExpression, computed: boolean): IPropertyExpression
     {
-        return new PropertyExpression(key, value, computed);
+        return new PropertyExpression(key, value, computed, false);
     }
 
     public static regex(pattern: string, flags: string): IRegexExpression

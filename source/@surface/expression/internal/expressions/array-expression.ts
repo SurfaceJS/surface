@@ -44,6 +44,6 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
     public toString(): string
     {
-        return `[${this.elements.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")}]`;
+        return `[${this.elements.map(x => x.toString()).join(", ")}]`;
     }
 }

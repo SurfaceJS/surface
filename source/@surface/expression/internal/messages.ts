@@ -34,7 +34,7 @@ export default class Messages
     // public static readonly noAsAfterImportNamespace      = "Unexpected token";
     // public static readonly noCatchOrFinally              = "Missing catch or finally after try";
     public static readonly numericSepatorNotAllowed      = "Numeric serapators are not allowed here.";
-    // public static readonly parameterAfterRestParameter   = "Rest parameter must be last formal parameter";
+    public static readonly parameterAfterRestParameter   = "Rest parameter must be last formal parameter";
     // public static readonly propertyAfterRestProperty     = "Unexpected token";
     // public static readonly redeclaration                 = "%0 '%1' has already been declared";
     // public static readonly staticPrototype               = "Classes may not have static property named prototype";

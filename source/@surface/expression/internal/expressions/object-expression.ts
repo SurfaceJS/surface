@@ -46,6 +46,6 @@ export default class ObjectExpression extends BaseExpression<Indexer>
 
     public toString(): string
     {
-        return this.entries.length > 0 ? `{ ${this.entries.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")} }` : "{ }";
+        return this.entries.length > 0 ? `{ ${this.entries.map(x => x.toString()).join(", ")} }` : "{ }";
     }
 }

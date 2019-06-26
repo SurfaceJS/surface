@@ -16,7 +16,13 @@ export default class PropertyExpression extends BaseExpression
         return this._key;
     }
 
-    private readonly _value: IExpression;
+    private readonly _shorthand: boolean;
+    public get shorthand(): boolean
+    {
+        return this._shorthand;
+    }
+
+    private _value: IExpression;
     public get value(): IExpression
     {
         return this._value;
@@ -27,13 +33,19 @@ export default class PropertyExpression extends BaseExpression
         return ExpressionType.Property;
     }
 
-    public constructor(key: IExpression, value: IExpression, computed: boolean)
+    public constructor(key: IExpression, value: IExpression, computed: boolean, shorthand: boolean)
     {
         super();
 
-        this._key      = key;
-        this._value    = value;
-        this._computed = computed;
+        this._key        = key;
+        this._value      = value;
+        this._computed   = computed;
+        this._shorthand  = shorthand;
+    }
+
+    public update(value: IExpression): void
+    {
+        this._value = value;
     }
 
     public evaluate(): unknown
@@ -43,6 +55,6 @@ export default class PropertyExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${this.computed ? `[${this.key}]` : `"${this.key.evaluate()}"` }: ${this.value}`;
+        return this.shorthand ? this.value.toString() : `${this.computed ? `[${this.key}]` : `"${this.key.evaluate()}"` }: ${this.value}`;
     }
 }

@@ -1,24 +1,25 @@
-import { Constructor, Nullable } from "@surface/core";
-import IExpression               from "../../interfaces/expression";
-import ArrayExpression           from "../../internal/expressions/array-expression";
-import AssignmentExpression      from "../../internal/expressions/assignment-expression";
-import BinaryExpression          from "../../internal/expressions/binary-expression" ;
-import CallExpression            from "../../internal/expressions/call-expression";
-import ConditionalExpression     from "../../internal/expressions/conditional-expression";
-import ConstantExpression        from "../../internal/expressions/constant-expression";
-import IdentifierExpression      from "../../internal/expressions/identifier-expression";
-import MemberExpression          from "../../internal/expressions/member-expression";
-import NewExpression             from "../../internal/expressions/new-expression";
-import ObjectExpression          from "../../internal/expressions/object-expression";
-import RegexExpression           from "../../internal/expressions/regex-expression";
-import TemplateExpression        from "../../internal/expressions/template-expression";
-import UnaryExpression           from "../../internal/expressions/unary-expression";
-import UpdateExpression          from "../../internal/expressions/update-expression";
-import SyntaxError               from "../../syntax-error";
+import { Constructor, Indexer, Nullable } from "@surface/core";
+import IExpression                        from "../../interfaces/expression";
+import ArrayExpression                    from "../../internal/expressions/array-expression";
+import AssignmentExpression               from "../../internal/expressions/assignment-expression";
+import BinaryExpression                   from "../../internal/expressions/binary-expression" ;
+import CallExpression                     from "../../internal/expressions/call-expression";
+import ConditionalExpression              from "../../internal/expressions/conditional-expression";
+import ConstantExpression                 from "../../internal/expressions/constant-expression";
+import IdentifierExpression               from "../../internal/expressions/identifier-expression";
+import LambdaExpression                   from "../../internal/expressions/lambda-expression";
+import MemberExpression                   from "../../internal/expressions/member-expression";
+import NewExpression                      from "../../internal/expressions/new-expression";
+import ObjectExpression                   from "../../internal/expressions/object-expression";
+import RegexExpression                    from "../../internal/expressions/regex-expression";
+import TemplateExpression                 from "../../internal/expressions/template-expression";
+import UnaryExpression                    from "../../internal/expressions/unary-expression";
+import UpdateExpression                   from "../../internal/expressions/update-expression";
+import SyntaxError                        from "../../syntax-error";
 
 export type ExpressionFixtureSpec =
 {
-    context:  Object,
+    context:  Indexer,
     raw:      string,
     toString: string,
     type:     Constructor<IExpression>,
@@ -516,6 +517,76 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
+        raw:      "() => undefined",
+        value:    () => undefined,
+        toString: "() => undefined",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(value) => value++",
+        value:    (value: number) => value++,
+        toString: "(value) => value++",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a, b) => a + b",
+        value:    (a: number, b: number) => a + b,
+        toString: "(a, b) => a + b",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "([a]) => a",
+        value:    ([a]: Array<string>) => a,
+        toString: "([a]) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a, [b, c]) => a + b + c",
+        value:    (a: number, [b, c]: Array<number>) => a + b + c,
+        toString: "(a, [b, c]) => a + b + c",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a, [b, [c]]) => a + b + c",
+        value:    (a: number, [b, [c]]: [number, Array<number>]) => a + b + c,
+        toString: "(a, [b, [c]]) => a + b + c",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "({ a }) => a",
+        value:    ({ a }: { a: string }) => a,
+        toString: "({ a }) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a, { b, x: { c } }) => a + b + c",
+        value:    (a: number, { b, "x": { c } }: { b: number, x: { c: number } }) => a + b + c,
+        toString: "(a, { b, \"x\": { c } }) => a + b + c",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a, [b, [c]]) => a + b + c",
+        value:    (a: number, [b, [c]]: [number, Array<number>]) => a + b + c,
+        toString: "(a, [b, [c]]) => a + b + c",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(...a) => a",
+        value:    (...a: Array<number>) => a,
+        toString: "(...a) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
         raw:      "this.new",
         value:    "new",
         toString: "this.new",
@@ -609,7 +680,7 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         context:  { id: 1 },
         raw:      "{ id }",
         value:    { id: 1 },
-        toString: "{ \"id\": id }",
+        toString: "{ id }",
         type:     ObjectExpression,
     },
     {
@@ -792,5 +863,25 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         context: context,
         raw:     "1 < 2 ? true .",
         error:   new SyntaxError("Unexpected end of expression", 1, 14, 15)
+    },
+    {
+        context: context,
+        raw:     "([x.y]) => 1",
+        error:   new SyntaxError("Unexpected token =>", 1, 8, 9)
+    },
+    {
+        context: context,
+        raw:     "({ x: 1 }) => 1",
+        error:   new SyntaxError("Unexpected token =>", 1, 11, 12)
+    },
+    {
+        context: context,
+        raw:     "([{ x: 1 }]) => 1",
+        error:   new SyntaxError("Unexpected token =>", 1, 13, 14)
+    },
+    {
+        context: context,
+        raw:     "(a, { b, x: { c: 1 } }) => a + b + c",
+        error:   new SyntaxError("Unexpected token =>", 0, 0, 0) // Todo: Review indexes
     },
 ];

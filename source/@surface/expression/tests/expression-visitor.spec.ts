@@ -9,7 +9,7 @@ export default class ExpressionVisitorSpec
 {
     @shouldPass
     @batchTest(validVisitors, x => `visit ${x.value}`)
-    public visitsShouldWork(spec: { raw: string, value: string, context?: Object }): void
+    public visitsShouldWork(spec: { raw: string, value: string, context?: object }): void
     {
         const expression = Expression.from(spec.raw, spec.context);
         const visitor  = new FixtureVisitor();

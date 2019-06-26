@@ -62,6 +62,6 @@ export default class NewExpression extends BaseExpression
 
     public toString(): string
     {
-        return `new ${this.callee}(${this.args.map(x => x.type == ExpressionType.Spread ? `...${x}` : x.toString()).join(", ")})`;
+        return `new ${this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
     }
 }
