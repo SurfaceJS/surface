@@ -1,7 +1,25 @@
 export default class Messages
 {
-    // public static readonly badImportCallArity            = "Unexpected token";
+    public static readonly illegalPropertyInDeclarationContext                           = "Illegal property in declaration context";
+    public static readonly invalidDestructuringAssignmentTarget                          = "Invalid destructuring assignment target";
+    public static readonly invalidHexadecimalEscapeSequence                              = "Invalid hexadecimal escape sequence";
+    public static readonly invalidRegularExpressionMissingToken                          = "Invalid regular expression missing /";
+    public static readonly keywordMustNotContainEscapedCharacters                        = "Keyword must not contain escaped characters";
+    public static readonly numericSerapatorsAreNotAllowedHere                            = "Numeric serapators are not allowed here.";
+    public static readonly octalLiteralsAreNotAllowedInTemplateStrings                   = "Octal literals are not allowed in template strings.";
+    public static readonly restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts = "`...` must be followed by an identifier in declaration contexts";
+    public static readonly restParameterMayNotHaveAdefaultInitializer                    = "Rest parameter may not have a default initializer";
+    public static readonly restParameterMustBeLastFormalParameter                        = "Rest parameter must be last formal parameter";
+    public static readonly unexpectedEndOfExpression                                     = "Unexpected end of expression";
+    public static readonly unexpectedIdentifier                                          = "Unexpected identifier";
+    public static readonly unexpectedNumber                                              = "Unexpected number";
+    public static readonly unexpectedString                                              = "Unexpected string";
+    public static readonly unexpectedToken                                               = "Unexpected token";
+    public static readonly unexpectedTokenIllegal                                        = "Unexpected token ILLEGAL";
+
+
     // public static readonly badGetterArity                = "Getter must not have any formal parameters";
+    // public static readonly badImportCallArity            = "Unexpected token";
     // public static readonly badSetterArity                = "Setter must have exactly one formal parameter";
     // public static readonly badSetterRestParameter        = "Setter function argument must not be a rest parameter";
     // public static readonly constructorIsAsync            = "Class constructor may not be an async method";
@@ -20,8 +38,6 @@ export default class Messages
     // public static readonly illegalImportDeclaration      = "Unexpected token";
     // public static readonly illegalLanguageModeDirective  = "Illegal 'use strict' directive in function with non-simple parameter list";
     // public static readonly illegalReturn                 = "Illegal return statement";
-    public static readonly invalidEscapedReservedWord    = "Keyword must not contain escaped characters"; // used
-    public static readonly invalidHexEscapeSequence      = "Invalid hexadecimal escape sequence"; // used
     // public static readonly invalidLHSInAssignment        = "Invalid left-hand side in assignment";
     // public static readonly invalidLHSInForIn             = "Invalid left-hand side in for-in";
     // public static readonly invalidLHSInForLoop           = "Invalid left-hand side in for-loop";
@@ -33,8 +49,6 @@ export default class Messages
     // public static readonly newlineAfterThrow             = "Illegal newline after throw";
     // public static readonly noAsAfterImportNamespace      = "Unexpected token";
     // public static readonly noCatchOrFinally              = "Missing catch or finally after try";
-    public static readonly numericSepatorNotAllowed      = "Numeric serapators are not allowed here.";
-    public static readonly parameterAfterRestParameter   = "Rest parameter must be last formal parameter";
     // public static readonly propertyAfterRestProperty     = "Unexpected token";
     // public static readonly redeclaration                 = "%0 '%1' has already been declared";
     // public static readonly staticPrototype               = "Classes may not have static property named prototype";
@@ -51,15 +65,8 @@ export default class Messages
     // public static readonly strictParamName               = "Parameter name eval or arguments is not allowed in strict mode";
     // public static readonly strictReservedWord            = "Use of future reserved word in strict mode";
     // public static readonly strictVarName                 = "Variable name may not be eval or arguments in strict mode";
-    public static readonly templateOctalLiteral          = "Octal literals are not allowed in template strings."; // used
-    //public static readonly unexpectedEOS                 = "Unexpected end of input";
-    //public static readonly unexpectedIdentifier          = "Unexpected identifier";
-    //public static readonly unexpectedNumber              = "Unexpected number";
-    //public static readonly unexpectedReserved            = "Unexpected reserved word";
-    //public static readonly unexpectedString              = "Unexpected string";
-    //public static readonly unexpectedTemplate            = "Unexpected quasi %0";
-    //public static readonly unexpectedToken               = "Unexpected token %0";
-    public static readonly unexpectedTokenIllegal        = "Unexpected token ILLEGAL"; // used
-    //public static readonly unknownLabel                  = "Undefined label '%0'";
-    public static readonly unterminatedRegExp            = "Invalid regular expression missing /";
+    // public static readonly unexpectedEOS                 = "Unexpected end of input";
+    // public static readonly unexpectedReserved            = "Unexpected reserved word";
+    // public static readonly unexpectedTemplate            = "Unexpected quasi %0";
+    // public static readonly unknownLabel                  = "Undefined label '%0'";
 }

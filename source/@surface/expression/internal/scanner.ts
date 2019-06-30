@@ -295,7 +295,7 @@ export default class Scanner
         {
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             $number += this.source[this.index];
@@ -323,7 +323,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (!this.eof())
@@ -381,7 +381,7 @@ export default class Scanner
         {
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             while (!this.eof())
@@ -404,7 +404,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -497,7 +497,7 @@ export default class Scanner
         if (type != TokenType.Identifier && (start + id.length != this.index))
         {
             this.setCursorAt(start);
-            this.throwUnexpectedToken(Messages.invalidEscapedReservedWord);
+            this.throwUnexpectedToken(Messages.keywordMustNotContainEscapedCharacters);
         }
 
         const token =
@@ -583,7 +583,7 @@ export default class Scanner
         {
             if ($number.endsWith("_"))
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             $number += this.source[this.index];
@@ -593,7 +593,7 @@ export default class Scanner
 
             if (char == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             if (!this.eof())
@@ -642,7 +642,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -685,7 +685,7 @@ export default class Scanner
 
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
         }
 
@@ -708,7 +708,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)) || Character.isDecimalDigit(this.source.charCodeAt(this.index)))
@@ -785,7 +785,7 @@ export default class Scanner
 
                             if (Object.is(unescaped, null))
                             {
-                                this.throwUnexpectedToken(Messages.invalidHexEscapeSequence);
+                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
 
                             $string += unescaped;
@@ -1065,7 +1065,7 @@ export default class Scanner
                             const unescaped = this.scanHexEscape(char);
                             if (unescaped === null)
                             {
-                                this.throwUnexpectedToken(Messages.invalidHexEscapeSequence);
+                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
                             cooked += unescaped;
                             break;
@@ -1085,14 +1085,14 @@ export default class Scanner
                                 if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                                 {
                                     // Illegal: \01 \02 and so on
-                                    this.throwUnexpectedToken(Messages.templateOctalLiteral);
+                                    this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                                 }
                                 cooked += "\0";
                             }
                             else if (Character.isOctalDigit(char.charCodeAt(0)))
                             {
                                 // Illegal: \1 \2
-                                this.throwUnexpectedToken(Messages.templateOctalLiteral);
+                                this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                             }
                             else
                             {
@@ -1314,7 +1314,7 @@ export default class Scanner
 
                         if (Character.isLineTerminator(char.charCodeAt(0)))
                         {
-                            this.throwUnexpectedToken(Messages.unterminatedRegExp);
+                            this.throwUnexpectedToken(Messages.invalidRegularExpressionMissingToken);
                         }
 
                         pattern += char;
@@ -1346,7 +1346,7 @@ export default class Scanner
 
         if (!terminated)
         {
-            this.throwUnexpectedToken(Messages.unterminatedRegExp);
+            this.throwUnexpectedToken(Messages.invalidRegularExpressionMissingToken);
         }
 
         let flags = "";

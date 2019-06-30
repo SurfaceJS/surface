@@ -76,6 +76,6 @@ export default class CallExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${[ExpressionType.Conditional, ExpressionType.Binary].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
+        return `${[ExpressionType.Binary, ExpressionType.Conditional, ExpressionType.Lambda].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
     }
 }

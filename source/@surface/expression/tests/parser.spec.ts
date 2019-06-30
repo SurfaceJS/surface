@@ -74,6 +74,8 @@ export default class ParserSpec
         try
         {
             Parser.parse(expression.raw, expression.context as Indexer);
+
+            throw new Error(`Expression (${expression.raw}) not throw`);
         }
         catch (error)
         {

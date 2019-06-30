@@ -1,6 +1,8 @@
 import { Indexer }         from "@surface/core";
+import { coalesce }        from "@surface/core/common/generic";
 import ExpressionType      from "../../expression-type";
 import IExpression         from "../../interfaces/expression";
+import Messages            from "../messages";
 import TypeGuard           from "../type-guard";
 import BaseExpression      from "./abstracts/base-expression";
 import ParameterExpression from "./parameter-expression";
@@ -39,30 +41,66 @@ export default class LambdaExpression extends BaseExpression
         this._body       = body;
     }
 
+    private resolveParameters(args: Array<unknown>): Indexer
+    {
+        const scope: Indexer = { };
+
+        let index = 0;
+        for (const parameter of this.parameters)
+        {
+            if (TypeGuard.isIdentifierExpression(parameter.expression))
+            {
+                scope[parameter.expression.name] = args[index];
+            }
+            else if (TypeGuard.isAssignmentExpression(parameter.expression))
+            {
+                if (TypeGuard.isIdentifierExpression(parameter.expression.left))
+                {
+                    scope[parameter.expression.left.name] = coalesce(args[index], parameter.expression.right.evaluate());
+                }
+                else
+                {
+                    throw new Error(Messages.illegalPropertyInDeclarationContext);
+                }
+            }
+            else if (TypeGuard.isRestExpression(parameter.expression))
+            {
+                Object.assign(scope, parameter.expression.destruct(args.slice(index)));
+            }
+            else
+            {
+                Object.assign(scope, parameter.expression.destruct(args[index] as Array<unknown>));
+            }
+
+            index++;
+        }
+
+        return scope;
+    }
+
     public evaluate(): unknown
     {
         if (!this._cache)
         {
             const fn = (...args: Array<unknown>) =>
             {
-                let index = 0;
-                for (const parameter of this.parameters)
-                {
-                    if (TypeGuard.isIdentifierExpression(parameter.expression))
-                    {
-                        this.context[parameter.expression.name] = args[index];
-                    }
-                }
+                const scope = this.resolveParameters(args);
+
+                const outterScope: Indexer = { ...this.context };
+
+                Object.assign(this.context, scope);
 
                 const value = this.body.evaluate();
 
-                for (const parameter of this.parameters)
+                for (const key of Object.keys(scope))
                 {
-                    if (TypeGuard.isIdentifierExpression(parameter.expression))
+                    if (key in outterScope)
                     {
-                        delete this.context[parameter.expression.name];
+                        delete this.context[key];
                     }
                 }
+
+                Object.assign(this.context, outterScope);
 
                 return value;
             };

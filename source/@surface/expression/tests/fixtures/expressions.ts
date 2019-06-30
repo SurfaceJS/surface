@@ -15,6 +15,7 @@ import RegexExpression                    from "../../internal/expressions/regex
 import TemplateExpression                 from "../../internal/expressions/template-expression";
 import UnaryExpression                    from "../../internal/expressions/unary-expression";
 import UpdateExpression                   from "../../internal/expressions/update-expression";
+import Messages                           from "../../internal/messages";
 import SyntaxError                        from "../../syntax-error";
 
 export type ExpressionFixtureSpec =
@@ -446,6 +447,55 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
+        context:  { },
+        raw:      "(() => 1)()",
+        value:    1,
+        toString: "(() => 1)()",
+        type:     CallExpression
+    },
+    {
+        context:  { b: 1 },
+        raw:      "(a => a + b)(1)",
+        value:    2,
+        toString: "((a) => a + b)(1)",
+        type:     CallExpression
+    },
+    {
+        context:  { b: 1 },
+        raw:      "(a => a + b)(1)",
+        value:    2,
+        toString: "((a) => a + b)(1)",
+        type:     CallExpression
+    },
+    {
+        context:  { b: 1 },
+        raw:      "((a, b) => a + b)(1, 2)",
+        value:    3,
+        toString: "((a, b) => a + b)(1, 2)",
+        type:     CallExpression
+    },
+    {
+        context:  { },
+        raw:      "((...a) => a)(1, 2)",
+        value:    [1, 2],
+        toString: "((...a) => a)(1, 2)",
+        type:     CallExpression
+    },
+    {
+        context:  { },
+        raw:      "((...[a, b]) => [a, b])(1, 2)",
+        value:    [1, 2],
+        toString: "((...[a, b]) => [a, b])(1, 2)",
+        type:     CallExpression
+    },
+    {
+        context:  { },
+        raw:      "(([a, b]) => [a, b])([1, 2])",
+        value:    [1, 2],
+        toString: "(([a, b]) => [a, b])([1, 2])",
+        type:     CallExpression
+    },
+    {
         context:  context,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
@@ -524,9 +574,23 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
-        raw:      "(value) => value++",
-        value:    (value: number) => value++,
-        toString: "(value) => value++",
+        raw:      "a => a++",
+        value:    (a: number) => a++,
+        toString: "(a) => a++",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a) => a++",
+        value:    (a: number) => a++,
+        toString: "(a) => a++",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(a = 1) => a++",
+        value:    (a: number = 1) => a++,
+        toString: "(a = 1) => a++",
         type:     LambdaExpression,
     },
     {
@@ -545,6 +609,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
+        raw:      "([a = 1]) => a",
+        value:    ([a = 1]: Array<number>) => a,
+        toString: "([a = 1]) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
         raw:      "(a, [b, c]) => a + b + c",
         value:    (a: number, [b, c]: Array<number>) => a + b + c,
         toString: "(a, [b, c]) => a + b + c",
@@ -559,9 +630,44 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
+        raw:      "(...a) => a",
+        value:    (...a: Array<number>) => a,
+        toString: "(...a) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(...[a]) => a",
+        value:    (...[a]: Array<number>) => a,
+        toString: "(...[a]) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(...[a, ...b]) => a + b[0]",
+        value:    (...[a, ...b]: Array<number>) => a + b[0],
+        toString: "(...[a, ...b]) => a + b[0]",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
         raw:      "({ a }) => a",
         value:    ({ a }: { a: string }) => a,
         toString: "({ a }) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "({ a = 1 }) => a",
+        value:    ({ a = 1 }: { a: number }) => a,
+        toString: "({ a = 1 }) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "({ a: b }) => b",
+        value:    ({ "a": b }: { a: number }) => b,
+        toString: "({ \"a\": b }) => b",
         type:     LambdaExpression,
     },
     {
@@ -573,16 +679,23 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
-        raw:      "(a, [b, [c]]) => a + b + c",
-        value:    (a: number, [b, [c]]: [number, Array<number>]) => a + b + c,
-        toString: "(a, [b, [c]]) => a + b + c",
+        raw:      "(a, { b, x: { ...c } }) => [a, b, c]",
+        value:    (a: number, { b, "x": { ...c } }: { b: number, x: { c: number } }) => [a, b, c],
+        toString: "(a, { b, \"x\": { ...c } }) => [a, b, c]",
         type:     LambdaExpression,
     },
     {
         context:  context,
-        raw:      "(...a) => a",
-        value:    (...a: Array<number>) => a,
-        toString: "(...a) => a",
+        raw:      "(...{ a }) => a",
+        value:    (...{ a }: { a: number }) => a,
+        toString: "(...{ a }) => a",
+        type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "(...{ a, x: { b } }) => a + b",
+        value:    (...{ a, "x": { b } }: { a: number, x: { b: number } }) => a + b,
+        toString: "(...{ a, \"x\": { b } }) => a + b",
         type:     LambdaExpression,
     },
     {
@@ -801,87 +914,112 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
     {
         context: context,
-        raw:     "foo",
-        error:   new Error("The identifier foo does not exist in this context")
-    },
-    {
-        context: context,
         raw:     "this.''",
-        error:   new SyntaxError("Unexpected string", 1, 5, 6)
+        error:   new SyntaxError(Messages.unexpectedString, 1, 5, 6)
     },
     {
         context: context,
         raw:     "this.1",
-        error:   new SyntaxError("Unexpected number", 1, 4, 5)
+        error:   new SyntaxError(Messages.unexpectedNumber, 1, 4, 5)
     },
     {
         context: context,
         raw:     ".",
-        error:   new SyntaxError("Unexpected token .", 1, 0, 1)
+        error:   new SyntaxError(Messages.unexpectedToken + " .", 1, 0, 1)
     },
     {
         context: context,
         raw:     "if",
-        error:   new SyntaxError("Unexpected token if", 1, 0, 1)
+        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 0, 1)
     },
     {
         context: context,
         raw:     "this.?",
-        error:   new SyntaxError("Unexpected token ?", 1, 5, 6)
+        error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 5, 6)
     },
     {
         context: context,
         raw:     "this if",
-        error:   new SyntaxError("Unexpected token if", 1, 5, 6)
+        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 5, 6)
     },
     {
         context: context,
         raw:     "{ (foo) }",
-        error:   new SyntaxError("Unexpected token (", 1, 2, 3)
+        error:   new SyntaxError(Messages.unexpectedToken + " (", 1, 2, 3)
     },
     {
         context: context,
         raw:     "{ new }",
-        error:   new SyntaxError("Unexpected token }", 1, 6, 7)
+        error:   new SyntaxError(Messages.unexpectedToken + " }", 1, 6, 7)
     },
     {
         context: context,
         raw:     "1 + if",
-        error:   new SyntaxError("Unexpected token if", 1, 4, 5)
+        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 4, 5)
     },
     {
         context: context,
         raw:     "[ ? ]",
-        error:   new SyntaxError("Unexpected token ?", 1, 2, 3)
+        error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 2, 3)
     },
     {
         context: context,
         raw:     "",
-        error:   new SyntaxError("Unexpected end of expression", 1, 0, 1)
+        error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 0, 1)
     },
     {
         context: context,
         raw:     "1 < 2 ? true .",
-        error:   new SyntaxError("Unexpected end of expression", 1, 14, 15)
+        error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 14, 15)
+    },
+    {
+        context: context,
+        raw:     "(x.y = 1) => 1",
+        error:   new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 10, 11)
+    },
+    {
+        context: context,
+        raw:     "({ x = 1 })",
+        error:   new SyntaxError(Messages.unexpectedToken + " =", 1, 5, 6)
     },
     {
         context: context,
         raw:     "([x.y]) => 1",
-        error:   new SyntaxError("Unexpected token =>", 1, 8, 9)
+        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 8, 9)
     },
     {
         context: context,
         raw:     "({ x: 1 }) => 1",
-        error:   new SyntaxError("Unexpected token =>", 1, 11, 12)
+        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 11, 12)
     },
     {
         context: context,
         raw:     "([{ x: 1 }]) => 1",
-        error:   new SyntaxError("Unexpected token =>", 1, 13, 14)
+        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 13, 14)
+    },
+    {
+        context: context,
+        raw:     "(...{ a, { b }}) => a + b",
+        error:   new SyntaxError(Messages.unexpectedToken + " {", 1, 9, 10)
     },
     {
         context: context,
         raw:     "(a, { b, x: { c: 1 } }) => a + b + c",
-        error:   new SyntaxError("Unexpected token =>", 0, 0, 0) // Todo: Review indexes
+        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 24, 25)
+    },
+    {
+        context: context,
+        raw:     "(...{ a, ...{ b } }) => a",
+        error:   new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 18, 19)
+    },
+    {
+        context: context,
+        raw:     "(...a = []) => a",
+        error:   new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 10, 11)
+    },
+    {
+        context: context,
+        raw:     "([x, ...y = []]) => y",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 17, 18)
     },
 ];

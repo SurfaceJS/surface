@@ -1,27 +1,35 @@
-import ExpressionType        from "../expression-type";
-import IExpression           from "../interfaces/expression";
-import ArrayExpression       from "./expressions/array-expression";
-import AssignmentExpression  from "./expressions/assignment-expression";
-import BinaryExpression      from "./expressions/binary-expression";
-import CallExpression        from "./expressions/call-expression";
-import ConditionalExpression from "./expressions/conditional-expression";
-import ConstantExpression    from "./expressions/constant-expression";
-import IdentifierExpression  from "./expressions/identifier-expression";
-import MemberExpression      from "./expressions/member-expression";
-import NewExpression         from "./expressions/new-expression";
-import ObjectExpression      from "./expressions/object-expression";
-import PropertyExpression    from "./expressions/property-expression";
-import RegexExpression       from "./expressions/regex-expression";
-import SpreadExpression      from "./expressions/spread-expression";
-import TemplateExpression    from "./expressions/template-expression";
-import UnaryExpression       from "./expressions/unary-expression";
-import UpdateExpression      from "./expressions/update-expression";
+import ExpressionType              from "../expression-type";
+import IExpression                 from "../interfaces/expression";
+import ArrayDestructureExpression  from "./expressions/array-destructure-expression";
+import ArrayExpression             from "./expressions/array-expression";
+import AssignmentExpression        from "./expressions/assignment-expression";
+import BinaryExpression            from "./expressions/binary-expression";
+import CallExpression              from "./expressions/call-expression";
+import ConditionalExpression       from "./expressions/conditional-expression";
+import ConstantExpression          from "./expressions/constant-expression";
+import IdentifierExpression        from "./expressions/identifier-expression";
+import MemberExpression            from "./expressions/member-expression";
+import NewExpression               from "./expressions/new-expression";
+import ObjectDestructureExpression from "./expressions/object-destructure-expression";
+import ObjectExpression            from "./expressions/object-expression";
+import PropertyExpression          from "./expressions/property-expression";
+import RegexExpression             from "./expressions/regex-expression";
+import RestExpression              from "./expressions/rest-expression";
+import SpreadExpression            from "./expressions/spread-expression";
+import TemplateExpression          from "./expressions/template-expression";
+import UnaryExpression             from "./expressions/unary-expression";
+import UpdateExpression            from "./expressions/update-expression";
 
 export default class TypeGuard
 {
     public static isArrayExpression(target: IExpression): target is ArrayExpression
     {
         return target.type == ExpressionType.Array;
+    }
+
+    public static isArrayDestructureExpression(target: IExpression): target is ArrayDestructureExpression
+    {
+        return target.type == ExpressionType.ArrayDestructure;
     }
 
     public static isAssignmentExpression(target: IExpression): target is AssignmentExpression
@@ -69,6 +77,11 @@ export default class TypeGuard
         return target.type == ExpressionType.Object;
     }
 
+    public static isObjectDestructureExpression(target: IExpression): target is ObjectDestructureExpression
+    {
+        return target.type == ExpressionType.ObjectDestructure;
+    }
+
     public static isPropertyExpression(target: IExpression): target is PropertyExpression
     {
         return target.type == ExpressionType.Property;
@@ -77,6 +90,11 @@ export default class TypeGuard
     public static isRegexExpression(target: IExpression): target is RegexExpression
     {
         return target.type == ExpressionType.Regex;
+    }
+
+    public static isRestExpression(target: IExpression): target is RestExpression
+    {
+        return target.type == ExpressionType.Rest;
     }
 
     public static isSpreadExpression(target: IExpression): target is SpreadExpression

@@ -1,13 +1,12 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../expression-type";
-import IExpression    from "../interfaces/expression";
-import SyntaxError    from "../syntax-error";
+import { Indexer, Nullable } from "@surface/core";
+import ExpressionType        from "../expression-type";
+import IExpression           from "../interfaces/expression";
+import SyntaxError           from "../syntax-error";
 import
 {
     AssignmentOpertaror,
     BinaryOperator,
-    DestructureElement,
-    ParameterElement,
+    DestructureExpression,
     UnaryOperator,
     UpdateOperator
 } from "../types";
@@ -41,13 +40,16 @@ export default class Parser
 {
     private readonly context: Indexer;
     private readonly scanner: Scanner;
-    private lookahead: Token;
+
+    private invalidInitialization: Nullable<Token>;
+    private lookahead:             Token;
 
     private constructor(source: string, context: Indexer)
     {
-        this.context   = context;
-        this.scanner   = new Scanner(source);
-        this.lookahead = this.scanner.nextToken();
+        this.context               = context;
+        this.scanner               = new Scanner(source);
+        this.lookahead             = this.scanner.nextToken();
+        this.invalidInitialization = null;
     }
 
     public static parse(source: string, context: object): IExpression
@@ -65,7 +67,7 @@ export default class Parser
         {
             while (true)
             {
-                const expression = this.match("...") ? this.spreadExpression() : this.assignmentExpression();
+                const expression = this.inheritGrammar(this.match("...") ? this.spreadExpression : this.assignmentExpression);
 
                 args.push(expression);
 
@@ -88,9 +90,52 @@ export default class Parser
         return args;
     }
 
+    private arrayDestructureExpression(): ArrayDestructureExpression
+    {
+        const elements: Array<DestructureExpression> = [];
+
+        this.expect("[");
+
+        while (!this.match("]"))
+        {
+            if (this.match("..."))
+            {
+                this.expect("...");
+
+                elements.push(new RestExpression(this.inheritGrammar(this.destructureExpression, false)));
+
+                if (!this.match("]"))
+                {
+                    throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                }
+            }
+            else if (this.match("["))
+            {
+                elements.push(this.inheritGrammar(this.arrayDestructureExpression));
+            }
+            else if (this.match("{"))
+            {
+                elements.push(this.inheritGrammar(this.objectDestructureExpression));
+            }
+            else
+            {
+                elements.push(this.reinterpretDestructure(this.inheritGrammar(this.assignmentExpression)) as DestructureExpression);
+            }
+
+            if (!this.match("]"))
+            {
+                this.expect(",");
+            }
+        }
+
+        this.expect("]");
+
+        return new ArrayDestructureExpression(elements);
+    }
+
     private arrayExpression(): IExpression
     {
-        let elements: Array<IExpression> = [];
+        const elements: Array<IExpression> = [];
 
         this.expect("[");
 
@@ -98,17 +143,17 @@ export default class Parser
         {
             if (this.match(","))
             {
-                elements = [...elements, new ConstantExpression(undefined)];
+                elements.push(new ConstantExpression(undefined));
                 this.nextToken();
             }
 
             if (this.match("..."))
             {
-                elements.push(this.spreadExpression());
+                elements.push(this.inheritGrammar(this.spreadExpression));
             }
             else if (!this.match("]"))
             {
-                elements.push(this.assignmentExpression());
+                elements.push(this.inheritGrammar(this.assignmentExpression));
             }
 
             if (!this.match("]"))
@@ -124,7 +169,7 @@ export default class Parser
 
     private assignmentExpression(): IExpression
     {
-        const left = this.conditionalExpression();
+        const left = this.inheritGrammar(this.conditionalExpression);
 
         const isAssignment = this.match("=")
             || this.match("*=")
@@ -144,7 +189,7 @@ export default class Parser
         {
             const token = this.nextToken();
 
-            const right = this.assignmentExpression();
+            const right = this.isolateGrammar(this.assignmentExpression);
 
             return new AssignmentExpression(left, right, token.raw as AssignmentOpertaror);
         }
@@ -156,7 +201,7 @@ export default class Parser
 
     private binaryExpression(): IExpression
     {
-        let expression = this.exponentiationExpression();
+        let expression = this.inheritGrammar(this.exponentiationExpression);
 
         let precedence = this.binaryPrecedence(this.lookahead);
 
@@ -165,7 +210,7 @@ export default class Parser
             const token = this.nextToken();
 
             let left  = expression;
-            let right = this.exponentiationExpression();
+            let right = this.isolateGrammar(this.exponentiationExpression);
 
             const stack: [IExpression, string, IExpression] = [left, token.raw, right];
             const precedences = [precedence];
@@ -189,7 +234,7 @@ export default class Parser
 
                 stack.push(this.nextToken().raw);
                 precedences.push(precedence);
-                stack.push(this.exponentiationExpression());
+                stack.push(this.isolateGrammar(this.exponentiationExpression));
             }
 
             let i = stack.length - 1;
@@ -272,22 +317,45 @@ export default class Parser
 
     private conditionalExpression(): IExpression
     {
-        let expression =  this.binaryExpression();
+        let expression =  this.inheritGrammar(this.binaryExpression);
 
         if (this.match("?"))
         {
             this.expect("?");
 
-            const truthyExpression = this.assignmentExpression();
+            const truthyExpression = this.isolateGrammar(this.assignmentExpression);
 
             this.expect(":");
 
-            const falsyExpression  = this.assignmentExpression();
+            const falsyExpression = this.isolateGrammar(this.assignmentExpression);
 
             expression = new ConditionalExpression(expression, truthyExpression, falsyExpression);
         }
 
         return expression;
+    }
+
+    private destructureExpression(root: boolean): DestructureExpression
+    {
+        if (this.match("["))
+        {
+            return this.isolateGrammar(this.arrayDestructureExpression);
+        }
+        else if (this.match("{"))
+        {
+            return this.isolateGrammar(this.objectDestructureExpression);
+        }
+        else
+        {
+            const expression = this.isolateGrammar(this.assignmentExpression);
+
+            if (!root && expression.type == ExpressionType.Assignment)
+            {
+                throw this.syntaxError(Messages.invalidDestructuringAssignmentTarget);
+            }
+
+            return this.reinterpretDestructure(expression) as DestructureExpression;
+        }
     }
 
     private expect(value: string): void
@@ -303,12 +371,12 @@ export default class Parser
 
     private exponentiationExpression(): IExpression
     {
-        const expression = this.unaryExpression();
+        const expression = this.inheritGrammar(this.unaryExpression);
 
         if (this.match("**"))
         {
             const operator = this.nextToken().raw;
-            return new BinaryExpression(expression, this.assignmentExpression(), operator as BinaryOperator);
+            return new BinaryExpression(expression, this.isolateGrammar(this.assignmentExpression), operator as BinaryOperator);
         }
 
         return expression;
@@ -316,12 +384,45 @@ export default class Parser
 
     private expression(): IExpression
     {
-        const expression = this.assignmentExpression();
+        const expression = this.isolateGrammar(this.assignmentExpression);
 
         if (this.lookahead.type != TokenType.EOF)
         {
             throw this.unexpectedTokenError(this.lookahead);
         }
+
+        return expression;
+    }
+
+    // tslint:disable-next-line:no-any
+    private inheritGrammar<TParser extends (...args: Array<any>) => any>(parser: TParser, ...args: Parameters<TParser>): ReturnType<TParser>
+    {
+        const invalidInitialization = this.invalidInitialization;
+
+        this.invalidInitialization = null;
+
+        const expression = parser.call(this, ...args);
+
+        this.invalidInitialization = invalidInitialization || this.invalidInitialization;
+
+        return expression;
+    }
+
+    // tslint:disable-next-line:no-any
+    private isolateGrammar<TParser extends (...args: Array<any>) => any>(parser: TParser, ...args: Parameters<TParser>): ReturnType<TParser>
+    {
+        const invalidInitialization = this.invalidInitialization;
+
+        this.invalidInitialization = null;
+
+        const expression = parser.call(this, ...args);
+
+        if (this.invalidInitialization)
+        {
+            throw this.unexpectedTokenError(this.invalidInitialization);
+        }
+
+        this.invalidInitialization = invalidInitialization || this.invalidInitialization;
 
         return expression;
     }
@@ -338,7 +439,7 @@ export default class Parser
             {
                 this.expect("=>");
 
-                const body = this.assignmentExpression();
+                const body = this.isolateGrammar(this.assignmentExpression);
 
                 return new LambdaExpression(this.context, [], body);
             }
@@ -351,20 +452,11 @@ export default class Parser
 
             if (this.match("..."))
             {
-                this.expect("...");
-
-                expressions.push(new RestExpression(this.reinterpretParameter(this.assignmentExpression())));
-
-                if (!this.match(")"))
-                {
-                    throw this.syntaxError(Messages.parameterAfterRestParameter);
-                }
-
-                this.expect(")");
+                expressions.push((this.inheritGrammar(this.restExpression)));
             }
             else
             {
-                expressions.push(this.assignmentExpression());
+                expressions.push(this.inheritGrammar(this.assignmentExpression));
 
                 if (this.match(","))
                 {
@@ -376,15 +468,11 @@ export default class Parser
 
                             if (this.match("..."))
                             {
-                                this.expect("...");
-
-                                expressions.push(new RestExpression(this.reinterpretParameter(this.assignmentExpression())));
-
-                                this.expect(")");
+                                expressions.push((this.inheritGrammar(this.restExpression)));
                             }
                             else
                             {
-                                expressions.push(this.assignmentExpression());
+                                expressions.push(this.isolateGrammar(this.assignmentExpression));
                             }
                         }
                         else
@@ -399,11 +487,13 @@ export default class Parser
 
             if (this.match("=>"))
             {
-                const parameters = expressions.map(x => new ParameterExpression(this.reinterpretParameter(x) as ParameterElement));
+                this.invalidInitialization = null;
+
+                const parameters = expressions.map(x => new ParameterExpression(this.reinterpretDestructure(x) as DestructureExpression));
 
                 this.expect("=>");
 
-                const body = this.assignmentExpression();
+                const body = this.inheritGrammar(this.assignmentExpression);
 
                 return new LambdaExpression(this.context, parameters, body);
 
@@ -419,7 +509,7 @@ export default class Parser
 
     private leftHandSideExpression(allowCall: boolean): IExpression
     {
-        let expression = this.matchKeyword("new") ? this.newPrimaryExpression() : this.primaryExpression();
+        let expression = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
         let parentExpression = expression;
 
         while (true)
@@ -443,7 +533,7 @@ export default class Parser
             {
                 this.expect("[");
 
-                const propertyExpression = this.assignmentExpression();
+                const propertyExpression = this.isolateGrammar(this.assignmentExpression);
 
                 this.expect("]");
 
@@ -460,7 +550,7 @@ export default class Parser
                     new ConstantExpression(expression.context)
                     : parentExpression;
 
-                expression = new CallExpression(context, expression, this.argumentsExpression());
+                expression = new CallExpression(context, expression, this.isolateGrammar(this.argumentsExpression));
             }
             else
             {
@@ -469,6 +559,48 @@ export default class Parser
         }
 
         return expression;
+    }
+
+    private objectDestructureExpression(): ObjectDestructureExpression
+    {
+        const entries: Array<PropertyExpression|RestExpression> = [];
+
+        this.expect("{");
+
+        while (!this.match("}"))
+        {
+            if (this.match("..."))
+            {
+                this.expect("...");
+
+                const expression = this.inheritGrammar(this.leftHandSideExpression, false);
+
+                if (expression.type != ExpressionType.Identifier)
+                {
+                    throw this.syntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts);
+                }
+
+                entries.push(new RestExpression(expression));
+
+                if (!this.match("}"))
+                {
+                    throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                }
+            }
+            else
+            {
+                entries.push(this.reinterpretDestructure(this.inheritGrammar(this.objectPropertyExpression)) as PropertyExpression|RestExpression);
+            }
+
+            if (!this.match("}"))
+            {
+                this.expect(",");
+            }
+        }
+
+        this.expect("}");
+
+        return new ObjectDestructureExpression(entries);
     }
 
     private objectExpression(): ObjectExpression
@@ -481,11 +613,11 @@ export default class Parser
         {
             if (this.match("..."))
             {
-                properties.push(this.spreadExpression());
+                properties.push(this.inheritGrammar(this.spreadExpression));
             }
             else
             {
-                properties.push(this.objectPropertyExpression());
+                properties.push(this.inheritGrammar(this.objectPropertyExpression));
             }
 
             if (!this.match("}"))
@@ -506,12 +638,26 @@ export default class Parser
         let key:   IExpression;
         let value: IExpression;
 
-        let computed   = false;
+        let computed = false;
 
         if (token.type == TokenType.Identifier)
         {
             key = new ConstantExpression(token.raw);
+
             this.nextToken();
+
+            if (this.match("="))
+            {
+                const invalidInitialization = this.lookahead;
+
+                this.expect("=");
+
+                const value = this.isolateGrammar(this.assignmentExpression);
+
+                this.invalidInitialization = invalidInitialization;
+
+                return new PropertyExpression(key, new AssignmentExpression(new IdentifierExpression({ }, token.raw), value, "="), computed, true);
+            }
 
             if (!this.match(":"))
             {
@@ -536,7 +682,7 @@ export default class Parser
                     {
                         this.expect("[");
 
-                        key = this.assignmentExpression();
+                        key = this.inheritGrammar(this.assignmentExpression);
 
                         this.expect("]");
 
@@ -554,7 +700,7 @@ export default class Parser
 
         this.expect(":");
 
-        value = this.assignmentExpression();
+        value = this.isolateGrammar(this.assignmentExpression);
         return new PropertyExpression(key, value, computed, false);
     }
 
@@ -593,9 +739,9 @@ export default class Parser
             this.unexpectedTokenError(token);
         }
 
-        const callee = this.leftHandSideExpression(false);
+        const callee = this.inheritGrammar(this.leftHandSideExpression, false);
 
-        const args = this.match("(") ? this.argumentsExpression() : [];
+        const args = this.match("(") ? this.isolateGrammar(this.argumentsExpression) : [];
 
         return new NewExpression(callee, args);
     }
@@ -660,35 +806,44 @@ export default class Parser
                     return new ConstantExpression(this.nextToken().value);
                 }
 
-                return new IdentifierExpression(this.context, this.nextToken().raw);
+                const indentifier = new IdentifierExpression(this.context, this.nextToken().raw);
+
+                if (this.match("=>"))
+                {
+                    this.expect("=>");
+
+                    return new LambdaExpression(this.context, [new ParameterExpression(indentifier)], this.inheritGrammar(this.assignmentExpression));
+                }
+                else
+                {
+                    return indentifier;
+                }
 
             case TokenType.BooleanLiteral:
                 return new ConstantExpression(this.nextToken().value);
-
             case TokenType.NumericLiteral:
             case TokenType.NullLiteral:
             case TokenType.StringLiteral:
             case TokenType.RegularExpression:
                 return new ConstantExpression(this.nextToken().value);
-
             case TokenType.Punctuator:
                 switch (this.lookahead.raw)
                 {
                     case "(":
-                        return this.groupExpression();
+                        return this.inheritGrammar(this.groupExpression);
                     case "[":
-                        return this.arrayExpression();
+                        return this.inheritGrammar(this.arrayExpression);
                     case "{":
-                        return this.objectExpression();
+                        return this.inheritGrammar(this.objectExpression);
                     case "/":
                         this.scanner.backtrack(1);
-                        return this.regexExpression();
+                        return this.inheritGrammar(this.regexExpression);
                     default:
                         throw this.unexpectedTokenError(this.lookahead);
                 }
 
             case TokenType.Template:
-                return this.templateLiteralExpression();
+                return this.inheritGrammar(this.templateLiteralExpression);
             /* istanbul ignore next */
             default:
                 break;
@@ -697,32 +852,84 @@ export default class Parser
         throw this.unexpectedTokenError(this.lookahead);
     }
 
-    private reinterpretParameter(expression: IExpression): IExpression
+    // tslint:disable-next-line:cyclomatic-complexity
+    private reinterpretDestructure(expression: IExpression): IExpression
     {
         switch (expression.type)
         {
-            case ExpressionType.Assignment:
             case ExpressionType.Identifier:
+            case ExpressionType.ArrayDestructure:
+            case ExpressionType.ObjectDestructure:
             case ExpressionType.Rest:
                 return expression;
+            case ExpressionType.Assignment:
+                if ((expression as AssignmentExpression).left.type != ExpressionType.Identifier)
+                {
+                    throw this.syntaxError(Messages.illegalPropertyInDeclarationContext);
+                }
+
+                return expression;
             case ExpressionType.Property:
-                if (!(expression as PropertyExpression).shorthand && (expression as PropertyExpression).value.type != ExpressionType.Object)
+                if (!(expression as PropertyExpression).shorthand && (expression as PropertyExpression).value.type != ExpressionType.Identifier && (expression as PropertyExpression).value.type != ExpressionType.Object)
                 {
                     break;
                 }
                 else if ((expression as PropertyExpression).value.type == ExpressionType.Object)
                 {
-                    (expression as PropertyExpression).update(this.reinterpretParameter((expression as PropertyExpression).value));
+                    (expression as PropertyExpression).update(this.reinterpretDestructure((expression as PropertyExpression).value));
                 }
 
                 return expression;
 
             case ExpressionType.Array:
-                return new ArrayDestructureExpression((expression as ArrayExpression).elements.map(this.reinterpretParameter.bind(this)) as Array<DestructureElement>);
+            {
+                let elements: Array<DestructureExpression> = [];
+
+                let index = 0;
+                for (const element of (expression as ArrayExpression).elements)
+                {
+                    if (element.type == ExpressionType.Spread && index < (expression as ArrayExpression).elements.length - 1)
+                    {
+                        throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                    }
+
+                    elements.push(this.reinterpretDestructure(element) as DestructureExpression);
+
+                    index++;
+                }
+
+                return new ArrayDestructureExpression(elements);
+            }
             case ExpressionType.Object:
-                return new ObjectDestructureExpression((expression as ObjectExpression).entries.map(this.reinterpretParameter.bind(this)) as Array<PropertyExpression>);
+            {
+                let entries: Array<PropertyExpression|RestExpression> = [];
+
+                let index = 0;
+                for (const entry of (expression as ObjectExpression).entries)
+                {
+                    if (entry.type == ExpressionType.Spread && index < (expression as ObjectExpression).entries.length - 1)
+                    {
+                        throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                    }
+
+                    entries.push(this.reinterpretDestructure(entry) as PropertyExpression|RestExpression);
+
+                    index++;
+                }
+
+                return new ObjectDestructureExpression(entries);
+            }
             case ExpressionType.Spread:
-                return this.reinterpretParameter((expression as SpreadExpression).argument);
+                if ((expression as SpreadExpression).argument.type == ExpressionType.Assignment)
+                {
+                    throw this.syntaxError(Messages.invalidDestructuringAssignmentTarget);
+                }
+                else if ((expression as SpreadExpression).argument.type != ExpressionType.Identifier)
+                {
+                    throw this.syntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts);
+                }
+
+                return new RestExpression(this.reinterpretDestructure((expression as SpreadExpression).argument));
             default:
                 break;
         }
@@ -736,11 +943,32 @@ export default class Parser
         return new RegexExpression(token.pattern as string, token.flags as string);
     }
 
+    private restExpression(): RestExpression
+    {
+        this.expect("...");
+
+        const expression = this.isolateGrammar(this.destructureExpression, true);
+
+        if (expression.type == ExpressionType.Assignment)
+        {
+            throw this.syntaxError(Messages.restParameterMayNotHaveAdefaultInitializer);
+        }
+
+        if (!this.match(")"))
+        {
+            throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+        }
+
+        this.expect(")");
+
+        return new RestExpression(expression);
+    }
+
     private spreadExpression(): SpreadExpression
     {
         this.expect("...");
 
-        return new SpreadExpression(this.assignmentExpression());
+        return new SpreadExpression(this.inheritGrammar(this.assignmentExpression));
     }
 
     private syntaxError(message: string): Error
@@ -753,11 +981,11 @@ export default class Parser
         if (this.match("+") || this.match("-") || this.match("~") || this.match("!") || this.matchKeyword("typeof"))
         {
             const token = this.nextToken();
-            return new UnaryExpression(this.updateExpression(), token.raw as UnaryOperator);
+            return new UnaryExpression(this.inheritGrammar(this.updateExpression), token.raw as UnaryOperator);
         }
         else
         {
-            return this.updateExpression();
+            return this.inheritGrammar(this.updateExpression);
         }
     }
 
@@ -771,7 +999,7 @@ export default class Parser
 
         while (!!!token.tail)
         {
-            expressions.push(this.assignmentExpression());
+            expressions.push(this.inheritGrammar(this.assignmentExpression));
             token = this.nextToken();
             quasis.push(token.value as string);
         }
@@ -784,11 +1012,11 @@ export default class Parser
         if (this.match("++") || this.match("--"))
         {
             const operator = this.nextToken().raw as UpdateOperator;
-            return new UpdateExpression(this.leftHandSideExpression(true), operator, true);
+            return new UpdateExpression(this.inheritGrammar(this.leftHandSideExpression, true), operator, true);
         }
         else
         {
-            const expression = this.leftHandSideExpression(true);
+            const expression = this.inheritGrammar(this.leftHandSideExpression, true);
 
             if (this.match("++") || this.match("--"))
             {
@@ -802,23 +1030,24 @@ export default class Parser
 
     private unexpectedTokenError(token: Token): Error
     {
-        let unexpected = `token ${token.raw}`;
+        let message: string;
 
         switch (token.type)
         {
             case TokenType.StringLiteral:
-                unexpected = "string";
+                message = Messages.unexpectedString;
                 break;
             case TokenType.NumericLiteral:
-                unexpected = "number";
+                message = Messages.unexpectedNumber;
                 break;
             case TokenType.EOF:
-                unexpected = "end of expression";
+                message = Messages.unexpectedEndOfExpression;
                 break;
             default:
+                message = `${Messages.unexpectedToken} ${token.raw}`;
                 break;
         }
 
-        return new SyntaxError(`Unexpected ${unexpected}`, token.lineNumber, token.start, token.start - token.lineStart + 1);
+        return new SyntaxError(message, token.lineNumber, token.start, token.start - token.lineStart + 1);
     }
 }

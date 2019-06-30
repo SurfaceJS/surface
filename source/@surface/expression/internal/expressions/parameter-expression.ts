@@ -1,11 +1,11 @@
-import ExpressionType from "../../expression-type";
-import { ParameterElement }  from "../../types";
-import BaseExpression from "./abstracts/base-expression";
+import ExpressionType            from "../../expression-type";
+import { DestructureExpression } from "../../types";
+import BaseExpression            from "./abstracts/base-expression";
 
 export default class ParameterExpression extends BaseExpression
 {
-    private _expression: ParameterElement;
-    public get expression(): ParameterElement
+    private _expression: DestructureExpression;
+    public get expression(): DestructureExpression
     {
         return this._expression;
     }
@@ -15,7 +15,7 @@ export default class ParameterExpression extends BaseExpression
         return ExpressionType.Parameter;
     }
 
-    public constructor(expression: ParameterElement)
+    public constructor(expression: DestructureExpression)
     {
         super();
 
