@@ -1,3 +1,4 @@
+import Property              from "../../internal/elements/property";
 import ArrayExpression       from "../../internal/expressions/array-expression";
 import AssignmentExpression  from "../../internal/expressions/assignment-expression";
 import BinaryExpression      from "../../internal/expressions/binary-expression";
@@ -8,7 +9,6 @@ import IdentifierExpression  from "../../internal/expressions/identifier-express
 import MemberExpression      from "../../internal/expressions/member-expression";
 import NewExpression         from "../../internal/expressions/new-expression";
 import ObjectExpression      from "../../internal/expressions/object-expression";
-import PropertyExpression    from "../../internal/expressions/property-expression";
 import RegexExpression       from "../../internal/expressions/regex-expression";
 import TemplateExpression    from "../../internal/expressions/template-expression";
 import UnaryExpression       from "../../internal/expressions/unary-expression";
@@ -105,7 +105,7 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             ObjectExpression.name,
-            PropertyExpression.name,
+            Property.name,
             ConstantExpression.name,
             ConstantExpression.name,
         ].join(" > "),
@@ -149,7 +149,7 @@ export const validVisitors: Array<ValidVisitSpec> =
             UpdateExpression.name,
             MemberExpression.name,
             ObjectExpression.name,
-            PropertyExpression.name,
+            Property.name,
             ConstantExpression.name,
             ConstantExpression.name,
             ConstantExpression.name

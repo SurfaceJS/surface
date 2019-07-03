@@ -1,4 +1,4 @@
-import ExpressionType from "../../expression-type";
+import NodeType from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class RegexExpression extends BaseExpression<RegExp>
@@ -15,9 +15,9 @@ export default class RegexExpression extends BaseExpression<RegExp>
         return this._pattern;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Regex;
+        return NodeType.Regex;
     }
 
     public constructor(pattern: string, flags: string)

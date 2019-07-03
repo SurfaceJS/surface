@@ -1,9 +1,9 @@
 import { Indexer, Nullable } from "@surface/core";
-import ExpressionType        from "../../expression-type";
 import IExpression           from "../../interfaces/expression";
+import ISpreadElement        from "../../interfaces/spread-element";
+import NodeType              from "../../node-type";
 import TypeGuard             from "../type-guard";
 import BaseExpression        from "./abstracts/base-expression";
-import SpreadExpression      from "./spread-expression";
 
 export default class CallExpression extends BaseExpression
 {
@@ -19,18 +19,18 @@ export default class CallExpression extends BaseExpression
         return this._callee;
     }
 
-    private readonly _args: Array<IExpression>;
-    public get args(): Array<IExpression>
+    private readonly _args: Array<IExpression|ISpreadElement>;
+    public get args(): Array<IExpression|ISpreadElement>
     {
         return this._args;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Call;
+        return NodeType.Call;
     }
 
-    public constructor(context: IExpression, callee: IExpression, args: Array<IExpression>)
+    public constructor(context: IExpression, callee: IExpression, args: Array<IExpression|ISpreadElement>)
     {
         super();
 
@@ -61,9 +61,9 @@ export default class CallExpression extends BaseExpression
 
         for (const argument of this.args)
         {
-            if (argument instanceof SpreadExpression)
+            if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.evaluate() as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate() as Array<unknown>);
             }
             else
             {
@@ -76,6 +76,6 @@ export default class CallExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${[ExpressionType.Binary, ExpressionType.Conditional, ExpressionType.Lambda].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
+        return `${[NodeType.Binary, NodeType.Conditional, NodeType.Lambda].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
     }
 }

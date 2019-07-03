@@ -1,18 +1,20 @@
-enum ExpressionType
+enum NodeType
 {
     Array,
-    ArrayDestructure,
+    ArrayPattern,
     Assignment,
+    AssignmentPattern,
     Binary,
     Call,
     Conditional,
     Constant,
     Identifier,
     Lambda,
+    Logical,
     Member,
     New,
     Object,
-    ObjectDestructure,
+    ObjectPattern,
     Parameter,
     Property,
     Regex,
@@ -24,4 +26,4 @@ enum ExpressionType
     Update,
 }
 
-export default ExpressionType;
+export default NodeType;

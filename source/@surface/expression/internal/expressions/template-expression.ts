@@ -1,5 +1,5 @@
-import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import NodeType       from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class TemplateExpression extends BaseExpression<string>
@@ -15,9 +15,9 @@ export default class TemplateExpression extends BaseExpression<string>
         return this._quasis;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Template;
+        return NodeType.Template;
     }
 
     public constructor(quasis: Array<string>, expressions: Array<IExpression>)

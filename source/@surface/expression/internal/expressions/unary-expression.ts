@@ -1,6 +1,6 @@
 import { Func1 }         from "@surface/core";
-import ExpressionType    from "../../expression-type";
 import IExpression       from "../../interfaces/expression";
+import NodeType          from "../../node-type";
 import { UnaryOperator } from "../../types";
 import BaseExpression    from "./abstracts/base-expression";
 
@@ -29,9 +29,9 @@ export default class UnaryExpression extends BaseExpression<Object>
         return this._expression;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Unary;
+        return NodeType.Unary;
     }
 
     public constructor(expression: IExpression, operator: UnaryOperator)

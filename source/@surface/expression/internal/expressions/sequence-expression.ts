@@ -1,5 +1,5 @@
-import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import NodeType       from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class SequenceExpression extends BaseExpression
@@ -10,9 +10,9 @@ export default class SequenceExpression extends BaseExpression
         return this._expressions;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Sequence;
+        return NodeType.Sequence;
     }
 
     public constructor(expressions: Array<IExpression>)

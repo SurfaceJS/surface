@@ -1,12 +1,13 @@
-import ExpressionType   from "../../expression-type";
-import IExpression      from "../../interfaces/expression";
-import BaseExpression   from "./abstracts/base-expression";
-import SpreadExpression from "./spread-expression";
+import IExpression    from "../../interfaces/expression";
+import ISpreadElement from "../../interfaces/spread-element";
+import NodeType       from "../../node-type";
+import TypeGuard      from "../type-guard";
+import BaseExpression from "./abstracts/base-expression";
 
 export default class NewExpression extends BaseExpression
 {
-    private readonly _args: Array<IExpression>;
-    public get args(): Array<IExpression>
+    private readonly _args: Array<IExpression|ISpreadElement>;
+    public get args(): Array<IExpression|ISpreadElement>
     {
         return this._args;
     }
@@ -17,12 +18,12 @@ export default class NewExpression extends BaseExpression
         return this._callee;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.New;
+        return NodeType.New;
     }
 
-    public constructor(callee: IExpression, args: Array<IExpression>)
+    public constructor(callee: IExpression, args: Array<IExpression|ISpreadElement>)
     {
         super();
 
@@ -47,9 +48,9 @@ export default class NewExpression extends BaseExpression
 
         for (const argument of this.args)
         {
-            if (argument instanceof SpreadExpression)
+            if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.evaluate() as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate() as Array<unknown>);
             }
             else
             {

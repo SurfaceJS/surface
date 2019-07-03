@@ -10,11 +10,14 @@ import IIdentifierExpression                                  from "./interfaces
 import IMemberExpression                                      from "./interfaces/member-expression";
 import INewExpression                                         from "./interfaces/new-expression";
 import IObjectExpression                                      from "./interfaces/object-expression";
-import IPropertyExpression                                    from "./interfaces/property-expression";
+import IProperty                                              from "./interfaces/property";
 import IRegexExpression                                       from "./interfaces/regex-expression";
-import ISpreadExpression                                      from "./interfaces/spread-expression";
+import ISequenceExpression                                    from "./interfaces/sequence-expression";
+import ISpreadElement                                         from "./interfaces/spread-element";
 import ITemplateExpression                                    from "./interfaces/template-expression";
 import IUnaryExpression                                       from "./interfaces/unary-expression";
+import Property                                               from "./internal/elements/property";
+import SpreadElement                                          from "./internal/elements/spread-element";
 import ArrayExpression                                        from "./internal/expressions/array-expression";
 import AssignmentExpression                                   from "./internal/expressions/assignment-expression";
 import BinaryExpression                                       from "./internal/expressions/binary-expression";
@@ -25,9 +28,8 @@ import IdentifierExpression                                   from "./internal/e
 import MemberExpression                                       from "./internal/expressions/member-expression";
 import NewExpression                                          from "./internal/expressions/new-expression";
 import ObjectExpression                                       from "./internal/expressions/object-expression";
-import PropertyExpression                                     from "./internal/expressions/property-expression";
 import RegexExpression                                        from "./internal/expressions/regex-expression";
-import SpreadExpression                                       from "./internal/expressions/spread-expression";
+import SequenceExpression                                     from "./internal/expressions/sequence-expression";
 import TemplateExpression                                     from "./internal/expressions/template-expression";
 import UnaryExpression                                        from "./internal/expressions/unary-expression";
 import Parser                                                 from "./internal/parser";
@@ -85,14 +87,14 @@ export default abstract class Expression
         return new NewExpression(callee, args);
     }
 
-    public static object(properties: Array<IPropertyExpression>): IObjectExpression
+    public static object(properties: Array<IProperty>): IObjectExpression
     {
         return new ObjectExpression(properties);
     }
 
-    public static property(key: IExpression, value: IExpression, computed: boolean): IPropertyExpression
+    public static property(key: IExpression, value: IExpression, computed: boolean): IProperty
     {
-        return new PropertyExpression(key, value, computed, false);
+        return new Property(key, value, computed, false);
     }
 
     public static regex(pattern: string, flags: string): IRegexExpression
@@ -100,9 +102,14 @@ export default abstract class Expression
         return new RegexExpression(pattern, flags);
     }
 
-    public static spread(argument: IExpression): ISpreadExpression
+    public static sequence(expressions: Array<IExpression>): ISequenceExpression
     {
-        return new SpreadExpression(argument);
+        return new SequenceExpression(expressions);
+    }
+
+    public static spread(argument: IExpression): ISpreadElement
+    {
+        return new SpreadElement(argument);
     }
 
     public static template(quasis: Array<string>, expressions: Array<IExpression>): ITemplateExpression

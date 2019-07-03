@@ -1,4 +1,4 @@
-import ExpressionType from "../../expression-type";
+import NodeType from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class ConstantExpression extends BaseExpression
@@ -9,9 +9,9 @@ export default class ConstantExpression extends BaseExpression
         return this._value;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Constant;
+        return NodeType.Constant;
     }
 
     public constructor(value: unknown)

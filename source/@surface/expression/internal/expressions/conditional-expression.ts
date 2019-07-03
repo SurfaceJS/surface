@@ -1,5 +1,5 @@
-import ExpressionType from "../../expression-type";
 import IExpression    from "../../interfaces/expression";
+import NodeType       from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class ConditionalExpression extends BaseExpression
@@ -22,9 +22,9 @@ export default class ConditionalExpression extends BaseExpression
         return this._truthy;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Conditional;
+        return NodeType.Conditional;
     }
 
     public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)

@@ -1,10 +1,10 @@
 import { Func2 }          from "@surface/core";
-import ExpressionType     from "../../expression-type";
 import IExpression        from "../../interfaces/expression";
+import NodeType           from "../../node-type";
 import { BinaryOperator } from "../../types";
 import BaseExpression     from "./abstracts/base-expression";
 
-const binaryFunctions =
+const binaryFunctions: Record<BinaryOperator, Func2<IExpression, IExpression, unknown>> =
 {
     "+":          (left: IExpression, right: IExpression) => (left.evaluate() as number) +          (right.evaluate() as number),
     "-":          (left: IExpression, right: IExpression) => (left.evaluate() as number) -          (right.evaluate() as number),
@@ -18,8 +18,6 @@ const binaryFunctions =
     "<<":         (left: IExpression, right: IExpression) => (left.evaluate() as number) <<         (right.evaluate() as number),
     ">>":         (left: IExpression, right: IExpression) => (left.evaluate() as number) >>         (right.evaluate() as number),
     ">>>":        (left: IExpression, right: IExpression) => (left.evaluate() as number) >>>        (right.evaluate() as number),
-    "&&":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) &&         (right.evaluate() as Object),
-    "||":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ||         (right.evaluate() as Object),
     "==":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) ==         (right.evaluate() as Object),
     "===":        (left: IExpression, right: IExpression) => (left.evaluate() as Object) ===        (right.evaluate() as Object),
     "!=":         (left: IExpression, right: IExpression) => (left.evaluate() as Object) !=         (right.evaluate() as Object),
@@ -54,9 +52,9 @@ export default class BinaryExpression extends BaseExpression
         return this._right;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Binary;
+        return NodeType.Binary;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: BinaryOperator)
@@ -76,6 +74,6 @@ export default class BinaryExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${this.left.type == ExpressionType.Object && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+        return `${this.left.type == NodeType.Object && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
     }
 }

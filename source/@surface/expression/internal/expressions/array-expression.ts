@@ -1,23 +1,24 @@
-import ExpressionType   from "../../expression-type";
-import IExpression      from "../../interfaces/expression";
-import BaseExpression   from "./abstracts/base-expression";
-import SpreadExpression from "./spread-expression";
+import IExpression    from "../../interfaces/expression";
+import ISpreadElement from "../../interfaces/spread-element";
+import NodeType       from "../../node-type";
+import TypeGuard      from "../type-guard";
+import BaseExpression from "./abstracts/base-expression";
 
 export default class ArrayExpression extends BaseExpression<Array<unknown>>
 {
-    private readonly _elements: Array<IExpression>;
+    private readonly _elements: Array<IExpression|ISpreadElement>;
 
-    public get elements(): Array<IExpression>
+    public get elements(): Array<IExpression|ISpreadElement>
     {
         return this._elements;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Array;
+        return NodeType.Array;
     }
 
-    public constructor(elements: Array<IExpression>)
+    public constructor(elements: Array<IExpression|ISpreadElement>)
     {
         super();
         this._elements = elements;
@@ -29,9 +30,9 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
         for (const element of this.elements)
         {
-            if (element instanceof SpreadExpression)
+            if (TypeGuard.isSpreadElement(element))
             {
-                evaluation.push(...element.evaluate() as Array<unknown>);
+                evaluation.push(...element.argument.evaluate() as Array<unknown>);
             }
             else
             {

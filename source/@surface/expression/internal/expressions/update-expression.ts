@@ -1,6 +1,6 @@
 import { Func2, Indexer } from "@surface/core";
-import ExpressionType     from "../../expression-type";
 import IExpression        from "../../interfaces/expression";
+import NodeType           from "../../node-type";
 import { UpdateOperator } from "../../types";
 import TypeGuard          from "../type-guard";
 import BaseExpression     from "./abstracts/base-expression";
@@ -38,9 +38,9 @@ export default class UpdateExpression extends BaseExpression<number>
         return this._prefix;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Update;
+        return NodeType.Update;
     }
 
     public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)

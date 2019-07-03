@@ -1,6 +1,6 @@
 import { Func3, Indexer }      from "@surface/core";
-import ExpressionType          from "../../expression-type";
 import IExpression             from "../../interfaces/expression";
+import NodeType                from "../../node-type";
 import { AssignmentOpertaror } from "../../types";
 import TypeGuard               from "../type-guard";
 import BaseExpression          from "./abstracts/base-expression";
@@ -44,9 +44,9 @@ export default class AssignmentExpression extends BaseExpression
         return this._operator;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Assignment;
+        return NodeType.Assignment;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: AssignmentOpertaror)

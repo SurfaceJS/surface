@@ -8,6 +8,7 @@ import ConditionalExpression              from "../../internal/expressions/condi
 import ConstantExpression                 from "../../internal/expressions/constant-expression";
 import IdentifierExpression               from "../../internal/expressions/identifier-expression";
 import LambdaExpression                   from "../../internal/expressions/lambda-expression";
+import LogicalExpression                  from "../../internal/expressions/logical-expression";
 import MemberExpression                   from "../../internal/expressions/member-expression";
 import NewExpression                      from "../../internal/expressions/new-expression";
 import ObjectExpression                   from "../../internal/expressions/object-expression";
@@ -234,27 +235,6 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "10 % 3",
         value:    1,
         toString: "10 % 3",
-        type:     BinaryExpression,
-    },
-    {
-        context:  context,
-        raw:      "true && false",
-        value:    false,
-        toString: "true && false",
-        type:     BinaryExpression,
-    },
-    {
-        context:  context,
-        raw:      "true || false",
-        value:    true,
-        toString: "true || false",
-        type:     BinaryExpression,
-    },
-    {
-        context:  context,
-        raw:      "false || true",
-        value:    true,
-        toString: "false || true",
         type:     BinaryExpression,
     },
     {
@@ -697,6 +677,27 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         value:    (...{ a, "x": { b } }: { a: number, x: { b: number } }) => a + b,
         toString: "(...{ a, \"x\": { b } }) => a + b",
         type:     LambdaExpression,
+    },
+    {
+        context:  context,
+        raw:      "true && false",
+        value:    false,
+        toString: "true && false",
+        type:     LogicalExpression,
+    },
+    {
+        context:  context,
+        raw:      "true || false",
+        value:    true,
+        toString: "true || false",
+        type:     LogicalExpression,
+    },
+    {
+        context:  context,
+        raw:      "false || true",
+        value:    true,
+        toString: "false || true",
+        type:     LogicalExpression,
     },
     {
         context:  context,

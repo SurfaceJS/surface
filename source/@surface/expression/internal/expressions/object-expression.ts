@@ -1,43 +1,44 @@
-import { Indexer }        from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import BaseExpression     from "./abstracts/base-expression";
-import PropertyExpression from "./property-expression";
-import SpreadExpression   from "./spread-expression";
+import { Indexer }    from "@surface/core";
+import IProperty      from "../../interfaces/property";
+import ISpreadElement from "../../interfaces/spread-element";
+import NodeType       from "../../node-type";
+import TypeGuard      from "../type-guard";
+import BaseExpression from "./abstracts/base-expression";
 
 export default class ObjectExpression extends BaseExpression<Indexer>
 {
-    private readonly _entries: Array<PropertyExpression|SpreadExpression>;
+    private readonly _properties: Array<IProperty|ISpreadElement>;
 
-    public get entries(): Array<PropertyExpression|SpreadExpression>
+    public get properties(): Array<IProperty|ISpreadElement>
     {
-        return this._entries;
+        return this._properties;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Object;
+        return NodeType.Object;
     }
 
-    public constructor(entries: Array<PropertyExpression|SpreadExpression>)
+    public constructor(entries: Array<IProperty|ISpreadElement>)
     {
         super();
 
-        this._entries = entries;
+        this._properties = entries;
     }
 
     public evaluate(): Indexer
     {
         const evaluation: Indexer = { };
 
-        for (const entry of this.entries)
+        for (const property of this.properties)
         {
-            if (entry instanceof PropertyExpression)
+            if (TypeGuard.isProperty(property))
             {
-                evaluation[entry.key.evaluate() as string] = entry.evaluate();
+                evaluation[property.key.evaluate() as string] = property.value.evaluate();
             }
             else
             {
-                Object.assign(evaluation, entry.evaluate());
+                Object.assign(evaluation, property.argument.evaluate());
             }
         }
 
@@ -46,6 +47,6 @@ export default class ObjectExpression extends BaseExpression<Indexer>
 
     public toString(): string
     {
-        return this.entries.length > 0 ? `{ ${this.entries.map(x => x.toString()).join(", ")} }` : "{ }";
+        return this.properties.length > 0 ? `{ ${this.properties.map(x => x.toString()).join(", ")} }` : "{ }";
     }
 }

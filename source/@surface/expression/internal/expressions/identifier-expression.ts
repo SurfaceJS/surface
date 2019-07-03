@@ -1,5 +1,5 @@
 import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
+import NodeType from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
 export default class IdentifierExpression extends BaseExpression
@@ -16,9 +16,9 @@ export default class IdentifierExpression extends BaseExpression
         return this._name;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Identifier;
+        return NodeType.Identifier;
     }
 
     public constructor(context: Indexer, name: string)

@@ -1,9 +1,8 @@
-import ExpressionType from "../expression-type";
+import NodeType from "../node-type";
+import INode    from "./node";
 
-export default interface IExpression
+export default interface IExpression extends INode
 {
-    type:       ExpressionType;
     cache:      unknown;
     evaluate(): unknown;
-    toString(): string;
 }

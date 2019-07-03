@@ -1,6 +1,6 @@
 import { Indexer }      from "@surface/core";
-import ExpressionType   from "../../expression-type";
 import IExpression      from "../../interfaces/expression";
+import NodeType         from "../../node-type";
 import BaseExpression   from "./abstracts/base-expression";
 
 export default class MemberExpression extends BaseExpression
@@ -23,9 +23,9 @@ export default class MemberExpression extends BaseExpression
         return this._target;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Member;
+        return NodeType.Member;
     }
 
     public constructor(target: IExpression, key: IExpression, computed: boolean)

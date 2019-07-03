@@ -1,25 +1,40 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import IExpression from "../../interfaces/expression";
+import INode       from "../../interfaces/node";
+import NodeType    from "../../node-type";
 
-export default class PropertyExpression extends BaseExpression
+export default class Property implements INode
 {
-    private readonly _computed: boolean;
+    private _computed: boolean;
     public get computed(): boolean
     {
         return this._computed;
     }
 
-    private readonly _key: IExpression;
+    public set computed(value: boolean)
+    {
+        this._computed = value;
+    }
+
+    private _key: IExpression;
     public get key(): IExpression
     {
         return this._key;
     }
 
-    private readonly _shorthand: boolean;
+    public set key(value: IExpression)
+    {
+        this._key = value;
+    }
+
+    private _shorthand: boolean;
     public get shorthand(): boolean
     {
         return this._shorthand;
+    }
+
+    public set shorthand(value: boolean)
+    {
+        this._shorthand = value;
     }
 
     private _value: IExpression;
@@ -28,29 +43,22 @@ export default class PropertyExpression extends BaseExpression
         return this._value;
     }
 
-    public get type(): ExpressionType
-    {
-        return ExpressionType.Property;
-    }
-
-    public constructor(key: IExpression, value: IExpression, computed: boolean, shorthand: boolean)
-    {
-        super();
-
-        this._key        = key;
-        this._value      = value;
-        this._computed   = computed;
-        this._shorthand  = shorthand;
-    }
-
-    public update(value: IExpression): void
+    public set value(value: IExpression)
     {
         this._value = value;
     }
 
-    public evaluate(): unknown
+    public get type(): NodeType
     {
-        return this._cache = this.value.evaluate();
+        return NodeType.Property;
+    }
+
+    public constructor(key: IExpression, value: IExpression, computed: boolean, shorthand: boolean)
+    {
+        this._key        = key;
+        this._value      = value;
+        this._computed   = computed;
+        this._shorthand  = shorthand;
     }
 
     public toString(): string

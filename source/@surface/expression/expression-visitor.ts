@@ -4,14 +4,14 @@ import IBinaryExpression      from "./interfaces/binary-expression";
 import ICallExpression        from "./interfaces/call-expression";
 import IConditionalExpression from "./interfaces/conditional-expression";
 import IConstantExpression    from "./interfaces/constant-expression";
-import IExpression            from "./interfaces/expression";
 import IIdentifierExpression  from "./interfaces/identifier-expression";
 import IMemberExpression      from "./interfaces/member-expression";
 import INewExpression         from "./interfaces/new-expression";
+import INode                  from "./interfaces/node";
 import IObjectExpression      from "./interfaces/object-expression";
-import IPropertyExpression    from "./interfaces/property-expression";
+import IProperty              from "./interfaces/property";
 import IRegexExpression       from "./interfaces/regex-expression";
-import ISpreadExpression      from "./interfaces/spread-expression";
+import ISpreadElement         from "./interfaces/spread-element";
 import ITemplateExpression    from "./interfaces/template-expression";
 import IUnaryExpression       from "./interfaces/unary-expression";
 import IUpdateExpression      from "./interfaces/update-expression";
@@ -19,7 +19,7 @@ import TypeGuard              from "./internal/type-guard";
 
 export default abstract class ExpressionVisitor
 {
-    protected visit(expression: IExpression): IExpression
+    protected visit(expression: INode): INode
     {
         if (TypeGuard.isArrayExpression(expression))
         {
@@ -61,7 +61,7 @@ export default abstract class ExpressionVisitor
         {
             return this.visitObjectExpression(expression);
         }
-        else if (TypeGuard.isPropertyExpression(expression))
+        else if (TypeGuard.isProperty(expression))
         {
             return this.visitPropertyExpression(expression);
         }
@@ -87,7 +87,7 @@ export default abstract class ExpressionVisitor
         }
     }
 
-    protected visitArrayExpression(expression: IArrayExpression): IExpression
+    protected visitArrayExpression(expression: IArrayExpression): INode
     {
         for (const element of expression.elements)
         {
@@ -97,7 +97,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitAssignmentExpression(expression: IAssignmentExpression): IExpression
+    protected visitAssignmentExpression(expression: IAssignmentExpression): INode
     {
         this.visit(expression.left);
         this.visit(expression.right);
@@ -105,7 +105,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitBinaryExpression(expression: IBinaryExpression): IExpression
+    protected visitBinaryExpression(expression: IBinaryExpression): INode
     {
         this.visit(expression.left);
         this.visit(expression.right);
@@ -113,7 +113,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitCallExpression(expression: ICallExpression): IExpression
+    protected visitCallExpression(expression: ICallExpression): INode
     {
         this.visit(expression.context);
         this.visit(expression.callee);
@@ -126,7 +126,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitConditionalExpression(expression: IConditionalExpression): IExpression
+    protected visitConditionalExpression(expression: IConditionalExpression): INode
     {
         this.visit(expression.condition);
         this.visit(expression.truthy);
@@ -135,17 +135,17 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitConstantExpression(expression: IConstantExpression): IExpression
+    protected visitConstantExpression(expression: IConstantExpression): INode
     {
         return expression;
     }
 
-    protected visitIdentifierExpression(expression: IIdentifierExpression): IExpression
+    protected visitIdentifierExpression(expression: IIdentifierExpression): INode
     {
         return expression;
     }
 
-    protected visitMemberExpression(expression: IMemberExpression): IExpression
+    protected visitMemberExpression(expression: IMemberExpression): INode
     {
         this.visit(expression.target);
         this.visit(expression.key);
@@ -153,7 +153,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitNewExpression(expression: INewExpression): IExpression
+    protected visitNewExpression(expression: INewExpression): INode
     {
         this.visit(expression.callee);
 
@@ -165,9 +165,9 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitObjectExpression(expression: IObjectExpression): IExpression
+    protected visitObjectExpression(expression: IObjectExpression): INode
     {
-        for (const entry of expression.entries)
+        for (const entry of expression.properties)
         {
             this.visit(entry);
         }
@@ -175,7 +175,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitPropertyExpression(expression: IPropertyExpression): IExpression
+    protected visitPropertyExpression(expression: IProperty): INode
     {
         this.visit(expression.key);
         this.visit(expression.value);
@@ -183,19 +183,19 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitRegexExpression(expression: IRegexExpression): IExpression
+    protected visitRegexExpression(expression: IRegexExpression): INode
     {
         return expression;
     }
 
-    protected visitSpreadExpression(expression: ISpreadExpression): IExpression
+    protected visitSpreadExpression(node: ISpreadElement): INode
     {
-        this.visit(expression.argument);
+        this.visit(node.argument);
 
-        return expression;
+        return node;
     }
 
-    protected visitTemplateExpression(expression: ITemplateExpression): IExpression
+    protected visitTemplateExpression(expression: ITemplateExpression): INode
     {
         for (const node of expression.expressions)
         {
@@ -205,14 +205,14 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitUnaryExpression(expression: IUnaryExpression): IExpression
+    protected visitUnaryExpression(expression: IUnaryExpression): INode
     {
         this.visit(expression.expression);
 
         return expression;
     }
 
-    protected visitUpdateExpression(expression: IUpdateExpression): IExpression
+    protected visitUpdateExpression(expression: IUpdateExpression): INode
     {
         this.visit(expression.expression);
 
