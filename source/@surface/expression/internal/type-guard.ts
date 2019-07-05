@@ -1,27 +1,28 @@
-import IArrayExpression       from "../interfaces/array-expression";
-import IArrayPattern          from "../interfaces/array-pattern";
-import IAssignmentExpression  from "../interfaces/assignment-expression";
-import IAssignmentPattern     from "../interfaces/assignment-pattern";
-import IBinaryExpression      from "../interfaces/binary-expression";
-import ICallExpression        from "../interfaces/call-expression";
-import IConditionalExpression from "../interfaces/conditional-expression";
-import IConstantExpression    from "../interfaces/constant-expression";
-import IIdentifierExpression  from "../interfaces/identifier-expression";
-import ILogicalExpression     from "../interfaces/logical-expression";
-import IMemberExpression      from "../interfaces/member-expression";
-import INewExpression         from "../interfaces/new-expression";
-import INode                  from "../interfaces/node";
-import IObjectExpression      from "../interfaces/object-expression";
-import IObjectPattern         from "../interfaces/object-pattern";
-import IProperty              from "../interfaces/property";
-import IRegexExpression       from "../interfaces/regex-expression";
-import IRestElement           from "../interfaces/rest-element";
-import ISequenceExpression    from "../interfaces/sequence-expression";
-import ISpreadElement         from "../interfaces/spread-element";
-import ITemplateExpression    from "../interfaces/template-expression";
-import IUnaryExpression       from "../interfaces/unary-expression";
-import IUpdateExpression      from "../interfaces/update-expression";
-import NodeType               from "../node-type";
+import IArrayExpression         from "../interfaces/array-expression";
+import IArrayPattern            from "../interfaces/array-pattern";
+import IArrowFunctionExpression from "../interfaces/arrow-function-expression";
+import IAssignmentExpression    from "../interfaces/assignment-expression";
+import IAssignmentPattern       from "../interfaces/assignment-pattern";
+import IBinaryExpression        from "../interfaces/binary-expression";
+import ICallExpression          from "../interfaces/call-expression";
+import IConditionalExpression   from "../interfaces/conditional-expression";
+import IConstantExpression      from "../interfaces/constant-expression";
+import IIdentifierExpression    from "../interfaces/identifier-expression";
+import ILogicalExpression       from "../interfaces/logical-expression";
+import IMemberExpression        from "../interfaces/member-expression";
+import INewExpression           from "../interfaces/new-expression";
+import INode                    from "../interfaces/node";
+import IObjectExpression        from "../interfaces/object-expression";
+import IObjectPattern           from "../interfaces/object-pattern";
+import IProperty                from "../interfaces/property";
+import IRegexExpression         from "../interfaces/regex-expression";
+import IRestElement             from "../interfaces/rest-element";
+import ISequenceExpression      from "../interfaces/sequence-expression";
+import ISpreadElement           from "../interfaces/spread-element";
+import ITemplateExpression      from "../interfaces/template-expression";
+import IUnaryExpression         from "../interfaces/unary-expression";
+import IUpdateExpression        from "../interfaces/update-expression";
+import NodeType                 from "../node-type";
 
 export default class TypeGuard
 {
@@ -33,6 +34,11 @@ export default class TypeGuard
     public static isArrayPattern(node: INode): node is IArrayPattern
     {
         return node.type == NodeType.ArrayPattern;
+    }
+
+    public static isArrowFunctionExpression(node: INode): node is IArrowFunctionExpression
+    {
+        return node.type == NodeType.ArrowFunction;
     }
 
     public static isAssignmentExpression(node: INode): node is IAssignmentExpression

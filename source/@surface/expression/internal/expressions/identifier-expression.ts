@@ -16,6 +16,11 @@ export default class IdentifierExpression extends BaseExpression
         return this._name;
     }
 
+    public set name(value: string)
+    {
+        this._name = value;
+    }
+
     public get type(): NodeType
     {
         return NodeType.Identifier;

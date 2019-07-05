@@ -118,7 +118,7 @@ export default abstract class ExpressionVisitor
         this.visit(expression.context);
         this.visit(expression.callee);
 
-        for (const arg of expression.args)
+        for (const arg of expression.arguments)
         {
             this.visit(arg);
         }
@@ -128,9 +128,9 @@ export default abstract class ExpressionVisitor
 
     protected visitConditionalExpression(expression: IConditionalExpression): INode
     {
-        this.visit(expression.condition);
-        this.visit(expression.truthy);
-        this.visit(expression.falsy);
+        this.visit(expression.test);
+        this.visit(expression.alternate);
+        this.visit(expression.consequent);
 
         return expression;
     }
@@ -147,8 +147,8 @@ export default abstract class ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        this.visit(expression.target);
-        this.visit(expression.key);
+        this.visit(expression.object);
+        this.visit(expression.property);
 
         return expression;
     }
@@ -157,7 +157,7 @@ export default abstract class ExpressionVisitor
     {
         this.visit(expression.callee);
 
-        for (const arg of expression.args)
+        for (const arg of expression.arguments)
         {
             this.visit(arg);
         }
@@ -207,14 +207,14 @@ export default abstract class ExpressionVisitor
 
     protected visitUnaryExpression(expression: IUnaryExpression): INode
     {
-        this.visit(expression.expression);
+        this.visit(expression.argument);
 
         return expression;
     }
 
     protected visitUpdateExpression(expression: IUpdateExpression): INode
     {
-        this.visit(expression.expression);
+        this.visit(expression.argument);
 
         return expression;
     }

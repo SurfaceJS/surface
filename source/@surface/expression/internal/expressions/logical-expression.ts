@@ -14,22 +14,37 @@ export default class LogicalExpression extends BaseExpression
 {
     private readonly operation: Func2<IExpression, IExpression, unknown>;
 
-    private readonly _left: IExpression;
+    private _left: IExpression;
     public get left(): IExpression
     {
         return this._left;
     }
 
-    private readonly _operator: LogicalOperator;
+    public set left(value: IExpression)
+    {
+        this._left = value;
+    }
+
+    private _operator: LogicalOperator;
     public get operator(): LogicalOperator
     {
         return this._operator;
     }
 
-    private readonly _right: IExpression;
+    public set operator(value: LogicalOperator)
+    {
+        this._operator = value;
+    }
+
+    private _right: IExpression;
     public get right(): IExpression
     {
         return this._right;
+    }
+
+    public set right(value: IExpression)
+    {
+        this._right = value;
     }
 
     public get type(): NodeType

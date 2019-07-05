@@ -1,39 +1,47 @@
-import { Indexer }                                            from "@surface/core";
-import IArrayExpression                                       from "./interfaces/array-expression";
-import IAssignmentExpression                                  from "./interfaces/assignment-expression";
-import IBinaryExpression                                      from "./interfaces/binary-expression";
-import ICallExpression                                        from "./interfaces/call-expression";
-import IConditionalExpression                                 from "./interfaces/conditional-expression";
-import IConstantExpression                                    from "./interfaces/constant-expression";
-import IExpression                                            from "./interfaces/expression";
-import IIdentifierExpression                                  from "./interfaces/identifier-expression";
-import IMemberExpression                                      from "./interfaces/member-expression";
-import INewExpression                                         from "./interfaces/new-expression";
-import IObjectExpression                                      from "./interfaces/object-expression";
-import IProperty                                              from "./interfaces/property";
-import IRegexExpression                                       from "./interfaces/regex-expression";
-import ISequenceExpression                                    from "./interfaces/sequence-expression";
-import ISpreadElement                                         from "./interfaces/spread-element";
-import ITemplateExpression                                    from "./interfaces/template-expression";
-import IUnaryExpression                                       from "./interfaces/unary-expression";
-import Property                                               from "./internal/elements/property";
-import SpreadElement                                          from "./internal/elements/spread-element";
-import ArrayExpression                                        from "./internal/expressions/array-expression";
-import AssignmentExpression                                   from "./internal/expressions/assignment-expression";
-import BinaryExpression                                       from "./internal/expressions/binary-expression";
-import CallExpression                                         from "./internal/expressions/call-expression";
-import ConditionalExpression                                  from "./internal/expressions/conditional-expression";
-import ConstantExpression                                     from "./internal/expressions/constant-expression";
-import IdentifierExpression                                   from "./internal/expressions/identifier-expression";
-import MemberExpression                                       from "./internal/expressions/member-expression";
-import NewExpression                                          from "./internal/expressions/new-expression";
-import ObjectExpression                                       from "./internal/expressions/object-expression";
-import RegexExpression                                        from "./internal/expressions/regex-expression";
-import SequenceExpression                                     from "./internal/expressions/sequence-expression";
-import TemplateExpression                                     from "./internal/expressions/template-expression";
-import UnaryExpression                                        from "./internal/expressions/unary-expression";
-import Parser                                                 from "./internal/parser";
-import { AssignmentOpertaror, BinaryOperator, UnaryOperator } from "./types";
+import { Indexer }            from "@surface/core";
+import IArrayExpression       from "./interfaces/array-expression";
+import IAssignmentExpression  from "./interfaces/assignment-expression";
+import IBinaryExpression      from "./interfaces/binary-expression";
+import ICallExpression        from "./interfaces/call-expression";
+import IConditionalExpression from "./interfaces/conditional-expression";
+import IConstantExpression    from "./interfaces/constant-expression";
+import IExpression            from "./interfaces/expression";
+import IIdentifierExpression  from "./interfaces/identifier-expression";
+import IMemberExpression      from "./interfaces/member-expression";
+import INewExpression         from "./interfaces/new-expression";
+import IObjectExpression      from "./interfaces/object-expression";
+import IProperty              from "./interfaces/property";
+import IRegexExpression       from "./interfaces/regex-expression";
+import ISequenceExpression    from "./interfaces/sequence-expression";
+import ISpreadElement         from "./interfaces/spread-element";
+import ITemplateExpression    from "./interfaces/template-expression";
+import IUnaryExpression       from "./interfaces/unary-expression";
+import IUpdateExpression      from "./interfaces/update-expression";
+import Property               from "./internal/elements/property";
+import SpreadElement          from "./internal/elements/spread-element";
+import ArrayExpression        from "./internal/expressions/array-expression";
+import AssignmentExpression   from "./internal/expressions/assignment-expression";
+import BinaryExpression       from "./internal/expressions/binary-expression";
+import CallExpression         from "./internal/expressions/call-expression";
+import ConditionalExpression  from "./internal/expressions/conditional-expression";
+import ConstantExpression     from "./internal/expressions/constant-expression";
+import IdentifierExpression   from "./internal/expressions/identifier-expression";
+import MemberExpression       from "./internal/expressions/member-expression";
+import NewExpression          from "./internal/expressions/new-expression";
+import ObjectExpression       from "./internal/expressions/object-expression";
+import RegexExpression        from "./internal/expressions/regex-expression";
+import SequenceExpression     from "./internal/expressions/sequence-expression";
+import TemplateExpression     from "./internal/expressions/template-expression";
+import UnaryExpression        from "./internal/expressions/unary-expression";
+import UpdateExpression       from "./internal/expressions/update-expression";
+import Parser                 from "./internal/parser";
+import
+{
+    AssignmentOperator,
+    BinaryOperator,
+    UnaryOperator,
+    UpdateOperator
+} from "./types";
 
 export default abstract class Expression
 {
@@ -42,7 +50,7 @@ export default abstract class Expression
         return new ArrayExpression(elements);
     }
 
-    public static assignment(left: IExpression, right: IExpression, operator: AssignmentOpertaror): IAssignmentExpression
+    public static assignment(left: IExpression, right: IExpression, operator: AssignmentOperator): IAssignmentExpression
     {
         return new AssignmentExpression(left, right, operator);
     }
@@ -52,14 +60,14 @@ export default abstract class Expression
         return new BinaryExpression(left, right, operator);
     }
 
-    public static call(context: IExpression, callee: IExpression, args: Array<IExpression>): ICallExpression
+    public static call(context: IExpression, callee: IExpression, $arguments: Array<IExpression>): ICallExpression
     {
-        return new CallExpression(context, callee, args);
+        return new CallExpression(context, callee, $arguments);
     }
 
-    public static conditional(condition: IExpression, thuthy: IExpression, falsy: IExpression): IConditionalExpression
+    public static conditional(condition: IExpression, alternate: IExpression, consequent: IExpression): IConditionalExpression
     {
-        return new ConditionalExpression(condition, thuthy, falsy);
+        return new ConditionalExpression(condition, alternate, consequent);
     }
 
     public static constant(value: unknown): IConstantExpression
@@ -77,14 +85,14 @@ export default abstract class Expression
         return new IdentifierExpression(context as Indexer, name);
     }
 
-    public static member(target: IExpression, key: IExpression, computed: boolean): IMemberExpression
+    public static member(object: IExpression, property: IExpression, computed: boolean): IMemberExpression
     {
-        return new MemberExpression(target, key, computed);
+        return new MemberExpression(object, property, computed);
     }
 
-    public static new(callee: IExpression, args: Array<IExpression>): INewExpression
+    public static new(callee: IExpression, $arguments: Array<IExpression>): INewExpression
     {
-        return new NewExpression(callee, args);
+        return new NewExpression(callee, $arguments);
     }
 
     public static object(properties: Array<IProperty>): IObjectExpression
@@ -117,8 +125,13 @@ export default abstract class Expression
         return new TemplateExpression(quasis, expressions);
     }
 
-    public static unary(expression: IExpression, operator: UnaryOperator): IUnaryExpression
+    public static unary(argument: IExpression, operator: UnaryOperator): IUnaryExpression
     {
-        return new UnaryExpression(expression, operator);
+        return new UnaryExpression(argument, operator);
+    }
+
+    public static update(argument: IExpression, operator: UpdateOperator, prefix: boolean): IUpdateExpression
+    {
+        return new UpdateExpression(argument, operator, prefix);
     }
 }

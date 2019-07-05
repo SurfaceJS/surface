@@ -20,22 +20,37 @@ export default class UpdateExpression extends BaseExpression<number>
 {
     private readonly operation: Func2<IExpression, IExpression, number>;
 
-    private readonly _expression: IExpression;
-    public get expression(): IExpression
+    private _argument: IExpression;
+    public get argument(): IExpression
     {
-        return this._expression;
+        return this._argument;
     }
 
-    private readonly _operator: UpdateOperator;
+    public set argument(value: IExpression)
+    {
+        this._argument = value;
+    }
+
+    private _operator: UpdateOperator;
     public get operator(): UpdateOperator
     {
         return this._operator;
     }
 
-    private readonly _prefix: boolean;
+    public set operator(value: UpdateOperator)
+    {
+        this._operator = value;
+    }
+
+    private _prefix: boolean;
     public get prefix(): boolean
     {
         return this._prefix;
+    }
+
+    public set prefix(value: boolean)
+    {
+        this._prefix = value;
     }
 
     public get type(): NodeType
@@ -43,26 +58,26 @@ export default class UpdateExpression extends BaseExpression<number>
         return NodeType.Update;
     }
 
-    public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)
+    public constructor(argument: IExpression, operator: UpdateOperator, prefix: boolean)
     {
         super();
 
-        this._expression = expression;
-        this._prefix     = prefix;
-        this._operator   = operator;
-        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
+        this._argument = argument;
+        this._prefix   = prefix;
+        this._operator = operator;
+        this.operation = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
     }
 
     public evaluate(): number
     {
         /* istanbul ignore else  */
-        if (TypeGuard.isIdentifierExpression(this.expression))
+        if (TypeGuard.isIdentifierExpression(this.argument))
         {
-            return this._cache = this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
+            return this._cache = this.operation(new ConstantExpression(this.argument.context), new ConstantExpression(this.argument.name));
         }
-        else if (TypeGuard.isMemberExpression(this.expression))
+        else if (TypeGuard.isMemberExpression(this.argument))
         {
-            return this._cache = this.operation(this.expression.target, this.expression.key);
+            return this._cache = this.operation(this.argument.object, this.argument.property);
         }
         else
         {
@@ -72,6 +87,6 @@ export default class UpdateExpression extends BaseExpression<number>
 
     public toString(): string
     {
-        return this.prefix ? `${this.operator}${this.expression}` : `${this.expression}${this.operator}`;
+        return this.prefix ? `${this.operator}${this.argument}` : `${this.argument}${this.operator}`;
     }
 }

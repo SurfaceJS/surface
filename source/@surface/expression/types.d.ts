@@ -4,7 +4,7 @@ import IIdentifierExpression from "./interfaces/identifier-expression";
 import IObjectPattern        from "./interfaces/object-pattern";
 import IRestElement          from "./interfaces/rest-element";
 
-export type AssignmentOpertaror   = "="|"*="|"**="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|=";
+export type AssignmentOperator    = "="|"*="|"**="|"/="|"%="|"+="|"-="|"<<="|">>="|">>>="|"&="|"^="|"|=";
 export type ArithmeticOperator    = "+"|"-"|"*"|"/"|"%"|"**";
 export type BinaryBitwiseOperator = "&"|"|"|"^";
 export type LogicalOperator       = "&&"|"||";

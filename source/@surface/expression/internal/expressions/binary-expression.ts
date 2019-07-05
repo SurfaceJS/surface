@@ -34,22 +34,32 @@ export default class BinaryExpression extends BaseExpression
 {
     private readonly operation: Func2<IExpression, IExpression, unknown>;
 
-    private readonly _left: IExpression;
+    private _left: IExpression;
     public get left(): IExpression
     {
         return this._left;
     }
 
-    private readonly _operator: BinaryOperator;
+    public set left(value: IExpression)
+    {
+        this._left = value;
+    }
+
+    private _operator: BinaryOperator;
     public get operator(): BinaryOperator
     {
         return this._operator;
     }
 
-    private readonly _right: IExpression;
+    private _right: IExpression;
     public get right(): IExpression
     {
         return this._right;
+    }
+
+    public set right(value: IExpression)
+    {
+        this._right = value;
     }
 
     public get type(): NodeType

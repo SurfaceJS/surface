@@ -6,11 +6,16 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class ArrayExpression extends BaseExpression<Array<unknown>>
 {
-    private readonly _elements: Array<IExpression|ISpreadElement>;
+    private _elements: Array<IExpression|ISpreadElement>;
 
     public get elements(): Array<IExpression|ISpreadElement>
     {
         return this._elements;
+    }
+
+    public set elements(value: Array<IExpression|ISpreadElement>)
+    {
+        this._elements = value;
     }
 
     public get type(): NodeType

@@ -2,6 +2,7 @@ enum NodeType
 {
     Array,
     ArrayPattern,
+    ArrowFunction,
     Assignment,
     AssignmentPattern,
     Binary,
@@ -9,7 +10,6 @@ enum NodeType
     Conditional,
     Constant,
     Identifier,
-    Lambda,
     Logical,
     Member,
     New,

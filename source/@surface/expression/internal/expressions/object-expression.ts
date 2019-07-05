@@ -7,11 +7,15 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class ObjectExpression extends BaseExpression<Indexer>
 {
-    private readonly _properties: Array<IProperty|ISpreadElement>;
-
+    private _properties: Array<IProperty|ISpreadElement>;
     public get properties(): Array<IProperty|ISpreadElement>
     {
         return this._properties;
+    }
+
+    public set properties(value: Array<IProperty|ISpreadElement>)
+    {
+        this._properties = value;
     }
 
     public get type(): NodeType
@@ -19,11 +23,11 @@ export default class ObjectExpression extends BaseExpression<Indexer>
         return NodeType.Object;
     }
 
-    public constructor(entries: Array<IProperty|ISpreadElement>)
+    public constructor(properties: Array<IProperty|ISpreadElement>)
     {
         super();
 
-        this._properties = entries;
+        this._properties = properties;
     }
 
     public evaluate(): Indexer

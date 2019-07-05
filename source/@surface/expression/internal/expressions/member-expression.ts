@@ -5,22 +5,37 @@ import BaseExpression   from "./abstracts/base-expression";
 
 export default class MemberExpression extends BaseExpression
 {
-    private readonly _computed: boolean;
+    private _computed: boolean;
     public get computed(): boolean
     {
         return this._computed;
     }
 
-    private readonly _key: IExpression;
-    public get key(): IExpression
+    public set computed(value: boolean)
     {
-        return this._key;
+        this._computed = value;
     }
 
-    private readonly _target: IExpression;
-    public get target(): IExpression
+    private _property: IExpression;
+    public get property(): IExpression
     {
-        return this._target;
+        return this._property;
+    }
+
+    public set property(value: IExpression)
+    {
+        this._property = value;
+    }
+
+    private _object: IExpression;
+    public get object(): IExpression
+    {
+        return this._object;
+    }
+
+    public set object(value: IExpression)
+    {
+        this._object = value;
     }
 
     public get type(): NodeType
@@ -28,22 +43,22 @@ export default class MemberExpression extends BaseExpression
         return NodeType.Member;
     }
 
-    public constructor(target: IExpression, key: IExpression, computed: boolean)
+    public constructor(object: IExpression, property: IExpression, computed: boolean)
     {
         super();
 
-        this._key      = key;
-        this._target   = target;
+        this._object   = object;
+        this._property = property;
         this._computed = computed;
     }
 
     public evaluate(): unknown
     {
-        return this._cache = (this.target.evaluate() as Indexer)[`${this.key.evaluate()}`];
+        return this._cache = (this.object.evaluate() as Indexer)[`${this.property.evaluate()}`];
     }
 
     public toString(): string
     {
-        return `${this.target}${this.computed ? `[${this.key}]` : `.${this.key.evaluate()}`}`;
+        return `${this.object}${this.computed ? `[${this.property}]` : `.${this.property.evaluate()}`}`;
     }
 }

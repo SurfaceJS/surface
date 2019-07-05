@@ -4,22 +4,37 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class ConditionalExpression extends BaseExpression
 {
-    private _condition: IExpression;
-    public get condition(): IExpression
+    private _alternate: IExpression;
+    public get alternate(): IExpression
     {
-        return this._condition;
+        return this._alternate;
     }
 
-    private readonly _falsy: IExpression;
-    public get falsy(): IExpression
+    public set alternate(value: IExpression)
     {
-        return this._falsy;
+        this._alternate = value;
     }
 
-    private readonly _truthy: IExpression;
-    public get truthy(): IExpression
+    private _consequent: IExpression;
+    public get consequent(): IExpression
     {
-        return this._truthy;
+        return this._consequent;
+    }
+
+    public set consequent(value: IExpression)
+    {
+        this._consequent = value;
+    }
+
+    private _test: IExpression;
+    public get test(): IExpression
+    {
+        return this._test;
+    }
+
+    public set test(value: IExpression)
+    {
+        this._test = value;
     }
 
     public get type(): NodeType
@@ -27,22 +42,22 @@ export default class ConditionalExpression extends BaseExpression
         return NodeType.Conditional;
     }
 
-    public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)
+    public constructor(test: IExpression, alternate: IExpression, consequent: IExpression)
     {
         super();
 
-        this._condition = condition;
-        this._falsy     = falsy;
-        this._truthy    = truthy;
+        this._test       = test;
+        this._consequent = consequent;
+        this._alternate  = alternate;
     }
 
     public evaluate(): unknown
     {
-        return this._cache = this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
+        return this._cache = this.test.evaluate() ? this.alternate.evaluate() : this.consequent.evaluate();
     }
 
     public toString(): string
     {
-        return `${this.condition} ? ${this.truthy} : ${this.falsy}`;
+        return `${this.test} ? ${this.alternate} : ${this.consequent}`;
     }
 }

@@ -15,18 +15,28 @@ const unaryFunctions =
 
 export default class UnaryExpression extends BaseExpression<Object>
 {
+    private _argument: IExpression;
+    public get argument(): IExpression
+    {
+        return this._argument;
+    }
+
+    public set argument(value: IExpression)
+    {
+        this._argument = value;
+    }
+
     private readonly operation: Func1<unknown, Object>;
 
-    private readonly _operator: UnaryOperator;
+    private _operator: UnaryOperator;
     public get operator(): UnaryOperator
     {
         return this._operator;
     }
 
-    private readonly _expression: IExpression;
-    public get expression(): IExpression
+    public set operator(value: UnaryOperator)
     {
-        return this._expression;
+        this._operator = value;
     }
 
     public get type(): NodeType
@@ -34,22 +44,22 @@ export default class UnaryExpression extends BaseExpression<Object>
         return NodeType.Unary;
     }
 
-    public constructor(expression: IExpression, operator: UnaryOperator)
+    public constructor(argument: IExpression, operator: UnaryOperator)
     {
         super();
 
-        this._operator   = operator;
-        this._expression = expression;
-        this.operation   = unaryFunctions[this.operator] as Func1<unknown, Object>;
+        this._operator = operator;
+        this._argument = argument;
+        this.operation = unaryFunctions[this.operator] as Func1<unknown, Object>;
     }
 
     public evaluate(): Object
     {
-        return this._cache = this.operation(this.expression);
+        return this._cache = this.operation(this.argument);
     }
 
     public toString(): string
     {
-        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.expression}`;
+        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.argument}`;
     }
 }

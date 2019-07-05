@@ -10,12 +10,17 @@ import Messages       from "../messages";
 import TypeGuard      from "../type-guard";
 import BaseExpression from "./abstracts/base-expression";
 
-export default class LambdaExpression extends BaseExpression
+export default class ArrowFunctionExpression extends BaseExpression
 {
     private _body: IExpression;
     public get body(): IExpression
     {
         return this._body;
+    }
+
+    public set body(value: IExpression)
+    {
+        this._body = value;
     }
 
     private _context: Indexer;
@@ -30,9 +35,14 @@ export default class LambdaExpression extends BaseExpression
         return this._parameters;
     }
 
+    public set parameters(value: Array<IParameter>)
+    {
+        this._parameters = value;
+    }
+
     public get type(): NodeType
     {
-        return NodeType.Lambda;
+        return NodeType.ArrowFunction;
     }
 
     public constructor(context: Indexer, parameters: Array<IParameter>, body: IExpression)

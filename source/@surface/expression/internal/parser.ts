@@ -6,39 +6,39 @@ import NodeType              from "../node-type";
 import SyntaxError           from "../syntax-error";
 import
 {
-    AssignmentOpertaror,
+    AssignmentOperator,
     BinaryOperator,
-    PatternElement,
     LogicalOperator,
+    PatternElement,
     UnaryOperator,
     UpdateOperator,
 } from "../types";
-import Parameter             from "./elements/parameter";
-import Property              from "./elements/property";
-import SpreadElement         from "./elements/spread-element";
-import ArrayExpression       from "./expressions/array-expression";
-import AssignmentExpression  from "./expressions/assignment-expression";
-import BinaryExpression      from "./expressions/binary-expression";
-import CallExpression        from "./expressions/call-expression";
-import ConditionalExpression from "./expressions/conditional-expression";
-import ConstantExpression    from "./expressions/constant-expression";
-import IdentifierExpression  from "./expressions/identifier-expression";
-import LambdaExpression      from "./expressions/lambda-expression";
-import LogicalExpression     from "./expressions/logical-expression";
-import MemberExpression      from "./expressions/member-expression";
-import NewExpression         from "./expressions/new-expression";
-import ObjectExpression      from "./expressions/object-expression";
-import RegexExpression       from "./expressions/regex-expression";
-import SequenceExpression    from "./expressions/sequence-expression";
-import TemplateExpression    from "./expressions/template-expression";
-import UnaryExpression       from "./expressions/unary-expression";
-import UpdateExpression      from "./expressions/update-expression";
-import Messages              from "./messages";
-import ArrayPattern          from "./patterns/array-pattern";
-import ObjectPattern         from "./patterns/object-pattern";
-import RestElement           from "./patterns/rest-element";
-import Scanner, { Token }    from "./scanner";
-import TokenType             from "./token-type";
+import Parameter               from "./elements/parameter";
+import Property                from "./elements/property";
+import SpreadElement           from "./elements/spread-element";
+import ArrayExpression         from "./expressions/array-expression";
+import ArrowFunctionExpression from "./expressions/arrow-function-expression";
+import AssignmentExpression    from "./expressions/assignment-expression";
+import BinaryExpression        from "./expressions/binary-expression";
+import CallExpression          from "./expressions/call-expression";
+import ConditionalExpression   from "./expressions/conditional-expression";
+import ConstantExpression      from "./expressions/constant-expression";
+import IdentifierExpression    from "./expressions/identifier-expression";
+import LogicalExpression       from "./expressions/logical-expression";
+import MemberExpression        from "./expressions/member-expression";
+import NewExpression           from "./expressions/new-expression";
+import ObjectExpression        from "./expressions/object-expression";
+import RegexExpression         from "./expressions/regex-expression";
+import SequenceExpression      from "./expressions/sequence-expression";
+import TemplateExpression      from "./expressions/template-expression";
+import UnaryExpression         from "./expressions/unary-expression";
+import UpdateExpression        from "./expressions/update-expression";
+import Messages                from "./messages";
+import ArrayPattern            from "./patterns/array-pattern";
+import ObjectPattern           from "./patterns/object-pattern";
+import RestElement             from "./patterns/rest-element";
+import Scanner, { Token }      from "./scanner";
+import TokenType               from "./token-type";
 
 export default class Parser
 {
@@ -195,7 +195,7 @@ export default class Parser
 
             const right = this.isolateGrammar(this.assignmentExpression);
 
-            return new AssignmentExpression(left, right, token.raw as AssignmentOpertaror);
+            return new AssignmentExpression(left, right, token.raw as AssignmentOperator);
         }
         else
         {
@@ -453,7 +453,7 @@ export default class Parser
 
                 const body = this.isolateGrammar(this.assignmentExpression);
 
-                return new LambdaExpression(this.context, [], body);
+                return new ArrowFunctionExpression(this.context, [], body);
             }
 
             throw this.unexpectedTokenError(this.lookahead);
@@ -507,7 +507,7 @@ export default class Parser
 
                 const body = this.inheritGrammar(this.assignmentExpression);
 
-                return new LambdaExpression(this.context, parameters, body);
+                return new ArrowFunctionExpression(this.context, parameters, body);
 
             }
             else if (expressions.length > 1)
@@ -824,7 +824,7 @@ export default class Parser
                 {
                     this.expect("=>");
 
-                    return new LambdaExpression(this.context, [new Parameter(indentifier)], this.inheritGrammar(this.assignmentExpression));
+                    return new ArrowFunctionExpression(this.context, [new Parameter(indentifier)], this.inheritGrammar(this.assignmentExpression));
                 }
                 else
                 {

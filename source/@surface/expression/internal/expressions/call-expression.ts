@@ -13,16 +13,26 @@ export default class CallExpression extends BaseExpression
         return this._context;
     }
 
-    private readonly _callee: IExpression;
+    private _callee: IExpression;
     public get callee(): IExpression
     {
         return this._callee;
     }
 
-    private readonly _args: Array<IExpression|ISpreadElement>;
-    public get args(): Array<IExpression|ISpreadElement>
+    public set callee(value: IExpression)
     {
-        return this._args;
+        this._callee = value;
+    }
+
+    private _arguments: Array<IExpression|ISpreadElement>;
+    public get arguments(): Array<IExpression|ISpreadElement>
+    {
+        return this._arguments;
+    }
+
+    public set arguments(value: Array<IExpression|ISpreadElement>)
+    {
+        this._arguments = value;
     }
 
     public get type(): NodeType
@@ -30,12 +40,12 @@ export default class CallExpression extends BaseExpression
         return NodeType.Call;
     }
 
-    public constructor(context: IExpression, callee: IExpression, args: Array<IExpression|ISpreadElement>)
+    public constructor(context: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
     {
         super();
 
-        this._args    = args;
-        this._context = context;
+        this._arguments = $arguments;
+        this._context   = context;
         this._callee    = callee;
     }
 
@@ -45,7 +55,7 @@ export default class CallExpression extends BaseExpression
         let fn      = TypeGuard.isIdentifierExpression(this.callee) ?
             context[this.callee.name] as Nullable<Function>
             : TypeGuard.isMemberExpression(this.callee) ?
-                context[this.callee.key.evaluate() as string|number] as Nullable<Function>
+                context[this.callee.property.evaluate() as string|number] as Nullable<Function>
                 : this.callee.evaluate()  as Nullable<Function>;
 
         if (!fn)
@@ -59,7 +69,7 @@ export default class CallExpression extends BaseExpression
 
         const $arguments: Array<unknown> = [];
 
-        for (const argument of this.args)
+        for (const argument of this.arguments)
         {
             if (TypeGuard.isSpreadElement(argument))
             {
@@ -76,6 +86,6 @@ export default class CallExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${[NodeType.Binary, NodeType.Conditional, NodeType.Lambda].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
+        return `${[NodeType.Binary, NodeType.Conditional, NodeType.ArrowFunction].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.arguments.map(x => x.toString()).join(", ")})`;
     }
 }

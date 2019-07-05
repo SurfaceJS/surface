@@ -1,11 +1,11 @@
 import { Func3, Indexer }      from "@surface/core";
 import IExpression             from "../../interfaces/expression";
 import NodeType                from "../../node-type";
-import { AssignmentOpertaror } from "../../types";
+import { AssignmentOperator } from "../../types";
 import TypeGuard               from "../type-guard";
 import BaseExpression          from "./abstracts/base-expression";
 
-const assignmentOperations: Record<AssignmentOpertaror, Func3<Indexer, string|number, unknown, unknown>> =
+const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string|number, unknown, unknown>> =
 {
     "%=":   (target, key, value) => (target[key] as number) %=   value as number,
     "&=":   (target, key, value) => (target[key] as number) &=   value as number,
@@ -25,23 +25,38 @@ const assignmentOperations: Record<AssignmentOpertaror, Func3<Indexer, string|nu
 export default class AssignmentExpression extends BaseExpression
 {
     private readonly operation: Func3<Indexer, string|number, unknown, unknown>;
-    private readonly _left:     IExpression;
-    private readonly _right:    IExpression;
-    private readonly _operator: AssignmentOpertaror;
 
+    private _left:     IExpression;
     public get left(): IExpression
     {
         return this._left;
     }
 
+    public set left(value: IExpression)
+    {
+        this._left = value;
+    }
+
+    private _operator: AssignmentOperator;
+    public get operator(): AssignmentOperator
+    {
+        return this._operator;
+    }
+
+    public set operator(value: AssignmentOperator)
+    {
+        this._operator = value;
+    }
+
+    private _right:    IExpression;
     public get right(): IExpression
     {
         return this._right;
     }
 
-    public get operator(): AssignmentOpertaror
+    public set right(value: IExpression)
     {
-        return this._operator;
+        this._right = value;
     }
 
     public get type(): NodeType
@@ -49,7 +64,7 @@ export default class AssignmentExpression extends BaseExpression
         return NodeType.Assignment;
     }
 
-    public constructor(left: IExpression, right: IExpression, operator: AssignmentOpertaror)
+    public constructor(left: IExpression, right: IExpression, operator: AssignmentOperator)
     {
         super();
 
@@ -69,7 +84,7 @@ export default class AssignmentExpression extends BaseExpression
         }
         else if (TypeGuard.isMemberExpression(this.left))
         {
-            return this._cache = this.operation(this.left.target.evaluate() as Indexer, this.left.key.evaluate() as string|number, this.right.evaluate());
+            return this._cache = this.operation(this.left.object.evaluate() as Indexer, this.left.property.evaluate() as string|number, this.right.evaluate());
         }
         else
         {

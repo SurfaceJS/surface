@@ -3,10 +3,15 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class ConstantExpression extends BaseExpression
 {
-    private readonly _value: unknown;
+    private _value: unknown;
     public get value(): unknown
     {
         return this._value;
+    }
+
+    public set value(value: unknown)
+    {
+        this._value = value;
     }
 
     public get type(): NodeType
@@ -28,10 +33,6 @@ export default class ConstantExpression extends BaseExpression
 
     public toString(): string
     {
-        return typeof this.value == "string" ?
-            `\"${this.value}\"`
-            : typeof this.value == "symbol" ?
-                this.value.toString()
-                : `${this.value}`;
+        return typeof this.value == "string" ? `\"${this.value}\"` : `${this.value}`;
     }
 }

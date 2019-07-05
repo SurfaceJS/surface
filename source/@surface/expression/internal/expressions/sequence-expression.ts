@@ -10,6 +10,11 @@ export default class SequenceExpression extends BaseExpression
         return this._expressions;
     }
 
+    public set expressions(value: Array<IExpression>)
+    {
+        this._expressions = value;
+    }
+
     public get type(): NodeType
     {
         return NodeType.Sequence;

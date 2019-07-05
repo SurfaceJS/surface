@@ -6,16 +6,26 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class NewExpression extends BaseExpression
 {
-    private readonly _args: Array<IExpression|ISpreadElement>;
-    public get args(): Array<IExpression|ISpreadElement>
+    private _arguments: Array<IExpression|ISpreadElement>;
+    public get arguments(): Array<IExpression|ISpreadElement>
     {
-        return this._args;
+        return this._arguments;
     }
 
-    private readonly _callee: IExpression;
+    public set arguments(value: Array<IExpression|ISpreadElement>)
+    {
+        this._arguments = value;
+    }
+
+    private _callee: IExpression;
     public get callee(): IExpression
     {
         return this._callee;
+    }
+
+    public set callee(value: IExpression)
+    {
+        this._callee = value;
     }
 
     public get type(): NodeType
@@ -23,12 +33,12 @@ export default class NewExpression extends BaseExpression
         return NodeType.New;
     }
 
-    public constructor(callee: IExpression, args: Array<IExpression|ISpreadElement>)
+    public constructor(callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
     {
         super();
 
-        this._callee = callee;
-        this._args   = args;
+        this._callee    = callee;
+        this._arguments = $arguments;
     }
 
     public evaluate(): unknown
@@ -46,7 +56,7 @@ export default class NewExpression extends BaseExpression
 
         const $arguments: Array<unknown> = [];
 
-        for (const argument of this.args)
+        for (const argument of this.arguments)
         {
             if (TypeGuard.isSpreadElement(argument))
             {
@@ -63,6 +73,6 @@ export default class NewExpression extends BaseExpression
 
     public toString(): string
     {
-        return `new ${this.callee}(${this.args.map(x => x.toString()).join(", ")})`;
+        return `new ${this.callee}(${this.arguments.map(x => x.toString()).join(", ")})`;
     }
 }

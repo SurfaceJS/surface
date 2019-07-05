@@ -4,15 +4,26 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class TemplateExpression extends BaseExpression<string>
 {
-    private readonly _expressions: Array<IExpression>;
+    private _expressions: Array<IExpression>;
     public get expressions(): Array<IExpression>
     {
         return this._expressions;
     }
-    private readonly _quasis: Array<string>;
+
+    public set expressions(value: Array<IExpression>)
+    {
+        this._expressions = value;
+    }
+
+    private _quasis: Array<string>;
     public get quasis(): Array<string>
     {
         return this._quasis;
+    }
+
+    public set quasis(value: Array<string>)
+    {
+        this._quasis = value;
     }
 
     public get type(): NodeType
