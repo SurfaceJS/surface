@@ -6,8 +6,8 @@ import IAssignmentPattern       from "../interfaces/assignment-pattern";
 import IBinaryExpression        from "../interfaces/binary-expression";
 import ICallExpression          from "../interfaces/call-expression";
 import IConditionalExpression   from "../interfaces/conditional-expression";
-import IConstantExpression      from "../interfaces/constant-expression";
-import IIdentifierExpression    from "../interfaces/identifier-expression";
+import IIdentifier              from "../interfaces/identifier";
+import ILiteral                 from "../interfaces/literal";
 import ILogicalExpression       from "../interfaces/logical-expression";
 import IMemberExpression        from "../interfaces/member-expression";
 import INewExpression           from "../interfaces/new-expression";
@@ -15,11 +15,11 @@ import INode                    from "../interfaces/node";
 import IObjectExpression        from "../interfaces/object-expression";
 import IObjectPattern           from "../interfaces/object-pattern";
 import IProperty                from "../interfaces/property";
-import IRegexExpression         from "../interfaces/regex-expression";
+import IRegExpLiteral           from "../interfaces/reg-exp-literal";
 import IRestElement             from "../interfaces/rest-element";
 import ISequenceExpression      from "../interfaces/sequence-expression";
 import ISpreadElement           from "../interfaces/spread-element";
-import ITemplateExpression      from "../interfaces/template-expression";
+import ITemplateLiteral         from "../interfaces/template-literal";
 import IUnaryExpression         from "../interfaces/unary-expression";
 import IUpdateExpression        from "../interfaces/update-expression";
 import NodeType                 from "../node-type";
@@ -28,7 +28,7 @@ export default class TypeGuard
 {
     public static isArrayExpression(node: INode): node is IArrayExpression
     {
-        return node.type == NodeType.Array;
+        return node.type == NodeType.ArrayExpression;
     }
 
     public static isArrayPattern(node: INode): node is IArrayPattern
@@ -38,62 +38,62 @@ export default class TypeGuard
 
     public static isArrowFunctionExpression(node: INode): node is IArrowFunctionExpression
     {
-        return node.type == NodeType.ArrowFunction;
+        return node.type == NodeType.ArrowFunctionExpression;
     }
 
     public static isAssignmentExpression(node: INode): node is IAssignmentExpression
     {
-        return node.type == NodeType.Assignment;
+        return node.type == NodeType.AssignmentExpression;
     }
 
     public static isAssignmentPattern(node: INode): node is IAssignmentPattern
     {
-        return node.type == NodeType.Assignment;
+        return node.type == NodeType.AssignmentExpression;
     }
 
     public static isBinaryExpression(node: INode): node is IBinaryExpression
     {
-        return node.type == NodeType.Binary;
+        return node.type == NodeType.BinaryExpression;
     }
 
     public static isCallExpression(node: INode): node is ICallExpression
     {
-        return node.type == NodeType.Call;
+        return node.type == NodeType.CallExpression;
     }
 
     public static isConditionalExpression(node: INode): node is IConditionalExpression
     {
-        return node.type == NodeType.Conditional;
+        return node.type == NodeType.ConditionalExpression;
     }
 
-    public static isConstantExpression(node: INode): node is IConstantExpression
-    {
-        return node.type == NodeType.Constant;
-    }
-
-    public static isIdentifierExpression(node: INode): node is IIdentifierExpression
+    public static isIdentifier(node: INode): node is IIdentifier
     {
         return node.type == NodeType.Identifier;
     }
 
+    public static isLiteral(node: INode): node is ILiteral
+    {
+        return node.type == NodeType.Literal;
+    }
+
     public static isLogicalExpression(node: INode): node is ILogicalExpression
     {
-        return node.type == NodeType.Logical;
+        return node.type == NodeType.LogicalExpression;
     }
 
     public static isMemberExpression(node: INode): node is IMemberExpression
     {
-        return node.type == NodeType.Member;
+        return node.type == NodeType.MemberExpression;
     }
 
     public static isNewExpression(node: INode): node is INewExpression
     {
-        return node.type == NodeType.New;
+        return node.type == NodeType.NewExpression;
     }
 
     public static isObjectExpression(node: INode): node is IObjectExpression
     {
-        return node.type == NodeType.Object;
+        return node.type == NodeType.ObjectExpression;
     }
 
     public static isObjectPattern(node: INode): node is IObjectPattern
@@ -106,38 +106,38 @@ export default class TypeGuard
         return node.type == NodeType.Property;
     }
 
-    public static isRegexExpression(node: INode): node is IRegexExpression
+    public static isRegExpLiteral(node: INode): node is IRegExpLiteral
     {
-        return node.type == NodeType.Regex;
+        return node.type == NodeType.RegExpLiteral;
     }
 
     public static isRestElement(node: INode): node is IRestElement
     {
-        return node.type == NodeType.Rest;
+        return node.type == NodeType.RestElement;
     }
 
     public static isSequenceExpression(node: INode): node is ISequenceExpression
     {
-        return node.type == NodeType.Sequence;
+        return node.type == NodeType.SequenceExpression;
     }
 
     public static isSpreadElement(node: INode): node is ISpreadElement
     {
-        return node.type == NodeType.Spread;
+        return node.type == NodeType.SpreadElement;
     }
 
-    public static isTemplateExpression(node: INode): node is ITemplateExpression
+    public static isTemplateLiteral(node: INode): node is ITemplateLiteral
     {
-        return node.type == NodeType.Template;
+        return node.type == NodeType.TemplateLiteral;
     }
 
     public static isUnaryExpression(node: INode): node is IUnaryExpression
     {
-        return node.type == NodeType.Unary;
+        return node.type == NodeType.UnaryExpression;
     }
 
     public static isUpdateExpression(node: INode): node is IUpdateExpression
     {
-        return node.type == NodeType.Update;
+        return node.type == NodeType.UpdateExpression;
     }
 }

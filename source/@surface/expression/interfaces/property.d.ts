@@ -1,4 +1,4 @@
-import PropertyExpression from "../internal/elements/property";
+import Property from "../internal/elements/property";
 
-export default interface IProperty extends PropertyExpression
+export default interface IProperty extends Property
 { }

@@ -3,16 +3,16 @@ import IAssignmentExpression  from "./interfaces/assignment-expression";
 import IBinaryExpression      from "./interfaces/binary-expression";
 import ICallExpression        from "./interfaces/call-expression";
 import IConditionalExpression from "./interfaces/conditional-expression";
-import IConstantExpression    from "./interfaces/constant-expression";
-import IIdentifierExpression  from "./interfaces/identifier-expression";
+import IIdentifier            from "./interfaces/identifier";
+import ILiteral               from "./interfaces/literal";
 import IMemberExpression      from "./interfaces/member-expression";
 import INewExpression         from "./interfaces/new-expression";
 import INode                  from "./interfaces/node";
 import IObjectExpression      from "./interfaces/object-expression";
 import IProperty              from "./interfaces/property";
-import IRegexExpression       from "./interfaces/regex-expression";
+import IRegExpLiteral         from "./interfaces/reg-exp-literal";
 import ISpreadElement         from "./interfaces/spread-element";
-import ITemplateExpression    from "./interfaces/template-expression";
+import ITemplateLiteral       from "./interfaces/template-literal";
 import IUnaryExpression       from "./interfaces/unary-expression";
 import IUpdateExpression      from "./interfaces/update-expression";
 import TypeGuard              from "./internal/type-guard";
@@ -41,11 +41,11 @@ export default abstract class ExpressionVisitor
         {
             return this.visitConditionalExpression(expression);
         }
-        else if (TypeGuard.isConstantExpression(expression))
+        else if (TypeGuard.isLiteral(expression))
         {
-            return this.visitConstantExpression(expression);
+            return this.visitLiteral(expression);
         }
-        else if (TypeGuard.isIdentifierExpression(expression))
+        else if (TypeGuard.isIdentifier(expression))
         {
             return this.visitIdentifierExpression(expression);
         }
@@ -65,11 +65,11 @@ export default abstract class ExpressionVisitor
         {
             return this.visitPropertyExpression(expression);
         }
-        else if (TypeGuard.isRegexExpression(expression))
+        else if (TypeGuard.isRegExpLiteral(expression))
         {
             return this.visitRegexExpression(expression);
         }
-        else if (TypeGuard.isTemplateExpression(expression))
+        else if (TypeGuard.isTemplateLiteral(expression))
         {
             return this.visitTemplateExpression(expression);
         }
@@ -91,7 +91,10 @@ export default abstract class ExpressionVisitor
     {
         for (const element of expression.elements)
         {
-            this.visit(element);
+            if (element)
+            {
+                this.visit(element);
+            }
         }
 
         return expression;
@@ -115,7 +118,7 @@ export default abstract class ExpressionVisitor
 
     protected visitCallExpression(expression: ICallExpression): INode
     {
-        this.visit(expression.context);
+        this.visit(expression.thisArg);
         this.visit(expression.callee);
 
         for (const arg of expression.arguments)
@@ -135,12 +138,12 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitConstantExpression(expression: IConstantExpression): INode
+    protected visitLiteral(expression: ILiteral): INode
     {
         return expression;
     }
 
-    protected visitIdentifierExpression(expression: IIdentifierExpression): INode
+    protected visitIdentifierExpression(expression: IIdentifier): INode
     {
         return expression;
     }
@@ -183,7 +186,7 @@ export default abstract class ExpressionVisitor
         return expression;
     }
 
-    protected visitRegexExpression(expression: IRegexExpression): INode
+    protected visitRegexExpression(expression: IRegExpLiteral): INode
     {
         return expression;
     }
@@ -195,7 +198,7 @@ export default abstract class ExpressionVisitor
         return node;
     }
 
-    protected visitTemplateExpression(expression: ITemplateExpression): INode
+    protected visitTemplateExpression(expression: ITemplateLiteral): INode
     {
         for (const node of expression.expressions)
         {

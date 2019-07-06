@@ -1015,7 +1015,7 @@ export default class Scanner
             {
                 if (this.source[this.index] == "{")
                 {
-                    this.curlyStack.push("${");
+                    this.curlyStack.push("$" + "{"); // VS Code bug - Wrong color syntax when string contains the token ${
                     this.advance();
                     terminated = true;
                     break;
@@ -1269,7 +1269,7 @@ export default class Scanner
 
         // Template literals start with ` (U+0060) for template head
         // or } (U+007D) for template middle or template tail.
-        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "${"))
+        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "$" + "{")) // VS Code bug - Wrong color syntax when string contains the token ${
         {
             return this.scanTemplate();
         }

@@ -49,7 +49,7 @@ export default class LogicalExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Logical;
+        return NodeType.LogicalExpression;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: LogicalOperator)
@@ -69,6 +69,6 @@ export default class LogicalExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${this.left.type == NodeType.Conditional ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+        return `${this.left.type == NodeType.ConditionalExpression ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
     }
 }

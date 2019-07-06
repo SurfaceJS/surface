@@ -39,7 +39,7 @@ export default class ConditionalExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Conditional;
+        return NodeType.ConditionalExpression;
     }
 
     public constructor(test: IExpression, alternate: IExpression, consequent: IExpression)

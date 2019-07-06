@@ -61,7 +61,7 @@ export default class AssignmentExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Assignment;
+        return NodeType.AssignmentExpression;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: AssignmentOperator)
@@ -78,9 +78,9 @@ export default class AssignmentExpression extends BaseExpression
     public evaluate(): unknown
     {
         /* istanbul ignore else  */
-        if (TypeGuard.isIdentifierExpression(this.left))
+        if (TypeGuard.isIdentifier(this.left))
         {
-            return this._cache = this.operation(this.left.context, this.left.name, this.right.evaluate());
+            return this._cache = this.operation(this.left.scope, this.left.name, this.right.evaluate());
         }
         else if (TypeGuard.isMemberExpression(this.left))
         {

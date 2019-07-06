@@ -17,7 +17,7 @@ export default class SequenceExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Sequence;
+        return NodeType.SequenceExpression;
     }
 
     public constructor(expressions: Array<IExpression>)

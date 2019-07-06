@@ -20,7 +20,7 @@ export default class ObjectExpression extends BaseExpression<Indexer>
 
     public get type(): NodeType
     {
-        return NodeType.Object;
+        return NodeType.ObjectExpression;
     }
 
     public constructor(properties: Array<IProperty|ISpreadElement>)

@@ -1,7 +1,8 @@
-import NodeType from "../../node-type";
+import ILiteral       from "../../interfaces/literal";
+import NodeType       from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
-export default class RegexExpression extends BaseExpression<RegExp>
+export default class RegExpLiteral extends BaseExpression<RegExp> implements ILiteral
 {
     private _flags: string;
     public get flags(): string
@@ -27,7 +28,12 @@ export default class RegexExpression extends BaseExpression<RegExp>
 
     public get type(): NodeType
     {
-        return NodeType.Regex;
+        return NodeType.RegExpLiteral;
+    }
+
+    public get value(): RegExp
+    {
+        return this.evaluate();
     }
 
     public constructor(pattern: string, flags: string)

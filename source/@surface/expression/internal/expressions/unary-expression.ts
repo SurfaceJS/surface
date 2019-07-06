@@ -41,7 +41,7 @@ export default class UnaryExpression extends BaseExpression<Object>
 
     public get type(): NodeType
     {
-        return NodeType.Unary;
+        return NodeType.UnaryExpression;
     }
 
     public constructor(argument: IExpression, operator: UnaryOperator)

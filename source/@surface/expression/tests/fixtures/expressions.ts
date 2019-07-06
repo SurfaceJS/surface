@@ -6,14 +6,15 @@ import AssignmentExpression               from "../../internal/expressions/assig
 import BinaryExpression                   from "../../internal/expressions/binary-expression" ;
 import CallExpression                     from "../../internal/expressions/call-expression";
 import ConditionalExpression              from "../../internal/expressions/conditional-expression";
-import ConstantExpression                 from "../../internal/expressions/constant-expression";
-import IdentifierExpression               from "../../internal/expressions/identifier-expression";
+import Identifier                         from "../../internal/expressions/identifier";
+import Literal                            from "../../internal/expressions/literal";
 import LogicalExpression                  from "../../internal/expressions/logical-expression";
 import MemberExpression                   from "../../internal/expressions/member-expression";
 import NewExpression                      from "../../internal/expressions/new-expression";
 import ObjectExpression                   from "../../internal/expressions/object-expression";
-import RegexExpression                    from "../../internal/expressions/regex-expression";
-import TemplateExpression                 from "../../internal/expressions/template-expression";
+import RegExpLiteral                      from "../../internal/expressions/reg-exp-literal";
+import TemplateLiteral                 from "../../internal/expressions/template-literal";
+import ThisExpression                     from "../../internal/expressions/this-expression";
 import UnaryExpression                    from "../../internal/expressions/unary-expression";
 import UpdateExpression                   from "../../internal/expressions/update-expression";
 import Messages                           from "../../internal/messages";
@@ -609,6 +610,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
+        context:  { },
+        raw:      "(([, b]) => [b])([1, 2])",
+        value:    [2],
+        toString: "(([, b]) => [b])([1, 2])",
+        type:     CallExpression
+    },
+    {
         context:  context,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
@@ -624,59 +632,59 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
-        raw:      "1",
-        value:    1,
-        toString: "1",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
-        raw:      "\"double quotes\"",
-        value:    "double quotes",
-        toString: "\"double quotes\"",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
-        raw:      "'single quotes'",
-        value:    "single quotes",
-        toString: "\"single quotes\"",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
-        raw:      "true",
-        value:    true,
-        toString: "true",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
-        raw:      "false",
-        value:    false,
-        toString: "false",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
-        raw:      "null",
-        value:    null,
-        toString: "null",
-        type:     ConstantExpression,
-    },
-    {
-        context:  context,
         raw:      "undefined",
         value:    undefined,
         toString: "undefined",
-        type:     ConstantExpression,
+        type:     Identifier,
     },
     {
         context:  { this: { id: 1 } },
         raw:      "this",
         value:    { id: 1 },
         toString: "this",
-        type:     IdentifierExpression,
+        type:     ThisExpression,
+    },
+    {
+        context:  context,
+        raw:      "1",
+        value:    1,
+        toString: "1",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "\"double quotes\"",
+        value:    "double quotes",
+        toString: "\"double quotes\"",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "'single quotes'",
+        value:    "single quotes",
+        toString: "\"single quotes\"",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "true",
+        value:    true,
+        toString: "true",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "false",
+        value:    false,
+        toString: "false",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "null",
+        value:    null,
+        toString: "null",
+        type:     Literal,
     },
     {
         context:  context,
@@ -816,21 +824,21 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "/test/",
         value:    /test/,
         toString: "/test/",
-        type:     RegexExpression,
+        type:     RegExpLiteral,
     },
     {
         context:  context,
         raw:      "/test/ig",
         value:    /test/ig,
         toString: "/test/ig",
-        type:     RegexExpression,
+        type:     RegExpLiteral,
     },
     {
         context:  context,
         raw:      "`The id is: ${this.id}`",
         value:    "The id is: 1",
         toString: "`The id is: ${this.id}`",
-        type:     TemplateExpression
+        type:     TemplateLiteral
     },
     {
         context:  context,

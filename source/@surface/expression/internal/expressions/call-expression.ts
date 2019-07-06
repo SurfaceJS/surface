@@ -7,10 +7,15 @@ import BaseExpression        from "./abstracts/base-expression";
 
 export default class CallExpression extends BaseExpression
 {
-    private readonly _context: IExpression;
-    public get context(): IExpression
+    private _arguments: Array<IExpression|ISpreadElement>;
+    public get arguments(): Array<IExpression|ISpreadElement>
     {
-        return this._context;
+        return this._arguments;
+    }
+
+    public set arguments(value: Array<IExpression|ISpreadElement>)
+    {
+        this._arguments = value;
     }
 
     private _callee: IExpression;
@@ -24,20 +29,20 @@ export default class CallExpression extends BaseExpression
         this._callee = value;
     }
 
-    private _arguments: Array<IExpression|ISpreadElement>;
-    public get arguments(): Array<IExpression|ISpreadElement>
+    private _thisArg: IExpression;
+    public get thisArg(): IExpression
     {
-        return this._arguments;
+        return this._thisArg;
     }
 
-    public set arguments(value: Array<IExpression|ISpreadElement>)
+    public set thisArg(value: IExpression)
     {
-        this._arguments = value;
+        this._thisArg = value;
     }
 
     public get type(): NodeType
     {
-        return NodeType.Call;
+        return NodeType.CallExpression;
     }
 
     public constructor(context: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
@@ -45,26 +50,26 @@ export default class CallExpression extends BaseExpression
         super();
 
         this._arguments = $arguments;
-        this._context   = context;
+        this._thisArg   = context;
         this._callee    = callee;
     }
 
     public evaluate(): unknown
     {
-        let context = this.context.evaluate() as Indexer<Function>;
-        let fn      = TypeGuard.isIdentifierExpression(this.callee) ?
-            context[this.callee.name] as Nullable<Function>
+        let thisArg = this.thisArg.evaluate() as Indexer<Function>;
+        let fn      = TypeGuard.isIdentifier(this.callee) ?
+            thisArg[this.callee.name] as Nullable<Function>
             : TypeGuard.isMemberExpression(this.callee) ?
-                context[this.callee.property.evaluate() as string|number] as Nullable<Function>
+                thisArg[this.callee.property.evaluate() as string|number] as Nullable<Function>
                 : this.callee.evaluate()  as Nullable<Function>;
 
         if (!fn)
         {
-            throw new ReferenceError(`${this.callee.toString()} is not defined`);
+            throw new ReferenceError(`${this.callee} is not defined`);
         }
         else if (typeof fn != "function")
         {
-            throw new TypeError(`${this.callee.toString()} is not a function`);
+            throw new TypeError(`${this.callee} is not a function`);
         }
 
         const $arguments: Array<unknown> = [];
@@ -81,11 +86,11 @@ export default class CallExpression extends BaseExpression
             }
         }
 
-        return this._cache = fn.apply(context, $arguments);
+        return this._cache = fn.apply(thisArg, $arguments);
     }
 
     public toString(): string
     {
-        return `${[NodeType.Binary, NodeType.Conditional, NodeType.ArrowFunction].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.arguments.map(x => x.toString()).join(", ")})`;
+        return `${[NodeType.BinaryExpression, NodeType.ConditionalExpression, NodeType.ArrowFunctionExpression].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.arguments.map(x => x.toString()).join(", ")})`;
     }
 }

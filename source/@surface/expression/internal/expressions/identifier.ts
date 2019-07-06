@@ -1,15 +1,10 @@
 import { Indexer }    from "@surface/core";
-import NodeType from "../../node-type";
+import IPattern       from "../../interfaces/pattern";
+import NodeType       from "../../node-type";
 import BaseExpression from "./abstracts/base-expression";
 
-export default class IdentifierExpression extends BaseExpression
+export default class Identifier extends BaseExpression implements IPattern
 {
-    private readonly _context: Indexer;
-    public get context(): Indexer
-    {
-        return this._context;
-    }
-
     private _name: string;
     public get name(): string
     {
@@ -21,22 +16,28 @@ export default class IdentifierExpression extends BaseExpression
         this._name = value;
     }
 
+    private readonly _scope: Indexer;
+    public get scope(): Indexer
+    {
+        return this._scope;
+    }
+
     public get type(): NodeType
     {
         return NodeType.Identifier;
     }
 
-    public constructor(context: Indexer, name: string)
+    public constructor(scope: Indexer, name: string)
     {
         super();
 
-        this._context = context;
-        this._name    = name;
+        this._scope = scope;
+        this._name  = name;
     }
 
     public evaluate(): unknown
     {
-        return this._cache = this.context[this.name];
+        return this._cache = this.scope[this.name];
     }
 
     public toString(): string

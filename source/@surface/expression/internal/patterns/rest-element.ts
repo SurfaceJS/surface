@@ -1,21 +1,20 @@
-import INode    from "../../interfaces/node";
 import IPattern from "../../interfaces/pattern";
 import NodeType from "../../node-type";
 
 export default class RestElement implements IPattern
 {
-    private readonly _argument: INode;
-    public get argument(): INode
+    private readonly _argument: IPattern;
+    public get argument(): IPattern
     {
         return this._argument;
     }
 
     public get type(): NodeType
     {
-        return NodeType.Rest;
+        return NodeType.RestElement;
     }
 
-    public constructor(argument: INode)
+    public constructor(argument: IPattern)
     {
         this._argument = argument;
     }

@@ -64,7 +64,7 @@ export default class BinaryExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Binary;
+        return NodeType.BinaryExpression;
     }
 
     public constructor(left: IExpression, right: IExpression, operator: BinaryOperator)
@@ -84,6 +84,6 @@ export default class BinaryExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${this.left.type == NodeType.Object && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+        return `${this.left.type == NodeType.ObjectExpression && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
     }
 }

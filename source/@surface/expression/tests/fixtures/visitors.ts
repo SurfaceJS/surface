@@ -4,13 +4,13 @@ import AssignmentExpression  from "../../internal/expressions/assignment-express
 import BinaryExpression      from "../../internal/expressions/binary-expression";
 import CallExpression        from "../../internal/expressions/call-expression";
 import ConditionalExpression from "../../internal/expressions/conditional-expression";
-import ConstantExpression    from "../../internal/expressions/constant-expression";
-import IdentifierExpression  from "../../internal/expressions/identifier-expression";
+import Identifier            from "../../internal/expressions/identifier";
+import Literal               from "../../internal/expressions/literal";
 import MemberExpression      from "../../internal/expressions/member-expression";
 import NewExpression         from "../../internal/expressions/new-expression";
 import ObjectExpression      from "../../internal/expressions/object-expression";
-import RegexExpression       from "../../internal/expressions/regex-expression";
-import TemplateExpression    from "../../internal/expressions/template-expression";
+import RegExpLiteral       from "../../internal/expressions/reg-exp-literal";
+import TemplateLiteral    from "../../internal/expressions/template-literal";
 import UnaryExpression       from "../../internal/expressions/unary-expression";
 import UpdateExpression      from "../../internal/expressions/update-expression";
 
@@ -23,8 +23,8 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             AssignmentExpression.name,
-            IdentifierExpression.name,
-            ConstantExpression.name,
+            Identifier.name,
+            Literal.name,
         ].join(" > ")
     },
     {
@@ -32,7 +32,7 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             NewExpression.name,
-            IdentifierExpression.name,
+            Identifier.name,
         ].join(" > ")
     },
     {
@@ -40,7 +40,7 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             ArrayExpression.name,
-            ConstantExpression.name
+            Literal.name
         ].join(" > ")
     },
     {
@@ -48,8 +48,8 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             BinaryExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name
+            Literal.name,
+            Literal.name
         ].join(" > ")
     },
     {
@@ -57,11 +57,11 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             CallExpression.name,
-            IdentifierExpression.name,
+            Identifier.name,
             MemberExpression.name,
-            IdentifierExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
+            Identifier.name,
+            Literal.name,
+            Literal.name,
         ].join(" > "),
         context: { this: { say: /* istanbul ignore next */ (message: string) => message } }
     },
@@ -71,19 +71,19 @@ export const validVisitors: Array<ValidVisitSpec> =
         [
             ConditionalExpression.name,
             BinaryExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
+            Literal.name,
+            Literal.name,
+            Literal.name,
+            Literal.name,
         ].join(" > ")
     },
     {
         raw:   "1",
-        value: ConstantExpression.name
+        value: Literal.name
     },
     {
         raw:     "this",
-        value:   IdentifierExpression.name,
+        value:   Identifier.name,
         context: { this: { } }
     },
     {
@@ -91,8 +91,8 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             MemberExpression.name,
-            IdentifierExpression.name,
-            ConstantExpression.name,
+            Identifier.name,
+            Literal.name,
         ].join(" > "),
         context: { this: { id: 1 } }
     },
@@ -106,32 +106,32 @@ export const validVisitors: Array<ValidVisitSpec> =
         [
             ObjectExpression.name,
             Property.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
+            Literal.name,
+            Literal.name,
         ].join(" > "),
     },
     {
         raw:   "/foo/",
-        value: RegexExpression.name
+        value: RegExpLiteral.name
     },
     {
         raw:   "/foo/.test('foo')",
         value:
         [
             CallExpression.name,
-            RegexExpression.name,
+            RegExpLiteral.name,
             MemberExpression.name,
-            RegexExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name
+            RegExpLiteral.name,
+            Literal.name,
+            Literal.name
         ].join(" > "),
     },
     {
         raw: "`Hello ${'World'}!!!`",
         value:
         [
-            TemplateExpression.name,
-            ConstantExpression.name
+            TemplateLiteral.name,
+            Literal.name
         ].join(" > ")
     },
     {
@@ -139,7 +139,7 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             UnaryExpression.name,
-            ConstantExpression.name
+            Literal.name
         ].join(" > ")
     },
     {
@@ -150,9 +150,9 @@ export const validVisitors: Array<ValidVisitSpec> =
             MemberExpression.name,
             ObjectExpression.name,
             Property.name,
-            ConstantExpression.name,
-            ConstantExpression.name,
-            ConstantExpression.name
+            Literal.name,
+            Literal.name,
+            Literal.name
         ].join(" > ")
     },
 ];

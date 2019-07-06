@@ -3,8 +3,8 @@ import NodeType from "../../node-type";
 
 export default class ArrayPattern implements IPattern
 {
-    private _elements: Array<IPattern>;
-    public get elements(): Array<IPattern>
+    private _elements: Array<IPattern|null>;
+    public get elements(): Array<IPattern|null>
     {
         return this._elements;
     }
@@ -14,13 +14,13 @@ export default class ArrayPattern implements IPattern
         return NodeType.ArrayPattern;
     }
 
-    public constructor(elements: Array<IPattern>)
+    public constructor(elements: Array<IPattern|null>)
     {
         this._elements = elements;
     }
 
     public toString(): string
     {
-        return `[${this.elements.map(x => x.toString()).join(", ")}]`;
+        return `[${this.elements.map(x => (x ||  "").toString()).join(", ")}]`;
     }
 }

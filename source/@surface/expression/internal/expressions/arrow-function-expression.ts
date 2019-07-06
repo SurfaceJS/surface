@@ -3,7 +3,7 @@ import { coalesce }   from "@surface/core/common/generic";
 import IArrayPattern  from "../../interfaces/array-pattern";
 import IExpression    from "../../interfaces/expression";
 import IObjectPattern from "../../interfaces/object-pattern";
-import IParameter     from "../../interfaces/parameter";
+import IPattern       from "../../interfaces/pattern";
 import IRestElement   from "../../interfaces/rest-element";
 import NodeType       from "../../node-type";
 import Messages       from "../messages";
@@ -23,33 +23,33 @@ export default class ArrowFunctionExpression extends BaseExpression
         this._body = value;
     }
 
-    private _context: Indexer;
-    public get context(): Indexer
-    {
-        return this._context;
-    }
-
-    private _parameters: Array<IParameter>;
-    public get parameters(): Array<IParameter>
+    private _parameters: Array<IPattern>;
+    public get parameters(): Array<IPattern>
     {
         return this._parameters;
     }
 
-    public set parameters(value: Array<IParameter>)
+    public set parameters(value: Array<IPattern>)
     {
         this._parameters = value;
     }
 
-    public get type(): NodeType
+    private _scope: Indexer;
+    public get scope(): Indexer
     {
-        return NodeType.ArrowFunction;
+        return this._scope;
     }
 
-    public constructor(context: Indexer, parameters: Array<IParameter>, body: IExpression)
+    public get type(): NodeType
+    {
+        return NodeType.ArrowFunctionExpression;
+    }
+
+    public constructor(scope: Indexer, parameters: Array<IPattern>, body: IExpression)
     {
         super();
 
-        this._context    = context;
+        this._scope      = scope;
         this._parameters = parameters;
         this._body       = body;
     }
@@ -61,32 +61,32 @@ export default class ArrowFunctionExpression extends BaseExpression
         let index = 0;
         for (const parameter of this.parameters)
         {
-            if (TypeGuard.isIdentifierExpression(parameter.expression))
+            if (TypeGuard.isIdentifier(parameter))
             {
-                scope[parameter.expression.name] = args[index];
+                scope[parameter.name] = args[index];
             }
-            else if (TypeGuard.isAssignmentExpression(parameter.expression))
+            else if (TypeGuard.isAssignmentExpression(parameter))
             {
-                if (TypeGuard.isIdentifierExpression(parameter.expression.left))
+                if (TypeGuard.isIdentifier(parameter.left))
                 {
-                    scope[parameter.expression.left.name] = coalesce(args[index], parameter.expression.right.evaluate());
+                    scope[parameter.left.name] = coalesce(args[index], parameter.right.evaluate());
                 }
                 else
                 {
                     throw new Error(Messages.illegalPropertyInDeclarationContext);
                 }
             }
-            else if (TypeGuard.isRestElement(parameter.expression))
+            else if (TypeGuard.isRestElement(parameter))
             {
-                Object.assign(scope, this.resolveRestElement(parameter.expression, args.slice(index)));
+                Object.assign(scope, this.resolveRestElement(parameter, args.slice(index)));
             }
-            else if (TypeGuard.isArrayPattern(parameter.expression))
+            else if (TypeGuard.isArrayPattern(parameter))
             {
-                Object.assign(scope, this.resolveArrayPattern(parameter.expression, args[index] as Array<unknown>));
+                Object.assign(scope, this.resolveArrayPattern(parameter, args[index] as Array<unknown>));
             }
-            else if (TypeGuard.isObjectPattern(parameter.expression))
+            else if (TypeGuard.isObjectPattern(parameter))
             {
-                Object.assign(scope, this.resolveObjectPattern(parameter.expression, args[index] as Indexer));
+                Object.assign(scope, this.resolveObjectPattern(parameter, args[index] as Indexer));
             }
 
             index++;
@@ -103,32 +103,35 @@ export default class ArrowFunctionExpression extends BaseExpression
 
         for (const element of arrayPattern.elements)
         {
-            if (TypeGuard.isIdentifierExpression(element))
+            if (element)
             {
-                result[element.name] = value[index];
-            }
-            else if (TypeGuard.isAssignmentExpression(element))
-            {
-                if (TypeGuard.isIdentifierExpression(element.left))
+                if (TypeGuard.isIdentifier(element))
                 {
-                    result[element.left.name] = coalesce(value[index], element.right.evaluate());
+                    result[element.name] = value[index];
                 }
-                else
+                else if (TypeGuard.isAssignmentExpression(element))
                 {
-                    throw new Error(Messages.illegalPropertyInDeclarationContext);
+                    if (TypeGuard.isIdentifier(element.left))
+                    {
+                        result[element.left.name] = coalesce(value[index], element.right.evaluate());
+                    }
+                    else
+                    {
+                        throw new Error(Messages.illegalPropertyInDeclarationContext);
+                    }
                 }
-            }
-            else if (TypeGuard.isArrayPattern(element))
-            {
-                Object.assign(result, this.resolveArrayPattern(element, value));
-            }
-            else if (TypeGuard.isObjectPattern(element))
-            {
-                Object.assign(result, this.resolveObjectPattern(element, value[index] as Indexer));
-            }
-            else if (TypeGuard.isRestElement(element))
-            {
-                Object.assign(result, this.resolveRestElement(element, value));
+                else if (TypeGuard.isArrayPattern(element))
+                {
+                    Object.assign(result, this.resolveArrayPattern(element, value));
+                }
+                else if (TypeGuard.isObjectPattern(element))
+                {
+                    Object.assign(result, this.resolveObjectPattern(element, value[index] as Indexer));
+                }
+                else if (TypeGuard.isRestElement(element))
+                {
+                    Object.assign(result, this.resolveRestElement(element, value));
+                }
             }
 
             index++;
@@ -141,13 +144,13 @@ export default class ArrowFunctionExpression extends BaseExpression
     {
         const result: Indexer = { };
 
-        if (TypeGuard.isIdentifierExpression(restElement.argument))
+        if (TypeGuard.isIdentifier(restElement.argument))
         {
             result[restElement.argument.name] = value;
         }
         else if (TypeGuard.isAssignmentExpression(restElement.argument))
         {
-            if (TypeGuard.isIdentifierExpression(restElement.argument.left))
+            if (TypeGuard.isIdentifier(restElement.argument.left))
             {
                 result[restElement.argument.left.name] = coalesce(value, restElement.argument.right.evaluate());
             }
@@ -220,21 +223,21 @@ export default class ArrowFunctionExpression extends BaseExpression
             {
                 const scope = this.resolveParameters(args);
 
-                const outterScope: Indexer = { ...this.context };
+                const outterScope: Indexer = { ...this.scope };
 
-                Object.assign(this.context, scope);
+                Object.assign(this.scope, scope);
 
                 const value = this.body.evaluate();
 
                 for (const key of Object.keys(scope))
                 {
-                    if (key in outterScope)
+                    if (!(key in outterScope))
                     {
-                        delete this.context[key];
+                        delete this.scope[key];
                     }
                 }
 
-                Object.assign(this.context, outterScope);
+                Object.assign(this.scope, outterScope);
 
                 return value;
             };

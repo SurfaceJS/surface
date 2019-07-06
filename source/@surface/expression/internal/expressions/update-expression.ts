@@ -1,24 +1,22 @@
-import { Func2, Indexer } from "@surface/core";
+import { Func1 }          from "@surface/core";
 import IExpression        from "../../interfaces/expression";
 import NodeType           from "../../node-type";
 import { UpdateOperator } from "../../types";
-import TypeGuard          from "../type-guard";
 import BaseExpression     from "./abstracts/base-expression";
-import ConstantExpression from "./constant-expression";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
-const updateFunctions: Record<Operators, Func2<IExpression, IExpression, number>> =
+const updateFunctions: Record<Operators, Func1<number, number>> =
 {
-    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
-    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
-    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!++,
-    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!--,
+    "++*": value => ++value,
+    "--*": value => --value,
+    "*++": value => value++,
+    "*--": value => value--,
 };
 
 export default class UpdateExpression extends BaseExpression<number>
 {
-    private readonly operation: Func2<IExpression, IExpression, number>;
+    private readonly operation: Func1<number, number>;
 
     private _argument: IExpression;
     public get argument(): IExpression
@@ -55,7 +53,7 @@ export default class UpdateExpression extends BaseExpression<number>
 
     public get type(): NodeType
     {
-        return NodeType.Update;
+        return NodeType.UpdateExpression;
     }
 
     public constructor(argument: IExpression, operator: UpdateOperator, prefix: boolean)
@@ -70,19 +68,7 @@ export default class UpdateExpression extends BaseExpression<number>
 
     public evaluate(): number
     {
-        /* istanbul ignore else  */
-        if (TypeGuard.isIdentifierExpression(this.argument))
-        {
-            return this._cache = this.operation(new ConstantExpression(this.argument.context), new ConstantExpression(this.argument.name));
-        }
-        else if (TypeGuard.isMemberExpression(this.argument))
-        {
-            return this._cache = this.operation(this.argument.object, this.argument.property);
-        }
-        else
-        {
-            throw new TypeError("Invalid target expression");
-        }
+        return this.operation(this.argument.evaluate() as number);
     }
 
     public toString(): string

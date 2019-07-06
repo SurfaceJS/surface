@@ -1,32 +1,31 @@
-import IExpression           from "../../interfaces/expression";
-import IIdentifierExpression from "../../interfaces/identifier-expression";
-import IPattern              from "../../interfaces/pattern";
-import NodeType              from "../../node-type";
+import IExpression from "../../interfaces/expression";
+import IPattern    from "../../interfaces/pattern";
+import NodeType    from "../../node-type";
 
 export default class AssignmentPattern implements IPattern
 {
-    private readonly _left:  IIdentifierExpression;
+    private readonly _left:  IPattern;
     private readonly _right: IExpression;
 
-    public get left(): IExpression
+    public get left(): IPattern
     {
         return this._left;
     }
 
-    public get right(): IExpression
+    public get right(): IPattern
     {
         return this._right;
     }
 
     public get type(): NodeType
     {
-        return NodeType.Assignment;
+        return NodeType.AssignmentPattern;
     }
 
-    public constructor(left: IIdentifierExpression, right: IExpression)
+    public constructor(left: IPattern, right: IExpression)
     {
-        this._left     = left;
-        this._right    = right;
+        this._left  = left;
+        this._right = right;
     }
 
     public toString(): string

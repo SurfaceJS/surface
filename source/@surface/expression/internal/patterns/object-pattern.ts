@@ -13,7 +13,7 @@ export default class ObjectPattern implements IPattern
 
     public get type(): NodeType
     {
-        return NodeType.ArrayPattern;
+        return NodeType.ObjectPattern;
     }
 
     public constructor(properties: Array<IProperty|IRestElement>)

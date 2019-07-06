@@ -4,31 +4,33 @@ import NodeType    from "../../node-type";
 
 export type ExpressionFactoryFixture = { factory: () => IExpression, type: NodeType, value: unknown };
 
+const scope = { };
+
 export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
 [
     {
-        factory: () => Expression.array([Expression.constant(1), Expression.constant(2)]),
-        type:    NodeType.Array,
+        factory: () => Expression.array([Expression.literal(1), Expression.literal(2)]),
+        type:    NodeType.ArrayExpression,
         value:   [1, 2]
     },
     {
-        factory: () => Expression.binary(Expression.constant(1), Expression.constant(2), ">"),
-        type:    NodeType.Binary,
+        factory: () => Expression.binary(Expression.literal(1), Expression.literal(2), ">"),
+        type:    NodeType.BinaryExpression,
         value:   false
     },
     {
-        factory: () => Expression.call(Expression.constant(null), Expression.constant((value: number) => ++value), [Expression.constant(1)]),
-        type:    NodeType.Call,
+        factory: () => Expression.call(Expression.this(scope), Expression.arrowFunction(scope, [Expression.identifier(scope, "x")], Expression.identifier(scope, "x")), [Expression.literal(2)]),
+        type:    NodeType.CallExpression,
         value:   2
     },
     {
-        factory: () => Expression.conditional(Expression.constant(true), Expression.constant(1), Expression.constant(2)),
-        type:    NodeType.Conditional,
+        factory: () => Expression.conditional(Expression.literal(true), Expression.literal(1), Expression.literal(2)),
+        type:    NodeType.ConditionalExpression,
         value:   1
     },
     {
-        factory: () => Expression.constant(1),
-        type:    NodeType.Constant,
+        factory: () => Expression.literal(1),
+        type:    NodeType.Literal,
         value:   1
     },
     {
@@ -37,28 +39,28 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   1
     },
     {
-        factory: () => Expression.member(Expression.constant({ value: 1 }), Expression.constant("value"), false),
-        type:    NodeType.Member,
+        factory: () => Expression.member(Expression.object([Expression.property(Expression.literal("value"), Expression.literal(1))]), Expression.literal("value"), false),
+        type:    NodeType.MemberExpression,
         value:   1
     },
     {
-        factory: () => Expression.object([Expression.property(Expression.constant("value"), Expression.constant(1), false)]),
-        type:    NodeType.Object,
+        factory: () => Expression.object([Expression.property(Expression.literal("value"), Expression.literal(1), false)]),
+        type:    NodeType.ObjectExpression,
         value:   { value: 1 }
     },
     {
         factory: () => Expression.regex("/foo/", "i"),
-        type:    NodeType.Regex,
+        type:    NodeType.RegExpLiteral,
         value:   /foo/i
     },
     {
-        factory: () => Expression.template(["Hello ", "!!!"], [Expression.constant("World")]),
-        type:    NodeType.Template,
+        factory: () => Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")]),
+        type:    NodeType.TemplateLiteral,
         value:   "Hello World!!!"
     },
     {
-        factory: () => Expression.unary(Expression.constant(true), "!"),
-        type:    NodeType.Unary,
+        factory: () => Expression.unary(Expression.literal(true), "!"),
+        type:    NodeType.UnaryExpression,
         value:   false
     },
 ];

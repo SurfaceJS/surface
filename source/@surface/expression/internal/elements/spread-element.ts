@@ -12,7 +12,7 @@ export default class SpreadElement implements INode
 
     public get type(): NodeType
     {
-        return NodeType.Spread;
+        return NodeType.SpreadElement;
     }
 
     public constructor(argument: IExpression)

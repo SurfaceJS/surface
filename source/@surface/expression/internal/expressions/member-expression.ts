@@ -40,7 +40,7 @@ export default class MemberExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.Member;
+        return NodeType.MemberExpression;
     }
 
     public constructor(object: IExpression, property: IExpression, computed: boolean)

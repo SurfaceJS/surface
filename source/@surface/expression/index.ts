@@ -1,44 +1,53 @@
-import { Indexer }            from "@surface/core";
-import IArrayExpression       from "./interfaces/array-expression";
-import IAssignmentExpression  from "./interfaces/assignment-expression";
-import IBinaryExpression      from "./interfaces/binary-expression";
-import ICallExpression        from "./interfaces/call-expression";
-import IConditionalExpression from "./interfaces/conditional-expression";
-import IConstantExpression    from "./interfaces/constant-expression";
-import IExpression            from "./interfaces/expression";
-import IIdentifierExpression  from "./interfaces/identifier-expression";
-import IMemberExpression      from "./interfaces/member-expression";
-import INewExpression         from "./interfaces/new-expression";
-import IObjectExpression      from "./interfaces/object-expression";
-import IProperty              from "./interfaces/property";
-import IRegexExpression       from "./interfaces/regex-expression";
-import ISequenceExpression    from "./interfaces/sequence-expression";
-import ISpreadElement         from "./interfaces/spread-element";
-import ITemplateExpression    from "./interfaces/template-expression";
-import IUnaryExpression       from "./interfaces/unary-expression";
-import IUpdateExpression      from "./interfaces/update-expression";
-import Property               from "./internal/elements/property";
-import SpreadElement          from "./internal/elements/spread-element";
-import ArrayExpression        from "./internal/expressions/array-expression";
-import AssignmentExpression   from "./internal/expressions/assignment-expression";
-import BinaryExpression       from "./internal/expressions/binary-expression";
-import CallExpression         from "./internal/expressions/call-expression";
-import ConditionalExpression  from "./internal/expressions/conditional-expression";
-import ConstantExpression     from "./internal/expressions/constant-expression";
-import IdentifierExpression   from "./internal/expressions/identifier-expression";
-import MemberExpression       from "./internal/expressions/member-expression";
-import NewExpression          from "./internal/expressions/new-expression";
-import ObjectExpression       from "./internal/expressions/object-expression";
-import RegexExpression        from "./internal/expressions/regex-expression";
-import SequenceExpression     from "./internal/expressions/sequence-expression";
-import TemplateExpression     from "./internal/expressions/template-expression";
-import UnaryExpression        from "./internal/expressions/unary-expression";
-import UpdateExpression       from "./internal/expressions/update-expression";
-import Parser                 from "./internal/parser";
+import { Indexer }              from "@surface/core";
+import IArrayExpression         from "./interfaces/array-expression";
+import IArrowFunctionExpression from "./interfaces/arrow-function-expression";
+import IAssignmentExpression    from "./interfaces/assignment-expression";
+import IBinaryExpression        from "./interfaces/binary-expression";
+import ICallExpression          from "./interfaces/call-expression";
+import IConditionalExpression   from "./interfaces/conditional-expression";
+import IExpression              from "./interfaces/expression";
+import IIdentifier              from "./interfaces/identifier";
+import ILiteral                 from "./interfaces/literal";
+import IMemberExpression        from "./interfaces/member-expression";
+import INewExpression           from "./interfaces/new-expression";
+import IObjectExpression        from "./interfaces/object-expression";
+import IPattern                 from "./interfaces/pattern";
+import IProperty                from "./interfaces/property";
+import IRegExpLiteral           from "./interfaces/reg-exp-literal";
+import ISequenceExpression      from "./interfaces/sequence-expression";
+import ISpreadElement           from "./interfaces/spread-element";
+import ITemplateElement         from "./interfaces/template-element";
+import ITemplateLiteral         from "./interfaces/template-literal";
+import IThisExpression          from "./interfaces/this-expression";
+import IUnaryExpression         from "./interfaces/unary-expression";
+import IUpdateExpression        from "./interfaces/update-expression";
+import Property                 from "./internal/elements/property";
+import SpreadElement            from "./internal/elements/spread-element";
+import TemplateElement          from "./internal/elements/template-element";
+import ArrayExpression          from "./internal/expressions/array-expression";
+import ArrowFunctionExpression  from "./internal/expressions/arrow-function-expression";
+import AssignmentExpression     from "./internal/expressions/assignment-expression";
+import BinaryExpression         from "./internal/expressions/binary-expression";
+import CallExpression           from "./internal/expressions/call-expression";
+import ConditionalExpression    from "./internal/expressions/conditional-expression";
+import Identifier               from "./internal/expressions/identifier";
+import Literal                  from "./internal/expressions/literal";
+import MemberExpression         from "./internal/expressions/member-expression";
+import NewExpression            from "./internal/expressions/new-expression";
+import ObjectExpression         from "./internal/expressions/object-expression";
+import RegExpLiteral            from "./internal/expressions/reg-exp-literal";
+import SequenceExpression       from "./internal/expressions/sequence-expression";
+import TemplateLiteral          from "./internal/expressions/template-literal";
+import ThisExpression           from "./internal/expressions/this-expression";
+import UnaryExpression          from "./internal/expressions/unary-expression";
+import UpdateExpression         from "./internal/expressions/update-expression";
+import Parser                   from "./internal/parser";
 import
 {
     AssignmentOperator,
     BinaryOperator,
+    LiteralValue,
+    ThisValue,
     UnaryOperator,
     UpdateOperator
 } from "./types";
@@ -48,6 +57,11 @@ export default abstract class Expression
     public static array(elements: Array<IExpression>): IArrayExpression
     {
         return new ArrayExpression(elements);
+    }
+
+    public static arrowFunction(context: Indexer, parameters: Array<IPattern>, body: IExpression): IArrowFunctionExpression
+    {
+        return new ArrowFunctionExpression(context, parameters, body);
     }
 
     public static assignment(left: IExpression, right: IExpression, operator: AssignmentOperator): IAssignmentExpression
@@ -70,19 +84,19 @@ export default abstract class Expression
         return new ConditionalExpression(condition, alternate, consequent);
     }
 
-    public static constant(value: unknown): IConstantExpression
-    {
-        return new ConstantExpression(value);
-    }
-
     public static from(source: string, context?: object): IExpression
     {
         return Parser.parse(source, context || { });
     }
 
-    public static identifier(context: object, name: string): IIdentifierExpression
+    public static identifier(scope: object, name: string): IIdentifier
     {
-        return new IdentifierExpression(context as Indexer, name);
+        return new Identifier(scope as Indexer, name);
+    }
+
+    public static literal(value: LiteralValue): ILiteral
+    {
+        return new Literal(value);
     }
 
     public static member(object: IExpression, property: IExpression, computed: boolean): IMemberExpression
@@ -100,14 +114,14 @@ export default abstract class Expression
         return new ObjectExpression(properties);
     }
 
-    public static property(key: IExpression, value: IExpression, computed: boolean): IProperty
+    public static property(key: IExpression, value: IExpression, computed?: boolean): IProperty
     {
-        return new Property(key, value, computed, false);
+        return new Property(key, value, !!computed, false);
     }
 
-    public static regex(pattern: string, flags: string): IRegexExpression
+    public static regex(pattern: string, flags: string): IRegExpLiteral
     {
-        return new RegexExpression(pattern, flags);
+        return new RegExpLiteral(pattern, flags);
     }
 
     public static sequence(expressions: Array<IExpression>): ISequenceExpression
@@ -120,9 +134,19 @@ export default abstract class Expression
         return new SpreadElement(argument);
     }
 
-    public static template(quasis: Array<string>, expressions: Array<IExpression>): ITemplateExpression
+    public static this(scope: ThisValue): IThisExpression
     {
-        return new TemplateExpression(quasis, expressions);
+        return new ThisExpression(scope);
+    }
+
+    public static template(quasis: Array<ITemplateElement>, expressions: Array<IExpression>): ITemplateLiteral
+    {
+        return new TemplateLiteral(quasis, expressions);
+    }
+
+    public static templateElement(cooked: string, raw: string, tail: boolean): ITemplateElement
+    {
+        return new TemplateElement(cooked, raw, tail);
     }
 
     public static unary(argument: IExpression, operator: UnaryOperator): IUnaryExpression

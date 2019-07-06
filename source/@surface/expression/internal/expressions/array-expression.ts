@@ -6,24 +6,24 @@ import BaseExpression from "./abstracts/base-expression";
 
 export default class ArrayExpression extends BaseExpression<Array<unknown>>
 {
-    private _elements: Array<IExpression|ISpreadElement>;
+    private _elements: Array<IExpression|ISpreadElement|null>;
 
-    public get elements(): Array<IExpression|ISpreadElement>
+    public get elements(): Array<IExpression|ISpreadElement|null>
     {
         return this._elements;
     }
 
-    public set elements(value: Array<IExpression|ISpreadElement>)
+    public set elements(value: Array<IExpression|ISpreadElement|null>)
     {
         this._elements = value;
     }
 
     public get type(): NodeType
     {
-        return NodeType.Array;
+        return NodeType.ArrayExpression;
     }
 
-    public constructor(elements: Array<IExpression|ISpreadElement>)
+    public constructor(elements: Array<IExpression|ISpreadElement|null>)
     {
         super();
         this._elements = elements;
@@ -35,13 +35,20 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
         for (const element of this.elements)
         {
-            if (TypeGuard.isSpreadElement(element))
+            if (element)
             {
-                evaluation.push(...element.argument.evaluate() as Array<unknown>);
+                if (TypeGuard.isSpreadElement(element))
+                {
+                    evaluation.push(...element.argument.evaluate() as Array<unknown>);
+                }
+                else
+                {
+                    evaluation.push(element.evaluate());
+                }
             }
             else
             {
-                evaluation.push(element.evaluate());
+                evaluation.push(undefined);
             }
         }
 
@@ -50,6 +57,6 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
     public toString(): string
     {
-        return `[${this.elements.map(x => x.toString()).join(", ")}]`;
+        return `[${this.elements.map(x => (x || "undefined").toString()).join(", ")}]`;
     }
 }

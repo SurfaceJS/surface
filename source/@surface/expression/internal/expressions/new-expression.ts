@@ -30,7 +30,7 @@ export default class NewExpression extends BaseExpression
 
     public get type(): NodeType
     {
-        return NodeType.New;
+        return NodeType.NewExpression;
     }
 
     public constructor(callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
