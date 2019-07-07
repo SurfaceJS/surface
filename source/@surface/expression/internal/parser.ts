@@ -30,7 +30,6 @@ import LogicalExpression       from "./expressions/logical-expression";
 import MemberExpression        from "./expressions/member-expression";
 import NewExpression           from "./expressions/new-expression";
 import ObjectExpression        from "./expressions/object-expression";
-import RegExpLiteral           from "./expressions/reg-exp-literal";
 import SequenceExpression      from "./expressions/sequence-expression";
 import TemplateLiteral         from "./expressions/template-literal";
 import ThisExpression          from "./expressions/this-expression";
@@ -543,7 +542,7 @@ export default class Parser
 
                 if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
-                    expression = new MemberExpression(parentExpression, new Literal(this.nextToken().value as LiteralValue), false);
+                    expression = new MemberExpression(parentExpression, new Identifier(this.nextToken().raw), false);
                 }
                 else
                 {
@@ -664,7 +663,7 @@ export default class Parser
 
         if (token.type == TokenType.Identifier)
         {
-            key = new Literal(token.raw);
+            key = new Identifier(token.raw);
 
             this.nextToken();
 
@@ -678,12 +677,12 @@ export default class Parser
 
                 this.invalidInitialization = invalidInitialization;
 
-                return new Property(key, new AssignmentExpression(new Identifier({ }, token.raw), value, "="), computed, true);
+                return new Property(key, new AssignmentExpression(new Identifier(token.raw), value, "="), computed, true);
             }
 
             if (!this.match(":"))
             {
-                return new Property(key, new Identifier(this.scope, token.raw), false, true);
+                return new Property(key, new Identifier(token.raw, true, this.scope), false, true);
             }
         }
         else
@@ -695,6 +694,8 @@ export default class Parser
                 case TokenType.BooleanLiteral:
                 case TokenType.Keyword:
                 case TokenType.NullLiteral:
+                    key = new Identifier(this.nextToken().raw);
+                    break;
                 case TokenType.NumericLiteral:
                 case TokenType.StringLiteral:
                     key = new Literal(this.nextToken().value as LiteralValue);
@@ -826,10 +827,10 @@ export default class Parser
             case TokenType.Identifier:
                 if (this.lookahead.raw == "undefined")
                 {
-                    return new Identifier({ }, this.nextToken().raw);
+                    return new Identifier(this.nextToken().raw, true);
                 }
 
-                const indentifier = new Identifier(this.scope, this.nextToken().raw);
+                const indentifier = new Identifier(this.nextToken().raw, true, this.scope);
 
                 if (this.match("=>"))
                 {
@@ -992,7 +993,7 @@ export default class Parser
     private regexExpression(): IExpression
     {
         const token = this.nextRegexToken();
-        return new RegExpLiteral(token.pattern as string, token.flags as string);
+        return new Literal(token.value as RegExp);
     }
 
     private restElement(): RestElement

@@ -1,6 +1,7 @@
 import IExpression from "../../interfaces/expression";
 import INode       from "../../interfaces/node";
 import NodeType    from "../../node-type";
+import TypeGuard   from "../type-guard";
 
 export default class Property implements INode
 {
@@ -63,6 +64,18 @@ export default class Property implements INode
 
     public toString(): string
     {
-        return this.shorthand ? this.value.toString() : `${this.computed ? `[${this.key}]` : `"${this.key.evaluate()}"` }: ${this.value}`;
+        if (this.shorthand)
+        {
+            return this.value.toString();
+        }
+        else
+        {
+            if (TypeGuard.isIdentifier(this.key) || (TypeGuard.isLiteral(this.key) && typeof this.key.value == "number"))
+            {
+                return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
+            }
+
+            return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
+        }
     }
 }

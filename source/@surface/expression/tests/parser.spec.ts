@@ -8,7 +8,7 @@ import
     validExpressions,
     ExpressionFixtureSpec,
     InvalidExpressionFixtureSpec
-} from "./fixtures/expressions";
+} from "./expectations/parser-expected";
 
 @suite
 export default class ParserSpec

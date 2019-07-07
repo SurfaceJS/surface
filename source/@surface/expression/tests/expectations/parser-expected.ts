@@ -12,8 +12,7 @@ import LogicalExpression                  from "../../internal/expressions/logic
 import MemberExpression                   from "../../internal/expressions/member-expression";
 import NewExpression                      from "../../internal/expressions/new-expression";
 import ObjectExpression                   from "../../internal/expressions/object-expression";
-import RegExpLiteral                      from "../../internal/expressions/reg-exp-literal";
-import TemplateLiteral                 from "../../internal/expressions/template-literal";
+import TemplateLiteral                    from "../../internal/expressions/template-literal";
 import ThisExpression                     from "../../internal/expressions/this-expression";
 import UnaryExpression                    from "../../internal/expressions/unary-expression";
 import UpdateExpression                   from "../../internal/expressions/update-expression";
@@ -88,14 +87,14 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         context:  context,
         raw:      "[1, 'foo', true, { foo: 'bar' }]",
         value:    [1, "foo", true, { foo: "bar" }],
-        toString: "[1, \"foo\", true, { \"foo\": \"bar\" }]",
+        toString: "[1, \"foo\", true, { foo: \"bar\" }]",
         type:     ArrayExpression,
     },
     {
         context:  { one: 1, two: 2 },
         raw:      "[1, 'foo', true, ...[{ foo: one }, { bar: two }]]",
         value:    [1, "foo", true, { foo: 1 }, { bar: 2 }],
-        toString: "[1, \"foo\", true, ...[{ \"foo\": one }, { \"bar\": two }]]",
+        toString: "[1, \"foo\", true, ...[{ foo: one }, { bar: two }]]",
         type:     ArrayExpression,
     },
     {
@@ -206,22 +205,22 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     {
         context:  context,
         raw:      "({ a: b }) => b",
-        value:    ({ "a": b }: { a: number }) => b,
-        toString: "({ \"a\": b }) => b",
+        value:    ({ a: b }: { a: number }) => b,
+        toString: "({ a: b }) => b",
         type:     ArrowFunctionExpression,
     },
     {
         context:  context,
         raw:      "(a, { b, x: { c } }) => a + b + c",
-        value:    (a: number, { b, "x": { c } }: { b: number, x: { c: number } }) => a + b + c,
-        toString: "(a, { b, \"x\": { c } }) => a + b + c",
+        value:    (a: number, { b, x: { c } }: { b: number, x: { c: number } }) => a + b + c,
+        toString: "(a, { b, x: { c } }) => a + b + c",
         type:     ArrowFunctionExpression,
     },
     {
         context:  context,
         raw:      "(a, { b, x: { ...c } }) => [a, b, c]",
-        value:    (a: number, { b, "x": { ...c } }: { b: number, x: { c: number } }) => [a, b, c],
-        toString: "(a, { b, \"x\": { ...c } }) => [a, b, c]",
+        value:    (a: number, { b, x: { ...c } }: { b: number, x: { c: number } }) => [a, b, c],
+        toString: "(a, { b, x: { ...c } }) => [a, b, c]",
         type:     ArrowFunctionExpression,
     },
     {
@@ -234,8 +233,8 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     {
         context:  context,
         raw:      "(...{ a, x: { b } }) => a + b",
-        value:    (...{ a, "x": { b } }: { a: number, x: { b: number } }) => a + b,
-        toString: "(...{ a, \"x\": { b } }) => a + b",
+        value:    (...{ a, x: { b } }: { a: number, x: { b: number } }) => a + b,
+        toString: "(...{ a, x: { b } }) => a + b",
         type:     ArrowFunctionExpression,
     },
     {
@@ -688,6 +687,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         context:  context,
+        raw:      "/test/",
+        value:    /test/,
+        toString: "/test/",
+        type:     Literal,
+    },
+    {
+        context:  context,
+        raw:      "/test/gi",
+        value:    /test/gi,
+        toString: "/test/gi",
+        type:     Literal,
+    },
+    {
+        context:  context,
         raw:      "true && false",
         value:    false,
         toString: "true && false",
@@ -767,35 +780,35 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         context: context,
         raw:      "{ 1: 1 }",
         value:    { 1: 1 },
-        toString: "{ \"1\": 1 }",
+        toString: "{ 1: 1 }",
         type:     ObjectExpression,
     },
     {
         context:  context,
         raw:      "{ new: 1 }",
         value:    { new: 1 },
-        toString: "{ \"new\": 1 }",
+        toString: "{ new: 1 }",
         type:     ObjectExpression,
     },
     {
         context:  context,
-        raw:      "{ foo: 1, \"bar\": [1, ...[2, 3]], [{id: 1}.id]: 1 }",
-        value:    { foo: 1, "bar": [1, 2, 3], [{id: 1}.id]: 1 },
-        toString: "{ \"foo\": 1, \"bar\": [1, ...[2, 3]], [{ \"id\": 1 }.id]: 1 }",
+        raw:      "{ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 }",
+        value:    { foo: 1, bar: [1, 2, 3], [{id: 1}.id]: 1 },
+        toString: "{ foo: 1, bar: [1, ...[2, 3]], [{ id: 1 }.id]: 1 }",
         type:     ObjectExpression,
     },
     {
         context:  context,
         raw:      "{ foo: 'bar', ...{ id: 2, value: 3 } }",
         value:    { foo: "bar", id: 2, value: 3 },
-        toString: "{ \"foo\": \"bar\", ...{ \"id\": 2, \"value\": 3 } }",
+        toString: "{ foo: \"bar\", ...{ id: 2, value: 3 } }",
         type:     ObjectExpression,
     },
     {
         context:  context,
         raw:      "{ foo: 'bar', ...[1, 2] }",
         value:    { 0: 1, 1: 2, foo: "bar" },
-        toString: "{ \"foo\": \"bar\", ...[1, 2] }",
+        toString: "{ foo: \"bar\", ...[1, 2] }",
         type:     ObjectExpression,
     },
     {
@@ -816,22 +829,8 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         context:  { factory: () => ({ id: 1 }) },
         raw:      "{ foo: 1, ...factory() }",
         value:    { foo: 1, id: 1 },
-        toString: "{ \"foo\": 1, ...factory() }",
+        toString: "{ foo: 1, ...factory() }",
         type:     ObjectExpression,
-    },
-    {
-        context:  context,
-        raw:      "/test/",
-        value:    /test/,
-        toString: "/test/",
-        type:     RegExpLiteral,
-    },
-    {
-        context:  context,
-        raw:      "/test/ig",
-        value:    /test/ig,
-        toString: "/test/ig",
-        type:     RegExpLiteral,
     },
     {
         context:  context,

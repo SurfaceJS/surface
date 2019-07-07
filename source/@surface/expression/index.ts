@@ -89,9 +89,9 @@ export default abstract class Expression
         return Parser.parse(source, context || { });
     }
 
-    public static identifier(scope: object, name: string): IIdentifier
+    public static identifier(name: string, binded?: boolean, scope?: object): IIdentifier
     {
-        return new Identifier(scope as Indexer, name);
+        return new Identifier(name, binded, scope as Indexer);
     }
 
     public static literal(value: LiteralValue): ILiteral

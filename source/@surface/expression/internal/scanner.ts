@@ -1364,11 +1364,13 @@ export default class Scanner
             this.advance();
         }
 
+        pattern = pattern.substring(1, pattern.length - 1);
+
         const token =
         {
-            raw:        pattern + flags,
+            raw:        `/${pattern}/${flags}`,
             value:      new RegExp(pattern, flags),
-            pattern:    pattern.substring(1, pattern.length - 1),
+            pattern:    pattern,
             type:       TokenType.RegularExpression, flags,
             start:      start,
             end:        this.index,

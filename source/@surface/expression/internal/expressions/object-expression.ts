@@ -38,7 +38,7 @@ export default class ObjectExpression extends BaseExpression<Indexer>
         {
             if (TypeGuard.isProperty(property))
             {
-                evaluation[property.key.evaluate() as string] = property.value.evaluate();
+                evaluation[property.key.evaluate() as string|number] = property.value.evaluate();
             }
             else
             {

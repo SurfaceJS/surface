@@ -19,7 +19,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   false
     },
     {
-        factory: () => Expression.call(Expression.this(scope), Expression.arrowFunction(scope, [Expression.identifier(scope, "x")], Expression.identifier(scope, "x")), [Expression.literal(2)]),
+        factory: () => Expression.call(Expression.this(scope), Expression.arrowFunction(scope, [Expression.identifier("x")], Expression.identifier("x", true, scope)), [Expression.literal(2)]),
         type:    NodeType.CallExpression,
         value:   2
     },
@@ -34,7 +34,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   1
     },
     {
-        factory: () => Expression.identifier({ value: 1 }, "value"),
+        factory: () => Expression.identifier("value", true, { value: 1 }),
         type:    NodeType.Identifier,
         value:   1
     },

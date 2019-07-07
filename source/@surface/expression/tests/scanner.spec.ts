@@ -4,7 +4,7 @@ import Messages                                           from "../internal/mess
 import Scanner, { Token }                                 from "../internal/scanner";
 import TokenType                                          from "../internal/token-type";
 import SyntaxError                                        from "../syntax-error";
-import { invalidTokens, validTokens, InvalidToken }       from "./fixtures/tokens";
+import { invalidTokens, validTokens, InvalidToken }       from "./expectations/scanner-expected";
 
 @suite
 export default class ScannerSpec

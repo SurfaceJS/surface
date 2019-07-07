@@ -1,7 +1,8 @@
-import { Indexer }      from "@surface/core";
-import IExpression      from "../../interfaces/expression";
-import NodeType         from "../../node-type";
-import BaseExpression   from "./abstracts/base-expression";
+import { Indexer }    from "@surface/core";
+import IExpression    from "../../interfaces/expression";
+import NodeType       from "../../node-type";
+import TypeGuard      from "../type-guard";
+import BaseExpression from "./abstracts/base-expression";
 
 export default class MemberExpression extends BaseExpression
 {
@@ -59,6 +60,6 @@ export default class MemberExpression extends BaseExpression
 
     public toString(): string
     {
-        return `${this.object}${this.computed ? `[${this.property}]` : `.${this.property.evaluate()}`}`;
+        return `${this.object}${TypeGuard.isIdentifier(this.property) ? `.${this.property.name}` : `[${this.property}]`}`;
     }
 }

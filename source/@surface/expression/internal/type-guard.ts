@@ -19,7 +19,9 @@ import IRegExpLiteral           from "../interfaces/reg-exp-literal";
 import IRestElement             from "../interfaces/rest-element";
 import ISequenceExpression      from "../interfaces/sequence-expression";
 import ISpreadElement           from "../interfaces/spread-element";
+import ITemplateElement         from "../interfaces/template-element";
 import ITemplateLiteral         from "../interfaces/template-literal";
+import IThisExpression          from "../interfaces/this-expression";
 import IUnaryExpression         from "../interfaces/unary-expression";
 import IUpdateExpression        from "../interfaces/update-expression";
 import NodeType                 from "../node-type";
@@ -129,6 +131,16 @@ export default class TypeGuard
     public static isTemplateLiteral(node: INode): node is ITemplateLiteral
     {
         return node.type == NodeType.TemplateLiteral;
+    }
+
+    public static isTemplateElement(node: INode): node is ITemplateElement
+    {
+        return node.type == NodeType.TemplateElement;
+    }
+
+    public static isThisExpression(node: INode): node is IThisExpression
+    {
+        return node.type == NodeType.ThisExpression;
     }
 
     public static isUnaryExpression(node: INode): node is IUnaryExpression

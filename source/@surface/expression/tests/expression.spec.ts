@@ -1,7 +1,7 @@
 import { batchTest, shouldPass, suite }                        from "@surface/test-suite";
 import { expect }                                              from "chai";
 import NodeType                                                from "../node-type";
-import { expressionFactoryFixtures, ExpressionFactoryFixture } from "./fixtures/expression-factory";
+import { expressionFactoryFixtures, ExpressionFactoryFixture } from "./expectations/expression-expected";
 
 @suite
 export default class ExpressionSpec
