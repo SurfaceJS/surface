@@ -1,12 +1,14 @@
 import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
 import IExpression           from "../../interfaces/expression";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
 import TypeGuard             from "../type-guard";
-import BaseExpression        from "./abstracts/base-expression";
 
-export default class CallExpression extends BaseExpression
+export default class CallExpression implements IExpression
 {
+    private cache: unknown;
+
     private _arguments: Array<IExpression|ISpreadElement>;
     public get arguments(): Array<IExpression|ISpreadElement>
     {
@@ -45,23 +47,29 @@ export default class CallExpression extends BaseExpression
         return NodeType.CallExpression;
     }
 
-    public constructor(context: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
+    public constructor(thisArg: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
     {
-        super();
-
         this._arguments = $arguments;
-        this._thisArg   = context;
+        this._thisArg   = thisArg;
         this._callee    = callee;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        let thisArg = this.thisArg.evaluate() as Indexer<Function>;
-        let fn      = TypeGuard.isIdentifier(this.callee) ?
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        let thisArg = TypeGuard.isArrowFunctionExpression(this.thisArg) || (TypeGuard.isLiteral(this.thisArg) && this.thisArg.value == null) ?
+            scope :
+            this.thisArg.evaluate(scope, useChache) as Indexer;
+
+        let fn = TypeGuard.isIdentifier(this.callee) ?
             thisArg[this.callee.name] as Nullable<Function>
             : TypeGuard.isMemberExpression(this.callee) ?
-                thisArg[this.callee.property.evaluate() as string|number] as Nullable<Function>
-                : this.callee.evaluate()  as Nullable<Function>;
+                thisArg[this.callee.property.evaluate(scope, useChache) as string|number] as Nullable<Function>
+                : this.callee.evaluate(scope, useChache)  as Nullable<Function>;
 
         if (!fn)
         {
@@ -78,15 +86,15 @@ export default class CallExpression extends BaseExpression
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate() as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate(scope, useChache) as Array<unknown>);
             }
             else
             {
-                $arguments.push(argument.evaluate());
+                $arguments.push(argument.evaluate(scope, useChache));
             }
         }
 
-        return this._cache = fn.apply(thisArg, $arguments);
+        return this.cache = fn.apply(thisArg, $arguments);
     }
 
     public toString(): string

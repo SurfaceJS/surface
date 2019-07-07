@@ -1,18 +1,22 @@
-import { Func2 }           from "@surface/core";
+import { Indexer }         from "@surface/core";
+import { hasValue }        from "@surface/core/common/generic";
 import IExpression         from "../../interfaces/expression";
 import NodeType            from "../../node-type";
 import { LogicalOperator } from "../../types";
-import BaseExpression      from "./abstracts/base-expression";
 
-const binaryFunctions: Record<LogicalOperator, Func2<IExpression, IExpression, unknown>> =
+type Operation = (left: IExpression, right: IExpression, scope: Indexer, useChache: boolean) => unknown;
+
+const binaryFunctions: Record<LogicalOperator, Operation> =
 {
-    "&&": (left: IExpression, right: IExpression) => (left.evaluate() as Object) && (right.evaluate() as Object),
-    "||": (left: IExpression, right: IExpression) => (left.evaluate() as Object) || (right.evaluate() as Object),
+    "&&": (left, right, scope, useChache) => (left.evaluate(scope, useChache) as Object) && (right.evaluate(scope, useChache) as Object),
+    "||": (left, right, scope, useChache) => (left.evaluate(scope, useChache) as Object) || (right.evaluate(scope, useChache) as Object),
 };
 
-export default class LogicalExpression extends BaseExpression
+export default class LogicalExpression implements IExpression
 {
-    private readonly operation: Func2<IExpression, IExpression, unknown>;
+    private readonly operation: Operation;
+
+    private cache: unknown;
 
     private _left: IExpression;
     public get left(): IExpression
@@ -54,17 +58,20 @@ export default class LogicalExpression extends BaseExpression
 
     public constructor(left: IExpression, right: IExpression, operator: LogicalOperator)
     {
-        super();
-
         this._left     = left;
         this._operator = operator;
         this._right    = right;
         this.operation = binaryFunctions[this.operator];
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        return this._cache = this.operation(this.left, this.right);
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.operation(this.left, this.right, scope, useChache);
     }
 
     public toString(): string

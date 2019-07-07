@@ -1,9 +1,12 @@
-import IExpression    from "../../interfaces/expression";
-import NodeType       from "../../node-type";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
 
-export default class ConditionalExpression extends BaseExpression
+export default class ConditionalExpression implements IExpression
 {
+    private cache: unknown;
+
     private _alternate: IExpression;
     public get alternate(): IExpression
     {
@@ -44,16 +47,19 @@ export default class ConditionalExpression extends BaseExpression
 
     public constructor(test: IExpression, alternate: IExpression, consequent: IExpression)
     {
-        super();
-
         this._test       = test;
         this._consequent = consequent;
         this._alternate  = alternate;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        return this._cache = this.test.evaluate() ? this.alternate.evaluate() : this.consequent.evaluate();
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.test.evaluate(scope, useChache) ? this.alternate.evaluate(scope, useChache) : this.consequent.evaluate(scope, useChache);
     }
 
     public toString(): string

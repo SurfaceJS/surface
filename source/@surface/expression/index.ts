@@ -1,4 +1,3 @@
-import { Indexer }              from "@surface/core";
 import IArrayExpression         from "./interfaces/array-expression";
 import IArrowFunctionExpression from "./interfaces/arrow-function-expression";
 import IAssignmentExpression    from "./interfaces/assignment-expression";
@@ -47,7 +46,6 @@ import
     AssignmentOperator,
     BinaryOperator,
     LiteralValue,
-    ThisValue,
     UnaryOperator,
     UpdateOperator
 } from "./types";
@@ -59,9 +57,9 @@ export default abstract class Expression
         return new ArrayExpression(elements);
     }
 
-    public static arrowFunction(context: Indexer, parameters: Array<IPattern>, body: IExpression): IArrowFunctionExpression
+    public static arrowFunction(parameters: Array<IPattern>, body: IExpression): IArrowFunctionExpression
     {
-        return new ArrowFunctionExpression(context, parameters, body);
+        return new ArrowFunctionExpression(parameters, body);
     }
 
     public static assignment(left: IExpression, right: IExpression, operator: AssignmentOperator): IAssignmentExpression
@@ -84,14 +82,14 @@ export default abstract class Expression
         return new ConditionalExpression(condition, alternate, consequent);
     }
 
-    public static from(source: string, context?: object): IExpression
+    public static from(source: string): IExpression
     {
-        return Parser.parse(source, context || { });
+        return Parser.parse(source);
     }
 
-    public static identifier(name: string, binded?: boolean, scope?: object): IIdentifier
+    public static identifier(name: string, binded?: boolean): IIdentifier
     {
-        return new Identifier(name, binded, scope as Indexer);
+        return new Identifier(name, binded);
     }
 
     public static literal(value: LiteralValue): ILiteral
@@ -134,9 +132,9 @@ export default abstract class Expression
         return new SpreadElement(argument);
     }
 
-    public static this(scope: ThisValue): IThisExpression
+    public static this(): IThisExpression
     {
-        return new ThisExpression(scope);
+        return new ThisExpression();
     }
 
     public static template(quasis: Array<ITemplateElement>, expressions: Array<IExpression>): ITemplateLiteral

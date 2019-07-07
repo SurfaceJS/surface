@@ -1,9 +1,12 @@
-import ILiteral       from "../../interfaces/literal";
-import NodeType       from "../../node-type";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import ILiteral              from "../../interfaces/literal";
+import NodeType              from "../../node-type";
 
-export default class RegExpLiteral extends BaseExpression<RegExp> implements ILiteral
+export default class RegExpLiteral implements ILiteral
 {
+    private cache: Nullable<RegExp>;
+
     private _flags: string;
     public get flags(): string
     {
@@ -31,22 +34,25 @@ export default class RegExpLiteral extends BaseExpression<RegExp> implements ILi
         return NodeType.RegExpLiteral;
     }
 
-    public get value(): RegExp
+    public get value(): null
     {
-        return this.evaluate();
+        return null;
     }
 
     public constructor(pattern: string, flags: string)
     {
-        super();
-
         this._flags   = flags;
         this._pattern = pattern;
     }
 
-    public evaluate(): RegExp
+    public evaluate(_: Indexer, useChache: boolean): RegExp
     {
-        return this._cache = new RegExp(this.pattern, this.flags);
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = new RegExp(this.pattern, this.flags);
     }
 
     public toString(): string

@@ -15,7 +15,7 @@ export default class ExpressionSpec
 
         if ("evaluate" in expression)
         {
-            const value = expression.evaluate();
+            const value = expression.evaluate(fixture.scope || { });
 
             if (value instanceof RegExp)
             {

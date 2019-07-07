@@ -1,4 +1,3 @@
-import { Indexer } from "@surface/core";
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                                          from "chai";
 import Parser                                             from "../internal/parser";
@@ -52,15 +51,15 @@ export default class ParserSpec
     @batchTest(validExpressions, x => `expression (${x.raw}) should be evaluated to ${x.type.name}: ${x.value}`)
     public expressionsShouldWork(expression: ExpressionFixtureSpec): void
     {
-        const result = Parser.parse(expression.raw, expression.context);
+        const result = Parser.parse(expression.raw);
 
         if (expression.value instanceof Function)
         {
-            chai.expect((result.evaluate() as Function).toString(), "evaluate").to.deep.equal(expression.value.toString());
+            chai.expect((result.evaluate(expression.scope) as Function).toString(), "evaluate").to.deep.equal(expression.value.toString());
         }
         else
         {
-            chai.expect(result.evaluate(), "evaluate").to.deep.equal(expression.value);
+            chai.expect(result.evaluate(expression.scope), "evaluate").to.deep.equal(expression.value);
         }
 
         chai.expect(result, "instanceof").instanceof(expression.type);
@@ -73,7 +72,7 @@ export default class ParserSpec
     {
         try
         {
-            Parser.parse(expression.raw, expression.context as Indexer);
+            Parser.parse(expression.raw);
 
             throw new Error(`Expression (${expression.raw}) not throw`);
         }

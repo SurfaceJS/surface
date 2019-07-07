@@ -1,13 +1,15 @@
-import IExpression    from "../../interfaces/expression";
-import ISpreadElement from "../../interfaces/spread-element";
-import NodeType       from "../../node-type";
-import TypeGuard      from "../type-guard";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import IExpression           from "../../interfaces/expression";
+import ISpreadElement        from "../../interfaces/spread-element";
+import NodeType              from "../../node-type";
+import TypeGuard             from "../type-guard";
 
-export default class ArrayExpression extends BaseExpression<Array<unknown>>
+export default class ArrayExpression implements IExpression
 {
-    private _elements: Array<IExpression|ISpreadElement|null>;
+    private cache: Nullable<Array<unknown>>;
 
+    private _elements: Array<IExpression|ISpreadElement|null>;
     public get elements(): Array<IExpression|ISpreadElement|null>
     {
         return this._elements;
@@ -25,12 +27,16 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
 
     public constructor(elements: Array<IExpression|ISpreadElement|null>)
     {
-        super();
         this._elements = elements;
     }
 
-    public evaluate(): Array<unknown>
+    public evaluate(scope: Indexer, useCache: boolean): Array<unknown>
     {
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
         const evaluation: Array<unknown> = [];
 
         for (const element of this.elements)
@@ -39,11 +45,11 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
             {
                 if (TypeGuard.isSpreadElement(element))
                 {
-                    evaluation.push(...element.argument.evaluate() as Array<unknown>);
+                    evaluation.push(...element.argument.evaluate(scope, useCache) as Array<unknown>);
                 }
                 else
                 {
-                    evaluation.push(element.evaluate());
+                    evaluation.push(element.evaluate(scope, useCache));
                 }
             }
             else
@@ -52,7 +58,7 @@ export default class ArrayExpression extends BaseExpression<Array<unknown>>
             }
         }
 
-        return this._cache = evaluation;
+        return this.cache = evaluation;
     }
 
     public toString(): string

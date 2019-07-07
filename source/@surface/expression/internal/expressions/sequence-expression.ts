@@ -1,9 +1,12 @@
-import IExpression    from "../../interfaces/expression";
-import NodeType       from "../../node-type";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
 
-export default class SequenceExpression extends BaseExpression
+export default class SequenceExpression implements IExpression
 {
+    private cache: unknown;
+
     private _expressions: Array<IExpression>;
     public get expressions(): Array<IExpression>
     {
@@ -22,21 +25,24 @@ export default class SequenceExpression extends BaseExpression
 
     public constructor(expressions: Array<IExpression>)
     {
-        super();
-
         this._expressions = expressions;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
         let value: unknown;
 
         for (const expression of this.expressions)
         {
-            value = expression.evaluate();
+            value = expression.evaluate(scope, useChache);
         }
 
-        return this._cache = value;
+        return this.cache = value;
     }
 
     public toString(): string

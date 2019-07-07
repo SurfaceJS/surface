@@ -1,9 +1,9 @@
-import { Func3, Indexer }      from "@surface/core";
-import IExpression             from "../../interfaces/expression";
-import NodeType                from "../../node-type";
+import { Func3, Indexer }     from "@surface/core";
+import { hasValue }           from "@surface/core/common/generic";
+import IExpression            from "../../interfaces/expression";
+import NodeType               from "../../node-type";
 import { AssignmentOperator } from "../../types";
-import TypeGuard               from "../type-guard";
-import BaseExpression          from "./abstracts/base-expression";
+import TypeGuard              from "../type-guard";
 
 const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string|number, unknown, unknown>> =
 {
@@ -22,9 +22,11 @@ const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string|num
     "|=":   (target, key, value) => (target[key] as number) |=   value as number,
 };
 
-export default class AssignmentExpression extends BaseExpression
+export default class AssignmentExpression implements IExpression
 {
     private readonly operation: Func3<Indexer, string|number, unknown, unknown>;
+
+    private cache: unknown;
 
     private _left:     IExpression;
     public get left(): IExpression
@@ -66,8 +68,6 @@ export default class AssignmentExpression extends BaseExpression
 
     public constructor(left: IExpression, right: IExpression, operator: AssignmentOperator)
     {
-        super();
-
         this._left     = left;
         this._right    = right;
         this._operator = operator;
@@ -75,16 +75,21 @@ export default class AssignmentExpression extends BaseExpression
         this.operation = assignmentOperations[operator];
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
         /* istanbul ignore else  */
         if (TypeGuard.isIdentifier(this.left))
         {
-            return this._cache = this.operation(this.left.scope, this.left.name, this.right.evaluate());
+            return this.cache = this.operation(scope, this.left.name, this.right.evaluate(scope, useChache));
         }
         else if (TypeGuard.isMemberExpression(this.left))
         {
-            return this._cache = this.operation(this.left.object.evaluate() as Indexer, this.left.property.evaluate() as string|number, this.right.evaluate());
+            return this.cache = this.operation(this.left.object.evaluate(scope, useChache) as Indexer, this.left.property.evaluate(scope, useChache) as string|number, this.right.evaluate(scope, useChache));
         }
         else
         {

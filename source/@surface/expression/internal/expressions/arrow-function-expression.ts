@@ -1,17 +1,18 @@
-import { Indexer }    from "@surface/core";
-import { coalesce }   from "@surface/core/common/generic";
-import IArrayPattern  from "../../interfaces/array-pattern";
-import IExpression    from "../../interfaces/expression";
-import IObjectPattern from "../../interfaces/object-pattern";
-import IPattern       from "../../interfaces/pattern";
-import IRestElement   from "../../interfaces/rest-element";
-import NodeType       from "../../node-type";
-import Messages       from "../messages";
-import TypeGuard      from "../type-guard";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable }  from "@surface/core";
+import { coalesce, hasValue } from "@surface/core/common/generic";
+import IArrayPattern          from "../../interfaces/array-pattern";
+import IExpression            from "../../interfaces/expression";
+import IObjectPattern         from "../../interfaces/object-pattern";
+import IPattern               from "../../interfaces/pattern";
+import IRestElement           from "../../interfaces/rest-element";
+import NodeType               from "../../node-type";
+import Messages               from "../messages";
+import TypeGuard              from "../type-guard";
 
-export default class ArrowFunctionExpression extends BaseExpression
+export default class ArrowFunctionExpression implements IExpression
 {
+    private cache: Nullable<Function>;
+
     private _body: IExpression;
     public get body(): IExpression
     {
@@ -34,42 +35,33 @@ export default class ArrowFunctionExpression extends BaseExpression
         this._parameters = value;
     }
 
-    private _scope: Indexer;
-    public get scope(): Indexer
-    {
-        return this._scope;
-    }
-
     public get type(): NodeType
     {
         return NodeType.ArrowFunctionExpression;
     }
 
-    public constructor(scope: Indexer, parameters: Array<IPattern>, body: IExpression)
+    public constructor(parameters: Array<IPattern>, body: IExpression)
     {
-        super();
-
-        this._scope      = scope;
         this._parameters = parameters;
         this._body       = body;
     }
 
-    private resolveParameters(args: Array<unknown>): Indexer
+    private resolveParameters(args: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
     {
-        const scope: Indexer = { };
+        const currentScope: Indexer = { };
 
         let index = 0;
         for (const parameter of this.parameters)
         {
             if (TypeGuard.isIdentifier(parameter))
             {
-                scope[parameter.name] = args[index];
+                currentScope[parameter.name] = args[index];
             }
             else if (TypeGuard.isAssignmentExpression(parameter))
             {
                 if (TypeGuard.isIdentifier(parameter.left))
                 {
-                    scope[parameter.left.name] = coalesce(args[index], parameter.right.evaluate());
+                    currentScope[parameter.left.name] = coalesce(args[index], parameter.right.evaluate(scope, useCache));
                 }
                 else
                 {
@@ -78,26 +70,26 @@ export default class ArrowFunctionExpression extends BaseExpression
             }
             else if (TypeGuard.isRestElement(parameter))
             {
-                Object.assign(scope, this.resolveRestElement(parameter, args.slice(index)));
+                Object.assign(currentScope, this.resolveRestElement(parameter, args.slice(index), scope, useCache));
             }
             else if (TypeGuard.isArrayPattern(parameter))
             {
-                Object.assign(scope, this.resolveArrayPattern(parameter, args[index] as Array<unknown>));
+                Object.assign(currentScope, this.resolveArrayPattern(parameter, args[index] as Array<unknown>, scope, useCache));
             }
             else if (TypeGuard.isObjectPattern(parameter))
             {
-                Object.assign(scope, this.resolveObjectPattern(parameter, args[index] as Indexer));
+                Object.assign(currentScope, this.resolveObjectPattern(parameter, args[index] as Indexer, scope, useCache));
             }
 
             index++;
         }
 
-        return scope;
+        return currentScope;
     }
 
-    private resolveArrayPattern(arrayPattern: IArrayPattern, value: Array<unknown>): Indexer
+    private resolveArrayPattern(arrayPattern: IArrayPattern, value: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
     {
-        const result: Indexer = { };
+        const currentScope: Indexer = { };
 
         let index = 0;
 
@@ -107,13 +99,13 @@ export default class ArrowFunctionExpression extends BaseExpression
             {
                 if (TypeGuard.isIdentifier(element))
                 {
-                    result[element.name] = value[index];
+                    currentScope[element.name] = value[index];
                 }
                 else if (TypeGuard.isAssignmentExpression(element))
                 {
                     if (TypeGuard.isIdentifier(element.left))
                     {
-                        result[element.left.name] = coalesce(value[index], element.right.evaluate());
+                        currentScope[element.left.name] = coalesce(value[index], element.right.evaluate(scope, useCache));
                     }
                     else
                     {
@@ -122,37 +114,37 @@ export default class ArrowFunctionExpression extends BaseExpression
                 }
                 else if (TypeGuard.isArrayPattern(element))
                 {
-                    Object.assign(result, this.resolveArrayPattern(element, value));
+                    Object.assign(currentScope, this.resolveArrayPattern(element, value, scope, useCache));
                 }
                 else if (TypeGuard.isObjectPattern(element))
                 {
-                    Object.assign(result, this.resolveObjectPattern(element, value[index] as Indexer));
+                    Object.assign(currentScope, this.resolveObjectPattern(element, value[index] as Indexer, scope, useCache));
                 }
                 else if (TypeGuard.isRestElement(element))
                 {
-                    Object.assign(result, this.resolveRestElement(element, value));
+                    Object.assign(currentScope, this.resolveRestElement(element, value, scope, useCache));
                 }
             }
 
             index++;
         }
 
-        return result;
+        return currentScope;
     }
 
-    private resolveRestElement(restElement: IRestElement, value: unknown): Indexer
+    private resolveRestElement(restElement: IRestElement, value: unknown, scope: Indexer, useCache: boolean): Indexer
     {
-        const result: Indexer = { };
+        const currentScope: Indexer = { };
 
         if (TypeGuard.isIdentifier(restElement.argument))
         {
-            result[restElement.argument.name] = value;
+            currentScope[restElement.argument.name] = value;
         }
         else if (TypeGuard.isAssignmentExpression(restElement.argument))
         {
             if (TypeGuard.isIdentifier(restElement.argument.left))
             {
-                result[restElement.argument.left.name] = coalesce(value, restElement.argument.right.evaluate());
+                currentScope[restElement.argument.left.name] = coalesce(value, restElement.argument.right.evaluate(scope, useCache));
             }
             else
             {
@@ -161,23 +153,23 @@ export default class ArrowFunctionExpression extends BaseExpression
         }
         else if (TypeGuard.isArrayPattern(restElement.argument))
         {
-            Object.assign(result, this.resolveArrayPattern(restElement.argument, value as Array<unknown>));
+            Object.assign(currentScope, this.resolveArrayPattern(restElement.argument, value as Array<unknown>, scope, useCache));
         }
         else if (TypeGuard.isObjectPattern(restElement.argument))
         {
-            Object.assign(result, this.resolveObjectPattern(restElement.argument, value as Indexer));
+            Object.assign(currentScope, this.resolveObjectPattern(restElement.argument, value as Indexer, scope, useCache));
         }
         else if (TypeGuard.isRestElement(restElement.argument))
         {
-            Object.assign(result, this.resolveRestElement(restElement.argument, value));
+            Object.assign(currentScope, this.resolveRestElement(restElement.argument, value, scope, useCache));
         }
 
-        return result;
+        return currentScope;
     }
 
-    private resolveObjectPattern(objectPattern: IObjectPattern, value: Indexer): Indexer
+    private resolveObjectPattern(objectPattern: IObjectPattern, value: Indexer, scope: Indexer, useCache: boolean): Indexer
     {
-        const result: Indexer = { };
+        const currentScope: Indexer = { };
 
         for (const property of objectPattern.properties)
         {
@@ -187,67 +179,46 @@ export default class ArrowFunctionExpression extends BaseExpression
                 {
                     if (TypeGuard.isAssignmentExpression(property.value))
                     {
-                        result[`${property.value.left.evaluate()}`] = coalesce(value[`${property.value.left.evaluate()}`], property.value.right.evaluate());
+                        currentScope[`${property.value.left.evaluate(scope, useCache)}`] = coalesce(value[`${property.value.left.evaluate(scope, useCache)}`], property.value.right.evaluate(scope, useCache));
                     }
                     else
                     {
-                        result[`${property.value.evaluate()}`] = value[`${property.value.evaluate()}`];
+                        currentScope[`${property.value.evaluate(scope, useCache)}`] = value[`${property.value.evaluate(scope, useCache)}`];
                     }
                 }
                 else
                 {
                     if (TypeGuard.isAssignmentExpression(property.value))
                     {
-                        result[`${property.key.evaluate()}`] = coalesce(value[`${property.value.left.evaluate()}`], property.value.right.evaluate());
+                        currentScope[`${property.key.evaluate(scope, useCache)}`] = coalesce(value[`${property.value.left.evaluate(scope, useCache)}`], property.value.right.evaluate(scope, useCache));
                     }
                     else
                     {
-                        result[`${property.key.evaluate()}`] = value[`${property.value.evaluate()}`];
+                        currentScope[`${property.key.evaluate(scope, useCache)}`] = value[`${property.value.evaluate(scope, useCache)}`];
                     }
                 }
             }
             else
             {
-                Object.assign(result, this.resolveRestElement(property, value));
+                Object.assign(currentScope, this.resolveRestElement(property, value, scope, useCache));
             }
         }
 
-        return result;
+        return currentScope;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (!this._cache)
+        if (useCache && hasValue(this.cache))
         {
-            const fn = (...args: Array<unknown>) =>
-            {
-                const scope = this.resolveParameters(args);
-
-                const outterScope: Indexer = { ...this.scope };
-
-                Object.assign(this.scope, scope);
-
-                const value = this.body.evaluate();
-
-                for (const key of Object.keys(scope))
-                {
-                    if (!(key in outterScope))
-                    {
-                        delete this.scope[key];
-                    }
-                }
-
-                Object.assign(this.scope, outterScope);
-
-                return value;
-            };
-
-            fn.toString = () => this.toString();
-
-            this._cache = fn;
+            return this.cache;
         }
 
-        return this._cache;
+        const fn = (...args: Array<unknown>) => this.body.evaluate({ ...scope, ...this.resolveParameters(args, scope, useCache) }, useCache);
+
+        fn.toString = () => this.toString();
+
+        return this.cache = fn;
     }
 
     public toString(): string

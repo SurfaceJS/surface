@@ -1,9 +1,8 @@
 import ILiteral         from "../../interfaces/literal";
 import NodeType         from "../../node-type";
 import { LiteralValue } from "../../types";
-import BaseExpression   from "./abstracts/base-expression";
 
-export default class Literal extends BaseExpression implements ILiteral
+export default class Literal implements ILiteral
 {
     public get type(): NodeType
     {
@@ -23,8 +22,6 @@ export default class Literal extends BaseExpression implements ILiteral
 
     public constructor(value: LiteralValue)
     {
-        super();
-
         this._value = value;
     }
 

@@ -1,35 +1,25 @@
-import NodeType       from "../../node-type";
-import { ThisValue }  from "../../types";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
 
-export default class ThisExpression extends BaseExpression
+export default class ThisExpression implements IExpression
 {
-    private _scope: ThisValue;
-    public get scope(): ThisValue
-    {
-        return this._scope;
-    }
-
-    public set scope(value: ThisValue)
-    {
-        this._scope = value;
-    }
+    private cache: unknown;
 
     public get type(): NodeType
     {
         return NodeType.ThisExpression;
     }
 
-    public constructor(scope: ThisValue)
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        super();
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
 
-        this._scope = scope;
-    }
-
-    public evaluate(): unknown
-    {
-        return this._cache = this.scope.this;
+        return this.cache = scope["this"];
     }
 
     public toString(): string

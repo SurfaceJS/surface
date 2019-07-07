@@ -9,9 +9,9 @@ export default class ExpressionVisitorSpec
 {
     @shouldPass
     @batchTest(validVisitors, x => `(${x.raw}): visit ${x.value}`)
-    public visitsShouldWork(spec: { raw: string, value: string, context?: object }): void
+    public visitsShouldWork(spec: { raw: string, value: string }): void
     {
-        const expression = Expression.from(spec.raw, spec.context);
+        const expression = Expression.from(spec.raw);
         const visitor  = new FixtureVisitor();
 
         visitor.visit(expression);
@@ -25,6 +25,6 @@ export default class ExpressionVisitorSpec
         const visitor  = new FixtureVisitor();
         let expression = { cache: null, type: -1, evaluate: () => null };
 
-        expect(() => visitor.visit(expression).evaluate()).to.throw(Error, "Invalid node type");
+        expect(() => visitor.visit(expression)).to.throw(Error, "Invalid node type");
     }
 }

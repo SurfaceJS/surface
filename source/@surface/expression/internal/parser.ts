@@ -1,9 +1,9 @@
-import { Indexer, Nullable } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import INode                 from "../interfaces/node";
-import IPattern              from "../interfaces/pattern";
-import NodeType              from "../node-type";
-import SyntaxError           from "../syntax-error";
+import { Nullable } from "@surface/core";
+import IExpression  from "../interfaces/expression";
+import INode        from "../interfaces/node";
+import IPattern     from "../interfaces/pattern";
+import NodeType     from "../node-type";
+import SyntaxError  from "../syntax-error";
 import
 {
     AssignmentOperator,
@@ -11,7 +11,6 @@ import
     LiteralValue,
     LogicalOperator,
     PatternElement,
-    ThisValue,
     UnaryOperator,
     UpdateOperator,
 } from "../types";
@@ -42,26 +41,25 @@ import ObjectPattern           from "./patterns/object-pattern";
 import RestElement             from "./patterns/rest-element";
 import Scanner, { Token }      from "./scanner";
 import TokenType               from "./token-type";
+import TypeGuard               from "./type-guard";
 
 export default class Parser
 {
     private readonly scanner: Scanner;
-    private readonly scope:   Indexer;
 
     private invalidInitialization: Nullable<Token>;
     private lookahead:             Token;
 
-    private constructor(source: string, scope: Indexer)
+    private constructor(source: string)
     {
-        this.scope                 = scope;
         this.scanner               = new Scanner(source);
         this.lookahead             = this.scanner.nextToken();
         this.invalidInitialization = null;
     }
 
-    public static parse(source: string, context: object): IExpression
+    public static parse(source: string): IExpression
     {
-        return new Parser(source, context as Indexer).parseExpression();
+        return new Parser(source).parseExpression();
     }
 
     private argumentsExpression(): Array<IExpression|SpreadElement>
@@ -462,7 +460,7 @@ export default class Parser
 
                 const body = this.isolateGrammar(this.assignmentExpression);
 
-                return new ArrowFunctionExpression(this.scope, [], body);
+                return new ArrowFunctionExpression([], body);
             }
 
             throw this.unexpectedTokenError(this.lookahead);
@@ -516,7 +514,7 @@ export default class Parser
 
                 const body = this.inheritGrammar(this.assignmentExpression);
 
-                return new ArrowFunctionExpression(this.scope, parameters, body);
+                return new ArrowFunctionExpression(parameters, body);
 
             }
             else if (expressions.length > 1)
@@ -567,11 +565,9 @@ export default class Parser
                     return expression;
                 }
 
-                const context = expression instanceof Identifier ?
-                    new ThisExpression({ this: expression.scope })
-                    : parentExpression;
+                const thisArg = TypeGuard.isIdentifier(expression) ? new Literal(null) : parentExpression;
 
-                expression = new CallExpression(context, expression, this.isolateGrammar(this.argumentsExpression));
+                expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.argumentsExpression));
             }
             else
             {
@@ -682,7 +678,7 @@ export default class Parser
 
             if (!this.match(":"))
             {
-                return new Property(key, new Identifier(token.raw, true, this.scope), false, true);
+                return new Property(key, new Identifier(token.raw, true), false, true);
             }
         }
         else
@@ -821,7 +817,7 @@ export default class Parser
                 if (this.matchKeyword("this"))
                 {
                     this.nextToken();
-                    return new ThisExpression(this.scope as ThisValue);
+                    return new ThisExpression();
                 }
                 break;
             case TokenType.Identifier:
@@ -830,13 +826,13 @@ export default class Parser
                     return new Identifier(this.nextToken().raw, true);
                 }
 
-                const indentifier = new Identifier(this.nextToken().raw, true, this.scope);
+                const indentifier = new Identifier(this.nextToken().raw, true);
 
                 if (this.match("=>"))
                 {
                     this.expect("=>");
 
-                    return new ArrowFunctionExpression(this.scope, [indentifier], this.inheritGrammar(this.assignmentExpression));
+                    return new ArrowFunctionExpression([indentifier], this.inheritGrammar(this.assignmentExpression));
                 }
                 else
                 {

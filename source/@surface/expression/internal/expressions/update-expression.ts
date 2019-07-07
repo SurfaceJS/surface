@@ -1,8 +1,8 @@
-import { Func1 }          from "@surface/core";
-import IExpression        from "../../interfaces/expression";
-import NodeType           from "../../node-type";
-import { UpdateOperator } from "../../types";
-import BaseExpression     from "./abstracts/base-expression";
+import { Func1, Indexer, Nullable } from "@surface/core";
+import { hasValue }                 from "@surface/core/common/generic";
+import IExpression                  from "../../interfaces/expression";
+import NodeType                     from "../../node-type";
+import { UpdateOperator }           from "../../types";
 
 type Operators = "++*"|"--*"|"*++"|"*--";
 
@@ -14,9 +14,11 @@ const updateFunctions: Record<Operators, Func1<number, number>> =
     "*--": value => value--,
 };
 
-export default class UpdateExpression extends BaseExpression<number>
+export default class UpdateExpression implements IExpression
 {
     private readonly operation: Func1<number, number>;
+
+    private cache: Nullable<number>;
 
     private _argument: IExpression;
     public get argument(): IExpression
@@ -58,17 +60,20 @@ export default class UpdateExpression extends BaseExpression<number>
 
     public constructor(argument: IExpression, operator: UpdateOperator, prefix: boolean)
     {
-        super();
-
         this._argument = argument;
         this._prefix   = prefix;
         this._operator = operator;
         this.operation = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
     }
 
-    public evaluate(): number
+    public evaluate(scope: Indexer, useCache: boolean): number
     {
-        return this.operation(this.argument.evaluate() as number);
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.operation(this.argument.evaluate(scope, useCache) as number);
     }
 
     public toString(): string

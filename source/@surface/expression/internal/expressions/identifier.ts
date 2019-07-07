@@ -1,10 +1,13 @@
-import { Indexer }    from "@surface/core";
-import IPattern       from "../../interfaces/pattern";
-import NodeType       from "../../node-type";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import IPattern     from "../../interfaces/pattern";
+import NodeType     from "../../node-type";
 
-export default class Identifier extends BaseExpression implements IPattern
+export default class Identifier implements IExpression, IPattern
 {
+    private cache: unknown;
+
     private readonly _binded: boolean;
     public get binded(): boolean
     {
@@ -22,29 +25,25 @@ export default class Identifier extends BaseExpression implements IPattern
         this._name = value;
     }
 
-    private readonly _scope: Indexer;
-    public get scope(): Indexer
-    {
-        return this._scope;
-    }
-
     public get type(): NodeType
     {
         return NodeType.Identifier;
     }
 
-    public constructor(name: string, binded?: boolean, scope?: Indexer)
+    public constructor(name: string, binded?: boolean)
     {
-        super();
-
         this._name   = name;
         this._binded = !!binded;
-        this._scope  = scope || { };
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        return this._cache = this.binded ? this.scope[this.name] : this.name;
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.binded ? scope[this.name] : this.name;
     }
 
     public toString(): string

@@ -13,7 +13,6 @@ export type EqualityOperator      = "=="|"==="|"!="|"!==";
 export type LiteralValue          = boolean|null|number|RegExp|string;
 export type LogicalOperator       = "&&"|"||";
 export type RelationalOperator    = "<="|">="|"<"|">"|"in"|"instanceof";
-export type ThisValue             = { this?: Indexer };
 export type UnaryOperator         = "+"|"-"|"~"|"!"|"typeof";
 export type UpdateOperator        = "++"|"--";
 

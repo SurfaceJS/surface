@@ -1,11 +1,14 @@
+import { Indexer }    from "@surface/core";
+import { hasValue }   from "@surface/core/common/generic";
 import IExpression    from "../../interfaces/expression";
 import ISpreadElement from "../../interfaces/spread-element";
 import NodeType       from "../../node-type";
 import TypeGuard      from "../type-guard";
-import BaseExpression from "./abstracts/base-expression";
 
-export default class NewExpression extends BaseExpression
+export default class NewExpression implements IExpression
 {
+    private cache: unknown;
+
     private _arguments: Array<IExpression|ISpreadElement>;
     public get arguments(): Array<IExpression|ISpreadElement>
     {
@@ -35,23 +38,26 @@ export default class NewExpression extends BaseExpression
 
     public constructor(callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
     {
-        super();
-
         this._callee    = callee;
         this._arguments = $arguments;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        const fn = this.callee.evaluate() as Function;
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        const fn = this.callee.evaluate(scope, useChache) as Function;
 
         if (!fn)
         {
-            throw new ReferenceError(`${this.callee.toString()} is not defined`);
+            throw new ReferenceError(`${this.callee} is not defined`);
         }
         else if (typeof fn != "function")
         {
-            throw new TypeError(`${this.callee.toString()} is not a constructor`);
+            throw new TypeError(`${this.callee} is not a constructor`);
         }
 
         const $arguments: Array<unknown> = [];
@@ -60,15 +66,15 @@ export default class NewExpression extends BaseExpression
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate() as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate(scope, useChache) as Array<unknown>);
             }
             else
             {
-                $arguments.push(argument.evaluate());
+                $arguments.push(argument.evaluate(scope, useChache));
             }
         }
 
-        return this._cache = Reflect.construct(fn, $arguments, fn);
+        return this.cache = Reflect.construct(fn, $arguments, fn);
     }
 
     public toString(): string

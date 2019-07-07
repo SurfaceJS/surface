@@ -1,10 +1,13 @@
-import IExpression      from "../../interfaces/expression";
-import ITemplateElement from "../../interfaces/template-element";
-import NodeType         from "../../node-type";
-import BaseExpression   from "./abstracts/base-expression";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import IExpression           from "../../interfaces/expression";
+import ITemplateElement      from "../../interfaces/template-element";
+import NodeType              from "../../node-type";
 
-export default class TemplateLiteral extends BaseExpression<string>
+export default class TemplateLiteral implements IExpression
 {
+    private cache: Nullable<string>;
+
     private _expressions: Array<IExpression>;
     public get expressions(): Array<IExpression>
     {
@@ -34,22 +37,25 @@ export default class TemplateLiteral extends BaseExpression<string>
 
     public constructor(quasis: Array<ITemplateElement>, expressions: Array<IExpression>)
     {
-        super();
-
         this._expressions = expressions;
         this._quasis      = quasis;
     }
 
-    public evaluate(): string
+    public evaluate(scope: Indexer, useChache: boolean): string
     {
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
         let result = "";
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = this.quasis[i].cooked + `${this.expressions[i].evaluate()}`;
+            result = this.quasis[i].cooked + `${this.expressions[i].evaluate(scope, useChache)}`;
         }
 
-        return this._cache = result + this.quasis[this.quasis.length - 1].cooked;
+        return this.cache = result + this.quasis[this.quasis.length - 1].cooked;
     }
 
     public toString(): string

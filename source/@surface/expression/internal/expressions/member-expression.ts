@@ -1,11 +1,13 @@
-import { Indexer }    from "@surface/core";
-import IExpression    from "../../interfaces/expression";
-import NodeType       from "../../node-type";
-import TypeGuard      from "../type-guard";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
+import TypeGuard    from "../type-guard";
 
-export default class MemberExpression extends BaseExpression
+export default class MemberExpression implements IExpression
 {
+    private cache: unknown;
+
     private _computed: boolean;
     public get computed(): boolean
     {
@@ -46,16 +48,19 @@ export default class MemberExpression extends BaseExpression
 
     public constructor(object: IExpression, property: IExpression, computed: boolean)
     {
-        super();
-
         this._object   = object;
         this._property = property;
         this._computed = computed;
     }
 
-    public evaluate(): unknown
+    public evaluate(scope: Indexer, useChache: boolean): unknown
     {
-        return this._cache = (this.object.evaluate() as Indexer)[`${this.property.evaluate()}`];
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = (this.object.evaluate(scope, useChache) as Indexer)[`${this.property.evaluate(scope, useChache)}`];
     }
 
     public toString(): string

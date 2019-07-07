@@ -1,10 +1,9 @@
+import { Indexer } from "@surface/core";
 import Expression  from "../..";
 import IExpression from "../../interfaces/expression";
 import NodeType    from "../../node-type";
 
-export type ExpressionFactoryFixture = { factory: () => IExpression, type: NodeType, value: unknown };
-
-const scope = { };
+export type ExpressionFactoryFixture = { factory: () => IExpression, type: NodeType, value: unknown, scope?: Indexer };
 
 export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
 [
@@ -19,7 +18,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   false
     },
     {
-        factory: () => Expression.call(Expression.this(scope), Expression.arrowFunction(scope, [Expression.identifier("x")], Expression.identifier("x", true, scope)), [Expression.literal(2)]),
+        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x", true)), [Expression.literal(2)]),
         type:    NodeType.CallExpression,
         value:   2
     },
@@ -34,7 +33,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   1
     },
     {
-        factory: () => Expression.identifier("value", true, { value: 1 }),
+        factory: () => Expression.identifier("value", true),
         type:    NodeType.Identifier,
         value:   1
     },

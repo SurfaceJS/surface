@@ -1,20 +1,24 @@
-import { Func1 }         from "@surface/core";
-import IExpression       from "../../interfaces/expression";
-import NodeType          from "../../node-type";
-import { UnaryOperator } from "../../types";
-import BaseExpression    from "./abstracts/base-expression";
+import { Func1, Indexer, Nullable } from "@surface/core";
+import { hasValue }                 from "@surface/core/common/generic";
+import IExpression                  from "../../interfaces/expression";
+import NodeType                     from "../../node-type";
+import { UnaryOperator }            from "../../types";
 
-const unaryFunctions =
+type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
+
+const unaryFunctions: Record<UnaryOperator, Operation> =
 {
-    "+":      (value: IExpression) => +(value.evaluate() as Object),
-    "-":      (value: IExpression) => -(value.evaluate() as Object),
-    "~":      (value: IExpression) => ~(value.evaluate() as Object),
-    "!":      (value: IExpression) => !value.evaluate(),
-    "typeof": (value: IExpression) => typeof value.evaluate(),
+    "+":      (expression, scope, useCache) => +(expression.evaluate(scope, useCache) as Object),
+    "-":      (expression, scope, useCache) => -(expression.evaluate(scope, useCache) as Object),
+    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
+    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
+    "typeof": (expression, scope, useCache) => typeof expression.evaluate(scope, useCache),
 };
 
-export default class UnaryExpression extends BaseExpression<Object>
+export default class UnaryExpression implements IExpression
 {
+    private cache: Nullable<Object>;
+
     private _argument: IExpression;
     public get argument(): IExpression
     {
@@ -26,7 +30,7 @@ export default class UnaryExpression extends BaseExpression<Object>
         this._argument = value;
     }
 
-    private readonly operation: Func1<unknown, Object>;
+    private readonly operation: Operation;
 
     private _operator: UnaryOperator;
     public get operator(): UnaryOperator
@@ -46,16 +50,19 @@ export default class UnaryExpression extends BaseExpression<Object>
 
     public constructor(argument: IExpression, operator: UnaryOperator)
     {
-        super();
-
         this._operator = operator;
         this._argument = argument;
         this.operation = unaryFunctions[this.operator] as Func1<unknown, Object>;
     }
 
-    public evaluate(): Object
+    public evaluate(scope: Indexer, useChache: boolean): Object
     {
-        return this._cache = this.operation(this.argument);
+        if (useChache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.operation(this.argument, scope, useChache);
     }
 
     public toString(): string

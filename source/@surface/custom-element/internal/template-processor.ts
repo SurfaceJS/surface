@@ -4,9 +4,9 @@ import { coalesce, typeGuard }                                 from "@surface/co
 import { destruct, getKeyMember }                              from "@surface/core/common/object";
 import { dashedToCamel }                                       from "@surface/core/common/string";
 import Expression                                              from "@surface/expression";
-import ExpressionType                                          from "@surface/expression/expression-type";
 import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
 import IExpression                                             from "@surface/expression/interfaces/expression";
+import NodeType                                                from "@surface/expression/node-type";
 import Type                                                    from "@surface/reflection";
 import PropertyInfo                                            from "@surface/reflection/property-info";
 import ISubscription                                           from "../../reactive/interfaces/subscription";
@@ -77,15 +77,15 @@ export default class TemplateProcessor
         {
             if (this.expressions.databind.test(attribute.value))
             {
-                const context = this.createProxy({ this: element, ...this.context });
+                const scope = this.createProxy({ this: element, ...this.context });
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    const expression = BindParser.scan(context, attribute.value);
+                    const expression = BindParser.scan(scope, attribute.value);
 
-                    const action = expression.type == ExpressionType.Identifier || expression.type ==  ExpressionType.Member ?
-                        expression.evaluate() as Action
-                        : () => expression.evaluate();
+                    const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
+                        expression.evaluate(scope) as Action
+                        : () => expression.evaluate(scope);
 
                     element.addEventListener(attribute.name.replace(/^on-/, ""), action);
                     attribute.value = `[binding ${action.name || "expression"}]`;
@@ -98,7 +98,7 @@ export default class TemplateProcessor
                     }
                     else if (attribute.name == "scope")
                     {
-                        context[attribute.value] = (element.assignedSlot! as Indexer).scope;
+                        scope[attribute.value] = (element.assignedSlot! as Indexer).scope;
                     }
 
                     const isOneWay         = this.expressions.oneWay.test(attribute.value);
@@ -113,7 +113,7 @@ export default class TemplateProcessor
                     {
                         const match = this.expressions.path.exec(attribute.value);
 
-                        const target = context;
+                        const target = scope;
                         const path   = match![1];
 
                         const [key, member] = getKeyMember(target, path);
@@ -139,13 +139,13 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const expression = BindParser.scan(context, attribute.value);
+                        const expression = BindParser.scan(scope, attribute.value);
 
                         const notify = () =>
                         {
                             const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
-                                expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
-                                expression.evaluate();
+                                expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
+                                expression.evaluate(scope);
 
                             if (canWrite)
                             {
@@ -171,21 +171,21 @@ export default class TemplateProcessor
     {
         if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
         {
-            const context = this.createProxy({ this: element.parentElement, ...this.context });
+            const scope = this.createProxy({ this: element.parentElement, ...this.context });
 
             const match = this.expressions.path.exec(element.nodeValue);
 
             if (match)
             {
-                DataBind.oneWay(context, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
+                DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
             }
             else
             {
-                const expression = BindParser.scan(context, element.nodeValue);
+                const expression = BindParser.scan(scope, element.nodeValue);
 
                 const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
-                    () => element.nodeValue = `${expression.evaluate().reduce((previous, current) => `${previous}${current}`)}` :
-                    () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
+                    () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
+                    () => element.nodeValue = `${coalesce(expression.evaluate(scope), "")}`;
 
                 const visitor = new ObserverVisitor({ notify });
                 visitor.observe(expression);
@@ -376,7 +376,7 @@ export default class TemplateProcessor
 
                 for (const [expression, template] of expressions)
                 {
-                    if (expression.evaluate())
+                    if (expression.evaluate(context))
                     {
                         const content = template.content.cloneNode(true) as Element;
 
