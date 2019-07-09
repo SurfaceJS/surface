@@ -17,4 +17,3 @@ export type UnaryOperator         = "+"|"-"|"~"|"!"|"typeof";
 export type UpdateOperator        = "++"|"--";
 
 export type BinaryOperator = ArithmeticOperator|BinaryBitwiseOperator|BitwiseShiftOperator|EqualityOperator|RelationalOperator;
-export type PatternElement = IArrayPattern|IAssignmentPattern|IIdentifier|IObjectPattern|IRestElement;

@@ -10,7 +10,6 @@ import
     BinaryOperator,
     LiteralValue,
     LogicalOperator,
-    PatternElement,
     UnaryOperator,
     UpdateOperator,
 } from "../types";
@@ -405,6 +404,25 @@ export default class Parser
     {
         const expression = this.isolateGrammar(this.assignmentExpression);
 
+        if (this.match(","))
+        {
+            const expressions = [expression];
+
+            while (this.match(","))
+            {
+                this.expect(",");
+
+                expressions.push(this.isolateGrammar(this.assignmentExpression));
+            }
+
+            if (this.lookahead.type != TokenType.EOF)
+            {
+                throw this.unexpectedTokenError(this.lookahead);
+            }
+
+            return new SequenceExpression(expressions);
+        }
+
         if (this.lookahead.type != TokenType.EOF)
         {
             throw this.unexpectedTokenError(this.lookahead);
@@ -508,7 +526,7 @@ export default class Parser
             {
                 this.invalidInitialization = null;
 
-                const parameters = expressions.map(x => this.reinterpretPattern(x) as PatternElement);
+                const parameters = expressions.map(x => this.reinterpretPattern(x));
 
                 this.expect("=>");
 

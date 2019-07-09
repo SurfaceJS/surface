@@ -12,6 +12,7 @@ import LogicalExpression                  from "../../internal/expressions/logic
 import MemberExpression                   from "../../internal/expressions/member-expression";
 import NewExpression                      from "../../internal/expressions/new-expression";
 import ObjectExpression                   from "../../internal/expressions/object-expression";
+import SequenceExpression                 from "../../internal/expressions/sequence-expression";
 import TemplateLiteral                    from "../../internal/expressions/template-literal";
 import ThisExpression                     from "../../internal/expressions/this-expression";
 import UnaryExpression                    from "../../internal/expressions/unary-expression";
@@ -35,7 +36,7 @@ export type InvalidExpressionFixtureSpec =
     raw:     string,
 };
 
-const context =
+const scope =
 {
     this:
     {
@@ -48,6 +49,10 @@ const context =
         increment: (value: number) => ++value,
         getObject: () => ({ value: "Hello World!!!" }),
         getValue:  () => 42
+    },
+    getScope()
+    {
+        return this;
     },
     MyClass: class MyClass
     {
@@ -75,21 +80,21 @@ const context =
 export const validExpressions: Array<ExpressionFixtureSpec> =
 [
     {
-        scope:    context,
+        scope:    scope,
         raw:      "[]",
         value:    [],
         toString: "[]",
         type:     ArrayExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "[, 1, 2, , 3, ,]",
         value:    [undefined, 1, 2, undefined, 3, undefined,],
         toString: "[undefined, 1, 2, undefined, 3, undefined]",
         type:     ArrayExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "[1, 'foo', true, { foo: 'bar' }]",
         value:    [1, "foo", true, { foo: "bar" }],
         toString: "[1, \"foo\", true, { foo: \"bar\" }]",
@@ -110,266 +115,287 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     ArrayExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "() => undefined",
         value:    () => undefined,
         toString: "() => undefined",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "a => a++",
         value:    (a: number) => a++,
         toString: "(a) => a++",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a) => a++",
         value:    (a: number) => a++,
         toString: "(a) => a++",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a = 1) => a++",
         value:    (a: number = 1) => a++,
         toString: "(a = 1) => a++",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a, b) => a + b",
         value:    (a: number, b: number) => a + b,
         toString: "(a, b) => a + b",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "([a]) => a",
         value:    ([a]: Array<string>) => a,
         toString: "([a]) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "([a = 1]) => a",
         value:    ([a = 1]: Array<number>) => a,
         toString: "([a = 1]) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a, [b, c]) => a + b + c",
         value:    (a: number, [b, c]: Array<number>) => a + b + c,
         toString: "(a, [b, c]) => a + b + c",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a, [b, [c]]) => a + b + c",
         value:    (a: number, [b, [c]]: [number, Array<number>]) => a + b + c,
         toString: "(a, [b, [c]]) => a + b + c",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(...a) => a",
         value:    (...a: Array<number>) => a,
         toString: "(...a) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(...[a]) => a",
         value:    (...[a]: Array<number>) => a,
         toString: "(...[a]) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(...[a, ...b]) => a + b[0]",
         value:    (...[a, ...b]: Array<number>) => a + b[0],
         toString: "(...[a, ...b]) => a + b[0]",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "({ a }) => a",
         value:    ({ a }: { a: string }) => a,
         toString: "({ a }) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "({ a = 1 }) => a",
         value:    ({ a = 1 }: { a: number }) => a,
         toString: "({ a = 1 }) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "({ a: b }) => b",
         value:    ({ a: b }: { a: number }) => b,
         toString: "({ a: b }) => b",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a, { b, x: { c } }) => a + b + c",
         value:    (a: number, { b, x: { c } }: { b: number, x: { c: number } }) => a + b + c,
         toString: "(a, { b, x: { c } }) => a + b + c",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(a, { b, x: { ...c } }) => [a, b, c]",
         value:    (a: number, { b, x: { ...c } }: { b: number, x: { c: number } }) => [a, b, c],
         toString: "(a, { b, x: { ...c } }) => [a, b, c]",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(...{ a }) => a",
         value:    (...{ a }: { a: number }) => a,
         toString: "(...{ a }) => a",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(...{ a, x: { b } }) => a + b",
         value:    (...{ a, x: { b } }: { a: number, x: { b: number } }) => a + b,
         toString: "(...{ a, x: { b } }) => a + b",
         type:     ArrowFunctionExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value = 0",
         value:    0,
         toString: "this.value = 0",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value = this.value1 += 2",
         value:    2,
         toString: "this.value = this.value1 += 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value *= 2",
         value:    4,
         toString: "this.value *= 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value **= 2",
         value:    16,
         toString: "this.value **= 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value /= 2",
         value:    8,
         toString: "this.value /= 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value %= 2",
         value:    0,
         toString: "this.value %= 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value += 2",
         value:    2,
         toString: "this.value += 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value -= 1",
         value:    1,
         toString: "this.value -= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value <<= 2",
         value:    4,
         toString: "this.value <<= 2",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value >>= 1",
         value:    2,
         toString: "this.value >>= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value >>>= 1",
         value:    1,
         toString: "this.value >>>= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value &= 1",
         value:    1,
         toString: "this.value &= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value ^= 1",
         value:    0,
         toString: "this.value ^= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.value |= 1",
         value:    1,
         toString: "this.value |= 1",
         type:     AssignmentExpression
     },
     {
-        scope:    context,
+        scope:    { x: 1, y: 2 },
+        raw:      "x = y++",
+        value:    2,
+        toString: "x = y++",
+        type:     AssignmentExpression
+    },
+    {
+        scope:    { x: 1, y: 2 },
+        raw:      "x = ++y",
+        value:    3,
+        toString: "x = ++y",
+        type:     AssignmentExpression
+    },
+    {
+        scope:    { x: 1, y: 2 },
+        raw:      "x += (x++, x + y)",
+        value:    6,
+        toString: "x += (x++, x + y)",
+        type:     AssignmentExpression
+    },
+    {
+        scope:    scope,
         raw:      "1 + 1",
         value:    2,
         toString: "1 + 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 - 1",
         value:    0,
         toString: "1 - 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "2 * 2",
         value:    4,
         toString: "2 * 2",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "4 / 2",
         value:    2,
         toString: "4 / 2",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "10 % 3",
         value:    1,
         toString: "10 % 3",
@@ -383,175 +409,182 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 == 1",
         value:    true,
         toString: "1 == 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 === 1",
         value:    true,
         toString: "1 === 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 != 1",
         value:    false,
         toString: "1 != 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 !== 1",
         value:    false,
         toString: "1 !== 1",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "({ }) instanceof { }.constructor",
         value:    true,
         toString: "({ }) instanceof { }.constructor",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 <= 0",
         value:    false,
         toString: "1 <= 0",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 >= 0",
         value:    true,
         toString: "1 >= 0",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 > 0",
         value:    true,
         toString: "1 > 0",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 < 0",
         value:    false,
         toString: "1 < 0",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 & 2",
         value:    0,
         toString: "1 & 2",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 | 2",
         value:    3,
         toString: "1 | 2",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 ^ 2",
         value:    3,
         toString: "1 ^ 2",
         type:     BinaryExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "2 ** 2",
         value:    4,
         toString: "2 ** 2",
         type:     BinaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "0b1000 << 2",
         value:    0b100000,
         toString: "8 << 2",
         type:     BinaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "0b1000 >> 2",
         value:    0b10,
         toString: "8 >> 2",
         type:     BinaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "0b1000 >>> 2",
         value:    0b10,
         toString: "8 >>> 2",
         type:     BinaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 + 1 * 2 / 2",
         value:    2,
         toString: "1 + 1 * 2 / 2",
         type:     BinaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "noop(true)",
         value:    true,
         toString: "noop(true)",
         type:     CallExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
+        raw:      "getScope()",
+        value:    null,
+        toString: "getScope()",
+        type:     CallExpression,
+    },
+    {
+        scope:    scope,
         raw:      "this.getValue()",
         value:    42,
         toString: "this.getValue()",
         type:     CallExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.increment(1)",
         value:    2,
         toString: "this.increment(1)",
         type:     CallExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.greater(1, 2)",
         value:    false,
         toString: "this.greater(1, 2)",
         type:     CallExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.greater(...[1, 2],)",
         value:    false,
         toString: "this.greater(...[1, 2])",
         type:     CallExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "/test/.test(\"test\")",
         value:    true,
         toString: "/test/.test(\"test\")",
         type:     CallExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "/test/i.test(\"TEST\")",
         value:    true,
         toString: "/test/i.test(\"TEST\")",
         type:     CallExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "(true ? this.greater : this.lesser)(1, 2)",
         value:    false,
         toString: "(true ? this.greater : this.lesser)(1, 2)",
@@ -565,7 +598,7 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
-        scope:    { ...context, factory: () => [2, true]},
+        scope:    { ...scope, factory: () => [2, true]},
         raw:      "new MyClass(...factory()).getId()",
         value:    2,
         toString: "new MyClass(...factory()).getId()",
@@ -628,112 +661,105 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
         toString: "1 > 2 ? \"greater\" : \"smaller\"",
         type:     ConditionalExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "2 > 1 ? \"greater\" : \"smaller\"",
         value:    "greater",
         toString: "2 > 1 ? \"greater\" : \"smaller\"",
         type:     ConditionalExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "undefined",
         value:    undefined,
         toString: "undefined",
         type:     Identifier,
     },
     {
-        scope:    { this: { id: 1 } },
-        raw:      "this",
-        value:    { id: 1 },
-        toString: "this",
-        type:     ThisExpression,
-    },
-    {
-        scope:    context,
+        scope:    scope,
         raw:      "1",
         value:    1,
         toString: "1",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "\"double quotes\"",
         value:    "double quotes",
         toString: "\"double quotes\"",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "'single quotes'",
         value:    "single quotes",
         toString: "\"single quotes\"",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "true",
         value:    true,
         toString: "true",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "false",
         value:    false,
         toString: "false",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "null",
         value:    null,
         toString: "null",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "/test/",
         value:    /test/,
         toString: "/test/",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "/test/gi",
         value:    /test/gi,
         toString: "/test/gi",
         type:     Literal,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "true && false",
         value:    false,
         toString: "true && false",
         type:     LogicalExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "true || false",
         value:    true,
         toString: "true || false",
         type:     LogicalExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "false || true",
         value:    true,
         toString: "false || true",
         type:     LogicalExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.new",
         value:    "new",
         toString: "this.new",
@@ -747,77 +773,77 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     MemberExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.increment",
-        value:    context.this.increment,
+        value:    scope.this.increment,
         toString: "this.increment",
         type:     MemberExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this['increment']",
-        value:    context.this.increment,
+        value:    scope.this.increment,
         toString: "this[\"increment\"]",
         type:     MemberExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "this.getObject().value",
         value:    "Hello World!!!",
         toString: "this.getObject().value",
         type:     MemberExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "new MyClass",
         value:    { id: 0, active: false },
         toString: "new MyClass()",
         type:     NewExpression,
     },
     {
-        scope:    { ...context, factory: () => [1, true]},
+        scope:    { ...scope, factory: () => [1, true]},
         raw:      "new MyClass(...factory())",
         value:    { id: 1, active: true },
         toString: "new MyClass(...factory())",
         type:     NewExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "{ }",
         value:    { },
         toString: "{ }",
         type:     ObjectExpression,
     },
     {
-        scope: context,
+        scope: scope,
         raw:      "{ 1: 1 }",
         value:    { 1: 1 },
         toString: "{ 1: 1 }",
         type:     ObjectExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "{ new: 1 }",
         value:    { new: 1 },
         toString: "{ new: 1 }",
         type:     ObjectExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "{ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 }",
         value:    { foo: 1, bar: [1, 2, 3], [{id: 1}.id]: 1 },
         toString: "{ foo: 1, bar: [1, ...[2, 3]], [{ id: 1 }.id]: 1 }",
         type:     ObjectExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "{ foo: 'bar', ...{ id: 2, value: 3 } }",
         value:    { foo: "bar", id: 2, value: 3 },
         toString: "{ foo: \"bar\", ...{ id: 2, value: 3 } }",
         type:     ObjectExpression,
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "{ foo: 'bar', ...[1, 2] }",
         value:    { 0: 1, 1: 2, foo: "bar" },
         toString: "{ foo: \"bar\", ...[1, 2] }",
@@ -845,42 +871,63 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     ObjectExpression,
     },
     {
-        scope:    context,
+        scope:    { x: 1, y: 2 },
+        raw:      "x++, y + x",
+        value:    4,
+        toString: "(x++, y + x)",
+        type:     SequenceExpression,
+    },
+    {
+        scope:    { x: 1, y: 2 },
+        raw:      "(x++, y + x)",
+        value:    4,
+        toString: "(x++, y + x)",
+        type:     SequenceExpression,
+    },
+    {
+        scope:    scope,
         raw:      "`The id is: ${this.id}`",
         value:    "The id is: 1",
         toString: "`The id is: ${this.id}`",
         type:     TemplateLiteral
     },
     {
-        scope:    context,
+        scope:    { this: { id: 1 } },
+        raw:      "this",
+        value:    { id: 1 },
+        toString: "this",
+        type:     ThisExpression,
+    },
+    {
+        scope:    scope,
         raw:      "+1",
         value:    1,
         toString: "+1",
         type:     UnaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "-1",
         value:    -1,
         toString: "-1",
         type:     UnaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "~1",
         value:    -2,
         toString: "~1",
         type:     UnaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "!true",
         value:    false,
         toString: "!true",
         type:     UnaryExpression
     },
     {
-        scope:    context,
+        scope:    scope,
         raw:      "typeof 1",
         value:    "number",
         toString: "typeof 1",
@@ -933,112 +980,112 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
 export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
     {
-        context: context,
+        context: scope,
         raw:     "this.''",
         error:   new SyntaxError(Messages.unexpectedString, 1, 5, 6)
     },
     {
-        context: context,
+        context: scope,
         raw:     "this.1",
         error:   new SyntaxError(Messages.unexpectedNumber, 1, 4, 5)
     },
     {
-        context: context,
+        context: scope,
         raw:     ".",
         error:   new SyntaxError(Messages.unexpectedToken + " .", 1, 0, 1)
     },
     {
-        context: context,
+        context: scope,
         raw:     "if",
         error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 0, 1)
     },
     {
-        context: context,
+        context: scope,
         raw:     "this.?",
         error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 5, 6)
     },
     {
-        context: context,
+        context: scope,
         raw:     "this if",
         error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 5, 6)
     },
     {
-        context: context,
+        context: scope,
         raw:     "{ (foo) }",
         error:   new SyntaxError(Messages.unexpectedToken + " (", 1, 2, 3)
     },
     {
-        context: context,
+        context: scope,
         raw:     "{ new }",
         error:   new SyntaxError(Messages.unexpectedToken + " }", 1, 6, 7)
     },
     {
-        context: context,
+        context: scope,
         raw:     "1 + if",
         error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 4, 5)
     },
     {
-        context: context,
+        context: scope,
         raw:     "[ ? ]",
         error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 2, 3)
     },
     {
-        context: context,
+        context: scope,
         raw:     "",
         error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 0, 1)
     },
     {
-        context: context,
+        context: scope,
         raw:     "1 < 2 ? true .",
         error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 14, 15)
     },
     {
-        context: context,
+        context: scope,
         raw:     "(x.y = 1) => 1",
         error:   new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 10, 11)
     },
     {
-        context: context,
+        context: scope,
         raw:     "({ x = 1 })",
         error:   new SyntaxError(Messages.unexpectedToken + " =", 1, 5, 6)
     },
     {
-        context: context,
+        context: scope,
         raw:     "([x.y]) => 1",
         error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 8, 9)
     },
     {
-        context: context,
+        context: scope,
         raw:     "({ x: 1 }) => 1",
         error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 11, 12)
     },
     {
-        context: context,
+        context: scope,
         raw:     "([{ x: 1 }]) => 1",
         error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 13, 14)
     },
     {
-        context: context,
+        context: scope,
         raw:     "(...{ a, { b }}) => a + b",
         error:   new SyntaxError(Messages.unexpectedToken + " {", 1, 9, 10)
     },
     {
-        context: context,
+        context: scope,
         raw:     "(a, { b, x: { c: 1 } }) => a + b + c",
         error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 24, 25)
     },
     {
-        context: context,
+        context: scope,
         raw:     "(...{ a, ...{ b } }) => a",
         error:   new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 18, 19)
     },
     {
-        context: context,
+        context: scope,
         raw:     "(...a = []) => a",
         error:   new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 10, 11)
     },
     {
-        context: context,
+        context: scope,
         raw:     "([x, ...y = []]) => y",
         error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 17, 18)
     },

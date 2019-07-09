@@ -1,22 +1,24 @@
-import { Func1, Indexer, Nullable } from "@surface/core";
-import { hasValue }                 from "@surface/core/common/generic";
-import IExpression                  from "../../interfaces/expression";
-import NodeType                     from "../../node-type";
-import { UpdateOperator }           from "../../types";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import IExpression           from "../../interfaces/expression";
+import NodeType              from "../../node-type";
+import { UpdateOperator }    from "../../types";
+import TypeGuard             from "../type-guard";
 
+type Operation = (object: Record<string, number>, key: string) => number;
 type Operators = "++*"|"--*"|"*++"|"*--";
 
-const updateFunctions: Record<Operators, Func1<number, number>> =
+const updateFunctions: Record<Operators, Operation> =
 {
-    "++*": value => ++value,
-    "--*": value => --value,
-    "*++": value => value++,
-    "*--": value => value--,
+    "++*": (object, property) => ++object[property],
+    "--*": (object, property) => --object[property],
+    "*++": (object, property) => object[property]++,
+    "*--": (object, property) => object[property]--,
 };
 
 export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Func1<number, number>;
+    private readonly operation: Operation;
 
     private cache: Nullable<number>;
 
@@ -73,7 +75,19 @@ export default class UpdateExpression implements IExpression
             return this.cache;
         }
 
-        return this.cache = this.operation(this.argument.evaluate(scope, useCache) as number);
+        /* istanbul ignore else  */
+        if (TypeGuard.isIdentifier(this.argument))
+        {
+            return this.cache = this.operation(scope as Record<string, number>, this.argument.name);
+        }
+        else if (TypeGuard.isMemberExpression(this.argument))
+        {
+            return this.cache = this.operation(this.argument.object.evaluate(scope, useCache) as Record<string, number>, this.argument.property.evaluate(scope, useCache) as string);
+        }
+        else
+        {
+            throw new TypeError("Invalid argument expression");
+        }
     }
 
     public toString(): string

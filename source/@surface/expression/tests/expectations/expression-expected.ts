@@ -35,7 +35,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
     {
         factory: () => Expression.identifier("value", true),
         type:    NodeType.Identifier,
-        value:   1
+        value:   undefined
     },
     {
         factory: () => Expression.member(Expression.object([Expression.property(Expression.literal("value"), Expression.literal(1))]), Expression.literal("value"), false),
