@@ -61,15 +61,7 @@ export default class CallExpression implements IExpression
             return this.cache;
         }
 
-        let thisArg = TypeGuard.isArrowFunctionExpression(this.thisArg) || (TypeGuard.isLiteral(this.thisArg) && this.thisArg.value == null) ?
-            scope :
-            this.thisArg.evaluate(scope, useChache) as Indexer;
-
-        let fn = TypeGuard.isIdentifier(this.callee) ?
-            thisArg[this.callee.name] as Nullable<Function>
-            : TypeGuard.isMemberExpression(this.callee) ?
-                thisArg[this.callee.property.evaluate(scope, useChache) as string|number] as Nullable<Function>
-                : this.callee.evaluate(scope, useChache)  as Nullable<Function>;
+        const fn = this.callee.evaluate(scope, useChache) as Nullable<Function>;
 
         if (!fn)
         {
@@ -94,7 +86,7 @@ export default class CallExpression implements IExpression
             }
         }
 
-        return this.cache = fn.apply(thisArg, $arguments);
+        return this.cache = fn.apply(this.thisArg.evaluate(scope, (TypeGuard.isMemberExpression(this.callee) && this.callee.object == this.thisArg) || useChache), $arguments);
     }
 
     public toString(): string

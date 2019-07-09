@@ -565,7 +565,7 @@ export default class Parser
                     return expression;
                 }
 
-                const thisArg = TypeGuard.isIdentifier(expression) ? new Literal(null) : parentExpression;
+                const thisArg = TypeGuard.isIdentifier(parentExpression) ? new Literal(null) : parentExpression;
 
                 expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.argumentsExpression));
             }
