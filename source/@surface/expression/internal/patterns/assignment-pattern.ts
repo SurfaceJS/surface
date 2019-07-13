@@ -12,7 +12,7 @@ export default class AssignmentPattern implements IPattern
         return this._left;
     }
 
-    public get right(): IPattern
+    public get right(): IExpression
     {
         return this._right;
     }

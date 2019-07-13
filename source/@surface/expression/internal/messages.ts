@@ -1,5 +1,7 @@
 export default class Messages
 {
+    public static readonly duplicateParameterNameNotAllowedInThisContext                 = "Duplicate parameter name not allowed in this context";
+    public static readonly identifierIsNotDefined                                        = "${identifier} is not defined";
     public static readonly illegalPropertyInDeclarationContext                           = "Illegal property in declaration context";
     public static readonly invalidDestructuringAssignmentTarget                          = "Invalid destructuring assignment target";
     public static readonly invalidHexadecimalEscapeSequence                              = "Invalid hexadecimal escape sequence";
@@ -14,7 +16,7 @@ export default class Messages
     public static readonly unexpectedIdentifier                                          = "Unexpected identifier";
     public static readonly unexpectedNumber                                              = "Unexpected number";
     public static readonly unexpectedString                                              = "Unexpected string";
-    public static readonly unexpectedToken                                               = "Unexpected token";
+    public static readonly unexpectedToken                                               = "Unexpected token ${token}";
     public static readonly unexpectedTokenIllegal                                        = "Unexpected token ILLEGAL";
 
 

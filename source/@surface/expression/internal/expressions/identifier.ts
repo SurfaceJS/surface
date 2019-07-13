@@ -1,8 +1,10 @@
 import { Indexer }  from "@surface/core";
 import { hasValue } from "@surface/core/common/generic";
+import { format }   from "@surface/core/common/string";
 import IExpression  from "../../interfaces/expression";
 import IPattern     from "../../interfaces/pattern";
 import NodeType     from "../../node-type";
+import Messages     from "../messages";
 
 export default class Identifier implements IExpression, IPattern
 {
@@ -43,7 +45,22 @@ export default class Identifier implements IExpression, IPattern
             return this.cache;
         }
 
-        return this.cache = this.binded ? scope[this.name] : this.name;
+        if (this.binded)
+        {
+            if (this.name == "undefined")
+            {
+                return undefined;
+            }
+
+            if (!(this.name in scope))
+            {
+                throw new Error(format(Messages.identifierIsNotDefined, { identifier: this.name }));
+            }
+
+            return this.cache = this.binded ? scope[this.name] : this.name;
+        }
+
+        return this.cache = this.name;
     }
 
     public toString(): string

@@ -60,7 +60,7 @@ export default abstract class ExpressionVisitor
         }
         else if (TypeGuard.isIdentifier(node))
         {
-            return this.visitIdentifierExpression(node);
+            return this.visitIdentifier(node);
         }
         else if (TypeGuard.isLiteral(node))
         {
@@ -204,7 +204,7 @@ export default abstract class ExpressionVisitor
         return node;
     }
 
-    protected visitIdentifierExpression(node: IIdentifier): INode
+    protected visitIdentifier(node: IIdentifier): INode
     {
         return node;
     }

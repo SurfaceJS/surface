@@ -1,4 +1,5 @@
 import { Nullable } from "@surface/core";
+import { format }   from "@surface/core/common/string";
 import IExpression  from "../interfaces/expression";
 import INode        from "../interfaces/node";
 import IPattern     from "../interfaces/pattern";
@@ -13,6 +14,7 @@ import
     UnaryOperator,
     UpdateOperator,
 } from "../types";
+import { hasDuplicated } from "./common";
 import Property                from "./elements/property";
 import SpreadElement           from "./elements/spread-element";
 import TemplateElement         from "./elements/template-element";
@@ -526,11 +528,16 @@ export default class Parser
             {
                 this.invalidInitialization = null;
 
-                const parameters = expressions.map(x => this.reinterpretPattern(x));
+                const parameters = expressions.map(x => this.reinterpretPattern(x) as IPattern);
 
                 this.expect("=>");
 
                 const body = this.inheritGrammar(this.assignmentExpression);
+
+                if (hasDuplicated(parameters))
+                {
+                    throw this.syntaxError(Messages.duplicateParameterNameNotAllowedInThisContext);
+                }
 
                 return new ArrowFunctionExpression(parameters, body);
 
@@ -922,7 +929,11 @@ export default class Parser
             {
                 const expression = node as Property;
 
-                if (!expression.shorthand && expression.value.type != NodeType.Identifier && expression.value.type != NodeType.ObjectExpression)
+                if (expression.shorthand && TypeGuard.isIdentifier(expression.value))
+                {
+                    return new Property(new Identifier(expression.value.name), new Identifier(expression.value.name), false, true);
+                }
+                else if (!expression.shorthand && expression.value.type != NodeType.Identifier && expression.value.type != NodeType.ObjectExpression)
                 {
                     break;
                 }
@@ -1113,7 +1124,7 @@ export default class Parser
                 message = Messages.unexpectedEndOfExpression;
                 break;
             default:
-                message = `${Messages.unexpectedToken} ${token.raw}`;
+                message = format(Messages.unexpectedToken, { token: token.raw });
                 break;
         }
 

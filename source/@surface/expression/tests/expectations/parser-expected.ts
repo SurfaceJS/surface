@@ -1,4 +1,5 @@
 import { Constructor, Indexer, Nullable } from "@surface/core";
+import { format }                         from "@surface/core/common/string";
 import IExpression                        from "../../interfaces/expression";
 import ArrayExpression                    from "../../internal/expressions/array-expression";
 import ArrowFunctionExpression            from "../../internal/expressions/arrow-function-expression";
@@ -31,7 +32,7 @@ export type ExpressionFixtureSpec =
 
 export type InvalidExpressionFixtureSpec =
 {
-    context: Object,
+    scope: Object,
     error:   Error,
     raw:     string,
 };
@@ -661,6 +662,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
+        scope:    { },
+        raw:      "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
+        value:    [1, 2],
+        toString: "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
+        type:     CallExpression
+    },
+    {
         scope:    scope,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
@@ -815,7 +823,7 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     ObjectExpression,
     },
     {
-        scope: scope,
+        scope:   scope,
         raw:      "{ 1: 1 }",
         value:    { 1: 1 },
         toString: "{ 1: 1 }",
@@ -980,113 +988,143 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
 export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
     {
-        context: scope,
+        scope:   scope,
         raw:     "this.''",
         error:   new SyntaxError(Messages.unexpectedString, 1, 5, 6)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "this.1",
         error:   new SyntaxError(Messages.unexpectedNumber, 1, 4, 5)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     ".",
-        error:   new SyntaxError(Messages.unexpectedToken + " .", 1, 0, 1)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "." }), 1, 0, 1)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "if",
-        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 0, 1)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 0, 1)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "this.?",
-        error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 5, 6)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 5, 6)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "this if",
-        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 5, 6)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 5, 6)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "{ (foo) }",
-        error:   new SyntaxError(Messages.unexpectedToken + " (", 1, 2, 3)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "(" }), 1, 2, 3)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "{ new }",
-        error:   new SyntaxError(Messages.unexpectedToken + " }", 1, 6, 7)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "}" }), 1, 6, 7)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "1 + if",
-        error:   new SyntaxError(Messages.unexpectedToken + " if", 1, 4, 5)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 4, 5)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "[ ? ]",
-        error:   new SyntaxError(Messages.unexpectedToken + " ?", 1, 2, 3)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 2, 3)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "",
         error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 0, 1)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "1 < 2 ? true .",
         error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 14, 15)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "(x.y = 1) => 1",
         error:   new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 10, 11)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "({ x = 1 })",
-        error:   new SyntaxError(Messages.unexpectedToken + " =", 1, 5, 6)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 5, 6)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "([x.y]) => 1",
-        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 8, 9)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 8, 9)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "({ x: 1 }) => 1",
-        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 11, 12)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 11, 12)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "([{ x: 1 }]) => 1",
-        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 13, 14)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 13, 14)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "(...{ a, { b }}) => a + b",
-        error:   new SyntaxError(Messages.unexpectedToken + " {", 1, 9, 10)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 9, 10)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "(a, { b, x: { c: 1 } }) => a + b + c",
-        error:   new SyntaxError(Messages.unexpectedToken + " =>", 1, 24, 25)
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 24, 25)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "(...{ a, ...{ b } }) => a",
         error:   new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 18, 19)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "(...a = []) => a",
         error:   new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 10, 11)
     },
     {
-        context: scope,
+        scope:   scope,
         raw:     "([x, ...y = []]) => y",
         error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 17, 18)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, a) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 11, 12)
+    },
+    {
+        scope:   scope,
+        raw:     "(...[a, a]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 16, 17)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [a]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 13, 14)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [b, { b }]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 20, 21)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [b, { x: b }]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 23, 24)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [b, { x: { b } }]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 27, 28)
     },
 ];

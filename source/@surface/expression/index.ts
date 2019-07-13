@@ -20,6 +20,7 @@ import ITemplateLiteral         from "./interfaces/template-literal";
 import IThisExpression          from "./interfaces/this-expression";
 import IUnaryExpression         from "./interfaces/unary-expression";
 import IUpdateExpression        from "./interfaces/update-expression";
+import { hasDuplicated }        from "./internal/common";
 import Property                 from "./internal/elements/property";
 import SpreadElement            from "./internal/elements/spread-element";
 import TemplateElement          from "./internal/elements/template-element";
@@ -40,6 +41,7 @@ import TemplateLiteral          from "./internal/expressions/template-literal";
 import ThisExpression           from "./internal/expressions/this-expression";
 import UnaryExpression          from "./internal/expressions/unary-expression";
 import UpdateExpression         from "./internal/expressions/update-expression";
+import Messages                 from "./internal/messages";
 import Parser                   from "./internal/parser";
 import
 {
@@ -59,6 +61,11 @@ export default abstract class Expression
 
     public static arrowFunction(parameters: Array<IPattern>, body: IExpression): IArrowFunctionExpression
     {
+        if (hasDuplicated(parameters))
+        {
+            throw new Error(Messages.duplicateParameterNameNotAllowedInThisContext);
+        }
+
         return new ArrowFunctionExpression(parameters, body);
     }
 

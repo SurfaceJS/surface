@@ -30,7 +30,7 @@ export default class ArrayExpression implements IExpression
         this._elements = elements;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): Array<unknown>
+    public evaluate(scope: Indexer, useCache?: boolean): Array<unknown>
     {
         if (useCache && hasValue(this.cache))
         {

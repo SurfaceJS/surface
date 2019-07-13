@@ -50,7 +50,7 @@ export default class TypeGuard
 
     public static isAssignmentPattern(node: INode): node is IAssignmentPattern
     {
-        return node.type == NodeType.AssignmentExpression;
+        return node.type == NodeType.AssignmentPattern;
     }
 
     public static isBinaryExpression(node: INode): node is IBinaryExpression

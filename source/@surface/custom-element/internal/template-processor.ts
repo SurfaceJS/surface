@@ -81,7 +81,7 @@ export default class TemplateProcessor
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    const expression = BindParser.scan(scope, attribute.value);
+                    const expression = BindParser.scan(attribute.value);
 
                     const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
                         expression.evaluate(scope) as Action
@@ -139,11 +139,11 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const expression = BindParser.scan(scope, attribute.value);
+                        const expression = BindParser.scan(attribute.value);
 
                         const notify = () =>
                         {
-                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
+                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
                                 expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
                                 expression.evaluate(scope);
 
@@ -155,7 +155,7 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        const visitor = new ObserverVisitor({ notify });
+                        const visitor = new ObserverVisitor({ notify }, scope);
                         visitor.observe(expression);
 
                         notifications.push(notify);
@@ -181,13 +181,13 @@ export default class TemplateProcessor
             }
             else
             {
-                const expression = BindParser.scan(scope, element.nodeValue);
+                const expression = BindParser.scan(element.nodeValue);
 
-                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
+                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
                     () => element.nodeValue = `${coalesce(expression.evaluate(scope), "")}`;
 
-                const visitor = new ObserverVisitor({ notify });
+                const visitor = new ObserverVisitor({ notify }, scope);
                 visitor.observe(expression);
 
                 notify();
@@ -264,7 +264,7 @@ export default class TemplateProcessor
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private processDirectives(template: HTMLTemplateElement, context: Indexer): void
+    private processDirectives(template: HTMLTemplateElement, scope: Indexer): void
     {
         if (!template.parentNode)
         {
@@ -283,7 +283,7 @@ export default class TemplateProcessor
 
             const rawScope = template.getAttribute("#scope");
 
-            const contentScope: Indexer = rawScope ? Expression.from(rawScope, this.createProxy(context)).evaluate() as Indexer : { };
+            const contentScope: Indexer = rawScope ? Expression.from(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
 
             const slotName = template.getAttribute("#content") || "";
 
@@ -306,9 +306,9 @@ export default class TemplateProcessor
 
             const destructuredScope = scopeSpression.startsWith("{");
 
-            const { scope, scopeAlias } = destructuredScope ?
-                { scope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
-                { scope: contentScope, scopeAlias: scopeSpression };
+            const { elementScope, scopeAlias } = destructuredScope ?
+                { elementScope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
+                { elementScope: contentScope, scopeAlias: scopeSpression };
 
             const content = document.importNode(outterTemplate.content, true);
 
@@ -319,8 +319,8 @@ export default class TemplateProcessor
             const apply = (outterContext: Indexer) =>
             {
                 const merged = destructuredScope ?
-                    { ...scope, ...outterContext }
-                    : { [scopeAlias]: scope, ...outterContext };
+                    { ...elementScope, ...outterContext }
+                    : { [scopeAlias]: elementScope, ...outterContext };
 
                 TemplateProcessor.process(this.host, content, merged);
 
@@ -376,13 +376,13 @@ export default class TemplateProcessor
 
                 for (const [expression, template] of expressions)
                 {
-                    if (expression.evaluate(context))
+                    if (expression.evaluate(scope))
                     {
                         const content = template.content.cloneNode(true) as Element;
 
                         content.normalize();
 
-                        TemplateProcessor.process(this.host, content, context);
+                        TemplateProcessor.process(this.host, content, scope);
 
                         end.parentNode.insertBefore(content, end);
 
@@ -391,9 +391,9 @@ export default class TemplateProcessor
                 }
             };
 
-            const visitor = new ObserverVisitor({ notify });
+            const visitor = new ObserverVisitor({ notify }, scope);
 
-            const expression = Expression.from(template.getAttribute("#if")!, context);
+            const expression = Expression.from(template.getAttribute("#if")!);
 
             subscriptions.push(visitor.observe(expression));
 
@@ -405,7 +405,7 @@ export default class TemplateProcessor
             {
                 if (simbling.hasAttribute("#else-if"))
                 {
-                    const expression = Expression.from(simbling.getAttribute("#else-if")!, this.createProxy(context));
+                    const expression = Expression.from(simbling.getAttribute("#else-if")!);
 
                     subscriptions.push(visitor.observe(expression));
 
@@ -421,7 +421,7 @@ export default class TemplateProcessor
                 {
                     simbling.remove();
 
-                    expressions.push([Expression.constant(true), simbling]);
+                    expressions.push([Expression.literal(true), simbling]);
 
                     break;
                 }
@@ -453,7 +453,7 @@ export default class TemplateProcessor
 
             const destructured = aliasExpression.startsWith("[");
 
-            const expression = Expression.from(iterableExpression, this.createProxy(context));
+            const expression = Expression.from(iterableExpression);
 
             let cache: Array<[unknown, Array<ChildNode>]> = [];
 
@@ -492,8 +492,8 @@ export default class TemplateProcessor
                         content.normalize();
 
                         const mergedContext = destructured ?
-                            { ...destruct(aliasExpression, element as Array<unknown>), ...context }
-                            : { ...context, [aliasExpression]: element };
+                            { ...destruct(aliasExpression, element as Array<unknown>), ...scope }
+                            : { ...scope, [aliasExpression]: element };
 
                         TemplateProcessor.process(this.host, content, mergedContext);
 
@@ -525,7 +525,7 @@ export default class TemplateProcessor
                     }
                 };
 
-                return () =>
+                return (scope: Indexer) =>
                 {
                     if (!end.parentNode)
                     {
@@ -534,7 +534,7 @@ export default class TemplateProcessor
                         return;
                     }
 
-                    const elements = expression.evaluate() as Array<Element>;
+                    const elements = expression.evaluate(scope) as Array<Element>;
 
                     if (elements.length < cache.length)
                     {
@@ -559,12 +559,12 @@ export default class TemplateProcessor
 
             const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-            const subscription = new ObserverVisitor({ notify }).observe(expression);
+            const subscription = new ObserverVisitor({ notify }, scope).observe(expression);
 
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);
 
-            notify();
+            notify(scope);
         }
     }
 

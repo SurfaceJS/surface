@@ -1,8 +1,9 @@
 import { Indexer, Nullable } from "@surface/core";
 import { typeGuard }         from "@surface/core/common/generic";
 import ExpressionVisitor     from "@surface/expression/expression-visitor";
-import IIdentifierExpression from "@surface/expression/interfaces/identifier-expression";
-import ExpressionType        from "../../expression/expression-type";
+import IIdentifier           from "@surface/expression/interfaces/identifier";
+import INode                 from "@surface/expression/interfaces/node";
+import NodeType              from "@surface/expression/node-type";
 import IExpression           from "../../expression/interfaces/expression";
 import IMemberExpression     from "../../expression/interfaces/member-expression";
 import IListener             from "../interfaces/listener";
@@ -16,7 +17,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
     protected dependency:    Nullable<IReactor>   = null;
     protected subscriptions: Array<ISubscription> = [];
 
-    public constructor(protected readonly listener: IListener)
+    public constructor(protected readonly listener: IListener, protected readonly scope: Indexer)
     {
         super();
     }
@@ -41,21 +42,21 @@ export default class ReactiveVisitor extends ExpressionVisitor
         return reactor;
     }
 
-    protected visitIdentifierExpression(expression: IIdentifierExpression): IExpression
+    protected visitIdentifier(expression: IIdentifier): INode
     {
-        this.reactivate(expression.context, expression.name);
+        this.reactivate(this.scope, expression.name);
 
         this.dependency = null;
 
-        return super.visitIdentifierExpression(expression);
+        return super.visitIdentifier(expression);
     }
 
-    protected visitMemberExpression(expression: IMemberExpression): IExpression
+    protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        if (expression.key.type == ExpressionType.Constant)
+        if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
         {
-            const target = expression.target.cache;
-            const key    = expression.key.cache;
+            const target = expression.object.evaluate(this.scope, true);
+            const key    = expression.property.evaluate(this.scope, true);
 
             if (typeGuard<Indexer>(target, x => x instanceof Object))
             {
@@ -67,14 +68,14 @@ export default class ReactiveVisitor extends ExpressionVisitor
             }
         }
 
-        this.visit(expression.target);
+        this.visit(expression.object);
 
         return expression;
     }
 
-    protected visit(expression: IExpression): IExpression
+    protected visit(expression: IExpression): INode
     {
-        if (expression.type != ExpressionType.Identifier && expression.type != ExpressionType.Member)
+        if (expression.type != NodeType.Identifier && expression.type != NodeType.MemberExpression)
         {
             this.dependency = null;
         }

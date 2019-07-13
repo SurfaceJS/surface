@@ -46,45 +46,52 @@ export default class ArrowFunctionExpression implements IExpression
         this._body       = body;
     }
 
-    private resolveParameters(args: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
+    private resolveParameters($arguments: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
         let index = 0;
         for (const parameter of this.parameters)
         {
-            if (TypeGuard.isIdentifier(parameter))
-            {
-                currentScope[parameter.name] = args[index];
-            }
-            else if (TypeGuard.isAssignmentExpression(parameter))
-            {
-                if (TypeGuard.isIdentifier(parameter.left))
-                {
-                    currentScope[parameter.left.name] = coalesce(args[index], parameter.right.evaluate(scope, useCache));
-                }
-                else
-                {
-                    throw new Error(Messages.illegalPropertyInDeclarationContext);
-                }
-            }
-            else if (TypeGuard.isRestElement(parameter))
-            {
-                Object.assign(currentScope, this.resolveRestElement(parameter, args.slice(index), scope, useCache));
-            }
-            else if (TypeGuard.isArrayPattern(parameter))
-            {
-                Object.assign(currentScope, this.resolveArrayPattern(parameter, args[index] as Array<unknown>, scope, useCache));
-            }
-            else if (TypeGuard.isObjectPattern(parameter))
-            {
-                Object.assign(currentScope, this.resolveObjectPattern(parameter, args[index] as Indexer, scope, useCache));
-            }
+            Object.assign(currentScope, this.resolvePattern(parameter, $arguments[index], $arguments.slice(index), scope, useCache));
 
             index++;
         }
 
         return currentScope;
+    }
+
+    private resolvePattern(pattern: IPattern, value: unknown, rest: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
+    {
+        if (TypeGuard.isIdentifier(pattern))
+        {
+            return { [pattern.name]: value };
+        }
+        else if (TypeGuard.isAssignmentPattern(pattern))
+        {
+            if (TypeGuard.isIdentifier(pattern.left))
+            {
+                return { [pattern.left.name]: coalesce(value, pattern.right.evaluate(scope, useCache)) };
+            }
+            else
+            {
+                throw new Error(Messages.illegalPropertyInDeclarationContext);
+            }
+        }
+        else if (TypeGuard.isArrayPattern(pattern))
+        {
+            return this.resolveArrayPattern(pattern, value as Array<unknown>, scope, useCache);
+        }
+        else if (TypeGuard.isObjectPattern(pattern))
+        {
+            return this.resolveObjectPattern(pattern, value as Indexer, scope, useCache);
+        }
+        else if (TypeGuard.isRestElement(pattern))
+        {
+            return this.resolveRestElement(pattern, rest, scope, useCache);
+        }
+
+        throw new Error();
     }
 
     private resolveArrayPattern(arrayPattern: IArrayPattern, value: Array<unknown>, scope: Indexer, useCache: boolean): Indexer
@@ -97,71 +104,10 @@ export default class ArrowFunctionExpression implements IExpression
         {
             if (element)
             {
-                if (TypeGuard.isIdentifier(element))
-                {
-                    currentScope[element.name] = value[index];
-                }
-                else if (TypeGuard.isAssignmentExpression(element))
-                {
-                    if (TypeGuard.isIdentifier(element.left))
-                    {
-                        currentScope[element.left.name] = coalesce(value[index], element.right.evaluate(scope, useCache));
-                    }
-                    else
-                    {
-                        throw new Error(Messages.illegalPropertyInDeclarationContext);
-                    }
-                }
-                else if (TypeGuard.isArrayPattern(element))
-                {
-                    Object.assign(currentScope, this.resolveArrayPattern(element, value, scope, useCache));
-                }
-                else if (TypeGuard.isObjectPattern(element))
-                {
-                    Object.assign(currentScope, this.resolveObjectPattern(element, value[index] as Indexer, scope, useCache));
-                }
-                else if (TypeGuard.isRestElement(element))
-                {
-                    Object.assign(currentScope, this.resolveRestElement(element, value, scope, useCache));
-                }
+                Object.assign(currentScope, this.resolvePattern(element, value[index], value, scope, useCache));
             }
 
             index++;
-        }
-
-        return currentScope;
-    }
-
-    private resolveRestElement(restElement: IRestElement, value: unknown, scope: Indexer, useCache: boolean): Indexer
-    {
-        const currentScope: Indexer = { };
-
-        if (TypeGuard.isIdentifier(restElement.argument))
-        {
-            currentScope[restElement.argument.name] = value;
-        }
-        else if (TypeGuard.isAssignmentExpression(restElement.argument))
-        {
-            if (TypeGuard.isIdentifier(restElement.argument.left))
-            {
-                currentScope[restElement.argument.left.name] = coalesce(value, restElement.argument.right.evaluate(scope, useCache));
-            }
-            else
-            {
-                throw new Error(Messages.illegalPropertyInDeclarationContext);
-            }
-        }
-        else if (TypeGuard.isArrayPattern(restElement.argument))
-        {
-            Object.assign(currentScope, this.resolveArrayPattern(restElement.argument, value as Array<unknown>, scope, useCache));
-        }
-        else if (TypeGuard.isObjectPattern(restElement.argument))
-        {
-            Object.assign(currentScope, this.resolveObjectPattern(restElement.argument, value as Indexer, scope, useCache));
-        }
-        else if (TypeGuard.isRestElement(restElement.argument))
-        {
-            Object.assign(currentScope, this.resolveRestElement(restElement.argument, value, scope, useCache));
         }
 
         return currentScope;
@@ -175,27 +121,15 @@ export default class ArrowFunctionExpression implements IExpression
         {
             if (TypeGuard.isProperty(property))
             {
-                if (property.shorthand)
+                if (TypeGuard.isAssignmentExpression(property.value))
                 {
-                    if (TypeGuard.isAssignmentExpression(property.value))
-                    {
-                        currentScope[`${property.value.left.evaluate(scope, useCache)}`] = coalesce(value[`${property.value.left.evaluate(scope, useCache)}`], property.value.right.evaluate(scope, useCache));
-                    }
-                    else
-                    {
-                        currentScope[`${property.value.evaluate(scope, useCache)}`] = value[`${property.value.evaluate(scope, useCache)}`];
-                    }
+                    currentScope[`${property.value.left.evaluate(scope, useCache)}`] = coalesce(value[`${property.value.left.evaluate(scope, useCache)}`], property.value.right.evaluate(scope, useCache));
                 }
                 else
                 {
-                    if (TypeGuard.isAssignmentExpression(property.value))
-                    {
-                        currentScope[`${property.key.evaluate(scope, useCache)}`] = coalesce(value[`${property.value.left.evaluate(scope, useCache)}`], property.value.right.evaluate(scope, useCache));
-                    }
-                    else
-                    {
-                        currentScope[`${property.key.evaluate(scope, useCache)}`] = value[`${property.value.evaluate(scope, useCache)}`];
-                    }
+                    currentScope[`${property.value.evaluate(scope, useCache)}`] = property.shorthand ?
+                        value[`${property.value.evaluate(scope, useCache)}`]
+                        : value[`${property.key.evaluate(scope, useCache)}`];
                 }
             }
             else
@@ -205,6 +139,16 @@ export default class ArrowFunctionExpression implements IExpression
         }
 
         return currentScope;
+    }
+
+    private resolveRestElement(restElement: IRestElement, value: Array<unknown>|Indexer, scope: Indexer, useCache: boolean): Indexer
+    {
+        if (TypeGuard.isIdentifier(restElement.argument))
+        {
+            return { [restElement.argument.name]: value };
+        }
+
+        return this.resolvePattern(restElement.argument, value, [], scope, useCache);
     }
 
     public evaluate(scope: Indexer, useCache: boolean): unknown
