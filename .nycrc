@@ -1,7 +1,0 @@
-{
-    "all":       false,
-    "cache":     true,
-    "include":   ["source/@surface/*"],
-    "exclude":   ["source/@surface/*/tests/*", "source/@surface/*/extensions.*"],
-    "reporter":  ["lcov", "text-summary"]
-}

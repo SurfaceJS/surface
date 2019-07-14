@@ -151,15 +151,18 @@ export default class ArrowFunctionExpression implements IExpression
         return this.resolvePattern(restElement.argument, value, [], scope, useCache);
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): Function
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        const fn = (...args: Array<unknown>) => this.body.evaluate({ ...scope, ...this.resolveParameters(args, scope, useCache) }, useCache);
+        const fn = (...args: Array<unknown>) => this.body.evaluate({ ...scope, ...this.resolveParameters(args, scope, !!useCache) }, useCache);
 
+        //fn.apply    = (thisArg: Indexer, argArray: Array<unknown>) => this.evaluate({ ...scope, this: thisArg })(argArray);
+        //fn.bind     = (thisArg: Indexer) => this.evaluate({ ...scope, this: thisArg });
+        //fn.call     = (thisArg: Indexer, ...argArray: Array<unknown>) => this.evaluate({ ...scope, this: thisArg })(argArray);
         fn.toString = () => this.toString();
 
         return this.cache = fn;

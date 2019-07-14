@@ -59,7 +59,7 @@ export default class Tasks
             alias = "index";
         }
 
-        await common.execute(`cover ${file.name} tests`, `${bin}/nyc --include **/${alias}.js --exclude tests/* --reporter=text ${bin}/mocha --ui tdd ${file.name}.js`);
+        await common.execute(`cover ${file.name} tests`,`${path.join(bin, "nyc")} --include **/${alias}.js --include **/${alias}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
     }
 
     public static async install(full: "true"|"false"): Promise<void>
