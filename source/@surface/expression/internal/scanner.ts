@@ -997,6 +997,7 @@ export default class Scanner
         let cooked     = "";
         let terminated = false;
         let tail       = false;
+        let offset     = 1;
 
         this.advance();
 
@@ -1016,8 +1017,13 @@ export default class Scanner
                 if (this.source[this.index] == "{")
                 {
                     this.curlyStack.push("$" + "{"); // VS Code bug - Wrong color syntax when string contains the token ${
+
                     this.advance();
+
+                    offset++;
+
                     terminated = true;
+
                     break;
                 }
                 cooked += char;
@@ -1142,11 +1148,9 @@ export default class Scanner
             this.curlyStack.pop();
         }
 
-        const $string = this.source.slice(start + 1, this.index - 1);
-
         const token =
         {
-            raw:        (head ? "`" : "") + $string + (tail ? "`" : ""),
+            raw:        this.source.slice(start + 1, this.index - offset),
             value:      cooked,
             type:       TokenType.Template,
             head:       head,

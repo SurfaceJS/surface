@@ -1,10 +1,10 @@
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                                         from "chai";
 import Messages                                           from "../internal/messages";
-import Scanner, { Token }                                 from "../internal/scanner";
+import Scanner                                            from "../internal/scanner";
 import TokenType                                          from "../internal/token-type";
 import SyntaxError                                        from "../syntax-error";
-import { invalidTokens, validTokens, InvalidToken }       from "./expectations/scanner-expected";
+import { invalidTokens, validTokens, ExpectedInvalidToken, ExpectedValidToken }       from "./expectations/scanner-expected";
 
 @suite
 export default class ScannerSpec
@@ -40,10 +40,10 @@ export default class ScannerSpec
     }
 
     @shouldPass
-    @batchTest(validTokens, x => `token (${x.raw}) should be ${TokenType[x.type]}`)
-    public tokensShouldWork(token: Token): void
+    @batchTest(validTokens, x => `token (${x.source}) should be ${TokenType[x.token.type]}`)
+    public tokensShouldWork(expected: ExpectedValidToken): void
     {
-        expect(new Scanner(token.raw).nextToken()).to.deep.equal(token);
+        expect(new Scanner(expected.source).nextToken()).to.deep.equal(expected.token);
     }
 
     @shouldFail
@@ -57,9 +57,9 @@ export default class ScannerSpec
 
     @shouldFail
     @batchTest(invalidTokens, x => `token (${x.token}) should throw ${x.message}`)
-    public tokensShouldThrow(spec: InvalidToken): void
+    public tokensShouldThrow(expected: ExpectedInvalidToken): void
     {
-        const scanner = new Scanner(spec.token);
-        expect(() => scanner.nextToken()).to.throw(SyntaxError, spec.message);
+        const scanner = new Scanner(expected.token);
+        expect(() => scanner.nextToken()).to.throw(SyntaxError, expected.message);
     }
 }
