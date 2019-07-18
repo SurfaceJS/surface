@@ -75,7 +75,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
 
     protected visit(expression: IExpression): INode
     {
-        if (expression.type != NodeType.Identifier && expression.type != NodeType.MemberExpression)
+        if (expression.type != NodeType.Identifier && expression.type != NodeType.MemberExpression && expression.type != NodeType.ThisExpression)
         {
             this.dependency = null;
         }

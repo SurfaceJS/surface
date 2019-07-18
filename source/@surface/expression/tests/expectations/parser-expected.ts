@@ -74,6 +74,13 @@ const scope =
     noop(value: unknown)
     {
         return value;
+    },
+    object:
+    {
+        getValue(): number
+        {
+            return 1;
+        }
     }
 };
 
@@ -568,6 +575,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "this.greater(...[1, 2],)",
         value:    false,
         toString: "this.greater(...[1, 2])",
+        type:     CallExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "object.getValue()",
+        value:    1,
+        toString: "object.getValue()",
         type:     CallExpression,
     },
     {

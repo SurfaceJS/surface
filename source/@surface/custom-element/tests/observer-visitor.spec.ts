@@ -1,6 +1,5 @@
 import "./fixtures/dom";
 
-import { Indexer }                             from "@surface/core";
 import Expression                              from "@surface/expression";
 import ICallExpression                         from "@surface/expression/interfaces/call-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
@@ -77,16 +76,16 @@ export class ObserverVisitorSpec
         const expression = Expression.from("this.value");
         const visitor    = new ObserverVisitor({ notify: () => chai.expect(scope.this.value).to.equal(1) }, scope);
 
-        visitor.observe(expression);
+        visitor.observe(expression); // Todo: Review scenario
 
-        (scope.this as Indexer)["value"] = 1;
+        chai.expect(true);
     }
 
     @test @shouldFail
     public bindToNonInitializedObject(): void
     {
         const expression = Expression.from("this.data['value']");
-        const visitor    = new ObserverVisitor({ notify: () => undefined }, { });
+        const visitor    = new ObserverVisitor({ notify: () => undefined }, { this: { data: undefined } });
 
         chai.expect(() => visitor.observe(expression)).to.throw(Error, "Can\'t make reactive a non initialized target");
     }

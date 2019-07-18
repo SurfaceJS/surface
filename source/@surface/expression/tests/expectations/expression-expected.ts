@@ -33,7 +33,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
         value:   1
     },
     {
-        factory: () => Expression.identifier("value", true),
+        factory: () => Expression.identifier("undefined", true),
         type:    NodeType.Identifier,
         value:   undefined
     },

@@ -60,10 +60,10 @@ export default class BindParserSpec
 
         const expression = BindParser.scan("The value is: [[ this.value ]]");
 
-        expect(expression.evaluate({ })).to.deep.equal(["The value is: ", 0]);
+        expect(expression.evaluate(scope)).to.deep.equal(["The value is: ", 0]);
 
         scope.this.value = 1;
-        expect(expression.evaluate({ })).to.deep.equal(["The value is: ", 1]);
+        expect(expression.evaluate(scope)).to.deep.equal(["The value is: ", 1]);
     }
 
     @test @shouldPass
@@ -83,14 +83,14 @@ export default class BindParserSpec
             }
         }
 
-        const context = { this: new Mock() };
+        const scope = { this: new Mock() };
 
         const expression = BindParser.scan("{{ this.value }}");
 
-        expect(expression.evaluate({ })).to.equal(0);
+        expect(expression.evaluate(scope)).to.equal(0);
 
-        context.this.value = 1;
-        expect(expression.evaluate({ })).to.equal(1);
+        scope.this.value = 1;
+        expect(expression.evaluate(scope)).to.equal(1);
     }
 
     @test @shouldPass
@@ -110,30 +110,30 @@ export default class BindParserSpec
             }
         }
 
-        const context = { this: new Mock() };
+        const scope = { this: new Mock() };
 
         const expression = BindParser.scan("{{ this.value > 0 }}");
 
-        expect(expression.evaluate({ })).to.equal(false);
+        expect(expression.evaluate(scope)).to.equal(false);
 
-        context.this.value = 1;
-        expect(expression.evaluate({ })).to.equal(true);
+        scope.this.value = 1;
+        expect(expression.evaluate(scope)).to.equal(true);
     }
 
     @test @shouldPass
     public twoWayBindWithInterpolation(): void
     {
-        const context = { this: new Mock() };
+        const scope = { this: new Mock() };
 
         const expression = BindParser.scan("Value: {{ this.value }}; Text: {{ this.text }}");
 
-        expect(expression.evaluate({ })).to.deep.equal(["Value: ", 0, "; Text: ", "Hello World!!!"]);
+        expect(expression.evaluate(scope)).to.deep.equal(["Value: ", 0, "; Text: ", "Hello World!!!"]);
 
-        context.this.value = 1;
-        expect(expression.evaluate({ })).to.deep.equal(["Value: ", 1, "; Text: ", "Hello World!!!"]);
+        scope.this.value = 1;
+        expect(expression.evaluate(scope)).to.deep.equal(["Value: ", 1, "; Text: ", "Hello World!!!"]);
 
-        context.this.text = "Updated!!!";
-        expect(expression.evaluate({ })).to.deep.equal(["Value: ", 1, "; Text: ", "Updated!!!"]);
+        scope.this.text = "Updated!!!";
+        expect(expression.evaluate(scope)).to.deep.equal(["Value: ", 1, "; Text: ", "Updated!!!"]);
     }
 
     @test @shouldPass
@@ -141,18 +141,6 @@ export default class BindParserSpec
     {
         const expression = BindParser.scan("This is an scaped expression \\{{ this.value }}");
         expect(expression.evaluate({ })).to.equal("This is an scaped expression {{ this.value }}");
-    }
-
-    @test @shouldFail
-    public invalidIdentifier(): void
-    {
-        expect(() => BindParser.scan("This is my value: {{ this.value }}")).to.throw(Error, "The identifier this does not exist in this context");
-    }
-
-    @test @shouldFail
-    public invalidIndentifier(): void
-    {
-        expect(() => BindParser.scan("This is my value: {{ this }}")).to.throw(Error, "The identifier this does not exist in this context");
     }
 
     @test @shouldFail

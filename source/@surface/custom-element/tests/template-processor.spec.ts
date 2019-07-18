@@ -48,20 +48,17 @@ export default class DirectivesProcessorSpec
 
         if (element.firstElementChild)
         {
-            const span = element.firstElementChild as HTMLSpanElement;
-            chai.expect(span.lang).to.equal("pt-br");
-            chai.expect(span.getAttribute("lang")).to.equal("pt-br");
-            chai.expect(span.getAttribute("parent")).to.equal("DIV");
+            const input = element.firstElementChild as HTMLSpanElement;
+            chai.expect(input.lang).to.equal("pt-br");
+            chai.expect(input.getAttribute("lang")).to.equal("pt-br");
+            chai.expect(input.getAttribute("parent")).to.equal("DIV");
 
-            span.lang = "en-us";
-            span.dispatchEvent(new Event("change"));
+            input.lang = "en-us";
+            input.dispatchEvent(new Event("input"));
             chai.expect(host.lang).to.equal("en-us");
 
-            span.setAttribute("lang", "pt-pt");
-            chai.expect(host.lang).to.equal("pt-pt");
-
-            span.lang = "pt-br";
-            span.dispatchEvent(new Event("keyup"));
+            input.lang = "pt-br";
+            input.dispatchEvent(new Event("input"));
             chai.expect(host.lang).to.equal("pt-br");
         }
     }

@@ -7,10 +7,10 @@ import Expression                                              from "@surface/ex
 import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
 import IExpression                                             from "@surface/expression/interfaces/expression";
 import NodeType                                                from "@surface/expression/node-type";
+import ISubscription                                           from "@surface/reactive/interfaces/subscription";
 import Type                                                    from "@surface/reflection";
+import FieldInfo                                               from "@surface/reflection/field-info";
 import PropertyInfo                                            from "@surface/reflection/property-info";
-import ISubscription                                           from "../../reactive/interfaces/subscription";
-import FieldInfo                                               from "../../reflection/field-info";
 import BindParser                                              from "./bind-parser";
 import DataBind                                                from "./data-bind";
 import ObserverVisitor                                         from "./observer-visitor";
@@ -27,7 +27,7 @@ type Bindable<T extends object> = T &
 
 export default class TemplateProcessor
 {
-    private readonly context: Indexer;
+    private readonly scope: Indexer;
     private readonly expressions =
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
@@ -38,16 +38,16 @@ export default class TemplateProcessor
     private readonly host:   Node|Element;
     private readonly window: Window;
 
-    private constructor(host: Node|Element, context: Indexer)
+    private constructor(host: Node|Element, scope: Indexer)
     {
-        this.host    = host;
-        this.context = { host, ...context };
-        this.window  = windowWrapper;
+        this.host   = host;
+        this.scope  = { host, ...scope };
+        this.window = windowWrapper;
     }
 
-    public static process(host: Node|Element, node: Node, context: Indexer): void
+    public static process(host: Node|Element, node: Node, scope: Indexer): void
     {
-        const processor = new TemplateProcessor(host, context);
+        const processor = new TemplateProcessor(host, scope);
 
         processor.traverseElement(node);
     }
@@ -77,7 +77,7 @@ export default class TemplateProcessor
         {
             if (this.expressions.databind.test(attribute.value))
             {
-                const scope = this.createProxy({ this: element, ...this.context });
+                const scope = this.createProxy({ this: element, ...this.scope });
 
                 if (attribute.name.startsWith("on-"))
                 {
@@ -132,7 +132,7 @@ export default class TemplateProcessor
 
                         DataBind.oneWay(target, path, { notify });
 
-                        if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
+                        if (isTwoWay && elementMember instanceof FieldInfo && !elementMember.readonly && targetMember instanceof FieldInfo && !targetMember.readonly)
                         {
                             DataBind.twoWay(target, path, element as Indexer, attributeName);
                         }
@@ -171,7 +171,7 @@ export default class TemplateProcessor
     {
         if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
         {
-            const scope = this.createProxy({ this: element.parentElement, ...this.context });
+            const scope = this.createProxy({ this: element.parentElement, ...this.scope });
 
             const match = this.expressions.path.exec(element.nodeValue);
 
@@ -574,11 +574,11 @@ export default class TemplateProcessor
         {
             if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
             {
-                this.processDirectives(element, this.context);
+                this.processDirectives(element, this.scope);
             }
             else if (!element[BINDED])
             {
-                element[CONTEXT] = this.context;
+                element[CONTEXT] = this.scope;
 
                 if (element.attributes && element.attributes.length > 0)
                 {
@@ -594,7 +594,7 @@ export default class TemplateProcessor
 
                 if (element[ON_AFTER_BINDED])
                 {
-                    element[ON_AFTER_BINDED]!(this.context);
+                    element[ON_AFTER_BINDED]!(this.scope);
                 }
 
                 element[BINDED] = true;

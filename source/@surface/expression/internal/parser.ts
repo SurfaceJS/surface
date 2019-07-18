@@ -238,10 +238,10 @@ export default class Parser
                 while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
                 {
                     right = stack.pop() as IExpression;
-                    const operator = stack.pop() as string;
+                    const operator = stack.pop() as BinaryOperator|LogicalOperator;
                     left = stack.pop() as IExpression;
                     precedences.pop();
-                    stack.push(new BinaryExpression(left, right, operator as BinaryOperator));
+                    stack.push(operator == "&&" || operator == "||" ? new LogicalExpression(left, right, operator) : new BinaryExpression(left, right, operator));
                 }
 
                 stack.push(this.nextToken().raw);
@@ -255,7 +255,7 @@ export default class Parser
             while (i > 1)
             {
                 const operator = stack[i - 1] as BinaryOperator|LogicalOperator;
-                if (operator == "&&" || operator == "||" )
+                if (operator == "&&" || operator == "||")
                 {
                     expression = new LogicalExpression(stack[i - 2] as IExpression, expression, operator);
                 }
@@ -571,7 +571,6 @@ export default class Parser
                 {
                     throw this.unexpectedTokenError(this.lookahead);
                 }
-
             }
             else if (this.match("["))
             {
@@ -590,7 +589,7 @@ export default class Parser
                     return expression;
                 }
 
-                const thisArg = TypeGuard.isIdentifier(parentExpression) ? new Literal(null) : parentExpression;
+                const thisArg = parentExpression == expression ? new Literal(null) : parentExpression;
 
                 expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.argumentsExpression));
             }
