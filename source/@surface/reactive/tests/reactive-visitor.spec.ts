@@ -19,7 +19,7 @@ export default class ReactiveVisitorSpec
 
         let value = true;
 
-        const expression = Expression.from("a.instance.very.deep.path.value == b.instance.very['deep'].path.value || a.instance.very.deep.path.value > c.instance.very.deep.path.value");
+        const expression = Expression.parse("a.instance.very.deep.path.value == b.instance.very['deep'].path.value || a.instance.very.deep.path.value > c.instance.very.deep.path.value");
 
         const notification = () => value = expression.evaluate(scope) as boolean;
 
@@ -59,7 +59,7 @@ export default class ReactiveVisitorSpec
 
         let value = 0;
 
-        const expression = Expression.from("a.instance.invoke(value).very.deep['path'].value");
+        const expression = Expression.parse("a.instance.invoke(value).very.deep['path'].value");
 
         const notification = () => value = expression.evaluate(scope) as number;
 
@@ -111,7 +111,7 @@ export default class ReactiveVisitorSpec
 
         let value = 0;
 
-        const expression = Expression.from("a.instance.items[3].very.deep['path'].value");
+        const expression = Expression.parse("a.instance.items[3].very.deep['path'].value");
 
         const notification = (x: number) => value = x;
 

@@ -86,7 +86,7 @@ export default class CallExpression implements IExpression
             }
         }
 
-        return this.cache = fn.apply(this.thisArg.evaluate(scope, (this.callee == this.thisArg) || (TypeGuard.isMemberExpression(this.callee) && this.callee.object == this.thisArg) || useChache), $arguments);
+        return this.cache = fn.apply(this.thisArg.evaluate(scope, true), $arguments);
     }
 
     public toString(): string

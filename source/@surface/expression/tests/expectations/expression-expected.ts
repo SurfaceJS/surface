@@ -1,65 +1,144 @@
-import { Indexer } from "@surface/core";
-import Expression  from "../..";
-import IExpression from "../../interfaces/expression";
-import NodeType    from "../../node-type";
+import Expression from "../..";
+import INode      from "../../interfaces/node";
+import NodeType   from "../../node-type";
 
-export type ExpressionFactoryFixture = { factory: () => IExpression, type: NodeType, value: unknown, scope?: Indexer };
+export type ExpressionFactoryExpected = { method: string, factory: () => INode, type: NodeType };
 
-export const expressionFactoryFixtures: Array<ExpressionFactoryFixture> =
+export const expressionFactoryFixtures: Array<ExpressionFactoryExpected> =
 [
     {
         factory: () => Expression.array([Expression.literal(1), Expression.literal(2)]),
+        method:  Expression.array.name,
         type:    NodeType.ArrayExpression,
-        value:   [1, 2]
+    },
+    {
+        factory: () => Expression.arrayPattern([Expression.identifier("x")]),
+        method:  Expression.arrayPattern.name,
+        type:    NodeType.ArrayPattern,
+    },
+    {
+        factory: () => Expression.assignment(Expression.identifier("x"), Expression.literal(1), "="),
+        method:  Expression.assignment.name,
+        type:    NodeType.AssignmentExpression,
+    },
+    {
+        factory: () => Expression.assignmentPattern(Expression.identifier("x"), Expression.literal(1)),
+        method:  Expression.assignment.name,
+        type:    NodeType.AssignmentPattern,
+    },
+    {
+        factory: () => Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x")),
+        method:  Expression.arrowFunction.name,
+        type:    NodeType.ArrowFunctionExpression,
     },
     {
         factory: () => Expression.binary(Expression.literal(1), Expression.literal(2), ">"),
+        method:  Expression.arrowFunction.name,
         type:    NodeType.BinaryExpression,
-        value:   false
+    },
+    {
+        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x", true))),
+        method:  Expression.call.name,
+        type:    NodeType.CallExpression,
     },
     {
         factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x", true)), [Expression.literal(2)]),
+        method:  Expression.call.name,
         type:    NodeType.CallExpression,
-        value:   2
     },
     {
         factory: () => Expression.conditional(Expression.literal(true), Expression.literal(1), Expression.literal(2)),
+        method:  Expression.conditional.name,
         type:    NodeType.ConditionalExpression,
-        value:   1
     },
     {
         factory: () => Expression.literal(1),
+        method:  Expression.literal.name,
         type:    NodeType.Literal,
-        value:   1
+    },
+    {
+        factory: () => Expression.logical(Expression.identifier("x"), Expression.identifier("y"), "&&"),
+        method:  Expression.logical.name,
+        type:    NodeType.LogicalExpression,
     },
     {
         factory: () => Expression.identifier("undefined", true),
+        method:  Expression.identifier.name,
         type:    NodeType.Identifier,
-        value:   undefined
     },
     {
         factory: () => Expression.member(Expression.object([Expression.property(Expression.literal("value"), Expression.literal(1))]), Expression.literal("value"), false),
+        method:  Expression.member.name,
         type:    NodeType.MemberExpression,
-        value:   1
     },
     {
-        factory: () => Expression.object([Expression.property(Expression.literal("value"), Expression.literal(1), false)]),
+        factory: () => Expression.new(Expression.identifier("x")),
+        method:  Expression.new.name,
+        type:    NodeType.NewExpression,
+    },
+    {
+        factory: () => Expression.new(Expression.identifier("x"), [Expression.literal(1)]),
+        method:  Expression.new.name,
+        type:    NodeType.NewExpression,
+    },
+    {
+        factory: () => Expression.object(),
+        method:  Expression.object.name,
         type:    NodeType.ObjectExpression,
-        value:   { value: 1 }
+    },
+    {
+        factory: () => Expression.object([Expression.property(Expression.identifier("value"))]),
+        method:  Expression.object.name,
+        type:    NodeType.ObjectExpression,
+    },
+    {
+        factory: () => Expression.object([Expression.property(Expression.identifier("value"), Expression.literal(1), false)]),
+        method:  Expression.object.name,
+        type:    NodeType.ObjectExpression,
+    },
+    {
+        factory: () => Expression.objectPattern([Expression.assignmentProperty(Expression.identifier("value"))]),
+        method:  Expression.objectPattern.name,
+        type:    NodeType.ObjectPattern,
+    },
+    {
+        factory: () => Expression.objectPattern([Expression.assignmentProperty(Expression.identifier("x"), Expression.identifier("y"), false)]),
+        method:  Expression.objectPattern.name,
+        type:    NodeType.ObjectPattern,
     },
     {
         factory: () => Expression.regex("/foo/", "i"),
+        method:  Expression.regex.name,
         type:    NodeType.RegExpLiteral,
-        value:   /foo/i
+    },
+    {
+        factory: () => Expression.rest(Expression.identifier("x")),
+        method:  Expression.rest.name,
+        type:    NodeType.RestElement,
+    },
+    {
+        factory: () => Expression.spread(Expression.identifier("x")),
+        method:  Expression.spread.name,
+        type:    NodeType.SpreadElement,
+    },
+    {
+        factory: () => Expression.sequence([Expression.identifier("x"), Expression.identifier("y")]),
+        method:  Expression.sequence.name,
+        type:    NodeType.SequenceExpression,
     },
     {
         factory: () => Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")]),
+        method:  Expression.template.name,
         type:    NodeType.TemplateLiteral,
-        value:   "Hello World!!!"
     },
     {
         factory: () => Expression.unary(Expression.literal(true), "!"),
+        method:  Expression.unary.name,
         type:    NodeType.UnaryExpression,
-        value:   false
+    },
+    {
+        factory: () => Expression.update(Expression.identifier("x"), "++", true),
+        method:  Expression.update.name,
+        type:    NodeType.UpdateExpression,
     },
 ];

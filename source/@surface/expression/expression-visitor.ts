@@ -3,6 +3,7 @@ import IArrayPattern            from "./interfaces/array-pattern";
 import IArrowFunctionExpression from "./interfaces/arrow-function-expression";
 import IAssignmentExpression    from "./interfaces/assignment-expression";
 import IAssignmentPattern       from "./interfaces/assignment-pattern";
+import IAssignmentProperty      from "./interfaces/assignment-property";
 import IBinaryExpression        from "./interfaces/binary-expression";
 import ICallExpression          from "./interfaces/call-expression";
 import IConditionalExpression   from "./interfaces/conditional-expression";
@@ -17,6 +18,7 @@ import IObjectPattern           from "./interfaces/object-pattern";
 import IProperty                from "./interfaces/property";
 import IRegExpLiteral           from "./interfaces/reg-exp-literal";
 import IRestElement             from "./interfaces/rest-element";
+import ISequenceExpression      from "./interfaces/sequence-expression";
 import ISpreadElement           from "./interfaces/spread-element";
 import ITemplateElement         from "./interfaces/template-element";
 import ITemplateLiteral         from "./interfaces/template-literal";
@@ -30,6 +32,7 @@ export default abstract class ExpressionVisitor
     // tslint:disable-next-line:cyclomatic-complexity
     protected visit(node: INode): INode
     {
+        /* istanbul ignore else */
         if (TypeGuard.isArrayExpression(node))
         {
             return this.visitArrayExpression(node);
@@ -38,13 +41,21 @@ export default abstract class ExpressionVisitor
         {
             return this.visitArrayPattern(node);
         }
+        else if (TypeGuard.isArrowFunctionExpression(node))
+        {
+            return this.visitArrowFunctionExpression(node);
+        }
         else if (TypeGuard.isAssignmentExpression(node))
         {
             return this.visitAssignmentExpression(node);
         }
+        else if (TypeGuard.isAssignmentProperty(node))
+        {
+            return this.visitAssignmentProperty(node);
+        }
         else if (TypeGuard.isAssignmentPattern(node))
         {
-            return this.visit(node);
+            return this.visitAssignmentPattern(node);
         }
         else if (TypeGuard.isBinaryExpression(node))
         {
@@ -94,6 +105,18 @@ export default abstract class ExpressionVisitor
         {
             return this.visitRegExpLiteral(node);
         }
+        else if (TypeGuard.isRestElement(node))
+        {
+            return this.visitRestElement(node);
+        }
+        else if (TypeGuard.isSequenceExpression(node))
+        {
+            return this.visitSequenceExpression(node);
+        }
+        else if (TypeGuard.isSpreadElement(node))
+        {
+            return this.visitSpreadExpression(node);
+        }
         else if (TypeGuard.isTemplateLiteral(node))
         {
             return this.visitTemplateLiteral(node);
@@ -116,7 +139,7 @@ export default abstract class ExpressionVisitor
         }
         else
         {
-            throw new Error("Invalid node type");
+            return node;
         }
     }
 
@@ -162,6 +185,14 @@ export default abstract class ExpressionVisitor
     {
         this.visit(node.left);
         this.visit(node.right);
+
+        return node;
+    }
+
+    protected visitAssignmentProperty(node: IAssignmentProperty): INode
+    {
+        this.visit(node.key);
+        this.visit(node.value);
 
         return node;
     }
@@ -278,6 +309,16 @@ export default abstract class ExpressionVisitor
     protected visitRestElement(node: IRestElement): INode
     {
         this.visit(node.argument);
+
+        return node;
+    }
+
+    protected visitSequenceExpression(node: ISequenceExpression): INode
+    {
+        for (const expression of node.expressions)
+        {
+            this.visit(expression);
+        }
 
         return node;
     }

@@ -1,4 +1,5 @@
 import { Nullable } from "@surface/core";
+import { tuple }    from "@surface/core/common/generic";
 import { format }   from "@surface/core/common/string";
 import IExpression  from "../interfaces/expression";
 import INode        from "../interfaces/node";
@@ -14,7 +15,8 @@ import
     UnaryOperator,
     UpdateOperator,
 } from "../types";
-import { hasDuplicated } from "./common";
+import { hasDuplicated }       from "./common";
+import AssignmentProperty      from "./elements/assignment-property";
 import Property                from "./elements/property";
 import SpreadElement           from "./elements/spread-element";
 import TemplateElement         from "./elements/template-element";
@@ -127,7 +129,7 @@ export default class Parser
             }
             else if (this.match("{"))
             {
-                elements.push(this.inheritGrammar(this.objectDestructureExpression));
+                elements.push(this.inheritGrammar(this.objectPattern));
             }
             else
             {
@@ -224,8 +226,9 @@ export default class Parser
             let left  = expression;
             let right = this.isolateGrammar(this.exponentiationExpression);
 
-            const stack: [IExpression, string, IExpression] = [left, token.raw, right];
+            const stack = tuple(left, token.raw as BinaryOperator|LogicalOperator, right);
             const precedences = [precedence];
+
             while (true)
             {
                 precedence = this.binaryPrecedence(this.lookahead);
@@ -238,23 +241,31 @@ export default class Parser
                 while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
                 {
                     right = stack.pop() as IExpression;
+
                     const operator = stack.pop() as BinaryOperator|LogicalOperator;
+
                     left = stack.pop() as IExpression;
+
                     precedences.pop();
+
                     stack.push(operator == "&&" || operator == "||" ? new LogicalExpression(left, right, operator) : new BinaryExpression(left, right, operator));
                 }
 
-                stack.push(this.nextToken().raw);
+                stack.push(this.nextToken().raw as BinaryOperator|LogicalOperator);
+
                 precedences.push(precedence);
+
                 stack.push(this.isolateGrammar(this.exponentiationExpression));
             }
 
             let i = stack.length - 1;
+
             expression = stack[i] as IExpression;
 
             while (i > 1)
             {
                 const operator = stack[i - 1] as BinaryOperator|LogicalOperator;
+
                 if (operator == "&&" || operator == "||")
                 {
                     expression = new LogicalExpression(stack[i - 2] as IExpression, expression, operator);
@@ -363,7 +374,7 @@ export default class Parser
         }
         else if (this.match("{"))
         {
-            return this.isolateGrammar(this.objectDestructureExpression);
+            return this.isolateGrammar(this.objectPattern);
         }
         else
         {
@@ -528,7 +539,7 @@ export default class Parser
             {
                 this.invalidInitialization = null;
 
-                const parameters = expressions.map(x => this.reinterpretPattern(x) as IPattern);
+                const parameters = expressions.map(x => this.reinterpretPattern(x));
 
                 this.expect("=>");
 
@@ -602,9 +613,9 @@ export default class Parser
         return expression;
     }
 
-    private objectDestructureExpression(): ObjectPattern
+    private objectPattern(): ObjectPattern
     {
-        const entries: Array<Property|RestElement> = [];
+        const entries: Array<AssignmentProperty|RestElement> = [];
 
         this.expect("{");
 
@@ -616,7 +627,7 @@ export default class Parser
 
                 const expression = this.inheritGrammar(this.leftHandSideExpression, false);
 
-                if (expression.type != NodeType.Identifier)
+                if (!TypeGuard.isIdentifier(expression))
                 {
                     throw this.syntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts);
                 }
@@ -630,7 +641,7 @@ export default class Parser
             }
             else
             {
-                entries.push(this.reinterpretPattern(this.inheritGrammar(this.objectPropertyExpression)) as Property);
+                entries.push(this.reinterpretPattern(this.inheritGrammar(this.objectPropertyExpression)));
             }
 
             if (!this.match("}"))
@@ -898,9 +909,10 @@ export default class Parser
     private reinterpretPattern(expression: ArrayExpression):        ArrayPattern;
     private reinterpretPattern(expression: AssignmentExpression):   AssignmentPattern;
     private reinterpretPattern(expression: ObjectExpression):       ObjectPattern;
+    private reinterpretPattern(expression: Property):               AssignmentProperty;
     private reinterpretPattern(expression: SpreadElement):          RestElement;
-    private reinterpretPattern(expression: SpreadElement|Property): RestElement|Property;
-    private reinterpretPattern<T extends INode>(node: T):           T;
+    private reinterpretPattern(expression: Property|SpreadElement): AssignmentProperty|RestElement;
+    private reinterpretPattern(expression: INode):                  IPattern;
     // tslint:disable-next-line:cyclomatic-complexity
     private reinterpretPattern(node: INode):                        INode
     {
@@ -908,6 +920,7 @@ export default class Parser
         {
             case NodeType.ArrayPattern:
             case NodeType.AssignmentPattern:
+            case NodeType.AssignmentProperty:
             case NodeType.Identifier:
             case NodeType.Literal:
             case NodeType.ObjectPattern:
@@ -917,31 +930,27 @@ export default class Parser
             {
                 const expression = node as AssignmentExpression;
 
-                if (expression.left.type != NodeType.Identifier)
+                if (TypeGuard.isIdentifier(expression.left))
                 {
-                    throw this.syntaxError(Messages.illegalPropertyInDeclarationContext);
+                    return new AssignmentPattern(expression.left, expression.right);
                 }
 
-                return new AssignmentPattern(expression.left, expression.right);
+                throw this.syntaxError(Messages.illegalPropertyInDeclarationContext);
             }
             case NodeType.Property:
             {
-                const expression = node as Property;
+                const { key, value, computed, shorthand } = node as Property;
 
-                if (expression.shorthand && TypeGuard.isIdentifier(expression.value))
+                if (shorthand && TypeGuard.isIdentifier(value))
                 {
-                    return new Property(new Identifier(expression.value.name), new Identifier(expression.value.name), false, true);
+                    return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, true);
                 }
-                else if (!expression.shorthand && expression.value.type != NodeType.Identifier && expression.value.type != NodeType.ObjectExpression)
+                else if (!shorthand && !TypeGuard.isIdentifier(value) && !TypeGuard.isObjectExpression(value))
                 {
                     break;
                 }
-                else if (expression.value.type == NodeType.ObjectExpression)
-                {
-                    expression.value = this.reinterpretPattern(expression.value);
-                }
 
-                return node;
+                return new AssignmentProperty(key, TypeGuard.isObjectExpression(value) ? this.reinterpretPattern(value) : value as Identifier, computed, shorthand);
             }
             case NodeType.ArrayExpression:
             {
@@ -975,7 +984,7 @@ export default class Parser
             {
                 const expression = node as ObjectExpression;
 
-                let entries: Array<Property|RestElement> = [];
+                let entries: Array<AssignmentProperty|RestElement> = [];
 
                 let index = 0;
                 for (const property of expression.properties)
@@ -1121,6 +1130,9 @@ export default class Parser
                 break;
             case TokenType.EOF:
                 message = Messages.unexpectedEndOfExpression;
+                break;
+            case TokenType.Template:
+                message = format(Messages.unexpectedToken, { token: "" });
                 break;
             default:
                 message = format(Messages.unexpectedToken, { token: token.raw });

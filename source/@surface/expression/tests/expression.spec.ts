@@ -1,30 +1,33 @@
-import { batchTest, shouldPass, suite }                        from "@surface/test-suite";
-import { expect }                                              from "chai";
+import { batchTest, shouldFail, shouldPass, suite, test }      from "@surface/test-suite";
+import chai                                                    from "chai";
+import Expression                                              from "..";
 import NodeType                                                from "../node-type";
-import { expressionFactoryFixtures, ExpressionFactoryFixture } from "./expectations/expression-expected";
+import { expressionFactoryFixtures, ExpressionFactoryExpected } from "./expectations/expression-expected";
 
 @suite
 export default class ExpressionSpec
 {
     @shouldPass
-    @batchTest(expressionFactoryFixtures, x => `method Expression.${NodeType[x.type]} should return ${NodeType[x.type]} Expression`)
-    public expressionFactory(fixture: ExpressionFactoryFixture)
+    @batchTest(expressionFactoryFixtures, x => `method Expression.${x.method} should return ${NodeType[x.type]} Expression`)
+    public expressionFactory(expected: ExpressionFactoryExpected)
     {
-        const expression = fixture.factory();
-        expect(expression.type).to.equal(fixture.type);
+        chai.expect(expected.factory().type).to.equal(expected.type);
+    }
 
-        if ("evaluate" in expression)
-        {
-            const value = expression.evaluate(fixture.scope || { });
+    @test @shouldPass
+    public parse()
+    {
+        const expression = Expression.parse("this");
 
-            if (value instanceof RegExp)
-            {
-                expect(value).to.match(fixture.value as RegExp);
-            }
-            else
-            {
-                expect(value).to.deep.equal(fixture.value);
-            }
-        }
+        chai.expect(expression.type).to.equal(NodeType.ThisExpression);
+    }
+
+    @test @shouldFail
+    public arrowFunctionWithDuplicatedParameters()
+    {
+        const expression = () =>
+            Expression.arrowFunction([Expression.identifier("a"), Expression.identifier("a") ], Expression.identifier("x", true));
+
+        chai.expect(expression).to.throw("Duplicate parameter name not allowed in this context");
     }
 }

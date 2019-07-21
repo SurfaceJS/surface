@@ -36,7 +36,7 @@ export function hasDuplicated(parameters: Array<IPattern>): boolean
         {
             for (const property of pattern.properties)
             {
-                if (TypeGuard.isProperty(property))
+                if (TypeGuard.isAssignmentProperty(property))
                 {
                     if (isDuplicated(property.value))
                     {

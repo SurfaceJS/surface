@@ -92,15 +92,6 @@ export default class TemplateProcessor
                 }
                 else
                 {
-                    if (element.tagName == "SLOT" && attribute.name == "scope" && !("scope" in element))
-                    {
-                        Object.defineProperty(element, "scope", { configurable: true, value: null, writable: true });
-                    }
-                    else if (attribute.name == "scope")
-                    {
-                        scope[attribute.value] = (element.assignedSlot! as Indexer).scope;
-                    }
-
                     const isOneWay         = this.expressions.oneWay.test(attribute.value);
                     const isTwoWay         = this.expressions.twoWay.test(attribute.value);
                     const isPathExpression = this.expressions.path.test(attribute.value);
@@ -283,16 +274,16 @@ export default class TemplateProcessor
 
             const rawScope = template.getAttribute("#scope");
 
-            const contentScope: Indexer = rawScope ? Expression.from(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
+            const contentScope: Indexer = rawScope ? Expression.parse(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
 
-            const slotName = template.getAttribute("#content") || "";
+            const contentName = template.getAttribute("#content") || "";
 
             const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
 
-            if (!slottedTemplates.has(slotName))
+            if (!slottedTemplates.has(contentName))
             {
-                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${slotName}]`);
-                slottedTemplates.set(slotName, outterTemplate);
+                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${contentName}]`);
+                slottedTemplates.set(contentName, outterTemplate);
 
                 if (outterTemplate)
                 {
@@ -300,7 +291,7 @@ export default class TemplateProcessor
                 }
             }
 
-            const outterTemplate = slottedTemplates.get(slotName) || template;
+            const outterTemplate = slottedTemplates.get(contentName) || template;
 
             const scopeSpression = outterTemplate.getAttribute("scope") || "scope";
 
@@ -393,7 +384,7 @@ export default class TemplateProcessor
 
             const visitor = new ObserverVisitor({ notify }, scope);
 
-            const expression = Expression.from(template.getAttribute("#if")!);
+            const expression = Expression.parse(template.getAttribute("#if")!);
 
             subscriptions.push(visitor.observe(expression));
 
@@ -405,7 +396,7 @@ export default class TemplateProcessor
             {
                 if (simbling.hasAttribute("#else-if"))
                 {
-                    const expression = Expression.from(simbling.getAttribute("#else-if")!);
+                    const expression = Expression.parse(simbling.getAttribute("#else-if")!);
 
                     subscriptions.push(visitor.observe(expression));
 
@@ -453,7 +444,7 @@ export default class TemplateProcessor
 
             const destructured = aliasExpression.startsWith("[");
 
-            const expression = Expression.from(iterableExpression);
+            const expression = Expression.parse(iterableExpression);
 
             let cache: Array<[unknown, Array<ChildNode>]> = [];
 

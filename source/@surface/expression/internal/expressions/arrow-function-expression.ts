@@ -2,6 +2,8 @@ import { Indexer, Nullable }  from "@surface/core";
 import { coalesce, hasValue } from "@surface/core/common/generic";
 import IArrayPattern          from "../../interfaces/array-pattern";
 import IExpression            from "../../interfaces/expression";
+import IIdentifier            from "../../interfaces/identifier";
+import ILiteral               from "../../interfaces/literal";
 import IObjectPattern         from "../../interfaces/object-pattern";
 import IPattern               from "../../interfaces/pattern";
 import IRestElement           from "../../interfaces/rest-element";
@@ -119,7 +121,7 @@ export default class ArrowFunctionExpression implements IExpression
 
         for (const property of objectPattern.properties)
         {
-            if (TypeGuard.isProperty(property))
+            if (TypeGuard.isAssignmentProperty(property))
             {
                 if (TypeGuard.isAssignmentExpression(property.value))
                 {
@@ -127,8 +129,8 @@ export default class ArrowFunctionExpression implements IExpression
                 }
                 else
                 {
-                    currentScope[`${property.value.evaluate(scope, useCache)}`] = property.shorthand ?
-                        value[`${property.value.evaluate(scope, useCache)}`]
+                    currentScope[`${(property.value as IIdentifier|ILiteral).evaluate(scope, useCache)}`] = property.shorthand ?
+                        value[`${(property.value as IIdentifier|ILiteral).evaluate(scope, useCache)}`]
                         : value[`${property.key.evaluate(scope, useCache)}`];
                 }
             }

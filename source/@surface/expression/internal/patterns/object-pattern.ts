@@ -1,12 +1,16 @@
-import IPattern        from "../../interfaces/pattern";
-import IProperty       from "../../interfaces/property";
-import IRestElement from "../../interfaces/rest-element";
-import NodeType        from "../../node-type";
+import IAssignmentProperty from "../../interfaces/assignment-property";
+import IPattern            from "../../interfaces/pattern";
+import IRestElement        from "../../interfaces/rest-element";
+import NodeType            from "../../node-type";
+import { PATTERN }         from "../../symbols";
 
 export default class ObjectPattern implements IPattern
 {
-    private _properties: Array<IProperty|IRestElement>;
-    public get properties(): Array<IProperty|IRestElement>
+    private _properties: Array<IAssignmentProperty|IRestElement>;
+
+    public [PATTERN]: void;
+
+    public get properties(): Array<IAssignmentProperty|IRestElement>
     {
         return this._properties;
     }
@@ -16,7 +20,7 @@ export default class ObjectPattern implements IPattern
         return NodeType.ObjectPattern;
     }
 
-    public constructor(properties: Array<IProperty|IRestElement>)
+    public constructor(properties: Array<IAssignmentProperty|IRestElement>)
     {
         this._properties = properties;
     }

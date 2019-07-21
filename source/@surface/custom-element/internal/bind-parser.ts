@@ -71,7 +71,7 @@ export default class BindParser
                 }
                 while (!this.eof() && stack > 0);
 
-                const expression = Expression.from(this.source.substring(start, this.index - 2));
+                const expression = Expression.parse(this.source.substring(start, this.index - 2));
 
                 this.expressions.push(expression);
 

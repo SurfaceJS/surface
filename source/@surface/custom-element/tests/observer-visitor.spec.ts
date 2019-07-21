@@ -30,7 +30,7 @@ export class ObserverVisitorSpec
 
         let value = 0;
 
-        const expression = Expression.from("this.value");
+        const expression = Expression.parse("this.value");
         const visitor    = new ObserverVisitor({ notify: (x: number) => value = x }, scope);
 
         visitor.observe(expression);
@@ -51,7 +51,7 @@ export class ObserverVisitorSpec
         }
 
         const scope      = { this: new Mock() };
-        const expression = Expression.from("this.increment(1)");
+        const expression = Expression.parse("this.increment(1)");
         const visitor    = new ObserverVisitor({ notify: () => undefined }, scope);
 
         const invoker = (expression as ICallExpression).callee.evaluate(scope);
@@ -73,7 +73,7 @@ export class ObserverVisitorSpec
         }
 
         const scope    = { this: new MockWithoutSetter() };
-        const expression = Expression.from("this.value");
+        const expression = Expression.parse("this.value");
         const visitor    = new ObserverVisitor({ notify: () => chai.expect(scope.this.value).to.equal(1) }, scope);
 
         visitor.observe(expression); // Todo: Review scenario
@@ -84,7 +84,7 @@ export class ObserverVisitorSpec
     @test @shouldFail
     public bindToNonInitializedObject(): void
     {
-        const expression = Expression.from("this.data['value']");
+        const expression = Expression.parse("this.data['value']");
         const visitor    = new ObserverVisitor({ notify: () => undefined }, { this: { data: undefined } });
 
         chai.expect(() => visitor.observe(expression)).to.throw(Error, "Can\'t make reactive a non initialized target");

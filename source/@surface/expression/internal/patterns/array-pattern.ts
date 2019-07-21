@@ -1,9 +1,13 @@
-import IPattern from "../../interfaces/pattern";
-import NodeType from "../../node-type";
+import IPattern    from "../../interfaces/pattern";
+import NodeType    from "../../node-type";
+import { PATTERN } from "../../symbols";
 
 export default class ArrayPattern implements IPattern
 {
     private _elements: Array<IPattern|null>;
+
+    public [PATTERN]: void;
+
     public get elements(): Array<IPattern|null>
     {
         return this._elements;

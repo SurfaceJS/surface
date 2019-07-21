@@ -166,6 +166,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "([, a]) => a",
+        value:    ([, a]: Array<string>) => a,
+        toString: "([, a]) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
         raw:      "([a = 1]) => a",
         value:    ([a = 1]: Array<number>) => a,
         toString: "([a = 1]) => a",
@@ -204,6 +211,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "(...[a, ...b]) => a + b[0]",
         value:    (...[a, ...b]: Array<number>) => a + b[0],
         toString: "(...[a, ...b]) => a + b[0]",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "(...[a, [b]]) => a + b",
+        value:    (...[a, [b]]: [number, Array<number>]) => a + b,
+        toString: "(...[a, [b]]) => a + b",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "(...[a, { b }]) => a + b",
+        value:    (...[a, { b }]: [number, { b: number }]) => a + b,
+        toString: "(...[a, { b }]) => a + b",
         type:     ArrowFunctionExpression,
     },
     {
@@ -775,9 +796,9 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
-        raw:      "false || true",
+        raw:      "false || true && !false",
         value:    true,
-        toString: "false || true",
+        toString: "false || true && !false",
         type:     LogicalExpression,
     },
     {
@@ -1043,6 +1064,11 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
+        raw:     "{ `x`: 1 }",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "" }), 1, 2, 3)
+    },
+    {
+        scope:   scope,
         raw:     "1 + if",
         error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 4, 5)
     },
@@ -1088,6 +1114,16 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
+        raw:     "([...x, y]) => 1",
+        error:   new SyntaxError(format(Messages.restParameterMustBeLastFormalParameter, { token: "=>" }), 1, 12, 13)
+    },
+    {
+        scope:   scope,
+        raw:     "(...[...x, y]) => 1",
+        error:   new SyntaxError(format(Messages.restParameterMustBeLastFormalParameter, { token: "=>" }), 1, 9, 10)
+    },
+    {
+        scope:   scope,
         raw:     "(...{ a, { b }}) => a + b",
         error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 9, 10)
     },
@@ -1100,6 +1136,11 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         scope:   scope,
         raw:     "(...{ a, ...{ b } }) => a",
         error:   new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 18, 19)
+    },
+    {
+        scope:   scope,
+        raw:     "({ ...{ a }, b }) => a",
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 18, 19)
     },
     {
         scope:   scope,
@@ -1140,5 +1181,15 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         scope:   scope,
         raw:     "(a, [b, { x: { b } }]) => a",
         error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 27, 28)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [b, { x: { c, c } }]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 30, 31)
+    },
+    {
+        scope:   scope,
+        raw:     "(a, [b, { x: { c, ...c } }]) => a",
+        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 33, 34)
     },
 ];

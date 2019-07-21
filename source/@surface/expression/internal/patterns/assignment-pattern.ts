@@ -1,11 +1,14 @@
 import IExpression from "../../interfaces/expression";
 import IPattern    from "../../interfaces/pattern";
 import NodeType    from "../../node-type";
+import { PATTERN } from "../../symbols";
 
 export default class AssignmentPattern implements IPattern
 {
     private readonly _left:  IPattern;
     private readonly _right: IExpression;
+
+    public [PATTERN]: void;
 
     public get left(): IPattern
     {

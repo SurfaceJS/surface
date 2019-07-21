@@ -5,6 +5,7 @@ enum NodeType
     ArrowFunctionExpression,
     AssignmentExpression,
     AssignmentPattern,
+    AssignmentProperty,
     BinaryExpression,
     CallExpression,
     ConditionalExpression,

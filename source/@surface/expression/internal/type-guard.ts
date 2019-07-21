@@ -3,6 +3,7 @@ import IArrayPattern            from "../interfaces/array-pattern";
 import IArrowFunctionExpression from "../interfaces/arrow-function-expression";
 import IAssignmentExpression    from "../interfaces/assignment-expression";
 import IAssignmentPattern       from "../interfaces/assignment-pattern";
+import IAssignmentProperty      from "../interfaces/assignment-property";
 import IBinaryExpression        from "../interfaces/binary-expression";
 import ICallExpression          from "../interfaces/call-expression";
 import IConditionalExpression   from "../interfaces/conditional-expression";
@@ -46,6 +47,11 @@ export default class TypeGuard
     public static isAssignmentExpression(node: INode): node is IAssignmentExpression
     {
         return node.type == NodeType.AssignmentExpression;
+    }
+
+    public static isAssignmentProperty(node: INode): node is IAssignmentProperty
+    {
+        return node.type == NodeType.AssignmentProperty;
     }
 
     public static isAssignmentPattern(node: INode): node is IAssignmentPattern
