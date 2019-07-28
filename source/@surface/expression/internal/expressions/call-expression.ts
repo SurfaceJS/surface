@@ -31,6 +31,17 @@ export default class CallExpression implements IExpression
         this._callee = value;
     }
 
+    private _optional: boolean;
+    public get optional(): boolean
+    {
+        return this._optional;
+    }
+
+    public set optional(value: boolean)
+    {
+        this._optional = value;
+    }
+
     private _thisArg: IExpression;
     public get thisArg(): IExpression
     {
@@ -47,11 +58,12 @@ export default class CallExpression implements IExpression
         return NodeType.CallExpression;
     }
 
-    public constructor(thisArg: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
+    public constructor(thisArg: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>, optional?: boolean)
     {
         this._arguments = $arguments;
         this._thisArg   = thisArg;
         this._callee    = callee;
+        this._optional  = !!optional;
     }
 
     public evaluate(scope: Indexer, useChache: boolean): unknown
@@ -62,6 +74,11 @@ export default class CallExpression implements IExpression
         }
 
         const fn = this.callee.evaluate(scope, useChache) as Nullable<Function>;
+
+        if (this.optional && !hasValue(fn))
+        {
+            return undefined;
+        }
 
         if (!fn)
         {
@@ -91,6 +108,6 @@ export default class CallExpression implements IExpression
 
     public toString(): string
     {
-        return `${[NodeType.BinaryExpression, NodeType.ConditionalExpression, NodeType.ArrowFunctionExpression].includes(this.callee.type) ? `(${this.callee})` : this.callee}(${this.arguments.map(x => x.toString()).join(", ")})`;
+        return `${[NodeType.BinaryExpression, NodeType.ConditionalExpression, NodeType.ArrowFunctionExpression].includes(this.callee.type) ? `(${this.callee})` : this.callee}${this.optional ? "?." : ""}(${this.arguments.map(x => x.toString()).join(", ")})`;
     }
 }

@@ -1,4 +1,4 @@
-import { Indexer }  from "@surface/core";
+import { Indexer, Nullable }  from "@surface/core";
 import { hasValue } from "@surface/core/common/generic";
 import IExpression  from "../../interfaces/expression";
 import NodeType     from "../../node-type";
@@ -41,16 +41,28 @@ export default class MemberExpression implements IExpression
         this._object = value;
     }
 
+    private _optional: boolean;
+    public get optional(): boolean
+    {
+        return this._optional;
+    }
+
+    public set optional(value: boolean)
+    {
+        this._optional = value;
+    }
+
     public get type(): NodeType
     {
         return NodeType.MemberExpression;
     }
 
-    public constructor(object: IExpression, property: IExpression, computed: boolean)
+    public constructor(object: IExpression, property: IExpression, computed: boolean, optional?: boolean)
     {
         this._object   = object;
         this._property = property;
         this._computed = computed;
+        this._optional = !!optional;
     }
 
     public evaluate(scope: Indexer, useChache: boolean): unknown
@@ -60,11 +72,18 @@ export default class MemberExpression implements IExpression
             return this.cache;
         }
 
-        return this.cache = (this.object.evaluate(scope, useChache) as Indexer)[`${this.property.evaluate(scope, useChache)}`];
+        const object = this.object.evaluate(scope, useChache) as Nullable<Indexer>;
+
+        if (this.optional)
+        {
+            return this.cache = (hasValue(object) ? object[`${this.property.evaluate(scope, useChache)}`] : undefined);
+        }
+
+        return this.cache = object![`${this.property.evaluate(scope, useChache)}`];
     }
 
     public toString(): string
     {
-        return `${this.object}${TypeGuard.isIdentifier(this.property) ? `.${this.property.name}` : `[${this.property}]`}`;
+        return `${this.object}${TypeGuard.isIdentifier(this.property) ? `${this.optional ? "?" : ""}.${this.property.name}` : `${this.optional ? "?." : ""}[${this.property}]`}`;
     }
 }

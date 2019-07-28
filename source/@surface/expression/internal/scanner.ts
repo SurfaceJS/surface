@@ -286,7 +286,7 @@ export default class Scanner
         return { code, octal };
     }
 
-    private scanBinaryLiteral(prefix: string, start: number): Token
+    private scanBinaryLiteral(start: number): Token
     {
         let $number = "";
         let char    = "";
@@ -544,7 +544,7 @@ export default class Scanner
                     if (char == "b" || char == "B")
                     {
                         this.advance();
-                        return this.scanBinaryLiteral(char, start);
+                        return this.scanBinaryLiteral(start);
                     }
 
                     if (char == "o" || char == "O")
@@ -870,12 +870,12 @@ export default class Scanner
         const start = this.index;
 
         // Check for most common single-character punctuators.
-        let $string = this.source[this.index];
-        switch ($string)
+        let punctuator = this.source[this.index];
+        switch (punctuator)
         {
             case "(":
             case "{":
-                if ($string == "{")
+                if (punctuator == "{")
                 {
                     this.curlyStack.push("{");
                 }
@@ -888,7 +888,7 @@ export default class Scanner
                 {
                     // Spread operator: ...
                     this.setCursorAt(this.index + 2);
-                    $string = "...";
+                    punctuator = "...";
                 }
                 break;
 
@@ -902,24 +902,47 @@ export default class Scanner
             case "[":
             case "]":
             case ":":
-            case "?":
             case "~":
                 this.advance();
+                break;
+            case "?":
+                punctuator = "?";
+
+                const lookahead = this.source[this.index + 1];
+
+                if (lookahead == ".")
+                {
+                    if (!Character.isDecimalDigit(this.source.codePointAt(this.index + 2)!))
+                    {
+                        punctuator = "?.";
+
+                        this.advance();
+                    }
+                }
+                else if (lookahead == "?")
+                {
+                    punctuator = "??";
+
+                    this.advance();
+                }
+
+                this.advance();
+
                 break;
 
             default:
                 // 4-character punctuator.
-                $string = this.source.substr(this.index, 4);
+                punctuator = this.source.substr(this.index, 4);
 
-                if ($string == ">>>=")
+                if (punctuator == ">>>=")
                 {
                     this.setCursorAt(this.index + 4);
                 }
                 else
                 {
                     // 3-character punctuators.
-                    $string = $string.substr(0, 3);
-                    switch ($string)
+                    punctuator = punctuator.substr(0, 3);
+                    switch (punctuator)
                     {
                         case "===":
                         case "!==":
@@ -931,35 +954,35 @@ export default class Scanner
                         break;
                         default:
                             // 2-character punctuators.
-                            $string = $string.substr(0, 2);
-                            switch ($string)
+                            punctuator = punctuator.substr(0, 2);
+                            switch (punctuator)
                             {
-                                case "&&":
-                                case "||":
-                                case "==":
                                 case "!=":
-                                case "+=":
-                                case "-=":
-                                case "*=":
-                                case "/=":
-                                case "++":
-                                case "--":
-                                case "<<":
-                                case ">>":
-                                case "&=":
-                                case "|=":
-                                case "^=":
                                 case "%=":
-                                case "<=":
-                                case ">=":
-                                case "=>":
+                                case "&&":
+                                case "&=":
                                 case "**":
-                                this.setCursorAt(this.index + 2);
-                                break;
+                                case "*=":
+                                case "++":
+                                case "+=":
+                                case "--":
+                                case "-=":
+                                case "/=":
+                                case "<<":
+                                case "<=":
+                                case "==":
+                                case "=>":
+                                case ">=":
+                                case ">>":
+                                case "^=":
+                                case "|=":
+                                case "||":
+                                    this.setCursorAt(this.index + 2);
+                                    break;
                             default:
                                 // 1-character punctuators.
-                                $string = this.source[this.index];
-                                if ("<>=!+-*%&|^/".indexOf($string) >= 0)
+                                punctuator = this.source[this.index];
+                                if ("<>=!+-*%&|^/".includes(punctuator))
                                 {
                                     this.advance();
                                 }
@@ -976,8 +999,8 @@ export default class Scanner
 
         const token =
         {
-            raw:        $string,
-            value:      $string,
+            raw:        punctuator,
+            value:      punctuator,
             type:       TokenType.Punctuator,
             start:      start,
             end:        this.index,

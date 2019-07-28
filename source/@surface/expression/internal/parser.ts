@@ -10,6 +10,7 @@ import
 {
     AssignmentOperator,
     BinaryOperator,
+    CoalesceOperator,
     LiteralValue,
     LogicalOperator,
     UnaryOperator,
@@ -25,6 +26,7 @@ import ArrowFunctionExpression from "./expressions/arrow-function-expression";
 import AssignmentExpression    from "./expressions/assignment-expression";
 import BinaryExpression        from "./expressions/binary-expression";
 import CallExpression          from "./expressions/call-expression";
+import CoalesceExpression      from "./expressions/coalesce-expression";
 import ConditionalExpression   from "./expressions/conditional-expression";
 import Identifier              from "./expressions/identifier";
 import Literal                 from "./expressions/literal";
@@ -242,13 +244,13 @@ export default class Parser
                 {
                     right = stack.pop() as IExpression;
 
-                    const operator = stack.pop() as BinaryOperator|LogicalOperator;
+                    const operator = stack.pop() as BinaryOperator|CoalesceOperator|LogicalOperator;
 
                     left = stack.pop() as IExpression;
 
                     precedences.pop();
 
-                    stack.push(operator == "&&" || operator == "||" ? new LogicalExpression(left, right, operator) : new BinaryExpression(left, right, operator));
+                    stack.push(operator == "??" ? new CoalesceExpression(left, right) : operator == "&&" || operator == "||" ? new LogicalExpression(left, right, operator) : new BinaryExpression(left, right, operator));
                 }
 
                 stack.push(this.nextToken().raw as BinaryOperator|LogicalOperator);
@@ -264,19 +266,21 @@ export default class Parser
 
             while (i > 1)
             {
-                const operator = stack[i - 1] as BinaryOperator|LogicalOperator;
+                const operator = stack[i - 1] as BinaryOperator|CoalesceOperator|LogicalOperator;
 
-                if (operator == "&&" || operator == "||")
-                {
-                    expression = new LogicalExpression(stack[i - 2] as IExpression, expression, operator);
-                }
-                else
-                {
-                    expression = new BinaryExpression(stack[i - 2] as IExpression, expression, operator);
-                }
+                left  = stack[i - 2] as IExpression;
+                right = expression;
+
+                expression = operator == "??" ?
+                    new CoalesceExpression(left, right)
+                    : operator == "&&" || operator == "||" ?
+                        new LogicalExpression(left, right, operator)
+                        : new BinaryExpression(left, right, operator);
+
                 i -= 2;
             }
         }
+
         return expression;
     }
 
@@ -296,41 +300,44 @@ export default class Parser
                 default:
                     return 0;
 
-                case "||":
+                case "??":
                     return 1;
 
-                case "&&":
+                case "||":
                     return 2;
 
-                case "|":
+                case "&&":
                     return 3;
 
-                case "^":
+                case "|":
                     return 4;
 
-                case "&":
+                case "^":
                     return 5;
+
+                case "&":
+                    return 6;
 
                 case "==":
                 case "!=":
                 case "===":
                 case "!==":
-                    return 6;
+                    return 7;
 
                 case "<":
                 case ">":
                 case "<=":
                 case ">=":
-                    return  7;
+                    return  8;
 
                 case "<<":
                 case ">>":
                 case ">>>":
-                    return 8;
+                    return 9;
 
                 case "+":
                 case "-":
-                    return 9;
+                    return 10;
 
                 case "*":
                 case "/":
@@ -503,6 +510,13 @@ export default class Parser
             if (this.match("..."))
             {
                 expressions.push((this.inheritGrammar(this.restElement)));
+
+                if (!this.match(")"))
+                {
+                    throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                }
+
+                this.expect(")");
             }
             else
             {
@@ -519,6 +533,13 @@ export default class Parser
                             if (this.match("..."))
                             {
                                 expressions.push((this.inheritGrammar(this.restElement)));
+
+                                if (!this.match(")"))
+                                {
+                                    throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
+                                }
+
+                                break;
                             }
                             else
                             {
@@ -583,30 +604,53 @@ export default class Parser
                     throw this.unexpectedTokenError(this.lookahead);
                 }
             }
-            else if (this.match("["))
-            {
-                this.expect("[");
-
-                const propertyExpression = this.isolateGrammar(this.assignmentExpression);
-
-                this.expect("]");
-
-                expression = new MemberExpression(expression, propertyExpression, true);
-            }
-            else if (this.match("("))
-            {
-                if (!allowCall)
-                {
-                    return expression;
-                }
-
-                const thisArg = parentExpression == expression ? new Literal(null) : parentExpression;
-
-                expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.argumentsExpression));
-            }
             else
             {
-                break;
+                let optional = this.match("?.");
+
+                if (optional)
+                {
+                    this.nextToken();
+                }
+
+                if (this.match("["))
+                {
+                    this.expect("[");
+
+                    const propertyExpression = this.isolateGrammar(this.assignmentExpression);
+
+                    this.expect("]");
+
+                    expression = new MemberExpression(expression, propertyExpression, true, optional);
+                }
+                else if (this.match("("))
+                {
+                    if (!allowCall)
+                    {
+                        return expression;
+                    }
+
+                    const thisArg = parentExpression == expression ? new Literal(null) : parentExpression;
+
+                    expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.argumentsExpression), optional);
+                }
+                else if (optional)
+                {
+                    parentExpression = expression;
+
+                    if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
+                    {
+                        expression = new MemberExpression(parentExpression, new Identifier(this.nextToken().raw), false, true);
+                    }
+                    else
+                    {
+                        throw this.unexpectedTokenError(this.lookahead);
+                    }
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
@@ -786,12 +830,7 @@ export default class Parser
 
     private newPrimaryExpression(): IExpression
     {
-        const token = this.nextToken();
-
-        if (token.type != TokenType.Identifier)
-        {
-            this.unexpectedTokenError(token);
-        }
+        this.nextToken();
 
         const callee = this.inheritGrammar(this.leftHandSideExpression, false);
 
@@ -918,9 +957,9 @@ export default class Parser
     {
         switch (node.type)
         {
-            case NodeType.ArrayPattern:
-            case NodeType.AssignmentPattern:
-            case NodeType.AssignmentProperty:
+            // case NodeType.ArrayPattern: Never reached
+            // case NodeType.AssignmentPattern: Never reached
+            // case NodeType.AssignmentProperty: Never reached
             case NodeType.Identifier:
             case NodeType.Literal:
             case NodeType.ObjectPattern:
@@ -929,6 +968,11 @@ export default class Parser
             case NodeType.AssignmentExpression:
             {
                 const expression = node as AssignmentExpression;
+
+                if (expression.operator != "=")
+                {
+                    throw this.syntaxError(Messages.invalidDestructuringAssignmentTarget);
+                }
 
                 if (TypeGuard.isIdentifier(expression.left))
                 {
@@ -945,7 +989,7 @@ export default class Parser
                 {
                     return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, true);
                 }
-                else if (!shorthand && !TypeGuard.isIdentifier(value) && !TypeGuard.isObjectExpression(value))
+                else if (!shorthand && !TypeGuard.isIdentifier(value) && !TypeGuard.isArrayExpression(value) && !TypeGuard.isObjectExpression(value))
                 {
                     break;
                 }
@@ -1009,10 +1053,6 @@ export default class Parser
                 {
                     throw this.syntaxError(Messages.invalidDestructuringAssignmentTarget);
                 }
-                else if (expression.argument.type != NodeType.Identifier)
-                {
-                    throw this.syntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts);
-                }
 
                 return new RestElement(this.reinterpretPattern(expression.argument));
             }
@@ -1039,13 +1079,6 @@ export default class Parser
         {
             throw this.syntaxError(Messages.restParameterMayNotHaveAdefaultInitializer);
         }
-
-        if (!this.match(")"))
-        {
-            throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
-        }
-
-        this.expect(")");
 
         return new RestElement(expression);
     }

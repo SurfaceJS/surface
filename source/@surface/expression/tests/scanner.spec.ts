@@ -1,10 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                                         from "chai";
-import Messages                                           from "../internal/messages";
-import Scanner                                            from "../internal/scanner";
-import TokenType                                          from "../internal/token-type";
-import SyntaxError                                        from "../syntax-error";
-import { invalidTokens, validTokens, ExpectedInvalidToken, ExpectedValidToken }       from "./expectations/scanner-expected";
+import { batchTest, shouldFail, shouldPass, suite, test }                       from "@surface/test-suite";
+import { expect }                                                               from "chai";
+import Messages                                                                 from "../internal/messages";
+import Scanner                                                                  from "../internal/scanner";
+import TokenType                                                                from "../internal/token-type";
+import SyntaxError                                                              from "../syntax-error";
+import { invalidTokens, validTokens, ExpectedInvalidToken, ExpectedValidToken } from "./expectations/scanner-expected";
 
 @suite
 export default class ScannerSpec
@@ -46,17 +46,32 @@ export default class ScannerSpec
         expect(new Scanner(expected.source).nextToken()).to.deep.equal(expected.token);
     }
 
-    @shouldFail
-    @test
+    @test @shouldPass
+    public backtrack(): void
+    {
+        const scanner = new Scanner("x.y");
+
+        expect(scanner.index).to.equal(0);
+        expect(scanner.nextToken().raw).to.equal("x");
+        expect(scanner.index).to.equal(1);
+
+        scanner.backtrack(1);
+
+        expect(scanner.index).to.equal(0);
+        expect(scanner.nextToken().raw).to.equal("x");
+        expect(scanner.index).to.equal(1);
+    }
+
+    @shouldFail @test
     public invalidRegex(): void
     {
         expect(() => new Scanner("foo[123]bar()\\//").scanRegex()).to.throw(SyntaxError, Messages.unexpectedTokenIllegal);
         expect(() => new Scanner("/foo[123]bar()\\/").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);
+        expect(() => new Scanner("/foo/ig1/").scanRegex()).to.throw("Invalid flags supplied to RegExp constructor 'ig1'");
         expect(() => new Scanner("/\\\r").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);
     }
 
-    @shouldFail
-    @batchTest(invalidTokens, x => `token (${x.token}) should throw ${x.message}`)
+    @shouldFail @batchTest(invalidTokens, x => `token (${x.token}) should throw ${x.message}`)
     public tokensShouldThrow(expected: ExpectedInvalidToken): void
     {
         const scanner = new Scanner(expected.token);

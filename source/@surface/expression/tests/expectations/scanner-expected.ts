@@ -34,6 +34,19 @@ export const validTokens: Array<ExpectedValidToken> =
         },
     },
     {
+        source: " x",
+        token:
+        {
+            raw:        "x",
+            value:      "x",
+            type:       TokenType.Identifier,
+            start:      1,
+            end:        2,
+            lineStart:  0,
+            lineNumber: 1,
+        },
+    },
+    {
         source: "_identifier",
         token:
         {
@@ -55,6 +68,19 @@ export const validTokens: Array<ExpectedValidToken> =
             type:       TokenType.Identifier,
             start:      0,
             end:        10,
+            lineStart:  0,
+            lineNumber: 1,
+        },
+    },
+    {
+        source: "undefined",
+        token:
+        {
+            raw:        "undefined",
+            value:      undefined,
+            type:       TokenType.Identifier,
+            start:      0,
+            end:        9,
             lineStart:  0,
             lineNumber: 1,
         },
@@ -676,6 +702,19 @@ export const validTokens: Array<ExpectedValidToken> =
         },
     },
     {
+        source: "1",
+        token:
+        {
+            raw:        "1",
+            value:      1,
+            type:       TokenType.NumericLiteral,
+            start:      0,
+            end:        1,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
         source: "123",
         token:
         {
@@ -846,6 +885,19 @@ export const validTokens: Array<ExpectedValidToken> =
     },
     {
         source: "0b0101",
+        token:
+        {
+            raw:        "0b0101",
+            value:      5,
+            type:       TokenType.NumericLiteral,
+            start:      0,
+            end:        6,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
+        source: "0b0101 ",
         token:
         {
             raw:        "0b0101",
@@ -1664,6 +1716,58 @@ export const validTokens: Array<ExpectedValidToken> =
         },
     },
     {
+        source: "?.",
+        token:
+        {
+            raw:        "?.",
+            value:      "?.",
+            type:       TokenType.Punctuator,
+            start:      0,
+            end:        2,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
+        source: "?.0",
+        token:
+        {
+            raw:        "?",
+            value:      "?",
+            type:       TokenType.Punctuator,
+            start:      0,
+            end:        1,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
+        source: "?.x",
+        token:
+        {
+            raw:        "?.",
+            value:      "?.",
+            type:       TokenType.Punctuator,
+            start:      0,
+            end:        2,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
+        source: "??",
+        token:
+        {
+            raw:        "??",
+            value:      "??",
+            type:       TokenType.Punctuator,
+            start:      0,
+            end:        2,
+            lineStart:  0,
+            lineNumber: 1
+        },
+    },
+    {
         source: "~",
         token:
         {
@@ -2209,6 +2313,8 @@ export const invalidTokens: Array<ExpectedInvalidToken> =
     { token: "'\\9'",                       message: Messages.unexpectedTokenIllegal },
     { token: "0b",                          message: Messages.unexpectedTokenIllegal },
     { token: "0B",                          message: Messages.unexpectedTokenIllegal },
+    { token: "0B0a",                        message: Messages.unexpectedTokenIllegal },
+    { token: "0B09",                        message: Messages.unexpectedTokenIllegal },
     { token: "0o8",                         message: Messages.unexpectedTokenIllegal },
     { token: "0O8",                         message: Messages.unexpectedTokenIllegal },
     { token: "0o1a",                        message: Messages.unexpectedTokenIllegal },

@@ -6,6 +6,7 @@ import ArrowFunctionExpression            from "../../internal/expressions/arrow
 import AssignmentExpression               from "../../internal/expressions/assignment-expression";
 import BinaryExpression                   from "../../internal/expressions/binary-expression" ;
 import CallExpression                     from "../../internal/expressions/call-expression";
+import CoalesceExpression                 from "../../internal/expressions/coalesce-expression";
 import ConditionalExpression              from "../../internal/expressions/conditional-expression";
 import Identifier                         from "../../internal/expressions/identifier";
 import Literal                            from "../../internal/expressions/literal";
@@ -166,6 +167,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "([a], [b]) => [a, b]",
+        value:    ([a]: Array<string>, [b]: Array<string>) => [a, b],
+        toString: "([a], [b]) => [a, b]",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
         raw:      "([, a]) => a",
         value:    ([, a]: Array<string>) => a,
         toString: "([, a]) => a",
@@ -201,9 +209,23 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "(a, ...b) => [a, ...b]",
+        value:    (a: number, ...b: Array<number>) => [a, ...b],
+        toString: "(a, ...b) => [a, ...b]",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
         raw:      "(...[a]) => a",
         value:    (...[a]: Array<number>) => a,
         toString: "(...[a]) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "(...[, a]) => a",
+        value:    (...[, a]: Array<number>) => a,
+        toString: "(...[, a]) => a",
         type:     ArrowFunctionExpression,
     },
     {
@@ -229,6 +251,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "(...[a, { b, ...c }]) => a + b + c.x + c.y + c.z",
+        value:    (...[a, { b, ...c }]: [number, { b: number, x: number, y: number, z: number }]) => a + b + c.x + c.y + c.z,
+        toString: "(...[a, { b, ...c }]) => a + b + c.x + c.y + c.z",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
         raw:      "({ a }) => a",
         value:    ({ a }: { a: string }) => a,
         toString: "({ a }) => a",
@@ -246,6 +275,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "({ a: b }) => b",
         value:    ({ a: b }: { a: number }) => b,
         toString: "({ a: b }) => b",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "({ a: [x] }) => x",
+        value:    ({ a: [x] }: { a: Array<number> }) => x,
+        toString: "({ a: [x] }) => x",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "(...[{ a: [x] }]) => x",
+        value:    (...[{ a: [x] }]: Array<{ a: Array<number> }>) => x,
+        toString: "(...[{ a: [x] }]) => x",
         type:     ArrowFunctionExpression,
     },
     {
@@ -564,6 +607,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression,
     },
     {
+        scope:    { fn: () => true },
+        raw:      "fn?.()",
+        value:    true,
+        toString: "fn?.()",
+        type:     CallExpression,
+    },
+    {
+        scope:    { fn: null },
+        raw:      "fn?.()",
+        value:    undefined,
+        toString: "fn?.()",
+        type:     CallExpression,
+    },
+    {
         scope:    scope,
         raw:      "getScope()",
         value:    null,
@@ -704,6 +761,34 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CallExpression
     },
     {
+        scope:    { id: 1 },
+        raw:      "id ?? 2",
+        value:    1,
+        toString: "id ?? 2",
+        type:     CoalesceExpression
+    },
+    {
+        scope:    { id: null },
+        raw:      "id ?? 2",
+        value:    2,
+        toString: "id ?? 2",
+        type:     CoalesceExpression
+    },
+    {
+        scope:    { id: 1 },
+        raw:      "false || true && id ?? 2",
+        value:    1,
+        toString: "false || true && id ?? 2",
+        type:     CoalesceExpression
+    },
+    {
+        scope:    { id: null },
+        raw:      "false || true && id ?? 2",
+        value:    2,
+        toString: "false || true && id ?? 2",
+        type:     CoalesceExpression
+    },
+    {
         scope:    scope,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
@@ -830,6 +915,34 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     MemberExpression,
     },
     {
+        scope:    { this: { id: 1 } },
+        raw:      "this?.id",
+        value:    1,
+        toString: "this?.id",
+        type:     MemberExpression,
+    },
+    {
+        scope:    { this: null },
+        raw:      "this?.id",
+        value:    undefined,
+        toString: "this?.id",
+        type:     MemberExpression,
+    },
+    {
+        scope:    { this: { id: 1 } },
+        raw:      "this?.['id']",
+        value:    1,
+        toString: "this?.[\"id\"]",
+        type:     MemberExpression,
+    },
+    {
+        scope:    { this: null },
+        raw:      "this?.['id']",
+        value:    undefined,
+        toString: "this?.[\"id\"]",
+        type:     MemberExpression,
+    },
+    {
         scope:    scope,
         raw:      "this.getObject().value",
         value:    "Hello World!!!",
@@ -869,6 +982,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "{ new: 1 }",
         value:    { new: 1 },
         toString: "{ new: 1 }",
+        type:     ObjectExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "{ true: 1 }",
+        value:    { true: 1 },
+        toString: "{ true: 1 }",
         type:     ObjectExpression,
     },
     {
@@ -1049,6 +1169,11 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
+        raw:     "this?.?",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 6, 7)
+    },
+    {
+        scope:   scope,
         raw:     "this if",
         error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 5, 6)
     },
@@ -1089,6 +1214,26 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
+        raw:     "() = 1",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 3, 4)
+    },
+    {
+        scope:   scope,
+        raw:     "(a += 1) => 1",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 9, 10)
+    },
+    {
+        scope:   scope,
+        raw:     "([a += 1]) => 1",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 11, 12)
+    },
+    {
+        scope:   scope,
+        raw:     "(...[a += 1]) => 1",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 11, 12)
+    },
+    {
+        scope:   scope,
         raw:     "(x.y = 1) => 1",
         error:   new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 10, 11)
     },
@@ -1114,13 +1259,28 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
+        raw:     "(...x, y) => 1",
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 5, 6)
+    },
+    {
+        scope:   scope,
+        raw:     "(x, ...y, z) => 1",
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 8, 9)
+    },
+    {
+        scope:   scope,
         raw:     "([...x, y]) => 1",
-        error:   new SyntaxError(format(Messages.restParameterMustBeLastFormalParameter, { token: "=>" }), 1, 12, 13)
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 12, 13)
     },
     {
         scope:   scope,
         raw:     "(...[...x, y]) => 1",
-        error:   new SyntaxError(format(Messages.restParameterMustBeLastFormalParameter, { token: "=>" }), 1, 9, 10)
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 9, 10)
+    },
+    {
+        scope:   scope,
+        raw:     "(...[{ ...x, y }]) => 1",
+        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 11, 12)
     },
     {
         scope:   scope,
@@ -1146,6 +1306,11 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         scope:   scope,
         raw:     "(...a = []) => a",
         error:   new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 10, 11)
+    },
+    {
+        scope:   scope,
+        raw:     "(...[...a = 1]) => a",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 13, 14)
     },
     {
         scope:   scope,
@@ -1191,5 +1356,10 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         scope:   scope,
         raw:     "(a, [b, { x: { c, ...c } }]) => a",
         error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 33, 34)
+    },
+    {
+        scope:   scope,
+        raw:     "x, y z",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "z" }), 1, 5, 6)
     },
 ];
