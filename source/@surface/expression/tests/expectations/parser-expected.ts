@@ -775,17 +775,17 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     CoalesceExpression
     },
     {
-        scope:    { id: 1 },
-        raw:      "false || true && id ?? 2",
+        scope:    { id: 1, lastId: 2 },
+        raw:      "id ?? 0 || lastId ?? 4",
         value:    1,
-        toString: "false || true && id ?? 2",
+        toString: "id ?? 0 || lastId ?? 4",
         type:     CoalesceExpression
     },
     {
-        scope:    { id: null },
-        raw:      "false || true && id ?? 2",
-        value:    2,
-        toString: "false || true && id ?? 2",
+        scope:    { id: null, lastId: null },
+        raw:      "id ?? 0 || lastId ?? 4",
+        value:    4,
+        toString: "id ?? 0 || lastId ?? 4",
         type:     CoalesceExpression
     },
     {
