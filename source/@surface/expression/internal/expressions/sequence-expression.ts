@@ -13,6 +13,7 @@ export default class SequenceExpression implements IExpression
         return this._expressions;
     }
 
+    /* istanbul ignore next */
     public set expressions(value: Array<IExpression>)
     {
         this._expressions = value;

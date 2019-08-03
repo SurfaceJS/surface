@@ -34,8 +34,8 @@ export type ExpressionFixtureSpec =
 export type InvalidExpressionFixtureSpec =
 {
     scope: Object,
-    error:   Error,
-    raw:     string,
+    error: Error,
+    raw:   string,
 };
 
 const scope =
@@ -265,6 +265,34 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "({ \"a\": a }) => a",
+        value:    ({ "a": a }: { "a": string }) => a,
+        toString: "({ \"a\": a }) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "({ 0: a }) => a",
+        value:    ({ 0: a }: { 0: string }) => a,
+        toString: "({ 0: a }) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "({ [0]: a }) => a",
+        value:    ({ [0]: a }: { [key: number]: string }) => a,
+        toString: "({ [0]: a }) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "({ [scope.this.id]: a }) => a",
+        value:    ({ [scope.this.id]: a }: { [key: number]: string }) => a,
+        toString: "({ [scope.this.id]: a }) => a",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
         raw:      "({ a = 1 }) => a",
         value:    ({ a = 1 }: { a: number }) => a,
         toString: "({ a = 1 }) => a",
@@ -324,6 +352,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "this.value = 0",
         value:    0,
         toString: "this.value = 0",
+        type:     AssignmentExpression
+    },
+    {
+        scope:    { this: { value: 1 }, key: "value" },
+        raw:      "this[key] = 0",
+        value:    0,
+        toString: "this[key] = 0",
         type:     AssignmentExpression
     },
     {
@@ -713,9 +748,9 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    { b: 1 },
-        raw:      "(a => a + b)(1)",
+        raw:      "((a = 1) => a + b)()",
         value:    2,
-        toString: "((a) => a + b)(1)",
+        toString: "((a = 1) => a + b)()",
         type:     CallExpression
     },
     {
@@ -748,6 +783,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    { },
+        raw:      "(([a, ...b]) => [a, b])([1, 2, 3])",
+        value:    [1, [2, 3]],
+        toString: "(([a, ...b]) => [a, b])([1, 2, 3])",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
         raw:      "(([, b]) => [b])([1, 2])",
         value:    [2],
         toString: "(([, b]) => [b])([1, 2])",
@@ -758,6 +800,41 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
         value:    [1, 2],
         toString: "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
+        raw:      "(({ a = 1, b }) => [a, b])({ b: 2 })",
+        value:    [1, 2],
+        toString: "(({ a = 1, b }) => [a, b])({ b: 2 })",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
+        raw:      "(({ a, ...b }) => [a, b])({ a: 1, b: 2, c: 3 })",
+        value:    [1, { b: 2, c: 3 }],
+        toString: "(({ a, ...b }) => [a, b])({ a: 1, b: 2, c: 3 })",
+        type:     CallExpression
+    },
+    {
+        scope:    { x: "a" },
+        raw:      "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
+        value:    [1, 2],
+        toString: "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
+        raw:      "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
+        value:    [1, 2],
+        toString: "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
+        type:     CallExpression
+    },
+    {
+        scope:    { x: "a" },
+        raw:      "(({ [x]: a = 1, b }) => [a, b])({ b: 2 })",
+        value:    [1, 2],
+        toString: "(({ [x]: a = 1, b }) => [a, b])({ b: 2 })",
         type:     CallExpression
     },
     {
@@ -1125,10 +1202,24 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     UpdateExpression
     },
     {
+        scope:    { this: { value: 1 }, key: "value" },
+        raw:      "--this[key]",
+        value:    0,
+        toString: "--this[key]",
+        type:     UpdateExpression
+    },
+    {
         scope:    { this: { value: 1 } },
         raw:      "this.value++",
         value:    1,
         toString: "this.value++",
+        type:     UpdateExpression
+    },
+    {
+        scope:    { this: { value: 1 }, key: "value" },
+        raw:      "this[key]++",
+        value:    1,
+        toString: "this[key]++",
         type:     UpdateExpression
     },
     {

@@ -4,10 +4,16 @@ import NodeType    from "../../node-type";
 
 export default class SpreadElement implements INode
 {
-    private readonly _argument: IExpression;
+    private _argument: IExpression;
     public get argument(): IExpression
     {
         return this._argument;
+    }
+
+    /* istanbul ignore next */
+    public set argument(value: IExpression)
+    {
+        this._argument = value;
     }
 
     public get type(): NodeType

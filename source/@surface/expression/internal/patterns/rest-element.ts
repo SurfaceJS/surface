@@ -4,13 +4,19 @@ import { PATTERN } from "../../symbols";
 
 export default class RestElement implements IPattern
 {
-    private readonly _argument: IPattern;
+    private _argument: IPattern;
 
     public [PATTERN]: void;
 
     public get argument(): IPattern
     {
         return this._argument;
+    }
+
+    /* istanbul ignore next */
+    public set argument(value: IPattern)
+    {
+        this._argument = value;
     }
 
     public get type(): NodeType

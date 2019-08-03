@@ -34,6 +34,7 @@ export default class AssignmentExpression implements IExpression
         return this._left;
     }
 
+    /* istanbul ignore next */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -45,6 +46,7 @@ export default class AssignmentExpression implements IExpression
         return this._operator;
     }
 
+    /* istanbul ignore next */
     public set operator(value: AssignmentOperator)
     {
         this._operator = value;
@@ -56,6 +58,7 @@ export default class AssignmentExpression implements IExpression
         return this._right;
     }
 
+    /* istanbul ignore next */
     public set right(value: IExpression)
     {
         this._right = value;
@@ -75,9 +78,9 @@ export default class AssignmentExpression implements IExpression
         this.operation = assignmentOperations[operator];
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
@@ -85,11 +88,14 @@ export default class AssignmentExpression implements IExpression
         /* istanbul ignore else  */
         if (TypeGuard.isIdentifier(this.left))
         {
-            return this.cache = this.operation(scope, this.left.name, this.right.evaluate(scope, useChache));
+            return this.cache = this.operation(scope, this.left.name, this.right.evaluate(scope, useCache));
         }
         else if (TypeGuard.isMemberExpression(this.left))
         {
-            return this.cache = this.operation(this.left.object.evaluate(scope, useChache) as Indexer, this.left.property.evaluate(scope, useChache) as string|number, this.right.evaluate(scope, useChache));
+            const object   = this.left.object.evaluate(scope, useCache) as Indexer;
+            const property = TypeGuard.isIdentifier(this.left.property) && !this.left.computed ? this.left.property.name : this.left.property.evaluate(scope, useCache) as string|number;
+
+            return this.cache = this.operation(object, property, this.right.evaluate(scope, useCache));
         }
         else
         {

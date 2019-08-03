@@ -15,6 +15,12 @@ export default class ObjectPattern implements IPattern
         return this._properties;
     }
 
+    /* istanbul ignore next */
+    public set properties(value: Array<IAssignmentProperty|IRestElement>)
+    {
+        this._properties = value;
+    }
+
     public get type(): NodeType
     {
         return NodeType.ObjectPattern;

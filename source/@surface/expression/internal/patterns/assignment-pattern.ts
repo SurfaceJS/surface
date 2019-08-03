@@ -5,8 +5,8 @@ import { PATTERN } from "../../symbols";
 
 export default class AssignmentPattern implements IPattern
 {
-    private readonly _left:  IPattern;
-    private readonly _right: IExpression;
+    private _left:  IPattern;
+    private _right: IExpression;
 
     public [PATTERN]: void;
 
@@ -15,9 +15,21 @@ export default class AssignmentPattern implements IPattern
         return this._left;
     }
 
+    /* istanbul ignore next */
+    public set left(value: IPattern)
+    {
+        this._left = value;
+    }
+
     public get right(): IExpression
     {
         return this._right;
+    }
+
+    /* istanbul ignore next */
+    public set right(value: IExpression)
+    {
+        this._right = value;
     }
 
     public get type(): NodeType

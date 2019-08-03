@@ -13,6 +13,12 @@ export default class ArrayPattern implements IPattern
         return this._elements;
     }
 
+    /* istanbul ignore next */
+    public set elements(value: Array<IPattern|null>)
+    {
+        this._elements = value;
+    }
+
     public get type(): NodeType
     {
         return NodeType.ArrayPattern;

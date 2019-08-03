@@ -44,6 +44,7 @@ export default class BinaryExpression implements IExpression
         return this._left;
     }
 
+    /* istanbul ignore next */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -55,12 +56,19 @@ export default class BinaryExpression implements IExpression
         return this._operator;
     }
 
+    /* istanbul ignore next */
+    public set operator(value: BinaryOperator)
+    {
+        this._operator = value;
+    }
+
     private _right: IExpression;
     public get right(): IExpression
     {
         return this._right;
     }
 
+    /* istanbul ignore next */
     public set right(value: IExpression)
     {
         this._right = value;

@@ -757,7 +757,7 @@ export default class Parser
 
             if (!this.match(":"))
             {
-                return new Property(key, new Identifier(token.raw, true), false, true);
+                return new Property(key, new Identifier(token.raw), false, true);
             }
         }
         else
@@ -897,10 +897,10 @@ export default class Parser
             case TokenType.Identifier:
                 if (this.lookahead.raw == "undefined")
                 {
-                    return new Identifier(this.nextToken().raw, true);
+                    return new Identifier(this.nextToken().raw);
                 }
 
-                const indentifier = new Identifier(this.nextToken().raw, true);
+                const indentifier = new Identifier(this.nextToken().raw);
 
                 if (this.match("=>"))
                 {
@@ -985,16 +985,23 @@ export default class Parser
             {
                 const { key, value, computed, shorthand } = node as Property;
 
-                if (shorthand && TypeGuard.isIdentifier(value))
+                if (shorthand)
                 {
-                    return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, true);
+                    if (TypeGuard.isIdentifier(value))
+                    {
+                        return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
+                    }
+                    else if (TypeGuard.isAssignmentExpression(value))
+                    {
+                        return new AssignmentProperty(key, this.reinterpretPattern(value), computed, shorthand);
+                    }
                 }
-                else if (!shorthand && !TypeGuard.isIdentifier(value) && !TypeGuard.isArrayExpression(value) && !TypeGuard.isObjectExpression(value))
+                else if (TypeGuard.isArrayExpression(value) || TypeGuard.isAssignmentExpression(value) || TypeGuard.isIdentifier(value) || TypeGuard.isObjectExpression(value))
                 {
-                    break;
+                    return new AssignmentProperty(key, TypeGuard.isIdentifier(value) ? new Identifier(value.name) : this.reinterpretPattern(value), computed, shorthand);
                 }
 
-                return new AssignmentProperty(key, TypeGuard.isObjectExpression(value) ? this.reinterpretPattern(value) : value as Identifier, computed, shorthand);
+                break;
             }
             case NodeType.ArrayExpression:
             {

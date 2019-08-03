@@ -11,6 +11,7 @@ export default class AssignmentProperty
         return this._computed;
     }
 
+    /* istanbul ignore next */
     public set computed(value: boolean)
     {
         this._computed = value;
@@ -22,6 +23,7 @@ export default class AssignmentProperty
         return this._key;
     }
 
+    /* istanbul ignore next */
     public set key(value: IExpression)
     {
         this._key = value;
@@ -33,6 +35,7 @@ export default class AssignmentProperty
         return this._shorthand;
     }
 
+    /* istanbul ignore next */
     public set shorthand(value: boolean)
     {
         this._shorthand = value;
@@ -44,6 +47,7 @@ export default class AssignmentProperty
         return this._value;
     }
 
+    /* istanbul ignore next */
     public set value(value: IPattern)
     {
         this._value = value;

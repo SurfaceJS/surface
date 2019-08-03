@@ -14,6 +14,7 @@ export default class MemberExpression implements IExpression
         return this._computed;
     }
 
+    /* istanbul ignore next */
     public set computed(value: boolean)
     {
         this._computed = value;
@@ -25,6 +26,7 @@ export default class MemberExpression implements IExpression
         return this._property;
     }
 
+    /* istanbul ignore next */
     public set property(value: IExpression)
     {
         this._property = value;
@@ -36,6 +38,7 @@ export default class MemberExpression implements IExpression
         return this._object;
     }
 
+    /* istanbul ignore next */
     public set object(value: IExpression)
     {
         this._object = value;
@@ -47,6 +50,7 @@ export default class MemberExpression implements IExpression
         return this._optional;
     }
 
+    /* istanbul ignore next */
     public set optional(value: boolean)
     {
         this._optional = value;
@@ -74,16 +78,18 @@ export default class MemberExpression implements IExpression
 
         const object = this.object.evaluate(scope, useChache) as Nullable<Indexer>;
 
+        const key = TypeGuard.isIdentifier(this.property) ? this.property.name : `${this.property.evaluate(scope, useChache)}`;
+
         if (this.optional)
         {
-            return this.cache = (hasValue(object) ? object[`${this.property.evaluate(scope, useChache)}`] : undefined);
+            return this.cache = (hasValue(object) ? object[key] : undefined);
         }
 
-        return this.cache = object![`${this.property.evaluate(scope, useChache)}`];
+        return this.cache = object![key];
     }
 
     public toString(): string
     {
-        return `${this.object}${TypeGuard.isIdentifier(this.property) ? `${this.optional ? "?" : ""}.${this.property.name}` : `${this.optional ? "?." : ""}[${this.property}]`}`;
+        return `${this.object}${TypeGuard.isIdentifier(this.property) && !this.computed ? `${this.optional ? "?" : ""}.${this.property.name}` : `${this.optional ? "?." : ""}[${this.property}]`}`;
     }
 }

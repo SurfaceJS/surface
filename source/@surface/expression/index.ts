@@ -98,7 +98,7 @@ export default abstract class Expression
     }
 
     public static assignmentProperty(key: IIdentifier): IAssignmentProperty;
-    public static assignmentProperty(key: IExpression, value: IPattern, computed: boolean): IAssignmentProperty;
+    public static assignmentProperty(key: IExpression, value: IPattern, computed?: boolean): IAssignmentProperty;
     public static assignmentProperty(...args: [IIdentifier]|[IExpression, IPattern, boolean?]): IAssignmentProperty
     {
         return args.length == 1 ?
@@ -121,9 +121,9 @@ export default abstract class Expression
         return new ConditionalExpression(condition, alternate, consequent);
     }
 
-    public static identifier(name: string, binded?: boolean): IIdentifier
+    public static identifier(name: string): IIdentifier
     {
-        return new Identifier(name, binded);
+        return new Identifier(name);
     }
 
     public static literal(value: LiteralValue): ILiteral

@@ -15,6 +15,7 @@ export default class NewExpression implements IExpression
         return this._arguments;
     }
 
+    /* istanbul ignore next */
     public set arguments(value: Array<IExpression|ISpreadElement>)
     {
         this._arguments = value;
@@ -26,6 +27,7 @@ export default class NewExpression implements IExpression
         return this._callee;
     }
 
+    /* istanbul ignore next */
     public set callee(value: IExpression)
     {
         this._callee = value;

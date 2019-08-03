@@ -16,6 +16,7 @@ export default class ObjectExpression implements IExpression
         return this._properties;
     }
 
+    /* istanbul ignore next */
     public set properties(value: Array<IProperty|ISpreadElement>)
     {
         this._properties = value;
@@ -44,7 +45,9 @@ export default class ObjectExpression implements IExpression
         {
             if (TypeGuard.isProperty(property))
             {
-                evaluation[property.key.evaluate(scope, useChache) as string|number] = property.value.evaluate(scope, useChache);
+                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useChache) as string|number;
+
+                evaluation[key] = property.value.evaluate(scope, useChache);
             }
             else
             {

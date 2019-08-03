@@ -37,12 +37,12 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryExpected> =
         type:    NodeType.BinaryExpression,
     },
     {
-        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x", true))),
+        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x"))),
         method:  Expression.call.name,
         type:    NodeType.CallExpression,
     },
     {
-        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x", true)), [Expression.literal(2)]),
+        factory: () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x")), [Expression.literal(2)]),
         method:  Expression.call.name,
         type:    NodeType.CallExpression,
     },
@@ -62,7 +62,7 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryExpected> =
         type:    NodeType.LogicalExpression,
     },
     {
-        factory: () => Expression.identifier("undefined", true),
+        factory: () => Expression.identifier("undefined"),
         method:  Expression.identifier.name,
         type:    NodeType.Identifier,
     },

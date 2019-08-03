@@ -56,10 +56,12 @@ export default class ParserSpec
         if (expression.value instanceof Function)
         {
             chai.expect((result.evaluate(expression.scope) as Function).toString(), "evaluate").to.deep.equal(expression.value.toString());
+            chai.expect((result.evaluate(expression.scope, true) as Function).toString(), "evaluate using cache").to.deep.equal(expression.value.toString());
         }
         else
         {
             chai.expect(result.evaluate(expression.scope), "evaluate").to.deep.equal(expression.value);
+            chai.expect(result.evaluate(expression.scope, true), "evaluate using cache").to.deep.equal(expression.value);
         }
 
         chai.expect(result, "instanceof").instanceof(expression.type);

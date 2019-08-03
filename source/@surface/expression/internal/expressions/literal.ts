@@ -15,6 +15,7 @@ export default class Literal implements ILiteral
         return this._value;
     }
 
+    /* istanbul ignore next */
     public set value(value: LiteralValue)
     {
         this._value = value;

@@ -13,6 +13,7 @@ export default class ConditionalExpression implements IExpression
         return this._alternate;
     }
 
+    /* istanbul ignore next */
     public set alternate(value: IExpression)
     {
         this._alternate = value;
@@ -24,6 +25,7 @@ export default class ConditionalExpression implements IExpression
         return this._consequent;
     }
 
+    /* istanbul ignore next */
     public set consequent(value: IExpression)
     {
         this._consequent = value;
@@ -35,6 +37,7 @@ export default class ConditionalExpression implements IExpression
         return this._test;
     }
 
+    /* istanbul ignore next */
     public set test(value: IExpression)
     {
         this._test = value;

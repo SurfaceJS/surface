@@ -13,6 +13,7 @@ export default class CoalesceExpression implements IExpression
         return this._left;
     }
 
+    /* istanbul ignore next */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -24,6 +25,7 @@ export default class CoalesceExpression implements IExpression
         return this._right;
     }
 
+    /* istanbul ignore next */
     public set right(value: IExpression)
     {
         this._right = value;

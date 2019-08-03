@@ -13,6 +13,7 @@ export default class RegExpLiteral implements ILiteral
         return this._flags;
     }
 
+    /* istanbul ignore next */
     public set flags(value: string)
     {
         this._flags = value;
@@ -24,6 +25,7 @@ export default class RegExpLiteral implements ILiteral
         return this._pattern;
     }
 
+    /* istanbul ignore next */
     public set pattern(value: string)
     {
         this._pattern = value;
@@ -38,6 +40,10 @@ export default class RegExpLiteral implements ILiteral
     {
         return null;
     }
+
+    /* istanbul ignore next */
+    public set value(_: null)
+    { /* Compatibility */ }
 
     public constructor(pattern: string, flags: string)
     {

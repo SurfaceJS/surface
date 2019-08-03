@@ -14,6 +14,7 @@ export default class TemplateLiteral implements IExpression
         return this._expressions;
     }
 
+    /* istanbul ignore next */
     public set expressions(value: Array<IExpression>)
     {
         this._expressions = value;
@@ -25,6 +26,7 @@ export default class TemplateLiteral implements IExpression
         return this._quasis;
     }
 
+    /* istanbul ignore next */
     public set quasis(value: Array<ITemplateElement>)
     {
         this._quasis = value;

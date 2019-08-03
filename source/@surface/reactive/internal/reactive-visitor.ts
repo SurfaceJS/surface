@@ -3,6 +3,7 @@ import { typeGuard }         from "@surface/core/common/generic";
 import ExpressionVisitor     from "@surface/expression/expression-visitor";
 import IIdentifier           from "@surface/expression/interfaces/identifier";
 import INode                 from "@surface/expression/interfaces/node";
+import TypeGuard             from "@surface/expression/internal/type-guard";
 import NodeType              from "@surface/expression/node-type";
 import IExpression           from "../../expression/interfaces/expression";
 import IMemberExpression     from "../../expression/interfaces/member-expression";
@@ -56,7 +57,7 @@ export default class ReactiveVisitor extends ExpressionVisitor
         if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
         {
             const target = expression.object.evaluate(this.scope, true);
-            const key    = expression.property.evaluate(this.scope, true);
+            const key    = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : expression.property.evaluate(this.scope, true);
 
             if (typeGuard<Indexer>(target, x => x instanceof Object))
             {

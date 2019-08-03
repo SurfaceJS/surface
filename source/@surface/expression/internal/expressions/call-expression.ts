@@ -15,6 +15,7 @@ export default class CallExpression implements IExpression
         return this._arguments;
     }
 
+    /* istanbul ignore next */
     public set arguments(value: Array<IExpression|ISpreadElement>)
     {
         this._arguments = value;
@@ -26,6 +27,7 @@ export default class CallExpression implements IExpression
         return this._callee;
     }
 
+    /* istanbul ignore next */
     public set callee(value: IExpression)
     {
         this._callee = value;
@@ -37,6 +39,7 @@ export default class CallExpression implements IExpression
         return this._optional;
     }
 
+    /* istanbul ignore next */
     public set optional(value: boolean)
     {
         this._optional = value;
@@ -48,6 +51,7 @@ export default class CallExpression implements IExpression
         return this._thisArg;
     }
 
+    /* istanbul ignore next */
     public set thisArg(value: IExpression)
     {
         this._thisArg = value;
