@@ -33,7 +33,7 @@ export default class CoalesceExpression implements IExpression
 
     public get type(): NodeType
     {
-        return NodeType.BinaryExpression;
+        return NodeType.CoalesceExpression;
     }
 
     public constructor(left: IExpression, right: IExpression)

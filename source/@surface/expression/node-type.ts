@@ -8,6 +8,7 @@ enum NodeType
     AssignmentProperty,
     BinaryExpression,
     CallExpression,
+    CoalesceExpression,
     ConditionalExpression,
     Identifier,
     Literal,

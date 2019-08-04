@@ -1,10 +1,14 @@
-import Expression from "../..";
-import INode      from "../../interfaces/node";
-import NodeType   from "../../node-type";
+import { Indexer } from "@surface/core";
+import { format }  from "@surface/core/common/string";
+import Expression  from "../..";
+import INode       from "../../interfaces/node";
+import Messages    from "../../internal/messages";
+import NodeType    from "../../node-type";
 
-export type ExpressionFactoryExpected = { method: string, factory: () => INode, type: NodeType };
+export type ExpressionFactoryExpected = { method: string, type: NodeType, factory: () => INode };
+export type EvaluationErrorExpected   = { error: Error, raw: string, scope: Indexer };
 
-export const expressionFactoryFixtures: Array<ExpressionFactoryExpected> =
+export const expressionFactoriesExpected: Array<ExpressionFactoryExpected> =
 [
     {
         factory: () => Expression.array([Expression.literal(1), Expression.literal(2)]),
@@ -141,4 +145,33 @@ export const expressionFactoryFixtures: Array<ExpressionFactoryExpected> =
         method:  Expression.update.name,
         type:    NodeType.UpdateExpression,
     },
+];
+
+export const evaluationsExpected: Array<EvaluationErrorExpected> =
+[
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: "x" })),
+        raw:   "x",
+        scope: { }
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: "this.fn" })),
+        raw:   "this.fn()",
+        scope: { this: { }}
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotAFunction, { identifier: "fn" })),
+        raw:   "fn()",
+        scope: { fn: 1 }
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: "this.fn" })),
+        raw:   "new this.fn()",
+        scope: { this: { }}
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotAConstructor, { identifier: "fn" })),
+        raw:   "new fn()",
+        scope: { fn: 1 }
+    }
 ];

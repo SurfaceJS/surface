@@ -1,8 +1,10 @@
 import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
+import { format }            from "@surface/core/common/string";
 import IExpression           from "../../interfaces/expression";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
+import Messages              from "../messages";
 import TypeGuard             from "../type-guard";
 
 export default class CallExpression implements IExpression
@@ -86,11 +88,11 @@ export default class CallExpression implements IExpression
 
         if (!fn)
         {
-            throw new ReferenceError(`${this.callee} is not defined`);
+            throw new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: this.callee.toString() }));
         }
         else if (typeof fn != "function")
         {
-            throw new TypeError(`${this.callee} is not a function`);
+            throw new TypeError(format(Messages.identifierIsNotAFunction, { identifier: this.callee.toString() }));
         }
 
         const $arguments: Array<unknown> = [];

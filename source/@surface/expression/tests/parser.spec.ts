@@ -48,7 +48,7 @@ export default class ParserSpec
     }
 
     @shouldPass
-    @batchTest(validExpressions, x => `expression (${x.raw}) should be evaluated to ${x.type.name}: ${x.value}`)
+    @batchTest(validExpressions, x => `expression: ${x.raw}; should be evaluated to ${x.type.name}: ${x.value}`)
     public expressionsShouldWork(expression: ExpressionFixtureSpec): void
     {
         const result = Parser.parse(expression.raw);
@@ -69,14 +69,14 @@ export default class ParserSpec
     }
 
     @shouldFail
-    @batchTest(invalidExpressions, x => `Expression (${x.raw}) should throw ${x.error.message}`)
+    @batchTest(invalidExpressions, x => `expression: ${x.raw}; should throw ${x.error.message}`)
     public expressionsShouldThrow(expression: InvalidExpressionFixtureSpec): void
     {
         try
         {
             Parser.parse(expression.raw);
 
-            throw new Error(`Expression (${expression.raw}) not throw`);
+            throw new Error(`expression ${expression.raw}; not throw`);
         }
         catch (error)
         {

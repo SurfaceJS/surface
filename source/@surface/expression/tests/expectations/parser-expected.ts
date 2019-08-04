@@ -1034,6 +1034,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     NewExpression,
     },
     {
+        scope:    scope,
+        raw:      "new MyClass(1, true)",
+        value:    { id: 1, active: true },
+        toString: "new MyClass(1, true)",
+        type:     NewExpression,
+    },
+    {
         scope:    { ...scope, factory: () => [1, true]},
         raw:      "new MyClass(...factory())",
         value:    { id: 1, active: true },

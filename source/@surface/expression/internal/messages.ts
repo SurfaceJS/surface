@@ -1,6 +1,8 @@
 export default class Messages
 {
     public static readonly duplicateParameterNameNotAllowedInThisContext                 = "Duplicate parameter name not allowed in this context";
+    public static readonly identifierIsNotAConstructor                                   = "${identifier} is not a constructor";
+    public static readonly identifierIsNotAFunction                                      = "${identifier} is not a function";
     public static readonly identifierIsNotDefined                                        = "${identifier} is not defined";
     public static readonly illegalPropertyInDeclarationContext                           = "Illegal property in declaration context";
     public static readonly invalidDestructuringAssignmentTarget                          = "Invalid destructuring assignment target";

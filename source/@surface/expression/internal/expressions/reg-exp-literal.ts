@@ -51,7 +51,7 @@ export default class RegExpLiteral implements ILiteral
         this._pattern = pattern;
     }
 
-    public evaluate(_: Indexer, useChache: boolean): RegExp
+    public evaluate(_?: Indexer, useChache?: boolean): RegExp
     {
         if (useChache && hasValue(this.cache))
         {

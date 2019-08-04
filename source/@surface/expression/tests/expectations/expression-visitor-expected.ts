@@ -7,6 +7,7 @@ import ArrowFunctionExpression from "../../internal/expressions/arrow-function-e
 import AssignmentExpression    from "../../internal/expressions/assignment-expression";
 import BinaryExpression        from "../../internal/expressions/binary-expression";
 import CallExpression          from "../../internal/expressions/call-expression";
+import CoalesceExpression      from "../../internal/expressions/coalesce-expression";
 import ConditionalExpression   from "../../internal/expressions/conditional-expression";
 import Identifier              from "../../internal/expressions/identifier";
 import Literal                 from "../../internal/expressions/literal";
@@ -110,6 +111,15 @@ export const validVisitors: Array<ValidVisitSpec> =
             Literal.name,
             Identifier.name,
             Literal.name,
+        ].join(" > ")
+    },
+    {
+        raw: "x ?? y",
+        value:
+        [
+            CoalesceExpression.name,
+            Identifier.name,
+            Identifier.name,
         ].join(" > ")
     },
     {

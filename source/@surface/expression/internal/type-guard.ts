@@ -6,6 +6,7 @@ import IAssignmentPattern       from "../interfaces/assignment-pattern";
 import IAssignmentProperty      from "../interfaces/assignment-property";
 import IBinaryExpression        from "../interfaces/binary-expression";
 import ICallExpression          from "../interfaces/call-expression";
+import ICoalesceExpression      from "../interfaces/coalesce-expression";
 import IConditionalExpression   from "../interfaces/conditional-expression";
 import IIdentifier              from "../interfaces/identifier";
 import ILiteral                 from "../interfaces/literal";
@@ -67,6 +68,11 @@ export default class TypeGuard
     public static isCallExpression(node: INode): node is ICallExpression
     {
         return node.type == NodeType.CallExpression;
+    }
+
+    public static isCoalesceExpression(node: INode): node is ICoalesceExpression
+    {
+        return node.type == NodeType.CoalesceExpression;
     }
 
     public static isConditionalExpression(node: INode): node is IConditionalExpression
