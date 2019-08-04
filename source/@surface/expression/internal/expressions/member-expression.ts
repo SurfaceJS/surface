@@ -69,16 +69,16 @@ export default class MemberExpression implements IExpression
         this._optional = !!optional;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        const object = this.object.evaluate(scope, useChache) as Nullable<Indexer>;
+        const object = this.object.evaluate(scope, useCache) as Nullable<Indexer>;
 
-        const key = TypeGuard.isIdentifier(this.property) ? this.property.name : `${this.property.evaluate(scope, useChache)}`;
+        const key = TypeGuard.isIdentifier(this.property) ? this.property.name : `${this.property.evaluate(scope, useCache)}`;
 
         if (this.optional)
         {

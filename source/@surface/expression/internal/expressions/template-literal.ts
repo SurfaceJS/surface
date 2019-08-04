@@ -43,9 +43,9 @@ export default class TemplateLiteral implements IExpression
         this._quasis      = quasis;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): string
+    public evaluate(scope: Indexer, useCache: boolean): string
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
@@ -54,7 +54,7 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = this.quasis[i].cooked + `${this.expressions[i].evaluate(scope, useChache)}`;
+            result = this.quasis[i].cooked + `${this.expressions[i].evaluate(scope, useCache)}`;
         }
 
         return this.cache = result + this.quasis[this.quasis.length - 1].cooked;

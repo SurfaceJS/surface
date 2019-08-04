@@ -1,32 +1,33 @@
-import IArrayExpression         from "../interfaces/array-expression";
-import IArrayPattern            from "../interfaces/array-pattern";
-import IArrowFunctionExpression from "../interfaces/arrow-function-expression";
-import IAssignmentExpression    from "../interfaces/assignment-expression";
-import IAssignmentPattern       from "../interfaces/assignment-pattern";
-import IAssignmentProperty      from "../interfaces/assignment-property";
-import IBinaryExpression        from "../interfaces/binary-expression";
-import ICallExpression          from "../interfaces/call-expression";
-import ICoalesceExpression      from "../interfaces/coalesce-expression";
-import IConditionalExpression   from "../interfaces/conditional-expression";
-import IIdentifier              from "../interfaces/identifier";
-import ILiteral                 from "../interfaces/literal";
-import ILogicalExpression       from "../interfaces/logical-expression";
-import IMemberExpression        from "../interfaces/member-expression";
-import INewExpression           from "../interfaces/new-expression";
-import INode                    from "../interfaces/node";
-import IObjectExpression        from "../interfaces/object-expression";
-import IObjectPattern           from "../interfaces/object-pattern";
-import IProperty                from "../interfaces/property";
-import IRegExpLiteral           from "../interfaces/reg-exp-literal";
-import IRestElement             from "../interfaces/rest-element";
-import ISequenceExpression      from "../interfaces/sequence-expression";
-import ISpreadElement           from "../interfaces/spread-element";
-import ITemplateElement         from "../interfaces/template-element";
-import ITemplateLiteral         from "../interfaces/template-literal";
-import IThisExpression          from "../interfaces/this-expression";
-import IUnaryExpression         from "../interfaces/unary-expression";
-import IUpdateExpression        from "../interfaces/update-expression";
-import NodeType                 from "../node-type";
+import IArrayExpression          from "../interfaces/array-expression";
+import IArrayPattern             from "../interfaces/array-pattern";
+import IArrowFunctionExpression  from "../interfaces/arrow-function-expression";
+import IAssignmentExpression     from "../interfaces/assignment-expression";
+import IAssignmentPattern        from "../interfaces/assignment-pattern";
+import IAssignmentProperty       from "../interfaces/assignment-property";
+import IBinaryExpression         from "../interfaces/binary-expression";
+import ICallExpression           from "../interfaces/call-expression";
+import ICoalesceExpression       from "../interfaces/coalesce-expression";
+import IConditionalExpression    from "../interfaces/conditional-expression";
+import IIdentifier               from "../interfaces/identifier";
+import ILiteral                  from "../interfaces/literal";
+import ILogicalExpression        from "../interfaces/logical-expression";
+import IMemberExpression         from "../interfaces/member-expression";
+import INewExpression            from "../interfaces/new-expression";
+import INode                     from "../interfaces/node";
+import IObjectExpression         from "../interfaces/object-expression";
+import IObjectPattern            from "../interfaces/object-pattern";
+import IProperty                 from "../interfaces/property";
+import IRegExpLiteral            from "../interfaces/reg-exp-literal";
+import IRestElement              from "../interfaces/rest-element";
+import ISequenceExpression       from "../interfaces/sequence-expression";
+import ISpreadElement            from "../interfaces/spread-element";
+import ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
+import ITemplateElement          from "../interfaces/template-element";
+import ITemplateLiteral          from "../interfaces/template-literal";
+import IThisExpression           from "../interfaces/this-expression";
+import IUnaryExpression          from "../interfaces/unary-expression";
+import IUpdateExpression         from "../interfaces/update-expression";
+import NodeType                  from "../node-type";
 
 export default class TypeGuard
 {
@@ -138,6 +139,11 @@ export default class TypeGuard
     public static isSpreadElement(node: INode): node is ISpreadElement
     {
         return node.type == NodeType.SpreadElement;
+    }
+
+    public static isTaggedTemplateExpression(node: INode): node is ITaggedTemplateExpression
+    {
+        return node.type == NodeType.TaggedTemplateExpression;
     }
 
     public static isTemplateLiteral(node: INode): node is ITemplateLiteral

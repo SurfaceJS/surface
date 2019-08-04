@@ -46,14 +46,14 @@ export default class NewExpression implements IExpression
         this._arguments = $arguments;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        const fn = this.callee.evaluate(scope, useChache) as Function;
+        const fn = this.callee.evaluate(scope, useCache) as Function;
 
         if (!fn)
         {
@@ -70,11 +70,11 @@ export default class NewExpression implements IExpression
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate(scope, useChache) as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate(scope, useCache) as Array<unknown>);
             }
             else
             {
-                $arguments.push(argument.evaluate(scope, useChache));
+                $arguments.push(argument.evaluate(scope, useCache));
             }
         }
 

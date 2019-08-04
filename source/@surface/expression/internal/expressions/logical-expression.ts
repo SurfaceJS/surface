@@ -4,12 +4,12 @@ import IExpression         from "../../interfaces/expression";
 import NodeType            from "../../node-type";
 import { LogicalOperator } from "../../types";
 
-type Operation = (left: IExpression, right: IExpression, scope: Indexer, useChache: boolean) => unknown;
+type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
 
 const binaryFunctions: Record<LogicalOperator, Operation> =
 {
-    "&&": (left, right, scope, useChache) => (left.evaluate(scope, useChache) as Object) && (right.evaluate(scope, useChache) as Object),
-    "||": (left, right, scope, useChache) => (left.evaluate(scope, useChache) as Object) || (right.evaluate(scope, useChache) as Object),
+    "&&": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) && (right.evaluate(scope, useCache) as Object),
+    "||": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) || (right.evaluate(scope, useCache) as Object),
 };
 
 export default class LogicalExpression implements IExpression
@@ -67,14 +67,14 @@ export default class LogicalExpression implements IExpression
         this.operation = binaryFunctions[this.operator];
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.left, this.right, scope, useChache);
+        return this.cache = this.operation(this.left, this.right, scope, useCache);
     }
 
     public toString(): string

@@ -131,6 +131,11 @@ export const expressionFactoriesExpected: Array<ExpressionFactoryExpected> =
         type:    NodeType.SequenceExpression,
     },
     {
+        factory: () => Expression.taggedTemplate(Expression.literal(null), Expression.identifier("tag"), Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")])),
+        method:  Expression.taggedTemplate.name,
+        type:    NodeType.TaggedTemplateExpression,
+    },
+    {
         factory: () => Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")]),
         method:  Expression.template.name,
         type:    NodeType.TemplateLiteral,
@@ -163,6 +168,16 @@ export const evaluationsExpected: Array<EvaluationErrorExpected> =
         error: new ReferenceError(format(Messages.identifierIsNotAFunction, { identifier: "fn" })),
         raw:   "fn()",
         scope: { fn: 1 }
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: "this.tag" })),
+        raw:   "this.tag`Hello ${'World'}`",
+        scope: { this: { }}
+    },
+    {
+        error: new ReferenceError(format(Messages.identifierIsNotAFunction, { identifier: "tag" })),
+        raw:   "tag`Hello ${'World'}`",
+        scope: { tag: 1 }
     },
     {
         error: new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: "this.fn" })),

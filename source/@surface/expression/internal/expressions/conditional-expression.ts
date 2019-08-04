@@ -55,14 +55,14 @@ export default class ConditionalExpression implements IExpression
         this._alternate  = alternate;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.test.evaluate(scope, useChache) ? this.alternate.evaluate(scope, useChache) : this.consequent.evaluate(scope, useChache);
+        return this.cache = this.test.evaluate(scope, useCache) ? this.alternate.evaluate(scope, useCache) : this.consequent.evaluate(scope, useCache);
     }
 
     public toString(): string

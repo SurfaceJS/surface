@@ -29,9 +29,9 @@ export default class SequenceExpression implements IExpression
         this._expressions = expressions;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): unknown
+    public evaluate(scope: Indexer, useCache: boolean): unknown
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
@@ -40,7 +40,7 @@ export default class SequenceExpression implements IExpression
 
         for (const expression of this.expressions)
         {
-            value = expression.evaluate(scope, useChache);
+            value = expression.evaluate(scope, useCache);
         }
 
         return this.cache = value;

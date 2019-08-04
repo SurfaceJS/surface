@@ -15,6 +15,7 @@ import MemberExpression                   from "../../internal/expressions/membe
 import NewExpression                      from "../../internal/expressions/new-expression";
 import ObjectExpression                   from "../../internal/expressions/object-expression";
 import SequenceExpression                 from "../../internal/expressions/sequence-expression";
+import TaggedTemplateExpression           from "../../internal/expressions/tagged-template-expression";
 import TemplateLiteral                    from "../../internal/expressions/template-literal";
 import ThisExpression                     from "../../internal/expressions/this-expression";
 import UnaryExpression                    from "../../internal/expressions/unary-expression";
@@ -84,6 +85,13 @@ const scope =
         }
     }
 };
+
+function makeTemplateObject(cooked: Array<string>, raw: Array<string>): Array<string>
+{
+    Object.defineProperty(cooked, "raw", { value: raw });
+
+    return cooked;
+}
 
 // tslint:disable-next-line:no-any
 export const validExpressions: Array<ExpressionFixtureSpec> =
@@ -992,6 +1000,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     MemberExpression,
     },
     {
+        scope:    scope,
+        raw:      "this['x', 'increment']",
+        value:    scope.this.increment,
+        toString: "this[(\"x\", \"increment\")]",
+        type:     MemberExpression,
+    },
+    {
         scope:    { this: { id: 1 } },
         raw:      "this?.id",
         value:    1,
@@ -1137,6 +1152,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         value:    "The id is: 1",
         toString: "`The id is: ${this.id}`",
         type:     TemplateLiteral
+    },
+    {
+        scope:    scope,
+        raw:      "`The id is: ${1, 2, 3}`",
+        value:    "The id is: 3",
+        toString: "`The id is: ${(1, 2, 3)}`",
+        type:     TemplateLiteral
+    },
+    {
+        scope:    { name: "World", tag: (...args: Array<unknown>) => args },
+        raw:      "tag`\\tHello ${name}!!!`",
+        value:    [makeTemplateObject(["\tHello ", "!!!"], ["\\tHello ", "!!!"]), "World"],
+        toString: "tag`\\tHello ${name}!!!`",
+        type:     TaggedTemplateExpression
     },
     {
         scope:    { this: { id: 1 } },

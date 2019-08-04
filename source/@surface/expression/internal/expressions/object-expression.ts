@@ -32,9 +32,9 @@ export default class ObjectExpression implements IExpression
         this._properties = properties;
     }
 
-    public evaluate(scope: Indexer, useChache: boolean): Indexer
+    public evaluate(scope: Indexer, useCache: boolean): Indexer
     {
-        if (useChache && hasValue(this.cache))
+        if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
@@ -45,13 +45,13 @@ export default class ObjectExpression implements IExpression
         {
             if (TypeGuard.isProperty(property))
             {
-                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useChache) as string|number;
+                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useCache) as string|number;
 
-                evaluation[key] = property.value.evaluate(scope, useChache);
+                evaluation[key] = property.value.evaluate(scope, useCache);
             }
             else
             {
-                Object.assign(evaluation, property.argument.evaluate(scope, useChache));
+                Object.assign(evaluation, property.argument.evaluate(scope, useCache));
             }
         }
 

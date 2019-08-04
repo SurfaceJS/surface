@@ -1,60 +1,62 @@
-import IArrayExpression         from "./interfaces/array-expression";
-import IArrayPattern            from "./interfaces/array-pattern";
-import IArrowFunctionExpression from "./interfaces/arrow-function-expression";
-import IAssignmentExpression    from "./interfaces/assignment-expression";
-import IAssignmentPattern       from "./interfaces/assignment-pattern";
-import IAssignmentProperty      from "./interfaces/assignment-property";
-import IBinaryExpression        from "./interfaces/binary-expression";
-import ICallExpression          from "./interfaces/call-expression";
-import IConditionalExpression   from "./interfaces/conditional-expression";
-import IExpression              from "./interfaces/expression";
-import IIdentifier              from "./interfaces/identifier";
-import ILiteral                 from "./interfaces/literal";
-import ILogicalExpression       from "./interfaces/logical-expression";
-import IMemberExpression        from "./interfaces/member-expression";
-import INewExpression           from "./interfaces/new-expression";
-import IObjectExpression        from "./interfaces/object-expression";
-import IObjectPattern           from "./interfaces/object-pattern";
-import IPattern                 from "./interfaces/pattern";
-import IProperty                from "./interfaces/property";
-import IRegExpLiteral           from "./interfaces/reg-exp-literal";
-import IRestElement             from "./interfaces/rest-element";
-import ISequenceExpression      from "./interfaces/sequence-expression";
-import ISpreadElement           from "./interfaces/spread-element";
-import ITemplateElement         from "./interfaces/template-element";
-import ITemplateLiteral         from "./interfaces/template-literal";
-import IThisExpression          from "./interfaces/this-expression";
-import IUnaryExpression         from "./interfaces/unary-expression";
-import IUpdateExpression        from "./interfaces/update-expression";
-import { hasDuplicated }        from "./internal/common";
-import AssignmentProperty       from "./internal/elements/assignment-property";
-import Property                 from "./internal/elements/property";
-import SpreadElement            from "./internal/elements/spread-element";
-import TemplateElement          from "./internal/elements/template-element";
-import ArrayExpression          from "./internal/expressions/array-expression";
-import ArrowFunctionExpression  from "./internal/expressions/arrow-function-expression";
-import AssignmentExpression     from "./internal/expressions/assignment-expression";
-import BinaryExpression         from "./internal/expressions/binary-expression";
-import CallExpression           from "./internal/expressions/call-expression";
-import ConditionalExpression    from "./internal/expressions/conditional-expression";
-import Identifier               from "./internal/expressions/identifier";
-import Literal                  from "./internal/expressions/literal";
-import LogicalExpression        from "./internal/expressions/logical-expression";
-import MemberExpression         from "./internal/expressions/member-expression";
-import NewExpression            from "./internal/expressions/new-expression";
-import ObjectExpression         from "./internal/expressions/object-expression";
-import RegExpLiteral            from "./internal/expressions/reg-exp-literal";
-import SequenceExpression       from "./internal/expressions/sequence-expression";
-import TemplateLiteral          from "./internal/expressions/template-literal";
-import ThisExpression           from "./internal/expressions/this-expression";
-import UnaryExpression          from "./internal/expressions/unary-expression";
-import UpdateExpression         from "./internal/expressions/update-expression";
-import Messages                 from "./internal/messages";
-import Parser                   from "./internal/parser";
-import ArrayPattern             from "./internal/patterns/array-pattern";
-import AssignmentPattern        from "./internal/patterns/assignment-pattern";
-import ObjectPattern            from "./internal/patterns/object-pattern";
-import RestElement              from "./internal/patterns/rest-element";
+import IArrayExpression          from "./interfaces/array-expression";
+import IArrayPattern             from "./interfaces/array-pattern";
+import IArrowFunctionExpression  from "./interfaces/arrow-function-expression";
+import IAssignmentExpression     from "./interfaces/assignment-expression";
+import IAssignmentPattern        from "./interfaces/assignment-pattern";
+import IAssignmentProperty       from "./interfaces/assignment-property";
+import IBinaryExpression         from "./interfaces/binary-expression";
+import ICallExpression           from "./interfaces/call-expression";
+import IConditionalExpression    from "./interfaces/conditional-expression";
+import IExpression               from "./interfaces/expression";
+import IIdentifier               from "./interfaces/identifier";
+import ILiteral                  from "./interfaces/literal";
+import ILogicalExpression        from "./interfaces/logical-expression";
+import IMemberExpression         from "./interfaces/member-expression";
+import INewExpression            from "./interfaces/new-expression";
+import IObjectExpression         from "./interfaces/object-expression";
+import IObjectPattern            from "./interfaces/object-pattern";
+import IPattern                  from "./interfaces/pattern";
+import IProperty                 from "./interfaces/property";
+import IRegExpLiteral            from "./interfaces/reg-exp-literal";
+import IRestElement              from "./interfaces/rest-element";
+import ISequenceExpression       from "./interfaces/sequence-expression";
+import ISpreadElement            from "./interfaces/spread-element";
+import ITaggedTemplateExpression from "./interfaces/tagged-template-expression";
+import ITemplateElement          from "./interfaces/template-element";
+import ITemplateLiteral          from "./interfaces/template-literal";
+import IThisExpression           from "./interfaces/this-expression";
+import IUnaryExpression          from "./interfaces/unary-expression";
+import IUpdateExpression         from "./interfaces/update-expression";
+import { hasDuplicated }         from "./internal/common";
+import AssignmentProperty        from "./internal/elements/assignment-property";
+import Property                  from "./internal/elements/property";
+import SpreadElement             from "./internal/elements/spread-element";
+import TemplateElement           from "./internal/elements/template-element";
+import ArrayExpression           from "./internal/expressions/array-expression";
+import ArrowFunctionExpression   from "./internal/expressions/arrow-function-expression";
+import AssignmentExpression      from "./internal/expressions/assignment-expression";
+import BinaryExpression          from "./internal/expressions/binary-expression";
+import CallExpression            from "./internal/expressions/call-expression";
+import ConditionalExpression     from "./internal/expressions/conditional-expression";
+import Identifier                from "./internal/expressions/identifier";
+import Literal                   from "./internal/expressions/literal";
+import LogicalExpression         from "./internal/expressions/logical-expression";
+import MemberExpression          from "./internal/expressions/member-expression";
+import NewExpression             from "./internal/expressions/new-expression";
+import ObjectExpression          from "./internal/expressions/object-expression";
+import RegExpLiteral             from "./internal/expressions/reg-exp-literal";
+import SequenceExpression        from "./internal/expressions/sequence-expression";
+import TaggedTemplateExpression  from "./internal/expressions/tagged-template-expression";
+import TemplateLiteral           from "./internal/expressions/template-literal";
+import ThisExpression            from "./internal/expressions/this-expression";
+import UnaryExpression           from "./internal/expressions/unary-expression";
+import UpdateExpression          from "./internal/expressions/update-expression";
+import Messages                  from "./internal/messages";
+import Parser                    from "./internal/parser";
+import ArrayPattern              from "./internal/patterns/array-pattern";
+import AssignmentPattern         from "./internal/patterns/assignment-pattern";
+import ObjectPattern             from "./internal/patterns/object-pattern";
+import RestElement               from "./internal/patterns/rest-element";
 import
 {
     AssignmentOperator,
@@ -111,9 +113,9 @@ export default abstract class Expression
         return new BinaryExpression(left, right, operator);
     }
 
-    public static call(context: IExpression, callee: IExpression, $arguments?: Array<IExpression>): ICallExpression
+    public static call(thisArg: IExpression, callee: IExpression, $arguments?: Array<IExpression>): ICallExpression
     {
-        return new CallExpression(context, callee, $arguments || []);
+        return new CallExpression(thisArg, callee, $arguments || []);
     }
 
     public static conditional(condition: IExpression, alternate: IExpression, consequent: IExpression): IConditionalExpression
@@ -193,6 +195,11 @@ export default abstract class Expression
     public static this(): IThisExpression
     {
         return new ThisExpression();
+    }
+
+    public static taggedTemplate(thisArg: IExpression, callee: IExpression, quasi: TemplateLiteral): ITaggedTemplateExpression
+    {
+        return new TaggedTemplateExpression(thisArg, callee, quasi);
     }
 
     public static template(quasis: Array<ITemplateElement>, expressions: Array<IExpression>): ITemplateLiteral

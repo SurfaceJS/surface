@@ -22,6 +22,7 @@ enum NodeType
     RestElement,
     SequenceExpression,
     SpreadElement,
+    TaggedTemplateExpression,
     TemplateElement,
     TemplateLiteral,
     ThisExpression,

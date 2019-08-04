@@ -1,32 +1,33 @@
-import IArrayExpression         from "./interfaces/array-expression";
-import IArrayPattern            from "./interfaces/array-pattern";
-import IArrowFunctionExpression from "./interfaces/arrow-function-expression";
-import IAssignmentExpression    from "./interfaces/assignment-expression";
-import IAssignmentPattern       from "./interfaces/assignment-pattern";
-import IAssignmentProperty      from "./interfaces/assignment-property";
-import IBinaryExpression        from "./interfaces/binary-expression";
-import ICallExpression          from "./interfaces/call-expression";
-import ICoalesceExpression      from "./interfaces/coalesce-expression";
-import IConditionalExpression   from "./interfaces/conditional-expression";
-import IIdentifier              from "./interfaces/identifier";
-import ILiteral                 from "./interfaces/literal";
-import ILogicalExpression       from "./interfaces/logical-expression";
-import IMemberExpression        from "./interfaces/member-expression";
-import INewExpression           from "./interfaces/new-expression";
-import INode                    from "./interfaces/node";
-import IObjectExpression        from "./interfaces/object-expression";
-import IObjectPattern           from "./interfaces/object-pattern";
-import IProperty                from "./interfaces/property";
-import IRegExpLiteral           from "./interfaces/reg-exp-literal";
-import IRestElement             from "./interfaces/rest-element";
-import ISequenceExpression      from "./interfaces/sequence-expression";
-import ISpreadElement           from "./interfaces/spread-element";
-import ITemplateElement         from "./interfaces/template-element";
-import ITemplateLiteral         from "./interfaces/template-literal";
-import IThisExpression          from "./interfaces/this-expression";
-import IUnaryExpression         from "./interfaces/unary-expression";
-import IUpdateExpression        from "./interfaces/update-expression";
-import TypeGuard                from "./internal/type-guard";
+import IArrayExpression          from "./interfaces/array-expression";
+import IArrayPattern             from "./interfaces/array-pattern";
+import IArrowFunctionExpression  from "./interfaces/arrow-function-expression";
+import IAssignmentExpression     from "./interfaces/assignment-expression";
+import IAssignmentPattern        from "./interfaces/assignment-pattern";
+import IAssignmentProperty       from "./interfaces/assignment-property";
+import IBinaryExpression         from "./interfaces/binary-expression";
+import ICallExpression           from "./interfaces/call-expression";
+import ICoalesceExpression       from "./interfaces/coalesce-expression";
+import IConditionalExpression    from "./interfaces/conditional-expression";
+import IIdentifier               from "./interfaces/identifier";
+import ILiteral                  from "./interfaces/literal";
+import ILogicalExpression        from "./interfaces/logical-expression";
+import IMemberExpression         from "./interfaces/member-expression";
+import INewExpression            from "./interfaces/new-expression";
+import INode                     from "./interfaces/node";
+import IObjectExpression         from "./interfaces/object-expression";
+import IObjectPattern            from "./interfaces/object-pattern";
+import IProperty                 from "./interfaces/property";
+import IRegExpLiteral            from "./interfaces/reg-exp-literal";
+import IRestElement              from "./interfaces/rest-element";
+import ISequenceExpression       from "./interfaces/sequence-expression";
+import ISpreadElement            from "./interfaces/spread-element";
+import ITaggedTemplateExpression from "./interfaces/tagged-template-expression";
+import ITemplateElement          from "./interfaces/template-element";
+import ITemplateLiteral          from "./interfaces/template-literal";
+import IThisExpression           from "./interfaces/this-expression";
+import IUnaryExpression          from "./interfaces/unary-expression";
+import IUpdateExpression         from "./interfaces/update-expression";
+import TypeGuard                 from "./internal/type-guard";
 
 export default abstract class ExpressionVisitor
 {
@@ -121,6 +122,10 @@ export default abstract class ExpressionVisitor
         else if (TypeGuard.isSpreadElement(node))
         {
             return this.visitSpreadExpression(node);
+        }
+        else if (TypeGuard.isTaggedTemplateExpression(node))
+        {
+            return this.visitTaggedTemplateExpression(node);
         }
         else if (TypeGuard.isTemplateLiteral(node))
         {
@@ -339,6 +344,15 @@ export default abstract class ExpressionVisitor
     protected visitSpreadExpression(node: ISpreadElement): INode
     {
         this.visit(node.argument);
+
+        return node;
+    }
+
+    protected visitTaggedTemplateExpression(node: ITaggedTemplateExpression): INode
+    {
+        this.visit(node.thisArg);
+        this.visit(node.callee);
+        this.visit(node.quasi);
 
         return node;
     }

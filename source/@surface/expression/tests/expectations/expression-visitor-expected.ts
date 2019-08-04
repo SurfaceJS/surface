@@ -1,29 +1,30 @@
-import AssignmentProperty      from "../../internal/elements/assignment-property";
-import Property                from "../../internal/elements/property";
-import SpreadElement           from "../../internal/elements/spread-element";
-import TemplateElement         from "../../internal/elements/template-element";
-import ArrayExpression         from "../../internal/expressions/array-expression";
-import ArrowFunctionExpression from "../../internal/expressions/arrow-function-expression";
-import AssignmentExpression    from "../../internal/expressions/assignment-expression";
-import BinaryExpression        from "../../internal/expressions/binary-expression";
-import CallExpression          from "../../internal/expressions/call-expression";
-import CoalesceExpression      from "../../internal/expressions/coalesce-expression";
-import ConditionalExpression   from "../../internal/expressions/conditional-expression";
-import Identifier              from "../../internal/expressions/identifier";
-import Literal                 from "../../internal/expressions/literal";
-import LogicalExpression       from "../../internal/expressions/logical-expression";
-import MemberExpression        from "../../internal/expressions/member-expression";
-import NewExpression           from "../../internal/expressions/new-expression";
-import ObjectExpression        from "../../internal/expressions/object-expression";
-import SequenceExpression      from "../../internal/expressions/sequence-expression";
-import TemplateLiteral         from "../../internal/expressions/template-literal";
-import ThisExpression          from "../../internal/expressions/this-expression";
-import UnaryExpression         from "../../internal/expressions/unary-expression";
-import UpdateExpression        from "../../internal/expressions/update-expression";
-import ArrayPattern            from "../../internal/patterns/array-pattern";
-import AssignmentPattern       from "../../internal/patterns/assignment-pattern";
-import ObjectPattern           from "../../internal/patterns/object-pattern";
-import RestElement             from "../../internal/patterns/rest-element";
+import AssignmentProperty       from "../../internal/elements/assignment-property";
+import Property                 from "../../internal/elements/property";
+import SpreadElement            from "../../internal/elements/spread-element";
+import TemplateElement          from "../../internal/elements/template-element";
+import ArrayExpression          from "../../internal/expressions/array-expression";
+import ArrowFunctionExpression  from "../../internal/expressions/arrow-function-expression";
+import AssignmentExpression     from "../../internal/expressions/assignment-expression";
+import BinaryExpression         from "../../internal/expressions/binary-expression";
+import CallExpression           from "../../internal/expressions/call-expression";
+import CoalesceExpression       from "../../internal/expressions/coalesce-expression";
+import ConditionalExpression    from "../../internal/expressions/conditional-expression";
+import Identifier               from "../../internal/expressions/identifier";
+import Literal                  from "../../internal/expressions/literal";
+import LogicalExpression        from "../../internal/expressions/logical-expression";
+import MemberExpression         from "../../internal/expressions/member-expression";
+import NewExpression            from "../../internal/expressions/new-expression";
+import ObjectExpression         from "../../internal/expressions/object-expression";
+import SequenceExpression       from "../../internal/expressions/sequence-expression";
+import TaggedTemplateExpression from "../../internal/expressions/tagged-template-expression";
+import TemplateLiteral          from "../../internal/expressions/template-literal";
+import ThisExpression           from "../../internal/expressions/this-expression";
+import UnaryExpression          from "../../internal/expressions/unary-expression";
+import UpdateExpression         from "../../internal/expressions/update-expression";
+import ArrayPattern             from "../../internal/patterns/array-pattern";
+import AssignmentPattern        from "../../internal/patterns/assignment-pattern";
+import ObjectPattern            from "../../internal/patterns/object-pattern";
+import RestElement              from "../../internal/patterns/rest-element";
 
 type ValidVisitSpec = { raw: string, value: string, context?: Object };
 
@@ -211,6 +212,19 @@ export const validVisitors: Array<ValidVisitSpec> =
             Identifier.name,
             SpreadElement.name,
             Identifier.name,
+        ].join(" > ")
+    },
+    {
+        raw: "tag`Hello: ${'World'}!!!`",
+        value:
+        [
+            TaggedTemplateExpression.name,
+            Literal.name,
+            Identifier.name,
+            TemplateLiteral.name,
+            TemplateElement.name,
+            TemplateElement.name,
+            Literal.name
         ].join(" > ")
     },
     {
