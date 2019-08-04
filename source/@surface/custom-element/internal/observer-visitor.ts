@@ -6,9 +6,9 @@ import IReactor        from "../../reactive/interfaces/reactor";
 
 export default class ObserverVisitor extends ReactiveVisitor
 {
-    public constructor(listener: IListener)
+    public constructor(listener: IListener, scope: Indexer)
     {
-        super(listener);
+        super(listener, scope);
     }
 
     protected reactivate(target: Indexer, key: string): IReactor

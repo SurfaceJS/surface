@@ -1,182 +1,398 @@
-import IArrayExpression       from "./interfaces/array-expression";
-import IBinaryExpression      from "./interfaces/binary-expression";
-import ICallExpression        from "./interfaces/call-expression";
-import IConditionalExpression from "./interfaces/conditional-expression";
-import IConstantExpression    from "./interfaces/constant-expression";
-import IExpression            from "./interfaces/expression";
-import IIdentifierExpression  from "./interfaces/identifier-expression";
-import IMemberExpression      from "./interfaces/member-expression";
-import IObjectExpression      from "./interfaces/object-expression";
-import IPropertyExpression    from "./interfaces/property-expression";
-import IRegexExpression       from "./interfaces/regex-expression";
-import ITemplateExpression    from "./interfaces/template-expression";
-import IUnaryExpression       from "./interfaces/unary-expression";
-import IUpdateExpression      from "./interfaces/update-expression";
-import TypeGuard              from "./internal/type-guard";
+import IArrayExpression          from "./interfaces/array-expression";
+import IArrayPattern             from "./interfaces/array-pattern";
+import IArrowFunctionExpression  from "./interfaces/arrow-function-expression";
+import IAssignmentExpression     from "./interfaces/assignment-expression";
+import IAssignmentPattern        from "./interfaces/assignment-pattern";
+import IAssignmentProperty       from "./interfaces/assignment-property";
+import IBinaryExpression         from "./interfaces/binary-expression";
+import ICallExpression           from "./interfaces/call-expression";
+import ICoalesceExpression       from "./interfaces/coalesce-expression";
+import IConditionalExpression    from "./interfaces/conditional-expression";
+import IIdentifier               from "./interfaces/identifier";
+import ILiteral                  from "./interfaces/literal";
+import ILogicalExpression        from "./interfaces/logical-expression";
+import IMemberExpression         from "./interfaces/member-expression";
+import INewExpression            from "./interfaces/new-expression";
+import INode                     from "./interfaces/node";
+import IObjectExpression         from "./interfaces/object-expression";
+import IObjectPattern            from "./interfaces/object-pattern";
+import IProperty                 from "./interfaces/property";
+import IRegExpLiteral            from "./interfaces/reg-exp-literal";
+import IRestElement              from "./interfaces/rest-element";
+import ISequenceExpression       from "./interfaces/sequence-expression";
+import ISpreadElement            from "./interfaces/spread-element";
+import ITaggedTemplateExpression from "./interfaces/tagged-template-expression";
+import ITemplateElement          from "./interfaces/template-element";
+import ITemplateLiteral          from "./interfaces/template-literal";
+import IThisExpression           from "./interfaces/this-expression";
+import IUnaryExpression          from "./interfaces/unary-expression";
+import IUpdateExpression         from "./interfaces/update-expression";
+import TypeGuard                 from "./internal/type-guard";
 
 export default abstract class ExpressionVisitor
 {
-    protected visit(expression: IExpression): IExpression
+    // tslint:disable-next-line:cyclomatic-complexity
+    protected visit(node: INode): INode
     {
-        if (TypeGuard.isArrayExpression(expression))
+        /* istanbul ignore else */
+        if (TypeGuard.isArrayExpression(node))
         {
-            return this.visitArrayExpression(expression);
+            return this.visitArrayExpression(node);
         }
-        else if (TypeGuard.isBinaryExpression(expression))
+        else if (TypeGuard.isArrayPattern(node))
         {
-            return this.visitBinaryExpression(expression);
+            return this.visitArrayPattern(node);
         }
-        else if (TypeGuard.isCallExpression(expression))
+        else if (TypeGuard.isArrowFunctionExpression(node))
         {
-            return this.visitCallExpression(expression);
+            return this.visitArrowFunctionExpression(node);
         }
-        else if (TypeGuard.isConditionalExpression(expression))
+        else if (TypeGuard.isAssignmentExpression(node))
         {
-            return this.visitConditionalExpression(expression);
+            return this.visitAssignmentExpression(node);
         }
-        else if (TypeGuard.isConstantExpression(expression))
+        else if (TypeGuard.isAssignmentProperty(node))
         {
-            return this.visitConstantExpression(expression);
+            return this.visitAssignmentProperty(node);
         }
-        else if (TypeGuard.isIdentifierExpression(expression))
+        else if (TypeGuard.isAssignmentPattern(node))
         {
-            return this.visitIdentifierExpression(expression);
+            return this.visitAssignmentPattern(node);
         }
-        else if (TypeGuard.isMemberExpression(expression))
+        else if (TypeGuard.isBinaryExpression(node))
         {
-            return this.visitMemberExpression(expression);
+            return this.visitBinaryExpression(node);
         }
-        else if (TypeGuard.isObjectExpression(expression))
+        else if (TypeGuard.isCallExpression(node))
         {
-            return this.visitObjectExpression(expression);
+            return this.visitCallExpression(node);
         }
-        else if (TypeGuard.isPropertyExpression(expression))
+        else if (TypeGuard.isCoalesceExpression(node))
         {
-            return this.visitPropertyExpression(expression);
+            return this.visitCoalesceExpression(node);
         }
-        else if (TypeGuard.isRegexExpression(expression))
+        else if (TypeGuard.isConditionalExpression(node))
         {
-            return this.visitRegexExpression(expression);
+            return this.visitConditionalExpression(node);
         }
-        else if (TypeGuard.isTemplateExpression(expression))
+        else if (TypeGuard.isIdentifier(node))
         {
-            return this.visitTemplateExpression(expression);
+            return this.visitIdentifier(node);
         }
-        else if (TypeGuard.isUpdateExpression(expression))
+        else if (TypeGuard.isLiteral(node))
         {
-            return this.visitUpdateExpression(expression);
+            return this.visitLiteral(node);
         }
-        else if (TypeGuard.isUnaryExpression(expression))
+        else if (TypeGuard.isLogicalExpression(node))
         {
-            return this.visitUnaryExpression(expression);
+            return this.visitLogicalExpression(node);
+        }
+        else if (TypeGuard.isMemberExpression(node))
+        {
+            return this.visitMemberExpression(node);
+        }
+        else if (TypeGuard.isNewExpression(node))
+        {
+            return this.visitNewExpression(node);
+        }
+        else if (TypeGuard.isObjectExpression(node))
+        {
+            return this.visitObjectExpression(node);
+        }
+        else if (TypeGuard.isObjectPattern(node))
+        {
+            return this.visitObjectPattern(node);
+        }
+        else if (TypeGuard.isProperty(node))
+        {
+            return this.visitProperty(node);
+        }
+        else if (TypeGuard.isRegExpLiteral(node))
+        {
+            return this.visitRegExpLiteral(node);
+        }
+        else if (TypeGuard.isRestElement(node))
+        {
+            return this.visitRestElement(node);
+        }
+        else if (TypeGuard.isSequenceExpression(node))
+        {
+            return this.visitSequenceExpression(node);
+        }
+        else if (TypeGuard.isSpreadElement(node))
+        {
+            return this.visitSpreadExpression(node);
+        }
+        else if (TypeGuard.isTaggedTemplateExpression(node))
+        {
+            return this.visitTaggedTemplateExpression(node);
+        }
+        else if (TypeGuard.isTemplateLiteral(node))
+        {
+            return this.visitTemplateLiteral(node);
+        }
+        else if (TypeGuard.isTemplateElement(node))
+        {
+            return this.visitTemplateElement(node);
+        }
+        else if (TypeGuard.isThisExpression(node))
+        {
+            return this.visitThisExpression(node);
+        }
+        else if (TypeGuard.isUpdateExpression(node))
+        {
+            return this.visitUpdateExpression(node);
+        }
+        else if (TypeGuard.isUnaryExpression(node))
+        {
+            return this.visitUnaryExpression(node);
         }
         else
         {
-            throw new Error("Invalid expression");
+            return node;
         }
     }
 
-    protected visitArrayExpression(expression: IArrayExpression): IExpression
+    protected visitArrayExpression(node: IArrayExpression): INode
     {
-        for (const element of expression.elements)
+        for (const element of node.elements)
         {
-            this.visit(element);
+            if (element)
+            {
+                this.visit(element);
+            }
         }
 
-        return expression;
+        return node;
     }
 
-    protected visitBinaryExpression(expression: IBinaryExpression): IExpression
+    protected visitArrayPattern(node: IArrayPattern): INode
     {
-        this.visit(expression.left);
-        this.visit(expression.right);
+        for (const element of node.elements)
+        {
+            if (element)
+            {
+                this.visit(element);
+            }
+        }
 
-        return expression;
+        return node;
     }
 
-    protected visitCallExpression(expression: ICallExpression): IExpression
+    protected visitArrowFunctionExpression(node: IArrowFunctionExpression): INode
     {
-        this.visit(expression.context);
+        for (const parameter of node.parameters)
+        {
+            this.visit(parameter);
+        }
 
-        for (const arg of expression.args)
+        this.visit(node.body);
+
+        return node;
+    }
+
+    protected visitAssignmentExpression(node: IAssignmentExpression): INode
+    {
+        this.visit(node.left);
+        this.visit(node.right);
+
+        return node;
+    }
+
+    protected visitAssignmentProperty(node: IAssignmentProperty): INode
+    {
+        this.visit(node.key);
+        this.visit(node.value);
+
+        return node;
+    }
+
+    protected visitAssignmentPattern(node: IAssignmentPattern): INode
+    {
+        this.visit(node.left);
+        this.visit(node.right);
+
+        return node;
+    }
+
+    protected visitBinaryExpression(node: IBinaryExpression): INode
+    {
+        this.visit(node.left);
+        this.visit(node.right);
+
+        return node;
+    }
+
+    protected visitCallExpression(node: ICallExpression): INode
+    {
+        this.visit(node.thisArg);
+        this.visit(node.callee);
+
+        for (const arg of node.arguments)
         {
             this.visit(arg);
         }
 
-        return expression;
+        return node;
     }
 
-    protected visitConditionalExpression(expression: IConditionalExpression): IExpression
+    protected visitCoalesceExpression(node: ICoalesceExpression): INode
     {
-        this.visit(expression.condition);
-        this.visit(expression.truthy);
-        this.visit(expression.falsy);
+        this.visit(node.left);
+        this.visit(node.right);
 
-        return expression;
+        return node;
     }
 
-    protected visitConstantExpression(expression: IConstantExpression): IExpression
+    protected visitConditionalExpression(node: IConditionalExpression): INode
     {
-        return expression;
+        this.visit(node.test);
+        this.visit(node.alternate);
+        this.visit(node.consequent);
+
+        return node;
     }
 
-    protected visitIdentifierExpression(expression: IIdentifierExpression): IExpression
+    protected visitIdentifier(node: IIdentifier): INode
     {
-        return expression;
+        return node;
     }
 
-    protected visitMemberExpression(expression: IMemberExpression): IExpression
+    protected visitLiteral(node: ILiteral): INode
     {
-        this.visit(expression.target);
-        this.visit(expression.key);
-
-        return expression;
+        return node;
     }
 
-    protected visitObjectExpression(expression: IObjectExpression): IExpression
+    protected visitLogicalExpression(node: ILogicalExpression): INode
     {
-        for (const property of expression.properties)
+        this.visit(node.left);
+        this.visit(node.right);
+
+        return node;
+    }
+
+    protected visitMemberExpression(node: IMemberExpression): INode
+    {
+        this.visit(node.object);
+        this.visit(node.property);
+
+        return node;
+    }
+
+    protected visitNewExpression(node: INewExpression): INode
+    {
+        this.visit(node.callee);
+
+        for (const arg of node.arguments)
         {
-            this.visit(property);
+            this.visit(arg);
         }
 
-        return expression;
+        return node;
     }
 
-    protected visitPropertyExpression(expression: IPropertyExpression): IExpression
+    protected visitObjectExpression(node: IObjectExpression): INode
     {
-        this.visit(expression.key);
-        this.visit(expression.value);
-
-        return expression;
-    }
-
-    protected visitRegexExpression(expression: IRegexExpression): IExpression
-    {
-        return expression;
-    }
-
-    protected visitTemplateExpression(expression: ITemplateExpression): IExpression
-    {
-        for (const node of expression.expressions)
+        for (const entry of node.properties)
         {
-            this.visit(node);
+            this.visit(entry);
         }
 
-        return expression;
+        return node;
     }
 
-    protected visitUnaryExpression(expression: IUnaryExpression): IExpression
+    protected visitObjectPattern(node: IObjectPattern): INode
     {
-        this.visit(expression.expression);
+        for (const entry of node.properties)
+        {
+            this.visit(entry);
+        }
 
-        return expression;
+        return node;
     }
 
-    protected visitUpdateExpression(expression: IUpdateExpression): IExpression
+    protected visitProperty(node: IProperty): INode
     {
-        this.visit(expression.expression);
+        this.visit(node.key);
+        this.visit(node.value);
 
-        return expression;
+        return node;
+    }
+
+    protected visitRegExpLiteral(node: IRegExpLiteral): INode
+    {
+        return node;
+    }
+
+    protected visitRestElement(node: IRestElement): INode
+    {
+        this.visit(node.argument);
+
+        return node;
+    }
+
+    protected visitSequenceExpression(node: ISequenceExpression): INode
+    {
+        for (const expression of node.expressions)
+        {
+            this.visit(expression);
+        }
+
+        return node;
+    }
+
+    protected visitSpreadExpression(node: ISpreadElement): INode
+    {
+        this.visit(node.argument);
+
+        return node;
+    }
+
+    protected visitTaggedTemplateExpression(node: ITaggedTemplateExpression): INode
+    {
+        this.visit(node.thisArg);
+        this.visit(node.callee);
+        this.visit(node.quasi);
+
+        return node;
+    }
+
+    protected visitTemplateLiteral(node: ITemplateLiteral): INode
+    {
+        for (const quasi of node.quasis)
+        {
+            this.visit(quasi);
+        }
+
+        for (const expression of node.expressions)
+        {
+            this.visit(expression);
+        }
+
+        return node;
+    }
+
+    protected visitTemplateElement(node: ITemplateElement): INode
+    {
+        return node;
+    }
+
+    protected visitThisExpression(node: IThisExpression): INode
+    {
+        return node;
+    }
+
+    protected visitUnaryExpression(node: IUnaryExpression): INode
+    {
+        this.visit(node.argument);
+
+        return node;
+    }
+
+    protected visitUpdateExpression(node: IUpdateExpression): INode
+    {
+        this.visit(node.argument);
+
+        return node;
     }
 }

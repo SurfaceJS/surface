@@ -1,83 +1,173 @@
-import ExpressionType        from "../expression-type";
-import IExpression           from "../interfaces/expression";
-import ArrayExpression       from "./expressions/array-expression";
-import BinaryExpression      from "./expressions/binary-expression";
-import CallExpression        from "./expressions/call-expression";
-import ConditionalExpression from "./expressions/conditional-expression";
-import ConstantExpression    from "./expressions/constant-expression";
-import IdentifierExpression  from "./expressions/identifier-expression";
-import MemberExpression      from "./expressions/member-expression";
-import ObjectExpression      from "./expressions/object-expression";
-import PropertyExpression    from "./expressions/property-expression";
-import RegexExpression       from "./expressions/regex-expression";
-import TemplateExpression    from "./expressions/template-expression";
-import UnaryExpression       from "./expressions/unary-expression";
-import UpdateExpression      from "./expressions/update-expression";
+import IArrayExpression          from "../interfaces/array-expression";
+import IArrayPattern             from "../interfaces/array-pattern";
+import IArrowFunctionExpression  from "../interfaces/arrow-function-expression";
+import IAssignmentExpression     from "../interfaces/assignment-expression";
+import IAssignmentPattern        from "../interfaces/assignment-pattern";
+import IAssignmentProperty       from "../interfaces/assignment-property";
+import IBinaryExpression         from "../interfaces/binary-expression";
+import ICallExpression           from "../interfaces/call-expression";
+import ICoalesceExpression       from "../interfaces/coalesce-expression";
+import IConditionalExpression    from "../interfaces/conditional-expression";
+import IIdentifier               from "../interfaces/identifier";
+import ILiteral                  from "../interfaces/literal";
+import ILogicalExpression        from "../interfaces/logical-expression";
+import IMemberExpression         from "../interfaces/member-expression";
+import INewExpression            from "../interfaces/new-expression";
+import INode                     from "../interfaces/node";
+import IObjectExpression         from "../interfaces/object-expression";
+import IObjectPattern            from "../interfaces/object-pattern";
+import IProperty                 from "../interfaces/property";
+import IRegExpLiteral            from "../interfaces/reg-exp-literal";
+import IRestElement              from "../interfaces/rest-element";
+import ISequenceExpression       from "../interfaces/sequence-expression";
+import ISpreadElement            from "../interfaces/spread-element";
+import ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
+import ITemplateElement          from "../interfaces/template-element";
+import ITemplateLiteral          from "../interfaces/template-literal";
+import IThisExpression           from "../interfaces/this-expression";
+import IUnaryExpression          from "../interfaces/unary-expression";
+import IUpdateExpression         from "../interfaces/update-expression";
+import NodeType                  from "../node-type";
 
 export default class TypeGuard
 {
-    public static isArrayExpression(target: IExpression): target is ArrayExpression
+    public static isArrayExpression(node: INode): node is IArrayExpression
     {
-        return target.type == ExpressionType.Array;
+        return node.type == NodeType.ArrayExpression;
     }
 
-    public static isBinaryExpression(target: IExpression): target is BinaryExpression
+    public static isArrayPattern(node: INode): node is IArrayPattern
     {
-        return target.type == ExpressionType.Binary;
+        return node.type == NodeType.ArrayPattern;
     }
 
-    public static isCallExpression(target: IExpression): target is CallExpression
+    public static isArrowFunctionExpression(node: INode): node is IArrowFunctionExpression
     {
-        return target.type == ExpressionType.Call;
+        return node.type == NodeType.ArrowFunctionExpression;
     }
 
-    public static isConditionalExpression(target: IExpression): target is ConditionalExpression
+    public static isAssignmentExpression(node: INode): node is IAssignmentExpression
     {
-        return target.type == ExpressionType.Conditional;
+        return node.type == NodeType.AssignmentExpression;
     }
 
-    public static isConstantExpression(target: IExpression): target is ConstantExpression
+    public static isAssignmentProperty(node: INode): node is IAssignmentProperty
     {
-        return target.type == ExpressionType.Constant;
+        return node.type == NodeType.AssignmentProperty;
     }
 
-    public static isIdentifierExpression(target: IExpression): target is IdentifierExpression
+    public static isAssignmentPattern(node: INode): node is IAssignmentPattern
     {
-        return target.type == ExpressionType.Identifier;
+        return node.type == NodeType.AssignmentPattern;
     }
 
-    public static isMemberExpression(target: IExpression): target is MemberExpression
+    public static isBinaryExpression(node: INode): node is IBinaryExpression
     {
-        return target.type == ExpressionType.Member;
+        return node.type == NodeType.BinaryExpression;
     }
 
-    public static isObjectExpression(target: IExpression): target is ObjectExpression
+    public static isCallExpression(node: INode): node is ICallExpression
     {
-        return target.type == ExpressionType.Object;
+        return node.type == NodeType.CallExpression;
     }
 
-    public static isPropertyExpression(target: IExpression): target is PropertyExpression
+    public static isCoalesceExpression(node: INode): node is ICoalesceExpression
     {
-        return target.type == ExpressionType.Property;
+        return node.type == NodeType.CoalesceExpression;
     }
 
-    public static isRegexExpression(target: IExpression): target is RegexExpression
+    public static isConditionalExpression(node: INode): node is IConditionalExpression
     {
-        return target.type == ExpressionType.Regex;
+        return node.type == NodeType.ConditionalExpression;
     }
 
-    public static isTemplateExpression(target: IExpression): target is TemplateExpression
+    public static isIdentifier(node: INode): node is IIdentifier
     {
-        return target.type == ExpressionType.Template;
+        return node.type == NodeType.Identifier;
     }
 
-    public static isUnaryExpression(target: IExpression): target is UnaryExpression
+    public static isLiteral(node: INode): node is ILiteral
     {
-        return target.type == ExpressionType.Unary;
+        return node.type == NodeType.Literal;
     }
 
-    public static isUpdateExpression(target: IExpression): target is UpdateExpression
+    public static isLogicalExpression(node: INode): node is ILogicalExpression
     {
-        return target.type == ExpressionType.Update;
+        return node.type == NodeType.LogicalExpression;
+    }
+
+    public static isMemberExpression(node: INode): node is IMemberExpression
+    {
+        return node.type == NodeType.MemberExpression;
+    }
+
+    public static isNewExpression(node: INode): node is INewExpression
+    {
+        return node.type == NodeType.NewExpression;
+    }
+
+    public static isObjectExpression(node: INode): node is IObjectExpression
+    {
+        return node.type == NodeType.ObjectExpression;
+    }
+
+    public static isObjectPattern(node: INode): node is IObjectPattern
+    {
+        return node.type == NodeType.ObjectPattern;
+    }
+
+    public static isProperty(node: INode): node is IProperty
+    {
+        return node.type == NodeType.Property;
+    }
+
+    public static isRegExpLiteral(node: INode): node is IRegExpLiteral
+    {
+        return node.type == NodeType.RegExpLiteral;
+    }
+
+    public static isRestElement(node: INode): node is IRestElement
+    {
+        return node.type == NodeType.RestElement;
+    }
+
+    public static isSequenceExpression(node: INode): node is ISequenceExpression
+    {
+        return node.type == NodeType.SequenceExpression;
+    }
+
+    public static isSpreadElement(node: INode): node is ISpreadElement
+    {
+        return node.type == NodeType.SpreadElement;
+    }
+
+    public static isTaggedTemplateExpression(node: INode): node is ITaggedTemplateExpression
+    {
+        return node.type == NodeType.TaggedTemplateExpression;
+    }
+
+    public static isTemplateLiteral(node: INode): node is ITemplateLiteral
+    {
+        return node.type == NodeType.TemplateLiteral;
+    }
+
+    public static isTemplateElement(node: INode): node is ITemplateElement
+    {
+        return node.type == NodeType.TemplateElement;
+    }
+
+    public static isThisExpression(node: INode): node is IThisExpression
+    {
+        return node.type == NodeType.ThisExpression;
+    }
+
+    public static isUnaryExpression(node: INode): node is IUnaryExpression
+    {
+        return node.type == NodeType.UnaryExpression;
+    }
+
+    public static isUpdateExpression(node: INode): node is IUpdateExpression
+    {
+        return node.type == NodeType.UpdateExpression;
     }
 }

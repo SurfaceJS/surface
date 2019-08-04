@@ -1,6 +1,5 @@
 import "./fixtures/dom";
 
-import { Indexer }                             from "@surface/core";
 import Expression                              from "@surface/expression";
 import ICallExpression                         from "@surface/expression/interfaces/call-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
@@ -27,17 +26,17 @@ export class ObserverVisitorSpec
             }
         }
 
-        const context = { this: new Mock() };
+        const scope = { this: new Mock() };
 
         let value = 0;
 
-        const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ notify: (x: number) => value = x });
+        const expression = Expression.parse("this.value");
+        const visitor    = new ObserverVisitor({ notify: (x: number) => value = x }, scope);
 
         visitor.observe(expression);
-        context.this.value += 1;
+        scope.this.value += 1;
 
-        chai.expect(value).to.equal(context.this.value);
+        chai.expect(value).to.equal(scope.this.value);
     }
 
     @test @shouldPass
@@ -51,11 +50,11 @@ export class ObserverVisitorSpec
             }
         }
 
-        const context    = { this: new Mock() };
-        const expression = Expression.from("this.increment(1)", context);
-        const visitor    = new ObserverVisitor({ notify: () => undefined });
+        const scope      = { this: new Mock() };
+        const expression = Expression.parse("this.increment(1)");
+        const visitor    = new ObserverVisitor({ notify: () => undefined }, scope);
 
-        const invoker = ((expression as ICallExpression).context.evaluate() as Indexer)[(expression as ICallExpression).name];
+        const invoker = (expression as ICallExpression).callee.evaluate(scope);
 
         visitor.observe(expression);
 
@@ -73,28 +72,20 @@ export class ObserverVisitorSpec
             }
         }
 
-        const context    = { this: new MockWithoutSetter() };
-        const expression = Expression.from("this.value", context);
-        const visitor    = new ObserverVisitor({ notify: () => chai.expect(context.this.value).to.equal(1) });
+        const scope    = { this: new MockWithoutSetter() };
+        const expression = Expression.parse("this.value");
+        const visitor    = new ObserverVisitor({ notify: () => chai.expect(scope.this.value).to.equal(1) }, scope);
 
-        visitor.observe(expression);
+        visitor.observe(expression); // Todo: Review scenario
 
-        (context.this as Indexer)["value"] = 1;
+        chai.expect(true);
     }
 
     @test @shouldFail
     public bindToNonInitializedObject(): void
     {
-        const context =
-        {
-            this:
-            {
-                data: undefined,
-            }
-        };
-
-        const expression = Expression.from("this.data['value']", context);
-        const visitor    = new ObserverVisitor({ notify: () => undefined });
+        const expression = Expression.parse("this.data['value']");
+        const visitor    = new ObserverVisitor({ notify: () => undefined }, { this: { data: undefined } });
 
         chai.expect(() => visitor.observe(expression)).to.throw(Error, "Can\'t make reactive a non initialized target");
     }

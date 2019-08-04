@@ -1,37 +1,95 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
+import TypeGuard    from "../type-guard";
 
-export default class MemberExpression extends BaseExpression
+export default class MemberExpression implements IExpression
 {
-    private readonly _key: IExpression;
-    public get key(): IExpression
+    private cache: unknown;
+
+    private _computed: boolean;
+    public get computed(): boolean
     {
-        return this._key;
+        return this._computed;
     }
 
-    private readonly _target: IExpression;
-    public get target(): IExpression
+    /* istanbul ignore next */
+    public set computed(value: boolean)
     {
-        return this._target;
+        this._computed = value;
     }
 
-    public get type(): ExpressionType
+    private _property: IExpression;
+    public get property(): IExpression
     {
-        return ExpressionType.Member;
+        return this._property;
     }
 
-    public constructor(target: IExpression, key: IExpression)
+    /* istanbul ignore next */
+    public set property(value: IExpression)
     {
-        super();
-
-        this._key    = key;
-        this._target = target;
+        this._property = value;
     }
 
-    public evaluate(): unknown
+    private _object: IExpression;
+    public get object(): IExpression
     {
-        return this._cache = (this.target.evaluate() as Indexer)[`${this.key.evaluate()}`];
+        return this._object;
+    }
+
+    /* istanbul ignore next */
+    public set object(value: IExpression)
+    {
+        this._object = value;
+    }
+
+    private _optional: boolean;
+    public get optional(): boolean
+    {
+        return this._optional;
+    }
+
+    /* istanbul ignore next */
+    public set optional(value: boolean)
+    {
+        this._optional = value;
+    }
+
+    public get type(): NodeType
+    {
+        return NodeType.MemberExpression;
+    }
+
+    public constructor(object: IExpression, property: IExpression, computed: boolean, optional?: boolean)
+    {
+        this._object   = object;
+        this._property = property;
+        this._computed = computed;
+        this._optional = !!optional;
+    }
+
+    public evaluate(scope: Indexer, useCache: boolean): unknown
+    {
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        const object = this.object.evaluate(scope, useCache) as Nullable<Indexer>;
+
+        const key = TypeGuard.isIdentifier(this.property) ? this.property.name : `${this.property.evaluate(scope, useCache)}`;
+
+        if (this.optional)
+        {
+            return this.cache = (hasValue(object) ? object[key] : undefined);
+        }
+
+        return this.cache = object![key];
+    }
+
+    public toString(): string
+    {
+        return `${this.object}${TypeGuard.isIdentifier(this.property) && !this.computed ? `${this.optional ? "?" : ""}.${this.property.name}` : `${this.optional ? "?." : ""}[${this.property}]`}`;
     }
 }

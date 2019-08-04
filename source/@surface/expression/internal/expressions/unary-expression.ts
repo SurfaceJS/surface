@@ -1,50 +1,74 @@
-import { Func1 }         from "@surface/core";
-import ExpressionType    from "../../expression-type";
-import IExpression       from "../../interfaces/expression";
-import { UnaryOperator } from "../../types";
-import BaseExpression    from "./abstracts/base-expression";
+import { Func1, Indexer, Nullable } from "@surface/core";
+import { hasValue }                 from "@surface/core/common/generic";
+import IExpression                  from "../../interfaces/expression";
+import NodeType                     from "../../node-type";
+import { UnaryOperator }            from "../../types";
 
-const unaryFunctions =
+type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
+
+const unaryFunctions: Record<UnaryOperator, Operation> =
 {
-    "+":      (value: IExpression) => +(value.evaluate() as Object),
-    "-":      (value: IExpression) => -(value.evaluate() as Object),
-    "~":      (value: IExpression) => ~(value.evaluate() as Object),
-    "!":      (value: IExpression) => !value.evaluate(),
-    "typeof": (value: IExpression) => typeof value.evaluate(),
+    "+":      (expression, scope, useCache) => +(expression.evaluate(scope, useCache) as Object),
+    "-":      (expression, scope, useCache) => -(expression.evaluate(scope, useCache) as Object),
+    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
+    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
+    "typeof": (expression, scope, useCache) => typeof expression.evaluate(scope, useCache),
 };
 
-export default class UnaryExpression extends BaseExpression<Object>
+export default class UnaryExpression implements IExpression
 {
-    private readonly operation: Func1<unknown, Object>;
+    private cache: Nullable<Object>;
 
-    private readonly _operator: UnaryOperator;
+    private _argument: IExpression;
+    public get argument(): IExpression
+    {
+        return this._argument;
+    }
+
+    /* istanbul ignore next */
+    public set argument(value: IExpression)
+    {
+        this._argument = value;
+    }
+
+    private readonly operation: Operation;
+
+    private _operator: UnaryOperator;
     public get operator(): UnaryOperator
     {
         return this._operator;
     }
 
-    private readonly _expression: IExpression;
-    public get expression(): IExpression
+    /* istanbul ignore next */
+    public set operator(value: UnaryOperator)
     {
-        return this._expression;
+        this._operator = value;
     }
 
-    public get type(): ExpressionType
+    public get type(): NodeType
     {
-        return ExpressionType.Unary;
+        return NodeType.UnaryExpression;
     }
 
-    public constructor(expression: IExpression, operator: UnaryOperator)
+    public constructor(argument: IExpression, operator: UnaryOperator)
     {
-        super();
-
-        this._operator   = operator;
-        this._expression = expression;
-        this.operation   = unaryFunctions[this.operator] as Func1<unknown, Object>;
+        this._operator = operator;
+        this._argument = argument;
+        this.operation = unaryFunctions[this.operator] as Func1<unknown, Object>;
     }
 
-    public evaluate(): Object
+    public evaluate(scope: Indexer, useCache: boolean): Object
     {
-        return this._cache = this.operation(this.expression);
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.operation(this.argument, scope, useCache);
+    }
+
+    public toString(): string
+    {
+        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.argument}`;
     }
 }

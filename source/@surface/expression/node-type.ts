@@ -1,0 +1,33 @@
+enum NodeType
+{
+    ArrayExpression,
+    ArrayPattern,
+    ArrowFunctionExpression,
+    AssignmentExpression,
+    AssignmentPattern,
+    AssignmentProperty,
+    BinaryExpression,
+    CallExpression,
+    CoalesceExpression,
+    ConditionalExpression,
+    Identifier,
+    Literal,
+    LogicalExpression,
+    MemberExpression,
+    NewExpression,
+    ObjectExpression,
+    ObjectPattern,
+    Property,
+    RegExpLiteral,
+    RestElement,
+    SequenceExpression,
+    SpreadElement,
+    TaggedTemplateExpression,
+    TemplateElement,
+    TemplateLiteral,
+    ThisExpression,
+    UnaryExpression,
+    UpdateExpression,
+}
+
+export default NodeType;

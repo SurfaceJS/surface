@@ -286,7 +286,7 @@ export default class Scanner
         return { code, octal };
     }
 
-    private scanBinaryLiteral(prefix: string, start: number): Token
+    private scanBinaryLiteral(start: number): Token
     {
         let $number = "";
         let char    = "";
@@ -295,7 +295,7 @@ export default class Scanner
         {
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             $number += this.source[this.index];
@@ -323,7 +323,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (!this.eof())
@@ -381,7 +381,7 @@ export default class Scanner
         {
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             while (!this.eof())
@@ -404,7 +404,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -497,7 +497,7 @@ export default class Scanner
         if (type != TokenType.Identifier && (start + id.length != this.index))
         {
             this.setCursorAt(start);
-            this.throwUnexpectedToken(Messages.invalidEscapedReservedWord);
+            this.throwUnexpectedToken(Messages.keywordMustNotContainEscapedCharacters);
         }
 
         const token =
@@ -544,7 +544,7 @@ export default class Scanner
                     if (char == "b" || char == "B")
                     {
                         this.advance();
-                        return this.scanBinaryLiteral(char, start);
+                        return this.scanBinaryLiteral(start);
                     }
 
                     if (char == "o" || char == "O")
@@ -583,7 +583,7 @@ export default class Scanner
         {
             if ($number.endsWith("_"))
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             $number += this.source[this.index];
@@ -593,7 +593,7 @@ export default class Scanner
 
             if (char == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
 
             if (!this.eof())
@@ -642,7 +642,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -685,7 +685,7 @@ export default class Scanner
 
             if (this.source[this.index] == "_")
             {
-                this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
             }
         }
 
@@ -708,7 +708,7 @@ export default class Scanner
 
         if ($number.endsWith("_"))
         {
-            this.throwUnexpectedToken(Messages.numericSepatorNotAllowed);
+            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)) || Character.isDecimalDigit(this.source.charCodeAt(this.index)))
@@ -785,7 +785,7 @@ export default class Scanner
 
                             if (Object.is(unescaped, null))
                             {
-                                this.throwUnexpectedToken(Messages.invalidHexEscapeSequence);
+                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
 
                             $string += unescaped;
@@ -870,12 +870,12 @@ export default class Scanner
         const start = this.index;
 
         // Check for most common single-character punctuators.
-        let $string = this.source[this.index];
-        switch ($string)
+        let punctuator = this.source[this.index];
+        switch (punctuator)
         {
             case "(":
             case "{":
-                if ($string == "{")
+                if (punctuator == "{")
                 {
                     this.curlyStack.push("{");
                 }
@@ -888,7 +888,7 @@ export default class Scanner
                 {
                     // Spread operator: ...
                     this.setCursorAt(this.index + 2);
-                    $string = "...";
+                    punctuator = "...";
                 }
                 break;
 
@@ -902,24 +902,47 @@ export default class Scanner
             case "[":
             case "]":
             case ":":
-            case "?":
             case "~":
                 this.advance();
+                break;
+            case "?":
+                punctuator = "?";
+
+                const lookahead = this.source[this.index + 1];
+
+                if (lookahead == ".")
+                {
+                    if (!Character.isDecimalDigit(this.source.codePointAt(this.index + 2)!))
+                    {
+                        punctuator = "?.";
+
+                        this.advance();
+                    }
+                }
+                else if (lookahead == "?")
+                {
+                    punctuator = "??";
+
+                    this.advance();
+                }
+
+                this.advance();
+
                 break;
 
             default:
                 // 4-character punctuator.
-                $string = this.source.substr(this.index, 4);
+                punctuator = this.source.substr(this.index, 4);
 
-                if ($string == ">>>=")
+                if (punctuator == ">>>=")
                 {
                     this.setCursorAt(this.index + 4);
                 }
                 else
                 {
                     // 3-character punctuators.
-                    $string = $string.substr(0, 3);
-                    switch ($string)
+                    punctuator = punctuator.substr(0, 3);
+                    switch (punctuator)
                     {
                         case "===":
                         case "!==":
@@ -931,35 +954,35 @@ export default class Scanner
                         break;
                         default:
                             // 2-character punctuators.
-                            $string = $string.substr(0, 2);
-                            switch ($string)
+                            punctuator = punctuator.substr(0, 2);
+                            switch (punctuator)
                             {
-                                case "&&":
-                                case "||":
-                                case "==":
                                 case "!=":
-                                case "+=":
-                                case "-=":
-                                case "*=":
-                                case "/=":
-                                case "++":
-                                case "--":
-                                case "<<":
-                                case ">>":
-                                case "&=":
-                                case "|=":
-                                case "^=":
                                 case "%=":
-                                case "<=":
-                                case ">=":
-                                case "=>":
+                                case "&&":
+                                case "&=":
                                 case "**":
-                                this.setCursorAt(this.index + 2);
-                                break;
+                                case "*=":
+                                case "++":
+                                case "+=":
+                                case "--":
+                                case "-=":
+                                case "/=":
+                                case "<<":
+                                case "<=":
+                                case "==":
+                                case "=>":
+                                case ">=":
+                                case ">>":
+                                case "^=":
+                                case "|=":
+                                case "||":
+                                    this.setCursorAt(this.index + 2);
+                                    break;
                             default:
                                 // 1-character punctuators.
-                                $string = this.source[this.index];
-                                if ("<>=!+-*%&|^/".indexOf($string) >= 0)
+                                punctuator = this.source[this.index];
+                                if ("<>=!+-*%&|^/".includes(punctuator))
                                 {
                                     this.advance();
                                 }
@@ -976,8 +999,8 @@ export default class Scanner
 
         const token =
         {
-            raw:        $string,
-            value:      $string,
+            raw:        punctuator,
+            value:      punctuator,
             type:       TokenType.Punctuator,
             start:      start,
             end:        this.index,
@@ -997,6 +1020,7 @@ export default class Scanner
         let cooked     = "";
         let terminated = false;
         let tail       = false;
+        let offset     = 1;
 
         this.advance();
 
@@ -1015,9 +1039,14 @@ export default class Scanner
             {
                 if (this.source[this.index] == "{")
                 {
-                    this.curlyStack.push("${");
+                    this.curlyStack.push("$" + "{"); // VS Code bug - Wrong color syntax when string contains the token ${
+
                     this.advance();
+
+                    offset++;
+
                     terminated = true;
+
                     break;
                 }
                 cooked += char;
@@ -1065,7 +1094,7 @@ export default class Scanner
                             const unescaped = this.scanHexEscape(char);
                             if (unescaped === null)
                             {
-                                this.throwUnexpectedToken(Messages.invalidHexEscapeSequence);
+                                this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
                             cooked += unescaped;
                             break;
@@ -1085,14 +1114,14 @@ export default class Scanner
                                 if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                                 {
                                     // Illegal: \01 \02 and so on
-                                    this.throwUnexpectedToken(Messages.templateOctalLiteral);
+                                    this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                                 }
                                 cooked += "\0";
                             }
                             else if (Character.isOctalDigit(char.charCodeAt(0)))
                             {
                                 // Illegal: \1 \2
-                                this.throwUnexpectedToken(Messages.templateOctalLiteral);
+                                this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                             }
                             else
                             {
@@ -1142,11 +1171,9 @@ export default class Scanner
             this.curlyStack.pop();
         }
 
-        const $string = this.source.slice(start + 1, this.index - 1);
-
         const token =
         {
-            raw:        (head ? "`" : "") + $string + (tail ? "`" : ""),
+            raw:        this.source.slice(start + 1, this.index - offset),
             value:      cooked,
             type:       TokenType.Template,
             head:       head,
@@ -1269,7 +1296,7 @@ export default class Scanner
 
         // Template literals start with ` (U+0060) for template head
         // or } (U+007D) for template middle or template tail.
-        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "${"))
+        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "$" + "{")) // VS Code bug - Wrong color syntax when string contains the token ${
         {
             return this.scanTemplate();
         }
@@ -1314,7 +1341,7 @@ export default class Scanner
 
                         if (Character.isLineTerminator(char.charCodeAt(0)))
                         {
-                            this.throwUnexpectedToken(Messages.unterminatedRegExp);
+                            this.throwUnexpectedToken(Messages.invalidRegularExpressionMissingToken);
                         }
 
                         pattern += char;
@@ -1346,7 +1373,7 @@ export default class Scanner
 
         if (!terminated)
         {
-            this.throwUnexpectedToken(Messages.unterminatedRegExp);
+            this.throwUnexpectedToken(Messages.invalidRegularExpressionMissingToken);
         }
 
         let flags = "";
@@ -1364,11 +1391,13 @@ export default class Scanner
             this.advance();
         }
 
+        pattern = pattern.substring(1, pattern.length - 1);
+
         const token =
         {
-            raw:        pattern + flags,
+            raw:        `/${pattern}/${flags}`,
             value:      new RegExp(pattern, flags),
-            pattern:    pattern.substring(1, pattern.length - 1),
+            pattern:    pattern,
             type:       TokenType.RegularExpression, flags,
             start:      start,
             end:        this.index,

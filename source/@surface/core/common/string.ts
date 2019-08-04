@@ -1,3 +1,5 @@
+import { Indexer } from "..";
+
 export function camelToText(value: string): string
 {
     return value.split(/(?=[A-Z])/g).join(" ").toLowerCase();
@@ -12,17 +14,22 @@ export function dashedToCamel<T extends string>(value: T): T;
 export function dashedToCamel(value: string): string;
 export function dashedToCamel(value: string): string
 {
-    return value.replace(/-([a-z])/g, (value, group) => group.toUpperCase());
+    return value.replace(/-([a-z])/g, (_, group) => group.toUpperCase());
 }
 
 export function dashedToTitle(value: string): string
 {
-    return value.replace(/(^[a-z]|-[a-z])/g, (value, group) => group.replace(/-/g, "").toUpperCase());
+    return value.replace(/(^[a-z]|-[a-z])/g, (_, group) => group.replace(/-/g, "").toUpperCase());
+}
+
+export function format(pattern: string, source: Indexer): string
+{
+    return pattern.replace(/\$\{([^}]*)\}/g, (_, key) => `${source[key]}`);
 }
 
 export function toTitle(value: string): string
 {
-    return value.replace(/(^[a-z]|\s+[a-z])/g, (value, group) => group.toUpperCase());
+    return value.replace(/(^[a-z]|\s+[a-z])/g, (_, group) => group.toUpperCase());
 }
 
 export function uuidv4()

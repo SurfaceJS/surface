@@ -63,14 +63,14 @@ export default class Reactive
     public static observe(target: Indexer, path: string): [IReactor, IObserver];
     public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
     public static observe(target: Indexer, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
-    public static observe(expression: IExpression, listener: IListener): ISubscription;
-    public static observe(...args: [Indexer, string]|[IExpression, IListener]|[Indexer, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|ISubscription
+    public static observe(expression: IExpression, scope: Indexer, listener: IListener): ISubscription;
+    public static observe(...args: [Indexer, string]|[IExpression, Indexer, IListener]|[Indexer, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|ISubscription
     {
-        if (args.length == 2 && "evaluate" in args[0] && typeof args[1] != "string")
+        if (args.length == 3 && "evaluate" in args[0] && typeof args[1] != "string")
         {
-            const [expression, listener] = args as [IExpression, IListener];
+            const [expression, scope, listener] = args as [IExpression, Indexer, IListener];
 
-            const visitor = new ReactiveVisitor(listener);
+            const visitor = new ReactiveVisitor(listener, scope);
 
             return visitor.observe(expression);
         }

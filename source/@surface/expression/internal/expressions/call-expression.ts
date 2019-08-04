@@ -1,56 +1,119 @@
-import { Indexer }    from "@surface/core";
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import { format }            from "@surface/core/common/string";
+import IExpression           from "../../interfaces/expression";
+import ISpreadElement        from "../../interfaces/spread-element";
+import NodeType              from "../../node-type";
+import Messages              from "../messages";
+import TypeGuard             from "../type-guard";
 
-export default class CallExpression extends BaseExpression
+export default class CallExpression implements IExpression
 {
-    private readonly _context: IExpression;
-    public get context(): IExpression
+    private cache: unknown;
+
+    private _arguments: Array<IExpression|ISpreadElement>;
+    public get arguments(): Array<IExpression|ISpreadElement>
     {
-        return this._context;
+        return this._arguments;
     }
 
-    private readonly _name: string;
-    public get name(): string
+    /* istanbul ignore next */
+    public set arguments(value: Array<IExpression|ISpreadElement>)
     {
-        return this._name;
+        this._arguments = value;
     }
 
-    private readonly _args: Array<IExpression>;
-    public get args(): Array<IExpression>
+    private _callee: IExpression;
+    public get callee(): IExpression
     {
-        return this._args;
+        return this._callee;
     }
 
-    public get type(): ExpressionType
+    /* istanbul ignore next */
+    public set callee(value: IExpression)
     {
-        return ExpressionType.Call;
+        this._callee = value;
     }
 
-    public constructor(context: IExpression, name: string, args: Array<IExpression>)
+    private _optional: boolean;
+    public get optional(): boolean
     {
-        super();
-
-        this._args    = args;
-        this._context = context;
-        this._name    = name;
+        return this._optional;
     }
 
-    public evaluate(): unknown
+    /* istanbul ignore next */
+    public set optional(value: boolean)
     {
-        const context = this.context.evaluate() as Indexer<Function>;
-        const fn      = context[this.name];
+        this._optional = value;
+    }
+
+    private _thisArg: IExpression;
+    public get thisArg(): IExpression
+    {
+        return this._thisArg;
+    }
+
+    /* istanbul ignore next */
+    public set thisArg(value: IExpression)
+    {
+        this._thisArg = value;
+    }
+
+    public get type(): NodeType
+    {
+        return NodeType.CallExpression;
+    }
+
+    public constructor(thisArg: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>, optional?: boolean)
+    {
+        this._arguments = $arguments;
+        this._thisArg   = thisArg;
+        this._callee    = callee;
+        this._optional  = !!optional;
+    }
+
+    public evaluate(scope: Indexer, useCache: boolean): unknown
+    {
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        const fn = this.callee.evaluate(scope, useCache) as Nullable<Function>;
+
+        if (this.optional && !hasValue(fn))
+        {
+            return undefined;
+        }
 
         if (!fn)
         {
-            throw new ReferenceError(`${this.name} is not defined`);
+            throw new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: this.callee.toString() }));
         }
         else if (typeof fn != "function")
         {
-            throw new TypeError(`${this.name} is not a function`);
+            throw new TypeError(format(Messages.identifierIsNotAFunction, { identifier: this.callee.toString() }));
         }
 
-        return this._cache = fn.apply(context, this.args.map(x => x.evaluate()));
+        const $arguments: Array<unknown> = [];
+
+        for (const argument of this.arguments)
+        {
+            if (TypeGuard.isSpreadElement(argument))
+            {
+                $arguments.push(...argument.argument.evaluate(scope, useCache) as Array<unknown>);
+            }
+            else
+            {
+                $arguments.push(argument.evaluate(scope, useCache));
+            }
+        }
+
+        return this.cache = fn.apply(this.thisArg.evaluate(scope, true), $arguments);
+    }
+
+    public toString(): string
+    {
+        return `${[NodeType.BinaryExpression, NodeType.ConditionalExpression, NodeType.ArrowFunctionExpression].includes(this.callee.type) ? `(${this.callee})` : this.callee}${this.optional ? "?." : ""}(${this.arguments.map(x => x.toString()).join(", ")})`;
     }
 }

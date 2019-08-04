@@ -4,13 +4,13 @@ import { coalesce, typeGuard }                                 from "@surface/co
 import { destruct, getKeyMember }                              from "@surface/core/common/object";
 import { dashedToCamel }                                       from "@surface/core/common/string";
 import Expression                                              from "@surface/expression";
-import ExpressionType                                          from "@surface/expression/expression-type";
 import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
 import IExpression                                             from "@surface/expression/interfaces/expression";
+import NodeType                                                from "@surface/expression/node-type";
+import ISubscription                                           from "@surface/reactive/interfaces/subscription";
 import Type                                                    from "@surface/reflection";
+import FieldInfo                                               from "@surface/reflection/field-info";
 import PropertyInfo                                            from "@surface/reflection/property-info";
-import ISubscription                                           from "../../reactive/interfaces/subscription";
-import FieldInfo                                               from "../../reflection/field-info";
 import BindParser                                              from "./bind-parser";
 import DataBind                                                from "./data-bind";
 import ObserverVisitor                                         from "./observer-visitor";
@@ -27,7 +27,7 @@ type Bindable<T extends object> = T &
 
 export default class TemplateProcessor
 {
-    private readonly context: Indexer;
+    private readonly scope: Indexer;
     private readonly expressions =
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
@@ -38,16 +38,16 @@ export default class TemplateProcessor
     private readonly host:   Node|Element;
     private readonly window: Window;
 
-    private constructor(host: Node|Element, context: Indexer)
+    private constructor(host: Node|Element, scope: Indexer)
     {
-        this.host    = host;
-        this.context = { host, ...context };
-        this.window  = windowWrapper;
+        this.host   = host;
+        this.scope  = { host, ...scope };
+        this.window = windowWrapper;
     }
 
-    public static process(host: Node|Element, node: Node, context: Indexer): void
+    public static process(host: Node|Element, node: Node, scope: Indexer): void
     {
-        const processor = new TemplateProcessor(host, context);
+        const processor = new TemplateProcessor(host, scope);
 
         processor.traverseElement(node);
     }
@@ -77,30 +77,21 @@ export default class TemplateProcessor
         {
             if (this.expressions.databind.test(attribute.value))
             {
-                const context = this.createProxy({ this: element, ...this.context });
+                const scope = this.createProxy({ this: element, ...this.scope });
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    const expression = BindParser.scan(context, attribute.value);
+                    const expression = BindParser.scan(attribute.value);
 
-                    const action = expression.type == ExpressionType.Identifier || expression.type ==  ExpressionType.Member ?
-                        expression.evaluate() as Action
-                        : () => expression.evaluate();
+                    const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
+                        expression.evaluate(scope) as Action
+                        : () => expression.evaluate(scope);
 
                     element.addEventListener(attribute.name.replace(/^on-/, ""), action);
                     attribute.value = `[binding ${action.name || "expression"}]`;
                 }
                 else
                 {
-                    if (element.tagName == "SLOT" && attribute.name == "scope" && !("scope" in element))
-                    {
-                        Object.defineProperty(element, "scope", { configurable: true, value: null, writable: true });
-                    }
-                    else if (attribute.name == "scope")
-                    {
-                        context[attribute.value] = (element.assignedSlot! as Indexer).scope;
-                    }
-
                     const isOneWay         = this.expressions.oneWay.test(attribute.value);
                     const isTwoWay         = this.expressions.twoWay.test(attribute.value);
                     const isPathExpression = this.expressions.path.test(attribute.value);
@@ -113,7 +104,7 @@ export default class TemplateProcessor
                     {
                         const match = this.expressions.path.exec(attribute.value);
 
-                        const target = context;
+                        const target = scope;
                         const path   = match![1];
 
                         const [key, member] = getKeyMember(target, path);
@@ -132,20 +123,20 @@ export default class TemplateProcessor
 
                         DataBind.oneWay(target, path, { notify });
 
-                        if (isTwoWay && elementMember instanceof FieldInfo && targetMember instanceof FieldInfo && !(elementMember instanceof PropertyInfo && elementMember.readonly || targetMember instanceof PropertyInfo && targetMember.readonly))
+                        if (isTwoWay && elementMember instanceof FieldInfo && !elementMember.readonly && targetMember instanceof FieldInfo && !targetMember.readonly)
                         {
                             DataBind.twoWay(target, path, element as Indexer, attributeName);
                         }
                     }
                     else
                     {
-                        const expression = BindParser.scan(context, attribute.value);
+                        const expression = BindParser.scan(attribute.value);
 
                         const notify = () =>
                         {
-                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) && interpolation ?
-                                expression.evaluate().reduce((previous, current) => `${previous}${current}`) :
-                                expression.evaluate();
+                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
+                                expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
+                                expression.evaluate(scope);
 
                             if (canWrite)
                             {
@@ -155,7 +146,7 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        const visitor = new ObserverVisitor({ notify });
+                        const visitor = new ObserverVisitor({ notify }, scope);
                         visitor.observe(expression);
 
                         notifications.push(notify);
@@ -171,23 +162,23 @@ export default class TemplateProcessor
     {
         if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
         {
-            const context = this.createProxy({ this: element.parentElement, ...this.context });
+            const scope = this.createProxy({ this: element.parentElement, ...this.scope });
 
             const match = this.expressions.path.exec(element.nodeValue);
 
             if (match)
             {
-                DataBind.oneWay(context, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
+                DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
             }
             else
             {
-                const expression = BindParser.scan(context, element.nodeValue);
+                const expression = BindParser.scan(element.nodeValue);
 
-                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == ExpressionType.Array) ?
-                    () => element.nodeValue = `${expression.evaluate().reduce((previous, current) => `${previous}${current}`)}` :
-                    () => element.nodeValue = `${coalesce(expression.evaluate(), "")}`;
+                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
+                    () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
+                    () => element.nodeValue = `${coalesce(expression.evaluate(scope), "")}`;
 
-                const visitor = new ObserverVisitor({ notify });
+                const visitor = new ObserverVisitor({ notify }, scope);
                 visitor.observe(expression);
 
                 notify();
@@ -264,7 +255,7 @@ export default class TemplateProcessor
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
-    private processDirectives(template: HTMLTemplateElement, context: Indexer): void
+    private processDirectives(template: HTMLTemplateElement, scope: Indexer): void
     {
         if (!template.parentNode)
         {
@@ -283,16 +274,16 @@ export default class TemplateProcessor
 
             const rawScope = template.getAttribute("#scope");
 
-            const contentScope: Indexer = rawScope ? Expression.from(rawScope, this.createProxy(context)).evaluate() as Indexer : { };
+            const contentScope: Indexer = rawScope ? Expression.parse(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
 
-            const slotName = template.getAttribute("#content") || "";
+            const contentName = template.getAttribute("#content") || "";
 
             const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
 
-            if (!slottedTemplates.has(slotName))
+            if (!slottedTemplates.has(contentName))
             {
-                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${slotName}]`);
-                slottedTemplates.set(slotName, outterTemplate);
+                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${contentName}]`);
+                slottedTemplates.set(contentName, outterTemplate);
 
                 if (outterTemplate)
                 {
@@ -300,15 +291,15 @@ export default class TemplateProcessor
                 }
             }
 
-            const outterTemplate = slottedTemplates.get(slotName) || template;
+            const outterTemplate = slottedTemplates.get(contentName) || template;
 
             const scopeSpression = outterTemplate.getAttribute("scope") || "scope";
 
             const destructuredScope = scopeSpression.startsWith("{");
 
-            const { scope, scopeAlias } = destructuredScope ?
-                { scope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
-                { scope: contentScope, scopeAlias: scopeSpression };
+            const { elementScope, scopeAlias } = destructuredScope ?
+                { elementScope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
+                { elementScope: contentScope, scopeAlias: scopeSpression };
 
             const content = document.importNode(outterTemplate.content, true);
 
@@ -319,8 +310,8 @@ export default class TemplateProcessor
             const apply = (outterContext: Indexer) =>
             {
                 const merged = destructuredScope ?
-                    { ...scope, ...outterContext }
-                    : { [scopeAlias]: scope, ...outterContext };
+                    { ...elementScope, ...outterContext }
+                    : { [scopeAlias]: elementScope, ...outterContext };
 
                 TemplateProcessor.process(this.host, content, merged);
 
@@ -376,13 +367,13 @@ export default class TemplateProcessor
 
                 for (const [expression, template] of expressions)
                 {
-                    if (expression.evaluate())
+                    if (expression.evaluate(scope))
                     {
                         const content = template.content.cloneNode(true) as Element;
 
                         content.normalize();
 
-                        TemplateProcessor.process(this.host, content, context);
+                        TemplateProcessor.process(this.host, content, scope);
 
                         end.parentNode.insertBefore(content, end);
 
@@ -391,9 +382,9 @@ export default class TemplateProcessor
                 }
             };
 
-            const visitor = new ObserverVisitor({ notify });
+            const visitor = new ObserverVisitor({ notify }, scope);
 
-            const expression = Expression.from(template.getAttribute("#if")!, context);
+            const expression = Expression.parse(template.getAttribute("#if")!);
 
             subscriptions.push(visitor.observe(expression));
 
@@ -405,7 +396,7 @@ export default class TemplateProcessor
             {
                 if (simbling.hasAttribute("#else-if"))
                 {
-                    const expression = Expression.from(simbling.getAttribute("#else-if")!, this.createProxy(context));
+                    const expression = Expression.parse(simbling.getAttribute("#else-if")!);
 
                     subscriptions.push(visitor.observe(expression));
 
@@ -421,7 +412,7 @@ export default class TemplateProcessor
                 {
                     simbling.remove();
 
-                    expressions.push([Expression.constant(true), simbling]);
+                    expressions.push([Expression.literal(true), simbling]);
 
                     break;
                 }
@@ -453,7 +444,7 @@ export default class TemplateProcessor
 
             const destructured = aliasExpression.startsWith("[");
 
-            const expression = Expression.from(iterableExpression, this.createProxy(context));
+            const expression = Expression.parse(iterableExpression);
 
             let cache: Array<[unknown, Array<ChildNode>]> = [];
 
@@ -492,8 +483,8 @@ export default class TemplateProcessor
                         content.normalize();
 
                         const mergedContext = destructured ?
-                            { ...destruct(aliasExpression, element as Array<unknown>), ...context }
-                            : { ...context, [aliasExpression]: element };
+                            { ...destruct(aliasExpression, element as Array<unknown>), ...scope }
+                            : { ...scope, [aliasExpression]: element };
 
                         TemplateProcessor.process(this.host, content, mergedContext);
 
@@ -525,7 +516,7 @@ export default class TemplateProcessor
                     }
                 };
 
-                return () =>
+                return (scope: Indexer) =>
                 {
                     if (!end.parentNode)
                     {
@@ -534,7 +525,7 @@ export default class TemplateProcessor
                         return;
                     }
 
-                    const elements = expression.evaluate() as Array<Element>;
+                    const elements = expression.evaluate(scope) as Array<Element>;
 
                     if (elements.length < cache.length)
                     {
@@ -559,12 +550,12 @@ export default class TemplateProcessor
 
             const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-            const subscription = new ObserverVisitor({ notify }).observe(expression);
+            const subscription = new ObserverVisitor({ notify }, scope).observe(expression);
 
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);
 
-            notify();
+            notify(scope);
         }
     }
 
@@ -574,11 +565,11 @@ export default class TemplateProcessor
         {
             if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
             {
-                this.processDirectives(element, this.context);
+                this.processDirectives(element, this.scope);
             }
             else if (!element[BINDED])
             {
-                element[CONTEXT] = this.context;
+                element[CONTEXT] = this.scope;
 
                 if (element.attributes && element.attributes.length > 0)
                 {
@@ -594,7 +585,7 @@ export default class TemplateProcessor
 
                 if (element[ON_AFTER_BINDED])
                 {
-                    element[ON_AFTER_BINDED]!(this.context);
+                    element[ON_AFTER_BINDED]!(this.scope);
                 }
 
                 element[BINDED] = true;

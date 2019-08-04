@@ -1,43 +1,72 @@
-import ExpressionType from "../../expression-type";
-import IExpression    from "../../interfaces/expression";
-import BaseExpression from "./abstracts/base-expression";
+import { Indexer }  from "@surface/core";
+import { hasValue } from "@surface/core/common/generic";
+import IExpression  from "../../interfaces/expression";
+import NodeType     from "../../node-type";
 
-export default class ConditionalExpression extends BaseExpression
+export default class ConditionalExpression implements IExpression
 {
-    private _condition: IExpression;
-    public get condition(): IExpression
+    private cache: unknown;
+
+    private _alternate: IExpression;
+    public get alternate(): IExpression
     {
-        return this._condition;
+        return this._alternate;
     }
 
-    private readonly _falsy: IExpression;
-    public get falsy(): IExpression
+    /* istanbul ignore next */
+    public set alternate(value: IExpression)
     {
-        return this._falsy;
+        this._alternate = value;
     }
 
-    private readonly _truthy: IExpression;
-    public get truthy(): IExpression
+    private _consequent: IExpression;
+    public get consequent(): IExpression
     {
-        return this._truthy;
+        return this._consequent;
     }
 
-    public get type(): ExpressionType
+    /* istanbul ignore next */
+    public set consequent(value: IExpression)
     {
-        return ExpressionType.Conditional;
+        this._consequent = value;
     }
 
-    public constructor(condition: IExpression, truthy: IExpression, falsy: IExpression)
+    private _test: IExpression;
+    public get test(): IExpression
     {
-        super();
-
-        this._condition = condition;
-        this._falsy     = falsy;
-        this._truthy    = truthy;
+        return this._test;
     }
 
-    public evaluate(): unknown
+    /* istanbul ignore next */
+    public set test(value: IExpression)
     {
-        return this._cache = this.condition.evaluate() ? this.truthy.evaluate() : this.falsy.evaluate();
+        this._test = value;
+    }
+
+    public get type(): NodeType
+    {
+        return NodeType.ConditionalExpression;
+    }
+
+    public constructor(test: IExpression, alternate: IExpression, consequent: IExpression)
+    {
+        this._test       = test;
+        this._consequent = consequent;
+        this._alternate  = alternate;
+    }
+
+    public evaluate(scope: Indexer, useCache: boolean): unknown
+    {
+        if (useCache && hasValue(this.cache))
+        {
+            return this.cache;
+        }
+
+        return this.cache = this.test.evaluate(scope, useCache) ? this.alternate.evaluate(scope, useCache) : this.consequent.evaluate(scope, useCache);
+    }
+
+    public toString(): string
+    {
+        return `${this.test} ? ${this.alternate} : ${this.consequent}`;
     }
 }

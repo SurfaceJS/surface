@@ -1,5 +1,5 @@
-import { shouldPass, suite, test }               from "@surface/test-suite";
-import * as chai                                 from "chai";
+import { shouldPass, suite, test }                         from "@surface/test-suite";
+import * as chai                                           from "chai";
 import { destruct, merge, objectFactory, structuralEqual } from "../../common/object";
 
 @suite

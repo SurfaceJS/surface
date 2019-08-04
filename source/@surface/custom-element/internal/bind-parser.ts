@@ -6,20 +6,18 @@ export default class BindParser
 {
     private readonly expressions: Array<IExpression> = [];
 
-    private readonly context: Object;
     private readonly source:  string;
 
     private index: number = 0;
 
-    private constructor(source: string, context: Object)
+    private constructor(source: string)
     {
         this.source  = source;
-        this.context = context;
     }
 
-    public static scan(context: Object, source: string): IExpression
+    public static scan(source: string): IExpression
     {
-        return new BindParser(source, context).scan();
+        return new BindParser(source).scan();
     }
 
     private advance(): void
@@ -49,7 +47,7 @@ export default class BindParser
                     .replace(/\\\[/g, "[")
                     .replace(/\\\]/g, "]");
 
-                this.expressions.push(Expression.constant(textFragment));
+                this.expressions.push(Expression.literal(textFragment));
             }
 
             if (!this.eof())
@@ -73,7 +71,7 @@ export default class BindParser
                 }
                 while (!this.eof() && stack > 0);
 
-                const expression = Expression.from(this.source.substring(start, this.index - 2), this.context);
+                const expression = Expression.parse(this.source.substring(start, this.index - 2));
 
                 this.expressions.push(expression);
 

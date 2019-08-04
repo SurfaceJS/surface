@@ -1,0 +1,23 @@
+{
+    "all": false,    
+    "exclude":
+    [
+        "**/tests"
+    ],
+    "extension":
+    [
+        ".js",
+        ".ts"
+    ],
+    "include":
+    [
+        "source/@surface/**/*.js",
+        "source/@surface/**/*.ts"
+    ],
+    "reporter":
+    [
+        "text-summary",
+        "lcov"
+    ],
+    "sourceMap": true
+}

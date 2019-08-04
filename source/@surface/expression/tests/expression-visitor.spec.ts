@@ -1,28 +1,32 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                                         from "chai";
-import Expression                                         from "..";
-import FixtureVisitor                                     from "./fixtures/fixture-visitor";
-import { validVisitors }                                  from "./fixtures/visitors";
+import { batchTest, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                       from "chai";
+import Expression                       from "..";
+import RegExpLiteral                    from "../internal/expressions/reg-exp-literal";
+import { validVisitors }                from "./expectations/expression-visitor-expected";
+import FixtureVisitor                   from "./fixtures/fixture-visitor";
 
 @suite
 export default class ExpressionVisitorSpec
 {
     @shouldPass
-    @batchTest(validVisitors, x => `visit ${x.value}`)
-    public visitsShouldWork(spec: { raw: string, value: string, context?: Object }): void
+    @batchTest(validVisitors, x => `(${x.raw}): visit ${x.value}`)
+    public visitsShouldWork(spec: { raw: string, value: string }): void
     {
+        const expression = Expression.parse(spec.raw);
         const visitor  = new FixtureVisitor();
-        let expression = Expression.from(spec.raw, spec.context);
 
-        expect(visitor.visit(expression).evaluate()).to.equal(spec.value);
+        visitor.visit(expression);
+
+        expect(visitor.toString()).to.equal(spec.value);
     }
 
-    @test @shouldFail
-    public invalidExpression(): void
+    @test @shouldPass
+    public visitRegExpLiteral(): void
     {
-        const visitor  = new FixtureVisitor();
-        let expression = { cache: null, type: -1, evaluate: () => null };
+        const visitor = new FixtureVisitor();
 
-        expect(() => visitor.visit(expression).evaluate()).to.throw(Error, "Invalid expression");
+        visitor.visit(new RegExpLiteral("\\d", "i"));
+
+        expect(visitor.toString()).to.equal("RegExpLiteral");
     }
 }

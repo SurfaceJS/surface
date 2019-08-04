@@ -1,72 +1,103 @@
-import { Func2, Indexer } from "@surface/core";
-import ExpressionType     from "../../expression-type";
-import IExpression        from "../../interfaces/expression";
-import { UpdateOperator } from "../../types";
-import TypeGuard          from "../type-guard";
-import BaseExpression     from "./abstracts/base-expression";
-import ConstantExpression from "./constant-expression";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import IExpression           from "../../interfaces/expression";
+import NodeType              from "../../node-type";
+import { UpdateOperator }    from "../../types";
+import TypeGuard             from "../type-guard";
 
+type Operation = (object: Record<string|number, number>, property: string|number) => number;
 type Operators = "++*"|"--*"|"*++"|"*--";
 
-const updateFunctions =
+const updateFunctions: Record<Operators, Operation> =
 {
-    "++*": (target: IExpression, key: IExpression) => ++(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
-    "--*": (target: IExpression, key: IExpression) => --(target.evaluate() as Indexer<number>)[key.evaluate() as string]!,
-    "*++": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!++,
-    "*--": (target: IExpression, key: IExpression) => (target.evaluate() as Indexer<number>)[key.evaluate() as string]!--,
+    "++*": (object, property) => ++object[property],
+    "--*": (object, property) => --object[property],
+    "*++": (object, property) => object[property]++,
+    "*--": (object, property) => object[property]--,
 };
 
-export default class UpdateExpression extends BaseExpression<number>
+export default class UpdateExpression implements IExpression
 {
-    private readonly operation: Func2<IExpression, IExpression, number>;
+    private readonly operation: Operation;
 
-    private readonly _expression: IExpression;
-    public get expression(): IExpression
+    private cache: Nullable<number>;
+
+    private _argument: IExpression;
+    public get argument(): IExpression
     {
-        return this._expression;
+        return this._argument;
     }
 
-    private readonly _operator: UpdateOperator;
+    /* istanbul ignore next */
+    public set argument(value: IExpression)
+    {
+        this._argument = value;
+    }
+
+    private _operator: UpdateOperator;
     public get operator(): UpdateOperator
     {
         return this._operator;
     }
 
-    private readonly _prefix: boolean;
+    /* istanbul ignore next */
+    public set operator(value: UpdateOperator)
+    {
+        this._operator = value;
+    }
+
+    private _prefix: boolean;
     public get prefix(): boolean
     {
         return this._prefix;
     }
 
-    public get type(): ExpressionType
+    /* istanbul ignore next */
+    public set prefix(value: boolean)
     {
-        return ExpressionType.Update;
+        this._prefix = value;
     }
 
-    public constructor(expression: IExpression, operator: UpdateOperator, prefix: boolean)
+    public get type(): NodeType
     {
-        super();
-
-        this._expression = expression;
-        this._prefix     = prefix;
-        this._operator   = operator;
-        this.operation   = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
+        return NodeType.UpdateExpression;
     }
 
-    public evaluate(): number
+    public constructor(argument: IExpression, operator: UpdateOperator, prefix: boolean)
     {
-        /* istanbul ignore else  */
-        if (TypeGuard.isIdentifierExpression(this.expression))
+        this._argument = argument;
+        this._prefix   = prefix;
+        this._operator = operator;
+        this.operation = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
+    }
+
+    public evaluate(scope: Indexer, useCache: boolean): number
+    {
+        if (useCache && hasValue(this.cache))
         {
-            return this._cache = this.operation(new ConstantExpression(this.expression.context), new ConstantExpression(this.expression.name));
+            return this.cache;
         }
-        else if (TypeGuard.isMemberExpression(this.expression))
+
+        /* istanbul ignore else  */
+        if (TypeGuard.isIdentifier(this.argument))
         {
-            return this._cache = this.operation(this.expression.target, this.expression.key);
+            return this.cache = this.operation(scope as Record<string|number, number>, this.argument.name);
+        }
+        else if (TypeGuard.isMemberExpression(this.argument))
+        {
+            const object   = this.argument.object.evaluate(scope, useCache) as Record<string|number, number>;
+            const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope, useCache) as string|number;
+
+            return this.cache = this.operation(object, property);
         }
         else
         {
-            throw new TypeError("Invalid target expression");
+            throw new TypeError("Invalid argument expression");
         }
+    }
+
+    public toString(): string
+    {
+        return this.prefix ? `${this.operator}${this.argument}` : `${this.argument}${this.operator}`;
     }
 }
