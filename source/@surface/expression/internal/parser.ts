@@ -189,6 +189,13 @@ export default class Parser
     {
         const left = this.inheritGrammar(this.conditionalExpression);
 
+        if (this.match("=>"))
+        {
+            this.expect("=>");
+
+            return new ArrowFunctionExpression([this.reinterpretPattern(left)], this.inheritGrammar(this.assignmentExpression));
+        }
+
         const isAssignment = this.match("=")
             || this.match("*=")
             || this.match("**=")
@@ -235,6 +242,16 @@ export default class Parser
 
             while (true)
             {
+                if (this.match("="))
+                {
+                    throw new ReferenceError(Messages.invalidLeftHandSideInAssignment);
+                }
+
+                if (this.match("=>"))
+                {
+                    throw this.syntaxError(Messages.malformedArrowFunctionParameterList);
+                }
+
                 precedence = this.binaryPrecedence(this.lookahead);
 
                 if (precedence <= 0)
@@ -909,18 +926,7 @@ export default class Parser
                     return new Identifier(this.nextToken().raw);
                 }
 
-                const indentifier = new Identifier(this.nextToken().raw);
-
-                if (this.match("=>"))
-                {
-                    this.expect("=>");
-
-                    return new ArrowFunctionExpression([indentifier], this.inheritGrammar(this.assignmentExpression));
-                }
-                else
-                {
-                    return indentifier;
-                }
+                return new Identifier(this.nextToken().raw);
 
             case TokenType.BooleanLiteral:
                 return new Literal(this.nextToken().value as LiteralValue);

@@ -1489,4 +1489,14 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
         raw:     "x, y z",
         error:   new SyntaxError(format(Messages.unexpectedToken, { token: "z" }), 1, 5, 6)
     },
+    {
+        scope:   scope,
+        raw:     "x || x = 1",
+        error:   new ReferenceError(Messages.invalidLeftHandSideInAssignment)
+    },
+    {
+        scope:   scope,
+        raw:     "x || x => x",
+        error:   new SyntaxError(Messages.malformedArrowFunctionParameterList, 1, 7, 8)
+    },
 ];
