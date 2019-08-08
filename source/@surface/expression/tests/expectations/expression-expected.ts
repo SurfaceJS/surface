@@ -188,5 +188,5 @@ export const evaluationsExpected: Array<EvaluationErrorExpected> =
         error: new ReferenceError(format(Messages.identifierIsNotAConstructor, { identifier: "fn" })),
         raw:   "new fn()",
         scope: { fn: 1 }
-    }
+    },
 ];

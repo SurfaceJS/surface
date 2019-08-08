@@ -1,6 +1,8 @@
 import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
 import IExpression           from "../../interfaces/expression";
+import IIdentifier           from "../../interfaces/identifier";
+import IMemberExpression     from "../../interfaces/member-expression";
 import NodeType              from "../../node-type";
 import { UpdateOperator }    from "../../types";
 import TypeGuard             from "../type-guard";
@@ -22,14 +24,14 @@ export default class UpdateExpression implements IExpression
 
     private cache: Nullable<number>;
 
-    private _argument: IExpression;
-    public get argument(): IExpression
+    private _argument: IIdentifier|IMemberExpression;
+    public get argument(): IIdentifier|IMemberExpression
     {
         return this._argument;
     }
 
     /* istanbul ignore next */
-    public set argument(value: IExpression)
+    public set argument(value: IIdentifier|IMemberExpression)
     {
         this._argument = value;
     }
@@ -63,7 +65,7 @@ export default class UpdateExpression implements IExpression
         return NodeType.UpdateExpression;
     }
 
-    public constructor(argument: IExpression, operator: UpdateOperator, prefix: boolean)
+    public constructor(argument: IIdentifier|IMemberExpression, operator: UpdateOperator, prefix: boolean)
     {
         this._argument = argument;
         this._prefix   = prefix;
@@ -78,21 +80,16 @@ export default class UpdateExpression implements IExpression
             return this.cache;
         }
 
-        /* istanbul ignore else  */
         if (TypeGuard.isIdentifier(this.argument))
         {
             return this.cache = this.operation(scope as Record<string|number, number>, this.argument.name);
         }
-        else if (TypeGuard.isMemberExpression(this.argument))
+        else
         {
             const object   = this.argument.object.evaluate(scope, useCache) as Record<string|number, number>;
             const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope, useCache) as string|number;
 
             return this.cache = this.operation(object, property);
-        }
-        else
-        {
-            throw new TypeError("Invalid argument expression");
         }
     }
 

@@ -212,6 +212,11 @@ export default class Parser
 
         if (isAssignment)
         {
+            if (!TypeGuard.isIdentifier(left) && !TypeGuard.isMemberExpression(left))
+            {
+                throw new ReferenceError(Messages.invalidLeftHandSideInAssignment);
+            }
+
             const token = this.nextToken();
 
             const right = this.isolateGrammar(this.assignmentExpression);
@@ -1002,6 +1007,7 @@ export default class Parser
 
                 if (shorthand)
                 {
+                    /* istanbul ignore else */
                     if (TypeGuard.isIdentifier(value))
                     {
                         return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
@@ -1154,8 +1160,15 @@ export default class Parser
     {
         if (this.match("++") || this.match("--"))
         {
-            const operator = this.nextToken().raw as UpdateOperator;
-            return new UpdateExpression(this.inheritGrammar(this.leftHandSideExpression, true), operator, true);
+            const operator   = this.nextToken().raw as UpdateOperator;
+            const expression = this.inheritGrammar(this.leftHandSideExpression, true);
+
+            if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
+            {
+                throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPrefixOperation);
+            }
+
+            return new UpdateExpression(expression, operator, true);
         }
         else
         {
@@ -1163,6 +1176,11 @@ export default class Parser
 
             if (this.match("++") || this.match("--"))
             {
+                if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
+                {
+                    throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPostfixOperation);
+                }
+
                 const operator = this.nextToken().raw as UpdateOperator;
                 return new UpdateExpression(expression, operator, false);
             }

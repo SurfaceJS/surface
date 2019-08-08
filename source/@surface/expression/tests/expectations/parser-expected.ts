@@ -1168,6 +1168,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         type:     TaggedTemplateExpression
     },
     {
+        scope:    { name: "World", x: { tag: (...args: Array<unknown>) => args }},
+        raw:      "x.tag`\\tHello ${name}!!!`",
+        value:    [makeTemplateObject(["\tHello ", "!!!"], ["\\tHello ", "!!!"]), "World"],
+        toString: "x.tag`\\tHello ${name}!!!`",
+        type:     TaggedTemplateExpression
+    },
+    {
         scope:    { this: { id: 1 } },
         raw:      "this",
         value:    { id: 1 },
@@ -1269,6 +1276,21 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
 
 export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
 [
+    {
+        scope:   scope,
+        raw:     "(x || y) = 1",
+        error:   new ReferenceError(Messages.invalidLeftHandSideInAssignment)
+    },
+    {
+        scope:   scope,
+        raw:     "++(x || y)",
+        error:   new ReferenceError(Messages.invalidLeftHandSideExpressionInPrefixOperation)
+    },
+    {
+        scope:   scope,
+        raw:     "(x || y)++",
+        error:   new ReferenceError(Messages.invalidLeftHandSideExpressionInPostfixOperation)
+    },
     {
         scope:   scope,
         raw:     "this.''",

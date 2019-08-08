@@ -89,7 +89,7 @@ export default abstract class Expression
         return new ArrowFunctionExpression(parameters, body);
     }
 
-    public static assignment(left: IExpression, right: IExpression, operator: AssignmentOperator): IAssignmentExpression
+    public static assignment(left: IIdentifier|IMemberExpression, right: IExpression, operator: AssignmentOperator): IAssignmentExpression
     {
         return new AssignmentExpression(left, right, operator);
     }
@@ -217,7 +217,7 @@ export default abstract class Expression
         return new UnaryExpression(argument, operator);
     }
 
-    public static update(argument: IExpression, operator: UpdateOperator, prefix: boolean): IUpdateExpression
+    public static update(argument: IIdentifier|IMemberExpression, operator: UpdateOperator, prefix: boolean): IUpdateExpression
     {
         return new UpdateExpression(argument, operator, prefix);
     }

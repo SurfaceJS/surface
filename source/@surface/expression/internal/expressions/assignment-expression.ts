@@ -1,6 +1,8 @@
 import { Func3, Indexer }     from "@surface/core";
 import { hasValue }           from "@surface/core/common/generic";
 import IExpression            from "../../interfaces/expression";
+import IIdentifier            from "../../interfaces/identifier";
+import IMemberExpression      from "../../interfaces/member-expression";
 import NodeType               from "../../node-type";
 import { AssignmentOperator } from "../../types";
 import TypeGuard              from "../type-guard";
@@ -28,14 +30,14 @@ export default class AssignmentExpression implements IExpression
 
     private cache: unknown;
 
-    private _left:     IExpression;
-    public get left(): IExpression
+    private _left:     IIdentifier|IMemberExpression;
+    public get left(): IIdentifier|IMemberExpression
     {
         return this._left;
     }
 
     /* istanbul ignore next */
-    public set left(value: IExpression)
+    public set left(value: IIdentifier|IMemberExpression)
     {
         this._left = value;
     }
@@ -69,7 +71,7 @@ export default class AssignmentExpression implements IExpression
         return NodeType.AssignmentExpression;
     }
 
-    public constructor(left: IExpression, right: IExpression, operator: AssignmentOperator)
+    public constructor(left: IIdentifier|IMemberExpression, right: IExpression, operator: AssignmentOperator)
     {
         this._left     = left;
         this._right    = right;
@@ -85,21 +87,17 @@ export default class AssignmentExpression implements IExpression
             return this.cache;
         }
 
-        /* istanbul ignore else  */
+
         if (TypeGuard.isIdentifier(this.left))
         {
             return this.cache = this.operation(scope, this.left.name, this.right.evaluate(scope, useCache));
         }
-        else if (TypeGuard.isMemberExpression(this.left))
+        else
         {
             const object   = this.left.object.evaluate(scope, useCache) as Indexer;
             const property = TypeGuard.isIdentifier(this.left.property) && !this.left.computed ? this.left.property.name : this.left.property.evaluate(scope, useCache) as string|number;
 
             return this.cache = this.operation(object, property, this.right.evaluate(scope, useCache));
-        }
-        else
-        {
-            throw new TypeError("Invalid left expression");
         }
     }
 
