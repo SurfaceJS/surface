@@ -15,6 +15,7 @@ import LogicalExpression        from "../../internal/expressions/logical-express
 import MemberExpression         from "../../internal/expressions/member-expression";
 import NewExpression            from "../../internal/expressions/new-expression";
 import ObjectExpression         from "../../internal/expressions/object-expression";
+import ParenthesizedExpression  from "../../internal/expressions/parenthesized-expression";
 import SequenceExpression       from "../../internal/expressions/sequence-expression";
 import TaggedTemplateExpression from "../../internal/expressions/tagged-template-expression";
 import TemplateLiteral          from "../../internal/expressions/template-literal";
@@ -163,9 +164,10 @@ export const validVisitors: Array<ValidVisitSpec> =
         ].join(" > ")
     },
     {
-        raw: "{ x: 1 }",
+        raw: "({ x: 1 })",
         value:
         [
+            ParenthesizedExpression.name,
             ObjectExpression.name,
             Property.name,
             Identifier.name,

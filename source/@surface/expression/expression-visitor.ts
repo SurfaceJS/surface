@@ -16,6 +16,7 @@ import INewExpression            from "./interfaces/new-expression";
 import INode                     from "./interfaces/node";
 import IObjectExpression         from "./interfaces/object-expression";
 import IObjectPattern            from "./interfaces/object-pattern";
+import IParenthesizedExpression  from "./interfaces/parenthesized-expression";
 import IProperty                 from "./interfaces/property";
 import IRegExpLiteral            from "./interfaces/reg-exp-literal";
 import IRestElement              from "./interfaces/rest-element";
@@ -102,6 +103,10 @@ export default abstract class ExpressionVisitor
         else if (TypeGuard.isObjectPattern(node))
         {
             return this.visitObjectPattern(node);
+        }
+        else if (TypeGuard.isParenthesizedExpression(node))
+        {
+            return this.visitParenthesizedExpression(node);
         }
         else if (TypeGuard.isProperty(node))
         {
@@ -307,6 +312,13 @@ export default abstract class ExpressionVisitor
         {
             this.visit(entry);
         }
+
+        return node;
+    }
+
+    protected visitParenthesizedExpression(node: IParenthesizedExpression): INode
+    {
+        this.visit(node.argument);
 
         return node;
     }

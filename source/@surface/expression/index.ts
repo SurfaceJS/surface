@@ -6,6 +6,7 @@ import IAssignmentPattern        from "./interfaces/assignment-pattern";
 import IAssignmentProperty       from "./interfaces/assignment-property";
 import IBinaryExpression         from "./interfaces/binary-expression";
 import ICallExpression           from "./interfaces/call-expression";
+import ICoalesceExpression       from "./interfaces/coalesce-expression";
 import IConditionalExpression    from "./interfaces/conditional-expression";
 import IExpression               from "./interfaces/expression";
 import IIdentifier               from "./interfaces/identifier";
@@ -15,6 +16,7 @@ import IMemberExpression         from "./interfaces/member-expression";
 import INewExpression            from "./interfaces/new-expression";
 import IObjectExpression         from "./interfaces/object-expression";
 import IObjectPattern            from "./interfaces/object-pattern";
+import IParenthesizedExpression  from "./interfaces/parenthesized-expression";
 import IPattern                  from "./interfaces/pattern";
 import IProperty                 from "./interfaces/property";
 import IRegExpLiteral            from "./interfaces/reg-exp-literal";
@@ -37,6 +39,7 @@ import ArrowFunctionExpression   from "./internal/expressions/arrow-function-exp
 import AssignmentExpression      from "./internal/expressions/assignment-expression";
 import BinaryExpression          from "./internal/expressions/binary-expression";
 import CallExpression            from "./internal/expressions/call-expression";
+import CoalesceExpression        from "./internal/expressions/coalesce-expression";
 import ConditionalExpression     from "./internal/expressions/conditional-expression";
 import Identifier                from "./internal/expressions/identifier";
 import Literal                   from "./internal/expressions/literal";
@@ -44,6 +47,7 @@ import LogicalExpression         from "./internal/expressions/logical-expression
 import MemberExpression          from "./internal/expressions/member-expression";
 import NewExpression             from "./internal/expressions/new-expression";
 import ObjectExpression          from "./internal/expressions/object-expression";
+import ParenthesizedExpression   from "./internal/expressions/parenthesized-expression";
 import RegExpLiteral             from "./internal/expressions/reg-exp-literal";
 import SequenceExpression        from "./internal/expressions/sequence-expression";
 import TaggedTemplateExpression  from "./internal/expressions/tagged-template-expression";
@@ -69,6 +73,15 @@ import
 
 export default abstract class Expression
 {
+    private static wrapParenthesis<T extends IExpression>(expression: T): T
+    {
+        const toString = expression.toString;
+
+        expression.toString = () => `(${toString.call(expression)})`;
+
+        return expression;
+    }
+
     public static array(elements: Array<IExpression>): IArrayExpression
     {
         return new ArrayExpression(elements);
@@ -110,12 +123,17 @@ export default abstract class Expression
 
     public static binary(left: IExpression, right: IExpression, operator: BinaryOperator): IBinaryExpression
     {
-        return new BinaryExpression(left, right, operator);
+        return Expression.wrapParenthesis(new BinaryExpression(left, right, operator));
     }
 
     public static call(thisArg: IExpression, callee: IExpression, $arguments?: Array<IExpression>): ICallExpression
     {
         return new CallExpression(thisArg, callee, $arguments || []);
+    }
+
+    public static coalesce(left: IExpression, right: IExpression): ICoalesceExpression
+    {
+        return Expression.wrapParenthesis(new CoalesceExpression(left, right));
     }
 
     public static conditional(condition: IExpression, alternate: IExpression, consequent: IExpression): IConditionalExpression
@@ -135,7 +153,7 @@ export default abstract class Expression
 
     public static logical(left: IExpression, right: IExpression, operator: LogicalOperator): ILogicalExpression
     {
-        return new LogicalExpression(left, right, operator);
+        return Expression.wrapParenthesis(new LogicalExpression(left, right, operator));
     }
 
     public static member(object: IExpression, property: IExpression, computed: boolean): IMemberExpression
@@ -161,6 +179,11 @@ export default abstract class Expression
     public static parse(source: string): IExpression
     {
         return Parser.parse(source);
+    }
+
+    public static parenthesized(argument: IExpression): IParenthesizedExpression
+    {
+        return new ParenthesizedExpression(argument);
     }
 
     public static property(key: IIdentifier): IProperty;

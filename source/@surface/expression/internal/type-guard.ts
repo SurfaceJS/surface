@@ -16,6 +16,7 @@ import INewExpression            from "../interfaces/new-expression";
 import INode                     from "../interfaces/node";
 import IObjectExpression         from "../interfaces/object-expression";
 import IObjectPattern            from "../interfaces/object-pattern";
+import IParenthesizedExpression  from "../interfaces/parenthesized-expression";
 import IProperty                 from "../interfaces/property";
 import IRegExpLiteral            from "../interfaces/reg-exp-literal";
 import IRestElement              from "../interfaces/rest-element";
@@ -114,6 +115,11 @@ export default class TypeGuard
     public static isObjectPattern(node: INode): node is IObjectPattern
     {
         return node.type == NodeType.ObjectPattern;
+    }
+
+    public static isParenthesizedExpression(node: INode): node is IParenthesizedExpression
+    {
+        return node.type == NodeType.ParenthesizedExpression;
     }
 
     public static isProperty(node: INode): node is IProperty

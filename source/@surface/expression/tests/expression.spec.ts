@@ -17,9 +17,12 @@ export default class ExpressionSpec
 {
     @shouldPass
     @batchTest(expressionFactoriesExpected, x => `method Expression.${x.method} should return ${NodeType[x.type]} Expression`)
-    public expressionFactory(expected: ExpressionFactoryExpected)
+    public expressionFactory(expressionFactoryExpected: ExpressionFactoryExpected)
     {
-        chai.expect(expected.factory().type).to.equal(expected.type);
+        const expression = expressionFactoryExpected.factory();
+
+        chai.expect(expression.type).to.equal(expressionFactoryExpected.type);
+        chai.expect(expression.toString()).to.equal(expressionFactoryExpected.toString);
     }
 
     @test @shouldPass

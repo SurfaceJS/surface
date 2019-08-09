@@ -1,12 +1,14 @@
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                                          from "chai";
+import ParenthesizedExpression                            from "../internal/expressions/parenthesized-expression";
 import Parser                                             from "../internal/parser";
+import TypeGuard                                          from "../internal/type-guard";
 import
 {
     invalidExpressions,
     validExpressions,
-    ExpressionFixtureSpec,
-    InvalidExpressionFixtureSpec
+    InvalidParseExpectedSpec,
+    ParseExpectedSpec
 } from "./expectations/parser-expected";
 
 @suite
@@ -49,39 +51,57 @@ export default class ParserSpec
 
     @shouldPass
     @batchTest(validExpressions, x => `expression: ${x.raw}; should be evaluated to ${x.type.name}: ${x.value}`)
-    public expressionsShouldWork(expression: ExpressionFixtureSpec): void
+    public expressionsShouldWork(parseExpectedSpec: ParseExpectedSpec): void
     {
-        const result = Parser.parse(expression.raw);
+        let expression = Parser.parse(parseExpectedSpec.raw);
 
-        if (expression.value instanceof Function)
+        if (TypeGuard.isParenthesizedExpression(expression))
         {
-            chai.expect((result.evaluate(expression.scope) as Function).toString(), "evaluate").to.deep.equal(expression.value.toString());
-            chai.expect((result.evaluate(expression.scope, true) as Function).toString(), "evaluate using cache").to.deep.equal(expression.value.toString());
+            expression = expression.argument;
+        }
+
+        if (parseExpectedSpec.value instanceof Function)
+        {
+            chai.expect((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), "evaluate").to.deep.equal(parseExpectedSpec.value.toString());
+            chai.expect((expression.evaluate(parseExpectedSpec.scope, true) as Function).toString(), "evaluate using cache").to.deep.equal(parseExpectedSpec.value.toString());
         }
         else
         {
-            chai.expect(result.evaluate(expression.scope), "evaluate").to.deep.equal(expression.value);
-            chai.expect(result.evaluate(expression.scope, true), "evaluate using cache").to.deep.equal(expression.value);
+            chai.expect(expression.evaluate(parseExpectedSpec.scope), "evaluate").to.deep.equal(parseExpectedSpec.value);
+            chai.expect(expression.evaluate(parseExpectedSpec.scope, true), "evaluate using cache").to.deep.equal(parseExpectedSpec.value);
         }
 
-        chai.expect(result, "instanceof").instanceof(expression.type);
-        chai.expect(result.toString(), "toString").to.equal(expression.toString);
+        chai.expect(expression, "instanceof").instanceof(parseExpectedSpec.type);
+        chai.expect(expression.toString(), "toString").to.equal(parseExpectedSpec.toString);
+    }
+
+    @test("expression: ((a && b) || x && y); should be evaluated to ParenthesizedExpression: false") @shouldPass
+    public parenthesizedExpression(): void
+    {
+        const scope = { a: true, b: false, x: false, y: true };
+
+        const expression = Parser.parse("((a && b) || x && y)");
+
+        chai.expect(expression.evaluate(scope), "evaluate").to.deep.equal(false);
+        chai.expect(expression.evaluate(scope, true), "evaluate using cache").to.deep.equal(false);
+        chai.expect(expression, "instanceof").instanceof(ParenthesizedExpression);
+        chai.expect(expression.toString(), "toString").to.equal("((a && b) || x && y)");
     }
 
     @shouldFail
     @batchTest(invalidExpressions, x => `expression: ${x.raw}; should throw ${x.error.message}`)
-    public expressionsShouldThrow(expression: InvalidExpressionFixtureSpec): void
+    public expressionsShouldThrow(invalidParseExpectedSpec: InvalidParseExpectedSpec): void
     {
         try
         {
-            Parser.parse(expression.raw);
+            Parser.parse(invalidParseExpectedSpec.raw);
 
-            throw new Error(`expression ${expression.raw}; not throw`);
+            throw new Error(`expression ${invalidParseExpectedSpec.raw}; not throw`);
         }
         catch (error)
         {
-            chai.expect(error.message).to.equal(expression.error.message);
-            chai.expect(error).to.includes(expression.error);
+            chai.expect(error.message).to.equal(invalidParseExpectedSpec.error.message);
+            chai.expect(error).to.includes(invalidParseExpectedSpec.error);
         }
     }
 }

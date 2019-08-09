@@ -23,7 +23,7 @@ import UpdateExpression                   from "../../internal/expressions/updat
 import Messages                           from "../../internal/messages";
 import SyntaxError                        from "../../syntax-error";
 
-export type ExpressionFixtureSpec =
+export type ParseExpectedSpec =
 {
     scope:    Indexer,
     raw:      string,
@@ -32,7 +32,7 @@ export type ExpressionFixtureSpec =
     value:    Nullable<Object>,
 };
 
-export type InvalidExpressionFixtureSpec =
+export type InvalidParseExpectedSpec =
 {
     scope: Object,
     error: Error,
@@ -94,7 +94,7 @@ function makeTemplateObject(cooked: Array<string>, raw: Array<string>): Array<st
 }
 
 // tslint:disable-next-line:no-any
-export const validExpressions: Array<ExpressionFixtureSpec> =
+export const validExpressions: Array<ParseExpectedSpec> =
 [
     {
         scope:    scope,
@@ -136,6 +136,13 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
         raw:      "() => undefined",
         value:    () => undefined,
         toString: "() => undefined",
+        type:     ArrowFunctionExpression,
+    },
+    {
+        scope:    scope,
+        raw:      "() => ({ x: 1 })",
+        value:    () => ({ x: 1 }),
+        toString: "() => ({ x: 1 })",
         type:     ArrowFunctionExpression,
     },
     {
@@ -553,9 +560,9 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
-        raw:      "({ }) instanceof { }.constructor",
+        raw:      "({ } instanceof { }.constructor)",
         value:    true,
-        toString: "({ }) instanceof { }.constructor",
+        toString: "{ } instanceof { }.constructor",
         type:     BinaryExpression,
     },
     {
@@ -875,6 +882,20 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
+        raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
+        value:    2,
+        toString: "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
+        type:     CoalesceExpression
+    },
+    {
+        scope:    scope,
+        raw:      "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
+        value:    0,
+        toString: "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
+        type:     CoalesceExpression
+    },
+    {
+        scope:    scope,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
         value:    "smaller",
         toString: "1 > 2 ? \"greater\" : \"smaller\"",
@@ -1064,70 +1085,70 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
     {
         scope:    scope,
-        raw:      "{ }",
+        raw:      "({ })",
         value:    { },
         toString: "{ }",
         type:     ObjectExpression,
     },
     {
         scope:   scope,
-        raw:      "{ 1: 1 }",
+        raw:      "({ 1: 1 })",
         value:    { 1: 1 },
         toString: "{ 1: 1 }",
         type:     ObjectExpression,
     },
     {
         scope:    scope,
-        raw:      "{ new: 1 }",
+        raw:      "({ new: 1 })",
         value:    { new: 1 },
         toString: "{ new: 1 }",
         type:     ObjectExpression,
     },
     {
         scope:    scope,
-        raw:      "{ true: 1 }",
+        raw:      "({ true: 1 })",
         value:    { true: 1 },
         toString: "{ true: 1 }",
         type:     ObjectExpression,
     },
     {
         scope:    scope,
-        raw:      "{ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 }",
+        raw:      "({ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 })",
         value:    { foo: 1, bar: [1, 2, 3], [{id: 1}.id]: 1 },
         toString: "{ foo: 1, bar: [1, ...[2, 3]], [{ id: 1 }.id]: 1 }",
         type:     ObjectExpression,
     },
     {
         scope:    scope,
-        raw:      "{ foo: 'bar', ...{ id: 2, value: 3 } }",
+        raw:      "({ foo: 'bar', ...{ id: 2, value: 3 } })",
         value:    { foo: "bar", id: 2, value: 3 },
         toString: "{ foo: \"bar\", ...{ id: 2, value: 3 } }",
         type:     ObjectExpression,
     },
     {
         scope:    scope,
-        raw:      "{ foo: 'bar', ...[1, 2] }",
+        raw:      "({ foo: 'bar', ...[1, 2] })",
         value:    { 0: 1, 1: 2, foo: "bar" },
         toString: "{ foo: \"bar\", ...[1, 2] }",
         type:     ObjectExpression,
     },
     {
         scope:    { id: 1 },
-        raw:      "{ id }",
+        raw:      "({ id })",
         value:    { id: 1 },
         toString: "{ id }",
         type:     ObjectExpression,
     },
     {
         scope:    { id: 1 },
-        raw:      "{ [id]: 2 }",
+        raw:      "({ [id]: 2 })",
         value:    { 1: 2 },
         toString: "{ [id]: 2 }",
         type:     ObjectExpression,
     },
     {
         scope:    { factory: () => ({ id: 1 }) },
-        raw:      "{ foo: 1, ...factory() }",
+        raw:      "({ foo: 1, ...factory() })",
         value:    { foo: 1, id: 1 },
         toString: "{ foo: 1, ...factory() }",
         type:     ObjectExpression,
@@ -1274,7 +1295,7 @@ export const validExpressions: Array<ExpressionFixtureSpec> =
     },
 ];
 
-export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
+export const invalidExpressions: Array<InvalidParseExpectedSpec> =
 [
     {
         scope:   scope,
@@ -1328,18 +1349,38 @@ export const invalidExpressions: Array<InvalidExpressionFixtureSpec> =
     },
     {
         scope:   scope,
-        raw:     "{ (foo) }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "(" }), 1, 2, 3)
+        raw:     "{ }",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 0, 1)
     },
     {
         scope:   scope,
-        raw:     "{ new }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "}" }), 1, 6, 7)
+        raw:     "x => { }",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 5, 6)
     },
     {
         scope:   scope,
-        raw:     "{ `x`: 1 }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "" }), 1, 2, 3)
+        raw:     "() => { }",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 6, 7)
+    },
+    {
+        scope:   scope,
+        raw:     "(x, y) => { }",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 10, 11)
+    },
+    {
+        scope:   scope,
+        raw:     "({ (foo) })",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "(" }), 1, 3, 4)
+    },
+    {
+        scope:   scope,
+        raw:     "({ new })",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "}" }), 1, 7, 8)
+    },
+    {
+        scope:   scope,
+        raw:     "({ `x`: 1 })",
+        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "" }), 1, 3, 4)
     },
     {
         scope:   scope,
