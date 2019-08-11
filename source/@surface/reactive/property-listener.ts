@@ -1,5 +1,5 @@
 import { Indexer }       from "@surface/core";
-import IPropertyListener from "../interfaces/property-listener";
+import IPropertyListener from "./interfaces/property-listener";
 
 export default class PropertyListener<TTarget extends Indexer = Indexer, TKey extends keyof TTarget = string> implements IPropertyListener<TTarget[TKey]>
 {

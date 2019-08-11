@@ -2,10 +2,10 @@ import { Indexer }       from "@surface/core";
 import { getKeyMember }  from "@surface/core/common/object";
 import Reactive          from "@surface/reactive";
 import IPropertyListener from "@surface/reactive/interfaces/property-listener";
+import PropertyListener  from "@surface/reactive/property-listener";
 import IListener         from "../../reactive/interfaces/listener";
 import IReactor          from "../../reactive/interfaces/reactor";
 import ISubscription     from "../../reactive/interfaces/subscription";
-import PropertyListener  from "./property-listener";
 
 const SUBSCRIPTIONS = Symbol("data-bind:subscriptions");
 

@@ -4,11 +4,11 @@ import IListener                  from "./interfaces/listener";
 import IObserver                  from "./interfaces/observer";
 import IReactor                   from "./interfaces/reactor";
 import ISubscription              from "./interfaces/subscription";
-import Observer                   from "./internal/observer";
-import PropertyListener           from "./internal/property-listener";
-import PropertySubscription       from "./internal/property-subscription";
 import Reactor                    from "./internal/reactor";
 import { REACTOR }                from "./internal/symbols";
+import Observer                   from "./observer";
+import PropertyListener           from "./property-listener";
+import PropertySubscription       from "./property-subscription";
 
 export default class Reactive
 {
@@ -67,7 +67,7 @@ export default class Reactive
 
         if (path.includes("."))
         {
-            const [reactor, , observer] =  Reactive.observePath(target, path);
+            const [reactor, , observer] = Reactive.observePath(target, path);
 
             if (listener)
             {

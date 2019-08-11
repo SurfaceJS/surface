@@ -1,6 +1,6 @@
-import IListener     from "../interfaces/listener";
-import IObserver     from "../interfaces/observer";
-import ISubscription from "../interfaces/subscription";
+import IListener     from "./interfaces/listener";
+import IObserver     from "./interfaces/observer";
+import ISubscription from "./interfaces/subscription";
 
 export default class Observer<TValue = unknown> implements IObserver<TValue>
 {

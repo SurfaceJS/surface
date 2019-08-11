@@ -146,8 +146,7 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
                         };
 
-                        const visitor = new ObserverVisitor({ notify }, scope);
-                        visitor.observe(expression);
+                        ObserverVisitor.observe(expression, scope, { notify });
 
                         notifications.push(notify);
                     }
@@ -178,8 +177,7 @@ export default class TemplateProcessor
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
                     () => element.nodeValue = `${coalesce(expression.evaluate(scope), "")}`;
 
-                const visitor = new ObserverVisitor({ notify }, scope);
-                visitor.observe(expression);
+                ObserverVisitor.observe(expression, scope, { notify });
 
                 notify();
             }
@@ -382,11 +380,11 @@ export default class TemplateProcessor
                 }
             };
 
-            const visitor = new ObserverVisitor({ notify }, scope);
+            const listener = { notify };
 
             const expression = Expression.parse(template.getAttribute("#if")!);
 
-            subscriptions.push(visitor.observe(expression));
+            subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
 
             expressions.push([expression, template]);
 
@@ -398,7 +396,7 @@ export default class TemplateProcessor
                 {
                     const expression = Expression.parse(simbling.getAttribute("#else-if")!);
 
-                    subscriptions.push(visitor.observe(expression));
+                    subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
 
                     expressions.push([expression, simbling]);
 
@@ -550,7 +548,7 @@ export default class TemplateProcessor
 
             const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-            const subscription = new ObserverVisitor({ notify }, scope).observe(expression);
+            const subscription = ObserverVisitor.observe(expression, scope, { notify });
 
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);

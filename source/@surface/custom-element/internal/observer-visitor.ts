@@ -1,49 +1,171 @@
-import { Indexer }     from "@surface/core";
-import IListener       from "@surface/reactive/interfaces/listener";
-import ReactiveVisitor from "./reactive-visitor";
-// import Reactive        from "../../reactive";
-// import IReactor        from "../../reactive/interfaces/reactor";
+import { Indexer }              from "@surface/core";
+import ExpressionVisitor        from "@surface/expression/expression-visitor";
+import IArrayPattern            from "@surface/expression/interfaces/array-pattern";
+import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
+import IAssignmentExpression    from "@surface/expression/interfaces/assignment-expression";
+import IAssignmentPattern       from "@surface/expression/interfaces/assignment-pattern";
+import IAssignmentProperty      from "@surface/expression/interfaces/assignment-property";
+import ICallExpression          from "@surface/expression/interfaces/call-expression";
+import IExpression              from "@surface/expression/interfaces/expression";
+import IIdentifier              from "@surface/expression/interfaces/identifier";
+import IMemberExpression        from "@surface/expression/interfaces/member-expression";
+import INewExpression           from "@surface/expression/interfaces/new-expression";
+import INode                    from "@surface/expression/interfaces/node";
+import IProperty                from "@surface/expression/interfaces/property";
+import IThisExpression          from "@surface/expression/interfaces/this-expression";
+import TypeGuard                from "@surface/expression/internal/type-guard";
+import NodeType                 from "@surface/expression/node-type";
+import Reactive                 from "@surface/reactive";
+import IListener                from "@surface/reactive/interfaces/listener";
+import ISubscription            from "@surface/reactive/interfaces/subscription";
 
-export default class ObserverVisitor extends ReactiveVisitor
+export default class ObserverVisitor extends ExpressionVisitor
 {
-    public constructor(listener: IListener, scope: Indexer)
+    private readonly scope: Indexer;
+    private readonly paths: Array<string> = [];
+    private stack: Array<string> = [];
+
+    private constructor(scope: Indexer)
     {
-        super(listener, scope);
+        super();
+
+        this.scope = scope;
     }
 
-    // protected reactivate(target: Indexer, key: string): IReactor
-    // {
-    //     if (!this.dependency)
-    //     {
-    //         const [reactor, observer] = Reactive.observe(target, key);
+    public static observe(expression: IExpression, scope: Indexer, listener: IListener): ISubscription
+    {
+        const visitor       = new ObserverVisitor(scope);
+        const subscriptions = [] as Array<ISubscription>;
 
-    //         this.subscriptions.push(observer.subscribe(this.listener));
+        visitor.visit(expression);
 
-    //         if (target instanceof HTMLInputElement)
-    //         {
-    //             type Key = keyof HTMLInputElement;
+        visitor.store();
 
-    //             const action = function (this: HTMLInputElement)
-    //             {
-    //                 observer.notify(this[key as Key]);
-    //             };
+        for (const path of visitor.paths)
+        {
+            subscriptions.push(Reactive.observe(scope, path, listener)[2]);
+        }
 
-    //             target.addEventListener("input", action);
+        return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) } ;
+    }
 
-    //             const subscription = { unsubscribe: () => target.removeEventListener("input", action) };
+    private store(): void
+    {
+        if (this.stack.length > 0)
+        {
+            this.paths.push(this.stack.join("."));
+            this.stack = [];
+        }
+    }
 
-    //             this.subscriptions.push(subscription);
-    //         }
+    protected visitArrayPattern(expression: IArrayPattern): INode
+    {
+        for (const element of expression.elements)
+        {
+            if (element && !TypeGuard.isIdentifier(element))
+            {
+                super.visit(element);
+            }
+        }
 
-    //         return reactor;
-    //     }
-    //     else
-    //     {
-    //         const reactor = Reactive.observe(target, key)[0];
+        return expression;
+    }
 
-    //         reactor.setDependency(key, this.dependency);
+    protected visitArrowFunctionExpression(expression: IArrowFunctionExpression): INode
+    {
+        for (const paramenter of expression.parameters)
+        {
+            if (!TypeGuard.isIdentifier(paramenter))
+            {
+                super.visit(paramenter);
+            }
+        }
 
-    //         return reactor;
-    //     }
-    // }
+        this.visit(expression.body);
+
+        return expression;
+    }
+
+    protected visitAssignmentExpression(expression: IAssignmentExpression): INode
+    {
+        this.visit(expression.right);
+
+        return expression;
+    }
+
+    protected visitAssignmentPattern(expression: IAssignmentPattern): INode
+    {
+        this.visit(expression.right);
+
+        return expression;
+    }
+
+    protected visitAssignmentProperty(expression: IAssignmentProperty): INode
+    {
+        if (TypeGuard.isAssignmentPattern(expression.value))
+        {
+            this.visitAssignmentPattern(expression.value);
+        }
+
+        return expression;
+    }
+
+    protected visitCallExpression(expression: ICallExpression): INode
+    {
+        expression.arguments.forEach(this.visit);
+
+        return expression;
+    }
+
+    protected visitIdentifier(expression: IIdentifier): INode
+    {
+        if (expression.name != "undefined")
+        {
+            this.stack.unshift(expression.name);
+
+            this.store();
+        }
+
+        return expression;
+    }
+
+    protected visitMemberExpression(expression: IMemberExpression): INode
+    {
+        if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
+        {
+            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : expression.property.evaluate(this.scope, true) as string;
+
+            this.stack.unshift(key);
+        }
+
+        this.visit(expression.object);
+
+        return expression;
+    }
+
+    protected visitNewExpression(expression: INewExpression): INode
+    {
+        return expression;
+    }
+
+    protected visitProperty(expression: IProperty): INode
+    {
+        if (expression.computed)
+        {
+            this.visit(expression.key);
+        }
+
+        this.visit(expression.value);
+
+        return expression;
+    }
+
+    protected visitThisExpression(expression: IThisExpression): INode
+    {
+        this.stack.unshift("this");
+
+        this.store();
+
+        return expression;
+    }
 }

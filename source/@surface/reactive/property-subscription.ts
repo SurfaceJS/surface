@@ -1,7 +1,7 @@
 import { Indexer }           from "@surface/core";
-import IObserver             from "../interfaces/observer";
-import IPropertyListener     from "../interfaces/property-listener";
-import IPropertySubscription from "../interfaces/property-subscription";
+import IObserver             from "./interfaces/observer";
+import IPropertyListener     from "./interfaces/property-listener";
+import IPropertySubscription from "./interfaces/property-subscription";
 
 export default class PropertySubscription implements IPropertySubscription
 {
