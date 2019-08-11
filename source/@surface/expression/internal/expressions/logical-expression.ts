@@ -79,6 +79,6 @@ export default class LogicalExpression implements IExpression
 
     public toString(): string
     {
-        return `${this.left.type == NodeType.ConditionalExpression ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+        return `${this.left} ${this.operator} ${this.right}`;
     }
 }

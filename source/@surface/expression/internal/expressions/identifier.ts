@@ -49,7 +49,7 @@ export default class Identifier implements IExpression, IPattern
 
         if (!(this.name in scope))
         {
-            throw new Error(format(Messages.identifierIsNotDefined, { identifier: this.name }));
+            throw new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: this.name }));
         }
 
         return this.cache = scope[this.name];

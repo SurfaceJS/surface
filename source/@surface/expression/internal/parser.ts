@@ -35,6 +35,7 @@ import LogicalExpression        from "./expressions/logical-expression";
 import MemberExpression         from "./expressions/member-expression";
 import NewExpression            from "./expressions/new-expression";
 import ObjectExpression         from "./expressions/object-expression";
+import ParenthesizedExpression  from "./expressions/parenthesized-expression";
 import SequenceExpression       from "./expressions/sequence-expression";
 import TaggedTemplateExpression from "./expressions/tagged-template-expression";
 import TemplateLiteral          from "./expressions/template-literal";
@@ -185,15 +186,20 @@ export default class Parser
         return new ArrayExpression(elements);
     }
 
-    private assignmentExpression(): IExpression
+    private assignmentExpression(preventBlock?: boolean): IExpression
     {
+        if (preventBlock && this.match("{"))
+        {
+            throw this.unexpectedTokenError(this.lookahead);
+        }
+
         const left = this.inheritGrammar(this.conditionalExpression);
 
         if (this.match("=>"))
         {
             this.expect("=>");
 
-            return new ArrowFunctionExpression([this.reinterpretPattern(left)], this.inheritGrammar(this.assignmentExpression));
+            return new ArrowFunctionExpression([this.reinterpretPattern(left)], this.inheritGrammar(this.assignmentExpression, true));
         }
 
         const isAssignment = this.match("=")
@@ -212,6 +218,11 @@ export default class Parser
 
         if (isAssignment)
         {
+            if (!TypeGuard.isIdentifier(left) && !TypeGuard.isMemberExpression(left))
+            {
+                throw new ReferenceError(Messages.invalidLeftHandSideInAssignment);
+            }
+
             const token = this.nextToken();
 
             const right = this.isolateGrammar(this.assignmentExpression);
@@ -439,9 +450,9 @@ export default class Parser
         return expression;
     }
 
-    private expression(): IExpression
+    private expression(preventBlock?: boolean): IExpression
     {
-        const expression = this.isolateGrammar(this.assignmentExpression);
+        const expression = this.isolateGrammar(this.assignmentExpression, preventBlock);
 
         if (this.match(","))
         {
@@ -476,7 +487,7 @@ export default class Parser
 
     private isolateExpression(): IExpression
     {
-        const expression = this.expression();
+        const expression = this.expression(true);
 
         if (this.lookahead.type != TokenType.EOF)
         {
@@ -517,7 +528,7 @@ export default class Parser
             {
                 this.expect("=>");
 
-                const body = this.isolateGrammar(this.assignmentExpression);
+                const body = this.isolateGrammar(this.assignmentExpression, true);
 
                 return new ArrowFunctionExpression([], body);
             }
@@ -585,7 +596,7 @@ export default class Parser
 
                 this.expect("=>");
 
-                const body = this.inheritGrammar(this.assignmentExpression);
+                const body = this.inheritGrammar(this.assignmentExpression, true);
 
                 if (hasDuplicated(parameters))
                 {
@@ -600,7 +611,7 @@ export default class Parser
                 return new SequenceExpression(expressions as Array<IExpression>);
             }
 
-            return expressions[0] as IExpression;
+            return new ParenthesizedExpression(expressions[0] as IExpression);
         }
     }
 
@@ -880,17 +891,17 @@ export default class Parser
             case TokenType.Punctuator:
                 if
                 (
-                    this.lookahead.raw == "("
-                    || this.lookahead.raw == "{"
-                    || this.lookahead.raw == "["
-                    || this.lookahead.raw == "/"
-                    || this.lookahead.raw == "!"
+                    this.lookahead.raw == "!"
+                    || this.lookahead.raw == "("
                     || this.lookahead.raw == "+"
-                    || this.lookahead.raw == "-"
-                    || this.lookahead.raw == "^"
-                    || this.lookahead.raw == "~"
                     || this.lookahead.raw == "++"
+                    || this.lookahead.raw == "-"
                     || this.lookahead.raw == "--"
+                    || this.lookahead.raw == "/"
+                    || this.lookahead.raw == "["
+                    || this.lookahead.raw == "^"
+                    || this.lookahead.raw == "{"
+                    || this.lookahead.raw == "~"
                 )
                 {
                     return this.isolateExpression();
@@ -1002,6 +1013,7 @@ export default class Parser
 
                 if (shorthand)
                 {
+                    /* istanbul ignore else */
                     if (TypeGuard.isIdentifier(value))
                     {
                         return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
@@ -1154,8 +1166,15 @@ export default class Parser
     {
         if (this.match("++") || this.match("--"))
         {
-            const operator = this.nextToken().raw as UpdateOperator;
-            return new UpdateExpression(this.inheritGrammar(this.leftHandSideExpression, true), operator, true);
+            const operator   = this.nextToken().raw as UpdateOperator;
+            const expression = this.inheritGrammar(this.leftHandSideExpression, true);
+
+            if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
+            {
+                throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPrefixOperation);
+            }
+
+            return new UpdateExpression(expression, operator, true);
         }
         else
         {
@@ -1163,6 +1182,11 @@ export default class Parser
 
             if (this.match("++") || this.match("--"))
             {
+                if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
+                {
+                    throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPostfixOperation);
+                }
+
                 const operator = this.nextToken().raw as UpdateOperator;
                 return new UpdateExpression(expression, operator, false);
             }

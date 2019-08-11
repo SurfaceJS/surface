@@ -9,7 +9,7 @@ import FixtureVisitor                   from "./fixtures/fixture-visitor";
 export default class ExpressionVisitorSpec
 {
     @shouldPass
-    @batchTest(validVisitors, x => `(${x.raw}): visit ${x.value}`)
+    @batchTest(validVisitors, x => `${x.raw}; visit ${x.value}`)
     public visitsShouldWork(spec: { raw: string, value: string }): void
     {
         const expression = Expression.parse(spec.raw);

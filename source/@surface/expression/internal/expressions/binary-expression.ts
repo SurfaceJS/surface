@@ -99,6 +99,6 @@ export default class BinaryExpression implements IExpression
 
     public toString(): string
     {
-        return `${this.left.type == NodeType.ObjectExpression && this.operator == "instanceof" ? `(${this.left})` : this.left} ${this.operator} ${this.right}`;
+        return `${this.left} ${this.operator} ${this.right}`;
     }
 }

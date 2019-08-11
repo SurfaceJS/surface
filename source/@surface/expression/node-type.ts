@@ -17,6 +17,7 @@ enum NodeType
     NewExpression,
     ObjectExpression,
     ObjectPattern,
+    ParenthesizedExpression,
     Property,
     RegExpLiteral,
     RestElement,
