@@ -110,7 +110,6 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             CallExpression.name,
-            Literal.name,
             Identifier.name,
             Literal.name,
         ].join(" > ")
@@ -210,7 +209,6 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             CallExpression.name,
-            Literal.name,
             Identifier.name,
             SpreadElement.name,
             Identifier.name,
@@ -221,7 +219,6 @@ export const validVisitors: Array<ValidVisitSpec> =
         value:
         [
             TaggedTemplateExpression.name,
-            Literal.name,
             Identifier.name,
             TemplateLiteral.name,
             TemplateElement.name,

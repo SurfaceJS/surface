@@ -618,7 +618,7 @@ export default class Parser
     private leftHandSideExpression(allowCall: boolean): IExpression
     {
         let expression = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
-        let parentExpression = expression;
+        //let parentExpression = expression;
 
         while (true)
         {
@@ -626,9 +626,7 @@ export default class Parser
             {
                 const quasi = this.inheritGrammar(this.templateLiteralExpression);
 
-                const thisArg = parentExpression == expression ? new Literal(null) : parentExpression;
-
-                expression = new TaggedTemplateExpression(thisArg, expression, quasi);
+                expression = new TaggedTemplateExpression(expression, quasi);
             }
             else if (this.match("."))
             {
@@ -669,9 +667,7 @@ export default class Parser
                         return expression;
                     }
 
-                    const thisArg = parentExpression == expression ? new Literal(null) : parentExpression;
-
-                    expression = new CallExpression(thisArg, expression, this.isolateGrammar(this.arguments), optional);
+                    expression = new CallExpression(expression, this.isolateGrammar(this.arguments), optional);
                 }
                 else if (optional)
                 {

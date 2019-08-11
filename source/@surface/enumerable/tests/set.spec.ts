@@ -37,6 +37,18 @@ export default class SetSpec
     }
 
     @test @shouldPass
+    public removeAll(): void
+    {
+        const elements = [1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        const set = Set.from(elements, new Comparer());
+
+        elements.forEach(set.remove.bind(set));
+
+        expect(Array.from(set).length == 0).to.equal(true);
+    }
+
+    @test @shouldPass
     public removeInvalideItem(): void
     {
         const set = Set.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
