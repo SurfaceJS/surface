@@ -28,6 +28,25 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
+    public observePropertyArray(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter",  elements: [{ value: 1 }] }};
+        const listener = { instance: { name: "Listener", elements: [{ value: 2 }] }};
+
+        Reactive.observe(emmiter.instance, "elements.0.value", { notify: (x: number) => listener.instance.elements[0].value = x });
+
+        chai.expect(emmiter.instance.elements[0].value == listener.instance.elements[0].value, "#1").to.equal(true);
+
+        emmiter.instance.elements[0].value = 5;
+
+        chai.expect(listener.instance.elements[0].value, "#2").to.equal(5);
+
+        listener.instance.elements[0].value = 6;
+
+        chai.expect(emmiter.instance.elements[0].value, "#3").to.equal(5);
+    }
+
+    @test @shouldPass
     public observePropertyCustomListener(): void
     {
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
@@ -260,7 +279,7 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public observeUbsubscribe(): void
+    public observeUnsubscribe(): void
     {
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const listener = { instance: { name: "Listener", value: 2 }};
@@ -285,7 +304,7 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public observeUbsubscribeTwoWay(): void
+    public observeUnsubscribeTwoWay(): void
     {
         const left  = { instance: { name: "left.instance.deep.path.value: 1",  deep: { path: { id: 1, value: 1 } } } };
         const right = { instance: { name: "right.instance.deep.path.value: 2", deep: { path: { id: 2, value: 2 } } } };
