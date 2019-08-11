@@ -1,6 +1,5 @@
 import { Indexer, Nullable }      from "@surface/core";
 import { getKeyMember, getValue } from "@surface/core/common/object";
-import IExpression                from "@surface/expression/interfaces/expression";
 import IListener                  from "./interfaces/listener";
 import IObserver                  from "./interfaces/observer";
 import IReactor                   from "./interfaces/reactor";
@@ -8,7 +7,6 @@ import ISubscription              from "./interfaces/subscription";
 import Observer                   from "./internal/observer";
 import PropertyListener           from "./internal/property-listener";
 import PropertySubscription       from "./internal/property-subscription";
-import ReactiveVisitor            from "./internal/reactive-visitor";
 import Reactor                    from "./internal/reactor";
 import { REACTOR }                from "./internal/symbols";
 
@@ -63,51 +61,39 @@ export default class Reactive
     public static observe(target: Indexer, path: string): [IReactor, IObserver];
     public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
     public static observe(target: Indexer, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
-    public static observe(expression: IExpression, scope: Indexer, listener: IListener): ISubscription;
-    public static observe(...args: [Indexer, string]|[IExpression, Indexer, IListener]|[Indexer, string, IListener]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]|ISubscription
+    public static observe(...args: [Indexer, string, IListener?]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]
     {
-        if (args.length == 3 && "evaluate" in args[0] && typeof args[1] != "string")
+        const [target, path, listener] = args;
+
+        if (path.includes("."))
         {
-            const [expression, scope, listener] = args as [IExpression, Indexer, IListener];
+            const [reactor, , observer] =  Reactive.observePath(target, path);
 
-            const visitor = new ReactiveVisitor(listener, scope);
+            if (listener)
+            {
+                const subscription = observer.subscribe(listener);
 
-            return visitor.observe(expression);
+                observer.notify(getValue(target, path));
+
+                return [reactor, observer, subscription];
+            }
+
+            return [reactor, observer];
         }
         else
         {
-            const [target, path, listener] = args as [Indexer, string, Nullable<IListener>];
+            const [reactor, observer] = Reactive.observeProperty(target, path);
 
-            if (path.includes("."))
+            if (listener)
             {
-                const [reactor, , observer] =  Reactive.observePath(target, path);
+                const subscription = observer.subscribe(listener);
 
-                if (listener)
-                {
-                    const subscription = observer.subscribe(listener);
+                observer.notify(target[path]);
 
-                    observer.notify(getValue(target, path));
-
-                    return [reactor, observer, subscription];
-                }
-
-                return [reactor, observer];
+                return [reactor, observer, subscription];
             }
-            else
-            {
-                const [reactor, observer] = Reactive.observeProperty(target, path);
 
-                if (listener)
-                {
-                    const subscription = observer.subscribe(listener);
-
-                    observer.notify(target[path]);
-
-                    return [reactor, observer, subscription];
-                }
-
-                return [reactor, observer];
-            }
+            return [reactor, observer];
         }
     }
 
