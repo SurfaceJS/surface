@@ -1,29 +1,37 @@
-import { Indexer }              from "@surface/core";
-import ExpressionVisitor        from "@surface/expression/expression-visitor";
-import IArrayPattern            from "@surface/expression/interfaces/array-pattern";
-import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
-import IAssignmentExpression    from "@surface/expression/interfaces/assignment-expression";
-import IAssignmentPattern       from "@surface/expression/interfaces/assignment-pattern";
-import IAssignmentProperty      from "@surface/expression/interfaces/assignment-property";
-import ICallExpression          from "@surface/expression/interfaces/call-expression";
-import IExpression              from "@surface/expression/interfaces/expression";
-import IIdentifier              from "@surface/expression/interfaces/identifier";
-import IMemberExpression        from "@surface/expression/interfaces/member-expression";
-import INewExpression           from "@surface/expression/interfaces/new-expression";
-import INode                    from "@surface/expression/interfaces/node";
-import IProperty                from "@surface/expression/interfaces/property";
-import IThisExpression          from "@surface/expression/interfaces/this-expression";
-import TypeGuard                from "@surface/expression/internal/type-guard";
-import NodeType                 from "@surface/expression/node-type";
-import Reactive                 from "@surface/reactive";
-import IListener                from "@surface/reactive/interfaces/listener";
-import ISubscription            from "@surface/reactive/interfaces/subscription";
+import { Indexer }               from "@surface/core";
+import ExpressionVisitor         from "@surface/expression/expression-visitor";
+import IArrayPattern             from "@surface/expression/interfaces/array-pattern";
+import IArrowFunctionExpression  from "@surface/expression/interfaces/arrow-function-expression";
+import IAssignmentExpression     from "@surface/expression/interfaces/assignment-expression";
+import IAssignmentPattern        from "@surface/expression/interfaces/assignment-pattern";
+import IAssignmentProperty       from "@surface/expression/interfaces/assignment-property";
+import ICallExpression           from "@surface/expression/interfaces/call-expression";
+import ICoalesceExpression       from "@surface/expression/interfaces/coalesce-expression";
+import IConditionalExpression    from "@surface/expression/interfaces/conditional-expression";
+import IExpression               from "@surface/expression/interfaces/expression";
+import IIdentifier               from "@surface/expression/interfaces/identifier";
+import IMemberExpression         from "@surface/expression/interfaces/member-expression";
+import INewExpression            from "@surface/expression/interfaces/new-expression";
+import INode                     from "@surface/expression/interfaces/node";
+import IParenthesizedExpression  from "@surface/expression/interfaces/parenthesized-expression";
+import IProperty                 from "@surface/expression/interfaces/property";
+import IRestElement              from "@surface/expression/interfaces/rest-element";
+import ITaggedTemplateExpression from "@surface/expression/interfaces/tagged-template-expression";
+import IThisExpression           from "@surface/expression/interfaces/this-expression";
+import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
+import TypeGuard                 from "@surface/expression/internal/type-guard";
+import NodeType                  from "@surface/expression/node-type";
+import Reactive                  from "@surface/reactive";
+import IListener                 from "@surface/reactive/interfaces/listener";
+import ISubscription             from "@surface/reactive/interfaces/subscription";
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly scope: Indexer;
     private readonly paths: Array<string> = [];
-    private stack: Array<string> = [];
+
+    private brokenPath: boolean       = false;
+    private stack:      Array<string> = [];
 
     private constructor(scope: Indexer)
     {
@@ -39,23 +47,38 @@ export default class ObserverVisitor extends ExpressionVisitor
 
         visitor.visit(expression);
 
-        visitor.store();
+        visitor.commit();
 
         for (const path of visitor.paths)
         {
-            subscriptions.push(Reactive.observe(scope, path, listener)[2]);
+            if (path.includes("."))
+            {
+                subscriptions.push(Reactive.observe(scope, path, listener)[2]);
+            }
         }
 
         return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) } ;
     }
 
-    private store(): void
+    private commit(): void
     {
         if (this.stack.length > 0)
         {
             this.paths.push(this.stack.join("."));
             this.stack = [];
         }
+    }
+
+    private reset(): void
+    {
+        this.brokenPath = false;
+        this.stack      = [];
+    }
+
+    private rollback(): void
+    {
+        this.brokenPath = true;
+        this.stack      = [];
     }
 
     protected visitArrayPattern(expression: IArrayPattern): INode
@@ -81,21 +104,19 @@ export default class ObserverVisitor extends ExpressionVisitor
             }
         }
 
-        this.visit(expression.body);
-
         return expression;
     }
 
     protected visitAssignmentExpression(expression: IAssignmentExpression): INode
     {
-        this.visit(expression.right);
+        super.visit(expression.right);
 
         return expression;
     }
 
     protected visitAssignmentPattern(expression: IAssignmentPattern): INode
     {
-        this.visit(expression.right);
+        super.visit(expression.right);
 
         return expression;
     }
@@ -112,7 +133,27 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitCallExpression(expression: ICallExpression): INode
     {
-        expression.arguments.forEach(this.visit);
+        this.rollback();
+
+        super.visit(expression.callee);
+
+        this.reset();
+
+        expression.arguments.forEach(super.visit.bind(this));
+
+        return expression;
+    }
+
+    protected visitCoalesceExpression(expression: ICoalesceExpression): INode
+    {
+        super.visit(expression.left);
+
+        return expression;
+    }
+
+    protected visitConditionalExpression(expression: IConditionalExpression): INode
+    {
+        super.visit(expression.test);
 
         return expression;
     }
@@ -123,7 +164,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             this.stack.unshift(expression.name);
 
-            this.store();
+            this.commit();
         }
 
         return expression;
@@ -131,20 +172,48 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
+        if (expression.optional)
+        {
+            this.rollback();
+        }
+        else if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
         {
             const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : expression.property.evaluate(this.scope, true) as string;
 
-            this.stack.unshift(key);
+            if (!this.brokenPath)
+            {
+                this.stack.unshift(key);
+            }
+        }
+        else
+        {
+            super.visit(expression.property);
         }
 
-        this.visit(expression.object);
+        super.visit(expression.object);
 
         return expression;
     }
 
     protected visitNewExpression(expression: INewExpression): INode
     {
+        this.rollback();
+
+        super.visit(expression.callee);
+
+        this.reset();
+
+        expression.arguments.forEach(super.visit.bind(this));
+
+        return expression;
+    }
+
+    protected visitParenthesizedExpression(expression: IParenthesizedExpression): INode
+    {
+        this.reset();
+
+        super.visit(expression.argument);
+
         return expression;
     }
 
@@ -152,10 +221,33 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (expression.computed)
         {
-            this.visit(expression.key);
+            super.visit(expression.key);
         }
 
-        this.visit(expression.value);
+        super.visit(expression.value);
+
+        return expression;
+    }
+
+    protected visitRestElement(expression: IRestElement): INode
+    {
+        if (!TypeGuard.isIdentifier(expression.argument))
+        {
+            super.visit(expression.argument);
+        }
+
+        return expression;
+    }
+
+    protected visitTaggedTemplateExpression(expression: ITaggedTemplateExpression): INode
+    {
+        this.rollback();
+
+        super.visit(expression.callee);
+
+        this.reset();
+
+        super.visit(expression.quasi);
 
         return expression;
     }
@@ -164,7 +256,16 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.stack.unshift("this");
 
-        this.store();
+        this.commit();
+
+        return expression;
+    }
+
+    protected visitUpdateExpression(expression: IUpdateExpression): INode
+    {
+        this.rollback();
+
+        super.visit(expression.argument);
 
         return expression;
     }

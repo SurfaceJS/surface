@@ -15,16 +15,28 @@ import
 @suite
 export class ObserverVisitorSpec
 {
-    @batchTest(observableExpressions, x => `observable expression ${x.expression}; should have ${x.observers} observers`)
+    @batchTest(observableExpressions, x => `observable expression ${x.expression}; should have ${x.observers} observers and ${x.observers * 2} notifications`)
     public observableExpressions(observableExpression: ObservableExpression): void
     {
         const expression = Expression.parse(observableExpression.expression);
 
         let observers = 0;
 
-        ObserverVisitor.observe(expression, observableExpression.scope, { notify: () => observers++ });
+        const subscription = ObserverVisitor.observe(expression, observableExpression.scope, { notify: () => observers++ });
 
-        chai.expect(observers).to.equal(observableExpression.observers);
+        chai.expect(observers, "observers").to.equal(observableExpression.observers);
+
+        observableExpression.change(observableExpression.scope);
+
+        chai.expect(observers, "notifications").to.equal(observableExpression.observers * 2);
+
+        observers = 0;
+
+        subscription.unsubscribe();
+
+        observableExpression.change(observableExpression.scope);
+
+        chai.expect(observers == 0, "unsubscribe").to.equal(true);
     }
 
     @batchTest(unobservableExpressions, x => `unobservable expression ${x.expression}; shouldn't have observers`)
@@ -36,6 +48,6 @@ export class ObserverVisitorSpec
 
         ObserverVisitor.observe(expression, unobservableExpression.scope, { notify: () => observers++ });
 
-        chai.expect(observers).to.equal(0);
+        chai.expect(observers == 0).to.equal(true);
     }
 }
