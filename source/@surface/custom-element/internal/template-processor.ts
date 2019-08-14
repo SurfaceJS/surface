@@ -45,9 +45,9 @@ export default class TemplateProcessor
         this.window = windowWrapper;
     }
 
-    public static process(host: Node|Element, node: Node, scope: Indexer): void
+    public static process(host: Node|Element, node: Node, scope?: Indexer): void
     {
-        const processor = new TemplateProcessor(host, scope);
+        const processor = new TemplateProcessor(host, scope || { });
 
         processor.traverseElement(node);
     }
@@ -199,24 +199,6 @@ export default class TemplateProcessor
     {
         const attributes = template.getAttributeNames();
 
-        /*if (contains(attributes, "#scope") && contains(attributes, "#if", "#else-if", "#else", "#for"))
-        {
-            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
-
-            template.removeAttribute("#if");
-            template.removeAttribute("#else-if");
-            template.removeAttribute("#else");
-            template.removeAttribute("#for");
-
-            innerTemplate.removeAttribute("#scope");
-
-            Array.from(template.content.childNodes).forEach(x => x.remove());
-
-            this.decomposeDirectives(innerTemplate);
-
-            template.content.appendChild(innerTemplate);
-        }
-        else*/
         if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#content", "#scope"))
         {
             const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
@@ -257,7 +239,7 @@ export default class TemplateProcessor
     {
         if (!template.parentNode)
         {
-            throw new Error("Cannor process orphan templates");
+            throw new Error("Cannot process orphan templates");
         }
 
         this.decomposeDirectives(template);
@@ -270,7 +252,7 @@ export default class TemplateProcessor
         {
             const reference = document.createComment("directive-content");
 
-            const rawScope = template.getAttribute("#scope");
+            const rawScope = `(${template.getAttribute("#scope")})`;
 
             const contentScope: Indexer = rawScope ? Expression.parse(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
 
@@ -480,11 +462,11 @@ export default class TemplateProcessor
 
                         content.normalize();
 
-                        const mergedContext = destructured ?
+                        const mergedScope = destructured ?
                             { ...destruct(aliasExpression, element as Array<unknown>), ...scope }
                             : { ...scope, [aliasExpression]: element };
 
-                        TemplateProcessor.process(this.host, content, mergedContext);
+                        TemplateProcessor.process(this.host, content, mergedScope);
 
                         if (index < cache.length)
                         {
@@ -514,7 +496,7 @@ export default class TemplateProcessor
                     }
                 };
 
-                return (scope: Indexer) =>
+                return () =>
                 {
                     if (!end.parentNode)
                     {
@@ -553,7 +535,7 @@ export default class TemplateProcessor
             parent.replaceChild(end, template);
             parent.insertBefore(start, end);
 
-            notify(scope);
+            notify();
         }
     }
 
@@ -563,7 +545,7 @@ export default class TemplateProcessor
         {
             if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
             {
-                this.processDirectives(element, this.scope);
+                this.processDirectives(element, this.createProxy(this.scope));
             }
             else if (!element[BINDED])
             {

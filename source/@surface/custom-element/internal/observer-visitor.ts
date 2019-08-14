@@ -40,7 +40,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         this.scope = scope;
     }
 
-    public static observe(expression: IExpression, scope: Indexer, listener: IListener): ISubscription
+    public static observe(expression: IExpression, scope: Indexer, listener: IListener, notifyImmediately?: boolean): ISubscription
     {
         const visitor       = new ObserverVisitor(scope);
         const subscriptions = [] as Array<ISubscription>;
@@ -53,7 +53,17 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (path.includes("."))
             {
-                subscriptions.push(Reactive.observe(scope, path, listener)[2]);
+                if (notifyImmediately)
+                {
+                    subscriptions.push(Reactive.observe(scope, path, listener)[2]);
+                }
+                else
+                {
+                    const observer = Reactive.observe(scope, path)[1];
+
+                    subscriptions.push(observer.subscribe(listener));
+                }
+
             }
         }
 

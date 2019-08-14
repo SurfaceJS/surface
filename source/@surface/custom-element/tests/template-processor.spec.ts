@@ -1,8 +1,8 @@
 import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                               from "chai";
-import TemplateProcessor                        from "../internal/template-processor";
+import chai                                    from "chai";
+import TemplateProcessor                       from "../internal/template-processor";
 
 @suite
 export default class DirectivesProcessorSpec
@@ -14,7 +14,7 @@ export default class DirectivesProcessorSpec
         const host     = document.createElement("div");
         const element  = document.createElement("span");
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
     }
 
     @test @shouldPass
@@ -26,7 +26,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span value='1'>Text</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -44,7 +44,7 @@ export default class DirectivesProcessorSpec
         host.lang = "pt-br";
         element.innerHTML = "<input type='text' lang='{{ host.lang }}' parent='{{ host.tagName }}'>Text</input>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -73,7 +73,7 @@ export default class DirectivesProcessorSpec
         host.lang = "pt-br";
         element.innerHTML = "<span data-text='Tag name: {{ host.tagName }}'>Text</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
         chai.expect(element.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
     }
 
@@ -90,7 +90,7 @@ export default class DirectivesProcessorSpec
 
         span.foo = "";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         chai.expect(span.foo).to.equal("DIV");
     }
@@ -104,7 +104,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span lang='{{ Node.name }}'</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -122,7 +122,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span has-childs='[[ this.childNodes.length > 0 ]]'></span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -139,7 +139,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span id='{{ this.childNodes.length > 0 }}'></span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -161,7 +161,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span on-click='{{ host.click }}'>Text</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -180,7 +180,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span on-click='{{ host.method(true) }}'>Text</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -197,7 +197,7 @@ export default class DirectivesProcessorSpec
 
         element.innerHTML = "<span>{{ host.foo }}</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -215,7 +215,7 @@ export default class DirectivesProcessorSpec
         host.id = "01";
         element.innerHTML = "<span>Host id: {{ host.id }}</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -236,7 +236,7 @@ export default class DirectivesProcessorSpec
         host.id = "01";
         element.innerHTML = "<span>{{ host.id == '01' }}</span>";
 
-        TemplateProcessor.process(host, element, { });
+        TemplateProcessor.process(host, element);
 
         if (element.firstElementChild)
         {
@@ -245,6 +245,69 @@ export default class DirectivesProcessorSpec
             host.dispatchEvent(new Event("change"));
             chai.expect(element.firstElementChild.innerHTML).to.equal("false");
         }
+    }
+
+    @test @shouldPass
+    public templateIfDirective(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { order?: number };
+
+        host.order = 1;
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childNodes[1].textContent).to.equal("First");
+
+        host.order = 2;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Second");
+
+        host.order = 3;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Last");
+    }
+
+    @test @shouldPass
+    public templateForEachDirective(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
+
+        host.elements = [1];
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #for="index of host.elements"><span>Element: {{ index }}</span></template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
+
+        host.elements = [1, 2];
+
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2");
+
+        host.elements = [1, 2, 3];
+
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2");
+        chai.expect(element.childNodes[3].textContent).to.equal("Element: 3");
+
+        host.elements = [2];
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 2");
     }
 
     @test @shouldFail
@@ -258,7 +321,7 @@ export default class DirectivesProcessorSpec
 
         try
         {
-            TemplateProcessor.process(host, element, { });
+            TemplateProcessor.process(host, element);
         }
         catch (error)
         {
