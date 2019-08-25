@@ -4,21 +4,24 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
+        "@surface/core": "0.0.3",
+        "@surface/reflection": "0.0.0",
         "tslib": "1.10.0"
     },
-    "description": "Types and core modules of @surface projects.",
+    "description": "Dependency Injection module.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "types",
+        "dependency-injection",
         "surface",
-        "typescrypt"
+        "typescript"
     ],
     "license": "MIT",
-    "name": "@surface/core",
+    "main": "index.js",
+    "name": "@surface/dependency-injection",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
@@ -26,5 +29,6 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "version": "0.0.4"
+    "types": "index.d.ts",
+    "version": "0.0.0"
 }
