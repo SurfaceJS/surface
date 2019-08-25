@@ -9,7 +9,7 @@
         "@surface/reflection": "0.0.0",
         "tslib": "1.10.0"
     },
-    "description": "Enumerable module the provides many methods to iterate through of collections.",
+    "description": "Reactive Observer module.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "chai": "4.2.0"

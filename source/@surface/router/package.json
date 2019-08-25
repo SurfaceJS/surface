@@ -9,7 +9,7 @@
         "@surface/enumerable": "0.0.5",
         "tslib": "1.10.0"
     },
-    "description": "Surface router.",
+    "description": "Client/Server Side Router.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "chai": "4.2.0"
