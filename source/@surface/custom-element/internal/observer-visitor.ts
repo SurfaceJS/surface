@@ -28,7 +28,7 @@ import ISubscription             from "@surface/reactive/interfaces/subscription
 export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly scope: Indexer;
-    private readonly paths: Array<string> = [];
+    private readonly paths: Array<Array<string>> = [];
 
     private brokenPath: boolean       = false;
     private stack:      Array<string> = [];
@@ -51,7 +51,7 @@ export default class ObserverVisitor extends ExpressionVisitor
 
         for (const path of visitor.paths)
         {
-            if (path.includes("."))
+            if (path.length > 1)
             {
                 if (notifyImmediately)
                 {
@@ -74,7 +74,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (this.stack.length > 0)
         {
-            this.paths.push(this.stack.join("."));
+            this.paths.push([...this.stack]);
             this.stack = [];
         }
     }

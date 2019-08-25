@@ -126,20 +126,20 @@ export function *enumerateKeys(target: object): IterableIterator<string>
     } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
 
-export function getKeyMember<T extends object>(target: T, path: string): [string, T];
-export function getKeyMember(target: Indexer, path: string): [string, Indexer]
+export function getKeyMember<T extends object>(target: T, path: string|Array<string>): [string, T];
+export function getKeyMember(target: Indexer, path: string|Array<string>): [string, Indexer]
 {
-    if (path.includes("."))
-    {
-        const [key, ...keys] = path.split(".");
+    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
 
+    if (keys.length > 0)
+    {
         if (key in target)
         {
             const member = target[key];
 
             if (member instanceof Object)
             {
-                return getKeyMember(member as Indexer, keys.join("."));
+                return getKeyMember(member as Indexer, keys);
             }
         }
         else
@@ -149,17 +149,17 @@ export function getKeyMember(target: Indexer, path: string): [string, Indexer]
         }
     }
 
-    return [path, target];
+    return [key, target];
 }
 
-export function getKeyValue<T = unknown>(target: Indexer, path: string): [string, T]
+export function getKeyValue<T = unknown>(target: Indexer, path: string|Array<string>): [string, T]
 {
     const [key, member] = getKeyMember(target, path);
 
     return [key, member[key] as T];
 }
 
-export function getValue<T = unknown>(target: Indexer, path: string): T
+export function getValue<T = unknown>(target: Indexer, path: string|Array<string>): T
 {
     return getKeyValue<T>(target, path)[1];
 }

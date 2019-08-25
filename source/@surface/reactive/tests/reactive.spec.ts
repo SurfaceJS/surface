@@ -91,7 +91,83 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public observePath(): void
+    public observeStringPath(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
+        const listener = { instance: { name: "Listener A", deep: { path: { value: 1 } } } };
+
+        Reactive.observe(emmiter.instance, "deep.path.value", { notify: (x: number) => listener.instance.deep.path.value = x });
+
+        chai.expect(emmiter.instance.deep.path.value == listener.instance.deep.path.value, "#1").to.equal(true);
+
+        emmiter.instance.deep.path.value = 5;
+
+        chai.expect(listener.instance.deep.path.value, "#2").to.equal(5);
+
+        listener.instance.deep.path.value = 6;
+
+        chai.expect(emmiter.instance.deep.path.value, "#3").to.equal(5);
+    }
+
+    @test @shouldPass
+    public observeArrayPath(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
+        const listener = { instance: { name: "Listener A", deep: { path: { value: 1 } } } };
+
+        Reactive.observe(emmiter.instance, "deep.path.value".split("."), { notify: (x: number) => listener.instance.deep.path.value = x });
+
+        chai.expect(emmiter.instance.deep.path.value == listener.instance.deep.path.value, "#1").to.equal(true);
+
+        emmiter.instance.deep.path.value = 5;
+
+        chai.expect(listener.instance.deep.path.value, "#2").to.equal(5);
+
+        listener.instance.deep.path.value = 6;
+
+        chai.expect(emmiter.instance.deep.path.value, "#3").to.equal(5);
+    }
+
+    @test @shouldPass
+    public observeTwoWayStringPath(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
+        const listener = { instance: { name: "Listener A", deep: { path: { value: 1 } } } };
+
+        Reactive.observeTwoWay(emmiter.instance, "deep.path.value", listener.instance, "deep.path.value");
+
+        chai.expect(emmiter.instance.deep.path.value == listener.instance.deep.path.value, "#1").to.equal(true);
+
+        emmiter.instance.deep.path.value = 5;
+
+        chai.expect(listener.instance.deep.path.value, "#2").to.equal(5);
+
+        listener.instance.deep.path.value = 6;
+
+        chai.expect(emmiter.instance.deep.path.value, "#3").to.equal(6);
+    }
+
+    @test @shouldPass
+    public observeTwoWayArrayPath(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
+        const listener = { instance: { name: "Listener A", deep: { path: { value: 1 } } } };
+
+        Reactive.observeTwoWay(emmiter.instance, "deep.path.value".split("."), listener.instance, "deep.path.value".split("."));
+
+        chai.expect(emmiter.instance.deep.path.value == listener.instance.deep.path.value, "#1").to.equal(true);
+
+        emmiter.instance.deep.path.value = 5;
+
+        chai.expect(listener.instance.deep.path.value, "#2").to.equal(5);
+
+        listener.instance.deep.path.value = 6;
+
+        chai.expect(emmiter.instance.deep.path.value, "#3").to.equal(6);
+    }
+
+    @test @shouldPass
+    public observePathEdgeCase(): void
     {
         const emmiterA = { instance: { name: "Emmiter A", deep: { path: { value: 1 } } } };
         const emmiterB = { instance: { name: "Emmiter B", deep: { path: { value: 2 } } } };
@@ -172,7 +248,7 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public observeTwoWay(): void
+    public observeTwoWayEdgeCase(): void
     {
         const left  = { instance: { name: "left.instance.deep.path.value: 1",  deep: { path: { id: 1, value: 1 } } } };
         const right = { instance: { name: "right.instance.deep.path.value: 2", deep: { path: { id: 2, value: 2 } } } };
@@ -182,7 +258,7 @@ export default class ReactiveSpec
         extractReactor(left);
         extractReactor(right);
 
-        Reactive.observeTwoWay(left, "instance.deep.path.value", right.instance.deep, "path.value");
+        Reactive.observeTwoWay(left, "instance.deep.path.value", right.instance.deep, "path.value".split("."));
 
         chai.expect(left.instance.deep.path.value == right.instance.deep.path.value, "#01 - left.instance.deep.path.value should be equal to right.instance.deep.path.value").to.equal(true);
 

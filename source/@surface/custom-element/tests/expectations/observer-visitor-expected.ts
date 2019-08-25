@@ -92,6 +92,12 @@ export const observableExpressions: Array<ObservableExpression> =
         change:     scope => scope.this.x = 2,
     },
     {
+        expression: "this['x.y']",
+        observers:  1,
+        scope:      { this: { "x.y": 1 } },
+        change:     scope => scope.this["x.y"] = 2,
+    },
+    {
         expression: "this[this.key]",
         observers:  1,
         scope:      { this: { x: 1, key: "x" } },

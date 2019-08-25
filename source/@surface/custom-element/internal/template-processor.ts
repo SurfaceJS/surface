@@ -32,7 +32,7 @@ export default class TemplateProcessor
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
         oneWay:   /^\[\[.*\]\]$/,
-        path:     /^(?:\{\{|\[\[)\s*((?:\w+\.?)+)\s*(?:\]\]|\}\})$/,
+        path:     /^(?:\{\{|\[\[)\s*(\w+(?:\.\w+)*)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
     private readonly host:   Node|Element;
@@ -123,7 +123,10 @@ export default class TemplateProcessor
 
                         DataBind.oneWay(target, path, { notify });
 
-                        if (isTwoWay && elementMember instanceof FieldInfo && !elementMember.readonly && targetMember instanceof FieldInfo && !targetMember.readonly)
+                        const canBindLeft  = elementMember instanceof FieldInfo && !elementMember.readonly;
+                        const canBindRigth = targetMember instanceof FieldInfo && !targetMember.readonly;
+
+                        if (isTwoWay && canBindLeft && canBindRigth)
                         {
                             DataBind.twoWay(target, path, element as Indexer, attributeName);
                         }
