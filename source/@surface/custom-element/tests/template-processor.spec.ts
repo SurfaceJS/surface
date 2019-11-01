@@ -5,7 +5,7 @@ import chai                                    from "chai";
 import TemplateProcessor                       from "../internal/template-processor";
 
 @suite
-export default class DirectivesProcessorSpec
+export default class TemplateProcessorSpec
 {
     @test @shouldPass
     public elementWithoutAttributes(): void
@@ -188,22 +188,22 @@ export default class DirectivesProcessorSpec
         }
     }
 
-    @test @shouldPass
-    public elementWithTextNodeNonInitilizedBind(): void
-    {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+    // @test @shouldPass
+    // public elementWithTextNodeNonInitilizedBind(): void
+    // {
+    //     const document = window.document;
+    //     const host     = document.createElement("div");
+    //     const element  = document.createElement("div");
 
-        element.innerHTML = "<span>{{ host.foo }}</span>";
+    //     element.innerHTML = "<span>{{ host.foo }}</span>";
 
-        TemplateProcessor.process(host, element);
+    //     TemplateProcessor.process(host, element);
 
-        if (element.firstElementChild)
-        {
-            chai.expect(element.firstElementChild.innerHTML).to.equal("");
-        }
-    }
+    //     if (element.firstElementChild)
+    //     {
+    //         chai.expect(element.firstElementChild.innerHTML).to.equal("");
+    //     }
+    // }
 
     @test @shouldPass
     public elementWithTextNodeBind(): void

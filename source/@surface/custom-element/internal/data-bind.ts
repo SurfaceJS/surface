@@ -1,11 +1,12 @@
-import { Indexer }       from "@surface/core";
-import { getKeyMember }  from "@surface/core/common/object";
-import Reactive          from "@surface/reactive";
-import IPropertyListener from "@surface/reactive/interfaces/property-listener";
-import PropertyListener  from "@surface/reactive/property-listener";
-import IListener         from "../../reactive/interfaces/listener";
-import IReactor          from "../../reactive/interfaces/reactor";
-import ISubscription     from "../../reactive/interfaces/subscription";
+import { Indexer }          from "@surface/core";
+import { getKeyMember }     from "@surface/core/common/object";
+import Reactive             from "@surface/reactive";
+import IPropertyListener    from "@surface/reactive/interfaces/property-listener";
+import PropertyListener     from "@surface/reactive/property-listener";
+import PropertySubscription from "@surface/reactive/property-subscription";
+import IListener            from "../../reactive/interfaces/listener";
+import IReactor             from "../../reactive/interfaces/reactor";
+import ISubscription        from "../../reactive/interfaces/subscription";
 
 const SUBSCRIPTIONS = Symbol("data-bind:subscriptions");
 
@@ -37,11 +38,22 @@ export default class DataBind
             subscriptions.push(subscription);
         }
 
-        const subscriptionWrapper = "update" in listener ?
-            { update: (target: Indexer) => listener.update(target), unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) }
-            : { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+        let subscriptionsHandler: ISubscription;
 
-        return [reactor, subscriptionWrapper];
+        if ("update" in listener)
+        {
+            const propertySubscription = new PropertySubscription(listener, observer);
+
+            propertySubscription.onUnsubscribe(() => subscriptions.forEach(x => x.unsubscribe()));
+
+            subscriptionsHandler = propertySubscription;
+        }
+        else
+        {
+            subscriptionsHandler = { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+        }
+
+        return [reactor, subscriptionsHandler];
     }
 
     public static twoWay(left: Observable, leftPath: string, right: Observable, rightPath: string): void
@@ -55,8 +67,15 @@ export default class DataBind
         const [leftReactor,  leftSubscription]  = DataBind.oneWay(left, leftPath, leftListener);
         const [rightReactor, rightSubscription] = DataBind.oneWay(right, rightPath, rightListener);
 
-        leftReactor.setSubscription(leftKey, rightSubscription);
-        rightReactor.setSubscription(rightKey, leftSubscription);
+        if ("update" in rightSubscription)
+        {
+            leftReactor.setPropertySubscription(leftKey, rightSubscription);
+        }
+
+        if ("update" in leftSubscription)
+        {
+            rightReactor.setPropertySubscription(rightKey, leftSubscription);
+        }
 
         const leftSubscriptionQueue = left[SUBSCRIPTIONS] = left[SUBSCRIPTIONS] || [];
         leftSubscriptionQueue.push(leftSubscription);

@@ -1,7 +1,8 @@
 import { Indexer }   from "@surface/core";
 import ISubscription from "./subscription";
 
-export default interface IPropertySubscription extends ISubscription
+export default interface IPropertySubscription<TTarget extends Indexer = Indexer> extends ISubscription
 {
-    update(target: Indexer): void;
+    onUnsubscribe(action: () => void): void;
+    update(target: TTarget): void;
 }

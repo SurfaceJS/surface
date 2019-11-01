@@ -1,7 +1,7 @@
 import { Indexer } from "@surface/core";
 import IListener from "./listener";
 
-export default interface IPropertyListener<T = unknown> extends IListener<T>
+export default interface IPropertyListener<T = unknown, TTarget extends Indexer = Indexer> extends IListener<T>
 {
-    update(target: Indexer): void;
+    update(target: TTarget): void;
 }

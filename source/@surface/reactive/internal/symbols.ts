@@ -1,3 +1,3 @@
-export const KEYS    = Symbol("reactive:keys");
-export const REACTOR = Symbol("reactive:reactor");
-export const WRAPPED = Symbol("reactive:wrapped");
+export const REACTOR      = Symbol("reactive:reactor");
+export const TRACKED_KEYS = Symbol("reactive:tracked-keys");
+export const WRAPPED      = Symbol("reactive:wrapped");

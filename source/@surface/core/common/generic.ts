@@ -1,5 +1,13 @@
 import { Func, Func1, Nullable } from "../";
 
+export function assert(condition: unknown, message?: string): asserts condition
+{
+    if (!condition)
+    {
+        throw new Error(message);
+    }
+}
+
 export function coalesce<T, U extends T>(value: Nullable<T>, fallback: U): T;
 export function coalesce<T, U extends T>(value: Nullable<T>, fallback: Func<U>): T;
 export function coalesce<T>(value: Nullable<T>, fallback: T): T;

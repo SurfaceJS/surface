@@ -9,6 +9,19 @@ import { REACTOR }                             from "../internal/symbols";
 export default class ReactiveSpec
 {
     @test @shouldPass
+    public getReactor(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
+        const listener = { instance: { name: "Listener", value: 2 }};
+
+        Reactive.observe(emmiter.instance, "value", { notify: x => listener.instance.value = x });
+
+        const reactor = Reactive.getReactor(emmiter.instance);
+
+        chai.expect(reactor).to.instanceOf(Reactor);
+    }
+
+    @test @shouldPass
     public observeProperty(): void
     {
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};

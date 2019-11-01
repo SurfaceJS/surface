@@ -1,25 +1,32 @@
-import { Indexer }           from "@surface/core";
+import { Action, Indexer }   from "@surface/core";
 import IObserver             from "./interfaces/observer";
 import IPropertyListener     from "./interfaces/property-listener";
 import IPropertySubscription from "./interfaces/property-subscription";
 
-export default class PropertySubscription implements IPropertySubscription
+export default class PropertySubscription<TValue = unknown, TTarget extends Indexer = Indexer> implements IPropertySubscription<TTarget>
 {
-    public constructor (private readonly listener: IPropertyListener, private readonly observer: IObserver)
+    private actions: Array<Action> = [];
+
+    public constructor (private readonly listener: IPropertyListener<TValue, TTarget>, private readonly observer: IObserver<TValue>)
     { }
 
-    public unsubscribe()
+    public onUnsubscribe(action: Action): void
     {
+        this.actions.push(action);
+    }
+
+    public unsubscribe(): void
+    {
+        while (this.actions.length > 0)
+        {
+            this.actions.pop()!();
+        }
+
         this.observer.unsubscribe(this.listener);
     }
 
-    public update(target: Indexer)
+    public update(target: TTarget): void
     {
         this.listener.update(target);
-    }
-
-    public toString(): string
-    {
-        return `{ "listener": ${this.listener.toString()}, "observer": ${this.observer.toString()} }`;
     }
 }

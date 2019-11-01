@@ -19,7 +19,6 @@
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
         "@types/jsdom": "12.2.4",
-        "canvas": "2.6.0",
         "chai": "4.2.0",
         "jsdom": "15.2.0"
     },

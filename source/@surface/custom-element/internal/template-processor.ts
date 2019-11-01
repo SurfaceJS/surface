@@ -192,7 +192,9 @@ export default class TemplateProcessor
         const handler: ProxyHandler<Indexer> =
         {
             get: (target, key) => key in target ? target[key as string] : (this.window as Indexer)[key as string],
-            has: (target, key) => key in target || key in this.window
+            has: (target, key) => key in target || key in this.window,
+            getOwnPropertyDescriptor: (target, key) =>
+                Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(this.window, key)
         };
 
         return new Proxy(context, handler);

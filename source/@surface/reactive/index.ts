@@ -45,14 +45,14 @@ export default class Reactive
     {
         const reactor = Reactor.makeReactive(target, key);
 
-        const observer = reactor.getObserver(key) || new Observer();
+        const observer = reactor.getObserver(key) ?? new Observer();
 
         reactor.setObserver(key, observer);
 
         return [reactor, observer];
     }
 
-    public static getReactor(target: Indexer): Nullable<IReactor>
+    public static getReactor(target: Indexer|Array<unknown>): Nullable<IReactor>
     {
         return (target as { [REACTOR]?: IReactor })[REACTOR];
     }
@@ -122,13 +122,13 @@ export default class Reactive
 
         const leftSubscription = new PropertySubscription(rightListener, rightObserver);
 
-        leftReactor.setSubscription(rightKey, leftSubscription);
+        leftReactor.setPropertySubscription(rightKey, leftSubscription);
 
         rightObserver.subscribe(rightListener);
 
         const rightSubscription = new PropertySubscription(leftListener, leftObserver);
 
-        rightReactor.setSubscription(leftKey, rightSubscription);
+        rightReactor.setPropertySubscription(leftKey, rightSubscription);
 
         return [leftSubscription, rightSubscription];
     }

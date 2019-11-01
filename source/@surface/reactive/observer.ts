@@ -4,16 +4,16 @@ import ISubscription from "./interfaces/subscription";
 
 export default class Observer<TValue = unknown> implements IObserver<TValue>
 {
-    private readonly listeners: Set<IListener> = new Set();
+    private readonly listeners: Set<IListener<TValue>> = new Set();
 
-    public subscribe(listerner: IListener): ISubscription
+    public subscribe(listerner: IListener<TValue>): ISubscription
     {
         this.listeners.add(listerner);
 
         return { unsubscribe: () => this.unsubscribe(listerner) };
     }
 
-    public unsubscribe(listerner: IListener)
+    public unsubscribe(listerner: IListener<TValue>)
     {
         if (!this.listeners.delete(listerner))
         {
@@ -27,10 +27,5 @@ export default class Observer<TValue = unknown> implements IObserver<TValue>
         {
             listerner.notify(value);
         }
-    }
-
-    public toString(): string
-    {
-        return `[${Array.from(this.listeners).map(x => x.toString()).join(", ")}]`;
     }
 }

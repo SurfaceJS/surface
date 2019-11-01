@@ -30,7 +30,7 @@
         "ts-loader": "6.2.1",
         "tslib": "1.10.0",
         "tslint": "5.20.0",
-        "typescript": "3.6.4",
+        "typescript": "3.7.1-rc",
         "webpack": "4.41.2"
     },
     "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",

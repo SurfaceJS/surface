@@ -6,21 +6,16 @@ export default class PropertyListener<TTarget extends Indexer = Indexer, TKey ex
     public constructor(private target: TTarget, private readonly key: TKey)
     { }
 
+    public notify(value: TTarget[TKey]): void
+    {
+        this.target[this.key] = value;
+    }
+
     public update(target: TTarget)
     {
         if (this.target != target)
         {
             this.target = target;
         }
-    }
-
-    public notify(value: TTarget[TKey]): void
-    {
-        this.target[this.key] = value;
-    }
-
-    public toString(): string
-    {
-        return `{ "${this.key}": ${JSON.stringify(this.target)} }`;
     }
 }
