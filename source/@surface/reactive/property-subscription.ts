@@ -17,12 +17,12 @@ export default class PropertySubscription<TValue = unknown, TTarget extends Inde
 
     public unsubscribe(): void
     {
+        this.observer.unsubscribe(this.listener);
+
         while (this.actions.length > 0)
         {
             this.actions.pop()!();
         }
-
-        this.observer.unsubscribe(this.listener);
     }
 
     public update(target: TTarget): void

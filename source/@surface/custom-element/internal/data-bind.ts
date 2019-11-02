@@ -20,8 +20,6 @@ export default class DataBind
         const [reactor, observer, subscription] = Reactive.observe(target, path, listener);
         const subscriptions                     = [] as Array<ISubscription>;
 
-        subscriptions.push(subscription);
-
         if (member instanceof HTMLInputElement)
         {
             type Key = keyof HTMLInputElement;
@@ -50,6 +48,8 @@ export default class DataBind
         }
         else
         {
+            subscriptions.push(subscription);
+
             subscriptionsHandler = { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
         }
 
