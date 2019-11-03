@@ -211,6 +211,11 @@ export default class Reactor
 
     private notifyValue(value: Indexer): void
     {
+        if (!hasValue(value))
+        {
+            return;
+        }
+
         for (const registry of this.registries.values())
         {
             registry.notify(value);
@@ -231,17 +236,22 @@ export default class Reactor
 
         for (const [key, observer] of this.observers)
         {
-            observer.notify(value[key]);
-        }
-    }
+            const keyValue = value[key];
 
-    private notifyTargetKey(target: Indexer, key: string): void
-    {
-        this.notifyTargetKeyValue(target, key, target[key] as Indexer);
+            if (hasValue(keyValue))
+            {
+                observer.notify(keyValue);
+            }
+        }
     }
 
     private notifyTargetKeyValue(target: Indexer, key: string, value: Indexer): void
     {
+        if (!hasValue(value))
+        {
+            return;
+        }
+
         for (const registry of this.registries.values())
         {
             registry.notify(target, key, value);
@@ -329,11 +339,6 @@ export default class Reactor
 
         const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
 
-        if (!hasValue(value))
-        {
-            return;
-        }
-
         Reactor.stack.push(this);
 
         if (args.length == 1)
@@ -346,7 +351,7 @@ export default class Reactor
 
             if (args.length == 2)
             {
-                this.notifyTargetKey(target, key);
+                this.notifyTargetKeyValue(target, key, target[key] as Indexer);
             }
             else
             {

@@ -159,11 +159,11 @@ export default class ReactorSpec
 
         emmiter.values.pop();
 
-        chai.expect(listener.values).deep.equal([{ value: 4 }, undefined]);
+        chai.expect(listener.values).deep.equal([{ value: 4 }, []]);
 
         emmiter.values.pop();
 
-        chai.expect(listener.values).deep.equal([undefined, undefined]);
+        chai.expect(listener.values).deep.equal([{ value: 4 }, []]);
     }
 
     @test @shouldPass
@@ -208,6 +208,10 @@ export default class ReactorSpec
         reactor.setObserver("value", observer);
 
         reactor.notify(null);
+
+        chai.expect(receiver.value).to.equal(1);
+
+        reactor.notify(emmiter, "value", null as unknown as number);
 
         chai.expect(receiver.value).to.equal(1);
 

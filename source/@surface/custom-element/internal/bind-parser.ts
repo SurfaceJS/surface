@@ -4,9 +4,9 @@ import SyntaxError from "@surface/expression/syntax-error";
 
 export default class BindParser
 {
-    private readonly expressions: Array<IExpression> = [];
+    private readonly source: string;
 
-    private readonly source:  string;
+    private readonly expressions: Array<IExpression> = [];
 
     private index: number = 0;
 
@@ -25,7 +25,6 @@ export default class BindParser
         this.index++;
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity
     private parse(start: number): void
     {
         try
