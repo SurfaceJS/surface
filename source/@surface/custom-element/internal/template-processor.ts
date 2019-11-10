@@ -1,10 +1,12 @@
 import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
 import { contains }                                            from "@surface/core/common/array";
 import { typeGuard }                                           from "@surface/core/common/generic";
-import { destruct, getKeyMember }                              from "@surface/core/common/object";
+import { getKeyMember }                                        from "@surface/core/common/object";
 import { dashedToCamel }                                       from "@surface/core/common/string";
 import Expression                                              from "@surface/expression";
+import Evaluate                                                from "@surface/expression/evaluate";
 import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
+import IArrowFunctionExpression                                from "@surface/expression/interfaces/arrow-function-expression";
 import IExpression                                             from "@surface/expression/interfaces/expression";
 import NodeType                                                from "@surface/expression/node-type";
 import ISubscription                                           from "@surface/reactive/interfaces/subscription";
@@ -276,15 +278,15 @@ export default class TemplateProcessor
                 }
             }
 
-            const outterTemplate = slottedTemplates.get(contentName) || template;
+            const outterTemplate = slottedTemplates.get(contentName) ?? template;
 
-            const scopeSpression = outterTemplate.getAttribute("scope") || "scope";
+            const scopeSpression = outterTemplate.getAttribute("scope") ?? "scope";
 
             const destructuredScope = scopeSpression.startsWith("{");
 
             const { elementScope, scopeAlias } = destructuredScope ?
-                { elementScope: destruct(scopeSpression, contentScope), scopeAlias: "" } :
-                { elementScope: contentScope, scopeAlias: scopeSpression };
+                { elementScope: Evaluate.pattern(contentScope, (Expression.parse(`(${scopeSpression}) => 0`) as IArrowFunctionExpression).parameters[0], null), scopeAlias: "" }
+                : { elementScope: contentScope, scopeAlias: scopeSpression };
 
             const content = document.importNode(outterTemplate.content, true);
 
@@ -427,7 +429,7 @@ export default class TemplateProcessor
 
             const [, aliasExpression, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
 
-            const destructured = aliasExpression.startsWith("[");
+            const destructured = aliasExpression.startsWith("[") || aliasExpression.startsWith("{");
 
             const expression = Expression.parse(iterableExpression);
 
@@ -468,7 +470,7 @@ export default class TemplateProcessor
                         content.normalize();
 
                         const mergedScope = destructured ?
-                            { ...destruct(aliasExpression, element as Array<unknown>), ...scope }
+                            { ...Evaluate.pattern(scope, (Expression.parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope }
                             : { ...scope, [aliasExpression]: element };
 
                         TemplateProcessor.process(this.host, content, mergedScope);
