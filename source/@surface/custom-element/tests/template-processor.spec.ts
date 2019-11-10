@@ -188,23 +188,6 @@ export default class TemplateProcessorSpec
         }
     }
 
-    // @test @shouldPass
-    // public elementWithTextNodeNonInitilizedBind(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
-
-    //     element.innerHTML = "<span>{{ host.foo }}</span>";
-
-    //     TemplateProcessor.process(host, element);
-
-    //     if (element.firstElementChild)
-    //     {
-    //         chai.expect(element.firstElementChild.innerHTML).to.equal("");
-    //     }
-    // }
-
     @test @shouldPass
     public elementWithTextNodeBind(): void
     {
@@ -248,29 +231,43 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateIfDirective(): void
+    public templateContentDirective(): void
     {
-        const host = document.createElement("div") as HTMLDivElement & { order?: number };
+        const root = document.createElement("div");
+        const host = document.createElement("div");
 
-        host.order = 1;
+        host.innerHTML = "<template content='items'>World</template>";
 
         const element = document.createElement("div");
 
+        root.appendChild(host);
         host.appendChild(element);
 
-        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+        element.innerHTML = "<span>Hello </span><template #content='items'></template><span>!!!</span>";
 
         TemplateProcessor.process(host, element);
+        TemplateProcessor.process(root, host);
 
-        chai.expect(element.childNodes[1].textContent).to.equal("First");
+        chai.expect(root.querySelector("div")?.textContent).to.equal("Hello World!!!");
+    }
 
-        host.order = 2;
+    @test @shouldPass
+    public templateContentDirectiveWithDefault(): void
+    {
+        const root = document.createElement("div");
+        const host = document.createElement("div");
 
-        chai.expect(element.childNodes[1].textContent).to.equal("Second");
+        const element = document.createElement("div");
 
-        host.order = 3;
+        root.appendChild(host);
+        host.appendChild(element);
 
-        chai.expect(element.childNodes[1].textContent).to.equal("Last");
+        element.innerHTML = "<span>Hello </span><template #content='items'>Default</template><span>!!!</span>";
+
+        TemplateProcessor.process(host, element);
+        TemplateProcessor.process(root, host);
+
+        chai.expect(root.querySelector("div")?.textContent).to.equal("Hello Default!!!");
     }
 
     @test @shouldPass
@@ -308,6 +305,207 @@ export default class TemplateProcessorSpec
 
         chai.expect(element.childElementCount).to.equal(1);
         chai.expect(element.childNodes[1].textContent).to.equal("Element: 2");
+    }
+
+    @test @shouldPass
+    public templateForEachDirectiveWithArrayDestructuring(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, number]> };
+
+        host.elements = [[1, 2]];
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #for="[index0, index1] of host.elements"><span>Element[0]: {{ index0 }}, Element[1]: {{ index1 }}</span></template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+
+        host.elements = [[1, 2], [2, 4]];
+
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+
+        host.elements = [[1, 2], [2, 4], [3, 6]];
+
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+
+        host.elements = [[2, 4]];
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
+
+    @test @shouldPass
+    public templateForEachDirectiveWithArrayDestructuringDeepNested(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, { item: { name: string } }]> };
+
+        host.elements = [[1, { item: { name: "one" } }]];
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #for="[index, { item: { name } }] of host.elements"><span>Element: {{ index }}, Name: {{ name }}</span></template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
+
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }]
+        ];
+
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2, Name: two");
+
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }],
+            [3, { item: { name: "three" } }]
+        ];
+
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2, Name: two");
+        chai.expect(element.childNodes[3].textContent).to.equal("Element: 3, Name: three");
+
+        host.elements = [[2, { item: { name: "two" } }]];
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element: 2, Name: two");
+    }
+
+    @test @shouldPass
+    public templateForEachDirectiveWithObjectDestructuring(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, number]}> };
+
+        host.elements = [{ values: [1, 2] }];
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #for="{ values: [value1, value2] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+        ];
+
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+            { values: [3, 6] },
+        ];
+
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+
+        host.elements = [{ values: [2, 4] }];
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
+
+    @test @shouldPass
+    public templateForEachDirectiveWithObjectDestructuringDeepNested(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, [[number]]]}> };
+
+        host.elements = [{ values: [1, [[2]]] }];
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #for="{ values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] }
+        ];
+
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] },
+            { values: [3, [[6]]] },
+        ];
+
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+
+        host.elements = [{ values: [2, [[4]]] },];
+
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
+
+    @test @shouldPass
+    public templateIfDirective(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { order?: number };
+
+        host.order = 1;
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childNodes[1].textContent).to.equal("First");
+
+        host.order = 2;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Second");
+
+        host.order = 3;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Last");
     }
 
     @test @shouldFail
