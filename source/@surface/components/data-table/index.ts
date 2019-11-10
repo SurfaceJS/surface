@@ -1,5 +1,4 @@
 import { Indexer, Nullable as __Nullable__ } from "@surface/core";
-import { coalesce }                          from "@surface/core/common/generic";
 import { clone, objectFactory }              from "@surface/core/common/object";
 import CustomElement                         from "@surface/custom-element";
 import Enumerable                            from "@surface/enumerable";
@@ -238,7 +237,7 @@ export default class DataTable extends Component
             const field = columnDefinition.field;
             const value = (field.indexOf(".") > -1 ? Function("data", `data.${field}`)(data) : data[field]) as Nullable<string>;
 
-            const cell = new DataCell(columnDefinition.editable, index, coalesce(value, ""), value);
+            const cell = new DataCell(columnDefinition.editable, index, value ?? "", value);
             row.appendChild(cell);
 
             if (columnDefinition.style)

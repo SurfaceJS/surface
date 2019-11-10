@@ -75,7 +75,8 @@ export default class ParserSpec
         chai.expect(expression.toString(), "toString").to.equal(parseExpectedSpec.toString);
     }
 
-    @test("expression: ((a && b) || x && y); should be evaluated to ParenthesizedExpression: false") @shouldPass
+    @shouldPass
+    @test("expression: ((a && b) || x && y); should be evaluated to ParenthesizedExpression: false")
     public parenthesizedExpression(): void
     {
         const scope = { a: true, b: false, x: false, y: true };

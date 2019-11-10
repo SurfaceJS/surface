@@ -1,5 +1,5 @@
 import { Indexer, Nullable }  from "@surface/core";
-import { coalesce, hasValue } from "@surface/core/common/generic";
+import { hasValue }           from "@surface/core/common/generic";
 import IArrayPattern          from "../../interfaces/array-pattern";
 import IExpression            from "../../interfaces/expression";
 import IIdentifier            from "../../interfaces/identifier";
@@ -75,7 +75,7 @@ export default class ArrowFunctionExpression implements IExpression
         {
             if (TypeGuard.isIdentifier(pattern.left))
             {
-                return { [pattern.left.name]: coalesce(value, pattern.right.evaluate(scope, useCache)) };
+                return { [pattern.left.name]: value ?? pattern.right.evaluate(scope, useCache) };
             }
             else
             {
@@ -132,7 +132,7 @@ export default class ArrowFunctionExpression implements IExpression
                 const key   = property.shorthand ? alias : TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : `${property.key.evaluate(scope, useCache)}`;
 
                 currentScope[alias] = TypeGuard.isAssignmentPattern(property.value) ?
-                    coalesce(value[key], property.value.right.evaluate(scope, useCache))
+                    value[key] ?? property.value.right.evaluate(scope, useCache)
                     : currentScope[alias] = value[key];
 
                 aliases.push(alias);

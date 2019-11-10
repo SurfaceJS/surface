@@ -1,4 +1,3 @@
-import { coalesce }                             from "@surface/core/common/generic";
 import Component                                from "../../../";
 import { attribute, element }                   from "../../../decorators";
 import { AttributeConverter }                   from "../../../types";
@@ -121,8 +120,8 @@ export default class DataFilterItem extends Component
     public constructor(type?: Type, operator?: Operator)
     {
         super();
-        this.type     = type || "string";
-        this.operator = coalesce(operator, null);
+        this.type     = type     ?? "string";
+        this.operator = operator ?? null;
     }
 
     protected setValue(value: unknown): void

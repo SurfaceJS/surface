@@ -1,6 +1,6 @@
 import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
 import { contains }                                            from "@surface/core/common/array";
-import { coalesce, typeGuard }                                 from "@surface/core/common/generic";
+import { typeGuard }                                           from "@surface/core/common/generic";
 import { destruct, getKeyMember }                              from "@surface/core/common/object";
 import { dashedToCamel }                                       from "@surface/core/common/string";
 import Expression                                              from "@surface/expression";
@@ -118,7 +118,7 @@ export default class TemplateProcessor
                                 (element as Indexer)[attributeName] = value;
                             }
 
-                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
+                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
                         };
 
                         DataBind.oneWay(target, path, { notify });
@@ -146,7 +146,7 @@ export default class TemplateProcessor
                                 (element as Indexer)[attributeName] = value;
                             }
 
-                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${coalesce(value, "")}`;
+                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
                         };
 
                         ObserverVisitor.observe(expression, scope, { notify });
@@ -170,7 +170,7 @@ export default class TemplateProcessor
 
             if (match)
             {
-                DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${coalesce(value, "")}` });
+                DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${value ?? ""}` });
             }
             else
             {
@@ -178,7 +178,7 @@ export default class TemplateProcessor
 
                 const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
-                    () => element.nodeValue = `${coalesce(expression.evaluate(scope), "")}`;
+                    () => element.nodeValue = `${expression.evaluate(scope) ?? ""}`;
 
                 ObserverVisitor.observe(expression, scope, { notify });
 

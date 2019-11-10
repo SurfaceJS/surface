@@ -1,4 +1,3 @@
-import { coalesce }  from "@surface/core/common/generic";
 import CustomElement from "@surface/custom-element";
 import { element }   from "../../decorators";
 import template      from "./index.html";
@@ -53,8 +52,8 @@ export default class DataCell extends CustomElement
     public constructor(editable?: boolean, index?: number, text?: string, value?: unknown)
     {
         super();
-        this._editable = coalesce(editable,  false);
-        this._index    = coalesce(index, 0);
+        this._editable = editable ?? false;
+        this._index    = index    ?? 0;
         this._value    = value;
 
         if (text)

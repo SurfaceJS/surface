@@ -1,4 +1,4 @@
-import { Func, Func1, Nullable } from "../";
+import { Func1, Nullable } from "../";
 
 export function assert(condition: unknown, message?: string): asserts condition
 {
@@ -6,15 +6,6 @@ export function assert(condition: unknown, message?: string): asserts condition
     {
         throw new Error(message);
     }
-}
-
-export function coalesce<T, U extends T>(value: Nullable<T>, fallback: U): T;
-export function coalesce<T, U extends T>(value: Nullable<T>, fallback: Func<U>): T;
-export function coalesce<T>(value: Nullable<T>, fallback: T): T;
-export function coalesce<T>(value: Nullable<T>, fallback: Func<T>): T;
-export function coalesce<T>(value: Nullable<T>, fallback: T|Func<T>): T
-{
-    return value !== null && value !== undefined ? value : fallback instanceof Function ? fallback() : fallback;
 }
 
 export function hasValue(value: unknown): value is Object;
