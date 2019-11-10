@@ -1,6 +1,7 @@
 import { Indexer }                   from "@surface/core";
 import { merge }                     from "@surface/core/common/object";
 import { resolveFile }               from "@surface/io";
+import chalk                         from "chalk";
 import ForkTsCheckerWebpackPlugin    from "fork-ts-checker-webpack-plugin";
 import fs                            from "fs";
 import path                          from "path";
@@ -109,7 +110,7 @@ export default class Compiler
         const callback: webpack.Compiler.Handler =
             (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
-        console.log(`Starting ${watch ? "Watch" : "build"} using ${enviroment} configuration.`);
+        console.log(`Starting ${chalk.bold.green(watch ? "Watch" : "build")} using ${chalk.bold.green(enviroment)} configuration.`);
 
         if (watch)
         {

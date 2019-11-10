@@ -1,3 +1,4 @@
+import chalk       from "chalk";
 import fs          from "fs";
 import path        from "path";
 import * as common from "./common";
@@ -25,12 +26,12 @@ export default class Tasks
         {
             const source = path.normalize(path.resolve(paths.modules.source, $packages.name));
 
-            commands.push(common.execute(`Building ${$packages.name}`, `tsc -p ${source}`));
+            commands.push(common.execute(`Building ${chalk.bold.blue($packages.name)}`, `tsc -p ${source}`));
         }
 
         await Promise.all(commands);
 
-        console.log("Building modules done!");
+        console.log(chalk.bold.green("Building modules done!"));
     }
 
     public static clean(): void
@@ -39,11 +40,11 @@ export default class Tasks
         {
             const source = path.normalize(path.resolve(paths.modules.source, $packages.name));
 
-            console.log(`Cleaning ${$packages.name}`);
+            console.log(`Cleaning ${chalk.bold.blue($packages.name)}`);
             common.cleanup(source, patterns.clean.include, patterns.clean.exclude);
         }
 
-        console.log("Cleaning done!");
+        console.log(chalk.bold.green("Cleaning done!"));
     }
 
     public static async cover(filepath: string): Promise<void>
@@ -59,7 +60,7 @@ export default class Tasks
             alias = "index";
         }
 
-        await common.execute(`cover ${file.name} tests`,`${path.join(bin, "nyc")} --include **/${alias}.js --include **/${alias}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
+        await common.execute(`cover ${chalk.bold.blue(file.name)} tests`,`${path.join(bin, "nyc")} --include **/${alias}.js --include **/${alias}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
     }
 
     public static async install(full: "true"|"false"): Promise<void>
@@ -79,7 +80,7 @@ export default class Tasks
 
             if (targets)
             {
-                commands.push(common.execute(`Installing ${$package.name} dependencies.`, `cd ${$package.path} && npm install ${targets} --save-exact`));
+                commands.push(common.execute(`Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${$package.path} && npm install ${targets} --save-exact`));
             }
         }
 
@@ -87,7 +88,7 @@ export default class Tasks
 
         Tasks.link();
 
-        console.log("Compiling done!");
+        console.log(chalk.bold.green("Compiling done!"));
     }
 
     public static link(): void
@@ -104,14 +105,12 @@ export default class Tasks
 
                 if (!fs.existsSync(symlink))
                 {
-                    //console.log(`Linking ${$package.name} dependence[${key}]`);
-                    //fs.symlinkSync(original, symlink);
-                    common.execute(`Linking ${$package.name} dependence[${key}]`, `mklink /J ${symlink} ${original}`);
+                    common.execute(`Linking ${chalk.bold.magenta(key)} to ${chalk.bold.blue($package.name)}`, `mklink /J ${symlink} ${original}`);
                 }
             }
         }
 
-        console.log("Linking done!");
+        console.log(chalk.bold.green("Linking done!"));
     }
 
     public static async publish(): Promise<void>
@@ -140,11 +139,11 @@ export default class Tasks
 
             if (fs.existsSync(targetFolder))
             {
-                console.log(`Unlinking @surface on ${$package.name}`);
+                console.log(`Unlinking @surface on ${chalk.bold.blue($package.name)}`);
                 common.deletePath(targetFolder);
             }
         }
 
-        console.log("Unlinking done!");
+        console.log(chalk.bold.green("Unlinking done!"));
     }
 }
