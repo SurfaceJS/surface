@@ -1,30 +1,30 @@
-import { Action, Action1, Action2, Indexer, Nullable }         from "@surface/core";
-import { contains }                                            from "@surface/core/common/array";
-import { typeGuard }                                           from "@surface/core/common/generic";
-import { getKeyMember }                                        from "@surface/core/common/object";
-import { dashedToCamel }                                       from "@surface/core/common/string";
-import Expression                                              from "@surface/expression";
-import Evaluate                                                from "@surface/expression/evaluate";
-import IArrayExpression                                        from "@surface/expression/interfaces/array-expression";
-import IArrowFunctionExpression                                from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                                             from "@surface/expression/interfaces/expression";
-import NodeType                                                from "@surface/expression/node-type";
-import ISubscription                                           from "@surface/reactive/interfaces/subscription";
-import Type                                                    from "@surface/reflection";
-import FieldInfo                                               from "@surface/reflection/field-info";
-import PropertyInfo                                            from "@surface/reflection/property-info";
-import BindParser                                              from "./bind-parser";
-import DataBind                                                from "./data-bind";
-import ObserverVisitor                                         from "./observer-visitor";
-import { BINDED, CONTEXT, ON_AFTER_BINDED, SLOTTED_TEMPLATES } from "./symbols";
-import windowWrapper                                           from "./window-wrapper";
+import { Action, Action1, Action2, Indexer, Nullable }       from "@surface/core";
+import { contains }                                          from "@surface/core/common/array";
+import { typeGuard }                                         from "@surface/core/common/generic";
+import { getKeyMember }                                      from "@surface/core/common/object";
+import { dashedToCamel }                                     from "@surface/core/common/string";
+import Expression                                            from "@surface/expression";
+import Evaluate                                              from "@surface/expression/evaluate";
+import IArrayExpression                                      from "@surface/expression/interfaces/array-expression";
+import IArrowFunctionExpression                              from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                                           from "@surface/expression/interfaces/expression";
+import NodeType                                              from "@surface/expression/node-type";
+import ISubscription                                         from "@surface/reactive/interfaces/subscription";
+import Type                                                  from "@surface/reflection";
+import FieldInfo                                             from "@surface/reflection/field-info";
+import PropertyInfo                                          from "@surface/reflection/property-info";
+import BindParser                                            from "./bind-parser";
+import DataBind                                              from "./data-bind";
+import ObserverVisitor                                       from "./observer-visitor";
+import { CONTEXT, ON_PROCESS, PROCESSED, SLOTTED_TEMPLATES } from "./symbols";
+import windowWrapper                                         from "./window-wrapper";
 
 type Bindable<T extends object> = T &
 {
-    [BINDED]?:            boolean,
+    [PROCESSED]?:            boolean,
     [CONTEXT]?:           Indexer,
     [SLOTTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>
-    [ON_AFTER_BINDED]?:   Action1<Indexer>;
+    [ON_PROCESS]?:   Action1<Indexer>;
 };
 
 export default class TemplateProcessor
@@ -49,19 +49,19 @@ export default class TemplateProcessor
 
     public static process(host: Node|Element, node: Node, scope?: Indexer): void
     {
-        const processor = new TemplateProcessor(host, scope || { });
+        const processor = new TemplateProcessor(host, scope ?? { });
 
         processor.traverseElement(node);
     }
 
     public static clear(node: Bindable<Node>)
     {
-        if (node[BINDED])
+        if (node[PROCESSED])
         {
             DataBind.unbind(node);
 
-            node[CONTEXT] = undefined;
-            node[BINDED]  = false;
+            node[CONTEXT]   = undefined;
+            node[PROCESSED] = false;
         }
 
         for (const element of node.childNodes as unknown as Iterable<Bindable<Element>>)
@@ -263,17 +263,18 @@ export default class TemplateProcessor
 
             const contentScope: Indexer = rawScope ? Expression.parse(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
 
-            const contentName = template.getAttribute("#content") || "";
+            const contentName = template.getAttribute("#content")!;
 
             const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
 
             if (!slottedTemplates.has(contentName))
             {
                 const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${contentName}]`);
-                slottedTemplates.set(contentName, outterTemplate);
 
                 if (outterTemplate)
                 {
+                    slottedTemplates.set(contentName, outterTemplate);
+
                     outterTemplate.remove();
                 }
             }
@@ -306,11 +307,11 @@ export default class TemplateProcessor
                 reference.remove();
             };
 
-            if (!host[BINDED])
+            if (!host[PROCESSED])
             {
-                const onAfterBinded = host[ON_AFTER_BINDED];
+                const onAfterBinded = host[ON_PROCESS];
 
-                host[ON_AFTER_BINDED] = function(outterContext: Indexer)
+                host[ON_PROCESS] = function(outterContext: Indexer)
                 {
                     if (onAfterBinded)
                     {
@@ -319,7 +320,7 @@ export default class TemplateProcessor
 
                     apply(outterContext);
 
-                    host[ON_AFTER_BINDED] = onAfterBinded;
+                    host[ON_PROCESS] = onAfterBinded;
                 };
             }
             else
@@ -546,37 +547,42 @@ export default class TemplateProcessor
         }
     }
 
-    private traverseElement(node: Node): void
+    private traverseElement(node: Bindable<Node>): void
     {
-        for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
+        if (!node[PROCESSED])
         {
-            if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
+            if (node[ON_PROCESS])
             {
-                this.processDirectives(element, this.createProxy(this.scope));
+                node[ON_PROCESS]!(this.scope);
             }
-            else if (!element[BINDED])
+
+            for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
             {
-                element[CONTEXT] = this.scope;
-
-                if (element.attributes && element.attributes.length > 0)
+                if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
                 {
-                    this.bindAttributes(element);
+                    this.processDirectives(element, this.createProxy(this.scope));
                 }
-
-                if (element.nodeType == Node.TEXT_NODE)
+                else
                 {
-                    this.bindTextNode(element);
+                    element[CONTEXT] = this.scope;
+
+                    if (element.attributes && element.attributes.length > 0)
+                    {
+                        this.bindAttributes(element);
+                    }
+
+                    if (element.nodeType == Node.TEXT_NODE)
+                    {
+                        this.bindTextNode(element);
+                    }
+
+                    this.traverseElement(element);
+
                 }
-
-                this.traverseElement(element);
-
-                if (element[ON_AFTER_BINDED])
-                {
-                    element[ON_AFTER_BINDED]!(this.scope);
-                }
-
-                element[BINDED] = true;
             }
+
+            node[PROCESSED] = true;
+
         }
     }
 
