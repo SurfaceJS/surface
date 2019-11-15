@@ -1,6 +1,7 @@
 import Expression  from "@surface/expression";
 import IExpression from "@surface/expression/interfaces/expression";
 import SyntaxError from "@surface/expression/syntax-error";
+import parse       from "./parse";
 
 export default class BindParser
 {
@@ -70,7 +71,7 @@ export default class BindParser
                 }
                 while (!this.eof() && stack > 0);
 
-                const expression = Expression.parse(this.source.substring(start, this.index - 2));
+                const expression = parse(this.source.substring(start, this.index - 2));
 
                 this.expressions.push(expression);
 
