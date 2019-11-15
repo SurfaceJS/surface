@@ -28,6 +28,9 @@ import ISubscription             from "@surface/reactive/interfaces/subscription
 export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly scope: Indexer;
+
+    private readonly cache: Map<IExpression, unknown> = new Map();
+
     private readonly paths: Array<Array<string>> = [];
 
     private brokenPath: boolean       = false;
@@ -76,6 +79,22 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             this.paths.push([...this.stack]);
             this.stack = [];
+        }
+    }
+
+    private evaluate(expression: IExpression): unknown
+    {
+        if (this.cache.has(expression))
+        {
+            return this.cache.get(expression);
+        }
+        else
+        {
+            const value = expression.evaluate(this.scope);
+
+            this.cache.set(expression, value);
+
+            return value;
         }
     }
 
@@ -188,7 +207,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         }
         else if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
         {
-            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : expression.property.evaluate(this.scope, true) as string;
+            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : this.evaluate(expression.property) as string;
 
             if (!this.brokenPath)
             {
