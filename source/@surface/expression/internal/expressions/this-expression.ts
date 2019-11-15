@@ -12,7 +12,7 @@ export default class ThisExpression implements IExpression
         return NodeType.ThisExpression;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

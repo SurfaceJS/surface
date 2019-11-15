@@ -46,7 +46,7 @@ export default class NewExpression implements IExpression
         this._arguments = $arguments;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

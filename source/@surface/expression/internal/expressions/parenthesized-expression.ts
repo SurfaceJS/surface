@@ -29,7 +29,7 @@ export default class ParenthesizedExpression implements IExpression
         this._argument = argument;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

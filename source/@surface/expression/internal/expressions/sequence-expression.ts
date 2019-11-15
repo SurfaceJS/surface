@@ -29,7 +29,7 @@ export default class SequenceExpression implements IExpression
         this._expressions = expressions;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

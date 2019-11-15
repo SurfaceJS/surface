@@ -32,7 +32,7 @@ export default class ObjectExpression implements IExpression
         this._properties = properties;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): Indexer
+    public evaluate(scope: Indexer, useCache?: boolean): Indexer
     {
         if (useCache && hasValue(this.cache))
         {

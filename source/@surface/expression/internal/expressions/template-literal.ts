@@ -43,7 +43,7 @@ export default class TemplateLiteral implements IExpression
         this._quasis      = quasis;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): string
+    public evaluate(scope: Indexer, useCache?: boolean): string
     {
         if (useCache && hasValue(this.cache))
         {

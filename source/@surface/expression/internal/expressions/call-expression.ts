@@ -59,7 +59,7 @@ export default class CallExpression implements IExpression
         this._optional  = !!optional;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
