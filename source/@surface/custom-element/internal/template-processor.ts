@@ -1,30 +1,44 @@
-import { Action, Action1, Action2, Indexer, Nullable }       from "@surface/core";
-import { contains }                                          from "@surface/core/common/array";
-import { typeGuard }                                         from "@surface/core/common/generic";
-import { getKeyMember }                                      from "@surface/core/common/object";
-import { dashedToCamel }                                     from "@surface/core/common/string";
-import Expression                                            from "@surface/expression";
-import Evaluate                                              from "@surface/expression/evaluate";
-import IArrayExpression                                      from "@surface/expression/interfaces/array-expression";
-import IArrowFunctionExpression                              from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                                           from "@surface/expression/interfaces/expression";
-import NodeType                                              from "@surface/expression/node-type";
-import ISubscription                                         from "@surface/reactive/interfaces/subscription";
-import Type                                                  from "@surface/reflection";
-import FieldInfo                                             from "@surface/reflection/field-info";
-import PropertyInfo                                          from "@surface/reflection/property-info";
-import BindParser                                            from "./bind-parser";
-import DataBind                                              from "./data-bind";
-import ObserverVisitor                                       from "./observer-visitor";
-import { CONTEXT, ON_PROCESS, PROCESSED, SLOTTED_TEMPLATES } from "./symbols";
-import windowWrapper                                         from "./window-wrapper";
+import { Action, Action1, Action2, Indexer, Nullable } from "@surface/core";
+import { contains }                                    from "@surface/core/common/array";
+import { typeGuard }                                   from "@surface/core/common/generic";
+import { getKeyMember }                                from "@surface/core/common/object";
+import { dashedToCamel }                               from "@surface/core/common/string";
+import Expression                                      from "@surface/expression";
+import Evaluate                                        from "@surface/expression/evaluate";
+import IArrayExpression                                from "@surface/expression/interfaces/array-expression";
+import IArrowFunctionExpression                        from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                                     from "@surface/expression/interfaces/expression";
+import NodeType                                        from "@surface/expression/node-type";
+import ISubscription                                   from "@surface/reactive/interfaces/subscription";
+import Type                                            from "@surface/reflection";
+import FieldInfo                                       from "@surface/reflection/field-info";
+import PropertyInfo                                    from "@surface/reflection/property-info";
+import BindExpression                                  from "./bind-expression";
+import DataBind                                        from "./data-bind";
+import ObserverVisitor                                 from "./observer-visitor";
+import parse                                           from "./parse";
+import
+{
+    INJECTED_TEMPLATES,
+    INJECTOR,
+    ON_PROCESS,
+    PROCESSED,
+    SCOPE
+}
+from "./symbols";
+import windowWrapper from "./window-wrapper";
 
 type Bindable<T extends object> = T &
 {
-    [PROCESSED]?:            boolean,
-    [CONTEXT]?:           Indexer,
-    [SLOTTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>
-    [ON_PROCESS]?:   Action1<Indexer>;
+    [SCOPE]?:              Indexer;
+    [ON_PROCESS]?:         Action1<Indexer>;
+    [PROCESSED]?:          boolean;
+    [INJECTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>;
+};
+
+type HTMLTemplateElementDirective = HTMLTemplateElement &
+{
+    [INJECTOR]?: string;
 };
 
 export default class TemplateProcessor
@@ -60,7 +74,7 @@ export default class TemplateProcessor
         {
             DataBind.unbind(node);
 
-            node[CONTEXT]   = undefined;
+            node[SCOPE]   = undefined;
             node[PROCESSED] = false;
         }
 
@@ -83,7 +97,7 @@ export default class TemplateProcessor
 
                 if (attribute.name.startsWith("on-"))
                 {
-                    const expression = BindParser.scan(attribute.value);
+                    const expression = BindExpression.parse(attribute.value);
 
                     const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
                         expression.evaluate(scope) as Action
@@ -135,7 +149,7 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const expression = BindParser.scan(attribute.value);
+                        const expression = BindExpression.parse(attribute.value);
 
                         const notify = () =>
                         {
@@ -176,7 +190,7 @@ export default class TemplateProcessor
             }
             else
             {
-                const expression = BindParser.scan(element.nodeValue);
+                const expression = BindExpression.parse(element.nodeValue);
 
                 const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
@@ -202,348 +216,424 @@ export default class TemplateProcessor
         return new Proxy(context, handler);
     }
 
-    private decomposeDirectives(template: HTMLTemplateElement): void
+    private decomposeDirectives(template: HTMLTemplateElementDirective): void
     {
         const attributes = template.getAttributeNames();
 
-        if (contains(attributes, "#if", "#else-if", "#else") && contains(attributes, "#for", "#content", "#scope"))
+        const organize = (template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement) =>
         {
-            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
-
-            template.removeAttribute("#for");
-            template.removeAttribute("#content");
-            template.removeAttribute("#scope");
-
-            innerTemplate.removeAttribute("#if");
-            innerTemplate.removeAttribute("#else-if");
-            innerTemplate.removeAttribute("#else");
-
             Array.from(template.content.childNodes).forEach(x => x.remove());
 
             this.decomposeDirectives(innerTemplate);
 
             template.content.appendChild(innerTemplate);
-        }
-        else if (attributes.includes("#for") && contains(attributes, "#content", "#scope"))
+        };
+
+        if (attributes.length > 0)
         {
-            const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+            const injectKey   = attributes.filter(x => x.startsWith("#inject:"))[0]   as string|null;
+            const injectorKey = attributes.filter(x => x.startsWith("#injector:"))[0] as string|null;
 
-            template.removeAttribute("#content");
-            template.removeAttribute("#scope");
+            if (injectKey && (contains(attributes, ["#if", "#else-if", "#else"]) || attributes.includes("#for") || injectorKey))
+            {
+                const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
-            innerTemplate.removeAttribute("#for");
+                template.removeAttribute("#if");
+                template.removeAttribute("#else-if");
+                template.removeAttribute("#else");
+                template.removeAttribute("#for");
 
-            Array.from(template.content.childNodes).forEach(x => x.remove());
+                if (injectorKey)
+                {
+                    template.removeAttribute(injectorKey);
+                }
 
-            this.decomposeDirectives(innerTemplate);
+                innerTemplate.removeAttribute(injectKey);
 
-            template.content.appendChild(innerTemplate);
+                organize(template, innerTemplate);
+            }
+            else if (contains(attributes, ["#if", "#else-if", "#else"]))
+            {
+                if (template.nextElementSibling?.tagName == "TEMPLATE" && contains(template.nextElementSibling.getAttributeNames(), ["#else-if", "#else"]))
+                {
+                    this.decomposeDirectives(template.nextElementSibling as HTMLTemplateElement);
+                }
+
+                if (attributes.includes("#for") || injectorKey)
+                {
+                    const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+                    template.removeAttribute("#for");
+
+                    if (injectorKey)
+                    {
+                        template.removeAttribute(injectorKey);
+                    }
+
+                    innerTemplate.removeAttribute("#if");
+                    innerTemplate.removeAttribute("#else-if");
+                    innerTemplate.removeAttribute("#else");
+
+                    organize(template, innerTemplate);
+                }
+            }
+            else if (attributes.includes("#for") && injectorKey)
+            {
+                const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+                template.removeAttribute(injectorKey);
+
+                innerTemplate.removeAttribute("#for");
+
+                organize(template, innerTemplate);
+            }
+            else if (injectorKey)
+            {
+                template[INJECTOR] = injectorKey.split(":")[1];
+            }
         }
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity
-    private processDirectives(template: HTMLTemplateElement, scope: Indexer): void
+    private processDirectives(host: Element|Node, template: HTMLTemplateElementDirective, scope: Indexer): void
     {
         if (!template.parentNode)
         {
             throw new Error("Cannot process orphan templates");
         }
 
-        this.decomposeDirectives(template);
-
         const parent = template.parentNode;
 
-        const host = this.host as Bindable<Node|Element>;
+        this.decomposeDirectives(template);
 
-        if (template.hasAttribute("#content") && "querySelector" in host)
+        if (template.hasAttribute("#if"))
         {
-            const reference = document.createComment("directive-content");
+            this.processConditionalDirectives(host, template, parent, scope);
+        }
+        else if (template.hasAttribute("#for"))
+        {
+            this.processForDirectives(host, template, parent, scope);
+        }
+        else if (!!template[INJECTOR] && "querySelector" in host)
+        {
+            this.processInjectorDirectives(host, template, parent, scope);
+        }
+    }
 
-            const rawScope = `(${template.getAttribute("#scope")})`;
+    private processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
+    {
+        const start = document.createComment("if-directive-start");
+        const end   = document.createComment("if-directive-end");
 
-            const contentScope: Indexer = rawScope ? Expression.parse(rawScope).evaluate(this.createProxy(scope)) as Indexer : { };
+        const expressions:   Array<[IExpression, HTMLTemplateElement]> = [];
+        const subscriptions: Array<ISubscription>                      = [];
 
-            const contentName = template.getAttribute("#content")!;
-
-            const slottedTemplates = host[SLOTTED_TEMPLATES] = host[SLOTTED_TEMPLATES] || new Map<string, Nullable<HTMLTemplateElement>>();
-
-            if (!slottedTemplates.has(contentName))
+        const notify = () =>
+        {
+            if (!end.parentNode)
             {
-                const outterTemplate = host.querySelector<HTMLTemplateElement>(`template[content=${contentName}]`);
+                subscriptions.forEach(x => x.unsubscribe());
 
-                if (outterTemplate)
-                {
-                    slottedTemplates.set(contentName, outterTemplate);
-
-                    outterTemplate.remove();
-                }
+                return;
             }
 
-            const outterTemplate = slottedTemplates.get(contentName) ?? template;
+            let simbling: Nullable<ChildNode> = null;
 
-            const scopeSpression = outterTemplate.getAttribute("scope") ?? "scope";
-
-            const destructuredScope = scopeSpression.startsWith("{");
-
-            const { elementScope, scopeAlias } = destructuredScope ?
-                { elementScope: Evaluate.pattern(contentScope, (Expression.parse(`(${scopeSpression}) => 0`) as IArrowFunctionExpression).parameters[0], null), scopeAlias: "" }
-                : { elementScope: contentScope, scopeAlias: scopeSpression };
-
-            const content = document.importNode(outterTemplate.content, true);
-
-            content.normalize();
-
-            parent.replaceChild(reference, template);
-
-            const apply = (outterContext: Indexer) =>
+            while ((simbling = start.nextSibling) && simbling != end)
             {
-                const merged = destructuredScope ?
-                    { ...elementScope, ...outterContext }
-                    : { [scopeAlias]: elementScope, ...outterContext };
+                simbling.remove();
+                TemplateProcessor.clear(simbling);
+            }
 
-                TemplateProcessor.process(this.host, content, merged);
-
-                reference.parentNode!.insertBefore(content, reference);
-                reference.remove();
-            };
-
-            if (!host[PROCESSED])
+            for (const [expression, template] of expressions)
             {
-                const onAfterBinded = host[ON_PROCESS];
-
-                host[ON_PROCESS] = function(outterContext: Indexer)
+                if (expression.evaluate(scope))
                 {
-                    if (onAfterBinded)
-                    {
-                        onAfterBinded.call(this, outterContext);
-                    }
+                    const content = template.content.cloneNode(true) as Element;
 
-                    apply(outterContext);
+                    content.normalize();
 
-                    host[ON_PROCESS] = onAfterBinded;
-                };
+                    TemplateProcessor.process(host, content, scope);
+
+                    end.parentNode.insertBefore(content, end);
+
+                    break;
+                }
+            }
+        };
+
+        const listener = { notify };
+
+        const expression = parse(template.getAttribute("#if")!);
+
+        subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+
+        expressions.push([expression, template]);
+
+        let simbling = template.nextElementSibling;
+
+        while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
+        {
+            if (simbling.hasAttribute("#else-if"))
+            {
+                const expression = parse(simbling.getAttribute("#else-if")!);
+
+                subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+
+                expressions.push([expression, simbling]);
+
+                const next = simbling.nextElementSibling;
+
+                simbling.remove();
+
+                simbling = next;
+            }
+            else if (simbling.hasAttribute("#else"))
+            {
+                simbling.remove();
+
+                expressions.push([Expression.literal(true), simbling]);
+
+                break;
             }
             else
             {
-                apply(host[CONTEXT] as Indexer);
+                break;
             }
         }
-        else if (template.hasAttribute("#if"))
+
+        parent.replaceChild(end, template);
+        parent.insertBefore(start, end);
+
+        notify();
+    }
+
+    private processForDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
+    {
+        const start = document.createComment("for-directive-start");
+        const end   = document.createComment("for-directive-end");
+
+        const forExpression = /(?:const|var|let)\s+(.*)\s+(in|of)\s+(.*)/;
+        const rawExpression = template.getAttribute("#for")!;
+
+        if (!forExpression.test(rawExpression))
         {
-            const start = document.createComment("start-if-directive");
-            const end   = document.createComment("end-if-directive");
+            throw new Error(`Invalid #for directive expression: ${rawExpression}`);
+        }
 
-            const expressions:   Array<[IExpression, HTMLTemplateElement]> = [];
-            const subscriptions: Array<ISubscription>                      = [];
+        const [, aliasExpression, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
 
-            const notify = () =>
+        const destructured = aliasExpression.startsWith("[") || aliasExpression.startsWith("{");
+
+        const expression = parse(iterableExpression);
+
+        let cache: Array<[unknown, Array<ChildNode>]> = [];
+
+        const forInIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
+        {
+            let index = 0;
+            for (const element in elements)
+            {
+                action(element, index);
+                index++;
+            }
+        };
+
+        const forOfIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
+        {
+            let index = 0;
+            for (const element of elements)
+            {
+                action(element, index);
+                index++;
+            }
+        };
+
+        const notifyFactory = (iterator: Action2<Array<unknown>, Action2<unknown, number>>) =>
+        {
+            let changedTree = false;
+
+            const tree = document.createDocumentFragment();
+
+            const action = (element: unknown, index: number) =>
+            {
+                if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
+                {
+                    const content = template.content.cloneNode(true) as Element;
+
+                    content.normalize();
+
+                    const mergedScope = destructured ?
+                        { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope }
+                        : { ...scope, [aliasExpression]: element };
+
+                    TemplateProcessor.process(host, content, mergedScope);
+
+                    if (index < cache.length)
+                    {
+                        for (const child of cache[index][1])
+                        {
+                            child.remove();
+                            TemplateProcessor.clear(child);
+                        }
+
+                        cache[index] = [element, Array.from(content.childNodes)];
+
+                        changedTree = true;
+                    }
+                    else
+                    {
+                        cache.push([element, Array.from(content.childNodes)]);
+                    }
+
+                    tree.appendChild(content);
+                }
+                else if (changedTree)
+                {
+                    for (const child of cache[index][1])
+                    {
+                        tree.appendChild(child);
+                    }
+                }
+            };
+
+            return () =>
             {
                 if (!end.parentNode)
                 {
-                    subscriptions.forEach(x => x.unsubscribe());
+                    subscription.unsubscribe();
 
                     return;
                 }
 
-                let simbling: Nullable<ChildNode> = null;
+                const elements = expression.evaluate(scope) as Array<Element>;
 
-                while ((simbling = start.nextSibling) && simbling != end)
+                if (elements.length < cache.length)
                 {
-                    simbling.remove();
-                    TemplateProcessor.clear(simbling);
-                }
-
-                for (const [expression, template] of expressions)
-                {
-                    if (expression.evaluate(scope))
+                    for (const [, childs] of cache.splice(elements.length))
                     {
-                        const content = template.content.cloneNode(true) as Element;
-
-                        content.normalize();
-
-                        TemplateProcessor.process(this.host, content, scope);
-
-                        end.parentNode.insertBefore(content, end);
-
-                        break;
+                        for (const child of childs)
+                        {
+                            child.remove();
+                            TemplateProcessor.clear(child);
+                        }
                     }
                 }
+
+                if (elements.length > 0)
+                {
+                    iterator(elements, action);
+                }
+
+                end.parentNode.insertBefore(tree, end);
             };
+        };
 
-            const listener = { notify };
+        const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-            const expression = Expression.parse(template.getAttribute("#if")!);
+        const subscription = ObserverVisitor.observe(expression, scope, { notify });
 
-            subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+        parent.replaceChild(end, template);
+        parent.insertBefore(start, end);
 
-            expressions.push([expression, template]);
+        notify();
+    }
 
-            let simbling = template.nextElementSibling;
+    private processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElementDirective, parent: Node, scope: Indexer): void
+    {
+        const start = document.createComment("injector-directive-start");
+        const end   = document.createComment("injector-directive-end");
 
-            while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
-            {
-                if (simbling.hasAttribute("#else-if"))
-                {
-                    const expression = Expression.parse(simbling.getAttribute("#else-if")!);
+        const injectorKey   = template[INJECTOR]!;
+        const injectorScope = template.getAttribute(`#injector:${injectorKey}`);
 
-                    subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+        const injectedTemplates = host[INJECTED_TEMPLATES] = host[INJECTED_TEMPLATES] ?? new Map<string, Nullable<HTMLTemplateElement>>();
 
-                    expressions.push([expression, simbling]);
-
-                    const next = simbling.nextElementSibling;
-
-                    simbling.remove();
-
-                    simbling = next;
-                }
-                else if (simbling.hasAttribute("#else"))
-                {
-                    simbling.remove();
-
-                    expressions.push([Expression.literal(true), simbling]);
-
-                    break;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            parent.replaceChild(end, template);
-            parent.insertBefore(start, end);
-
-            notify();
-        }
-        else if (template.hasAttribute("#for"))
+        if (!injectedTemplates.has(injectorKey))
         {
-            const start = document.createComment("start-for-directive");
-            const end   = document.createComment("end-for-directive");
+            const injectionTemplate = host.querySelector<HTMLTemplateElement>(`template[\\#inject\\:${injectorKey}]`);
 
-            const forExpression = /(.*)(in|of)(.*)/;
-            const rawExpression = template.getAttribute("#for")!;
-
-            if (!forExpression.test(rawExpression))
+            if (injectionTemplate)
             {
-                throw new Error("Invalid expression");
+                injectedTemplates.set(injectorKey, injectionTemplate);
+
+                injectionTemplate.remove();
+            }
+        }
+
+        const injectionTemplate = injectedTemplates.get(injectorKey) ?? template;
+
+        this.decomposeDirectives(injectionTemplate);
+
+        const scopeExpression = injectionTemplate.getAttribute(`#inject:${injectorKey}`) || "scope";
+
+        const expression = parse(`(${injectorScope || "{ }"})`);
+
+        const proxyScope = this.createProxy(scope);
+
+        const isDestructured = scopeExpression.startsWith("{");
+
+        parent.replaceChild(end, template);
+        parent.insertBefore(start, end);
+
+        let subscription: ISubscription;
+
+        const pattern = (parse(`(${scopeExpression}) => 0`) as IArrowFunctionExpression).parameters[0];
+
+        const apply = (outterScope: Indexer) =>
+        {
+            if (!end.parentNode)
+            {
+                subscription.unsubscribe();
+
+                return;
             }
 
-            const [, aliasExpression, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
+            let simbling: Nullable<ChildNode> = null;
 
-            const destructured = aliasExpression.startsWith("[") || aliasExpression.startsWith("{");
-
-            const expression = Expression.parse(iterableExpression);
-
-            let cache: Array<[unknown, Array<ChildNode>]> = [];
-
-            const forInIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
+            while ((simbling = start.nextSibling) && simbling != end)
             {
-                let index = 0;
-                for (const element in elements)
+                simbling.remove();
+                TemplateProcessor.clear(simbling);
+            }
+
+            const { elementScope, scopeAlias } = isDestructured ?
+                { elementScope: Evaluate.pattern(scope, pattern, expression.evaluate(proxyScope)), scopeAlias: "" }
+                : { elementScope: expression.evaluate(proxyScope) as Indexer, scopeAlias: scopeExpression };
+
+            const mergedScope = isDestructured ?
+                { ...elementScope, ...outterScope }
+                : { [scopeAlias]: elementScope, ...outterScope };
+
+            const content = document.importNode(injectionTemplate.content, true);
+
+            content.normalize();
+
+            TemplateProcessor.process(host, content, mergedScope);
+
+            end.parentNode.insertBefore(content, end);
+        };
+
+        subscription = ObserverVisitor.observe(expression, proxyScope, { notify: () => apply(host[SCOPE] as Indexer) });
+
+        if (!host[PROCESSED])
+        {
+            const onAfterBinded = host[ON_PROCESS];
+
+            host[ON_PROCESS] = function(outterScope: Indexer)
+            {
+                if (onAfterBinded)
                 {
-                    action(element, index);
-                    index++;
+                    onAfterBinded.call(this, outterScope);
                 }
+
+                apply(outterScope);
+
+                host[ON_PROCESS] = onAfterBinded;
             };
-
-            const forOfIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
-            {
-                let index = 0;
-                for (const element of elements)
-                {
-                    action(element, index);
-                    index++;
-                }
-            };
-
-            const notifyFactory = (iterator: Action2<Array<unknown>, Action2<unknown, number>>) =>
-            {
-                let changedTree = false;
-
-                const tree = document.createDocumentFragment();
-
-                const action = (element: unknown, index: number) =>
-                {
-                    if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
-                    {
-                        const content = template.content.cloneNode(true) as Element;
-
-                        content.normalize();
-
-                        const mergedScope = destructured ?
-                            { ...Evaluate.pattern(scope, (Expression.parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope }
-                            : { ...scope, [aliasExpression]: element };
-
-                        TemplateProcessor.process(this.host, content, mergedScope);
-
-                        if (index < cache.length)
-                        {
-                            for (const child of cache[index][1])
-                            {
-                                child.remove();
-                                TemplateProcessor.clear(child);
-                            }
-
-                            cache[index] = [element, Array.from(content.childNodes)];
-
-                            changedTree = true;
-                        }
-                        else
-                        {
-                            cache.push([element, Array.from(content.childNodes)]);
-                        }
-
-                        tree.appendChild(content);
-                    }
-                    else if (changedTree)
-                    {
-                        for (const child of cache[index][1])
-                        {
-                            tree.appendChild(child);
-                        }
-                    }
-                };
-
-                return () =>
-                {
-                    if (!end.parentNode)
-                    {
-                        subscription.unsubscribe();
-
-                        return;
-                    }
-
-                    const elements = expression.evaluate(scope) as Array<Element>;
-
-                    if (elements.length < cache.length)
-                    {
-                        for (const [, childs] of cache.splice(elements.length))
-                        {
-                            for (const child of childs)
-                            {
-                                child.remove();
-                                TemplateProcessor.clear(child);
-                            }
-                        }
-                    }
-
-                    if (elements.length > 0)
-                    {
-                        iterator(elements, action);
-                    }
-
-                    end.parentNode.insertBefore(tree, end);
-                };
-            };
-
-            const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
-
-            const subscription = ObserverVisitor.observe(expression, scope, { notify });
-
-            parent.replaceChild(end, template);
-            parent.insertBefore(start, end);
-
-            notify();
+        }
+        else
+        {
+            apply(host[SCOPE] as Indexer);
         }
     }
 
@@ -560,11 +650,11 @@ export default class TemplateProcessor
             {
                 if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
                 {
-                    this.processDirectives(element, this.createProxy(this.scope));
+                    this.processDirectives(this.host, element, this.createProxy(this.scope));
                 }
                 else
                 {
-                    element[CONTEXT] = this.scope;
+                    element[SCOPE] = this.scope;
 
                     if (element.attributes && element.attributes.length > 0)
                     {
@@ -582,7 +672,6 @@ export default class TemplateProcessor
             }
 
             node[PROCESSED] = true;
-
         }
     }
 

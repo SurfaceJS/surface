@@ -13,7 +13,7 @@
     "rules":
     {
         "adjacent-overload-signatures": true,
-        "align":                           
+        "align":
         [
             true,
             "arguments",
@@ -22,7 +22,7 @@
             "parameters",
             "statements"
         ],
-        "await-promise":                   true,        
+        "await-promise":                   true,
         "binary-expression-operand-order": true,
         "class-name":                      true,
         "completed-docs":
@@ -77,7 +77,7 @@
                     "public-instance-method"
                 ]
             }
-        ],        
+        ],
         "new-parens":                      true,
         "no-angle-bracket-type-assertion": true,
         "no-any":                          true,
@@ -113,7 +113,7 @@
                 "module-source-path":   "full",
                 "named-imports-order":  "lowercase-first"
             }
-        ],        
+        ],
         "one-variable-per-declaration":    true,
         "prefer-for-of":                   true,
         "promise-function-async":          true,
@@ -122,7 +122,7 @@
         "semicolon":                       true,
         "switch-default":                  true,
         "use-isnan":                       true,
-        "variable-name":                   
+        "variable-name":
         [
             true,
             "allow-leading-underscore",

@@ -3,8 +3,10 @@ import IExpression from "@surface/expression/interfaces/expression";
 import SyntaxError from "@surface/expression/syntax-error";
 import parse       from "./parse";
 
-export default class BindParser
+export default class BindExpression
 {
+    private static readonly cache: Record<string, IExpression> = { };
+
     private readonly source: string;
 
     private readonly expressions: Array<IExpression> = [];
@@ -16,9 +18,14 @@ export default class BindParser
         this.source  = source;
     }
 
-    public static scan(source: string): IExpression
+    public static parse(source: string): IExpression
     {
-        return new BindParser(source).scan();
+        if (source in BindExpression.cache)
+        {
+            return BindExpression.cache[source];
+        }
+
+        return BindExpression.cache[source] = new BindExpression(source).scan();
     }
 
     private advance(): void

@@ -207,7 +207,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         }
         else if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
         {
-            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : this.evaluate(expression.property) as string;
+            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : `${this.evaluate(expression.property)}`;
 
             if (!this.brokenPath)
             {

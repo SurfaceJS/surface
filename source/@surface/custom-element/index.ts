@@ -1,21 +1,21 @@
-import { Action, Indexer, KeyValue, Nullable }                 from "@surface/core";
-import Reactive                                                from "@surface/reactive";
-import References                                              from "./internal/references";
-import { CONTEXT, OBSERVED_ATTRIBUTES, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
-import TemplateProcessor                                       from "./internal/template-processor";
+import { Action, Indexer, KeyValue, Nullable }               from "@surface/core";
+import Reactive                                              from "@surface/reactive";
+import References                                            from "./internal/references";
+import { OBSERVED_ATTRIBUTES, SCOPE, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
+import TemplateProcessor                                     from "./internal/template-processor";
 
 export default abstract class CustomElement extends HTMLElement
 {
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
     public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
 
-    private [CONTEXT]: Indexer = { };
+    private [SCOPE]: Indexer = { };
     private readonly [SHADOW_ROOT]: ShadowRoot;
     private readonly _references:   References;
 
     protected get context(): Indexer
     {
-        return this[CONTEXT];
+        return this[SCOPE];
     }
 
     public get references(): References

@@ -11,7 +11,7 @@
 <div *style="[[ `display: ${host.filterable ? 'flex' : 'none'};` ]]" vertical-align="center">
     <button type="button" on-click="{{ host.toogleFilters() }}" vertical-align="center">
         <surface-icon name="filter_list"></surface-icon>
-    </button> 
+    </button>
     <surface-modal id="modal" start-position="manual" stick="left">
         <surface-data-filter field="[[ host.field ]]" field-type="[[ host.fieldType ]]"></surface-data-filter>
     </surface-modal>

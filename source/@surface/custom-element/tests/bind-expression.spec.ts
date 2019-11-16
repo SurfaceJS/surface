@@ -2,7 +2,7 @@ import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import BindParser                              from "../internal/bind-parser";
+import BindExpression                          from "../internal/bind-expression";
 
 class Mock
 {
@@ -30,14 +30,14 @@ class Mock
 }
 
 @suite
-export default class BindParserSpec
+export default class BindExpressionSpec
 {
     @test @shouldPass
     public oneWayBind(): void
     {
         const scope = { this: new Mock() };
 
-        const expression = BindParser.scan("[[ this.value ]]");
+        const expression = BindExpression.parse("[[ this.value ]]");
 
         expect(expression.evaluate(scope)).to.equal(0);
 
@@ -48,7 +48,7 @@ export default class BindParserSpec
     @test @shouldPass
     public oneWayScapedExpression(): void
     {
-        const expression = BindParser.scan("This is an scaped expression \\[[ this.value ]]");
+        const expression = BindExpression.parse("This is an scaped expression \\[[ this.value ]]");
 
         expect(expression.evaluate({ })).to.equal("This is an scaped expression [[ this.value ]]");
     }
@@ -58,7 +58,7 @@ export default class BindParserSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindParser.scan("The value is: [[ this.value ]]");
+        const expression = BindExpression.parse("The value is: [[ this.value ]]");
 
         expect(expression.evaluate(scope)).to.deep.equal(["The value is: ", 0]);
 
@@ -85,7 +85,7 @@ export default class BindParserSpec
 
         const scope = { this: new Mock() };
 
-        const expression = BindParser.scan("{{ this.value }}");
+        const expression = BindExpression.parse("{{ this.value }}");
 
         expect(expression.evaluate(scope)).to.equal(0);
 
@@ -112,7 +112,7 @@ export default class BindParserSpec
 
         const scope = { this: new Mock() };
 
-        const expression = BindParser.scan("{{ this.value > 0 }}");
+        const expression = BindExpression.parse("{{ this.value > 0 }}");
 
         expect(expression.evaluate(scope)).to.equal(false);
 
@@ -125,7 +125,7 @@ export default class BindParserSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindParser.scan("Value: {{ this.value }}; Text: {{ this.text }}");
+        const expression = BindExpression.parse("Value: {{ this.value }}; Text: {{ this.text }}");
 
         expect(expression.evaluate(scope)).to.deep.equal(["Value: ", 0, "; Text: ", "Hello World!!!"]);
 
@@ -139,13 +139,13 @@ export default class BindParserSpec
     @test @shouldPass
     public twoWayScapedExpression(): void
     {
-        const expression = BindParser.scan("This is an scaped expression \\{{ this.value }}");
+        const expression = BindExpression.parse("This is an scaped expression \\{{ this.value }}");
         expect(expression.evaluate({ })).to.equal("This is an scaped expression {{ this.value }}");
     }
 
     @test @shouldFail
     public invalidSyntax(): void
     {
-        expect(() => BindParser.scan("This is my value: {{ this.? }}")).to.throw(Error, "Unexpected token ? at posistion 6");
+        expect(() => BindExpression.parse("This is my value: {{ this.? }}")).to.throw(Error, "Unexpected token ? at posistion 6");
     }
 }

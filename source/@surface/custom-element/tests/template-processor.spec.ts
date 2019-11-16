@@ -2,6 +2,7 @@ import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
+import { PROCESSED }                           from "../internal/symbols";
 import TemplateProcessor                       from "../internal/template-processor";
 
 @suite
@@ -231,19 +232,19 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateContentDirective(): void
+    public templateInjectDirective(): void
     {
         const root = document.createElement("div");
         const host = document.createElement("div");
 
-        host.innerHTML = "<template content='items'>World</template>";
+        host.innerHTML = "<template #inject:items>World</template>";
 
         const element = document.createElement("div");
 
         root.appendChild(host);
         host.appendChild(element);
 
-        element.innerHTML = "<span>Hello </span><template #content='items'></template><span>!!!</span>";
+        element.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
 
         TemplateProcessor.process(host, element);
         TemplateProcessor.process(root, host);
@@ -252,7 +253,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateContentDirectiveWithDefault(): void
+    public templateInjectorDirectiveWithDefault(): void
     {
         const root = document.createElement("div");
         const host = document.createElement("div");
@@ -262,7 +263,7 @@ export default class TemplateProcessorSpec
         root.appendChild(host);
         host.appendChild(element);
 
-        element.innerHTML = "<span>Hello </span><template #content='items'>Default</template><span>!!!</span>";
+        element.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
 
         TemplateProcessor.process(host, element);
         TemplateProcessor.process(root, host);
@@ -271,7 +272,33 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateForEachDirective(): void
+    public templateConditionalDirective(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { order?: number };
+
+        host.order = 1;
+
+        const element = document.createElement("div");
+
+        host.appendChild(element);
+
+        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(element.childNodes[1].textContent).to.equal("First");
+
+        host.order = 2;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Second");
+
+        host.order = 3;
+
+        chai.expect(element.childNodes[1].textContent).to.equal("Last");
+    }
+
+    @test @shouldPass
+    public templateLoopDirective(): void
     {
         const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
 
@@ -281,7 +308,7 @@ export default class TemplateProcessorSpec
 
         host.appendChild(element);
 
-        element.innerHTML = `<template #for="index of host.elements"><span>Element: {{ index }}</span></template>`;
+        element.innerHTML = `<template #for="const index of host.elements"><span>Element: {{ index }}</span></template>`;
 
         TemplateProcessor.process(host, element);
 
@@ -308,7 +335,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateForEachDirectiveWithArrayDestructuring(): void
+    public templateLoopDirectiveWithArrayDestructuring(): void
     {
         const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, number]> };
 
@@ -318,7 +345,7 @@ export default class TemplateProcessorSpec
 
         host.appendChild(element);
 
-        element.innerHTML = `<template #for="[index0, index1] of host.elements"><span>Element[0]: {{ index0 }}, Element[1]: {{ index1 }}</span></template>`;
+        element.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {{ index0 }}, Element[1]: {{ index1 }}</span></template>`;
 
         TemplateProcessor.process(host, element);
 
@@ -345,7 +372,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateForEachDirectiveWithArrayDestructuringDeepNested(): void
+    public templateLoopDirectiveWithArrayDestructuringDeepNested(): void
     {
         const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, { item: { name: string } }]> };
 
@@ -355,7 +382,7 @@ export default class TemplateProcessorSpec
 
         host.appendChild(element);
 
-        element.innerHTML = `<template #for="[index, { item: { name } }] of host.elements"><span>Element: {{ index }}, Name: {{ name }}</span></template>`;
+        element.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {{ index }}, Name: {{ name }}</span></template>`;
 
         TemplateProcessor.process(host, element);
 
@@ -391,7 +418,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateForEachDirectiveWithObjectDestructuring(): void
+    public templateLoopDirectiveWithObjectDestructuring(): void
     {
         const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, number]}> };
 
@@ -401,7 +428,7 @@ export default class TemplateProcessorSpec
 
         host.appendChild(element);
 
-        element.innerHTML = `<template #for="{ values: [value1, value2] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
+        element.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
 
         TemplateProcessor.process(host, element);
 
@@ -437,7 +464,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateForEachDirectiveWithObjectDestructuringDeepNested(): void
+    public templateLoopDirectiveWithObjectDestructuringDeepNested(): void
     {
         const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, [[number]]]}> };
 
@@ -447,7 +474,7 @@ export default class TemplateProcessorSpec
 
         host.appendChild(element);
 
-        element.innerHTML = `<template #for="{ values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
+        element.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {{ value1 }}, Element[1]: {{ value2 }}</span></template>`;
 
         TemplateProcessor.process(host, element);
 
@@ -483,29 +510,199 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public templateIfDirective(): void
+    public templateCompositeConditionalAndLoopDirectives(): void
     {
-        const host = document.createElement("div") as HTMLDivElement & { order?: number };
+        const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
 
-        host.order = 1;
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
 
         const element = document.createElement("div");
-
         host.appendChild(element);
 
-        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+        element.innerHTML =
+        `
+            <template #if="host.condition" #for="const [key, value] of host.items">
+                <span>{{key}}: {{value}}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
 
         TemplateProcessor.process(host, element);
 
-        chai.expect(element.childNodes[1].textContent).to.equal("First");
+        chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
 
-        host.order = 2;
+        host.condition = true;
 
-        chai.expect(element.childNodes[1].textContent).to.equal("Second");
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
+    }
 
-        host.order = 3;
+    @test @shouldPass
+    public templateCompositeLoopAndConditionalDirectives(): void
+    {
+        const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
 
-        chai.expect(element.childNodes[1].textContent).to.equal("Last");
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
+
+        const element = document.createElement("div");
+        host.appendChild(element);
+
+        element.innerHTML =
+        `
+            <template #for="const [key, value] of host.items" #if="host.condition">
+                <span>{{key}}: {{value}}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
+
+        TemplateProcessor.process(host, element);
+
+        chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
+
+        host.condition = true;
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
+    }
+
+    @test @shouldPass
+    public templateCompositeConditionalAndInjectDirectives(): void
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, item?: [string, number] };
+        const content = document.createElement("div");
+
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item }" #if="item[1] % 2 == 1">
+                <span>{{item[0]}}: {{item[1]}}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #injector:items="{ item: host.item }">
+                <span>Default</span>
+            </template>
+        `;
+
+        content.normalize();
+
+        host.appendChild(content);
+
+        host.normalize();
+
+        host[PROCESSED] = true;
+
+        host.item = ["Value", 1];
+
+        TemplateProcessor.process(host, content);
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 1");
+
+        host.item[1] = 2;
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal(undefined);
+
+        host.item[1] = 3;
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 3");
+    }
+
+    @test @shouldPass
+    public templateCompositeConditionalAndInjectorDirectives(): void
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, item?: [string, number] };
+        const content = document.createElement("div");
+
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{{key}}: {{value}}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #injector:items="{ item: host.item }" #if="host.condition">
+                <span>Default</span>
+            </template>
+        `;
+
+        host.appendChild(content);
+
+        host.condition = false;
+        host.item      = ["One", 1];
+
+        TemplateProcessor.process(host, content);
+
+        chai.expect(host.querySelector("span")).to.equal(null);
+
+        host[PROCESSED] = true;
+
+        host.condition = true;
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+    }
+
+    @test @shouldPass
+    public templateCompositeLoopAndInjectorDirectives(): void
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, items?: Array<[string, number]> };
+        const content = document.createElement("div");
+
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{{key}}: {{value}}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #for="const item of host.items" #injector:items="{ item }">
+                <span>Default</span>
+            </template>
+        `;
+
+        host.appendChild(content);
+
+        host.condition = false;
+        host.items     = [];
+
+        TemplateProcessor.process(host, content);
+
+        chai.expect(host.querySelector("span")).to.equal(null);
+
+        host[PROCESSED] = true;
+
+        host.items =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3]
+        ];
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
     }
 
     @test @shouldFail

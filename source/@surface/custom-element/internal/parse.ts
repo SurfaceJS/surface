@@ -1,9 +1,14 @@
 import Expression  from "@surface/expression";
 import IExpression from "@surface/expression/interfaces/expression";
 
-const expressionCache: Record<string, IExpression> = { };
+const cache: Record<string, IExpression> = { };
 
 export default function parse(expression: string): IExpression
 {
-    return expressionCache[expression] = expressionCache[expression] ?? Expression.parse(expression);
+    if (expression in cache)
+    {
+        return cache[expression];
+    }
+
+    return cache[expression] = Expression.parse(expression);
 }
