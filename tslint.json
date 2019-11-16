@@ -5,8 +5,8 @@
         "exclude":
         [
             "**/*.json",
-            "**/node_modules/*.d.ts",
-            "**/node_modules/*.ts",
+            "**/node_modules/**/*.d.ts",
+            "**/node_modules/**/*.ts",
             "*.json"
         ]
     },
