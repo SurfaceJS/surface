@@ -29,7 +29,7 @@ export default class Reactive
 
             const [endpoint, dependency, observer] = Reactive.observePath(value, keys);
 
-            reactor.setDependency(key, dependency);
+            reactor.dependencies.set(key, dependency);
 
             return [endpoint, reactor, observer];
         }
@@ -45,9 +45,9 @@ export default class Reactive
     {
         const reactor = Reactor.makeReactive(target, key);
 
-        const observer = reactor.getObserver(key) ?? new Observer();
+        const observer = reactor.observers.get(key) ?? new Observer();
 
-        reactor.setObserver(key, observer);
+        reactor.observers.set(key, observer);
 
         return [reactor, observer];
     }
@@ -55,6 +55,11 @@ export default class Reactive
     public static getReactor(target: Indexer|Array<unknown>): Nullable<IReactor>
     {
         return (target as { [REACTOR]?: IReactor })[REACTOR];
+    }
+
+    public static hasObserver<T extends object>(target: T, key: keyof T): boolean
+    {
+        return Reactive.getReactor(target as Indexer)?.observers.has(key as string) ?? false;
     }
 
     public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];

@@ -78,12 +78,12 @@ export default class ReactorSpec
         instanceEmmiterValueObserver.subscribe({ notify: x => instanceEmmiterValueListener = x });
         rawEmmiterValueObserver.subscribe({ notify: x => rawEmmiterValueListerner = x });
 
-        Reactor.makeReactive(instanceEmmiter, "getValue").setObserver("getValue", instanceEmmiterGetValueObserver);
-        Reactor.makeReactive(instanceEmmiter, "value").setObserver("value", instanceEmmiterValueObserver);
+        Reactor.makeReactive(instanceEmmiter, "getValue").observers.set("getValue", instanceEmmiterGetValueObserver);
+        Reactor.makeReactive(instanceEmmiter, "value").observers.set("value", instanceEmmiterValueObserver);
         Reactor.makeReactive(instanceReadonlyEmmiter, "nonReactiveValue");
-        Reactor.makeReactive(instanceReadonlyEmmiter, "value").setObserver("value", instanceReadonlyEmmiterObserver);
+        Reactor.makeReactive(instanceReadonlyEmmiter, "value").observers.set("value", instanceReadonlyEmmiterObserver);
         Reactor.makeReactive(rawEmmiter, "nonReactiveValue");
-        Reactor.makeReactive(rawEmmiter, "value").setObserver("value", rawEmmiterValueObserver);
+        Reactor.makeReactive(rawEmmiter, "value").observers.set("value", rawEmmiterValueObserver);
 
         chai.expect(() => Reactor.makeReactive(rawEmmiter, "value")).to.not.throw();
         chai.expect(instanceEmmiter[TRACKED_KEYS]).to.deep.equal(["getValue", "value"]);
@@ -128,10 +128,10 @@ export default class ReactorSpec
         values01Observer.subscribe({ notify: x => listener.values[1][0] = x });
         values01ValueObserver.subscribe({ notify: x => listener.values[1][0].value = x });
 
-        Reactor.makeReactive(emmiter.values, 0).setObserver("0", values0Observer);
-        Reactor.makeReactive(emmiter.values, 1).setObserver("1", values1Observer);
-        Reactor.makeReactive(emmiter.values[1], 0).setObserver("0", values01Observer);
-        Reactor.makeReactive(emmiter.values[1][0], "value").setObserver("value", values01ValueObserver);
+        Reactor.makeReactive(emmiter.values, 0).observers.set("0", values0Observer);
+        Reactor.makeReactive(emmiter.values, 1).observers.set("1", values1Observer);
+        Reactor.makeReactive(emmiter.values[1], 0).observers.set("0", values01Observer);
+        Reactor.makeReactive(emmiter.values[1][0], "value").observers.set("value", values01ValueObserver);
 
         chai.expect(Reactive.getReactor(emmiter.values)).to.instanceOf(Reactor);
         chai.expect(Reactive.getReactor(emmiter.values[1])).to.instanceOf(Reactor);
@@ -174,9 +174,9 @@ export default class ReactorSpec
         const reactorA = Reactor.makeReactive(emmiter,   "a");
         const reactorB = Reactor.makeReactive(emmiter.a, "b");
 
-        reactorA.setDependency("a", reactorB);
+        reactorA.dependencies.set("a", reactorB);
 
-        chai.expect(reactorA.getDependency("a")).to.equal(reactorB);
+        chai.expect(reactorA.dependencies.get("a")).to.equal(reactorB);
     }
 
     @test @shouldPass
@@ -188,9 +188,9 @@ export default class ReactorSpec
 
         const observer = new Observer();
 
-        reactor.setObserver("a", new Observer());
+        reactor.observers.set("a", new Observer());
 
-        chai.expect(reactor.getObserver("a")).to.deep.equal(observer);
+        chai.expect(reactor.observers.get("a")).to.deep.equal(observer);
     }
 
     @test @shouldPass
@@ -205,7 +205,7 @@ export default class ReactorSpec
 
         observer.subscribe({ notify: (x: number) => receiver.value = x });
 
-        reactor.setObserver("value", observer);
+        reactor.observers.set("value", observer);
 
         reactor.notify(null);
 
@@ -238,14 +238,14 @@ export default class ReactorSpec
         const reactorB = Reactor.makeReactive(emmiter.a, "b");
         const reactor  = Reactor.makeReactive(emmiter.a.b, "value");
 
-        reactorA.setDependency("a", reactorB);
-        reactorB.setDependency("b", reactor);
+        reactorA.dependencies.set("a", reactorB);
+        reactorB.dependencies.set("b", reactor);
 
         const observer = new Observer<number>();
 
         observer.subscribe({ notify: x => receiver.value = x });
 
-        reactor.setObserver("value", observer);
+        reactor.observers.set("value", observer);
 
         reactorA.notify({ a: { b: { value: 2 } }});
 
@@ -268,9 +268,9 @@ export default class ReactorSpec
 
         receiverAObserver.subscribe({ notify: x => receiverA.value = x });
 
-        emmiterAReactorA.setDependency("a", emmiterAReactorB);
-        emmiterAReactorB.setDependency("b", emmiterAReactorValue);
-        emmiterAReactorValue.setObserver("value", receiverAObserver);
+        emmiterAReactorA.dependencies.set("a", emmiterAReactorB);
+        emmiterAReactorB.dependencies.set("b", emmiterAReactorValue);
+        emmiterAReactorValue.observers.set("value", receiverAObserver);
 
         const emmiterBReactorA     = Reactor.makeReactive(emmiterB, "a");
         const emmiterBReactorB     = Reactor.makeReactive(emmiterB.a, "b");
@@ -280,9 +280,9 @@ export default class ReactorSpec
 
         receiverAObserver.subscribe({ notify: x => receiverA.value = x });
 
-        emmiterBReactorA.setDependency("a", emmiterBReactorB);
-        emmiterBReactorB.setDependency("b", emmiterBReactorValue);
-        emmiterBReactorValue.setObserver("value", receiverBObserver);
+        emmiterBReactorA.dependencies.set("a", emmiterBReactorB);
+        emmiterBReactorB.dependencies.set("b", emmiterBReactorValue);
+        emmiterBReactorValue.observers.set("value", receiverBObserver);
 
         const oldA = emmiterA.a;
 
@@ -370,12 +370,12 @@ export default class ReactorSpec
         const observerB = new Observer();
         const observer  = new Observer();
 
-        reactorA.setObserver("a", observerA);
-        reactorB.setObserver("b", observerB);
-        reactor.setObserver("value", observer);
+        reactorA.observers.set("a", observerA);
+        reactorB.observers.set("b", observerB);
+        reactor.observers.set("value", observer);
 
-        reactorA.setDependency("a", reactorB);
-        reactorB.setDependency("b", reactor);
+        reactorA.dependencies.set("a", reactorB);
+        reactorB.dependencies.set("b", reactor);
 
         const newValue = { b: { value: 1, [REACTOR]: undefined }, [REACTOR]: undefined };
 

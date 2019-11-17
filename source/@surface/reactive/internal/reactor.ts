@@ -1,4 +1,4 @@
-import { Indexer, Nullable }              from "@surface/core";
+import { Indexer }                        from "@surface/core";
 import { hasValue, typeGuard }            from "@surface/core/common/generic";
 import Type                               from "@surface/reflection";
 import FieldInfo                          from "@surface/reflection/field-info";
@@ -14,10 +14,20 @@ export default class Reactor
 {
     private static readonly stack: Array<Reactor> = [];
 
-    private readonly dependencies:          Map<string, Reactor>                    = new Map();
-    private readonly observers:             Map<string, IObserver>                  = new Map();
+    private readonly _dependencies:         Map<string, Reactor>                    = new Map();
+    private readonly _observers:            Map<string, IObserver>                  = new Map();
     private readonly propertySubscriptions: Map<string, Set<IPropertySubscription>> = new Map();
     private readonly registries:            Set<Reactor>                            = new Set();
+
+    public get dependencies(): Map<string, Reactor>
+    {
+        return this._dependencies;
+    }
+
+    public get observers(): Map<string, IObserver>
+    {
+        return this._observers;
+    }
 
     private static notify(target: Reactiveable, key: string, value: unknown): void
     {
@@ -229,12 +239,12 @@ export default class Reactor
             }
         }
 
-        for (const [key, dependency] of this.dependencies)
+        for (const [key, dependency] of this._dependencies)
         {
             dependency.notify(value[key]);
         }
 
-        for (const [key, observer] of this.observers)
+        for (const [key, observer] of this._observers)
         {
             const keyValue = value[key];
 
@@ -262,20 +272,20 @@ export default class Reactor
             subscription.update(target);
         }
 
-        this.dependencies.get(key)?.notify(value);
+        this._dependencies.get(key)?.notify(value);
 
-        this.observers.get(key)?.notify(value);
+        this._observers.get(key)?.notify(value);
     }
 
     private register(target: Reactiveable, registry: Reactor): void
     {
         if (registry != this)
         {
-            for (const [key, dependency] of this.dependencies)
+            for (const [key, dependency] of this._dependencies)
             {
-                if (registry.dependencies.has(key))
+                if (registry._dependencies.has(key))
                 {
-                    dependency.register(target[key] as Indexer, registry.dependencies.get(key)!);
+                    dependency.register(target[key] as Indexer, registry._dependencies.get(key)!);
                 }
                 else
                 {
@@ -285,13 +295,13 @@ export default class Reactor
 
                     const reactor = value[REACTOR] = value[REACTOR] ?? new Reactor();
 
-                    registry.dependencies.set(key, reactor);
+                    registry._dependencies.set(key, reactor);
 
                     dependency.register(value, reactor);
                 }
             }
 
-            for (const key of this.observers.keys())
+            for (const key of this._observers.keys())
             {
                 Reactor.makeReactive(target, key);
             }
@@ -304,7 +314,7 @@ export default class Reactor
 
     private unregister(): void
     {
-        for (const dependency of this.dependencies.values())
+        for (const dependency of this._dependencies.values())
         {
             dependency.unregister();
         }
@@ -315,16 +325,6 @@ export default class Reactor
         }
 
         this.registries.clear();
-    }
-
-    public getDependency(key: string): Nullable<Reactor>
-    {
-        return this.dependencies.get(key);
-    }
-
-    public getObserver(key: string): Nullable<IObserver>
-    {
-        return this.observers.get(key);
     }
 
     public notify(value: unknown): void;
@@ -362,16 +362,6 @@ export default class Reactor
         Reactor.stack.pop();
     }
 
-    public setDependency(key: string, dependency: Reactor): void
-    {
-        this.dependencies.set(key, dependency);
-    }
-
-    public setObserver(key: string, observer: IObserver): void
-    {
-        this.observers.set(key, observer);
-    }
-
     public setPropertySubscription(key: string, subscription: IPropertySubscription): void
     {
         const subscriptions = this.propertySubscriptions.get(key) ?? new Set();
@@ -385,7 +375,7 @@ export default class Reactor
 
     public update(key: string, value: unknown)
     {
-        const dependency = this.dependencies.get(key);
+        const dependency = this._dependencies.get(key);
 
         if (dependency)
         {

@@ -24,7 +24,7 @@ export default class PropertySubscriptionSpec
 
         const subscription = new PropertySubscription(listener, observer);
 
-        reactor.setObserver("value", observer);
+        reactor.observers.set("value", observer);
         reactor.setPropertySubscription("value", subscription);
 
         let unsubscribed = false;

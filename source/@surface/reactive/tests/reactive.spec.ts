@@ -22,6 +22,19 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
+    public hasObserver(): void
+    {
+        const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
+        const receiver = { instance: { name: "Receiver", value: 2 }};
+
+        chai.expect(Reactive.hasObserver(emmiter.instance, "value")).to.equal(false);
+
+        Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x });
+
+        chai.expect(Reactive.hasObserver(emmiter.instance, "value")).to.equal(true);
+    }
+
+    @test @shouldPass
     public observeProperty(): void
     {
         const emmiter   = { instance: { name: "Emmiter",  value: 1 }};
