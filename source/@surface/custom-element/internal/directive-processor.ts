@@ -1,108 +1,118 @@
-import { Action1, Action2, Indexer, Nullable }                        from "@surface/core";
-import { contains }                                                   from "@surface/core/common/array";
-import { typeGuard }                                                  from "@surface/core/common/generic";
-import Expression                                                     from "@surface/expression";
-import Evaluate                                                       from "@surface/expression/evaluate";
-import IArrowFunctionExpression                                       from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                                                    from "@surface/expression/interfaces/expression";
-import ISubscription                                                  from "@surface/reactive/interfaces/subscription";
-import createProxy                                                    from "./create-proxy";
-import ObserverVisitor                                                from "./observer-visitor";
-import parse                                                          from "./parse";
-import { INJECTED_TEMPLATES, INJECTOR, ON_PROCESS, PROCESSED, SCOPE } from "./symbols";
-import TemplateProcessor                                              from "./template-processor";
-
-type Bindable<T extends object> = T &
+import { Action2, Indexer, Nullable }                       from "@surface/core";
+import { contains }                                         from "@surface/core/common/array";
+import { typeGuard }                                        from "@surface/core/common/generic";
+import Expression                                           from "@surface/expression";
+import Evaluate                                             from "@surface/expression/evaluate";
+import IArrowFunctionExpression                             from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                                          from "@surface/expression/interfaces/expression";
+import ISubscription                                        from "@surface/reactive/interfaces/subscription";
+import createProxy                                          from "./create-proxy";
+import ObserverVisitor                                      from "./observer-visitor";
+import parse                                                from "./parse";
+import
 {
-    [SCOPE]?:              Indexer;
-    [ON_PROCESS]?:         Action1<Indexer>;
-    [PROCESSED]?:          boolean;
-    [INJECTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>;
-};
+    INJECTED_TEMPLATES,
+    ON_PROCESS,
+    ON_REMOVED,
+    PROCESSED,
+    SCOPE,
+    SUBSCRIPTIONS
+} from "./symbols";
+import TemplateProcessor from "./template-processor";
+import { Bindable }      from "./type";
 
-type HTMLTemplateElementDirective = HTMLTemplateElement &
-{
-    [INJECTOR]?: string;
-};
+const __DECOPOSED__ = "__DECOPOSED__";
+const __INJECTOR__  = "__INJECTOR__";
+const HASH_ELSE     = "#else";
+const HASH_ELSE_IF  = "#else-if";
+const HASH_FOR      = "#for";
+const HASH_IF       = "#if";
+const HASH_INJECT   = "#inject";
+const HASH_INJECTOR = "#injector";
 
 export default class DirectiveProcessor
 {
-    private static decomposeDirectives(template: HTMLTemplateElementDirective): void
+    private static decomposeDirectives(template: HTMLTemplateElement): void
     {
-        const attributes = template.getAttributeNames();
-
-        const organize = (template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement) =>
+        if (!template.hasAttribute(__DECOPOSED__))
         {
-            Array.from(template.content.childNodes).forEach(x => x.remove());
+            const attributes = template.getAttributeNames();
 
-            DirectiveProcessor.decomposeDirectives(innerTemplate);
-
-            template.content.appendChild(innerTemplate);
-        };
-
-        if (attributes.length > 0)
-        {
-            const injectKey   = attributes.filter(x => x.startsWith("#inject:"))[0]   as string|null;
-            const injectorKey = attributes.filter(x => x.startsWith("#injector:"))[0] as string|null;
-
-            if (injectKey && (contains(attributes, ["#if", "#else-if", "#else"]) || attributes.includes("#for") || injectorKey))
+            const organize = (template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement) =>
             {
-                const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+                Array.from(template.content.childNodes).forEach(x => x.remove());
 
-                template.removeAttribute("#if");
-                template.removeAttribute("#else-if");
-                template.removeAttribute("#else");
-                template.removeAttribute("#for");
+                DirectiveProcessor.decomposeDirectives(innerTemplate);
 
-                if (injectorKey)
-                {
-                    template.removeAttribute(injectorKey);
-                }
+                template.content.appendChild(innerTemplate);
+            };
 
-                innerTemplate.removeAttribute(injectKey);
-
-                organize(template, innerTemplate);
-            }
-            else if (contains(attributes, ["#if", "#else-if", "#else"]))
+            if (attributes.length > 0)
             {
-                if (template.nextElementSibling?.tagName == "TEMPLATE" && contains(template.nextElementSibling.getAttributeNames(), ["#else-if", "#else"]))
-                {
-                    DirectiveProcessor.decomposeDirectives(template.nextElementSibling as HTMLTemplateElement);
-                }
+                const injectKey   = attributes.filter(x => x.startsWith(HASH_INJECT + ":"))[0]   as string|null;
+                const injectorKey = attributes.filter(x => x.startsWith(HASH_INJECTOR + ":"))[0] as string|null;
 
-                if (attributes.includes("#for") || injectorKey)
+                if (injectKey && (contains(attributes, [HASH_IF, HASH_ELSE_IF, HASH_ELSE]) || attributes.includes(HASH_FOR) || injectorKey))
                 {
                     const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
-                    template.removeAttribute("#for");
+                    template.removeAttribute(HASH_IF);
+                    template.removeAttribute(HASH_ELSE_IF);
+                    template.removeAttribute(HASH_ELSE);
+                    template.removeAttribute(HASH_FOR);
 
                     if (injectorKey)
                     {
                         template.removeAttribute(injectorKey);
                     }
 
-                    innerTemplate.removeAttribute("#if");
-                    innerTemplate.removeAttribute("#else-if");
-                    innerTemplate.removeAttribute("#else");
+                    innerTemplate.removeAttribute(injectKey);
 
                     organize(template, innerTemplate);
                 }
-            }
-            else if (attributes.includes("#for") && injectorKey)
-            {
-                const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+                else if (contains(attributes, [HASH_IF, HASH_ELSE_IF, HASH_ELSE]))
+                {
+                    if (template.nextElementSibling?.tagName == "TEMPLATE" && contains(template.nextElementSibling.getAttributeNames(), [HASH_ELSE_IF, HASH_ELSE]))
+                    {
+                        DirectiveProcessor.decomposeDirectives(template.nextElementSibling as HTMLTemplateElement);
+                    }
 
-                template.removeAttribute(injectorKey);
+                    if (attributes.includes(HASH_FOR) || injectorKey)
+                    {
+                        const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
 
-                innerTemplate.removeAttribute("#for");
+                        template.removeAttribute(HASH_FOR);
 
-                organize(template, innerTemplate);
-            }
-            else if (injectorKey)
-            {
-                template[INJECTOR] = injectorKey.split(":")[1];
+                        if (injectorKey)
+                        {
+                            template.removeAttribute(injectorKey);
+                        }
+
+                        innerTemplate.removeAttribute(HASH_IF);
+                        innerTemplate.removeAttribute(HASH_ELSE_IF);
+                        innerTemplate.removeAttribute(HASH_ELSE);
+
+                        organize(template, innerTemplate);
+                    }
+                }
+                else if (attributes.includes(HASH_FOR) && injectorKey)
+                {
+                    const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+
+                    template.removeAttribute(injectorKey);
+
+                    innerTemplate.removeAttribute(HASH_FOR);
+
+                    organize(template, innerTemplate);
+                }
+                else if (injectorKey)
+                {
+                    template.setAttribute(__INJECTOR__, injectorKey.split(":")[1]);
+                }
             }
         }
+
+        template.setAttribute(__DECOPOSED__, "");
     }
 
     private static processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
@@ -112,6 +122,8 @@ export default class DirectiveProcessor
 
         const expressions:   Array<[IExpression, HTMLTemplateElement]> = [];
         const subscriptions: Array<ISubscription>                      = [];
+
+        (start as Bindable<Node>)[ON_REMOVED] = () => subscriptions.forEach(x => x.unsubscribe());
 
         const notify = () =>
         {
@@ -127,6 +139,9 @@ export default class DirectiveProcessor
             while ((simbling = start.nextSibling) && simbling != end)
             {
                 simbling.remove();
+
+                (simbling as Bindable<Node>)[ON_REMOVED]?.();
+
                 TemplateProcessor.clear(simbling);
             }
 
@@ -149,9 +164,9 @@ export default class DirectiveProcessor
 
         const listener = { notify };
 
-        const expression = parse(template.getAttribute("#if")!);
+        const expression = parse(template.getAttribute(HASH_IF)!);
 
-        subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+        subscriptions.push(ObserverVisitor.observe(expression, scope, listener, true));
 
         expressions.push([expression, template]);
 
@@ -159,11 +174,11 @@ export default class DirectiveProcessor
 
         while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
         {
-            if (simbling.hasAttribute("#else-if"))
+            if (simbling.hasAttribute(HASH_ELSE_IF))
             {
-                const expression = parse(simbling.getAttribute("#else-if")!);
+                const expression = parse(simbling.getAttribute(HASH_ELSE_IF)!);
 
-                subscriptions.push(ObserverVisitor.observe(expression, scope, listener));
+                subscriptions.push(ObserverVisitor.observe(expression, scope, listener, true));
 
                 expressions.push([expression, simbling]);
 
@@ -173,7 +188,7 @@ export default class DirectiveProcessor
 
                 simbling = next;
             }
-            else if (simbling.hasAttribute("#else"))
+            else if (simbling.hasAttribute(HASH_ELSE))
             {
                 simbling.remove();
 
@@ -199,11 +214,11 @@ export default class DirectiveProcessor
         const end   = document.createComment("for-directive-end");
 
         const forExpression = /(?:const|var|let)\s+(.*)\s+(in|of)\s+(.*)/;
-        const rawExpression = template.getAttribute("#for")!;
+        const rawExpression = template.getAttribute(HASH_FOR)!;
 
         if (!forExpression.test(rawExpression))
         {
-            throw new Error(`Invalid #for directive expression: ${rawExpression}`);
+            throw new Error(`Invalid ${HASH_FOR} directive expression: ${rawExpression}`);
         }
 
         const [, aliasExpression, operator, iterableExpression] = forExpression.exec(rawExpression)!.map(x => x.trim());
@@ -249,8 +264,8 @@ export default class DirectiveProcessor
                     content.normalize();
 
                     const mergedScope = destructured ?
-                        { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope }
-                        : { ...scope, [aliasExpression]: element };
+                        { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope, [SUBSCRIPTIONS]: [] }
+                        : { ...scope, [aliasExpression]: element, [SUBSCRIPTIONS]: [] };
 
                     TemplateProcessor.process(host, content, mergedScope);
 
@@ -259,6 +274,9 @@ export default class DirectiveProcessor
                         for (const child of cache[index][1])
                         {
                             child.remove();
+
+                            (child as Bindable<Node>)[ON_REMOVED]?.();
+
                             TemplateProcessor.clear(child);
                         }
 
@@ -300,6 +318,9 @@ export default class DirectiveProcessor
                         for (const child of childs)
                         {
                             child.remove();
+
+                            (child as Bindable<Node>)[ON_REMOVED]?.();
+
                             TemplateProcessor.clear(child);
                         }
                     }
@@ -316,7 +337,9 @@ export default class DirectiveProcessor
 
         const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
 
-        const subscription = ObserverVisitor.observe(expression, scope, { notify });
+        const subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+
+        (start as Bindable<Node>)[ON_REMOVED] = () => subscription.unsubscribe();
 
         parent.replaceChild(end, template);
         parent.insertBefore(start, end);
@@ -324,19 +347,19 @@ export default class DirectiveProcessor
         notify();
     }
 
-    private static processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElementDirective, parent: Node, scope: Indexer): void
+    private static processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
     {
         const start = document.createComment("injector-directive-start");
         const end   = document.createComment("injector-directive-end");
 
-        const injectorKey   = template[INJECTOR]!;
-        const injectorScope = template.getAttribute(`#injector:${injectorKey}`);
+        const injectorKey   = template.getAttribute(__INJECTOR__)!;
+        const injectorScope = template.getAttribute(`${HASH_INJECTOR}:${injectorKey}`);
 
         const injectedTemplates = host[INJECTED_TEMPLATES] = host[INJECTED_TEMPLATES] ?? new Map<string, Nullable<HTMLTemplateElement>>();
 
         if (!injectedTemplates.has(injectorKey))
         {
-            const injectionTemplate = host.querySelector<HTMLTemplateElement>(`template[\\#inject\\:${injectorKey}]`);
+            const injectionTemplate = host.querySelector<HTMLTemplateElement>(`template[\\${HASH_INJECT}\\:${injectorKey}]`);
 
             if (injectionTemplate)
             {
@@ -350,7 +373,7 @@ export default class DirectiveProcessor
 
         DirectiveProcessor.decomposeDirectives(injectionTemplate);
 
-        const scopeExpression = injectionTemplate.getAttribute(`#inject:${injectorKey}`) || "scope";
+        const scopeExpression = injectionTemplate.getAttribute(`${HASH_INJECT}:${injectorKey}`) || "__scope__";
 
         const expression = parse(`(${injectorScope || "{ }"})`);
 
@@ -365,7 +388,7 @@ export default class DirectiveProcessor
 
         const pattern = (parse(`(${scopeExpression}) => 0`) as IArrowFunctionExpression).parameters[0];
 
-        const apply = (outterScope: Indexer) =>
+        const notify = () =>
         {
             if (!end.parentNode)
             {
@@ -379,6 +402,9 @@ export default class DirectiveProcessor
             while ((simbling = start.nextSibling) && simbling != end)
             {
                 simbling.remove();
+
+                (simbling as Bindable<Node>)[ON_REMOVED]?.();
+
                 TemplateProcessor.clear(simbling);
             }
 
@@ -387,8 +413,8 @@ export default class DirectiveProcessor
                 : { elementScope: expression.evaluate(proxyScope) as Indexer, scopeAlias: scopeExpression };
 
             const mergedScope = isDestructured ?
-                { ...elementScope, ...outterScope }
-                : { [scopeAlias]: elementScope, ...outterScope };
+                { ...elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] }
+                : { [scopeAlias]: elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] };
 
             const content = document.importNode(injectionTemplate.content, true);
 
@@ -399,31 +425,33 @@ export default class DirectiveProcessor
             end.parentNode.insertBefore(content, end);
         };
 
-        subscription = ObserverVisitor.observe(expression, proxyScope, { notify: () => apply(host[SCOPE] as Indexer) });
+        subscription = ObserverVisitor.observe(expression, proxyScope, { notify }, true);
+
+        (start as Bindable<Node>)[ON_REMOVED] = () => subscription.unsubscribe();
 
         if (!host[PROCESSED])
         {
             const onAfterBinded = host[ON_PROCESS];
 
-            host[ON_PROCESS] = function(outterScope: Indexer)
+            host[ON_PROCESS] = function()
             {
                 if (onAfterBinded)
                 {
-                    onAfterBinded.call(this, outterScope);
+                    onAfterBinded.call(this);
                 }
 
-                apply(outterScope);
+                notify();
 
                 host[ON_PROCESS] = onAfterBinded;
             };
         }
         else
         {
-            apply(host[SCOPE] as Indexer);
+            notify();
         }
     }
 
-    public static process(host: Element|Node, template: HTMLTemplateElementDirective, scope: Indexer): void
+    public static process(host: Element|Node, template: HTMLTemplateElement, scope: Indexer): void
     {
         if (!template.parentNode)
         {
@@ -434,15 +462,15 @@ export default class DirectiveProcessor
 
         DirectiveProcessor.decomposeDirectives(template);
 
-        if (template.hasAttribute("#if"))
+        if (template.hasAttribute(HASH_IF))
         {
             DirectiveProcessor.processConditionalDirectives(host, template, parent, scope);
         }
-        else if (template.hasAttribute("#for"))
+        else if (template.hasAttribute(HASH_FOR))
         {
             DirectiveProcessor.processForDirectives(host, template, parent, scope);
         }
-        else if (!!template[INJECTOR] && "querySelector" in host)
+        else if (!!template.hasAttribute("__INJECTOR__") && "querySelector" in host)
         {
             DirectiveProcessor.processInjectorDirectives(host, template, parent, scope);
         }

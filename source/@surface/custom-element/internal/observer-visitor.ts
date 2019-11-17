@@ -21,9 +21,9 @@ import IThisExpression           from "@surface/expression/interfaces/this-expre
 import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
 import TypeGuard                 from "@surface/expression/internal/type-guard";
 import NodeType                  from "@surface/expression/node-type";
-import Reactive                  from "@surface/reactive";
 import IListener                 from "@surface/reactive/interfaces/listener";
 import ISubscription             from "@surface/reactive/interfaces/subscription";
+import DataBind                  from "./data-bind";
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
@@ -43,7 +43,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         this.scope = scope;
     }
 
-    public static observe(expression: IExpression, scope: Indexer, listener: IListener, notifyImmediately?: boolean): ISubscription
+    public static observe(expression: IExpression, scope: Indexer, listener: IListener, lazy: boolean): ISubscription
     {
         const visitor       = new ObserverVisitor(scope);
         const subscriptions = [] as Array<ISubscription>;
@@ -56,17 +56,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (path.length > 1)
             {
-                if (notifyImmediately)
-                {
-                    subscriptions.push(Reactive.observe(scope, path, listener)[2]);
-                }
-                else
-                {
-                    const observer = Reactive.observe(scope, path)[1];
-
-                    subscriptions.push(observer.subscribe(listener));
-                }
-
+                subscriptions.push(DataBind.oneWay(scope, path, listener, lazy)[1]);
             }
         }
 

@@ -1,34 +1,27 @@
-import { Action, Action1, Indexer, Nullable } from "@surface/core";
-import { typeGuard }                          from "@surface/core/common/generic";
-import { getKeyMember }                       from "@surface/core/common/object";
-import { dashedToCamel }                      from "@surface/core/common/string";
-import IArrayExpression                       from "@surface/expression/interfaces/array-expression";
-import IExpression                            from "@surface/expression/interfaces/expression";
-import NodeType                               from "@surface/expression/node-type";
-import Type                                   from "@surface/reflection";
-import FieldInfo                              from "@surface/reflection/field-info";
-import PropertyInfo                           from "@surface/reflection/property-info";
-import BindExpression                         from "./bind-expression";
-import createProxy                            from "./create-proxy";
-import DataBind                               from "./data-bind";
-import DirectiveProcessor                     from "./directive-processor";
-import ObserverVisitor                        from "./observer-visitor";
+import { Action, Indexer }  from "@surface/core";
+import { typeGuard }        from "@surface/core/common/generic";
+import { getKeyMember }     from "@surface/core/common/object";
+import { dashedToCamel }    from "@surface/core/common/string";
+import IArrayExpression     from "@surface/expression/interfaces/array-expression";
+import IExpression          from "@surface/expression/interfaces/expression";
+import NodeType             from "@surface/expression/node-type";
+import ISubscription        from "@surface/reactive/interfaces/subscription";
+import Type                 from "@surface/reflection";
+import FieldInfo            from "@surface/reflection/field-info";
+import PropertyInfo         from "@surface/reflection/property-info";
+import BindExpression       from "./bind-expression";
+import { pushSubscription } from "./common";
+import createProxy          from "./create-proxy";
+import DataBind             from "./data-bind";
+import DirectiveProcessor   from "./directive-processor";
+import ObserverVisitor      from "./observer-visitor";
 import
 {
-    INJECTED_TEMPLATES,
     ON_PROCESS,
     PROCESSED,
-    SCOPE
-}
+    SCOPE}
 from "./symbols";
-
-type Bindable<T extends object> = T &
-{
-    [SCOPE]?:              Indexer;
-    [ON_PROCESS]?:         Action1<Indexer>;
-    [PROCESSED]?:          boolean;
-    [INJECTED_TEMPLATES]?: Map<string, Nullable<HTMLTemplateElement>>;
-};
+import { Bindable } from "./type";
 
 export default class TemplateProcessor
 {
@@ -36,7 +29,7 @@ export default class TemplateProcessor
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
         oneWay:   /^\[\[.*\]\]$/,
-        path:     /^(?:\{\{|\[\[)\s*(\w+(?:\.\w+)*)\s*(?:\]\]|\}\})$/,
+        path:     /^(?:\{\{|\[\[)\s*((?!\d)\w+(?:\.(?!\d)\w+)+)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
     private readonly host:   Node|Element;
@@ -124,7 +117,9 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
                         };
 
-                        DataBind.oneWay(target, path, { notify });
+                        const subscription = DataBind.oneWay(target, path, { notify })[1];
+
+                        pushSubscription(element, subscription);
 
                         const canBindLeft  = elementMember instanceof FieldInfo && !elementMember.readonly;
                         const canBindRigth = targetMember instanceof FieldInfo && !targetMember.readonly;
@@ -152,7 +147,9 @@ export default class TemplateProcessor
                             attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
                         };
 
-                        ObserverVisitor.observe(expression, scope, { notify });
+                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+
+                        pushSubscription(element, subscription);
 
                         notifications.push(notify);
                     }
@@ -171,9 +168,11 @@ export default class TemplateProcessor
 
             const match = this.expressions.path.exec(element.nodeValue);
 
+            let subscription: ISubscription;
+
             if (match)
             {
-                DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${value ?? ""}` });
+                subscription = DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${value ?? ""}` })[1];
             }
             else
             {
@@ -183,10 +182,12 @@ export default class TemplateProcessor
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
                     () => element.nodeValue = `${expression.evaluate(scope) ?? ""}`;
 
-                ObserverVisitor.observe(expression, scope, { notify });
+                subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
                 notify();
             }
+
+            pushSubscription(element, subscription);
         }
     }
 
@@ -194,10 +195,7 @@ export default class TemplateProcessor
     {
         if (!node[PROCESSED])
         {
-            if (node[ON_PROCESS])
-            {
-                node[ON_PROCESS]!(this.scope);
-            }
+            node[ON_PROCESS]?.();
 
             for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
             {
@@ -209,7 +207,7 @@ export default class TemplateProcessor
                 {
                     element[SCOPE] = this.scope;
 
-                    if (element.attributes && element.attributes.length > 0)
+                    if (element.attributes?.length > 0)
                     {
                         this.bindAttributes(element);
                     }

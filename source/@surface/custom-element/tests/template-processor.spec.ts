@@ -589,7 +589,7 @@ export default class TemplateProcessorSpec
         const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, item?: [string, number] };
         const content = document.createElement("div");
 
-        host.innerHTML    =
+        host.innerHTML =
         `
             <template #inject:items="{ item }" #if="item[1] % 2 == 1">
                 <span>{{item[0]}}: {{item[1]}}</span>
