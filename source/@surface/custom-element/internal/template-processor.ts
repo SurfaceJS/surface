@@ -25,6 +25,8 @@ import { Bindable } from "./type";
 
 export default class TemplateProcessor
 {
+    private static readonly lazyAttributesBind: Map<Node, Array<Action>> = new Map();
+
     private readonly expressions =
     {
         databind: /\[\[.*\]\]|\{\{.*\}\}/,
@@ -32,8 +34,8 @@ export default class TemplateProcessor
         path:     /^(?:\{\{|\[\[)\s*((?!\d)\w+(?:\.(?!\d)\w+)+)\s*(?:\]\]|\}\})$/,
         twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
     };
-    private readonly host:   Node|Element;
-    private readonly scope:  Indexer;
+    private readonly host:  Node|Element;
+    private readonly scope: Indexer;
 
     private constructor(host: Node|Element, scope: Indexer)
     {
@@ -44,6 +46,13 @@ export default class TemplateProcessor
     public static process(host: Node|Element, node: Node, scope?: Indexer): void
     {
         const processor = new TemplateProcessor(host, scope ?? { });
+
+        if (TemplateProcessor.lazyAttributesBind.has(host))
+        {
+            TemplateProcessor.lazyAttributesBind.get(host)!.forEach(action => action());
+
+            TemplateProcessor.lazyAttributesBind.delete(host);
+        }
 
         processor.traverseElement(node);
     }
@@ -67,97 +76,111 @@ export default class TemplateProcessor
     // tslint:disable-next-line:cyclomatic-complexity
     private bindAttributes(element: Element): void
     {
-        const notifications: Array<Action> = [];
-
         for (const attribute of this.wrapAttribute(element))
         {
             if (this.expressions.databind.test(attribute.value))
             {
                 const scope = createProxy({ this: element, ...this.scope });
 
-                if (attribute.name.startsWith("on-"))
+                const action = () =>
                 {
-                    const expression = BindExpression.parse(attribute.value);
-
-                    const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
-                        expression.evaluate(scope) as Action
-                        : () => expression.evaluate(scope);
-
-                    element.addEventListener(attribute.name.replace(/^on-/, ""), action);
-                    attribute.value = `[binding ${action.name || "expression"}]`;
-                }
-                else
-                {
-                    const isOneWay         = this.expressions.oneWay.test(attribute.value);
-                    const isTwoWay         = this.expressions.twoWay.test(attribute.value);
-                    const isPathExpression = this.expressions.path.test(attribute.value);
-                    const interpolation    = !(isOneWay || isTwoWay);
-                    const attributeName    = dashedToCamel(attribute.name);
-                    const elementMember    = Type.from(element).getMember(attributeName);
-                    const canWrite         = !!(elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName));
-
-                    if (isPathExpression)
-                    {
-                        const match = this.expressions.path.exec(attribute.value);
-
-                        const target = scope;
-                        const path   = match![1];
-
-                        const [key, member] = getKeyMember(target, path);
-
-                        const targetMember = Type.from(member).getMember(key);
-
-                        const notify = (value: unknown) =>
-                        {
-                            if (canWrite)
-                            {
-                                (element as Indexer)[attributeName] = value;
-                            }
-
-                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-                        };
-
-                        const subscription = DataBind.oneWay(target, path, { notify })[1];
-
-                        pushSubscription(element, subscription);
-
-                        const canBindLeft  = elementMember instanceof FieldInfo && !elementMember.readonly;
-                        const canBindRigth = targetMember instanceof FieldInfo && !targetMember.readonly;
-
-                        if (isTwoWay && canBindLeft && canBindRigth)
-                        {
-                            DataBind.twoWay(target, path, element as Indexer, attributeName);
-                        }
-                    }
-                    else
+                    if (attribute.name.startsWith("on-"))
                     {
                         const expression = BindExpression.parse(attribute.value);
 
-                        const notify = () =>
-                        {
-                            const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
-                                expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
-                                expression.evaluate(scope);
+                        const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
+                            expression.evaluate(scope) as Action
+                            : () => expression.evaluate(scope);
 
-                            if (canWrite)
-                            {
-                                (element as Indexer)[attributeName] = value;
-                            }
-
-                            attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-                        };
-
-                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
-
-                        pushSubscription(element, subscription);
-
-                        notifications.push(notify);
+                        element.addEventListener(attribute.name.replace(/^on-/, ""), action);
+                        attribute.value = `[binding ${action.name || "expression"}]`;
                     }
+                    else
+                    {
+                        const isOneWay         = this.expressions.oneWay.test(attribute.value);
+                        const isTwoWay         = this.expressions.twoWay.test(attribute.value);
+                        const isPathExpression = this.expressions.path.test(attribute.value);
+                        const interpolation    = !(isOneWay || isTwoWay);
+                        const attributeName    = dashedToCamel(attribute.name);
+                        const elementMember    = Type.from(element).getMember(attributeName);
+                        const canWrite         = !!(elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName));
+
+                        if (isPathExpression)
+                        {
+                            const match = this.expressions.path.exec(attribute.value);
+
+                            const target = scope;
+                            const path   = match![1];
+
+                            const [key, member] = getKeyMember(target, path);
+
+                            const targetMember = Type.from(member).getMember(key);
+
+                            const notify = (value: unknown) =>
+                            {
+                                if (canWrite)
+                                {
+                                    (element as Indexer)[attributeName] = value;
+                                }
+
+                                attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
+                            };
+
+                            const subscription = DataBind.oneWay(target, path, { notify })[1];
+
+                            pushSubscription(element, subscription);
+
+                            const canBindLeft  = elementMember instanceof FieldInfo && !elementMember.readonly;
+                            const canBindRigth = targetMember instanceof FieldInfo && !targetMember.readonly;
+
+                            if (isTwoWay && canBindLeft && canBindRigth)
+                            {
+                                DataBind.twoWay(target, path, element as Indexer, attributeName);
+                            }
+                        }
+                        else
+                        {
+                            const expression = BindExpression.parse(attribute.value);
+
+                            const notify = () =>
+                            {
+                                const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
+                                    expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
+                                    expression.evaluate(scope);
+
+                                if (canWrite)
+                                {
+                                    (element as Indexer)[attributeName] = value;
+                                }
+
+                                attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
+                            };
+
+                            let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+
+                            pushSubscription(element, subscription);
+
+                            notify();
+                        }
+                    }
+                };
+
+                const constructor = window.customElements.get(element.localName);
+
+                if (!constructor || constructor && element instanceof constructor)
+                {
+                    action();
+                }
+                else
+                {
+                    const actions = TemplateProcessor.lazyAttributesBind.get(element) ?? [];
+
+                    actions.push(action);
+
+                    TemplateProcessor.lazyAttributesBind.set(element, actions);
                 }
             }
         }
-
-        notifications.forEach(notification => notification());
     }
 
     private bindTextNode(element: Element): void
@@ -218,7 +241,6 @@ export default class TemplateProcessor
                     }
 
                     this.traverseElement(element);
-
                 }
             }
 
