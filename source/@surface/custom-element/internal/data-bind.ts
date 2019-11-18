@@ -9,7 +9,7 @@ import IReactor                          from "../../reactive/interfaces/reactor
 import ISubscription                     from "../../reactive/interfaces/subscription";
 import { pushSubscription }              from "./common";
 import { LISTENNING, SUBSCRIPTIONS }     from "./symbols";
-import { ElementSubscriber, Subscriber } from "./type";
+import { ElementSubscriber, Subscriber } from "./types";
 
 export default class DataBind
 {

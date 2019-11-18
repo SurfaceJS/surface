@@ -21,7 +21,7 @@ import
     PROCESSED,
     SCOPE}
 from "./symbols";
-import { Bindable } from "./type";
+import { Bindable } from "./types";
 
 export default class TemplateProcessor
 {
@@ -220,7 +220,7 @@ export default class TemplateProcessor
         {
             node[ON_PROCESS]?.();
 
-            for (const element of (node.childNodes as unknown as Iterable<Bindable<Element>>))
+            for (const element of (Array.from(node.childNodes) as Iterable<Bindable<Element>>))
             {
                 if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
                 {

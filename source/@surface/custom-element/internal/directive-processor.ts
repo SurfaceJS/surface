@@ -19,7 +19,7 @@ import
     SUBSCRIPTIONS
 } from "./symbols";
 import TemplateProcessor from "./template-processor";
-import { Bindable }      from "./type";
+import { Bindable }      from "./types";
 
 const __DECOPOSED__ = "__DECOPOSED__";
 const __INJECTOR__  = "__INJECTOR__";
