@@ -78,7 +78,7 @@ export default class MemberExpression implements IExpression
 
         const object = this.object.evaluate(scope, useCache) as Nullable<Indexer>;
 
-        const key = TypeGuard.isIdentifier(this.property) ? this.property.name : `${this.property.evaluate(scope, useCache)}`;
+        const key = TypeGuard.isIdentifier(this.property) && !this.computed ?  this.property.name : `${this.property.evaluate(scope, useCache)}`;
 
         if (this.optional)
         {
