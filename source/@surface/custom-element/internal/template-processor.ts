@@ -1,20 +1,21 @@
-import { Action, Indexer }  from "@surface/core";
-import { typeGuard }        from "@surface/core/common/generic";
-import { getKeyMember }     from "@surface/core/common/object";
-import { dashedToCamel }    from "@surface/core/common/string";
-import IArrayExpression     from "@surface/expression/interfaces/array-expression";
-import IExpression          from "@surface/expression/interfaces/expression";
-import NodeType             from "@surface/expression/node-type";
-import ISubscription        from "@surface/reactive/interfaces/subscription";
-import Type                 from "@surface/reflection";
-import FieldInfo            from "@surface/reflection/field-info";
-import PropertyInfo         from "@surface/reflection/property-info";
-import BindExpression       from "./bind-expression";
-import { pushSubscription } from "./common";
-import createProxy          from "./create-proxy";
-import DataBind             from "./data-bind";
-import DirectiveProcessor   from "./directive-processor";
-import ObserverVisitor      from "./observer-visitor";
+import { Action, Action1, Indexer } from "@surface/core";
+import { typeGuard }                from "@surface/core/common/generic";
+import { getKeyMember }             from "@surface/core/common/object";
+import { dashedToCamel }            from "@surface/core/common/string";
+import IArrayExpression             from "@surface/expression/interfaces/array-expression";
+import IExpression                  from "@surface/expression/interfaces/expression";
+import NodeType                     from "@surface/expression/node-type";
+import ISubscription                from "@surface/reactive/interfaces/subscription";
+import Type                         from "@surface/reflection";
+import FieldInfo                    from "@surface/reflection/field-info";
+import PropertyInfo                 from "@surface/reflection/property-info";
+import BindExpression               from "./bind-expression";
+import { pushSubscription }         from "./common";
+import createProxy                  from "./create-proxy";
+import DataBind                     from "./data-bind";
+import DirectiveProcessor           from "./directive-processor";
+import ObserverVisitor              from "./observer-visitor";
+import ParallelWorker               from "./parallel-worker";
 import
 {
     ON_PROCESS,
@@ -49,9 +50,15 @@ export default class TemplateProcessor
 
         if (TemplateProcessor.lazyAttributesBind.has(host))
         {
-            TemplateProcessor.lazyAttributesBind.get(host)!.forEach(action => action());
+            ParallelWorker.run
+            (
+                () =>
+                {
+                    TemplateProcessor.lazyAttributesBind.get(host)!.forEach(action => action());
 
-            TemplateProcessor.lazyAttributesBind.delete(host);
+                    TemplateProcessor.lazyAttributesBind.delete(host);
+                }
+            );
         }
 
         processor.traverseElement(node);
@@ -82,14 +89,18 @@ export default class TemplateProcessor
             {
                 const scope = createProxy({ this: element, ...this.scope });
 
+                const rawExpression = attribute.value;
+
+                attribute.value = "";
+
                 const action = () =>
                 {
                     if (attribute.name.startsWith("on-"))
                     {
-                        const expression = BindExpression.parse(attribute.value);
+                        const expression = BindExpression.parse(rawExpression);
 
                         const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
-                            expression.evaluate(scope) as Action
+                            expression.evaluate(scope) as Action1<Event>
                             : () => expression.evaluate(scope);
 
                         element.addEventListener(attribute.name.replace(/^on-/, ""), action);
@@ -97,9 +108,9 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const isOneWay         = this.expressions.oneWay.test(attribute.value);
-                        const isTwoWay         = this.expressions.twoWay.test(attribute.value);
-                        const isPathExpression = this.expressions.path.test(attribute.value);
+                        const isOneWay         = this.expressions.oneWay.test(rawExpression);
+                        const isTwoWay         = this.expressions.twoWay.test(rawExpression);
+                        const isPathExpression = this.expressions.path.test(rawExpression);
                         const interpolation    = !(isOneWay || isTwoWay);
                         const attributeName    = dashedToCamel(attribute.name);
                         const elementMember    = Type.from(element).getMember(attributeName);
@@ -107,7 +118,7 @@ export default class TemplateProcessor
 
                         if (isPathExpression)
                         {
-                            const match = this.expressions.path.exec(attribute.value);
+                            const match = this.expressions.path.exec(rawExpression);
 
                             const target = scope;
                             const path   = match![1];
@@ -140,12 +151,12 @@ export default class TemplateProcessor
                         }
                         else
                         {
-                            const expression = BindExpression.parse(attribute.value);
+                            const expression = BindExpression.parse(rawExpression);
 
                             const notify = () =>
                             {
                                 const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
-                                    expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`) :
+                                    expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`, "") :
                                     expression.evaluate(scope);
 
                                 if (canWrite)
@@ -175,7 +186,9 @@ export default class TemplateProcessor
                 {
                     const actions = TemplateProcessor.lazyAttributesBind.get(element) ?? [];
 
-                    actions.push(action);
+                    //actions.push(() => window.requestAnimationFrame(action));
+                    actions.push(() => ParallelWorker.run(action));
+                    //actions.push(action);
 
                     TemplateProcessor.lazyAttributesBind.set(element, actions);
                 }
@@ -189,7 +202,11 @@ export default class TemplateProcessor
         {
             const scope = createProxy({ this: element.parentElement, ...this.scope });
 
-            const match = this.expressions.path.exec(element.nodeValue);
+            const rawExpression = element.nodeValue;
+
+            element.nodeValue = "";
+
+            const match = this.expressions.path.exec(rawExpression);
 
             let subscription: ISubscription;
 
@@ -199,7 +216,7 @@ export default class TemplateProcessor
             }
             else
             {
-                const expression = BindExpression.parse(element.nodeValue);
+                const expression = BindExpression.parse(rawExpression);
 
                 const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
                     () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
@@ -224,7 +241,10 @@ export default class TemplateProcessor
             {
                 if (typeGuard<Element, HTMLTemplateElement>(element, x => x.tagName == "TEMPLATE"))
                 {
-                    DirectiveProcessor.process(this.host, element, createProxy(this.scope));
+                    if (element.parentNode)
+                    {
+                        DirectiveProcessor.process(this.host, element, createProxy(this.scope));
+                    }
                 }
                 else
                 {

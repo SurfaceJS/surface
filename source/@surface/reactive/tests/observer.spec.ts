@@ -39,12 +39,4 @@ export default class ObserverSpec
 
         chai.expect(value).to.equal(1);
     }
-
-    @test @shouldFail
-    public unsubscribeListernerNotSubscribed(): void
-    {
-        const observer = new Observer<number>();
-
-        chai.expect(() => observer.unsubscribe({ notify: () => null })).to.throw("Listerner not subscribed");
-    }
 }

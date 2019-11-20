@@ -1,14 +1,15 @@
-import { Action2, Indexer, Nullable }                       from "@surface/core";
-import { contains }                                         from "@surface/core/common/array";
-import { typeGuard }                                        from "@surface/core/common/generic";
-import Expression                                           from "@surface/expression";
-import Evaluate                                             from "@surface/expression/evaluate";
-import IArrowFunctionExpression                             from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                                          from "@surface/expression/interfaces/expression";
-import ISubscription                                        from "@surface/reactive/interfaces/subscription";
-import createProxy                                          from "./create-proxy";
-import ObserverVisitor                                      from "./observer-visitor";
-import parse                                                from "./parse";
+import { Action2, Indexer, Nullable } from "@surface/core";
+import { contains }                   from "@surface/core/common/array";
+import { typeGuard }                  from "@surface/core/common/generic";
+import Expression                     from "@surface/expression";
+import Evaluate                       from "@surface/expression/evaluate";
+import IArrowFunctionExpression       from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                    from "@surface/expression/interfaces/expression";
+import ISubscription                  from "@surface/reactive/interfaces/subscription";
+import createProxy                    from "./create-proxy";
+import ObserverVisitor                from "./observer-visitor";
+import ParallelWorker                 from "./parallel-worker";
+import parse                          from "./parse";
 import
 {
     INJECTED_TEMPLATES,
@@ -115,7 +116,7 @@ export default class DirectiveProcessor
         template.setAttribute(__DECOPOSED__, "");
     }
 
-    private static processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
+    private static async processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
         const start = document.createComment("if-directive-start");
         const end   = document.createComment("if-directive-end");
@@ -125,7 +126,7 @@ export default class DirectiveProcessor
 
         (start as Bindable<Node>)[ON_REMOVED] = () => subscriptions.forEach(x => x.unsubscribe());
 
-        const notify = () =>
+        const task = () =>
         {
             if (!end.parentNode)
             {
@@ -161,6 +162,8 @@ export default class DirectiveProcessor
                 }
             }
         };
+
+        const notify = () => ParallelWorker.run(task);
 
         const listener = { notify };
 
@@ -205,10 +208,10 @@ export default class DirectiveProcessor
         parent.replaceChild(end, template);
         parent.insertBefore(start, end);
 
-        notify();
+        await notify();
     }
 
-    private static processForDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
+    private static async processForDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
         const start = document.createComment("for-directive-start");
         const end   = document.createComment("for-directive-end");
@@ -227,7 +230,7 @@ export default class DirectiveProcessor
 
         const expression = parse(iterableExpression);
 
-        let cache: Array<[unknown, Array<ChildNode>]> = [];
+        let cache: Array<[unknown, ChildNode, ChildNode]> = [];
 
         const forInIterator = (elements: Array<unknown>, action: Action2<unknown, number>) =>
         {
@@ -252,13 +255,15 @@ export default class DirectiveProcessor
         const notifyFactory = (iterator: Action2<Array<unknown>, Action2<unknown, number>>) =>
         {
             let changedTree = false;
-
             const tree = document.createDocumentFragment();
 
             const action = (element: unknown, index: number) =>
             {
                 if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
                 {
+                    const rowStart = document.createComment(`for-directive-element[${index}]-start`);
+                    const rowEnd   = document.createComment(`for-directive-element[${index}]-end`);
+
                     const content = template.content.cloneNode(true) as Element;
 
                     content.normalize();
@@ -267,36 +272,60 @@ export default class DirectiveProcessor
                         { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope, [SUBSCRIPTIONS]: [] }
                         : { ...scope, [aliasExpression]: element, [SUBSCRIPTIONS]: [] };
 
+                    tree.appendChild(rowStart);
+
                     TemplateProcessor.process(host, content, mergedScope);
 
                     if (index < cache.length)
                     {
-                        for (const child of cache[index][1])
+                        const [, $rowStart, $rowEnd] = cache[index];
+
+                        let simbling: Nullable<ChildNode> = null;
+
+                        while ((simbling = $rowStart.nextSibling) && simbling != $rowEnd)
                         {
-                            child.remove();
+                            simbling.remove();
 
-                            (child as Bindable<Node>)[ON_REMOVED]?.();
+                            (simbling as Bindable<Node>)[ON_REMOVED]?.();
 
-                            TemplateProcessor.clear(child);
+                            TemplateProcessor.clear(simbling);
                         }
 
-                        cache[index] = [element, Array.from(content.childNodes)];
+                        $rowStart.remove();
+                        $rowEnd.remove();
+
+                        cache[index] = [element, rowStart, rowEnd];
 
                         changedTree = true;
                     }
                     else
                     {
-                        cache.push([element, Array.from(content.childNodes)]);
+                        cache.push([element, rowStart, rowEnd]);
                     }
 
                     tree.appendChild(content);
+
+                    tree.appendChild(rowEnd);
                 }
                 else if (changedTree)
                 {
-                    for (const child of cache[index][1])
+                    const [, rowStart, rowEnd] = cache[index];
+
+                    let simbling: Nullable<ChildNode> = null;
+
+                    const clone = rowStart.cloneNode();
+
+                    tree.appendChild(clone);
+
+                    while ((simbling = rowStart.nextSibling) && simbling != rowEnd)
                     {
-                        tree.appendChild(child);
+                        tree.appendChild(simbling);
                     }
+
+                    rowStart.remove();
+
+                    tree.replaceChild(rowStart, clone);
+                    tree.appendChild(rowEnd);
                 }
             };
 
@@ -313,16 +342,21 @@ export default class DirectiveProcessor
 
                 if (elements.length < cache.length)
                 {
-                    for (const [, childs] of cache.splice(elements.length))
+                    for (const [, rowStart, rowEnd] of cache.splice(elements.length))
                     {
-                        for (const child of childs)
+                        let simbling: Nullable<ChildNode> = null;
+
+                        while ((simbling = rowStart.nextSibling) && simbling != rowEnd)
                         {
-                            child.remove();
+                            simbling.remove();
 
-                            (child as Bindable<Node>)[ON_REMOVED]?.();
+                            (simbling as Bindable<Node>)[ON_REMOVED]?.();
 
-                            TemplateProcessor.clear(child);
+                            TemplateProcessor.clear(simbling);
                         }
+
+                        rowStart.remove();
+                        rowEnd.remove();
                     }
                 }
 
@@ -335,7 +369,9 @@ export default class DirectiveProcessor
             };
         };
 
-        const notify = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
+        const task = notifyFactory(operator == "in" ? forInIterator : forOfIterator);
+
+        const notify = () => ParallelWorker.run(task);
 
         const subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
@@ -344,10 +380,10 @@ export default class DirectiveProcessor
         parent.replaceChild(end, template);
         parent.insertBefore(start, end);
 
-        notify();
+        await notify();
     }
 
-    private static processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElement, parent: Node, scope: Indexer): void
+    private static async processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
         const start = document.createComment("injector-directive-start");
         const end   = document.createComment("injector-directive-end");
@@ -388,7 +424,7 @@ export default class DirectiveProcessor
 
         const pattern = (parse(`(${scopeExpression}) => 0`) as IArrowFunctionExpression).parameters[0];
 
-        const notify = () =>
+        const task = () =>
         {
             if (!end.parentNode)
             {
@@ -425,6 +461,8 @@ export default class DirectiveProcessor
             end.parentNode.insertBefore(content, end);
         };
 
+        const notify = () => ParallelWorker.run(task);
+
         subscription = ObserverVisitor.observe(expression, proxyScope, { notify }, true);
 
         (start as Bindable<Node>)[ON_REMOVED] = () => subscription.unsubscribe();
@@ -447,11 +485,11 @@ export default class DirectiveProcessor
         }
         else
         {
-            notify();
+            await notify();
         }
     }
 
-    public static process(host: Element|Node, template: HTMLTemplateElement, scope: Indexer): void
+    public static async process(host: Element|Node, template: HTMLTemplateElement, scope: Indexer): Promise<void>
     {
         if (!template.parentNode)
         {
@@ -464,15 +502,15 @@ export default class DirectiveProcessor
 
         if (template.hasAttribute(HASH_IF))
         {
-            DirectiveProcessor.processConditionalDirectives(host, template, parent, scope);
+            await DirectiveProcessor.processConditionalDirectives(host, template, parent, scope);
         }
         else if (template.hasAttribute(HASH_FOR))
         {
-            DirectiveProcessor.processForDirectives(host, template, parent, scope);
+            await DirectiveProcessor.processForDirectives(host, template, parent, scope);
         }
-        else if (!!template.hasAttribute("__INJECTOR__") && "querySelector" in host)
+        else if (!!template.hasAttribute(__INJECTOR__) && "querySelector" in host)
         {
-            DirectiveProcessor.processInjectorDirectives(host, template, parent, scope);
+            await DirectiveProcessor.processInjectorDirectives(host, template, parent, scope);
         }
     }
 }

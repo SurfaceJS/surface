@@ -15,10 +15,7 @@ export default class Observer<TValue = unknown> implements IObserver<TValue>
 
     public unsubscribe(listerner: IListener<TValue>)
     {
-        if (!this.listeners.delete(listerner))
-        {
-            throw new Error("Listerner not subscribed");
-        }
+        this.listeners.delete(listerner);
     }
 
     public notify(value: TValue): void
