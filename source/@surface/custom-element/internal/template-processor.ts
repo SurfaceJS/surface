@@ -8,7 +8,6 @@ import NodeType                     from "@surface/expression/node-type";
 import ISubscription                from "@surface/reactive/interfaces/subscription";
 import Type                         from "@surface/reflection";
 import FieldInfo                    from "@surface/reflection/field-info";
-import PropertyInfo                 from "@surface/reflection/property-info";
 import BindExpression               from "./bind-expression";
 import { pushSubscription }         from "./common";
 import createProxy                  from "./create-proxy";
@@ -26,7 +25,7 @@ import { Bindable } from "./types";
 
 export default class TemplateProcessor
 {
-    private static readonly lazyAttributesBind: Map<Node, Array<Action>> = new Map();
+    private static readonly postProcessing: Map<Node, Array<Action>> = new Map();
 
     private readonly expressions =
     {
@@ -48,15 +47,15 @@ export default class TemplateProcessor
     {
         const processor = new TemplateProcessor(host, scope ?? { });
 
-        if (TemplateProcessor.lazyAttributesBind.has(host))
+        if (TemplateProcessor.postProcessing.has(host))
         {
             ParallelWorker.run
             (
                 () =>
                 {
-                    TemplateProcessor.lazyAttributesBind.get(host)!.forEach(action => action());
+                    TemplateProcessor.postProcessing.get(host)!.forEach(action => action());
 
-                    TemplateProcessor.lazyAttributesBind.delete(host);
+                    TemplateProcessor.postProcessing.delete(host);
                 }
             );
         }
@@ -70,7 +69,7 @@ export default class TemplateProcessor
         {
             DataBind.unbind(node);
 
-            node[SCOPE]   = undefined;
+            node[SCOPE]     = undefined;
             node[PROCESSED] = false;
         }
 
@@ -80,9 +79,14 @@ export default class TemplateProcessor
         }
     }
 
-    // tslint:disable-next-line:cyclomatic-complexity
     private bindAttributes(element: Element): void
     {
+        const constructor = window.customElements.get(element.localName);
+
+        const processor = constructor && element instanceof constructor ?
+            TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
+            : null;
+
         for (const attribute of this.wrapAttribute(element))
         {
             if (this.expressions.databind.test(attribute.value))
@@ -114,7 +118,7 @@ export default class TemplateProcessor
                         const interpolation    = !(isOneWay || isTwoWay);
                         const attributeName    = dashedToCamel(attribute.name);
                         const elementMember    = Type.from(element).getMember(attributeName);
-                        const canWrite         = !!(elementMember && !(elementMember instanceof PropertyInfo && elementMember.readonly || elementMember instanceof FieldInfo && elementMember.readonly) && !["class", "style"].includes(attributeName));
+                        const canWriteElement  = elementMember instanceof FieldInfo && !elementMember.readonly && !["class", "style"].includes(attributeName);
 
                         if (isPathExpression)
                         {
@@ -127,24 +131,22 @@ export default class TemplateProcessor
 
                             const targetMember = Type.from(member).getMember(key);
 
-                            const notify = (value: unknown) =>
-                            {
-                                if (canWrite)
+                            const canWriteTarget = targetMember instanceof FieldInfo && !targetMember.readonly;
+
+                            const notify = isTwoWay && !canWriteElement ?
+                                (value: unknown) => attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`
+                                : (value: unknown) =>
                                 {
                                     (element as Indexer)[attributeName] = value;
-                                }
 
-                                attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-                            };
+                                    attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
+                                };
 
                             const subscription = DataBind.oneWay(target, path, { notify })[1];
 
                             pushSubscription(element, subscription);
 
-                            const canBindLeft  = elementMember instanceof FieldInfo && !elementMember.readonly;
-                            const canBindRigth = targetMember instanceof FieldInfo && !targetMember.readonly;
-
-                            if (isTwoWay && canBindLeft && canBindRigth)
+                            if (isTwoWay && canWriteTarget && canWriteElement)
                             {
                                 DataBind.twoWay(target, path, element as Indexer, attributeName);
                             }
@@ -159,7 +161,7 @@ export default class TemplateProcessor
                                     expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`, "") :
                                     expression.evaluate(scope);
 
-                                if (canWrite)
+                                if (canWriteElement)
                                 {
                                     (element as Indexer)[attributeName] = value;
                                 }
@@ -176,21 +178,13 @@ export default class TemplateProcessor
                     }
                 };
 
-                const constructor = window.customElements.get(element.localName);
-
-                if (!constructor || constructor && element instanceof constructor)
+                if (!processor)
                 {
                     action();
                 }
                 else
                 {
-                    const actions = TemplateProcessor.lazyAttributesBind.get(element) ?? [];
-
-                    //actions.push(() => window.requestAnimationFrame(action));
-                    actions.push(() => ParallelWorker.run(action));
-                    //actions.push(action);
-
-                    TemplateProcessor.lazyAttributesBind.set(element, actions);
+                    processor.push(() => ParallelWorker.run(action));
                 }
             }
         }

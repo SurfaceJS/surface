@@ -3,20 +3,19 @@ type Callback = (value: unknown) => void;
 
 export default class ParallelWorker
 {
-    public static readonly default = new ParallelWorker(16.17);
+    public static readonly default = new ParallelWorker();
 
     private readonly stack: Array<[Action, Callback]> = [];
 
     private readonly interval: number;
 
     private expended: number  = 0;
-    private started:  number  = 0;
-    private stopped:  number  = 0;
+    private lastRun:  number  = 0;
     private running:  boolean = false;
 
     public constructor(interval?: number)
     {
-        this.interval = interval ?? 0;
+        this.interval = interval ?? 16.17;
     }
 
     public static async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
@@ -52,7 +51,7 @@ export default class ParallelWorker
 
         this.running = false;
 
-        this.stopped = performance.now();
+        this.lastRun = performance.now();
     }
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
@@ -61,9 +60,7 @@ export default class ParallelWorker
 
         if (!this.running)
         {
-            this.expended = this.stopped - this.started;
-
-            this.started = performance.now();
+            this.expended = performance.now() - this.lastRun;
 
             this.execute();
         }
