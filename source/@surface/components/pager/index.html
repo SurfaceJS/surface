@@ -2,17 +2,17 @@
 <surface-import from="../stack-panel" />
 
 <surface-stack-panel orientation="horizontal">
-    <input type="button" disabled="[[ host.disabled || host.page == 1 ]]" value="&lt;&lt;" on-click="[[ host.firstPage() ]]" />
+    <input type="button" disabled="[[ host.disabled || host.page == 1 ]]" value="&lt;&lt;" on:click="[[ host.firstPage() ]]" />
     &nbsp;
-    <input type="button" disabled="[[ host.disabled || host.page == 1 ]]" value="&lt;" on-click="[[ host.previousPage() ]]"/>
+    <input type="button" disabled="[[ host.disabled || host.page == 1 ]]" value="&lt;" on:click="[[ host.previousPage() ]]"/>
     &nbsp;
     <surface-for-each start="[[ host.startRange ]]" end="[[ host.endRange ]]" >
         <template>
-            <input type="button" disabled="[[ host.disabled || host.page == index || host.pageCount == 0 ]]" value="[[ index ]]" on-click="[[ host.setPage(index) ]]" />
+            <input type="button" disabled="[[ host.disabled || host.page == index || host.pageCount == 0 ]]" value="[[ index ]]" on:click="[[ host.setPage(index) ]]" />
         </template>
     </surface-for-each>
     &nbsp;
-    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;" on-click="[[ host.nextPage() ]]" />
+    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;" on:click="[[ host.nextPage() ]]" />
     &nbsp;
-    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;&gt;" on-click="[[ host.lastPage() ]]" />
+    <input type="button" disabled="[[ host.disabled || host.page == host.pageCount || host.pageCount == 0 ]]" value="&gt;&gt;" on:click="[[ host.lastPage() ]]" />
 </surface-stack-panel>

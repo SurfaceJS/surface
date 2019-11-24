@@ -15,11 +15,11 @@
         <template when="boolean">
             <surface-stack-panel orientation="horizontal" content="justify">
                 <div horizontal-align="left">
-                    <input type="radio" name="boolean-filter" checked="{{ host.value != null && host.value }}" on-click="{{ host.setValue(this.checked) }}" />
+                    <input type="radio" name="boolean-filter" checked="{{ host.value != null && host.value }}" on:click="{{ host.setValue(this.checked) }}" />
                     <label for="boolean-filter">true</label>
                 </div>
                 <div horizontal-align="left">
-                    <input type="radio" name="boolean-filter" checked="{{ host.value != null && !host.value }}" on-click="{{ host.setValue(!this.checked) }}" />
+                    <input type="radio" name="boolean-filter" checked="{{ host.value != null && !host.value }}" on:click="{{ host.setValue(!this.checked) }}" />
                     <label for="boolean-filter">false</label>
                 </div>
             </surface-stack-panel>

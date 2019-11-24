@@ -98,7 +98,7 @@ export default class TemplateProcessor
 
                 const action = () =>
                 {
-                    if (attribute.name.startsWith("on-"))
+                    if (attribute.name.startsWith("on:"))
                     {
                         const expression = BindExpression.parse(rawExpression);
 
@@ -106,7 +106,7 @@ export default class TemplateProcessor
                             expression.evaluate(scope) as Action1<Event>
                             : () => expression.evaluate(scope);
 
-                        element.addEventListener(attribute.name.replace(/^on-/, ""), action);
+                        element.addEventListener(attribute.name.replace(/^on:/, ""), action);
                         attribute.value = `[binding ${action.name || "expression"}]`;
                     }
                     else

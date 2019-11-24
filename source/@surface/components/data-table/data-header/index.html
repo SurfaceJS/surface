@@ -2,14 +2,14 @@
 <!-- <surface-import from="../../stack-panel" /> -->
 <surface-import from="../../modal" />
 
-<div on-click="[[ host.sortable && host.sort() ]]" style="width: 100%;" vertical-align="center">
+<div on:click="[[ host.sortable && host.sort() ]]" style="width: 100%;" vertical-align="center">
     <span horizontal-align="center"><b>[[ host.header ]]</b></span>
 </div>
-<button *style="[[ `display: ${host.sortable ? 'flex' : 'none'};` ]]" type="button" on-click="{{ host.tooglePin() }}" vertical-align="center">
+<button *style="[[ `display: ${host.sortable ? 'flex' : 'none'};` ]]" type="button" on:click="{{ host.tooglePin() }}" vertical-align="center">
     <surface-icon name="outlined_flag"></surface-icon>
 </button>
 <div *style="[[ `display: ${host.filterable ? 'flex' : 'none'};` ]]" vertical-align="center">
-    <button type="button" on-click="{{ host.toogleFilters() }}" vertical-align="center">
+    <button type="button" on:click="{{ host.toogleFilters() }}" vertical-align="center">
         <surface-icon name="filter_list"></surface-icon>
     </button>
     <surface-modal id="modal" start-position="manual" stick="left">
