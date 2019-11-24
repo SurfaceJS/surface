@@ -1,15 +1,15 @@
 import { Action2, Indexer, Nullable } from "@surface/core";
 import { contains }                   from "@surface/core/common/array";
 import { typeGuard }                  from "@surface/core/common/generic";
-import Expression                     from "@surface/expression";
-import Evaluate                       from "@surface/expression/evaluate";
-import IArrowFunctionExpression       from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                    from "@surface/expression/interfaces/expression";
-import ISubscription                  from "@surface/reactive/interfaces/subscription";
-import createProxy                    from "./create-proxy";
-import ObserverVisitor                from "./observer-visitor";
-import ParallelWorker                 from "./parallel-worker";
-import parse                          from "./parse";
+import Expression               from "@surface/expression";
+import Evaluate                 from "@surface/expression/evaluate";
+import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression              from "@surface/expression/interfaces/expression";
+import ISubscription            from "@surface/reactive/interfaces/subscription";
+import { createProxy }          from "./common";
+import ObserverVisitor          from "./observer-visitor";
+import ParallelWorker           from "./parallel-worker";
+import parse                    from "./parse";
 import
 {
     INJECTED_TEMPLATES,

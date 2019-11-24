@@ -1,20 +1,19 @@
-import { Action, Action1, Indexer } from "@surface/core";
-import { typeGuard }                from "@surface/core/common/generic";
-import { getKeyMember }             from "@surface/core/common/object";
-import { dashedToCamel }            from "@surface/core/common/string";
-import IArrayExpression             from "@surface/expression/interfaces/array-expression";
-import IExpression                  from "@surface/expression/interfaces/expression";
-import NodeType                     from "@surface/expression/node-type";
-import ISubscription                from "@surface/reactive/interfaces/subscription";
-import Type                         from "@surface/reflection";
-import FieldInfo                    from "@surface/reflection/field-info";
-import BindExpression               from "./bind-expression";
-import { pushSubscription }         from "./common";
-import createProxy                  from "./create-proxy";
-import DataBind                     from "./data-bind";
-import DirectiveProcessor           from "./directive-processor";
-import ObserverVisitor              from "./observer-visitor";
-import ParallelWorker               from "./parallel-worker";
+import { Action, Action1, Indexer }      from "@surface/core";
+import { typeGuard }                     from "@surface/core/common/generic";
+import { getKeyMember }                  from "@surface/core/common/object";
+import { dashedToCamel }                 from "@surface/core/common/string";
+import IArrayExpression                  from "@surface/expression/interfaces/array-expression";
+import IExpression                       from "@surface/expression/interfaces/expression";
+import NodeType                          from "@surface/expression/node-type";
+import ISubscription                     from "@surface/reactive/interfaces/subscription";
+import Type                              from "@surface/reflection";
+import FieldInfo                         from "@surface/reflection/field-info";
+import BindExpression                    from "./bind-expression";
+import { createProxy, pushSubscription } from "./common";
+import DataBind                          from "./data-bind";
+import DirectiveProcessor                from "./directive-processor";
+import ObserverVisitor                   from "./observer-visitor";
+import ParallelWorker                    from "./parallel-worker";
 import
 {
     ON_PROCESS,
