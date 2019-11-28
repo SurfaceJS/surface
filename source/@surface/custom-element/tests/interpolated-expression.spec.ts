@@ -191,21 +191,24 @@ export default class InterpolatedExpressionSpec
     @test @shouldPass
     public complexScapedInterpolation(): void
     {
-        const expression = InterpolatedExpression.parse("This is an { 'very' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
+        const expression = InterpolatedExpression.parse("This is an { '\\'very\\'' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
 
-        expect(expression.evaluate({ })).to.deep.equal(["This is an ", "very", " complex {scaped} \\", "interpolation", " \\}"]);
+        expect(expression.evaluate({ })).to.deep.equal(["This is an ", "\'very\'", " complex {scaped} \\", "interpolation", " \\}"]);
     }
 
     @test @shouldFail
     public unclosedBrancket(): void
     {
-        expect(() => InterpolatedExpression.parse("This { Should throw")).to.throw(Error, "Unexpected token throw at posistion 8");
+        expect(() => InterpolatedExpression.parse("This { Should throw")).to.throw(Error, "Unexpected end of expression");
+        expect(() => InterpolatedExpression.parse("This { 'Should throw' ")).to.throw(Error, "Unexpected end of expression");
     }
 
     @test @shouldFail
     public unclosedString(): void
     {
-        expect(() => InterpolatedExpression.parse("This { 'Should throw }")).to.throw(Error, "Invalid or unexpected token at posistion 16");
+        expect(() => InterpolatedExpression.parse("This { 'Should throw }")).to.throw(Error, "Unexpected end of expression");
+        expect(() => InterpolatedExpression.parse("This { 'Should throw\" }")).to.throw(Error, "Unexpected end of expression");
+        expect(() => InterpolatedExpression.parse("This { 'Should throw\\' }")).to.throw(Error, "Unexpected end of expression");
     }
 
     @test @shouldFail

@@ -81,21 +81,26 @@ export default class InterpolatedExpression
                 this.collectTextFragment(start, this.index + 1);
             }
 
-            start = this.index + 1;
-
             if (!this.eof())
             {
-                const balanced = this.scanBalance();
+                const innerStart = this.index + 1;
 
-                const offset = balanced ? 1 : 0;
-
-                const expression = parse(this.source.substring(start, this.index - offset));
-
-                this.expressions.push(expression);
-
-                if (!this.eof())
+                if (this.scanBalance())
                 {
-                    this.parse(this.index);
+                    const innerEnd = this.index - 1;
+
+                    const expression = parse(this.source.substring(innerStart, innerEnd));
+
+                    this.expressions.push(expression);
+
+                    if (!this.eof())
+                    {
+                        this.parse(this.index);
+                    }
+                }
+                else
+                {
+                    throw Error("Unexpected end of expression");
                 }
             }
         }
