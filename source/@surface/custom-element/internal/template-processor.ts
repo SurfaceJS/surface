@@ -1,11 +1,7 @@
 import { Action, Action1, Indexer }      from "@surface/core";
 import { typeGuard }                     from "@surface/core/common/generic";
-import { getKeyMember }                  from "@surface/core/common/object";
 import { dashedToCamel }                 from "@surface/core/common/string";
-import IArrayExpression                  from "@surface/expression/interfaces/array-expression";
-import IExpression                       from "@surface/expression/interfaces/expression";
 import NodeType                          from "@surface/expression/node-type";
-import ISubscription                     from "@surface/reactive/interfaces/subscription";
 import Type                              from "@surface/reflection";
 import FieldInfo                         from "@surface/reflection/field-info";
 import BindExpression                    from "./bind-expression";
@@ -14,6 +10,7 @@ import DataBind                          from "./data-bind";
 import DirectiveProcessor                from "./directive-processor";
 import ObserverVisitor                   from "./observer-visitor";
 import ParallelWorker                    from "./parallel-worker";
+import parse                             from "./parse";
 import
 {
     ON_PROCESS,
@@ -28,10 +25,7 @@ export default class TemplateProcessor
 
     private readonly expressions =
     {
-        databind: /\[\[.*\]\]|\{\{.*\}\}/,
-        oneWay:   /^\[\[.*\]\]$/,
-        path:     /^(?:\{\{|\[\[)\s*((?!\d)\w+(?:\.(?!\d)\w+)+)\s*(?:\]\]|\}\})$/,
-        twoWay:   /^\{\{\s*(\w+\.?)+\s*\}\}$/
+        interpolation: /(?<!(?<!\\)\\)(\{)(.*?)(\})/,
     };
     private readonly host:  Node|Element;
     private readonly scope: Indexer;
@@ -86,94 +80,84 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
             : null;
 
-        for (const attribute of this.wrapAttribute(element))
+        for (const bindedAttribute of this.wrapAttribute(element))
         {
-            if (this.expressions.databind.test(attribute.value))
+            if (bindedAttribute.name.startsWith(":") || bindedAttribute.name.startsWith("on:") || this.expressions.interpolation.test(bindedAttribute.value))
             {
                 const scope = createProxy({ this: element, ...this.scope });
 
-                const rawExpression = attribute.value;
+                const rawExpression = bindedAttribute.value;
 
-                attribute.value = "";
+                bindedAttribute.value = "";
+
+                const isEvent  = bindedAttribute.name.startsWith("on:");
+                const isTwoWay = bindedAttribute.name.startsWith("::");
+                const isOneWay = !isTwoWay && bindedAttribute.name.startsWith(":");
 
                 const action = () =>
                 {
-                    if (attribute.name.startsWith("on:"))
+                    if (isEvent)
                     {
-                        const expression = BindExpression.parse(rawExpression);
+                        const expression = parse(rawExpression);
 
                         const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
                             expression.evaluate(scope) as Action1<Event>
                             : () => expression.evaluate(scope);
 
-                        element.addEventListener(attribute.name.replace(/^on:/, ""), action);
-                        attribute.value = `[binding ${action.name || "expression"}]`;
+                        element.addEventListener(bindedAttribute.name.replace(/^on:/, ""), action);
+                        bindedAttribute.value = `[binding ${action.name || "expression"}]`;
                     }
-                    else
+                    else if (isOneWay || isTwoWay)
                     {
-                        const isOneWay         = this.expressions.oneWay.test(rawExpression);
-                        const isTwoWay         = this.expressions.twoWay.test(rawExpression);
-                        const isPathExpression = this.expressions.path.test(rawExpression);
-                        const interpolation    = !(isOneWay || isTwoWay);
-                        const attributeName    = dashedToCamel(attribute.name);
-                        const elementMember    = Type.from(element).getMember(attributeName);
-                        const canWriteElement  = elementMember instanceof FieldInfo && !elementMember.readonly && !["class", "style"].includes(attributeName);
+                        const attribute = document.createAttribute(bindedAttribute.name.replace(/^::?/, ""));
 
-                        if (isPathExpression)
+                        attribute.value = attribute.value;
+
+                        element.removeAttributeNode(bindedAttribute);
+                        element.setAttributeNode(attribute);
+
+                        const propertyName    = dashedToCamel(attribute.name);
+                        const elementMember   = Type.from(element).getMember(propertyName);
+                        const canWriteElement = elementMember instanceof FieldInfo && !elementMember.readonly && !["class", "style"].includes(propertyName);
+
+                        if (isTwoWay)
                         {
-                            const match = this.expressions.path.exec(rawExpression);
-
                             const target = scope;
-                            const path   = match![1];
+                            const path   = rawExpression;
 
-                            const [key, member] = getKeyMember(target, path);
-
-                            const targetMember = Type.from(member).getMember(key);
-
-                            const canWriteTarget = targetMember instanceof FieldInfo && !targetMember.readonly;
-
-                            const notify = isTwoWay && !canWriteElement ?
-                                (value: unknown) => attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`
-                                : (value: unknown) =>
-                                {
-                                    (element as Indexer)[attributeName] = value;
-
-                                    attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-                                };
+                            const notify = (value: unknown) => attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
 
                             const subscription = DataBind.oneWay(target, path, { notify })[1];
 
                             pushSubscription(element, subscription);
 
-                            if (isTwoWay && canWriteTarget && canWriteElement)
-                            {
-                                DataBind.twoWay(target, path, element as Indexer, attributeName);
-                            }
+                            DataBind.twoWay(target, path, element as Indexer, propertyName);
                         }
                         else
                         {
-                            const expression = BindExpression.parse(rawExpression);
+                            const expression = parse(rawExpression);
 
-                            const notify = () =>
+                            if (canWriteElement)
                             {
-                                const value = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) && interpolation ?
-                                    expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`, "") :
-                                    expression.evaluate(scope);
+                                throw new Error(`Property ${propertyName} of ${element.constructor.name} is readonly`);
+                            }
 
-                                if (canWriteElement)
-                                {
-                                    (element as Indexer)[attributeName] = value;
-                                }
+                            const notify = (value: unknown) => (element as Indexer)[propertyName] = value;
 
-                                attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-                            };
-
-                            let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+                            let subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
 
                             pushSubscription(element, subscription);
-
-                            notify();
                         }
+                    }
+                    else
+                    {
+                        const expression = BindExpression.parse(rawExpression);
+
+                        const notify = () => bindedAttribute.value = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
+
+                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
+
+                        pushSubscription(element, subscription);
                     }
                 };
 
@@ -186,12 +170,23 @@ export default class TemplateProcessor
                     processor.push(() => ParallelWorker.run(action));
                 }
             }
+            else
+            {
+                bindedAttribute.value
+                    .replace(/(?<!\\)\\{/g, "{")
+                    .replace(/\\\\{/g, "\\");
+            }
         }
     }
 
     private bindTextNode(element: Element): void
     {
-        if (element.nodeValue && this.expressions.databind.test(element.nodeValue))
+        if (!element.nodeValue)
+        {
+            return;
+        }
+
+        if (this.expressions.interpolation.test(element.nodeValue))
         {
             const scope = createProxy({ this: element.parentElement, ...this.scope });
 
@@ -199,28 +194,19 @@ export default class TemplateProcessor
 
             element.nodeValue = "";
 
-            const match = this.expressions.path.exec(rawExpression);
+            const expression = BindExpression.parse(rawExpression);
 
-            let subscription: ISubscription;
+            const notify = () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
 
-            if (match)
-            {
-                subscription = DataBind.oneWay(scope, match[1], { notify: value => element.nodeValue = `${value ?? ""}` })[1];
-            }
-            else
-            {
-                const expression = BindExpression.parse(rawExpression);
-
-                const notify = typeGuard<IExpression, IArrayExpression>(expression, x => x.type == NodeType.ArrayExpression) ?
-                    () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}` :
-                    () => element.nodeValue = `${expression.evaluate(scope) ?? ""}`;
-
-                subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
-
-                notify();
-            }
+            const subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
 
             pushSubscription(element, subscription);
+        }
+        else
+        {
+            element.nodeValue
+                .replace(/(?<!\\)\\{/g, "{")
+                .replace(/\\\\{/g, "\\");
         }
     }
 
