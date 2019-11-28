@@ -1,5 +1,6 @@
 import { Action, Action1, Indexer }      from "@surface/core";
 import { typeGuard }                     from "@surface/core/common/generic";
+import { getKeyMember }                  from "@surface/core/common/object";
 import { dashedToCamel }                 from "@surface/core/common/string";
 import NodeType                          from "@surface/expression/node-type";
 import Type                              from "@surface/reflection";
@@ -15,7 +16,8 @@ import
 {
     ON_PROCESS,
     PROCESSED,
-    SCOPE}
+    SCOPE
+}
 from "./symbols";
 import { Bindable } from "./types";
 
@@ -82,19 +84,24 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
             : null;
 
-        for (const bindedAttribute of this.wrapAttribute(element))
+        for (const attribute of this.wrapAttribute(element))
         {
-            if (bindedAttribute.name.startsWith(":") || bindedAttribute.name.startsWith("on:") || this.expressions.interpolation.test(bindedAttribute.value))
+            if (attribute.name.startsWith(":") || attribute.name.startsWith("on:") || this.expressions.interpolation.test(attribute.value))
             {
                 const scope = createProxy({ this: element, ...this.scope });
 
-                const rawExpression = bindedAttribute.value;
+                const rawExpression = attribute.value;
+                const attributeName = attribute.name.replace(/^(on)?::?/, "");
+                const isEvent       = attribute.name.startsWith("on:");
+                const isTwoWay      = attribute.name.startsWith("::");
+                const isOneWay      = !isTwoWay && attribute.name.startsWith(":");
 
-                bindedAttribute.value = "";
+                attribute.value = "";
 
-                const isEvent  = bindedAttribute.name.startsWith("on:");
-                const isTwoWay = bindedAttribute.name.startsWith("::");
-                const isOneWay = !isTwoWay && bindedAttribute.name.startsWith(":");
+                if (isEvent || isOneWay || isTwoWay)
+                {
+                    element.removeAttributeNode(attribute);
+                }
 
                 const action = () =>
                 {
@@ -106,58 +113,53 @@ export default class TemplateProcessor
                             expression.evaluate(scope) as Action1<Event>
                             : () => expression.evaluate(scope);
 
-                        element.addEventListener(bindedAttribute.name.replace(/^on:/, ""), action);
-                        bindedAttribute.value = `[binding ${action.name || "expression"}]`;
+                        element.addEventListener(attributeName, action);
                     }
                     else if (isOneWay || isTwoWay)
                     {
-                        const attribute = document.createAttribute(bindedAttribute.name.replace(/^::?/, ""));
+                        const elementProperty = dashedToCamel(attributeName);
+                        const elementMember   = Type.from(element).getMember(elementProperty);
 
-                        attribute.value = attribute.value;
-
-                        element.removeAttributeNode(bindedAttribute);
-                        element.setAttributeNode(attribute);
-
-                        const propertyName    = dashedToCamel(attribute.name);
-                        const elementMember   = Type.from(element).getMember(propertyName);
-                        const canWriteElement = elementMember instanceof FieldInfo && !elementMember.readonly && !["class", "style"].includes(propertyName);
-
-                        if (isTwoWay)
+                        if (elementMember instanceof FieldInfo && elementMember.readonly)
                         {
-                            const target = scope;
-                            const path   = rawExpression;
-
-                            const notify = (value: unknown) => attribute.value = Array.isArray(value) ? "[binding Iterable]" : `${value ?? ""}`;
-
-                            const subscription = DataBind.oneWay(target, path, { notify })[1];
-
-                            pushSubscription(element, subscription);
-
-                            DataBind.twoWay(target, path, element as Indexer, propertyName);
+                            throw new Error(`Property ${elementProperty} of ${element.constructor.name} is readonly`);
                         }
-                        else
+
+                        if (isOneWay)
                         {
                             const expression = parse(rawExpression);
 
-                            if (canWriteElement)
-                            {
-                                throw new Error(`Property ${propertyName} of ${element.constructor.name} is readonly`);
-                            }
+                            const notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
 
-                            const notify = (value: unknown) => (element as Indexer)[propertyName] = value;
+                            let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
-                            let subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
+                            notify();
 
                             pushSubscription(element, subscription);
+                        }
+                        else
+                        {
+                            const [targetProperty, target] = getKeyMember(scope, rawExpression);
+
+                            const targetMember = Type.from(target).getMember(targetProperty);
+
+                            if (targetMember instanceof FieldInfo && targetMember.readonly)
+                            {
+                                throw new Error(`Property ${targetProperty} of ${target.constructor.name} is readonly`);
+                            }
+
+                            DataBind.twoWay(target, targetProperty, element as Indexer, elementProperty);
                         }
                     }
                     else
                     {
                         const expression = InterpolatedExpression.parse(rawExpression);
 
-                        const notify = () => bindedAttribute.value = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
+                        const notify = () => attribute.value = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
 
-                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
+                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+
+                        notify();
 
                         pushSubscription(element, subscription);
                     }
@@ -174,7 +176,7 @@ export default class TemplateProcessor
             }
             else
             {
-                bindedAttribute.value = scapeBrackets(bindedAttribute.value);
+                attribute.value = scapeBrackets(attribute.value);
             }
         }
     }
