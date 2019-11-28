@@ -4,10 +4,10 @@ import { dashedToCamel }                 from "@surface/core/common/string";
 import NodeType                          from "@surface/expression/node-type";
 import Type                              from "@surface/reflection";
 import FieldInfo                         from "@surface/reflection/field-info";
-import BindExpression                    from "./bind-expression";
 import { createProxy, pushSubscription } from "./common";
 import DataBind                          from "./data-bind";
 import DirectiveProcessor                from "./directive-processor";
+import InterpolatedExpression            from "./interpolated-expression";
 import ObserverVisitor                   from "./observer-visitor";
 import ParallelWorker                    from "./parallel-worker";
 import parse                             from "./parse";
@@ -18,6 +18,8 @@ import
     SCOPE}
 from "./symbols";
 import { Bindable } from "./types";
+
+const scapeBrackets = (value: string) => value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 
 export default class TemplateProcessor
 {
@@ -151,7 +153,7 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const expression = BindExpression.parse(rawExpression);
+                        const expression = InterpolatedExpression.parse(rawExpression);
 
                         const notify = () => bindedAttribute.value = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
 
@@ -172,9 +174,7 @@ export default class TemplateProcessor
             }
             else
             {
-                bindedAttribute.value
-                    .replace(/(?<!\\)\\{/g, "{")
-                    .replace(/\\\\{/g, "\\");
+                bindedAttribute.value = scapeBrackets(bindedAttribute.value);
             }
         }
     }
@@ -194,7 +194,7 @@ export default class TemplateProcessor
 
             element.nodeValue = "";
 
-            const expression = BindExpression.parse(rawExpression);
+            const expression = InterpolatedExpression.parse(rawExpression);
 
             const notify = () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
 
@@ -204,9 +204,7 @@ export default class TemplateProcessor
         }
         else
         {
-            element.nodeValue
-                .replace(/(?<!\\)\\{/g, "{")
-                .replace(/\\\\{/g, "\\");
+            element.nodeValue = scapeBrackets(element.nodeValue);
         }
     }
 

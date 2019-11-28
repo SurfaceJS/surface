@@ -2,7 +2,7 @@ import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import BindExpression                          from "../internal/bind-expression";
+import InterpolatedExpression                          from "../internal/interpolated-expression";
 
 class Mock
 {
@@ -30,16 +30,16 @@ class Mock
 }
 
 @suite
-export default class BindExpressionSpec
+export default class InterpolatedExpressionSpec
 {
     @test @shouldPass
     public cache(): void
     {
-        const expression = BindExpression.parse("Use cache");
+        const expression = InterpolatedExpression.parse("Use cache");
 
         expect(expression.evaluate({ })).to.deep.equal(["Use cache"]);
 
-        expect(BindExpression.parse("Use cache")).to.equal(expression);
+        expect(InterpolatedExpression.parse("Use cache")).to.equal(expression);
     }
 
     @test @shouldPass
@@ -47,7 +47,7 @@ export default class BindExpressionSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindExpression.parse("{this.value}");
+        const expression = InterpolatedExpression.parse("{this.value}");
 
         expect(expression.evaluate(scope)).to.deep.equal([0]);
 
@@ -60,7 +60,7 @@ export default class BindExpressionSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindExpression.parse("{ this.value } value at start");
+        const expression = InterpolatedExpression.parse("{ this.value } value at start");
 
         expect(expression.evaluate(scope)).to.deep.equal([0, " value at start"]);
 
@@ -73,7 +73,7 @@ export default class BindExpressionSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindExpression.parse("Value { this.value } at middle");
+        const expression = InterpolatedExpression.parse("Value { this.value } at middle");
 
         expect(expression.evaluate(scope)).to.deep.equal(["Value ", 0, " at middle"]);
 
@@ -86,7 +86,7 @@ export default class BindExpressionSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindExpression.parse("value at end { this.value }");
+        const expression = InterpolatedExpression.parse("value at end { this.value }");
 
         expect(expression.evaluate(scope)).to.deep.equal(["value at end ", 0]);
 
@@ -99,7 +99,7 @@ export default class BindExpressionSpec
     {
         const scope = { this: new Mock() };
 
-        const expression = BindExpression.parse("{ this.value } text at center { this.text }");
+        const expression = InterpolatedExpression.parse("{ this.value } text at center { this.text }");
 
         expect(expression.evaluate(scope)).to.deep.equal([0, " text at center ", "Hello World!!!"]);
 
@@ -111,7 +111,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideDoubleQuotedString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { \" double quoted string } - { \" } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { \" double quoted string } - { \" } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " double quoted string } - { ", " inside"]);
     }
@@ -119,7 +119,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideScapedDoubleQuotedString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { \" double \\\"quoted\\\" string } - { \" } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { \" double \\\"quoted\\\" string } - { \" } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " double \"quoted\" string } - { ", " inside"]);
     }
@@ -127,7 +127,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideSingleQuotedString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { ' single quoted string } - { ' } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ' single quoted string } - { ' } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " single quoted string } - { ", " inside"]);
     }
@@ -135,7 +135,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideScapedSingleQuotedString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { ' single \\'quoted\\' string } - { ' } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ' single \\'quoted\\' string } - { ' } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " single 'quoted' string } - { ", " inside"]);
     }
@@ -143,7 +143,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideTemplateString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { ` template single string } - { ` } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ` template single string } - { ` } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " template single string } - { ", " inside"]);
     }
@@ -151,7 +151,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideScapedTemplateString(): void
     {
-        const expression = BindExpression.parse("interpolatation with { ` template \\`single\\` string } - { ` } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ` template \\`single\\` string } - { ` } inside");
 
         expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " template `single` string } - { ", " inside"]);
     }
@@ -159,7 +159,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideTemplateStringAndTemplateInterpolation(): void
     {
-        const expression = BindExpression.parse("interpolatation with { ` template single ${ `value: ` + value} ` } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + value} ` } inside");
 
         expect(expression.evaluate({ value: 1 })).to.deep.equal(["interpolatation with ", " template single value: 1 ", " inside"]);
     }
@@ -167,7 +167,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public scapedInterpolation(): void
     {
-        const expression = BindExpression.parse("This is an scaped expression \\{ this.value }");
+        const expression = InterpolatedExpression.parse("This is an scaped expression \\{ this.value }");
 
         expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression { this.value }"]);
     }
@@ -175,7 +175,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public scapedScapedInterpolation(): void
     {
-        const expression = BindExpression.parse("This is an scaped expression \\\\{ 'scaped' }");
+        const expression = InterpolatedExpression.parse("This is an scaped expression \\\\{ 'scaped' }");
 
         expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression \\", "scaped"]);
     }
@@ -183,7 +183,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public interpolationAndScapedInterpolation(): void
     {
-        const expression = BindExpression.parse("This is an scaped expression \\{ { 'scaped' } }");
+        const expression = InterpolatedExpression.parse("This is an scaped expression \\{ { 'scaped' } }");
 
         expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression { ", "scaped", " }"]);
     }
@@ -191,7 +191,7 @@ export default class BindExpressionSpec
     @test @shouldPass
     public complexScapedInterpolation(): void
     {
-        const expression = BindExpression.parse("This is an { 'very' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
+        const expression = InterpolatedExpression.parse("This is an { 'very' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
 
         expect(expression.evaluate({ })).to.deep.equal(["This is an ", "very", " complex {scaped} \\", "interpolation", " \\}"]);
     }
@@ -199,18 +199,18 @@ export default class BindExpressionSpec
     @test @shouldFail
     public unclosedBrancket(): void
     {
-        expect(() => BindExpression.parse("This { Should throw")).to.throw(Error, "Unexpected token throw at posistion 8");
+        expect(() => InterpolatedExpression.parse("This { Should throw")).to.throw(Error, "Unexpected token throw at posistion 8");
     }
 
     @test @shouldFail
     public unclosedString(): void
     {
-        expect(() => BindExpression.parse("This { 'Should throw }")).to.throw(Error, "Invalid or unexpected token at posistion 16");
+        expect(() => InterpolatedExpression.parse("This { 'Should throw }")).to.throw(Error, "Invalid or unexpected token at posistion 16");
     }
 
     @test @shouldFail
     public invalidSyntax(): void
     {
-        expect(() => BindExpression.parse("This is my value: { this.? }")).to.throw(Error, "Unexpected token ? at posistion 6");
+        expect(() => InterpolatedExpression.parse("This is my value: { this.? }")).to.throw(Error, "Unexpected token ? at posistion 6");
     }
 }

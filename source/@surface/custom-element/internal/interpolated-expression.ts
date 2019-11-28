@@ -6,7 +6,7 @@ import parse            from "./parse";
 
 const stringTokens = ["\"", "'", "`"];
 
-export default class BindExpression
+export default class InterpolatedExpression
 {
     private static readonly cache: Record<string, IArrayExpression> = { };
 
@@ -23,12 +23,12 @@ export default class BindExpression
 
     public static parse(source: string): IArrayExpression
     {
-        if (source in BindExpression.cache)
+        if (source in InterpolatedExpression.cache)
         {
-            return BindExpression.cache[source];
+            return InterpolatedExpression.cache[source];
         }
 
-        return BindExpression.cache[source] = new BindExpression(source).scan();
+        return InterpolatedExpression.cache[source] = new InterpolatedExpression(source).scan();
     }
 
     private advance(): void
