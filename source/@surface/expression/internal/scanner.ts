@@ -774,7 +774,7 @@ export default class Scanner
 
                                 if (Object.is(unescapedChar, null))
                                 {
-                                    this.throwUnexpectedToken();
+                                    this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
                                 }
 
                                 $string += unescapedChar;
@@ -808,10 +808,6 @@ export default class Scanner
                         case "v":
                             $string += "\x0B";
                             break;
-                        case "8":
-                        case "9":
-                            $string += char;
-                            this.throwUnexpectedToken();
 
                         default:
                             if (char && Character.isOctalDigit(char.charCodeAt(0)))
@@ -845,7 +841,6 @@ export default class Scanner
 
         if (!terminated)
         {
-            this.setCursorAt(start);
             this.throwUnexpectedToken();
         }
 
@@ -1195,7 +1190,7 @@ export default class Scanner
         // At least, one hex digit is required.
         if (char == "}")
         {
-            this.throwUnexpectedToken();
+            this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
         }
 
         while (!this.eof())
@@ -1214,7 +1209,7 @@ export default class Scanner
 
         if (code > 0x10FFFF || char != "}")
         {
-            this.throwUnexpectedToken();
+            this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
         }
 
         return String.fromCodePoint(code);
@@ -1227,7 +1222,7 @@ export default class Scanner
 
     private throwUnexpectedToken(message?: string): never
     {
-        throw new SyntaxError(message || Messages.unexpectedTokenIllegal, this.lineNumber, this.index, this.index - this.lineStart + 1);
+        throw new SyntaxError(message ?? Messages.invalidOrUnexpectedToken, this.lineNumber, this.index, this.index - this.lineStart + 1);
     }
 
     public backtrack(steps: number): void
