@@ -21,11 +21,15 @@ Object.assign
             {
                 return;
             },
-            async whenDefined(name: string)
+            async whenDefined(_name: string)
             {
                 return await new Promise(resolve => setTimeout(resolve, 0));
             }
-        } as CustomElementRegistry
+        } as CustomElementRegistry,
+        requestAnimationFrame(callback: FrameRequestCallback)
+        {
+            setTimeout(callback, 0);
+        }
     }
 );
 

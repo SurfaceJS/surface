@@ -31,11 +31,11 @@ export default class ParallelWorker
         {
             const [action, callback] = this.stack.shift()!;
 
-            const start = performance.now();
+            const start = window.performance.now();
 
             callback(action());
 
-            const end = performance.now();
+            const end = window.performance.now();
 
             this.expended += (end - start);
 
@@ -51,7 +51,7 @@ export default class ParallelWorker
 
         this.running = false;
 
-        this.lastRun = performance.now();
+        this.lastRun = window.performance.now();
     }
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
@@ -60,7 +60,7 @@ export default class ParallelWorker
 
         if (!this.running)
         {
-            this.expended = performance.now() - this.lastRun;
+            this.expended = window.performance.now() - this.lastRun;
 
             this.execute();
         }

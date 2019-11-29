@@ -2,7 +2,10 @@ import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
+import { PROCESSED }               from "../internal/symbols";
 import TemplateProcessor           from "../internal/template-processor";
+
+const render = async (interval?: number) => await new Promise(resolve => setTimeout(resolve, interval ?? 0));
 
 @suite
 export default class TemplateProcessorSpec
@@ -59,663 +62,690 @@ export default class TemplateProcessorSpec
         }
     }
 
-    // @test @shouldPass
-    // public elementWithAttributeInterpolation(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+    @test @shouldPass
+    public elementWithAttributeInterpolation(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     host.lang = "pt-br";
-    //     element.innerHTML = "<span data-text='Tag name: {host.tagName}'>Text</span>";
-
-    //     TemplateProcessor.process(host, element);
-    //     chai.expect(element.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
-    // }
-
-    // @test @shouldPass
-    // public elementWithAttributesBindToNonBindableField(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+        host.lang = "pt-br";
+        element.innerHTML = "<span data-text='Tag name: {host.tagName}'>Text</span>";
 
-    //     element.innerHTML = "<span foo='{host.tagName}'</span>";
+        TemplateProcessor.process(host, element);
 
-    //     const span = element.firstElementChild as HTMLSpanElement & { foo?: string };
+        chai.expect(element.firstElementChild!.getAttribute("data-text")).to.equal("Tag name: DIV");
+    }
 
-    //     span.foo = "";
+    @test @shouldPass
+    public elementWithAttributeInterpolationExpression(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     TemplateProcessor.process(host, element);
+        element.innerHTML = "<span has-childs='Has childs: {this.childNodes.length > 0}'></span>";
 
-    //     chai.expect(span.foo).to.equal("DIV");
-    // }
-
-    // @test @shouldPass
-    // public elementWithAttributesBindToWindowFallback(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+        TemplateProcessor.process(host, element);
 
-    //     element.innerHTML = "<span lang='{Node.name}'</span>";
+        chai.expect(element.firstElementChild!.getAttribute("has-childs")).to.equal("Has childs: false");
+    }
 
-    //     TemplateProcessor.process(host, element);
-
-    //     if (element.firstElementChild)
-    //     {
-    //         const span = element.firstElementChild as HTMLSpanElement;
-    //         chai.expect(span.lang).to.equal("Node");
-    //     }
-    // }
-
-    // @test @shouldPass
-    // public elementWithAttributesBindExpression(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
-
-    //     element.innerHTML = "<span has-childs='[[ this.childNodes.length > 0 ]]'></span>";
-
-    //     TemplateProcessor.process(host, element);
-
-    //     if (element.firstElementChild)
-    //     {
-    //         chai.expect(element.firstElementChild.getAttribute("has-childs")).to.equal("false");
-    //     }
-    // }
-
-    // @test @shouldPass
-    // public elementWithPropertyAttributeBindExpression(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
-
-    //     element.innerHTML = "<span id='{this.childNodes.length > 0}'></span>";
-
-    //     TemplateProcessor.process(host, element);
-
-    //     if (element.firstElementChild)
-    //     {
-    //         const span = element.firstElementChild;
-
-    //         chai.expect(span.getAttribute("id")).to.equal("false");
-    //         chai.expect(span.id).to.equal("false");
-    //     }
-    // }
-
-    // @test @shouldPass
-    // public elementWithAttributesWithEventBind(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
-
-    //     host.click = () => chai.expect(true).to.equal(true);
-
-    //     element.innerHTML = "<span on-click='{host.click}'>Text</span>";
-
-    //     TemplateProcessor.process(host, element);
+    @test @shouldPass
+    public elementWithOneWayDataBinding(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     if (element.firstElementChild)
-    //     {
-    //         element.firstElementChild.dispatchEvent(new Event("click"));
-    //     }
-    // }
-
-    // @test @shouldPass
-    // public elementWithAttributesWithExpressionEventBind(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div") as HTMLDivElement & { method?: Function };
-    //     const element  = document.createElement("div");
+        element.innerHTML = "<span :foo='host.tagName'</span>";
 
-    //     host.method = (value: boolean) => chai.expect(value).to.equal(true);
+        const span = element.firstElementChild as HTMLSpanElement & { foo?: string };
 
-    //     element.innerHTML = "<span on-click='{host.method(true)}'>Text</span>";
+        span.foo = "";
 
-    //     TemplateProcessor.process(host, element);
+        TemplateProcessor.process(host, element);
 
-    //     if (element.firstElementChild)
-    //     {
-    //         element.firstElementChild.dispatchEvent(new Event("click"));
-    //     }
-    // }
+        chai.expect(span.foo).to.equal("DIV");
+    }
 
-    // @test @shouldPass
-    // public elementWithTextNodeBind(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+    @test @shouldPass
+    public elementWithOneWayDataBindingToWindowFallback(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     host.id = "01";
-    //     element.innerHTML = "<span>Host id: {host.id}</span>";
+        element.innerHTML = "<span lang='{Node.name}'</span>";
 
-    //     TemplateProcessor.process(host, element);
+        TemplateProcessor.process(host, element);
 
-    //     if (element.firstElementChild)
-    //     {
-    //         chai.expect(element.firstElementChild.innerHTML).to.equal("Host id: 01");
-    //         host.id = "02";
-    //         host.dispatchEvent(new Event("change"));
-    //         chai.expect(element.firstElementChild.innerHTML).to.equal("Host id: 02");
-    //     }
-    // }
+        const span = element.firstElementChild as HTMLSpanElement;
 
-    // @test @shouldPass
-    // public elementWithTextNodeBindExpression(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+        chai.expect(span.lang).to.equal("Node");
+    }
 
-    //     host.id = "01";
-    //     element.innerHTML = "<span>{host.id == '01'}</span>";
+    @test @shouldPass
+    public elementWithAttributesWithEventBind(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     TemplateProcessor.process(host, element);
+        let clicked = false;
 
-    //     if (element.firstElementChild)
-    //     {
-    //         chai.expect(element.firstElementChild.innerHTML).to.equal("true");
-    //         host.id = "02";
-    //         host.dispatchEvent(new Event("change"));
-    //         chai.expect(element.firstElementChild.innerHTML).to.equal("false");
-    //     }
-    // }
+        host.click = () => clicked = true;
 
-    // @test @shouldPass
-    // public templateInjectDirective(): void
-    // {
-    //     const root = document.createElement("div");
-    //     const host = document.createElement("div");
+        element.innerHTML = "<span on:click='host.click'>Text</span>";
 
-    //     host.innerHTML = "<template #inject:items>World</template>";
+        TemplateProcessor.process(host, element);
 
-    //     const element = document.createElement("div");
+        element.firstElementChild!.dispatchEvent(new Event("click"));
 
-    //     root.appendChild(host);
-    //     host.appendChild(element);
+        chai.expect(clicked).to.equal(true);
+    }
 
-    //     element.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
+    @test @shouldPass
+    public elementWithAttributesWithExpressionEventBind(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div") as HTMLDivElement & { method?: Function };
+        const element  = document.createElement("div");
 
-    //     TemplateProcessor.process(host, element);
-    //     TemplateProcessor.process(root, host);
+        let clicked = false;
 
-    //     chai.expect(root.querySelector("div")?.textContent).to.equal("Hello World!!!");
-    // }
+        host.method = (value: boolean) => clicked = value;
 
-    // @test @shouldPass
-    // public templateInjectorDirectiveWithDefault(): void
-    // {
-    //     const root = document.createElement("div");
-    //     const host = document.createElement("div");
+        element.innerHTML = "<span on:click='host.method(true)'>Text</span>";
 
-    //     const element = document.createElement("div");
+        TemplateProcessor.process(host, element);
 
-    //     root.appendChild(host);
-    //     host.appendChild(element);
+        element.firstElementChild!.dispatchEvent(new Event("click"));
 
-    //     element.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
+        chai.expect(clicked).to.equal(true);
+    }
 
-    //     TemplateProcessor.process(host, element);
-    //     TemplateProcessor.process(root, host);
+    @test @shouldPass
+    public elementWithTextNodeInterpolation(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     chai.expect(root.querySelector("div")?.textContent).to.equal("Hello Default!!!");
-    // }
+        host.id = "01";
+        element.innerHTML = "<span>Host id: {host.id}</span>";
 
-    // @test @shouldPass
-    // public templateConditionalDirective(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { order?: number };
+        TemplateProcessor.process(host, element);
 
-    //     host.order = 1;
+        chai.expect(element.firstElementChild!.innerHTML).to.equal("Host id: 01");
 
-    //     const element = document.createElement("div");
+        host.id = "02";
 
-    //     host.appendChild(element);
+        chai.expect(element.firstElementChild!.innerHTML).to.equal("Host id: 02");
+    }
 
-    //     element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+    @test @shouldPass
+    public elementWithTextNodeInterpolationExpression(): void
+    {
+        const document = window.document;
+        const host     = document.createElement("div");
+        const element  = document.createElement("div");
 
-    //     TemplateProcessor.process(host, element);
+        host.id = "01";
+        element.innerHTML = "<span>{host.id == '01'}</span>";
 
-    //     chai.expect(element.childNodes[1].textContent).to.equal("First");
+        TemplateProcessor.process(host, element);
 
-    //     host.order = 2;
+        chai.expect(element.firstElementChild!.innerHTML).to.equal("true");
 
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Second");
+        host.id = "02";
 
-    //     host.order = 3;
+        chai.expect(element.firstElementChild!.innerHTML).to.equal("false");
+    }
 
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Last");
-    // }
+    @test @shouldPass
+    public async templateInjectDirective(): Promise<void>
+    {
+        const root = document.createElement("div");
+        const host = document.createElement("div");
 
-    // @test @shouldPass
-    // public templateLoopDirective(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
+        host.innerHTML = "<template #inject:items>World</template>";
 
-    //     host.elements = [1];
+        const element = document.createElement("div");
 
-    //     const element = document.createElement("div");
+        root.appendChild(host);
+        host.appendChild(element);
 
-    //     host.appendChild(element);
+        element.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
 
-    //     element.innerHTML = `<template #for="const index of host.elements"><span>Element: {index}</span></template>`;
+        TemplateProcessor.process(host, element);
+        TemplateProcessor.process(root, host);
 
-    //     TemplateProcessor.process(host, element);
+        await render();
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
+        chai.expect(root.querySelector("div")?.textContent).to.equal("Hello World!!!");
+    }
 
-    //     host.elements = [1, 2];
+    @test @shouldPass
+    public async templateInjectorDirectiveWithDefault(): Promise<void>
+    {
+        const root = document.createElement("div");
+        const host = document.createElement("div");
 
-    //     chai.expect(element.childElementCount).to.equal(2);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element: 2");
+        const element = document.createElement("div");
 
-    //     host.elements = [1, 2, 3];
+        root.appendChild(host);
+        host.appendChild(element);
 
-    //     chai.expect(element.childElementCount).to.equal(3);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element: 2");
-    //     chai.expect(element.childNodes[3].textContent).to.equal("Element: 3");
+        element.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
 
-    //     host.elements = [2];
+        TemplateProcessor.process(host, element);
+        TemplateProcessor.process(root, host);
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 2");
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public templateLoopDirectiveWithArrayDestructuring(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, number]> };
+        chai.expect(root.querySelector("div")?.textContent).to.equal("Hello Default!!!");
+    }
 
-    //     host.elements = [[1, 2]];
+    @test @shouldPass
+    public async templateConditionalDirective(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { order?: number };
 
-    //     const element = document.createElement("div");
+        host.order = 1;
 
-    //     host.appendChild(element);
+        const element = document.createElement("div");
 
-    //     element.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>`;
+        host.appendChild(element);
 
-    //     TemplateProcessor.process(host, element);
+        element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        TemplateProcessor.process(host, element);
 
-    //     host.elements = [[1, 2], [2, 4]];
+        await render();
 
-    //     chai.expect(element.childElementCount).to.equal(2);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[1].textContent).to.equal("First");
 
-    //     host.elements = [[1, 2], [2, 4], [3, 6]];
+        host.order = 2;
 
-    //     chai.expect(element.childElementCount).to.equal(3);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    //     chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+        await render();
 
-    //     host.elements = [[2, 4]];
+        chai.expect(element.childNodes[1].textContent).to.equal("Second");
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    // }
+        host.order = 3;
 
-    // @test @shouldPass
-    // public templateLoopDirectiveWithArrayDestructuringDeepNested(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, { item: { name: string } }]> };
+        await render();
 
-    //     host.elements = [[1, { item: { name: "one" } }]];
+        chai.expect(element.childNodes[1].textContent).to.equal("Last");
+    }
 
-    //     const element = document.createElement("div");
+    @test @shouldPass
+    public async templateLoopDirective(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
 
-    //     host.appendChild(element);
+        host.elements = [1];
 
-    //     element.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {index}, Name: {name}</span></template>`;
+        const element = document.createElement("div");
 
-    //     TemplateProcessor.process(host, element);
+        host.appendChild(element);
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
+        element.innerHTML = `<template #for="const index of host.elements"><span>Element: {index}</span></template>`;
 
-    //     host.elements =
-    //     [
-    //         [1, { item: { name: "one" } }],
-    //         [2, { item: { name: "two" } }]
-    //     ];
+        TemplateProcessor.process(host, element);
 
-    //     chai.expect(element.childElementCount).to.equal(2);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element: 2, Name: two");
+        await render();
 
-    //     host.elements =
-    //     [
-    //         [1, { item: { name: "one" } }],
-    //         [2, { item: { name: "two" } }],
-    //         [3, { item: { name: "three" } }]
-    //     ];
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1");
 
-    //     chai.expect(element.childElementCount).to.equal(3);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 1, Name: one");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element: 2, Name: two");
-    //     chai.expect(element.childNodes[3].textContent).to.equal("Element: 3, Name: three");
+        host.elements = [1, 2];
 
-    //     host.elements = [[2, { item: { name: "two" } }]];
+        await render();
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element: 2, Name: two");
-    // }
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element: 2");
 
-    // @test @shouldPass
-    // public templateLoopDirectiveWithObjectDestructuring(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, number]}> };
+        host.elements = [1, 2, 3];
 
-    //     host.elements = [{ values: [1, 2] }];
+        await render();
 
-    //     const element = document.createElement("div");
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element: 2");
+        chai.expect(element.childNodes[8].textContent).to.equal("Element: 3");
 
-    //     host.appendChild(element);
+        host.elements = [2];
 
-    //     element.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        await render();
 
-    //     TemplateProcessor.process(host, element);
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2");
+    }
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+    @test @shouldPass
+    public async templateLoopDirectiveWithArrayDestructuring(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, number]> };
 
-    //     host.elements =
-    //     [
-    //         { values: [1, 2] },
-    //         { values: [2, 4] },
-    //     ];
+        host.elements = [[1, 2]];
 
-    //     chai.expect(element.childElementCount).to.equal(2);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        const element = document.createElement("div");
 
-    //     host.elements =
-    //     [
-    //         { values: [1, 2] },
-    //         { values: [2, 4] },
-    //         { values: [3, 6] },
-    //     ];
+        host.appendChild(element);
 
-    //     chai.expect(element.childElementCount).to.equal(3);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    //     chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+        element.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>`;
 
-    //     host.elements = [{ values: [2, 4] }];
+        TemplateProcessor.process(host, element);
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public templateLoopDirectiveWithObjectDestructuringDeepNested(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, [[number]]]}> };
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
 
-    //     host.elements = [{ values: [1, [[2]]] }];
+        host.elements = [[1, 2], [2, 4]];
 
-    //     const element = document.createElement("div");
+        await render();
 
-    //     host.appendChild(element);
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
 
-    //     element.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        host.elements = [[1, 2], [2, 4], [3, 6]];
 
-    //     TemplateProcessor.process(host, element);
+        await render();
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[8].textContent).to.equal("Element[0]: 3, Element[1]: 6");
 
-    //     host.elements =
-    //     [
-    //         { values: [1, [[2]]] },
-    //         { values: [2, [[4]]] }
-    //     ];
+        host.elements = [[2, 4]];
 
-    //     chai.expect(element.childElementCount).to.equal(2);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        await render();
 
-    //     host.elements =
-    //     [
-    //         { values: [1, [[2]]] },
-    //         { values: [2, [[4]]] },
-    //         { values: [3, [[6]]] },
-    //     ];
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
 
-    //     chai.expect(element.childElementCount).to.equal(3);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 1, Element[1]: 2");
-    //     chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    //     chai.expect(element.childNodes[3].textContent).to.equal("Element[0]: 3, Element[1]: 6");
+    @test @shouldPass
+    public async templateLoopDirectiveWithArrayDestructuringDeepNested(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, { item: { name: string } }]> };
 
-    //     host.elements = [{ values: [2, [[4]]] },];
+        host.elements = [[1, { item: { name: "one" } }]];
 
-    //     chai.expect(element.childElementCount).to.equal(1);
-    //     chai.expect(element.childNodes[1].textContent).to.equal("Element[0]: 2, Element[1]: 4");
-    // }
+        const element = document.createElement("div");
 
-    // @test @shouldPass
-    // public templateCompositeConditionalAndLoopDirectives(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
+        host.appendChild(element);
 
-    //     host.condition = false;
-    //     host.items     =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3],
-    //     ];
+        element.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {index}, Name: {name}</span></template>`;
 
-    //     const element = document.createElement("div");
-    //     host.appendChild(element);
+        TemplateProcessor.process(host, element);
 
-    //     element.innerHTML =
-    //     `
-    //         <template #if="host.condition" #for="const [key, value] of host.items">
-    //             <span>{{key}}: {{value}}</span>
-    //         </template>
-    //         <template #else>
-    //             <span>Empty</span>
-    //         </template>
-    //     `;
+        await render();
 
-    //     TemplateProcessor.process(host, element);
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1, Name: one");
 
-    //     chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }]
+        ];
 
-    //     host.condition = true;
+        await render();
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
-    //     chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
-    //     chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
-    // }
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1, Name: one");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element: 2, Name: two");
 
-    // @test @shouldPass
-    // public templateCompositeLoopAndConditionalDirectives(): void
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }],
+            [3, { item: { name: "three" } }]
+        ];
 
-    //     host.condition = false;
-    //     host.items     =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3],
-    //     ];
+        await render();
 
-    //     const element = document.createElement("div");
-    //     host.appendChild(element);
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 1, Name: one");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element: 2, Name: two");
+        chai.expect(element.childNodes[8].textContent).to.equal("Element: 3, Name: three");
 
-    //     element.innerHTML =
-    //     `
-    //         <template #for="const [key, value] of host.items" #if="host.condition">
-    //             <span>{{key}}: {{value}}</span>
-    //         </template>
-    //         <template #else>
-    //             <span>Empty</span>
-    //         </template>
-    //     `;
+        host.elements = [[2, { item: { name: "two" } }]];
 
-    //     TemplateProcessor.process(host, element);
+        await render();
 
-    //     chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element: 2, Name: two");
+    }
 
-    //     host.condition = true;
+    @test @shouldPass
+    public async templateLoopDirectiveWithObjectDestructuring(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, number]}> };
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
-    //     chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
-    //     chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
-    // }
+        host.elements = [{ values: [1, 2] }];
 
-    // @test @shouldPass
-    // public templateCompositeConditionalAndInjectDirectives(): void
-    // {
-    //     const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, item?: [string, number] };
-    //     const content = document.createElement("div");
+        const element = document.createElement("div");
 
-    //     host.innerHTML =
-    //     `
-    //         <template #inject:items="{ item }" #if="item[1] % 2 == 1">
-    //             <span>{{item[0]}}: {{item[1]}}</span>
-    //         </template>
-    //     `;
+        host.appendChild(element);
 
-    //     content.innerHTML =
-    //     `
-    //         <template #injector:items="{ item: host.item }">
-    //             <span>Default</span>
-    //         </template>
-    //     `;
+        element.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
 
-    //     content.normalize();
+        TemplateProcessor.process(host, element);
 
-    //     host.appendChild(content);
+        await render();
 
-    //     host.normalize();
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
 
-    //     host[PROCESSED] = true;
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+        ];
 
-    //     host.item = ["Value", 1];
+        await render();
 
-    //     TemplateProcessor.process(host, content);
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 1");
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+            { values: [3, 6] },
+        ];
 
-    //     host.item[1] = 2;
+        await render();
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal(undefined);
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[8].textContent).to.equal("Element[0]: 3, Element[1]: 6");
 
-    //     host.item[1] = 3;
+        host.elements = [{ values: [2, 4] }];
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 3");
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public templateCompositeConditionalAndInjectorDirectives(): void
-    // {
-    //     const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, item?: [string, number] };
-    //     const content = document.createElement("div");
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
 
-    //     host.innerHTML    =
-    //     `
-    //         <template #inject:items="{ item: [key, value] }">
-    //             <span>{{key}}: {{value}}</span>
-    //         </template>
-    //     `;
+    @test @shouldPass
+    public async templateLoopDirectiveWithObjectDestructuringDeepNested(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, [[number]]]}> };
 
-    //     content.innerHTML =
-    //     `
-    //         <template #injector:items="{ item: host.item }" #if="host.condition">
-    //             <span>Default</span>
-    //         </template>
-    //     `;
+        host.elements = [{ values: [1, [[2]]] }];
 
-    //     host.appendChild(content);
+        const element = document.createElement("div");
 
-    //     host.condition = false;
-    //     host.item      = ["One", 1];
+        host.appendChild(element);
 
-    //     TemplateProcessor.process(host, content);
+        element.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
 
-    //     chai.expect(host.querySelector("span")).to.equal(null);
+        TemplateProcessor.process(host, element);
 
-    //     host[PROCESSED] = true;
+        await render();
 
-    //     host.condition = true;
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
-    // }
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] }
+        ];
 
-    // @test @shouldPass
-    // public templateCompositeLoopAndInjectorDirectives(): void
-    // {
-    //     const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, items?: Array<[string, number]> };
-    //     const content = document.createElement("div");
+        await render();
 
-    //     host.innerHTML    =
-    //     `
-    //         <template #inject:items="{ item: [key, value] }">
-    //             <span>{{key}}: {{value}}</span>
-    //         </template>
-    //     `;
+        chai.expect(element.childElementCount).to.equal(2);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
 
-    //     content.innerHTML =
-    //     `
-    //         <template #for="const item of host.items" #injector:items="{ item }">
-    //             <span>Default</span>
-    //         </template>
-    //     `;
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] },
+            { values: [3, [[6]]] },
+        ];
 
-    //     host.appendChild(content);
+        await render();
 
-    //     host.condition = false;
-    //     host.items     = [];
+        chai.expect(element.childElementCount).to.equal(3);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 1, Element[1]: 2");
+        chai.expect(element.childNodes[5].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+        chai.expect(element.childNodes[8].textContent).to.equal("Element[0]: 3, Element[1]: 6");
 
-    //     TemplateProcessor.process(host, content);
+        host.elements = [{ values: [2, [[4]]] }];
 
-    //     chai.expect(host.querySelector("span")).to.equal(null);
+        await render();
 
-    //     host[PROCESSED] = true;
+        chai.expect(element.childElementCount).to.equal(1);
+        chai.expect(element.childNodes[2].textContent).to.equal("Element[0]: 2, Element[1]: 4");
+    }
 
-    //     host.items =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3]
-    //     ];
+    @test @shouldPass
+    public async templateCompositeConditionalAndLoopDirectives(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
 
-    //     chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
-    //     chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
-    //     chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
-    // }
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
 
-    // @test @shouldFail
-    // public elementWithInvalidBindExpression(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div");
-    //     const element  = document.createElement("div");
+        const element = document.createElement("div");
+        host.appendChild(element);
 
-    //     element.innerHTML = "<span>Host tag name: {host.?}</span>";
+        element.innerHTML =
+        `
+            <template #if="host.condition" #for="const [key, value] of host.items">
+                <span>{key}: {value}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
 
-    //     try
-    //     {
-    //         TemplateProcessor.process(host, element);
-    //     }
-    //     catch (error)
-    //     {
-    //         chai.expect(error).to.includes(new Error("Unexpected token ? - posistion 6"));
-    //     }
-    // }
+        TemplateProcessor.process(host, element);
+
+        await render();
+
+        chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
+
+        host.condition = true;
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
+    }
+
+    @test @shouldPass
+    public async templateCompositeLoopAndConditionalDirectives(): Promise<void>
+    {
+        const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
+
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
+
+        const element = document.createElement("div");
+        host.appendChild(element);
+
+        element.innerHTML =
+        `
+            <template #for="const [key, value] of host.items" #if="host.condition">
+                <span>{key}: {value}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
+
+        TemplateProcessor.process(host, element);
+
+        await render();
+
+        chai.expect(host.querySelector("span")?.textContent).to.equal("Empty");
+
+        host.condition = true;
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
+    }
+
+    @test @shouldPass
+    public async templateCompositeConditionalAndInjectDirectives(): Promise<void>
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, item?: [string, number] };
+        const content = document.createElement("div");
+
+        host.innerHTML =
+        `
+            <template #inject:items="{ item }" #if="item[1] % 2 == 1">
+                <span>{item[0]}: {item[1]}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #injector:items="{ item: host.item }">
+                <span>Default</span>
+            </template>
+        `;
+
+        content.normalize();
+
+        host.appendChild(content);
+
+        host.normalize();
+
+        host[PROCESSED] = true;
+
+        host.item = ["Value", 1];
+
+        TemplateProcessor.process(host, content);
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 1");
+
+        host.item[1] = 2;
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal(undefined);
+
+        host.item[1] = 3;
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("Value: 3");
+    }
+
+    @test @shouldPass
+    public async templateCompositeConditionalAndInjectorDirectives(): Promise<void>
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, item?: [string, number] };
+        const content = document.createElement("div");
+
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{key}: {value}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #injector:items="{ item: host.item }" #if="host.condition">
+                <span>Default</span>
+            </template>
+        `;
+
+        host.appendChild(content);
+
+        host.condition = false;
+        host.item      = ["One", 1];
+
+        TemplateProcessor.process(host, content);
+
+        await render();
+
+        chai.expect(host.querySelector("span")).to.equal(null);
+
+        host[PROCESSED] = true;
+
+        host.condition = true;
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+    }
+
+    @test @shouldPass
+    public async templateCompositeLoopAndInjectorDirectives(): Promise<void>
+    {
+        const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, items?: Array<[string, number]> };
+        const content = document.createElement("div");
+
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{key}: {value}</span>
+            </template>
+        `;
+
+        content.innerHTML =
+        `
+            <template #for="const item of host.items" #injector:items="{ item }">
+                <span>Default</span>
+            </template>
+        `;
+
+        host.appendChild(content);
+
+        host.condition = false;
+        host.items     = [];
+
+        TemplateProcessor.process(host, content);
+
+        await render();
+
+        chai.expect(host.querySelector("span")).to.equal(null);
+
+        host[PROCESSED] = true;
+
+        host.items =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3]
+        ];
+
+        await render();
+
+        chai.expect(host.querySelector("span:nth-child(1)")?.textContent).to.equal("One: 1");
+        chai.expect(host.querySelector("span:nth-child(2)")?.textContent).to.equal("Two: 2");
+        chai.expect(host.querySelector("span:nth-child(3)")?.textContent).to.equal("Three: 3");
+    }
 }
