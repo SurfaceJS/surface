@@ -159,9 +159,9 @@ export default class TemplateProcessor
 
                         let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
-                        notify();
-
                         pushSubscription(element, subscription);
+
+                        notify();
                     }
                 };
 
@@ -200,9 +200,11 @@ export default class TemplateProcessor
 
             const notify = () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = ObserverVisitor.observe(expression, scope, { notify }, false);
+            const subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
             pushSubscription(element, subscription);
+
+            notify();
         }
         else
         {
