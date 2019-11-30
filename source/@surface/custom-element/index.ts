@@ -25,9 +25,9 @@ export default abstract class CustomElement extends HTMLElement
 
     public onAfterBind?: Action;
 
-    protected constructor();
-    protected constructor(shadowRootInit: ShadowRootInit);
-    protected constructor(shadowRootInit?: ShadowRootInit)
+    public constructor();
+    public constructor(shadowRootInit: ShadowRootInit);
+    public constructor(shadowRootInit?: ShadowRootInit)
     {
         super();
         this[SHADOW_ROOT] = this.attachShadow(shadowRootInit || { mode: "closed" });

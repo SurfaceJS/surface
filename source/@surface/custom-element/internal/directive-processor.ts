@@ -1,15 +1,15 @@
 import { Action2, Indexer, Nullable } from "@surface/core";
 import { contains }                   from "@surface/core/common/array";
-import { typeGuard }                  from "@surface/core/common/generic";
-import Expression               from "@surface/expression";
-import Evaluate                 from "@surface/expression/evaluate";
-import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression              from "@surface/expression/interfaces/expression";
-import ISubscription            from "@surface/reactive/interfaces/subscription";
-import { createProxy }          from "./common";
-import ObserverVisitor          from "./observer-visitor";
-import ParallelWorker           from "./parallel-worker";
-import parse                    from "./parse";
+import { assert, typeGuard }          from "@surface/core/common/generic";
+import Expression                     from "@surface/expression";
+import Evaluate                       from "@surface/expression/evaluate";
+import IArrowFunctionExpression       from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                    from "@surface/expression/interfaces/expression";
+import ISubscription                  from "@surface/reactive/interfaces/subscription";
+import { createProxy, iterateRange }  from "./common";
+import ObserverVisitor                from "./observer-visitor";
+import ParallelWorker                 from "./parallel-worker";
+import parse                          from "./parse";
 import
 {
     INJECTED_TEMPLATES,
@@ -46,12 +46,14 @@ export default class DirectiveProcessor
                 DirectiveProcessor.decomposeDirectives(innerTemplate);
 
                 template.content.appendChild(innerTemplate);
+
+                template.setAttribute(__DECOPOSED__, "");
             };
 
             if (attributes.length > 0)
             {
-                const injectKey   = attributes.filter(x => x.startsWith(HASH_INJECT + ":"))[0]   as string|null;
-                const injectorKey = attributes.filter(x => x.startsWith(HASH_INJECTOR + ":"))[0] as string|null;
+                const injectKey   = attributes.find(x => x.startsWith(HASH_INJECT + ":"));
+                const injectorKey = attributes.find(x => x.startsWith(HASH_INJECTOR + ":"));
 
                 if (injectKey && (contains(attributes, [HASH_IF, HASH_ELSE_IF, HASH_ELSE]) || attributes.includes(HASH_FOR) || injectorKey))
                 {
@@ -112,8 +114,18 @@ export default class DirectiveProcessor
                 }
             }
         }
+    }
 
-        template.setAttribute(__DECOPOSED__, "");
+    private static removeBindingsInRange(start: ChildNode, end: ChildNode): void
+    {
+        for (const element of iterateRange(start, end))
+        {
+            element.remove();
+
+            (element as Bindable<Node>)[ON_REMOVED]?.();
+
+            TemplateProcessor.clear(element);
+        }
     }
 
     private static async processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
@@ -135,26 +147,13 @@ export default class DirectiveProcessor
                 return;
             }
 
-            let simbling: Nullable<ChildNode> = null;
-
-            while ((simbling = start.nextSibling) && simbling != end)
-            {
-                simbling.remove();
-
-                (simbling as Bindable<Node>)[ON_REMOVED]?.();
-
-                TemplateProcessor.clear(simbling);
-            }
+            DirectiveProcessor.removeBindingsInRange(start, end);
 
             for (const [expression, template] of expressions)
             {
                 if (expression.evaluate(scope))
                 {
-                    const content = template.content.cloneNode(true) as Element;
-
-                    content.normalize();
-
-                    TemplateProcessor.process(host, content, scope);
+                    const content = DirectiveProcessor.processTemplate(template, host, scope);
 
                     end.parentNode.insertBefore(content, end);
 
@@ -261,35 +260,22 @@ export default class DirectiveProcessor
             {
                 if (index >= cache.length || (index < cache.length && !Object.is(element, cache[index][0])))
                 {
+                    const mergedScope = destructured
+                        ? { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope, [SUBSCRIPTIONS]: [] }
+                        : { ...scope, [aliasExpression]: element, [SUBSCRIPTIONS]: [] };
+
                     const rowStart = document.createComment(`for-directive-element[${index}]-start`);
                     const rowEnd   = document.createComment(`for-directive-element[${index}]-end`);
 
-                    const content = template.content.cloneNode(true) as Element;
-
-                    content.normalize();
-
-                    const mergedScope = destructured ?
-                        { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope, [SUBSCRIPTIONS]: [] }
-                        : { ...scope, [aliasExpression]: element, [SUBSCRIPTIONS]: [] };
-
                     tree.appendChild(rowStart);
 
-                    TemplateProcessor.process(host, content, mergedScope);
+                    const content = DirectiveProcessor.processTemplate(template, host, mergedScope);
 
                     if (index < cache.length)
                     {
                         const [, $rowStart, $rowEnd] = cache[index];
 
-                        let simbling: Nullable<ChildNode> = null;
-
-                        while ((simbling = $rowStart.nextSibling) && simbling != $rowEnd)
-                        {
-                            simbling.remove();
-
-                            (simbling as Bindable<Node>)[ON_REMOVED]?.();
-
-                            TemplateProcessor.clear(simbling);
-                        }
+                        DirectiveProcessor.removeBindingsInRange($rowStart, $rowEnd);
 
                         $rowStart.remove();
                         $rowEnd.remove();
@@ -344,16 +330,7 @@ export default class DirectiveProcessor
                 {
                     for (const [, rowStart, rowEnd] of cache.splice(elements.length))
                     {
-                        let simbling: Nullable<ChildNode> = null;
-
-                        while ((simbling = rowStart.nextSibling) && simbling != rowEnd)
-                        {
-                            simbling.remove();
-
-                            (simbling as Bindable<Node>)[ON_REMOVED]?.();
-
-                            TemplateProcessor.clear(simbling);
-                        }
+                        DirectiveProcessor.removeBindingsInRange(rowStart, rowEnd);
 
                         rowStart.remove();
                         rowEnd.remove();
@@ -433,16 +410,7 @@ export default class DirectiveProcessor
                 return;
             }
 
-            let simbling: Nullable<ChildNode> = null;
-
-            while ((simbling = start.nextSibling) && simbling != end)
-            {
-                simbling.remove();
-
-                (simbling as Bindable<Node>)[ON_REMOVED]?.();
-
-                TemplateProcessor.clear(simbling);
-            }
+            DirectiveProcessor.removeBindingsInRange(start, end);
 
             const { elementScope, scopeAlias } = isDestructured ?
                 { elementScope: Evaluate.pattern(scope, pattern, expression.evaluate(proxyScope)), scopeAlias: "" }
@@ -452,11 +420,7 @@ export default class DirectiveProcessor
                 { ...elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] }
                 : { [scopeAlias]: elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] };
 
-            const content = document.importNode(injectionTemplate.content, true);
-
-            content.normalize();
-
-            TemplateProcessor.process(host, content, mergedScope);
+            const content = DirectiveProcessor.processTemplate(injectionTemplate, host, mergedScope);
 
             end.parentNode.insertBefore(content, end);
         };
@@ -489,12 +453,20 @@ export default class DirectiveProcessor
         }
     }
 
+    private static processTemplate(template: HTMLTemplateElement, host: Node, scope: Indexer): Element
+    {
+        const content = template.content.cloneNode(true) as Element;
+
+        content.normalize();
+
+        TemplateProcessor.process(host, content, scope);
+
+        return content;
+    }
+
     public static async process(host: Element|Node, template: HTMLTemplateElement, scope: Indexer): Promise<void>
     {
-        if (!template.parentNode)
-        {
-            throw new Error("Cannot process orphan templates");
-        }
+        assert(template.parentNode, "Cannot process orphan templates");
 
         const parent = template.parentNode;
 
