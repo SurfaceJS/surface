@@ -8,9 +8,6 @@ import { attribute, element }                  from "../decorators";
 @suite
 export default class DecoratorsSpec
 {
-    /*
-    Non testable using jsdom
-
     @test @shouldPass
     public elementDecoratorHtmlElement(): void
     {
@@ -20,7 +17,6 @@ export default class DecoratorsSpec
 
         expect(() => new Mock()).to.not.throw();
     }
-    */
 
     @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void

@@ -27,17 +27,46 @@
         "class-name":                      true,
         "completed-docs":
         [
-            false, // For now
+            false,
             {
-                "classes":    {"visibilities": ["exported"]},
-                "enums":      {"visibilities": ["exported"]},
-                "functions":  {"visibilities": ["exported"]},
-                "interfaces": {"visibilities": ["exported"]},
-                "namespaces": {"visibilities": ["exported"]},
-                "types":      {"visibilities": ["exported"]},
-                "variables":  {"visibilities": ["exported"]},
-                "methods":    {"locations": ["all"], "privacies": ["public", "protected"]},
-                "properties": {"locations": ["all"], "privacies": ["public", "protected"]}
+                "classes":
+                {
+                    "visibilities": ["exported"]
+                },
+                "enums":
+                {
+                    "visibilities": ["exported"]
+                },
+                "functions":
+                {
+                    "visibilities": ["exported"]
+                },
+                "interfaces":
+                {
+                    "visibilities": ["exported"]
+                },
+                "methods":
+                {
+                    "locations": ["all"],
+                    "privacies": ["public", "protected"]
+                },
+                "namespaces":
+                {
+                    "visibilities": ["exported"]
+                },
+                "properties":
+                {
+                    "locations": ["all"],
+                    "privacies": ["public", "protected"]
+                },
+                "types":
+                {
+                    "visibilities": ["exported"]
+                },
+                "variables":
+                {
+                    "visibilities": ["exported"]
+                }
             }
         ],
         "curly":                     true,
@@ -101,27 +130,30 @@
         "no-unnecessary-initializer":      true,
         "no-unnecessary-qualifier":        true,
         "no-unnecessary-type-assertion":   true,
+        "no-unsafe-any":                   false,
         "no-unused-expression":            true,
         "no-var-keyword":                  true,
-        "no-unsafe-any":                   false,
+        "one-variable-per-declaration":    true,
         "ordered-imports":
         [
             true,
             {
-                "import-sources-order": "lowercase-first",
                 "grouped-import":       true,
+                "import-sources-order": "lowercase-first",
                 "module-source-path":   "full",
                 "named-imports-order":  "lowercase-first"
             }
         ],
-        "one-variable-per-declaration":    true,
-        "prefer-for-of":                   true,
-        "promise-function-async":          true,
-        "quotemark":                       [true, "double"],
-        "restrict-plus-operands":          true,
-        "semicolon":                       true,
-        "switch-default":                  true,
-        "use-isnan":                       true,
+        "prefer-for-of": true,
+        "quotemark":
+        [
+            true,
+            "double"
+        ],
+        "restrict-plus-operands": true,
+        "semicolon":              true,
+        "switch-default":         true,
+        "use-isnan":              true,
         "variable-name":
         [
             true,
