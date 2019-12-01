@@ -12,7 +12,7 @@ wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
-export function createProxy(context: Indexer): Indexer
+export function createScope(scope: Indexer): Indexer
 {
     const handler: ProxyHandler<Indexer> =
     {
@@ -22,7 +22,7 @@ export function createProxy(context: Indexer): Indexer
             Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
     };
 
-    return new Proxy(context, handler);
+    return new Proxy(scope, handler);
 }
 
 export function pushSubscription(target: Subscriber, subscription: ISubscription): void
@@ -35,7 +35,7 @@ export function scapeBrackets(value: string)
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 }
 
-export function* iterateExpresssionAttributes(element: Element): Iterable<Attr>
+export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
 {
     for (const attribute of Array.from(element.attributes))
     {
@@ -53,7 +53,7 @@ export function* iterateExpresssionAttributes(element: Element): Iterable<Attr>
         (
             attribute.name.startsWith(":")
             || attribute.name.startsWith("on:")
-            || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) || nativeEvents.includes(attribute.name)))
+            || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
         )
         {
             yield attribute;
@@ -65,7 +65,7 @@ export function* iterateExpresssionAttributes(element: Element): Iterable<Attr>
     }
 }
 
-export function* iterateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
+export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
 {
     let simbling: Nullable<ChildNode> = null;
 

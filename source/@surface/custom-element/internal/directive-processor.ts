@@ -6,7 +6,7 @@ import Evaluate                       from "@surface/expression/evaluate";
 import IArrowFunctionExpression       from "@surface/expression/interfaces/arrow-function-expression";
 import IExpression                    from "@surface/expression/interfaces/expression";
 import ISubscription                  from "@surface/reactive/interfaces/subscription";
-import { createProxy, iterateRange }  from "./common";
+import { enumerateRange }             from "./common";
 import ObserverVisitor                from "./observer-visitor";
 import ParallelWorker                 from "./parallel-worker";
 import parse                          from "./parse";
@@ -118,7 +118,7 @@ export default class DirectiveProcessor
 
     private static removeBindingsInRange(start: ChildNode, end: ChildNode): void
     {
-        for (const element of iterateRange(start, end))
+        for (const element of enumerateRange(start, end))
         {
             element.remove();
 
@@ -390,8 +390,6 @@ export default class DirectiveProcessor
 
         const expression = parse(`(${injectorScope || "{ }"})`);
 
-        const proxyScope = createProxy(scope);
-
         const isDestructured = scopeExpression.startsWith("{");
 
         parent.replaceChild(end, template);
@@ -412,12 +410,12 @@ export default class DirectiveProcessor
 
             DirectiveProcessor.removeBindingsInRange(start, end);
 
-            const { elementScope, scopeAlias } = isDestructured ?
-                { elementScope: Evaluate.pattern(scope, pattern, expression.evaluate(proxyScope)), scopeAlias: "" }
-                : { elementScope: expression.evaluate(proxyScope) as Indexer, scopeAlias: scopeExpression };
+            const { elementScope, scopeAlias } = isDestructured
+                ? { elementScope: Evaluate.pattern(scope, pattern, expression.evaluate(scope)), scopeAlias: "" }
+                : { elementScope: expression.evaluate(scope) as Indexer, scopeAlias: scopeExpression };
 
-            const mergedScope = isDestructured ?
-                { ...elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] }
+            const mergedScope = isDestructured
+                ? { ...elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] }
                 : { [scopeAlias]: elementScope, ...host[SCOPE], [SUBSCRIPTIONS]: [] };
 
             const content = DirectiveProcessor.processTemplate(injectionTemplate, host, mergedScope);
@@ -427,7 +425,7 @@ export default class DirectiveProcessor
 
         const notify = () => ParallelWorker.run(task);
 
-        subscription = ObserverVisitor.observe(expression, proxyScope, { notify }, true);
+        subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
         (start as Bindable<Node>)[ON_REMOVED] = () => subscription.unsubscribe();
 

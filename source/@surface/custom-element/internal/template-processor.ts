@@ -7,8 +7,8 @@ import Type                         from "@surface/reflection";
 import FieldInfo                    from "@surface/reflection/field-info";
 import
 {
-    createProxy,
-    iterateExpresssionAttributes,
+    createScope,
+    enumerateExpresssionAttributes,
     pushSubscription,
     scapeBrackets
 }
@@ -17,7 +17,6 @@ import DataBind               from "./data-bind";
 import DirectiveProcessor     from "./directive-processor";
 import InterpolatedExpression from "./interpolated-expression";
 import ObserverVisitor        from "./observer-visitor";
-import ParallelWorker         from "./parallel-worker";
 import parse                  from "./parse";
 import { interpolation }      from "./patterns";
 import
@@ -84,9 +83,9 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
             : null;
 
-        for (const attribute of iterateExpresssionAttributes(element))
+        for (const attribute of enumerateExpresssionAttributes(element))
         {
-            const scope = createProxy({ this: element, ...this.scope });
+            const scope = createScope({ this: element, ...this.scope });
 
             const rawExpression = attribute.value;
             const attributeName = attribute.name.replace(/^(on)?::?/, "");
@@ -107,8 +106,8 @@ export default class TemplateProcessor
                 {
                     const expression = parse(rawExpression);
 
-                    const action = expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression ?
-                        expression.evaluate(scope) as Action1<Event>
+                    const action = expression.type == NodeType.ArrowFunctionExpression || expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression
+                        ? expression.evaluate(scope) as Action1<Event>
                         : () => expression.evaluate(scope);
 
                     element.addEventListener(attributeName, action);
@@ -180,7 +179,7 @@ export default class TemplateProcessor
 
         if (interpolation.test(element.nodeValue))
         {
-            const scope = createProxy({ this: element.parentElement, ...this.scope });
+            const scope = createScope({ this: element.parentElement, ...this.scope });
 
             const rawExpression = element.nodeValue;
 
@@ -214,7 +213,7 @@ export default class TemplateProcessor
                 {
                     if (childNode.parentNode)
                     {
-                        this.directives.push(DirectiveProcessor.process(this.host, childNode, createProxy(this.scope)));
+                        this.directives.push(DirectiveProcessor.process(this.host, childNode, createScope(this.scope)));
                     }
                 }
                 else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "STYLE")
