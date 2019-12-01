@@ -1,6 +1,7 @@
-import { shouldPass, suite, test }               from "@surface/test-suite";
-import * as chai                                 from "chai";
-import { merge, objectFactory, structuralEqual } from "../../common/object";
+import { shouldFail, shouldPass, suite, test }              from "@surface/test-suite";
+import * as chai                                            from "chai";
+import { Indexer }                                          from "../..";
+import { merge, objectFactory, proxyFrom, structuralEqual } from "../../common/object";
 
 @suite
 export default class CommonObjectSpec
@@ -64,6 +65,57 @@ export default class CommonObjectSpec
         };
 
         chai.expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldFail
+    public proxyFrom(): void
+    {
+        const instanceA = { a: 1, b: "two", c: false };
+        const instanceB = { c: true, d: null, e: [0], f: { value: 1 } };
+        const instanceC = { f: { value: 2 }, g: "G" };
+
+        const proxy = proxyFrom(instanceA, instanceB, instanceC);
+
+        chai.expect(proxy.a, "proxy.a").to.equal(1);
+        chai.expect(proxy.b, "proxy.b").to.equal("two");
+        chai.expect(proxy.c, "proxy.c").to.equal(false);
+        chai.expect(proxy.d, "proxy.d").to.equal(null);
+        chai.expect(proxy.e, "proxy.e").to.deep.equal([0]);
+        chai.expect(proxy.f, "proxy.f").to.deep.equal({ value: 1 });
+        chai.expect(proxy.g, "proxy.g").to.deep.equal("G");
+        chai.expect((proxy as Indexer)["h"], "proxy.h").to.deep.equal(undefined);
+
+        proxy.a = 2;
+        proxy.b = "three";
+        proxy.c = true;
+        proxy.d = null;
+        proxy.e = [1, 2];
+        proxy.f = { value: 3 };
+        proxy.g = "g";
+        (proxy as Indexer)["h"] = 10;
+
+        const merge = { foo: 1, bar: 2, ...proxy };
+
+        chai.expect(merge.a,   "merge.a").to.equal(2);
+        chai.expect(merge.b,   "merge.b").to.equal("three");
+        chai.expect(merge.c,   "merge.c").to.equal(true);
+        chai.expect(merge.d,   "merge.d").to.equal(null);
+        chai.expect(merge.e,   "merge.e").to.deep.equal([1, 2]);
+        chai.expect(merge.f,   "merge.f").to.deep.equal({ value: 3 });
+        chai.expect(merge.g,   "merge.g").to.deep.equal("g");
+        chai.expect(merge.foo, "merge.foo").to.deep.equal(1);
+        chai.expect(merge.bar, "merge.bar").to.deep.equal(2);
+        chai.expect((merge as Indexer)["h"], "merge.h").to.deep.equal(10);
+
+        const descriptors = Object.getOwnPropertyDescriptors(proxy);
+
+        chai.expect(descriptors.a).not.to.equal(undefined);
+        chai.expect(descriptors.b).not.to.equal(undefined);
+        chai.expect(descriptors.c).not.to.equal(undefined);
+        chai.expect(descriptors.d).not.to.equal(undefined);
+        chai.expect(descriptors.e).not.to.equal(undefined);
+        chai.expect(descriptors.f).not.to.equal(undefined);
+        chai.expect(descriptors.g).not.to.equal(undefined);
     }
 
     @test @shouldPass

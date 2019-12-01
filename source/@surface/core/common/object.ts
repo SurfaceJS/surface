@@ -1,17 +1,5 @@
-import { Constructor, Indexer } from "..";
-import Hashcode                 from "../hashcode";
-
-export function *enumerateKeys(target: object): IterableIterator<string>
-{
-    let prototype = target;
-    do
-    {
-        for (const key of Object.getOwnPropertyNames(prototype))
-        {
-            yield key;
-        }
-    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
-}
+import { Combine, Constructor, Indexer } from "..";
+import Hashcode                          from "../hashcode";
 
 export function clone<T extends object>(source: T): T;
 export function clone(source: Indexer): Indexer
@@ -195,6 +183,62 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
+// tslint:disable-next-line:no-any
+export function proxyFrom<TInstances extends Array<object>>(...instances: TInstances): Combine<TInstances>;
+export function proxyFrom(...instances: Array<Indexer>): Indexer
+{
+    const handler: ProxyHandler<Indexer> =
+    {
+        get(_, key)
+        {
+            const instance = instances.find(x => key in x);
+
+            if (instance)
+            {
+                return instance[key as string];
+            }
+
+            return undefined;
+        },
+        getOwnPropertyDescriptor(_, key)
+        {
+            for (const instance of instances)
+            {
+                const descriptor = Object.getOwnPropertyDescriptor(instance, key);
+
+                if (descriptor)
+                {
+                    descriptor.configurable = true,
+                    descriptor.enumerable   = true;
+
+                    return descriptor;
+                }
+            }
+
+            return undefined;
+        },
+        has: (_, key) => instances.some(x => key in x),
+        ownKeys: (_) => Array.from(new Set(instances.map(x => Object.getOwnPropertyNames(x)).flatMap(x => x))),
+        set(_, key, value)
+        {
+            const instance = instances.find(x => key in x);
+
+            if (instance)
+            {
+                instance[key as string] = value;
+            }
+            else
+            {
+                instances[0][key as string] = value;
+            }
+
+            return true;
+        },
+    };
+
+    return new Proxy(instances[0], handler);
+}
+
 /**
  * Performs deep comparision between values.
  * @param left  Left  value
@@ -203,4 +247,16 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
 export function structuralEqual(left: unknown, right: unknown): boolean
 {
     return left === right || Hashcode.encode(left) == Hashcode.encode(right);
+}
+
+export function *enumerateKeys(target: object): IterableIterator<string>
+{
+    let prototype = target;
+    do
+    {
+        for (const key of Object.getOwnPropertyNames(prototype))
+        {
+            yield key;
+        }
+    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }

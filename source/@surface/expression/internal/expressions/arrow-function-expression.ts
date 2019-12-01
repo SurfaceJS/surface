@@ -1,5 +1,6 @@
 import { Indexer, Nullable }  from "@surface/core";
 import { hasValue }           from "@surface/core/common/generic";
+import { proxyFrom }          from "@surface/core/common/object";
 import Evaluate               from "../../evaluate";
 import IExpression            from "../../interfaces/expression";
 import IPattern               from "../../interfaces/pattern";
@@ -66,7 +67,7 @@ export default class ArrowFunctionExpression implements IExpression
             return this.cache;
         }
 
-        const fn = (...args: Array<unknown>) => this.body.evaluate({ ...scope, ...this.resolveParameters(scope, args, !!useCache) }, useCache);
+        const fn = (...args: Array<unknown>) => this.body.evaluate(proxyFrom(this.resolveParameters(scope, args, !!useCache), scope), useCache);
 
         fn.toString = () => this.toString();
 
