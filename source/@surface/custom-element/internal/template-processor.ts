@@ -43,7 +43,7 @@ export default class TemplateProcessor
         this.scope = { host, ...scope };
     }
 
-    public static process(host: Node|Element, node: Node, scope?: Indexer): Promise<Array<void>>
+    public static process(host: Node|Element, node: Node, scope?: Indexer): Promise<void>
     {
         const processor = new TemplateProcessor(host, scope ?? { });
 
@@ -56,7 +56,7 @@ export default class TemplateProcessor
 
         processor.traverseElement(node);
 
-        return Promise.all(processor.directives);
+        return Promise.all(processor.directives) as unknown as Promise<void>;
     }
 
     public static clear(node: Bindable<Node>)
