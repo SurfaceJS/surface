@@ -166,7 +166,7 @@ export function mixin<TBase extends Constructor, TConstructors extends Construct
  */
 export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer): object
 {
-    target = target || { };
+    target = target ?? { };
     for (const entries of keys)
     {
         const [key, value] = entries;
