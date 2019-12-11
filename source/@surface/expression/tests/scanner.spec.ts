@@ -65,7 +65,7 @@ export default class ScannerSpec
     @shouldFail @test
     public invalidRegex(): void
     {
-        expect(() => new Scanner("foo[123]bar()\\//").scanRegex()).to.throw(SyntaxError, Messages.unexpectedTokenIllegal);
+        expect(() => new Scanner("foo[123]bar()\\//").scanRegex()).to.throw(SyntaxError, Messages.invalidOrUnexpectedToken);
         expect(() => new Scanner("/foo[123]bar()\\/").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);
         expect(() => new Scanner("/foo/ig1/").scanRegex()).to.throw("Invalid flags supplied to RegExp constructor 'ig1'");
         expect(() => new Scanner("/\\\r").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);

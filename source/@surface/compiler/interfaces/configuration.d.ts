@@ -1,5 +1,5 @@
 import { Indexer }              from "@surface/core";
-import { Configuration, Stats } from "webpack"
+import { Configuration, Stats } from "webpack";
 import HtmlTemplatePlugin       from "../plugins/html-template-plugin";
 import SimblingResolvePlugin    from "../plugins/simbling-priority-plugin";
 import { Entry }                from "./types";

@@ -35,7 +35,7 @@ export default class Identifier implements IExpression, IPattern
         this._name = name;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

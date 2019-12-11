@@ -1,7 +1,7 @@
 import { Indexer }                   from "@surface/core";
-import { coalesce }                  from "@surface/core/common/generic";
 import { merge }                     from "@surface/core/common/object";
 import { resolveFile }               from "@surface/io";
+import chalk                         from "chalk";
 import ForkTsCheckerWebpackPlugin    from "fork-ts-checker-webpack-plugin";
 import fs                            from "fs";
 import path                          from "path";
@@ -98,7 +98,7 @@ export default class Compiler
     {
         const webpackCompiler = webpack(config);
 
-        const statOptions: webpack.Stats.ToStringOptions = statsLevel ||
+        const statOptions: webpack.Stats.ToStringOptions = statsLevel ??
         {
             assets:   true,
             errors:   true,
@@ -110,7 +110,7 @@ export default class Compiler
         const callback: webpack.Compiler.Handler =
             (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
-        console.log(`Starting ${watch ? "Watch" : "build"} using ${enviroment} configuration.`);
+        console.log(`Starting ${chalk.bold.green(watch ? "Watch" : "build")} using ${chalk.bold.green(enviroment)} configuration.`);
 
         if (watch)
         {
@@ -192,7 +192,7 @@ export default class Compiler
             }
         }
 
-        configuration.tsconfig = configuration.tsconfig && path.resolve(root, configuration.tsconfig) || "tsconfig.json";
+        configuration.tsconfig = configuration.tsconfig && (path.resolve(root, configuration.tsconfig) ?? "tsconfig.json");
         configuration.tslint   = configuration.tslint   && path.resolve(root, configuration.tslint);
 
         const resolvePlugins: Array<webpack.ResolvePlugin> = [];
@@ -282,7 +282,6 @@ export default class Compiler
                         [
                             loaders.cache,
                             loaders.thread,
-                            //loaders.istanbul,
                             loaders.ts
                         ],
                     },
@@ -463,10 +462,10 @@ export default class Compiler
 
     public static async execute(task?: TasksType, config?: string, enviroment?: EnviromentType, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
     {
-        task       = coalesce(task, TasksType.build);
-        config     = coalesce(config, "./");
-        enviroment = coalesce(enviroment, EnviromentType.development);
-        watch      = coalesce(watch, false);
+        task       = task       ?? TasksType.build;
+        config     = config     ?? "./";
+        enviroment = enviroment ?? EnviromentType.development;
+        watch      = watch      ?? false;
 
         const wepackconfig = this.getConfig(config, enviroment);
 

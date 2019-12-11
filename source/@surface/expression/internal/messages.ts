@@ -10,7 +10,9 @@ export default class Messages
     public static readonly invalidLeftHandSideExpressionInPostfixOperation               = "Invalid left-hand side expression in postfix operation";
     public static readonly invalidLeftHandSideExpressionInPrefixOperation                = "Invalid left-hand side expression in prefix operation";
     public static readonly invalidLeftHandSideInAssignment                               = "Invalid left-hand side in assignment";
+    public static readonly invalidOrUnexpectedToken                                      = "Invalid or unexpected token";
     public static readonly invalidRegularExpressionMissingToken                          = "Invalid regular expression missing /";
+    public static readonly invalidUnicodeEscapeSequence                                  = "Invalid Unicode escape sequence";
     public static readonly keywordMustNotContainEscapedCharacters                        = "Keyword must not contain escaped characters";
     public static readonly malformedArrowFunctionParameterList                           = "Malformed arrow function parameter list";
     public static readonly numericSerapatorsAreNotAllowedHere                            = "Numeric serapators are not allowed here.";

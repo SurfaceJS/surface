@@ -80,7 +80,7 @@ export default class AssignmentExpression implements IExpression
         this.operation = assignmentOperations[operator];
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

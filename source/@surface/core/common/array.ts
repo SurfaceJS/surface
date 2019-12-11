@@ -1,4 +1,4 @@
-export function contains<T>(source: Array<T>, ...elements: Array<T>): boolean
+export function contains<T>(source: Array<T>, elements: Array<T>): boolean
 {
     for (const element of elements)
     {

@@ -1,11 +1,35 @@
 import { JSDOM } from "jsdom";
 
+const registries = new Map<string, Function>();
+
 const window = new JSDOM().window;
 Object.assign
 (
     window,
     {
-        customElements: { define: () => { return; } }
+        customElements:
+        {
+            define(name: string, constructor: Function, _options?: ElementDefinitionOptions)
+            {
+                registries.set(name, constructor);
+            },
+            get(name: string)
+            {
+                return registries.get(name);
+            },
+            upgrade(_root: Node)
+            {
+                return;
+            },
+            async whenDefined(_name: string)
+            {
+                return await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        } as CustomElementRegistry,
+        requestAnimationFrame(callback: FrameRequestCallback)
+        {
+            setTimeout(callback, 0);
+        }
     }
 );
 
@@ -33,5 +57,6 @@ Object.assign
         Node:             window.Node,
         NodeList:         window.NodeList,
         Window:           window.constructor,
+        __registries__:   registries
     }
 );

@@ -47,32 +47,19 @@ export default class CallExpression implements IExpression
         this._optional = value;
     }
 
-    private _thisArg: IExpression;
-    public get thisArg(): IExpression
-    {
-        return this._thisArg;
-    }
-
-    /* istanbul ignore next */
-    public set thisArg(value: IExpression)
-    {
-        this._thisArg = value;
-    }
-
     public get type(): NodeType
     {
         return NodeType.CallExpression;
     }
 
-    public constructor(thisArg: IExpression, callee: IExpression, $arguments: Array<IExpression|ISpreadElement>, optional?: boolean)
+    public constructor(callee: IExpression, $arguments: Array<IExpression|ISpreadElement>, optional?: boolean)
     {
         this._arguments = $arguments;
-        this._thisArg   = thisArg;
         this._callee    = callee;
         this._optional  = !!optional;
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
@@ -109,7 +96,9 @@ export default class CallExpression implements IExpression
             }
         }
 
-        return this.cache = fn.apply(this.thisArg.evaluate(scope, true), $arguments);
+        const thisArg = TypeGuard.isMemberExpression(this.callee) ? this.callee.object.evaluate(scope, true) : null;
+
+        return this.cache = fn.apply(thisArg, $arguments);
     }
 
     public toString(): string

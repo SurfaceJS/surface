@@ -1,4 +1,3 @@
-import { coalesce }                             from "@surface/core/common/generic";
 import Component                                from "../../../";
 import { attribute, element }                   from "../../../decorators";
 import { AttributeConverter }                   from "../../../types";
@@ -28,7 +27,6 @@ const attributeConverter: AttributeConverter<DataFilterItem, "operator"|"type"> 
 @element("surface-data-filter-item", template, style)
 export default class DataFilterItem extends Component
 {
-
     private static predicates: Array<KeyValue> =
     [
         { key: "none" ,         value: " - select - " },
@@ -46,6 +44,7 @@ export default class DataFilterItem extends Component
         { key: "ends-with",   value: "ends with"   }
     ]);
 
+    private _fixed:     boolean   = false;
     private _condition: Condition = "none";
     private _type:      Type      = "string";
     private _operator:  Operator  = null;
@@ -61,6 +60,17 @@ export default class DataFilterItem extends Component
     public set condition(value: Condition)
     {
         this._condition = value;
+    }
+
+    @attribute
+    public get fixed(): boolean
+    {
+        return this._fixed;
+    }
+
+    public set fixed(value: boolean)
+    {
+        this._fixed = value;
     }
 
     @attribute(attributeConverter.operator)
@@ -110,8 +120,8 @@ export default class DataFilterItem extends Component
     public constructor(type?: Type, operator?: Operator)
     {
         super();
-        this.type     = type || "string";
-        this.operator = coalesce(operator, null);
+        this.type     = type     ?? "string";
+        this.operator = operator ?? null;
     }
 
     protected setValue(value: unknown): void

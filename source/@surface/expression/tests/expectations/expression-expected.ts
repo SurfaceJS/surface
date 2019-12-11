@@ -47,13 +47,13 @@ export const expressionFactoriesExpected: Array<ExpressionFactoryExpected> =
         type:     NodeType.BinaryExpression,
     },
     {
-        factory:  () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x"))),
+        factory:  () => Expression.call(Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x"))),
         method:   Expression.call.name,
         toString: "((x) => x)()",
         type:     NodeType.CallExpression,
     },
     {
-        factory:  () => Expression.call(Expression.this(), Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x")), [Expression.literal(2)]),
+        factory:  () => Expression.call(Expression.arrowFunction([Expression.identifier("x")], Expression.identifier("x")), [Expression.literal(2)]),
         method:   Expression.call.name,
         toString: "((x) => x)(2)",
         type:     NodeType.CallExpression,
@@ -167,7 +167,7 @@ export const expressionFactoriesExpected: Array<ExpressionFactoryExpected> =
         type:     NodeType.SequenceExpression,
     },
     {
-        factory:  () => Expression.taggedTemplate(Expression.literal(null), Expression.identifier("tag"), Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")])),
+        factory:  () => Expression.taggedTemplate(Expression.identifier("tag"), Expression.template([Expression.templateElement("Hello ", "Hello ", false), Expression.templateElement("!!!", "!!!", true)], [Expression.literal("World")])),
         method:   Expression.taggedTemplate.name,
         toString: "tag`Hello ${\"World\"}!!!`",
         type:     NodeType.TaggedTemplateExpression,

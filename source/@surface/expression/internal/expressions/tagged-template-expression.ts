@@ -4,6 +4,7 @@ import { format }            from "@surface/core/common/string";
 import IExpression           from "../../interfaces/expression";
 import NodeType              from "../../node-type";
 import Messages              from "../messages";
+import TypeGuard             from "../type-guard";
 import TemplateLiteral       from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression
@@ -34,28 +35,15 @@ export default class TaggedTemplateExpression implements IExpression
         this._quasi = value;
     }
 
-    private _thisArg: IExpression;
-    public get thisArg(): IExpression
-    {
-        return this._thisArg;
-    }
-
-    /* istanbul ignore next */
-    public set thisArg(value: IExpression)
-    {
-        this._thisArg = value;
-    }
-
     public get type(): NodeType
     {
         return NodeType.TaggedTemplateExpression;
     }
 
-    public constructor(thisArg: IExpression, callee: IExpression, quasis: TemplateLiteral)
+    public constructor(callee: IExpression, quasis: TemplateLiteral)
     {
-        this._thisArg = thisArg;
-        this._callee  = callee,
-        this._quasi   = quasis;
+        this._callee = callee,
+        this._quasi  = quasis;
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown
@@ -79,7 +67,9 @@ export default class TaggedTemplateExpression implements IExpression
         const cooked = this.quasi.quasis.map(x => x.cooked);
         Object.defineProperty(cooked, "raw", { value: this.quasi.quasis.map(x => x.raw) });
 
-        return this.cache = fn.apply(this.thisArg.evaluate(scope, true), [cooked, ...this.quasi.expressions.map(x => x.evaluate(scope, useCache))]);
+        const thisArg = TypeGuard.isMemberExpression(this.callee) ? this.callee.object.evaluate(scope, true) : null;
+
+        return this.cache = fn.apply(thisArg, [cooked, ...this.quasi.expressions.map(x => x.evaluate(scope, useCache))]);
     }
 
     public toString(): string

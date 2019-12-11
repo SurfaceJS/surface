@@ -1,9 +1,8 @@
-import { coalesce }  from "@surface/core/common/generic";
-import Component     from "../..";
-import { element }   from "../../decorators";
-import Modal         from "../../modal";
-import template      from "./index.html";
-import style         from "./index.scss";
+import Component   from "../..";
+import { element } from "../../decorators";
+import Modal       from "../../modal";
+import template    from "./index.html";
+import style       from "./index.scss";
 
 @element("surface-data-header", template, style)
 export default class DataHeader extends Component
@@ -87,10 +86,10 @@ export default class DataHeader extends Component
     public constructor(header?: string, sortable?: boolean, filterable?: boolean, index?: number)
     {
         super();
-        this.header     = coalesce(header, "");
-        this.sortable   = coalesce(sortable, true);
-        this.filterable = coalesce(filterable, true);
-        this._index     = coalesce(index, 0);
+        this.header     = header     ?? "";
+        this.sortable   = sortable   ?? true;
+        this.filterable = filterable ?? true;
+        this._index     = index      ?? 0;
 
         window.addEventListener("scroll", () => this.modal.visible && this.refreshModal());
         window.addEventListener("resize", () => this.modal.visible && this.refreshModal());

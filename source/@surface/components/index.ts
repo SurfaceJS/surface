@@ -111,7 +111,7 @@ abstract class Component extends CustomElement
         }
         else if (value && super.style.display == "none")
         {
-            super.style.display = this.storedDisplay;
+            super.style.display = this.storedDisplay ?? "";
         }
     }
 

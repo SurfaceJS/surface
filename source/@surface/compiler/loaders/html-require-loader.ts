@@ -1,43 +1,51 @@
-import { Nullable } from "@surface/core";
+import { capture } from "@surface/core/common/string";
+import webpack     from "webpack";
 
-// tslint:disable-next-line:no-any
-export default function (this: any, content: string): string
+const expression = /^\s*(?:(?:\\\\)?#import\s+(\\?["'])([^"']+)\1)/;
+
+export default function (this: webpack.loader.LoaderContext, source: string): string
 {
-    // tslint:disable-next-line:no-unused-expression
-    this.cacheable && this.cacheable();
+    this.cacheable();
 
-    const expression = /(<!--(?:(?!<!--).)*?-->)|(?:<surface-(import|require)\s+from\s*=(?:(?:\s*(\\?["'])((?:(?!\3).|\\\3)+?)\3)|([^ ]+))\s*\/>((?:\s|\\[rn])*))/g;
-    const requires   = [] as Array<string>;
-    let   esmodule   = false;
+    const [start, middle, end] = capture(source, /((module.exports =)|(export default)) "/, /(")(?!(.|\n)*\1)/);
 
-    let raw = content;
+    if (!middle)
+    {
+        return source;
+    }
 
-    let match: Nullable<RegExpExecArray>;
+    const esmodule = start.startsWith("export default");
+    const imports  = [] as Array<string>;
+
+    let content = middle;
+
+    let match: RegExpExecArray | null;
 
     while (match = expression.exec(content))
     {
-        const [full, comments, method, , from1, from2] = match;
+        const [full, , path] = match;
 
-        const from = from1 || from2;
+        const importExpression = esmodule ? `import "${path}";` : `require("${path}");`;
 
-        if (comments)
+        const scaped = full.startsWith("\\\\");
+
+        if (!scaped && !imports.includes(importExpression))
         {
-            continue;
+            imports.push(importExpression);
         }
 
-        esmodule = esmodule || method == "import";
+        content = ((scaped ? full.replace(/^\\\\/, "") : "") + content.substring(match.index + full.length, content.length))
+            .replace(/^\n*/, "");
 
-        const requireExpression = esmodule ? `import "${from}";` : `require("${from}");`;
-
-        if (!requires.includes(requireExpression))
+        if (scaped)
         {
-            requires.push(requireExpression);
+            break;
         }
 
-        raw = raw.replace(full, "");
+        expression.lastIndex = 0;
     }
 
-    const stringModule = requires.concat(["", esmodule ? raw.replace("module.exports =", "export default") : raw]).join("\n");
+    const parsed = [...imports, (start + content.trim() + end)].join("\n");
 
-    return stringModule;
+    return parsed;
 }

@@ -1,92 +1,53 @@
 import "./fixtures/dom";
 
-import Expression                              from "@surface/expression";
-import ICallExpression                         from "@surface/expression/interfaces/call-expression";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                               from "chai";
-import ObserverVisitor                         from "../internal/observer-visitor";
+import Expression           from "@surface/expression";
+import { batchTest, suite } from "@surface/test-suite";
+import * as chai            from "chai";
+import ObserverVisitor      from "../internal/observer-visitor";
+import
+{
+    observableExpressions,
+    unobservableExpressions,
+    ObservableExpression,
+    UnobservableExpression
+} from "./expectations/observer-visitor-expected";
 
 @suite
 export class ObserverVisitorSpec
 {
-    @test @shouldPass
-    public propertyNotify(): void
+    @batchTest(observableExpressions, x => `observable expression ${x.expression}; should have ${x.observers} observers and ${x.observers * 2} notifications`)
+    public observableExpressions(observableExpression: ObservableExpression): void
     {
-        class Mock
-        {
-            private _value: number = 0;
-            public get value(): number
-            {
-                return this._value;
-            }
+        const expression = Expression.parse(observableExpression.expression);
 
-            public set value(value: number)
-            {
-                this._value = value;
-            }
-        }
+        let observers = 0;
 
-        const scope = { this: new Mock() };
+        const subscription = ObserverVisitor.observe(expression, observableExpression.scope, { notify: () => observers++ }, false);
 
-        let value = 0;
+        chai.expect(observers, "observers").to.equal(observableExpression.observers);
 
-        const expression = Expression.parse("this.value");
-        const visitor    = new ObserverVisitor({ notify: (x: number) => value = x }, scope);
+        observableExpression.change(observableExpression.scope);
 
-        visitor.observe(expression);
-        scope.this.value += 1;
+        chai.expect(observers, "notifications").to.equal(observableExpression.observers * 2);
 
-        chai.expect(value).to.equal(scope.this.value);
+        observers = 0;
+
+        subscription.unsubscribe();
+
+        observableExpression.change(observableExpression.scope);
+
+        chai.expect(observers == 0, "unsubscribe").to.equal(true);
     }
 
-    @test @shouldPass
-    public skipFunctionNotify(): void
+    @batchTest(unobservableExpressions, x => `unobservable expression ${x.expression}; shouldn't have observers`)
+    public unobservableExpressions(unobservableExpression: UnobservableExpression): void
     {
-        class Mock
-        {
-            public increment(value: number): number
-            {
-                return ++value;
-            }
-        }
+        const expression = Expression.parse(unobservableExpression.expression);
 
-        const scope      = { this: new Mock() };
-        const expression = Expression.parse("this.increment(1)");
-        const visitor    = new ObserverVisitor({ notify: () => undefined }, scope);
+        let observers = 0;
 
-        const invoker = (expression as ICallExpression).callee.evaluate(scope);
+        ObserverVisitor.observe(expression, unobservableExpression.scope, { notify: () => observers++ }, false);
 
-        visitor.observe(expression);
-
-        chai.expect(invoker).to.equal(Mock.prototype.increment);
-    }
-
-    @test @shouldPass
-    public onlyHostWithoutSetter(): void
-    {
-        class MockWithoutSetter
-        {
-            public get value(): number
-            {
-                return 0;
-            }
-        }
-
-        const scope    = { this: new MockWithoutSetter() };
-        const expression = Expression.parse("this.value");
-        const visitor    = new ObserverVisitor({ notify: () => chai.expect(scope.this.value).to.equal(1) }, scope);
-
-        visitor.observe(expression); // Todo: Review scenario
-
-        chai.expect(true);
-    }
-
-    @test @shouldFail
-    public bindToNonInitializedObject(): void
-    {
-        const expression = Expression.parse("this.data['value']");
-        const visitor    = new ObserverVisitor({ notify: () => undefined }, { this: { data: undefined } });
-
-        chai.expect(() => visitor.observe(expression)).to.throw(Error, "Can\'t make reactive a non initialized target");
+        chai.expect(observers == 0).to.equal(true);
     }
 }

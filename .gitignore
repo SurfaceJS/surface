@@ -66,6 +66,7 @@ typings/
 package-lock.json
 tsconfig.tsbuildinfo
 !source/@surface/code-splitter/tests/fixtures/**/*.js
+!environment.d.ts
 !types.d.ts
 !@types/**/*.d.ts
 !tasks/interfaces/*d.ts

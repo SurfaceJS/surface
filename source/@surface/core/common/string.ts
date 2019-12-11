@@ -1,4 +1,5 @@
 import { Indexer } from "..";
+import { tuple }   from "./generic";
 
 export function camelToText(value: string): string
 {
@@ -8,6 +9,52 @@ export function camelToText(value: string): string
 export function camelToDashed(value: string): string
 {
     return value.split(/(?=[A-Z])/g).join("-").toLowerCase();
+}
+
+export function capture(source: string, start: RegExp, end: RegExp): [string, string, string]
+{
+    const startMatch = start.exec(source);
+    const startIndex = (startMatch?.index ?? 0) + (startMatch?.[0]?.length ?? 0);
+
+    const endMatch = end.exec(source.substring(startIndex, source.length));
+    const endIndex = startIndex + (endMatch?.index ?? 0);
+
+    return [source.substring(0, startIndex), source.substring(startIndex, endIndex), source.substring(endIndex, source.length)];
+}
+
+export function captureAll(source: string, start: RegExp, end: RegExp): Array<[string, string, string]>
+{
+    let captures = tuple("", "", "");
+    let content  = source;
+
+    const result: Array<[string, string, string]> = [];
+
+    while ((captures = capture(content, start, end))[2])
+    {
+        if (!captures[0] && !captures[1])
+        {
+            const tail       = result[result.length -1];
+            const endCapture = tail[2];
+
+            tail[2] = `${endCapture}${captures[2]}`;
+
+            break;
+        }
+
+        content = captures[2];
+
+        const endMatch = end.exec(content);
+
+        const endCapture = content.substring(0, endMatch?.[0].length ?? 0);
+
+        content = content.substring(endMatch?.[0].length ?? 0, content.length);
+
+        end.lastIndex = 0;
+
+        result.push([captures[0], captures[1], endCapture]);
+    }
+
+    return result;
 }
 
 export function dashedToCamel<T extends string>(value: T): T;

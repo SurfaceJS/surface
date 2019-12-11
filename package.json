@@ -2,11 +2,12 @@
     "author": "HitalloExiled",
     "description": "Global modules and shared types",
     "devDependencies": {
-        "@types/chai": "4.1.7",
+        "@types/chai": "4.2.4",
         "@types/mocha": "5.2.7",
-        "@types/node": "12.0.8",
-        "mocha": "6.1.4",
-        "nyc": "14.1.1"
+        "@types/node": "12.12.0",
+        "chalk": "3.0.0",
+        "mocha": "6.2.2",
+        "nyc": "15.0.0-beta.0"
     },
     "keywords": [
         "types",

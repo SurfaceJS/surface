@@ -87,14 +87,14 @@ export default class BinaryExpression implements IExpression
         this.operation = binaryFunctions[this.operator];
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): unknown
+    public evaluate(scope: Indexer, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.left, this.right, scope, useCache);
+        return this.cache = this.operation(this.left, this.right, scope, !!useCache);
     }
 
     public toString(): string

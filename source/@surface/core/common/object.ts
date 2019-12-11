@@ -1,5 +1,5 @@
-import { Constructor, Indexer } from "..";
-import Hashcode                 from "../hashcode";
+import { Combine, Constructor, Indexer } from "..";
+import Hashcode                          from "../hashcode";
 
 export function clone<T extends object>(source: T): T;
 export function clone(source: Indexer): Indexer
@@ -42,104 +42,20 @@ export function clone(source: Indexer): Indexer
     }
 }
 
-// tslint:disable-next-line:cyclomatic-complexity
-export function destruct(expression: string, source: Indexer|Array<unknown>): Indexer
+export function getKeyMember<T extends object>(target: T, path: string|Array<string>): [string, T];
+export function getKeyMember(target: Indexer, path: string|Array<string>): [string, Indexer]
 {
-    const result: Indexer = { };
-    const arrayPattern    = /\[([^\[\]}]*)\]/;
-    const objectPattern   = /\{([^\{\}}]*)\}/;
+    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
 
-    if (arrayPattern.test(expression))
+    if (keys.length > 0)
     {
-        if (Array.isArray(source))
-        {
-            let index = 0;
-
-            const keys = arrayPattern.exec(expression)![1].split(",").map(pairs => pairs.split(":").map(keys => keys.trim()));
-
-            for (const [key, alias] of keys)
-            {
-                if (index == keys.length - 1 && key.startsWith("..."))
-                {
-                    result[(alias || key).replace("...", "")] = source.slice(index);
-                }
-                else
-                {
-                    result[alias || key] = source[index];
-                }
-
-                index++;
-            }
-
-            return result;
-        }
-        else
-        {
-            throw new Error();
-        }
-    }
-    else if (objectPattern.test(expression))
-    {
-        if (!Array.isArray(source))
-        {
-            let index = 0;
-
-            const keys = objectPattern.exec(expression)![1].split(",").map(pairs => pairs.split(":").map(keys => keys.trim()));
-
-            for (const [key, alias] of keys)
-            {
-                if (index == keys.length - 1 && key.startsWith("..."))
-                {
-                    let rest: Indexer = { };
-
-                    for (const [key, value] of Object.entries(source).filter(([sourceKey]) => !keys.some(([key]) => key == sourceKey)))
-                    {
-                        rest[key] = value;
-                    }
-
-                    result[(alias || key).replace("...", "")] = rest;
-                }
-                else
-                {
-                    result[alias || key] = source[key];
-                }
-
-                index++;
-            }
-
-            return result;
-        }
-    }
-
-    throw new Error("Invalid expression");
-}
-
-export function *enumerateKeys(target: object): IterableIterator<string>
-{
-    let prototype = target;
-    do
-    {
-        for (const key of Object.getOwnPropertyNames(prototype))
-        {
-            yield key;
-        }
-    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
-}
-
-export function getKeyMember<T extends object>(target: T, path: string): [string, T];
-export function getKeyMember(target: Indexer, path: string): [string, Indexer]
-{
-    if (path.includes("."))
-    {
-        const [key, ...keys] = path.split(".");
-
         if (key in target)
         {
             const member = target[key];
 
             if (member instanceof Object)
             {
-                return getKeyMember(member as Indexer, keys.join("."));
+                return getKeyMember(member as Indexer, keys);
             }
         }
         else
@@ -149,17 +65,17 @@ export function getKeyMember(target: Indexer, path: string): [string, Indexer]
         }
     }
 
-    return [path, target];
+    return [key, target];
 }
 
-export function getKeyValue<T = unknown>(target: Indexer, path: string): [string, T]
+export function getKeyValue<T = unknown>(target: Indexer, path: string|Array<string>): [string, T]
 {
     const [key, member] = getKeyMember(target, path);
 
     return [key, member[key] as T];
 }
 
-export function getValue<T = unknown>(target: Indexer, path: string): T
+export function getValue<T = unknown>(target: Indexer, path: string|Array<string>): T
 {
     return getKeyValue<T>(target, path)[1];
 }
@@ -250,7 +166,7 @@ export function mixin<TBase extends Constructor, TConstructors extends Construct
  */
 export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer): object
 {
-    target = target || { };
+    target = target ?? { };
     for (const entries of keys)
     {
         const [key, value] = entries;
@@ -267,6 +183,62 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
+// tslint:disable-next-line:no-any
+export function proxyFrom<TInstances extends Array<object>>(...instances: TInstances): Combine<TInstances>;
+export function proxyFrom(...instances: Array<Indexer>): Indexer
+{
+    const handler: ProxyHandler<Indexer> =
+    {
+        get(_, key)
+        {
+            const instance = instances.find(x => key in x);
+
+            if (instance)
+            {
+                return instance[key as string];
+            }
+
+            return undefined;
+        },
+        getOwnPropertyDescriptor(_, key)
+        {
+            for (const instance of instances)
+            {
+                const descriptor = Object.getOwnPropertyDescriptor(instance, key);
+
+                if (descriptor)
+                {
+                    descriptor.configurable = true,
+                    descriptor.enumerable   = true;
+
+                    return descriptor;
+                }
+            }
+
+            return undefined;
+        },
+        has: (_, key) => instances.some(x => key in x),
+        ownKeys: (_) => Array.from(new Set(instances.map(x => Object.getOwnPropertyNames(x)).flatMap(x => x))),
+        set(_, key, value)
+        {
+            const instance = instances.find(x => key in x);
+
+            if (instance)
+            {
+                instance[key as string] = value;
+            }
+            else
+            {
+                instances[0][key as string] = value;
+            }
+
+            return true;
+        },
+    };
+
+    return new Proxy(instances[0], handler);
+}
+
 /**
  * Performs deep comparision between values.
  * @param left  Left  value
@@ -275,4 +247,16 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
 export function structuralEqual(left: unknown, right: unknown): boolean
 {
     return left === right || Hashcode.encode(left) == Hashcode.encode(right);
+}
+
+export function *enumerateKeys(target: object): IterableIterator<string>
+{
+    let prototype = target;
+    do
+    {
+        for (const key of Object.getOwnPropertyNames(prototype))
+        {
+            yield key;
+        }
+    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }

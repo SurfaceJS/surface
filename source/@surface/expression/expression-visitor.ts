@@ -230,7 +230,6 @@ export default abstract class ExpressionVisitor
 
     protected visitCallExpression(node: ICallExpression): INode
     {
-        this.visit(node.thisArg);
         this.visit(node.callee);
 
         for (const arg of node.arguments)
@@ -362,7 +361,6 @@ export default abstract class ExpressionVisitor
 
     protected visitTaggedTemplateExpression(node: ITaggedTemplateExpression): INode
     {
-        this.visit(node.thisArg);
         this.visit(node.callee);
         this.visit(node.quasi);
 

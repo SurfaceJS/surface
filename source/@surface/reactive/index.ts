@@ -4,17 +4,17 @@ import IListener                  from "./interfaces/listener";
 import IObserver                  from "./interfaces/observer";
 import IReactor                   from "./interfaces/reactor";
 import ISubscription              from "./interfaces/subscription";
-import Observer                   from "./internal/observer";
-import PropertyListener           from "./internal/property-listener";
-import PropertySubscription       from "./internal/property-subscription";
 import Reactor                    from "./internal/reactor";
 import { REACTOR }                from "./internal/symbols";
+import Observer                   from "./observer";
+import PropertyListener           from "./property-listener";
+import PropertySubscription       from "./property-subscription";
 
 export default class Reactive
 {
-    private static observePath(target: Indexer, path: string): [IReactor, IReactor, IObserver]
+    private static observePath(target: Indexer, path: Array<string>): [IReactor, IReactor, IObserver]
     {
-        const [key, ...keys] = path.split(".");
+        const [key, ...keys] = path;
 
         if (keys.length > 0)
         {
@@ -25,11 +25,11 @@ export default class Reactive
 
             const reactor = Reactor.makeReactive(target, key);
 
-            const value   = target[key] as Indexer;
+            const value = target[key] as Indexer;
 
-            const [endpoint, dependency, observer] = Reactive.observePath(value, keys.join("."));
+            const [endpoint, dependency, observer] = Reactive.observePath(value, keys);
 
-            reactor.setDependency(key, dependency);
+            reactor.dependencies.set(key, dependency);
 
             return [endpoint, reactor, observer];
         }
@@ -45,35 +45,42 @@ export default class Reactive
     {
         const reactor = Reactor.makeReactive(target, key);
 
-        const observer = reactor.getObserver(key) || new Observer();
+        const observer = reactor.observers.get(key) ?? new Observer();
 
-        reactor.setObserver(key, observer);
+        reactor.observers.set(key, observer);
 
         return [reactor, observer];
     }
 
-    public static getReactor(target: Indexer): Nullable<IReactor>
+    public static getReactor(target: Indexer|Array<unknown>): Nullable<IReactor>
     {
         return (target as { [REACTOR]?: IReactor })[REACTOR];
     }
 
-    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
-    public static observe(target: Indexer, path: string): [IReactor, IObserver];
-    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
-    public static observe(target: Indexer, path: string, listener: IListener): [IReactor, IObserver, ISubscription];
-    public static observe(...args: [Indexer, string, IListener?]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]
+    public static hasObserver<T extends object>(target: T, key: keyof T): boolean
     {
-        const [target, path, listener] = args;
+        return Reactive.getReactor(target as Indexer)?.observers.has(key as string) ?? false;
+    }
 
-        if (path.includes("."))
+    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
+    public static observe(target: Indexer, path: string|Array<string>): [IReactor, IObserver];
+    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
+    public static observe(target: Indexer, path: string|Array<string>, listener: IListener): [IReactor, IObserver, ISubscription];
+    public static observe(...args: [Indexer, string|Array<string>, IListener?]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]
+    {
+        const [target, pathOrKeys, listener] = args;
+
+        const keys = Array.isArray(pathOrKeys) ? pathOrKeys : pathOrKeys.split(".");
+
+        if (keys.length > 1)
         {
-            const [reactor, , observer] =  Reactive.observePath(target, path);
+            const [reactor, , observer] = Reactive.observePath(target, keys);
 
             if (listener)
             {
                 const subscription = observer.subscribe(listener);
 
-                observer.notify(getValue(target, path));
+                observer.notify(getValue(target, keys));
 
                 return [reactor, observer, subscription];
             }
@@ -82,13 +89,15 @@ export default class Reactive
         }
         else
         {
-            const [reactor, observer] = Reactive.observeProperty(target, path);
+            const key = keys[0];
+
+            const [reactor, observer] = Reactive.observeProperty(target, key);
 
             if (listener)
             {
                 const subscription = observer.subscribe(listener);
 
-                observer.notify(target[path]);
+                observer.notify(target[key]);
 
                 return [reactor, observer, subscription];
             }
@@ -98,30 +107,33 @@ export default class Reactive
     }
 
     public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: TLeft, leftKey: TLeftKey, right: TRight, rightKey: TRightKey): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string, right: Indexer, rightPath: string): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string, right: Indexer, rightPath: string): [ISubscription, ISubscription]
+    public static observeTwoWay(left: Indexer, leftPath: string|Array<string>, right: Indexer, rightPath: string|Array<string>): [ISubscription, ISubscription];
+    public static observeTwoWay(left: Indexer, leftPath: string|Array<string>, right: Indexer, rightPath: string|Array<string>): [ISubscription, ISubscription]
     {
+        const leftKeys  = Array.isArray(leftPath)  ? leftPath  : leftPath.split(".");
+        const rightKeys = Array.isArray(rightPath) ? rightPath : rightPath.split(".");
+
         const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
         const [rightKey, rightMember] = getKeyMember(right, rightPath);
 
         const leftListener  = new PropertyListener(rightMember, rightKey);
         const rightListener = new PropertyListener(leftMember, leftKey);
 
-        const [leftReactor, , leftObserver]   = Reactive.observePath(left, leftPath);
-        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightPath);
+        const [leftReactor, , leftObserver]   = Reactive.observePath(left, leftKeys);
+        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightKeys);
 
         leftObserver.subscribe(leftListener);
         leftListener.notify(leftMember[leftKey]);
 
         const leftSubscription = new PropertySubscription(rightListener, rightObserver);
 
-        leftReactor.setSubscription(rightKey, leftSubscription);
+        leftReactor.setPropertySubscription(rightKey, leftSubscription);
 
         rightObserver.subscribe(rightListener);
 
         const rightSubscription = new PropertySubscription(leftListener, leftObserver);
 
-        rightReactor.setSubscription(leftKey, rightSubscription);
+        rightReactor.setPropertySubscription(leftKey, rightSubscription);
 
         return [leftSubscription, rightSubscription];
     }

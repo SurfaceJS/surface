@@ -819,6 +819,20 @@ export const validExpressions: Array<ParseExpectedSpec> =
     },
     {
         scope:    { },
+        raw:      "(({ a: { b: { c: { d } } } }) => d)({ a: { b: { c: { d: 2 } } } })",
+        value:    2,
+        toString: "(({ a: { b: { c: { d } } } }) => d)({ a: { b: { c: { d: 2 } } } })",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
+        raw:      "(({ a: { b: { c: [d] } } }) => d)({ a: { b: { c: [2] } } })",
+        value:    2,
+        toString: "(({ a: { b: { c: [d] } } }) => d)({ a: { b: { c: [2] } } })",
+        type:     CallExpression
+    },
+    {
+        scope:    { },
         raw:      "(({ a = 1, b }) => [a, b])({ b: 2 })",
         value:    [1, 2],
         toString: "(({ a = 1, b }) => [a, b])({ b: 2 })",

@@ -73,7 +73,7 @@ export default class UpdateExpression implements IExpression
         this.operation = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
     }
 
-    public evaluate(scope: Indexer, useCache: boolean): number
+    public evaluate(scope: Indexer, useCache?: boolean): number
     {
         if (useCache && hasValue(this.cache))
         {

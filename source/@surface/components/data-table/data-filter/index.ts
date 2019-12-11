@@ -24,12 +24,23 @@ export default class DataFilter extends Component
 {
     private readonly list = super.references.list as List;
 
-    private _field: string = "";
-    private _type:  Type   = "string";
+    private _fixed: boolean = false;
+    private _field: string  = "";
+    private _type:  Type    = "string";
 
     protected get operators(): Array<KeyValue>
     {
         return [{ key: "and", value: "And" }, { key: "or", value: "Or" }];
+    }
+
+    public get fixed(): boolean
+    {
+        return this._fixed;
+    }
+
+    public set fixed(value: boolean)
+    {
+        this._fixed = value;
     }
 
     public get field(): string

@@ -126,9 +126,9 @@ export default abstract class Expression
         return Expression.wrapParenthesis(new BinaryExpression(left, right, operator));
     }
 
-    public static call(thisArg: IExpression, callee: IExpression, $arguments?: Array<IExpression>): ICallExpression
+    public static call(callee: IExpression, $arguments?: Array<IExpression>): ICallExpression
     {
-        return new CallExpression(thisArg, callee, $arguments || []);
+        return new CallExpression(callee, $arguments || []);
     }
 
     public static coalesce(left: IExpression, right: IExpression): ICoalesceExpression
@@ -220,9 +220,9 @@ export default abstract class Expression
         return new ThisExpression();
     }
 
-    public static taggedTemplate(thisArg: IExpression, callee: IExpression, quasi: TemplateLiteral): ITaggedTemplateExpression
+    public static taggedTemplate(callee: IExpression, quasi: TemplateLiteral): ITaggedTemplateExpression
     {
-        return new TaggedTemplateExpression(thisArg, callee, quasi);
+        return new TaggedTemplateExpression(callee, quasi);
     }
 
     public static template(quasis: Array<ITemplateElement>, expressions: Array<IExpression>): ITemplateLiteral
