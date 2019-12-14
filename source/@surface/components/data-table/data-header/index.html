@@ -1,18 +1,17 @@
-<surface-import from="../../icon" />
-<!-- <surface-import from="../../stack-panel" /> -->
-<surface-import from="../../modal" />
+#import "../../icon"
+#import "../../modal"
 
-<div on:click="[[ host.sortable && host.sort() ]]" style="width: 100%;" vertical-align="center">
-    <span horizontal-align="center"><b>[[ host.header ]]</b></span>
+<div on:click="host.sortable && host.sort()" style="width: 100%;" vertical-align="center">
+    <span horizontal-align="center"><b>{host.header}</b></span>
 </div>
-<button *style="[[ `display: ${host.sortable ? 'flex' : 'none'};` ]]" type="button" on:click="{{ host.tooglePin() }}" vertical-align="center">
+<button *style="display: {host.sortable ? 'flex' : 'none'}" type="button" on:click="host.tooglePin()" vertical-align="center">
     <surface-icon name="outlined_flag"></surface-icon>
 </button>
-<div *style="[[ `display: ${host.filterable ? 'flex' : 'none'};` ]]" vertical-align="center">
-    <button type="button" on:click="{{ host.toogleFilters() }}" vertical-align="center">
+<div *style="display: {host.filterable ? 'flex' : 'none'}" vertical-align="center">
+    <button type="button" on:click="host.toogleFilters()" vertical-align="center">
         <surface-icon name="filter_list"></surface-icon>
     </button>
     <surface-modal id="modal" start-position="manual" stick="left">
-        <surface-data-filter field="[[ host.field ]]" field-type="[[ host.fieldType ]]"></surface-data-filter>
+        <surface-data-filter :field="host.field" :field-type="host.fieldType"></surface-data-filter>
     </surface-modal>
 </div>

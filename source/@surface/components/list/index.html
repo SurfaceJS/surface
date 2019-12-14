@@ -1,7 +1,7 @@
-<surface-import from="../stack-panel" />
-<surface-import from="./list-item" />
+#import "../stack-panel"
+#import "./list-item"
 
 <surface-stack-panel>
     <slot></slot>
-    <input type="button" value="+" on:click="{{ host.add() }}" horizontal-align="right" />
+    <input type="button" value="+" on:click="host.add()" horizontal-align="right" />
 </surface-stack-panel>
