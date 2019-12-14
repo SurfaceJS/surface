@@ -259,7 +259,7 @@ export default class DataTable extends Component
                     {
                         innerHTML = //html
                         `
-                            <button type="button" disabled="{{ row.disabled }}" value="${this._localization.edit}" on-click="{{ row.enterEdit() }}">
+                            <button type="button" :disabled="row.disabled" value="${this._localization.edit}" on:click="row.enterEdit()">
                                 <surface-icon name="create"></surface-icon>
                             </button>
                         `;
@@ -270,7 +270,7 @@ export default class DataTable extends Component
                         innerHTML = //html
                         `
                             ${innerHTML}
-                            <button type="button" disabled="{{row.disabled}}" value="${this._localization.delete}" on-click="{{ dataTable.deleteRow(row) }}">
+                            <button type="button" :disabled="row.disabled" value="${this._localization.delete}" on:click="dataTable.deleteRow(row)">
                                 <surface-icon name="delete"></surface-icon>
                             </button>
                         `;
@@ -278,10 +278,10 @@ export default class DataTable extends Component
 
                     innerHTML = //html
                     `
-                        <surface-switch value="{{ row.editMode }}">
+                        <surface-switch value="{row.editMode}">
                             <template when="true">
-                                <input type="button" value="${this._localization.save}"   horizontal-align="center" on-click="{{ dataTable.saveRow(row) }}" />
-                                <input type="button" value="${this._localization.cancel}" horizontal-align="center" on-click="{{ dataTable.undoRow(row) }}" />
+                                <input type="button" value="${this._localization.save}"   horizontal-align="center" on:click="dataTable.saveRow(row)" />
+                                <input type="button" value="${this._localization.cancel}" horizontal-align="center" on:click="dataTable.undoRow(row)" />
                             </template>
                             <template when="false">
                                 <surface-stack-panel content="center" orientation="horizontal">
