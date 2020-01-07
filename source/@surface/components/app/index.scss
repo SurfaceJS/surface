@@ -1,0 +1,20 @@
+:host
+{
+    display:        flex;
+    flex-direction: column;
+    ::slotted(surface-app-header),
+    ::slotted(surface-app-footer)
+    {
+        border: solid 1px red;
+    }
+
+    ::slotted(surface-app-aside)
+    {
+        border: solid 1px green;
+    }
+
+    ::slotted(surface-app-main)
+    {
+        border: solid 1px blue;
+    }
+}

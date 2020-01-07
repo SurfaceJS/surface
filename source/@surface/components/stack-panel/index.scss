@@ -8,7 +8,7 @@
     {
         flex-grow: 0;
     }
-    
+
     ::slotted([grow="1"])
     {
         flex-grow: 1;
@@ -28,11 +28,11 @@
     {
         flex-shrink: 0;
     }
-}    
+}
 
 :host([orientation=vertical])
 {
-    
+
     flex-direction: column;
     align-items:    stretch;
 }

@@ -1,0 +1,103 @@
+@import "../colors.scss";
+@import "../elevation.scss";
+
+$icon-size:      48px;
+$icon-font-size: 24px;
+
+:host
+{
+    align-items:      center;
+    background-color: $primary;
+    border-radius:    4px;
+    box-sizing:       border-box;
+    caret-color:      currentColor;
+    color:            white;
+    cursor:           pointer;
+    display:          inline-flex;
+    flex:             0 0 auto;
+    font-family:      "Roboto", sans-serif;
+    font-size:        14px;
+    font-weight:      500;
+    height:           32px;
+    justify-content:  center;
+    min-width:        64px;
+    padding:          0 16px;
+    position:         relative;
+    text-transform:   uppercase;
+    user-select:      none;
+
+    &::before
+    {
+        background-color: currentColor;
+        border-radius:    inherit;
+        bottom:           0;
+        color:            inherit;
+        content:          "";
+        left:             0;
+        opacity:          0;
+        pointer-events:   none;
+        position:         absolute;
+        right:            0;
+        top:              0;
+        transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+    }
+}
+
+:host([disabled])
+{
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+:host(:hover)::before
+{
+    opacity: 0.04;
+}
+
+:host(:active)::before,
+:host(:focus)::before
+{
+    opacity: 0.5;
+}
+
+:host(.outlined)
+{
+    background-color: transparent;
+    border-color:     currentColor;
+    border-style:     solid;
+    border-width:     1px;
+    color:            $primary;
+}
+
+:host(.flat)
+{
+    background-color: transparent;
+    color: $primary;
+}
+
+:host(.rounded)
+{
+    border-radius: 20px;
+}
+
+:host(.fab)
+{
+    border-radius: 50%;
+    font-size:     $icon-font-size;
+    height:        $icon-size;
+    min-height:    0;
+    min-width:     0;
+    width:         $icon-size;
+}
+
+:host(.icon)
+{
+    background-color: transparent;
+    border-radius:    50%;
+    color:            $primary;
+    font-size:        $icon-font-size;
+    height:           $icon-size;
+    min-height:       0;
+    min-width:        0;
+    width:            $icon-size;
+}

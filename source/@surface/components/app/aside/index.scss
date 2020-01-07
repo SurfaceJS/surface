@@ -1,0 +1,12 @@
+:host
+{
+    background: white;
+    display:    block;
+    height:     100vh;
+    left:       0;
+    max-height: calc(100% - 32px);
+    position:   fixed;
+    top:        64px;
+    width:      256px;
+    z-index:    0;
+}

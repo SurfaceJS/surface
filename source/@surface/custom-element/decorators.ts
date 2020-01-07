@@ -165,7 +165,7 @@ export function element(name: string, template?: string, style?: string, options
                 {
                     const styleElement = document.createElement("style");
                     styleElement.innerHTML = style;
-                    templateElement.content.appendChild(styleElement);
+                    templateElement.content.prepend(styleElement);
                 }
 
                 Object.defineProperty(target, symbols.TEMPLATE, { get: () => templateElement } );

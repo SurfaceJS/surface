@@ -1,13 +1,12 @@
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import { setGlobalStyle }     from "../internal/common";
-import fontFace               from "./font-face.scss";
+import fontFace               from "./font-face.scss?raw";
 import template               from "./index.html";
-import style                  from "./index.scss";
 
 setGlobalStyle("material-design", fontFace);
 
-@element("surface-icon", template, style)
+@element("surface-icon", template)
 export default class Icon extends Component
 {
     private _name: string = "";
