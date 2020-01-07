@@ -279,16 +279,25 @@ export default class Compiler
                                 ]
                             },
                             {
+                                resourceQuery: /file/,
                                 use:
                                 [
-                                    loaders.toString,
                                     loaders.fileCss,
                                     loaders.extract,
                                     loaders.css,
                                     loaders.resolveUrl,
                                     loaders.sass
                                 ]
-                            }
+                            },
+                            {
+                                use:
+                                [
+                                    loaders.toString,
+                                    loaders.css,
+                                    loaders.resolveUrl,
+                                    loaders.sass,
+                                ]
+                            },
                         ]
                     },
                     {

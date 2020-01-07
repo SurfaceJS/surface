@@ -1,6 +1,7 @@
 :host
 {
-    display:        flex;
+    display:        inline-flex;
+    flex:           0 0 auto;
     flex-direction: column;
     ::slotted(surface-app-header),
     ::slotted(surface-app-footer)

@@ -1,7 +1,8 @@
 :host
 {
     background: white;
-    display:    block;
+    display:    inline-flex;
+    flex:       0 0 auto;
     height:     100vh;
     left:       0;
     max-height: calc(100% - 32px);
