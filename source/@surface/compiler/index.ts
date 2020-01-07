@@ -24,28 +24,29 @@ const loaders =
             cacheDirectory: path.resolve(__dirname, ".cache")
         }
     },
-    css:
-    {
-        loader: "css-loader"
-    },
+    css: { loader: "css-loader" },
     file:
     {
         loader: "file-loader",
         options: { name: "[hash].[ext]", outputPath: "resources" }
     },
+    fileCss:
+    {
+        loader: "file-loader",
+        options: { name: "[hash].css", outputPath: "resources", esModule: false }
+    },
+    extract: { loader: "extract-loader" },
     html:
     {
         loader: "html-loader",
         options:
         {
             attrs:    ["img:src", "link:href", "script:src"],
+            esModule: true,
             minimize: true
         }
     },
-    htmlRequire:
-    {
-        loader: "html-require-loader"
-    },
+    htmlRequire: { loader: "html-require-loader" },
     istanbul:
     {
         loader: "istanbul-instrumenter-loader",
@@ -56,10 +57,8 @@ const loaders =
         }
     },
     resolveUrl: { loader: "resolve-url-loader" },
-    sass:
-    {
-        loader: "sass-loader"
-    },
+    sass:       { loader: "sass-loader" },
+    style:      { loader: "style-loader" },
     thread:
     {
         loader: "thread-loader",
@@ -69,10 +68,7 @@ const loaders =
           workers: require("os").cpus().length - 1,
         },
     },
-    toString:
-    {
-        loader: "to-string-loader"
-    },
+    toString: { loader: "to-string-loader" },
     ts:
     {
         loader: "ts-loader",
@@ -259,13 +255,40 @@ export default class Compiler
                         use:  loaders.file
                     },
                     {
-                        test: /\.(s[ac]|c)ss$/,
-                        use:
+                        test: /\.s?css$/,
+                        oneOf:
                         [
-                            loaders.toString,
-                            loaders.css,
-                            loaders.resolveUrl,
-                            loaders.sass
+                            {
+                                resourceQuery: /global/,
+                                use:
+                                [
+                                    loaders.style,
+                                    loaders.css,
+                                    loaders.resolveUrl,
+                                    loaders.sass
+                                ]
+                            },
+                            {
+                                resourceQuery: /raw/,
+                                use:
+                                [
+                                    loaders.toString,
+                                    loaders.css,
+                                    loaders.resolveUrl,
+                                    loaders.sass,
+                                ]
+                            },
+                            {
+                                use:
+                                [
+                                    loaders.toString,
+                                    loaders.fileCss,
+                                    loaders.extract,
+                                    loaders.css,
+                                    loaders.resolveUrl,
+                                    loaders.sass
+                                ]
+                            }
                         ]
                     },
                     {
