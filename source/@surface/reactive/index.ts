@@ -52,7 +52,7 @@ export default class Reactive
         return [reactor, observer];
     }
 
-    public static getReactor(target: Indexer|Array<unknown>): Nullable<IReactor>
+    public static getReactor(target: object|Indexer|Array<unknown>): Nullable<IReactor>
     {
         return (target as { [REACTOR]?: IReactor })[REACTOR];
     }

@@ -12,3 +12,4 @@ export const SCOPE                = Symbol("custom-element:scope");
 export const SHADOW_ROOT          = Symbol("custom-element:shadow-root");
 export const SUBSCRIPTIONS        = Symbol("custom-element:subscriptions");
 export const TEMPLATE             = Symbol("custom-element:template");
+export const METADATA             = Symbol("custom-element:metadata");

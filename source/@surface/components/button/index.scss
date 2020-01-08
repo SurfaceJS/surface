@@ -4,7 +4,7 @@
 $icon-size:      48px;
 $icon-font-size: 24px;
 
-:host
+:host container
 {
     align-items:      center;
     background-color: $primary;
@@ -41,63 +41,67 @@ $icon-font-size: 24px;
         top:              0;
         transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
     }
+
+    &.outlined
+    {
+        background-color: transparent;
+        border-color:     currentColor;
+        border-style:     solid;
+        border-width:     1px;
+        color:            $primary;
+    }
+
+    &.flat
+    {
+        background-color: transparent;
+        color: $primary;
+    }
+
+    &.rounded
+    {
+        border-radius: 20px;
+    }
+
+    &.fab
+    {
+        border-radius: 50%;
+        font-size:     $icon-font-size;
+        height:        $icon-size;
+        min-height:    0;
+        min-width:     0;
+        width:         $icon-size;
+    }
+
+    &.icon
+    {
+        background-color: transparent;
+        border-radius:    50%;
+        color:            $primary;
+        font-size:        $icon-font-size;
+        height:           $icon-size;
+        min-height:       0;
+        min-width:        0;
+        width:            $icon-size;
+    }
 }
 
 :host([disabled])
 {
-    opacity: 0.6;
+    opacity:        0.6;
     pointer-events: none;
 }
 
-:host(:hover)::before
+:host(:hover) container::before
 {
-    opacity: 0.04;
+    opacity: 0.06;
 }
 
-:host(:active)::before,
-:host(:focus)::before
+:host(:focus)
 {
-    opacity: 0.5;
-}
+    outline: 0;
 
-:host(.outlined)
-{
-    background-color: transparent;
-    border-color:     currentColor;
-    border-style:     solid;
-    border-width:     1px;
-    color:            $primary;
-}
-
-:host(.flat)
-{
-    background-color: transparent;
-    color: $primary;
-}
-
-:host(.rounded)
-{
-    border-radius: 20px;
-}
-
-:host(.fab)
-{
-    border-radius: 50%;
-    font-size:     $icon-font-size;
-    height:        $icon-size;
-    min-height:    0;
-    min-width:     0;
-    width:         $icon-size;
-}
-
-:host(.icon)
-{
-    background-color: transparent;
-    border-radius:    50%;
-    color:            $primary;
-    font-size:        $icon-font-size;
-    height:           $icon-size;
-    min-height:       0;
-    min-width:        0;
-    width:            $icon-size;
+    container::before
+    {
+        opacity: 0.12;
+    }
 }

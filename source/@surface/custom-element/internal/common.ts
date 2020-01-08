@@ -14,6 +14,8 @@ const windowWrapper = wrapper.prototype;
 
 export function createScope(scope: Indexer): Indexer
 {
+    scope["$class"] = classMap;
+
     const handler: ProxyHandler<Indexer> =
     {
         get: (target, key) => key in target ? target[key as string] : (windowWrapper as Indexer)[key as string],
@@ -23,6 +25,15 @@ export function createScope(scope: Indexer): Indexer
     };
 
     return new Proxy(scope, handler);
+}
+
+export function classMap(classes: Record<string, boolean>): string
+{
+    return Object.entries(classes)
+        .filter(x => x[1])
+        .map(x => x[0])
+        .reduce((a, b) => a + " " + b, "")
+        .trim();
 }
 
 export function pushSubscription(target: Subscriber, subscription: ISubscription): void

@@ -181,7 +181,7 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => attribute(Mock.prototype, "value", Object.getOwnPropertyDescriptor(Mock.prototype, "value")!))
+        expect(() => attribute(Mock.prototype, "value"))
             .to.throw(TypeError, "Target is not an valid instance of HTMLElement");
     }
 

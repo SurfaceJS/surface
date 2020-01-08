@@ -1,10 +1,11 @@
 import { Action, Indexer, KeyValue, Nullable }               from "@surface/core";
 import Reactive                                              from "@surface/reactive";
+import ICustomElement                                        from "./interfaces/custom-element";
 import References                                            from "./internal/references";
 import { OBSERVED_ATTRIBUTES, SCOPE, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
 import TemplateProcessor                                     from "./internal/template-processor";
 
-export default abstract class CustomElement extends HTMLElement
+export default abstract class CustomElement extends HTMLElement implements ICustomElement
 {
     public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
     public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;

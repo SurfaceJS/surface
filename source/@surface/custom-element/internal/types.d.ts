@@ -22,3 +22,11 @@ export type Bindable<T extends object> = T &
 
 export type Subscriber        = object & { [SUBSCRIPTIONS]?: Array<ISubscription> };
 export type ElementSubscriber = Subscriber & { [LISTENNING]?: boolean };
+
+export type Metadata =
+{
+    attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
+    conversionHandlers?:       Record<string, (target: Indexer, value: string) => void>
+    observedAttributes?:       Array<string>;
+    reflectedAttributes?:      Array<string>;
+};
