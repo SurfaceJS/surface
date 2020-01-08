@@ -34,7 +34,5 @@ export default class Button extends Component
     public constructor()
     {
         super();
-
-        this.tabIndex = 0;
     }
 }

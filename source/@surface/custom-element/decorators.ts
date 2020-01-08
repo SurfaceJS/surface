@@ -287,7 +287,7 @@ export function notify(property: string): PropertyDecorator
                     {
                         this[privateKey as string] = value;
 
-                        Reactive.getReactor(this)?.notify(this as Indexer, property);
+                        Reactive.getReactor(this)?.notify(this, property);
                     }
                 }
             );

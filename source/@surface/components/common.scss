@@ -1,0 +1,32 @@
+:host
+{
+    box-sizing:  border-box;
+    display:     inline-flex;
+    flex:        0 0 auto;
+    caret-color: currentColor;
+
+    container
+    {
+        box-sizing: border-box;
+        display:    inline-flex;
+        flex:       0 0 auto;
+
+        &:focus
+        {
+            outline: 0;
+        }
+    }
+}
+
+:host([disabled=""]),
+:host([disabled="disabled"]),
+:host([disabled="true"])
+{
+    opacity:        0.6;
+    pointer-events: none;
+}
+
+:host(:focus)
+{
+    outline: 0;
+}

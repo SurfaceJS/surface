@@ -1,94 +1,89 @@
 @import "../colors.scss";
+@import "../common.scss";
 @import "../elevation.scss";
 
 $icon-size:      48px;
 $icon-font-size: 24px;
 
-:host container
+:host
 {
-    align-items:      center;
-    background-color: $primary;
-    border-radius:    4px;
-    box-sizing:       border-box;
-    caret-color:      currentColor;
-    color:            white;
-    cursor:           pointer;
-    display:          inline-flex;
-    flex:             0 0 auto;
-    font-family:      "Roboto", sans-serif;
-    font-size:        14px;
-    font-weight:      500;
-    height:           32px;
-    justify-content:  center;
-    min-width:        64px;
-    padding:          0 16px;
-    position:         relative;
-    text-transform:   uppercase;
-    user-select:      none;
+    color:          white;
+    cursor:         pointer;
+    font-family:    "Roboto", sans-serif;
+    font-size:      14px;
+    font-weight:    500;
+    height:         32px;
+    min-width:      64px;
+    text-transform: uppercase;
+    user-select:    none;
 
-    &::before
+    container
     {
-        background-color: currentColor;
-        border-radius:    inherit;
-        bottom:           0;
-        color:            inherit;
-        content:          "";
-        left:             0;
-        opacity:          0;
-        pointer-events:   none;
-        position:         absolute;
-        right:            0;
-        top:              0;
-        transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
-    }
+        align-items:      center;
+        background-color: $primary;
+        border-radius:    4px;
+        justify-content:  center;
+        padding:          0 16px;
+        position:         relative;
 
-    &.outlined
-    {
-        background-color: transparent;
-        border-color:     currentColor;
-        border-style:     solid;
-        border-width:     1px;
-        color:            $primary;
-    }
+        &::before
+        {
+            background-color: currentColor;
+            border-radius:    inherit;
+            bottom:           0;
+            color:            inherit;
+            content:          "";
+            left:             0;
+            opacity:          0;
+            pointer-events:   none;
+            position:         absolute;
+            right:            0;
+            top:              0;
+            transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+        }
 
-    &.flat
-    {
-        background-color: transparent;
-        color: $primary;
-    }
+        &.outlined
+        {
+            background-color: transparent;
+            border-color:     currentColor;
+            border-style:     solid;
+            border-width:     1px;
+            color:            $primary;
+        }
 
-    &.rounded
-    {
-        border-radius: 20px;
-    }
+        &.flat
+        {
+            background-color: transparent;
+            color: $primary;
+        }
 
-    &.fab
-    {
-        border-radius: 50%;
-        font-size:     $icon-font-size;
-        height:        $icon-size;
-        min-height:    0;
-        min-width:     0;
-        width:         $icon-size;
-    }
+        &.rounded
+        {
+            border-radius: 20px;
+        }
 
-    &.icon
-    {
-        background-color: transparent;
-        border-radius:    50%;
-        color:            $primary;
-        font-size:        $icon-font-size;
-        height:           $icon-size;
-        min-height:       0;
-        min-width:        0;
-        width:            $icon-size;
-    }
-}
+        &.fab
+        {
+            border-radius: 50%;
+            font-size:     $icon-font-size;
+            height:        $icon-size;
+            min-height:    0;
+            min-width:     0;
+            width:         $icon-size;
+        }
 
-:host([disabled])
-{
-    opacity:        0.6;
-    pointer-events: none;
+        &.icon
+        {
+            background-color: transparent;
+            border-radius:    50%;
+            color:            $primary;
+            font-size:        $icon-font-size;
+            height:           $icon-size;
+            min-height:       0;
+            min-width:        0;
+            width:            $icon-size;
+        }
+    }
 }
 
 :host(:hover) container::before
@@ -96,12 +91,8 @@ $icon-font-size: 24px;
     opacity: 0.06;
 }
 
-:host(:focus)
+:host(:focus) container::before,
+:host container:focus::before
 {
-    outline: 0;
-
-    container::before
-    {
-        opacity: 0.12;
-    }
+    opacity: 0.12;
 }
