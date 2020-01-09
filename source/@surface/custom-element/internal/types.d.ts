@@ -26,7 +26,7 @@ export type ElementSubscriber = Subscriber & { [LISTENNING]?: boolean };
 export type Metadata =
 {
     attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
-    conversionHandlers?:       Record<string, (target: Indexer, value: string) => void>
+    conversionHandlers?:       Indexer<(target: Indexer, value: string) => void>
     observedAttributes?:       Array<string>;
     reflectedAttributes?:      Array<string>;
 };

@@ -1,7 +1,7 @@
 import CustomElement from "@surface/custom-element";
 import { attribute } from "./decorators";
 
-abstract class Component extends CustomElement
+class Component extends CustomElement
 {
     private storedDisplay: string|null = null;
 

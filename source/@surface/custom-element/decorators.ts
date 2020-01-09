@@ -39,7 +39,7 @@ export function attribute(...args: [Func1<string, unknown>] | [object, string | 
                 : target[symbols.METADATA] ?? { };
 
             const observedAttributes = metadata.observedAttributes = hasInheritance
-                ? [ ...metadata.observedAttributes ?? []]
+                ? [ ...(metadata.observedAttributes ?? [])]
                 : metadata.observedAttributes ?? [];
 
             const conversionHandlers = metadata.conversionHandlers = hasInheritance
@@ -152,7 +152,7 @@ export function attribute(...args: [Func1<string, unknown>] | [object, string | 
                 }
             };
 
-            const attributeChangedCallback = target["attributeChangedCallback"];
+            const attributeChangedCallback = target.attributeChangedCallback;
 
             if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
             {
@@ -163,7 +163,7 @@ export function attribute(...args: [Func1<string, unknown>] | [object, string | 
                         //     return;
                         // }
 
-                    this[symbols.METADATA]?.conversionHandlers?.[name](this as Indexer, newValue);
+                    this[symbols.METADATA]?.conversionHandlers?.[name]?.(this as Indexer, newValue);
 
                     attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
                 };

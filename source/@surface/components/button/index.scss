@@ -1,6 +1,7 @@
 @import "../colors.scss";
 @import "../common.scss";
 @import "../elevation.scss";
+@import "../styles/ripple.scss";
 
 $icon-size:      48px;
 $icon-font-size: 24px;
@@ -12,13 +13,14 @@ $icon-font-size: 24px;
     font-family:    "Roboto", sans-serif;
     font-size:      14px;
     font-weight:    500;
-    height:         32px;
-    min-width:      64px;
     text-transform: uppercase;
     user-select:    none;
 
     container
     {
+        height:           32px;
+        min-width:        64px;
+        width:            inherit;
         align-items:      center;
         background-color: $primary;
         border-radius:    4px;

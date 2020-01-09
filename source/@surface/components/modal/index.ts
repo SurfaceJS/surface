@@ -109,10 +109,10 @@ export default class Modal extends Component
 
     private refresh(): void
     {
-        super.style.position = this.startPosition == "none" ?
-            "relative"
-            : this.startPosition == "center-screen" ?
-                "fixed"
+        super.style.position = this.startPosition == "none"
+            ? "relative"
+            : this.startPosition == "center-screen"
+                ? "fixed"
                 : "absolute";
 
         if (this.startPosition == "center-screen" || this.startPosition == "center-parent")
