@@ -46,6 +46,15 @@ export function scapeBrackets(value: string)
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 }
 
+export function styleMap(rules: Record<string, boolean>): string
+{
+    return Object.entries(rules)
+        .filter(x => x[1])
+        .map(x => x[0])
+        .reduce((a, b) => a + "; " + b, "")
+        .trim();
+}
+
 export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
 {
     for (const attribute of Array.from(element.attributes))

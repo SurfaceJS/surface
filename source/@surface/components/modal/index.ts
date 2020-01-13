@@ -1,7 +1,7 @@
+import { attribute, element } from "@surface/custom-element/decorators";
 import ResizeObserver         from "resize-observer-polyfill";
 import Component              from "..";
 import Enumerable             from "../../enumerable";
-import { attribute, element } from "../decorators";
 import { AttributeConverter } from "../types";
 import template               from "./index.html";
 import style                  from "./index.scss";

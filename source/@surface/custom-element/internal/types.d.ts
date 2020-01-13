@@ -30,3 +30,10 @@ export type Metadata =
     observedAttributes?:       Array<string>;
     reflectedAttributes?:      Array<string>;
 };
+
+export type StaticMetadata =
+{
+    observedAttributes?: Array<string>;
+    styles?:             Array<string>;
+    template?:           HTMLTemplateElement;
+};

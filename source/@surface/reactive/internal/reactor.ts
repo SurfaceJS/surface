@@ -328,8 +328,8 @@ export default class Reactor
     }
 
     public notify(value: unknown): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
+    public notify<TTarget extends object | Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
+    public notify<TTarget extends object | Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
     public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
     {
         if (Reactor.stack.includes(this))

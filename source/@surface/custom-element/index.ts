@@ -1,15 +1,13 @@
-import { Action, Indexer, KeyValue, Nullable }               from "@surface/core";
-import Reactive                                              from "@surface/reactive";
-import ICustomElement                                        from "./interfaces/custom-element";
-import References                                            from "./internal/references";
-import { OBSERVED_ATTRIBUTES, SCOPE, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
-import TemplateProcessor                                     from "./internal/template-processor";
+import { Action, Indexer }                     from "@surface/core";
+import Reactive                                from "@surface/reactive";
+import ICustomElement                          from "./interfaces/custom-element";
+import References                              from "./internal/references";
+import { SCOPE, SHADOW_ROOT, STATIC_METADATA } from "./internal/symbols";
+import TemplateProcessor                       from "./internal/template-processor";
+import { StaticMetadata }                      from "./internal/types";
 
 export default abstract class CustomElement extends HTMLElement implements ICustomElement
 {
-    public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
-    public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
-
     private [SCOPE]: Indexer = { };
     private readonly [SHADOW_ROOT]: ShadowRoot;
     private readonly _references:   References;
@@ -26,18 +24,17 @@ export default abstract class CustomElement extends HTMLElement implements ICust
 
     public onAfterBind?: Action;
 
-    public constructor();
-    public constructor(shadowRootInit: ShadowRootInit);
     public constructor(shadowRootInit?: ShadowRootInit)
     {
         super();
-        this[SHADOW_ROOT] = this.attachShadow(shadowRootInit || { mode: "closed" });
 
-        const template = (this.constructor as typeof CustomElement)[TEMPLATE];
+        this[SHADOW_ROOT] = this.attachShadow(shadowRootInit ?? { mode: "closed" });
 
-        if (template)
+        const metadata = (this.constructor as Function & { [STATIC_METADATA]?: StaticMetadata })[STATIC_METADATA];
+
+        if (metadata?.template)
         {
-            this.applyTemplate(template);
+            this.applyTemplate(metadata.template);
         }
 
         this._references = new References(this[SHADOW_ROOT]);
@@ -86,38 +83,6 @@ export default abstract class CustomElement extends HTMLElement implements ICust
      */
     protected notify<K extends keyof this>(key: K)
     {
-        const reactor = Reactive.getReactor(this as unknown as Indexer);
-
-        if (reactor)
-        {
-            reactor.notify(this as unknown as Indexer, key as keyof Indexer);
-        }
-    }
-
-    /**
-     * Set value to especified object property.
-     * @param target Object instance
-     * @param key    Property key
-     * @param value  Value to set
-     */
-    protected set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): void;
-    /**
-     * Set value to this intance property.
-     * @param key   Property key
-     * @param value Value to set
-     */
-    protected set<K extends keyof this>(key: K, value: this[K]): void;
-    protected set<T extends object, K extends keyof T>(...args: KeyValue<this>|[T, K, T[K]]): void
-    {
-        if (args.length == 2)
-        {
-            const [key, value] = args;
-            this[key] = value;
-        }
-        else
-        {
-            const [target, key, value] = args;
-            target[key] = value;
-        }
+        Reactive.getReactor(this)?.notify(this, key);
     }
 }

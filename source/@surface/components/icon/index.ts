@@ -1,7 +1,7 @@
 import "./font-face.scss?global";
 
+import { attribute, element } from "@surface/custom-element/decorators";
 import Component              from "..";
-import { attribute, element } from "../decorators";
 import template               from "./index.html";
 import style                  from "./index.scss";
 

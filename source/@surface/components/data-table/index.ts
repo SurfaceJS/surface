@@ -1,9 +1,9 @@
 import { Indexer, Nullable as __Nullable__ } from "@surface/core";
 import { clone, objectFactory }              from "@surface/core/common/object";
 import CustomElement                         from "@surface/custom-element";
+import { attribute, element }                from "@surface/custom-element/decorators";
 import Enumerable                            from "@surface/enumerable";
 import Component                             from "..";
-import { attribute, element }                from "../decorators";
 import localize, { Localization }            from "../locales";
 import DataCell                              from "./data-cell";
 import DataFooterGroup                       from "./data-footer-group";
@@ -434,14 +434,6 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    protected connectedCallback(): void
-    {
-        if (!this.refreshing)
-        {
-            this.refresh();
-        }
-    }
-
     public async addNew(): Promise<void>
     {
         if (this.total > 0)
@@ -464,6 +456,14 @@ export default class DataTable extends Component
     {
         this.dataProvider.create(row.reference);
         await this.refresh();
+    }
+
+    public connectedCallback(): void
+    {
+        if (!this.refreshing)
+        {
+            this.refresh();
+        }
     }
 
     public async deleteRow(row: DataRow): Promise<void>

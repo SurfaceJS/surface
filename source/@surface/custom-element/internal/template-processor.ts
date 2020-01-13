@@ -7,10 +7,12 @@ import Type                         from "@surface/reflection";
 import FieldInfo                    from "@surface/reflection/field-info";
 import
 {
+    classMap,
     createScope,
     enumerateExpresssionAttributes,
     pushSubscription,
-    scapeBrackets
+    scapeBrackets,
+    styleMap
 }
 from "./common";
 import DataBind               from "./data-bind";
@@ -126,7 +128,23 @@ export default class TemplateProcessor
                     {
                         const expression = parse(rawExpression);
 
-                        const notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
+                        let notify: Action;
+
+                        if (attributeName == "class" || attributeName == "style")
+                        {
+                            const attribute = document.createAttribute(attributeName);
+
+                            element.setAttributeNode(attribute);
+
+                            notify = attributeName == "class"
+                                ? () => attribute.value = classMap(expression.evaluate(scope) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(expression.evaluate(scope) as Record<string, boolean>);
+                        }
+                        else
+                        {
+                            notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
+                        }
+
 
                         let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 

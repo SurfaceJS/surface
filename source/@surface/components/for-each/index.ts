@@ -1,8 +1,8 @@
 import { Indexer, Nullable }  from "@surface/core";
 import CustomElement          from "@surface/custom-element";
+import { attribute, element } from "@surface/custom-element/decorators";
 import Enumerable             from "@surface/enumerable";
 import Component              from "..";
-import { attribute, element } from "../decorators";
 import template               from "./index.html";
 
 @element("surface-for-each", template)

@@ -1,6 +1,6 @@
 import CustomElement  from "@surface/custom-element";
+import { element }    from "@surface/custom-element/decorators";
 import { Enumerable } from "@surface/enumerable";
-import { element }    from "../../decorators";
 import DataRow        from "../data-row";
 import template       from "./index.html";
 import style          from "./index.scss";

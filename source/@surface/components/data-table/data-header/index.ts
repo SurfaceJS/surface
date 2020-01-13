@@ -1,5 +1,5 @@
+import { element } from "@surface/custom-element/decorators";
 import Component   from "../..";
-import { element } from "../../decorators";
 import Modal       from "../../modal";
 import template    from "./index.html";
 import style       from "./index.scss";

@@ -1,7 +1,7 @@
 import { typeGuard }          from "@surface/core/common/generic";
 import CustomElement          from "@surface/custom-element";
+import { attribute, element } from "@surface/custom-element/decorators";
 import Component              from "..";
-import { attribute, element } from "../decorators";
 import style                  from "./index.scss";
 
 @element("surface-switch", "", style)

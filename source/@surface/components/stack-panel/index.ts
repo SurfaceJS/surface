@@ -1,5 +1,5 @@
+import { attribute, element } from "@surface/custom-element/decorators";
 import Component              from "..";
-import { attribute, element } from "../decorators";
 import style                  from "./index.scss";
 
 @element("surface-stack-panel", "", style)

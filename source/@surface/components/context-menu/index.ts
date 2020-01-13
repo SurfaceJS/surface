@@ -1,5 +1,5 @@
 import CustomElement from "@surface/custom-element";
-import { element }   from "../decorators";
+import { element }   from "@surface/custom-element/decorators";
 import style         from "./index.scss";
 
 @element("surface-context-menu", "", style)

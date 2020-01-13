@@ -1,6 +1,6 @@
+import { attribute, element }                   from "@surface/custom-element/decorators";
 import Component                                from "../..";
 import Enumerable                               from "../../../enumerable";
-import { attribute, element }                   from "../../decorators";
 import List                                     from "../../list";
 import { AttributeConverter }                   from "../../types";
 import DataFilterItem, { Filter }               from "./data-filter-item";
