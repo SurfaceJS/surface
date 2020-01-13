@@ -1,19 +1,19 @@
 import { attribute, element, notify } from "@surface/custom-element/decorators";
 import Component                      from "..";
-import { rippleMixin }                from "../internal/mixins/ripple";
+import Ripple                         from "../internal/mixins/ripple";
 import template                       from "./index.html";
 import style                          from "./index.scss";
 
 @element("surface-button", template, style)
-export default class Button extends rippleMixin(Component)
+export default class Button extends Ripple(Component)
 {
     @attribute
     @notify("classes")
-    public fab: boolean = false;
+    public block: boolean = false;
 
     @attribute
     @notify("classes")
-    public flat: boolean = false;
+    public fab: boolean = false;
 
     @attribute
     @notify("classes")
@@ -27,13 +27,25 @@ export default class Button extends rippleMixin(Component)
     @notify("classes")
     public outlined: boolean = false;
 
-    protected get classes(): object
-    {
-        return { fab: this.fab, flat: this.flat, icon: this.icon, rounded: this.rounded, outlined: this.outlined };
-    }
+    @attribute
+    @notify("classes")
+    public text: boolean = false;
 
-    public constructor()
+    @attribute
+    @notify("classes")
+    public tile: boolean = false;
+
+    public get classes(): Record<string, boolean>
     {
-        super();
+        return {
+            ...super.classes,
+            block:    this.block,
+            fab:      this.fab,
+            icon:     this.icon,
+            outlined: this.outlined,
+            rounded:  this.rounded,
+            text:     this.text,
+            tile:     this.tile
+        };
     }
 }

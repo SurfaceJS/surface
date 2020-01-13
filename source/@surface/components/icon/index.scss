@@ -2,30 +2,21 @@
 {
     i
     {
-        font-family:    'Material Icons';
-        font-weight:    normal;
-        font-style:     normal;
-        font-size:      inherit;//var(--font-size, 24px);
-        display:        inline-block;
-        line-height:    1;
-        text-transform: none;
-        letter-spacing: normal;
-        word-wrap:      normal;
-        white-space:    nowrap;
-        direction:      ltr;
-        // Support for all WebKit browsers.
         -webkit-font-smoothing: antialiased;
-        // Support for Safari and Chrome.
-        text-rendering: optimizeLegibility;
-        // Support for Firefox.
-        -moz-osx-font-smoothing: grayscale;
-        // Support for IE.
-        font-feature-settings: 'liga';
 
-        font-display: block;
-        //&:hover
-        //{
-        //    color: var(--hover-color, gray);
-        //}
+        direction:             ltr;
+        display:               inline-block;
+        font-display:          block;
+        font-family:           'Material Icons';
+        font-feature-settings: 'liga';
+        font-size:             inherit;
+        font-style:            normal;
+        font-weight:           normal;
+        letter-spacing:        normal;
+        pointer-events:        none;
+        text-rendering:        optimizeLegibility;
+        text-transform:        none;
+        white-space:           nowrap;
+        word-wrap:             normal;
     }
 }

@@ -1,20 +1,19 @@
 @import "../colors.scss";
-@import "../common.scss";
-@import "../elevation.scss";
-@import "../styles/ripple.scss";
 
 $icon-size:      48px;
 $icon-font-size: 24px;
 
 :host
 {
+    align-items:     center;
     color:          white;
-    cursor:         pointer;
-    font-family:    "Roboto", sans-serif;
-    font-size:      14px;
-    font-weight:    500;
-    text-transform: uppercase;
-    user-select:    none;
+    cursor:          pointer;
+    font-family:     "Roboto", sans-serif;
+    font-size:       14px;
+    font-weight:     500;
+    justify-content: center;
+    text-transform:  uppercase;
+    user-select:     none;
 
     container
     {
@@ -53,10 +52,10 @@ $icon-font-size: 24px;
             color:            $primary;
         }
 
-        &.flat
+        &.text
         {
             background-color: transparent;
-            color: $primary;
+            color:            $primary;
         }
 
         &.rounded
@@ -64,7 +63,8 @@ $icon-font-size: 24px;
             border-radius: 20px;
         }
 
-        &.fab
+        &.fab,
+        &.icon
         {
             border-radius: 50%;
             font-size:     $icon-font-size;
@@ -77,13 +77,20 @@ $icon-font-size: 24px;
         &.icon
         {
             background-color: transparent;
-            border-radius:    50%;
             color:            $primary;
-            font-size:        $icon-font-size;
-            height:           $icon-size;
-            min-height:       0;
-            min-width:        0;
-            width:            $icon-size;
+        }
+
+        &.tile
+        {
+            border-radius: 0;
+        }
+
+        &.block
+        {
+            display:   flex;
+            flex:      1 0 auto;
+            max-width: inherit;
+            min-width: 100%;
         }
     }
 }
