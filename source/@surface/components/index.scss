@@ -1,6 +1,22 @@
+@import "./styles/elevation.scss";
+
 :host
 {
-    display: flex;
+    -webkit-tap-highlight-color: transparent;
+
+    display:     inline-flex;
+    box-sizing:  border-box;
+    caret-color: currentColor;
+    outline:     0;
+
+    container
+    {
+        box-sizing: border-box;
+        display:    inline-flex;
+        flex:       0 0 auto;
+        position:   relative;
+        outline:    0;
+    }
 
     [vertical-align=top],
     ::slotted([vertical-align=top])
@@ -17,7 +33,7 @@
         margin-top:    auto;
         margin-bottom: auto;
     }
-    
+
     [vertical-align=bottom],
     ::slotted([vertical-align=bottom])
     {
@@ -25,7 +41,7 @@
         margin-top:    auto;
         margin-bottom: 0;
     }
-    
+
     [horizontal-align=left],
     ::slotted([horizontal-align=left])
     {
@@ -49,4 +65,12 @@
         margin-left:  auto;
         margin-right: 0;
     }
+}
+
+:host([disabled=""]),
+:host([disabled="disabled"]),
+:host([disabled="true"])
+{
+    opacity:        0.6;
+    pointer-events: none;
 }

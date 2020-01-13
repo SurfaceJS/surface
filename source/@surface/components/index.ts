@@ -1,39 +1,33 @@
-import CustomElement from "@surface/custom-element";
-import { attribute } from "./decorators";
+import CustomElement                 from "@surface/custom-element";
+import { attribute, notify, styles } from "@surface/custom-element/decorators";
+import style                         from "./index.scss";
 
+@styles(style)
 class Component extends CustomElement
 {
-    private storedDisplay: string|null = null;
-
-    private _disabled:        boolean                   = false;
-    private _horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
-    private _verticalAlign:   Component.VerticalAlign   = Component.VerticalAlign.Top;
+    private storedDisplay: string | null = null;
 
     @attribute
-    public get disabled(): boolean
-    {
-        return this._disabled;
-    }
+    public disabled: boolean = false;
 
-    public set disabled(value: boolean)
+    @attribute
+    @notify("classes")
+    public elevation: number = 0;
+
+    @attribute
+    public horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
+
+    @attribute
+    public verticalAlign: Component.VerticalAlign = Component.VerticalAlign.Top;
+
+    public get classes(): Record<string, boolean>
     {
-        this._disabled = value;
+        return { [`elevation-${this.elevation}`]: this.elevation > -1 && this.elevation < 25 };
     }
 
     public get height(): number
     {
         return super.getBoundingClientRect().height;
-    }
-
-    @attribute
-    public get horizontalAlign(): Component.HorizontalAlign
-    {
-        return this._horizontalAlign;
-    }
-
-    public set horizontalAlign(value: Component.HorizontalAlign)
-    {
-        this._horizontalAlign = value;
     }
 
     public get left(): number
@@ -45,8 +39,8 @@ class Component extends CustomElement
             case "fixed":
                 return super.getBoundingClientRect().left;
             default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
+                return super.parentElement
+                    ? super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
                     : super.getBoundingClientRect().left;
         }
     }
@@ -70,8 +64,8 @@ class Component extends CustomElement
             case "fixed":
                 return super.getBoundingClientRect().top;
             default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
+                return super.parentElement
+                    ? super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
                     : super.getBoundingClientRect().top;
         }
     }
@@ -87,16 +81,6 @@ class Component extends CustomElement
     }
 
     @attribute
-    public get verticalAlign(): Component.VerticalAlign
-    {
-        return this._verticalAlign;
-    }
-
-    public set verticalAlign(value: Component.VerticalAlign)
-    {
-        this._verticalAlign = value;
-    }
-
     public get visible(): boolean
     {
         return super.style.display != "none";
@@ -107,6 +91,7 @@ class Component extends CustomElement
         if (!value && super.style.display != "none")
         {
             this.storedDisplay = super.style.display;
+
             super.style.display = "none";
         }
         else if (value && super.style.display == "none")
