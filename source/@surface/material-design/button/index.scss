@@ -8,6 +8,7 @@ $icon-font-size: 24px;
     align-items:     center;
     color:          white;
     cursor:          pointer;
+    flex:            1 0 auto;
     font-family:     "Roboto", sans-serif;
     font-size:       14px;
     font-weight:     500;
@@ -87,8 +88,6 @@ $icon-font-size: 24px;
 
         &.block
         {
-            display:   flex;
-            flex:      1 0 auto;
             max-width: inherit;
             min-width: 100%;
         }

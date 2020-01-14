@@ -11,11 +11,12 @@
 
     container
     {
-        box-sizing: border-box;
-        display:    inline-flex;
-        flex:       0 0 auto;
-        position:   relative;
-        outline:    0;
+        box-sizing:  border-box;
+        display:     inline-flex;
+        flex:        0 0 auto;
+        position:    relative;
+        outline:     0;
+        will-change: box-shadow;
     }
 
     [vertical-align=top],
