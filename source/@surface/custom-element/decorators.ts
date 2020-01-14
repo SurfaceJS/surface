@@ -138,7 +138,7 @@ export function element(name: string, template?: string, style?: string, options
 {
     return <T extends Constructor<HTMLElement>>(target: T & { [symbols.STATIC_METADATA]?: StaticMetadata }) =>
     {
-        if (typeGuard<Function, typeof CustomElement>(target, x => x.prototype instanceof CustomElement))
+        if (typeGuard<typeof CustomElement>(target, target.prototype instanceof CustomElement))
         {
             const hasStaticInheritance = !target.hasOwnProperty(symbols.METADATA) && !!target[symbols.STATIC_METADATA];
 

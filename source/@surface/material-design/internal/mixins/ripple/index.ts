@@ -1,4 +1,5 @@
 import { Constructor }   from "@surface/core";
+import { typeGuard }     from "@surface/core/common/generic";
 import CustomElement     from "@surface/custom-element";
 import { query, styles } from "@surface/custom-element/decorators";
 import style             from "./index.scss";
@@ -14,6 +15,8 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
     @styles(style)
     class Rippleable extends superClass
     {
+        private firedByTouch: boolean = false;
+
         @query("container", true)
         private readonly container!: HTMLElement;
 
@@ -33,14 +36,28 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
         private show(event: MouseEvent|TouchEvent): void
         {
+            const isTouch = event instanceof TouchEvent;
+
+            console.log(isTouch);
+
+            if (!isTouch && this.firedByTouch)
+            {
+                this.firedByTouch = false;
+
+                return;
+            }
+
             const bounding = this.container.getBoundingClientRect();
 
-            const { pageX, pageY } = event instanceof TouchEvent
+
+            this.firedByTouch = isTouch;
+
+            const { pageX, pageY } = typeGuard<TouchEvent>(event, isTouch)
                 ? event.touches[event.touches.length - 1]
                 : event;
 
-            const x = pageX - bounding.x;
-            const y = pageY - bounding.y;
+            const x = pageX - (bounding.x + window.scrollX);
+            const y = pageY - (bounding.y + window.scrollY);
 
             const size   = Math.sqrt((bounding.height ** 2) + (bounding.width ** 2)) * 2;
             const offset = size / 2;

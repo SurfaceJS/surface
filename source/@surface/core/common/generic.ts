@@ -1,4 +1,4 @@
-import { Func1, Nullable } from "../";
+import { Nullable } from "../";
 
 export function assert(condition: unknown, message?: string): asserts condition
 {
@@ -27,9 +27,8 @@ export function tuple<Targs extends Array<any>>(...args: Targs): Targs
     return args;
 }
 
-export function typeGuard<T, U extends T>(target: T, predicate: Func1<T, boolean>): target is U;
-export function typeGuard<T>(target: unknown, predicate: Func1<unknown, boolean>): target is T;
-export function typeGuard(target: unknown, predicate: Func1<unknown, boolean>): boolean
+
+export function typeGuard<T>(target: unknown, condition: boolean): target is T
 {
-    return predicate(target);
+    return condition;
 }

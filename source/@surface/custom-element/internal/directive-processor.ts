@@ -176,7 +176,7 @@ export default class DirectiveProcessor
 
         let simbling = template.nextElementSibling;
 
-        while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
+        while (simbling && typeGuard<HTMLTemplateElement>(simbling, simbling.tagName == "TEMPLATE"))
         {
             if (simbling.hasAttribute(HASH_ELSE_IF))
             {

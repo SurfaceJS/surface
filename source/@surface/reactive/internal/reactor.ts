@@ -381,7 +381,7 @@ export default class Reactor
         {
             dependency.unregister();
 
-            if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
+            if (typeGuard<Reactiveable>(value, value instanceof Object))
             {
                 const reactor = value[REACTOR] ?? new Reactor();
 

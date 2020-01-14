@@ -57,7 +57,7 @@ export default class Switch extends Component
 
     public appendChild<T extends Node>(element: T): T
     {
-        if (typeGuard<Node, HTMLTemplateElement>(element, x => x.nodeName == "template"))
+        if (typeGuard<HTMLTemplateElement>(element, element.nodeName == "template"))
         {
             this.templates.set(element.getAttribute("when") || "default", element);
         }

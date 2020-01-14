@@ -227,7 +227,7 @@ export default class TemplateProcessor
 
             for (const childNode of (Array.from(node.childNodes) as Iterable<Bindable<Element>>))
             {
-                if (typeGuard<Element, HTMLTemplateElement>(childNode, x => x.nodeName == "TEMPLATE"))
+                if (typeGuard<HTMLTemplateElement>(childNode, childNode.nodeName == "TEMPLATE"))
                 {
                     if (childNode.parentNode)
                     {
