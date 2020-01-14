@@ -3,6 +3,6 @@ import Component   from "..";
 import template    from "./index.html";
 import style       from "./index.scss";
 
-@element("surface-app", template, style)
-export default class App extends Component
+@element("smd-drawer", template, style)
+export default class Drawer extends Component
 { }

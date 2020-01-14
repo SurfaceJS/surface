@@ -4,7 +4,7 @@ import Ripple                         from "../internal/mixins/ripple";
 import template                       from "./index.html";
 import style                          from "./index.scss";
 
-@element("surface-button", template, style)
+@element("smd-button", template, style)
 export default class Button extends Ripple(Component)
 {
     @attribute

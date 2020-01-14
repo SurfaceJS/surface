@@ -1,0 +1,76 @@
+@import "./internal/styles/elevation.scss";
+
+:host
+{
+    -webkit-tap-highlight-color: transparent;
+
+    display:     inline-flex;
+    box-sizing:  border-box;
+    caret-color: currentColor;
+    outline:     0;
+
+    container
+    {
+        box-sizing: border-box;
+        display:    inline-flex;
+        flex:       0 0 auto;
+        position:   relative;
+        outline:    0;
+    }
+
+    [vertical-align=top],
+    ::slotted([vertical-align=top])
+    {
+        height:        auto;
+        margin-top:    0;
+        margin-bottom: auto;
+    }
+
+    [vertical-align=center],
+    ::slotted([vertical-align=center])
+    {
+        height:        auto;
+        margin-top:    auto;
+        margin-bottom: auto;
+    }
+
+    [vertical-align=bottom],
+    ::slotted([vertical-align=bottom])
+    {
+        height:        auto;
+        margin-top:    auto;
+        margin-bottom: 0;
+    }
+
+    [horizontal-align=left],
+    ::slotted([horizontal-align=left])
+    {
+        width:        auto;
+        margin-left:  0;
+        margin-right: auto;
+    }
+
+    [horizontal-align=center],
+    ::slotted([horizontal-align=center])
+    {
+        width:        auto;
+        margin-left:  auto;
+        margin-right: auto;
+    }
+
+    [horizontal-align=right],
+    ::slotted([horizontal-align=right])
+    {
+        width:        auto;
+        margin-left:  auto;
+        margin-right: 0;
+    }
+}
+
+:host([disabled=""]),
+:host([disabled="disabled"]),
+:host([disabled="true"])
+{
+    opacity:        0.6;
+    pointer-events: none;
+}
