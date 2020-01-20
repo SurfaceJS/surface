@@ -6,27 +6,25 @@ $icon-font-size: 24px;
 :host
 {
     align-items:     center;
-    color:          white;
     cursor:          pointer;
-    flex:            1 0 auto;
     font-family:     "Roboto", sans-serif;
     font-size:       14px;
     font-weight:     500;
+    height:          32px;
     justify-content: center;
     text-transform:  uppercase;
     user-select:     none;
 
-    container
+    .container
     {
-        height:           32px;
-        min-width:        64px;
-        width:            inherit;
         align-items:      center;
-        background-color: $primary;
         border-radius:    4px;
+        height:           inherit;
         justify-content:  center;
+        min-width:        64px;
         padding:          0 16px;
         position:         relative;
+        width:            inherit;
 
         &::before
         {
@@ -47,16 +45,13 @@ $icon-font-size: 24px;
         &.outlined
         {
             background-color: transparent;
-            border-color:     currentColor;
             border-style:     solid;
             border-width:     1px;
-            color:            $primary;
         }
 
         &.text
         {
             background-color: transparent;
-            color:            $primary;
         }
 
         &.rounded
@@ -68,17 +63,14 @@ $icon-font-size: 24px;
         &.icon
         {
             border-radius: 50%;
-            font-size:     $icon-font-size;
-            height:        $icon-size;
-            min-height:    0;
-            min-width:     0;
-            width:         $icon-size;
+            font-size:     inherit;
+            min-height:    inherit;
+            min-width:     inherit;
         }
 
         &.icon
         {
             background-color: transparent;
-            color:            $primary;
         }
 
         &.tile
@@ -91,16 +83,37 @@ $icon-font-size: 24px;
             max-width: inherit;
             min-width: 100%;
         }
+
     }
 }
 
-:host(:hover) container::before
+:host(:hover) .container::before
 {
     opacity: 0.06;
 }
 
-:host(:focus) container::before,
+:host(:focus) .container::before,
 :host container:focus::before
 {
     opacity: 0.12;
+}
+
+:host([block]),
+:host([block=true])
+{
+    display:   flex;
+    flex:      0 1 auto;
+    min-width: 100%;
+}
+
+:host([icon]),
+:host([icon=true]),
+:host([fab]),
+:host([fab=true])
+{
+    font-size:  $icon-font-size;
+    height:     $icon-size;
+    min-height: 0;
+    min-width:  0;
+    width:      $icon-size;
 }

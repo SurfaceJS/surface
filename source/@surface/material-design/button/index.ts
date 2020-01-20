@@ -1,11 +1,12 @@
 import { attribute, element, notify } from "@surface/custom-element/decorators";
 import Component                      from "..";
-import Ripple                         from "../internal/mixins/ripple";
+import Colorable                      from "../internal/mixins/colorable";
+import Rippleable                     from "../internal/mixins/rippleable";
 import template                       from "./index.html";
 import style                          from "./index.scss";
 
 @element("smd-button", template, style)
-export default class Button extends Ripple(Component)
+export default class Button extends Rippleable(Colorable(Component))
 {
     @attribute
     @notify("classes")
@@ -39,13 +40,14 @@ export default class Button extends Ripple(Component)
     {
         return {
             ...super.classes,
-            block:    this.block,
-            fab:      this.fab,
-            icon:     this.icon,
-            outlined: this.outlined,
-            rounded:  this.rounded,
-            text:     this.text,
-            tile:     this.tile
+            container:  true,
+            block:      this.block,
+            fab:        this.fab,
+            icon:       this.icon,
+            outlined:   this.outlined,
+            rounded:    this.rounded,
+            text:       this.text,
+            tile:       this.tile
         };
     }
 }

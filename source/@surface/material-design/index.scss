@@ -5,11 +5,12 @@
     -webkit-tap-highlight-color: transparent;
 
     display:     inline-flex;
+    flex:        0 0 auto;
     box-sizing:  border-box;
     caret-color: currentColor;
     outline:     0;
 
-    container
+    .container
     {
         box-sizing:  border-box;
         display:     inline-flex;

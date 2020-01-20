@@ -1,7 +1,7 @@
 import { Constructor }   from "@surface/core";
 import { typeGuard }     from "@surface/core/common/generic";
-import CustomElement     from "@surface/custom-element";
 import { query, styles } from "@surface/custom-element/decorators";
+import Component         from "../../..";
 import style             from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
@@ -10,15 +10,20 @@ const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
 // tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+export default <T extends Constructor<Component>>(superClass: T) =>
 {
     @styles(style)
     class Rippleable extends superClass
     {
         private firedByTouch: boolean = false;
 
-        @query("container", true)
-        private readonly container!: HTMLElement;
+        @query(".rippleable", true)
+        private readonly rippleable!: HTMLElement;
+
+        public get classes(): Record<string, boolean>
+        {
+            return { ...super.classes, rippleable: true };
+        }
 
         public constructor(...args: Array<any>)
         {
@@ -47,7 +52,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
                 return;
             }
 
-            const bounding = this.container.getBoundingClientRect();
+            const bounding = this.rippleable.getBoundingClientRect();
 
 
             this.firedByTouch = isTouch;
@@ -75,7 +80,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
             ripple.dataset.animationStart = `${performance.now()}`;
 
-            this.container.append(ripple);
+            this.rippleable.append(ripple);
 
             setTimeout
             (
@@ -92,7 +97,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
         private hide(): void
         {
-            const ripples = this.container.querySelectorAll<HTMLElement>("." + RIPPLE);
+            const ripples = this.rippleable.querySelectorAll<HTMLElement>("." + RIPPLE);
 
             if (ripples.length == 0)
             {
