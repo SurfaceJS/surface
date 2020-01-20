@@ -1,12 +1,13 @@
 import { Combine, Constructor, Indexer } from "..";
 import Hashcode                          from "../hashcode";
+import { typeGuard }                     from "./generic";
 
 export function clone<T extends object>(source: T): T;
 export function clone(source: Indexer): Indexer
 {
     if (Array.isArray(source))
     {
-        const values = [];
+        const values: Array<unknown> = [];
         for (const value of source)
         {
             if (value instanceof Object)
@@ -82,55 +83,30 @@ export function getValue<T = unknown>(target: Indexer, path: string|Array<string
 
 /**
  * Deeply merges two or more objects.
- * @param target Object to receive merge.
- * @param source Objects to merge to the target.
+ * @param sources Objects to merge.
  */
-export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>): TTarget & TSource;
-/**
- * Deeply merges two or more objects, and optionally concatenate array values.
- * @param target        Object to receive merge.
- * @param source        Object to merge to the target.
- * @param combineArrays Specify to combine or not arrays.
- */
-export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: Array<TSource>, combineArrays: boolean): TTarget & TSource;
-/**
- * Deeply merges two objects.
- * @param target Object to receive merge.
- * @param source Objects to merge to the target.
- */
-export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource): TTarget & TSource;
-/**
- * Deeply merges two objects, and optionally concatenate array values.
- * @param target Object to receive merge.
- * @param source Object to merge to the target.
- * @param combineArrays
- */
-export function merge<TTarget extends object, TSource extends object>(target: TTarget, source: TSource, combineArrays: boolean): TTarget & TSource;
-export function merge(target: Indexer, source: Indexer|Array<Indexer>, combineArrays?: boolean): Indexer
+
+export function merge<TInstances extends Array<object>>(sources: TInstances, combineArrays?: boolean): Combine<TInstances>;
+export function merge(sources: Array<Indexer>, combineArrays?: boolean): Indexer
 {
-    combineArrays = !!combineArrays;
+    const target: Indexer = { };
 
-    if (!Array.isArray(source))
-    {
-        source = [source];
-    }
-
-    for (const current of source)
+    for (const current of sources)
     {
         for (const key of Object.getOwnPropertyNames(current))
         {
             const targetValue  = target[key];
             const currentValue = current[key];
 
-            if (targetValue instanceof Object)
+            if (typeGuard<Indexer>(targetValue, targetValue instanceof Object))
             {
                 if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
                 {
                     targetValue.push(...currentValue);
                 }
-                else if (currentValue instanceof Object)
+                else if (typeGuard<Indexer>(currentValue, currentValue instanceof Object))
                 {
-                    target[key] = merge(targetValue, currentValue, combineArrays);
+                    target[key] = merge([targetValue, currentValue]);
                 }
                 else if (currentValue != undefined)
                 {

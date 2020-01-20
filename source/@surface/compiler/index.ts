@@ -389,7 +389,7 @@ export default class Compiler
             },
         };
 
-        return merge(webpackConfiguration, userWebpack, true);
+        return merge([webpackConfiguration, userWebpack], true);
     }
 
     /**
