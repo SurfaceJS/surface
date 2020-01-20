@@ -40,7 +40,6 @@ export function attribute(converter: Func1<string, unknown>): PropertyDecorator;
 export function attribute(target: ICustomElement, propertyKey: string): void;
 export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): PropertyDecorator | void
 {
-
     const decorator = (target: Target, propertyKey: string) =>
     {
         const constructor = target.constructor;

@@ -5,6 +5,7 @@ import
 {
     merge,
     objectFactory,
+    pathfy,
     proxyFrom,
     structuralEqual
 } from "../../common/object";
@@ -72,6 +73,30 @@ export default class CommonObjectSpec
         };
 
         chai.expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldFail
+    public pathfy(): void
+    {
+        const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
+
+        const expected = ["a: 1", "b.c: 3", "e.f.g: 4"];
+
+        const actual = pathfy(source);
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public pathfyWithOptions(): void
+    {
+        const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
+
+        const expected = ["a = 1", "b-c = 3", "e-f-g = 4"];
+
+        const actual = pathfy(source, { keySeparator: "-", valueSeparator: " = " });
+
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail

@@ -159,6 +159,26 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
+export function pathfy(source: object, options?: { keySeparator?: string, valueSeparator?: string }): Array<string>
+{
+    const result: Array<string> = [];
+    const { keySeparator, valueSeparator } = options ?? { keySeparator: ".", valueSeparator: ": " };
+
+    for (const [key, value] of Object.entries(source))
+    {
+        if (value instanceof Object)
+        {
+            result.push(...pathfy(value, options).map(x => key + (keySeparator ?? ".") + x));
+        }
+        else
+        {
+            result.push(`${key}${valueSeparator ?? ": "}${value}`);
+        }
+    }
+
+    return result;
+}
+
 // tslint:disable-next-line:no-any
 export function proxyFrom<TInstances extends Array<object>>(...instances: TInstances): Combine<TInstances>;
 export function proxyFrom(...instances: Array<Indexer>): Indexer

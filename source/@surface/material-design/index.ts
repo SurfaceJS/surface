@@ -6,6 +6,10 @@ import style                         from "./index.scss";
 class Component extends CustomElement
 {
     @attribute
+    @notify("classes")
+    public dark: boolean = false;
+
+    @attribute
     public disabled: boolean = false;
 
     @attribute
@@ -16,11 +20,19 @@ class Component extends CustomElement
     public horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
 
     @attribute
+    @notify("classes")
+    public light: boolean = false;
+
+    @attribute
     public verticalAlign: Component.VerticalAlign = Component.VerticalAlign.Top;
 
     public get classes(): Record<string, boolean>
     {
-        return { [`elevation-${this.elevation}`]: this.elevation > -1 && this.elevation < 25 };
+        return {
+            dark:                            this.dark,
+            light:                           this.light,
+            [`elevation-${this.elevation}`]: this.elevation > -1 && this.elevation < 25
+        };
     }
 }
 
