@@ -32,8 +32,7 @@ export function classMap(classes: Record<string, boolean>): string
     return Object.entries(classes)
         .filter(x => x[1])
         .map(x => x[0])
-        .reduce((a, b) => a + " " + b, "")
-        .trim();
+        .join(" ");
 }
 
 export function pushSubscription(target: Subscriber, subscription: ISubscription): void
@@ -49,10 +48,8 @@ export function scapeBrackets(value: string)
 export function styleMap(rules: Record<string, boolean>): string
 {
     return Object.entries(rules)
-        .filter(x => x[1])
-        .map(x => x[0])
-        .reduce((a, b) => a + "; " + b, "")
-        .trim();
+        .map(([key, value]) => `${key}: ${value}` )
+        .join("; ");
 }
 
 export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
