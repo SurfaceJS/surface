@@ -159,9 +159,17 @@ export default class InterpolatedExpressionSpec
     @test @shouldPass
     public interpolationWithBracketInsideTemplateStringAndTemplateInterpolation(): void
     {
-        const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + value} ` } inside");
+        const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + \"1\"} ` } inside");
 
-        expect(expression.evaluate({ value: 1 })).to.deep.equal(["interpolatation with ", " template single value: 1 ", " inside"]);
+        expect(expression.evaluate({  })).to.deep.equal(["interpolatation with ", " template single value: 1 ", " inside"]);
+    }
+
+    @test @shouldPass
+    public interpolationWithBracketInsideTemplateAndStringAndConditionalTemplateInterpolation(): void
+    {
+        const expression = InterpolatedExpression.parse("interpolatation with { value == 'default' ? '' : `${value} expression` } inside");
+
+        expect(expression.evaluate({ value: "conditional" })).to.deep.equal(["interpolatation with ", "conditional expression", " inside"]);
     }
 
     @test @shouldPass
