@@ -76,7 +76,7 @@
         "indent":                    true,
         "interface-name":            true,
         "label-position":            true,
-        "match-default-export-name": true,
+        "match-default-export-name": false,
         "member-access":
         [
             true,

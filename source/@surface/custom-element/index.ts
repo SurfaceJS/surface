@@ -6,7 +6,7 @@ import { SCOPE, SHADOW_ROOT, STATIC_METADATA } from "./internal/symbols";
 import TemplateProcessor                       from "./internal/template-processor";
 import { StaticMetadata }                      from "./internal/types";
 
-export default abstract class CustomElement extends HTMLElement implements ICustomElement
+export default class CustomElement extends HTMLElement implements ICustomElement
 {
     private [SCOPE]: Indexer = { };
     private readonly [SHADOW_ROOT]: ShadowRoot;

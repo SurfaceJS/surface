@@ -27,6 +27,7 @@ export type Metadata =
 {
     attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
     conversionHandlers?:       Indexer<(target: Indexer, value: string) => void>
+    notificationListeners?:    Record<string, Array<string|symbol>>
     observedAttributes?:       Array<string>;
     reflectedAttributes?:      Array<string>;
 };
