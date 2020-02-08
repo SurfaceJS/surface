@@ -24,7 +24,7 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
             {
                 get(this: HTMLElement & { [symbols.SHADOW_ROOT]: ShadowRoot } & Indexer<(Element | null) | NodeListOf<Element>>)
                 {
-                    if (!cache || !this[privateKey as string])
+                    if (!cache || Object.is(this[privateKey as string], undefined))
                     {
                         this[privateKey as string] = fn(this[symbols.SHADOW_ROOT]);
                     }
@@ -195,6 +195,29 @@ export function element(name: string, template?: string, style?: string, options
     };
 }
 
+export function listen<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: keyof U) => void
+{
+    return <U extends T>(target: U & { [symbols.METADATA]?: Metadata }, propertyKey: keyof U) =>
+    {
+        const hasInheritance = !target.hasOwnProperty(symbols.METADATA) && !!target[symbols.METADATA];
+
+        const metadata = target[symbols.METADATA] = hasInheritance
+            ? { ...target[symbols.METADATA] }
+            : target[symbols.METADATA] ?? { };
+
+        const notificationListeners = metadata.notificationListeners = hasInheritance
+            ? { ...metadata.notificationListeners }
+            : metadata.notificationListeners ?? { };
+
+        for (const property of properties)
+        {
+            const list = notificationListeners[property as string] = notificationListeners[property as string] ?? [];
+
+            list.push(propertyKey as string|symbol);
+        }
+    };
+}
+
 export function notify<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: keyof U) => void
 {
     return <U extends T>(target: U, propertyKey: keyof U) =>
@@ -210,11 +233,18 @@ export function notify<T extends object>(property: keyof T): <U extends T>(targe
                 {
                     configurable: true,
                     get: descriptor?.get,
-                    set(this: object, value: unknown)
+                    set(this: object & { [symbols.METADATA]?: Metadata }, value: unknown)
                     {
                         descriptor.set!.call(this, value);
 
-                        Reactive.getReactor(this)?.notify(this as T, property);
+                        const reactor = Reactive.getReactor(this);
+
+                        if (reactor)
+                        {
+                            reactor.notify(this as T, property);
+
+                            this[symbols.METADATA]?.notificationListeners?.[property as string]?.forEach(x => reactor.notify(this as T, x as keyof T));
+                        }
                     }
                 }
             );
@@ -233,11 +263,18 @@ export function notify<T extends object>(property: keyof T): <U extends T>(targe
                     {
                         return this[privateKey as string];
                     },
-                    set(this: Indexer, value: unknown)
+                    set(this: Indexer & { [symbols.METADATA]?: Metadata }, value: unknown)
                     {
                         this[privateKey as string] = value;
 
-                        Reactive.getReactor(this)?.notify(this as T, property);
+                        const reactor = Reactive.getReactor(this);
+
+                        if (reactor)
+                        {
+                            reactor.notify(this as T, property);
+
+                            this[symbols.METADATA]?.notificationListeners?.[property as string]?.forEach(x => reactor.notify(this as T, x as keyof T));
+                        }
                     }
                 }
             );
@@ -245,9 +282,15 @@ export function notify<T extends object>(property: keyof T): <U extends T>(targe
     };
 }
 
-export const query = (selector: string, cache?: boolean) => queryFactory(x => x.querySelector(selector), cache);
+export function query(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+{
+    return queryFactory(x => x.querySelector(selector), cache);
+}
 
-export const queryAll = (selector: string, cache?: boolean) => queryFactory(x => x.querySelectorAll(selector), cache);
+export function queryAll(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+{
+    return queryFactory(x => x.querySelectorAll(selector), cache);
+}
 
 export function styles(...styles: Array<string>): <T extends Constructor<HTMLElement>>(target: T) => T
 {
