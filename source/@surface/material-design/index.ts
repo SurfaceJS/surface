@@ -1,56 +1,35 @@
-import CustomElement                 from "@surface/custom-element";
-import { attribute, notify, styles } from "@surface/custom-element/decorators";
-import style                         from "./index.scss";
+import { DeepPartial } from "@surface/core";
+import ITheme          from "./interfaces/theme";
+import IThemes         from "./interfaces/themes";
+import ThemeProvider   from "./internal/theme-provider";
 
-@styles(style)
-class Component extends CustomElement
+export default class MaterialDesign
 {
-    @attribute
-    @notify("classes")
-    public dark: boolean = false;
+    private static readonly themeProvider = new ThemeProvider();
 
-    @attribute
-    public disabled: boolean = false;
-
-    @attribute
-    @notify("classes")
-    public elevation: number = 0;
-
-    @attribute
-    public horizontalAlign: Component.HorizontalAlign = Component.HorizontalAlign.Left;
-
-    @attribute
-    @notify("classes")
-    public light: boolean = false;
-
-    @attribute
-    public verticalAlign: Component.VerticalAlign = Component.VerticalAlign.Top;
-
-    public get classes(): Record<string, boolean>
+    public static getColor(name: string): string
     {
-        return {
-            dark:                            this.dark,
-            light:                           this.light,
-            [`elevation-${this.elevation}`]: this.elevation > -1 && this.elevation < 25
-        };
+        return this.themeProvider.getColor(name);
+    }
+
+    public static useDark(): typeof MaterialDesign
+    {
+        this.themeProvider.dark = true;
+
+        return this;
+    }
+
+    public static useLight(): typeof MaterialDesign
+    {
+        this.themeProvider.dark = false;
+
+        return this;
+    }
+
+    public static useTheme(themes: DeepPartial<ITheme>|DeepPartial<IThemes>): typeof MaterialDesign
+    {
+        this.themeProvider.use(themes);
+
+        return this;
     }
 }
-
-namespace Component
-{
-    export enum HorizontalAlign
-    {
-        Center = "center",
-        Left   = "left",
-        Right  = "right"
-    }
-
-    export enum VerticalAlign
-    {
-        Bottom = "bottom",
-        Center = "center",
-        Top    = "top",
-    }
-}
-
-export default Component;

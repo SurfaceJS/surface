@@ -1,7 +1,7 @@
 import { Constructor }   from "@surface/core";
 import { typeGuard }     from "@surface/core/common/generic";
+import CustomElement     from "@surface/custom-element";
 import { query, styles } from "@surface/custom-element/decorators";
-import Component         from "../../..";
 import style             from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
@@ -10,7 +10,7 @@ const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
 // tslint:disable:no-any
-export default <T extends Constructor<Component>>(superClass: T) =>
+export default <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     @styles(style)
     class Rippleable extends superClass
@@ -20,9 +20,9 @@ export default <T extends Constructor<Component>>(superClass: T) =>
         @query(".rippleable", true)
         private readonly rippleable!: HTMLElement;
 
-        public get classes(): Record<string, boolean>
+        public get rippleClasses(): Record<string, boolean>
         {
-            return { ...super.classes, rippleable: true };
+            return { rippleable: true };
         }
 
         public constructor(...args: Array<any>)
@@ -35,7 +35,7 @@ export default <T extends Constructor<Component>>(superClass: T) =>
 
             super.addEventListener("mousedown", x => this.show(x));
             super.addEventListener("mouseup", () => this.hide());
-            super.addEventListener("mouseleave", () => this.hide());
+            // super.addEventListener("mouseleave", () => this.hide());
             super.addEventListener("dragstart", () => this.hide());
         }
 

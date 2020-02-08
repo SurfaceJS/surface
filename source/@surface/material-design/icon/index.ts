@@ -1,12 +1,12 @@
 import "./font-face.scss?global";
 
+import CustomElement          from "@surface/custom-element";
 import { attribute, element } from "@surface/custom-element/decorators";
-import Component              from "..";
 import template               from "./index.html";
 import style                  from "./index.scss";
 
 @element("smd-icon", template, style)
-export default class Icon extends Component
+export default class Icon extends CustomElement
 {
     private _name: string = "";
 

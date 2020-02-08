@@ -1,13 +1,40 @@
+@import "../styles/container.scss";
+
+@mixin set-color($property)
+{
+    &,
+    &.light
+    {
+        #{$property}: var(--smd--color, var(--smd--light--primary, var(--smd--primary)));
+    }
+
+    &.dark
+    {
+        #{$property}: var(--smd--color, var(--smd--dark--primary, var(--smd--primary)));
+    }
+
+    &:not(.light, .dark)
+    {
+        #{$property}: var(--smd--color, var(--smd--primary));
+    }
+}
+
 :host
 {
-    background: white;
-    bottom:     0;
-    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-    display:    inline-flex;
-    flex:       0 0 auto;
-    height:     32px;
-    left:       0;
-    position:   fixed;
-    right:      0;
-    z-index:    1;
+    bottom:   0;
+    height:   32px;
+    left:     0;
+    position: fixed;
+    right:    0;
+    z-index:  1;
+
+    .container
+    {
+        align-items: center;
+        display:     inline-flex;
+        flex:        0 0 auto;
+        padding:     0 10px;
+
+        @include set-color("background-color");
+    }
 }

@@ -1,27 +1,30 @@
+@import "../styles/container.scss";
+
 $icon-size:      48px;
 $icon-font-size: 24px;
 
 @mixin set-color($property)
 {
-    &,
+
     &.light
     {
-        #{$property}: var(--smd-color, var(--smd-light-secondary-color, var(--smd-secondary-color)));
+        #{$property}: var(--smd--color, var(--smd--light--secondary, var(--smd--secondary)));
     }
 
     &.dark
     {
-        #{$property}: var(--smd-color, var(--smd-dark-secondary-color, var(--smd-secondary-color)));
+        #{$property}: var(--smd--color, var(--smd--dark--secondary, var(--smd--secondary)));
     }
 
     &:not(.light, .dark)
     {
-        #{$property}: var(--smd-color, var(--smd-secondary-color));
+        #{$property}: var(--smd--color, var(--smd--secondary));
     }
 }
 
 :host
 {
+    display:         inline-flex;
     align-items:     center;
     cursor:          pointer;
     font-family:     "Roboto", sans-serif;
@@ -48,12 +51,12 @@ $icon-font-size: 24px;
         &,
         &.light
         {
-            color: var(--smd-text-color, var(--smd-light-text-color, black));
+            color: var(--smd--text-color, var(--smd--light--text, black));
         }
 
         &.dark
         {
-            color: var(--smd-text-color, var(--smd-dark-text-color, white));
+            color: var(--smd--text-color, var(--smd--dark--text, white));
         }
 
         &.outlined

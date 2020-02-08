@@ -1,0 +1,7 @@
+:host([disabled=""]),
+:host([disabled="disabled"]),
+:host([disabled="true"])
+{
+    opacity:        0.6;
+    pointer-events: none;
+}

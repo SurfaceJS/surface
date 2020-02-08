@@ -5,6 +5,7 @@
     },
     "dependencies": {
         "@surface/collection": "0.0.0",
+        "@surface/color": "0.0.0",
         "@surface/core": "0.0.4",
         "@surface/custom-element": "0.0.5",
         "@surface/enumerable": "0.0.0",
