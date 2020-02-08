@@ -1,6 +1,6 @@
-import { Combine, Constructor, Indexer } from "..";
-import Hashcode                          from "../hashcode";
-import { typeGuard }                     from "./generic";
+import { Combine, Constructor, Func1, Indexer, Mixer } from "..";
+import Hashcode                                        from "../hashcode";
+import { assert, typeGuard }                           from "./generic";
 
 export function clone<T extends object>(source: T): T;
 export function clone(source: Indexer): Indexer
@@ -43,6 +43,20 @@ export function clone(source: Indexer): Indexer
     }
 }
 
+export function freeze<T extends object>(target: T): T;
+export function freeze(target: Indexer): Indexer
+{
+    for (const value of Object.values(target))
+    {
+        if (value instanceof Object)
+        {
+            freeze(value);
+        }
+    }
+
+    return Object.freeze(target);
+}
+
 export function getKeyMember<T extends object>(target: T, path: string|Array<string>): [string, T];
 export function getKeyMember(target: Indexer, path: string|Array<string>): [string, Indexer]
 {
@@ -69,23 +83,30 @@ export function getKeyMember(target: Indexer, path: string|Array<string>): [stri
     return [key, target];
 }
 
-export function getKeyValue<T = unknown>(target: Indexer, path: string|Array<string>): [string, T]
+export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string|Array<string>): [string, TValue];
+export function getKeyValue(target: Indexer, path: string|Array<string>): [string, unknown]
 {
     const [key, member] = getKeyMember(target, path);
 
-    return [key, member[key] as T];
+    return [key, member[key]];
 }
 
-export function getValue<T = unknown>(target: Indexer, path: string|Array<string>): T
+export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string|Array<string>): T|undefined
 {
-    return getKeyValue<T>(target, path)[1];
+    try
+    {
+        return getKeyValue<TTarget, T>(target, path)[1];
+    }
+    catch
+    {
+        return undefined;
+    }
 }
 
 /**
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */
-
 export function merge<TInstances extends Array<object>>(sources: TInstances, combineArrays?: boolean): Combine<TInstances>;
 export function merge(sources: Array<Indexer>, combineArrays?: boolean): Indexer
 {
@@ -123,16 +144,23 @@ export function merge(sources: Array<Indexer>, combineArrays?: boolean): Indexer
     return target;
 }
 
-export function mixin<TBase extends Constructor, TConstructors extends Constructor>(first: TBase, second: TConstructors): TBase & TConstructors
+
+export function mixer<TConstructor extends Constructor, TMixins extends Array<(superClass: TConstructor) => Constructor>, TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
 {
-    const name = `${first.name}${second.name}Mixin`;
+    assert(mixins.length > 0, "Mixer requires at least one mixin");
 
-    const proxy = { [name]: function() { /* proxy */ }}[name];
+    const mixin = mixins.pop()!;
 
-    Object.setPrototypeOf(proxy, Object.assign(Object.getPrototypeOf(first), Object.getPrototypeOf(second)));
-    Object.defineProperties(proxy, Object.assign(Object.getOwnPropertyDescriptors(first), Object.getOwnPropertyDescriptors(second)));
+    const $class = mixin(constructor);
 
-    return proxy as unknown as TBase & TConstructors;
+    if (mixins.length > 0)
+    {
+        return mixer($class as TConstructor, mixins);
+    }
+    else
+    {
+        return $class as TMixer;
+    }
 }
 
 /**
@@ -159,20 +187,21 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
-export function pathfy(source: object, options?: { keySeparator?: string, valueSeparator?: string }): Array<string>
+export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): Array<string>
 {
+    const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ":" } = options ?? { };
+
     const result: Array<string> = [];
-    const { keySeparator, valueSeparator } = options ?? { keySeparator: ".", valueSeparator: ": " };
 
     for (const [key, value] of Object.entries(source))
     {
         if (value instanceof Object)
         {
-            result.push(...pathfy(value, options).map(x => key + (keySeparator ?? ".") + x));
+            result.push(...pathfy(value, options).map(x => keyTranform(key) + (keySeparator ?? ".") + x));
         }
         else
         {
-            result.push(`${key}${valueSeparator ?? ": "}${value}`);
+            result.push(`${keyTranform(key)}${valueSeparator ?? ": "}${value}`);
         }
     }
 
