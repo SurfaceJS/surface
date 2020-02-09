@@ -20,7 +20,7 @@ const defaultTheme: DeepPartial<Omit<IThemes, "default">> =
     {
         accent:     materialColors.pink["A200"],
         background: materialColors.white,
-        error:      materialColors.red["A200"],
+        error:      "#ff0005",//materialColors.red["A200"],
         info:       materialColors.blue,
         primary:    materialColors.blue,
         secondary:  materialColors.indigo,

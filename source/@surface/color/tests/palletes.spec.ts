@@ -1,6 +1,6 @@
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import { generatePallete, Swatch }             from "../internal/palletes";
+import { shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
+import { assert }                                from "chai";
+import { generatePallete, palleteScale, Swatch } from "../internal/palletes";
 
 @suite
 export default class PalleteSpec
@@ -74,7 +74,7 @@ export default class PalleteSpec
     }
 
     @test @shouldPass
-    public generatePalleteWithRangeAndSwatchAtAtCenter(): void
+    public generatePalleteWithRangeAndSwatchAtCenter(): void
     {
         const swatches: Array<Swatch> =
         [
@@ -87,9 +87,9 @@ export default class PalleteSpec
             { index: 2, color: { h: 0, s: 0.25,  v: 0.75 }},
             { index: 3, color: { h: 0, s: 0.375, v: 0.625 }},
             { index: 4, color: { h: 0, s: 0.5,   v: 0.5 }},
-            { index: 5, color: { h: 0, s: 0.625, v: 0.375 }},
-            { index: 6, color: { h: 0, s: 0.75,  v: 0.25 }},
-            { index: 7, color: { h: 0, s: 0.875, v: 0.125 }},
+            { index: 5, color: { h: 0, s: 0.5,   v: 0.375 }},
+            { index: 6, color: { h: 0, s: 0.5,   v: 0.25 }},
+            { index: 7, color: { h: 0, s: 0.5,   v: 0.125 }},
         ];
 
         const actual = Array.from(generatePallete(swatches, { start: 1, end: 7 }));
@@ -149,11 +149,31 @@ export default class PalleteSpec
             { index: 13, color: { h: 0.16666666666666666, s: 0.9,                 v: 0.7333333333333334  }},
             { index: 14, color: { h: 0.3333333333333333,  s: 0.7999999999999999,  v: 0.4666666666666667  }},
             { index: 15, color: { h: 0.5,                 s: 0.7,                 v: 0.2                 }},
-            { index: 16, color: { h: 0.42,                s: 0.7999999999999999,  v: 0.13333333333333336 }},
-            { index: 17, color: { h: 0.33999999999999997, s: 0.9,                 v: 0.06666666666666668 }},
+            { index: 16, color: { h: 0.42,                s: 0.7,                 v: 0.13333333333333336 }},
+            { index: 17, color: { h: 0.33999999999999997, s: 0.7,                 v: 0.06666666666666668 }},
         ];
 
         const actual = Array.from(generatePallete(swatches, { start: 1, end: 17 }));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public palleteScale(): void
+    {
+        const swatches: Array<Swatch> =
+        [
+            { index: 1, color: { h: 1, s: 1, v: 1 }},
+            { index: 5, color: { h: 1, s: 1, v: 0 }},
+        ];
+
+        const expected: Array<Swatch> =
+        [
+            { index: 1, color: { h: 0.75, s: 0.75, v: 0.75 }},
+            { index: 5, color: { h: 0.75, s: 0.75, v: 0.25 }},
+        ];
+
+        const actual = palleteScale(swatches, 0.5);
 
         assert.deepEqual(actual, expected);
     }

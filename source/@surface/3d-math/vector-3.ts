@@ -50,6 +50,11 @@ export default class Vector3
 
     public static divide(vector: Vector3, scalar: number): Vector3
     {
+        if (scalar == 0)
+        {
+            return new Vector3();
+        }
+
         return Vector3.multiply(vector, 1.0 / scalar);
     }
 

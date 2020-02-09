@@ -1,3 +1,4 @@
+import Polygon from "@surface/3d-math/polygon";
 import Vector3 from "@surface/3d-math/vector-3";
 import { HSV } from "./converters";
 
@@ -8,6 +9,15 @@ export type Swatch = { index: number, color: HSV };
 function average(...values: Array<number>): number
 {
     return values.reduce((a, b) => a + b) / values.length;
+}
+
+function lockValue(value: number, max: number): number
+{
+    return value < 0
+        ? value + max
+        : value > max
+            ? value - max
+            : value;
 }
 
 function colorFromVector(vector: Vector3): HSV
@@ -110,4 +120,16 @@ function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end:
 export function generatePallete(swatches: Array<Swatch>, range?: { start: number, end: number }): Array<Swatch>
 {
     return Array.from(palleteIterator(swatches, range));
+}
+
+export function palleteScale(swatches: Array<Swatch>, factor: number): Array<Swatch>
+{
+    const vertices = swatches.map(x => vectorFromColor(x.color));
+
+    const height = lockValue(average(...vertices.map(x => x.z)) - 0.5, 1);
+
+    const copy = [...swatches];
+
+    return Polygon.scale(new Polygon(vertices), new Vector3(0.5, 0.5, height), factor).vertices
+        .map((x, i) => ({ index: copy[i].index, color: colorFromVector(x) }));
 }

@@ -1,15 +1,15 @@
-import { generatePallete, hexToHsv, hsvToHex, Swatch } from "@surface/color";
-import { DeepPartial, Indexer }                        from "@surface/core";
-import { typeGuard }                                   from "@surface/core/common/generic";
-import { objectFactory, pathfy }                       from "@surface/core/common/object";
-import { camelToDashed }                               from "@surface/core/common/string";
-import { Color }                                       from "../interfaces/color";
-import ITheme                                          from "../interfaces/theme";
-import IThemes                                         from "../interfaces/themes";
+import { generatePallete, hexToHsv, hsvToHex, palleteScale, Swatch } from "@surface/color";
+import { DeepPartial, Indexer }                                      from "@surface/core";
+import { typeGuard }                                                 from "@surface/core/common/generic";
+import { objectFactory, pathfy }                                     from "@surface/core/common/object";
+import { camelToDashed }                                             from "@surface/core/common/string";
+import { Color }                                                     from "../interfaces/color";
+import ITheme                                                        from "../interfaces/theme";
+import IThemes                                                       from "../interfaces/themes";
 
 function resolveAccentSwatch(swatch: Swatch): [string, string]
 {
-    return ["A" + ((swatch.index - 1) * 100).toString(), hsvToHex(swatch.color)];
+    return ["A" + (swatch.index * 100).toString(), hsvToHex(swatch.color)];
 }
 
 function resolveSwatch(swatch: Swatch): [string, string]
@@ -26,13 +26,25 @@ function generateVariations(color: string|Color): Array<[string, string]>
 
     entries.forEach(x => x[0].startsWith("A") ? accent.push(x) : base.push(x));
 
+    if (base.length == 10 && accent.length == 4)
+    {
+        return [...base, ...accent] as Array<[string, string]>;
+    }
+
     const baseSwatches   = base.map(([key, value]) => ({ index: key == "50" ? 1 : (Number.parseInt(key) / 100) + 1, color: hexToHsv(value) }));
-    const accentSwatches = base.map(([key, value]) => ({ index: (Number.parseInt(key.replace("A", "")) / 100) + 1, color: hexToHsv(value) }));
+    const accentSwatches = accent.map(([key, value]) => ({ index: (Number.parseInt(key.replace("A", "")) / 100), color: hexToHsv(value) }));
 
-    const basePallete   = generatePallete(baseSwatches, { start: 1, end: 10 });
-    const accentPallete = accentSwatches.length > 0 ? generatePallete(accentSwatches, { start: 1, end: 7 }) : [];
+    const basePallete = baseSwatches.length == 10
+        ? baseSwatches
+        : generatePallete(baseSwatches, { start: 1, end: 10 });
 
-    return [...basePallete.map(resolveSwatch), ...accentPallete.filter(x => [0, 1, 3, 6].includes(x.index)).map(resolveAccentSwatch)];
+    const accentPallete = accentSwatches.length == 4
+        ? accentSwatches
+        : accentSwatches.length > 0
+            ? generatePallete(accentSwatches, { start: 1, end: 7 })
+            : palleteScale(basePallete, 0.95);
+
+    return [...basePallete.map(resolveSwatch), ...accentPallete.filter(x => [1, 2, 4, 7].includes(x.index)).map(resolveAccentSwatch)];
 }
 
 export function generateThemes(raw: DeepPartial<ITheme>|DeepPartial<IThemes>): IThemes
