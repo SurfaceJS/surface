@@ -228,7 +228,10 @@ export default class Reactor
 
         for (const registry of this.registries.values())
         {
-            registry.notify(value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(value);
+            }
         }
 
         for (const subscriptions of this.propertySubscriptions.values())
@@ -264,7 +267,10 @@ export default class Reactor
 
         for (const registry of this.registries.values())
         {
-            registry.notify(target, key, value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(target, key, value);
+            }
         }
 
         for (const subscription of this.propertySubscriptions.get(key) ?? [])
@@ -332,14 +338,9 @@ export default class Reactor
     public notify<TTarget extends object|Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
     public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
     {
-        if (Reactor.stack.includes(this))
-        {
-            return;
-        }
+        Reactor.stack.push(this);
 
         const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
-
-        Reactor.stack.push(this);
 
         if (args.length == 1)
         {

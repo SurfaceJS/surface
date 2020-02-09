@@ -57,15 +57,15 @@ export default class Reactive
         return (target as { [REACTOR]?: IReactor })[REACTOR];
     }
 
-    public static hasObserver<T extends object>(target: T, key: keyof T): boolean
+    public static hasObserver<T extends Indexer>(target: T, key: keyof T): boolean
     {
-        return Reactive.getReactor(target as Indexer)?.observers.has(key as string) ?? false;
+        return Reactive.getReactor(target)?.observers.has(key as string) ?? false;
     }
 
-    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
-    public static observe(target: Indexer, path: string|Array<string>): [IReactor, IObserver];
-    public static observe<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
-    public static observe(target: Indexer, path: string|Array<string>, listener: IListener): [IReactor, IObserver, ISubscription];
+    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
+    public static observe(target: object, path: string|Array<string>): [IReactor, IObserver];
+    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
+    public static observe(target: object, path: string|Array<string>, listener: IListener): [IReactor, IObserver, ISubscription];
     public static observe(...args: [Indexer, string|Array<string>, IListener?]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]
     {
         const [target, pathOrKeys, listener] = args;
@@ -136,5 +136,12 @@ export default class Reactive
         rightReactor.setPropertySubscription(leftKey, rightSubscription);
 
         return [leftSubscription, rightSubscription];
+    }
+
+    public static notify<T extends object>(target: T, key: keyof T): void;
+    public static notify(target: object, key: string): void;
+    public static notify(target: Indexer, key: string): void
+    {
+        Reactive.getReactor(target)?.notify(target, key);
     }
 }
