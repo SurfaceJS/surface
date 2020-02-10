@@ -9,7 +9,9 @@ import IThemes                                                       from "../in
 
 function resolveAccentSwatch(swatch: Swatch): [string, string]
 {
-    return ["A" + (swatch.index * 100).toString(), hsvToHex(swatch.color)];
+    const map: Record<number, number> = { 4: 1, 6: 2, 7: 4, 8: 7 };
+
+    return ["A" + (map[swatch.index] * 100).toString(), hsvToHex(swatch.color)];
 }
 
 function resolveSwatch(swatch: Swatch): [string, string]
@@ -42,9 +44,9 @@ function generateVariations(color: string|Color): Array<[string, string]>
         ? accentSwatches
         : accentSwatches.length > 0
             ? generatePallete(accentSwatches, { start: 1, end: 7 })
-            : palleteScale(basePallete, 0.95);
+            : palleteScale(basePallete, 1.05);
 
-    return [...basePallete.map(resolveSwatch), ...accentPallete.filter(x => [1, 2, 4, 7].includes(x.index)).map(resolveAccentSwatch)];
+    return [...basePallete.map(resolveSwatch), ...accentPallete.filter(x => [4, 6, 7, 8].includes(x.index)).map(resolveAccentSwatch)];
 }
 
 export function generateThemes(raw: DeepPartial<ITheme>|DeepPartial<IThemes>): IThemes
