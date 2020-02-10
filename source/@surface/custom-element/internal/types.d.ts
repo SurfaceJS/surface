@@ -27,14 +27,13 @@ export type Metadata =
 {
     attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
     conversionHandlers?:       Indexer<(target: Indexer, value: string) => void>
-    observedAttributes?:       Array<string>;
-    postConstruct?:            Array<<T extends object>(target: T) => void>
     reflectedAttributes?:      Array<string>;
 };
 
 export type StaticMetadata =
 {
     observedAttributes?: Array<string>;
+    postConstruct?:      Array<<T extends HTMLElement>(target: T) => void>
     styles?:             Array<string>;
     template?:           HTMLTemplateElement;
 };

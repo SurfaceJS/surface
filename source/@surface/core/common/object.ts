@@ -104,6 +104,31 @@ export function getValue<TTarget extends object, T = unknown>(target: TTarget, p
 }
 
 /**
+ * Inject an action to be executed after instantiation.
+ * @param constructor target constructor
+ * @param action action to be executed
+ */
+export function injectToConstructor<T extends Constructor>(constructor: T, action: Func1<InstanceType<T>, InstanceType<T>>): T
+{
+    const proxy =
+    {
+        [constructor.name]: function(...args: Array<unknown>)
+        {
+            const instance = Reflect.construct(constructor, args, new.target) as InstanceType<T>;
+
+            return action(instance);
+        }
+    }[constructor.name];
+
+    Object.setPrototypeOf(proxy, Object.getPrototypeOf(constructor));
+    Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(constructor));
+
+    proxy.prototype.constructor = proxy;
+
+    return proxy as unknown as T;
+}
+
+/**
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */

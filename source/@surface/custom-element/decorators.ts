@@ -1,5 +1,6 @@
 import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
 import { typeGuard }                             from "@surface/core/common/generic";
+import { injectToConstructor }                   from "@surface/core/common/object";
 import { camelToDashed }                         from "@surface/core/common/string";
 import Reactive                                  from "@surface/reactive";
 import CustomElement                             from ".";
@@ -22,7 +23,7 @@ function getMetadata(target: object & { [symbols.METADATA]?: Metadata }): Metada
         : target[symbols.METADATA] ?? { };
 }
 
-function getStaticMetadata(target: object & { [symbols.STATIC_METADATA]?: StaticMetadata }): StaticMetadata
+function getStaticMetadata(target: Function & { [symbols.STATIC_METADATA]?: StaticMetadata }): StaticMetadata
 {
     return target[symbols.STATIC_METADATA] = !target.hasOwnProperty(symbols.STATIC_METADATA) && !!target[symbols.STATIC_METADATA]
         ? { ...target[symbols.STATIC_METADATA] }
@@ -38,7 +39,7 @@ function getMetadataValue<K extends keyof Metadata>(target: object & { [symbols.
         : metadata[key] ?? fallback) as NonNullable<Metadata[K]>;
 }
 
-function getStaticMetadataValue<K extends keyof StaticMetadata>(target: object & { [symbols.STATIC_METADATA]?: StaticMetadata }, key: K, fallback: StaticMetadata[K]): NonNullable<StaticMetadata[K]>
+function getStaticMetadataValue<K extends keyof StaticMetadata>(target: Function & { [symbols.STATIC_METADATA]?: StaticMetadata }, key: K, fallback: StaticMetadata[K]): NonNullable<StaticMetadata[K]>
 {
     const metadata = getStaticMetadata(target);
 
@@ -157,12 +158,15 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
 {
     return <U extends T>(target: U & { [symbols.METADATA]?: Metadata }, propertyKey: string) =>
     {
-        const postConstruct = getMetadataValue(target, "postConstruct", []);
-
-        for (const property of properties)
+        const action = (instance: HTMLElement) =>
         {
-            postConstruct.push(x => Reactive.observe(x, property as string)[1].subscribe({ notify: () => Reactive.notify(x, propertyKey)}));
-        }
+            for (const property of properties)
+            {
+                Reactive.observe(instance, property as string)[1].subscribe({ notify: () => Reactive.notify(instance, propertyKey)});
+            }
+        };
+
+        getStaticMetadataValue(target.constructor, "postConstruct", []).push(action);
     };
 }
 
@@ -194,30 +198,22 @@ export function element(name: string, template?: string, style?: string, options
 
             metadata.template = templateElement;
 
-            const proxy = function(this: CustomElement, ...args: Array<unknown>)
+            const action = (instance: InstanceType<T> & CustomElement) =>
             {
-                const instance = Reflect.construct(target, args, new.target) as CustomElement;
-
                 TemplateProcessor.process(instance, instance[symbols.SHADOW_ROOT], { host: instance });
 
-                if (instance.onAfterBind)
-                {
-                    instance.onAfterBind();
-                }
+                instance.onAfterBind?.();
 
-                getMetadata(instance).postConstruct?.forEach(x => x(instance));
+                metadata.postConstruct?.forEach(x => x(instance));
 
                 return instance;
             };
 
-            Object.setPrototypeOf(proxy, Object.getPrototypeOf(target));
-            Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(target));
-
-            proxy.prototype.constructor = proxy;
+            const proxy = injectToConstructor(target, action);
 
             window.customElements.define(name, proxy, options);
 
-            return proxy as Function as T;
+            return proxy;
         }
 
         window.customElements.define(name, target, options);
@@ -225,6 +221,20 @@ export function element(name: string, template?: string, style?: string, options
         return target;
     };
 }
+
+export function event<K extends keyof HTMLElementEventMap>(type: K): (target: object, propertyKey: string|symbol) => void
+{
+    return (target: object, propertyKey: string|symbol) =>
+    {
+        const action = (element: HTMLElement) =>
+        {
+            element.addEventListener(type, (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event));
+        };
+
+        getStaticMetadataValue(target.constructor, "postConstruct", []).push(action);
+    };
+}
+
 
 export function query(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
 {
