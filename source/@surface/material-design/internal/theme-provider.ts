@@ -94,7 +94,9 @@ export default class ThemeProvider
 
     public use(themes: DeepPartial<ITheme>|DeepPartial<IThemes>): void
     {
-        this.themes = generateThemes(merge([this.themes, themes]));
+        const generated = generateThemes("dark" in themes || "light" in themes ? themes : { light: themes as ITheme });
+
+        this.themes = merge([this.themes, generated]);
 
         this.updateVariables();
     }
