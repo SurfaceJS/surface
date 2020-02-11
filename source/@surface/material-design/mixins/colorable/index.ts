@@ -1,25 +1,19 @@
-import { Constructor }      from "@surface/core";
-import CustomElement        from "@surface/custom-element";
-import { attribute, query } from "@surface/custom-element/decorators";
-import MaterialDesign       from "../..";
+import { Constructor } from "@surface/core";
+import CustomElement   from "@surface/custom-element";
+import { attribute }   from "@surface/custom-element/decorators";
+import MaterialDesign  from "../..";
 
 const CSS_COLORS_PATTERN = /^(#[a-f0-9]{6}|((rgb|hsl)\([^)]*)\))$/i;
 
 // tslint:disable:no-any
 export default <T extends Constructor<CustomElement>>(superClass: T) =>
 {
-    class Colorable extends superClass
+    abstract class Colorable extends superClass
     {
         private _color:     string = "";
         private _textColor: string = "";
 
-        @query(".colorable", true)
-        private readonly colorable?: HTMLElement;
-
-        public get colorClasses(): Record<string, boolean>
-        {
-            return { colorable: true };
-        }
+        protected abstract readonly colorable?: HTMLElement;
 
         public constructor(...args: Array<any>)
         {

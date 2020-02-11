@@ -1,7 +1,7 @@
 import { Constructor }   from "@surface/core";
 import { typeGuard }     from "@surface/core/common/generic";
 import CustomElement     from "@surface/custom-element";
-import { query, styles } from "@surface/custom-element/decorators";
+import { event, styles } from "@surface/custom-element/decorators";
 import style             from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
@@ -13,33 +13,15 @@ const RIPPLE          = "ripple";
 export default <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     @styles(style)
-    class Rippleable extends superClass
+    abstract class Rippleable extends superClass
     {
         private firedByTouch: boolean = false;
 
-        @query(".rippleable", true)
-        private readonly rippleable!: HTMLElement;
+        protected abstract readonly rippleable: HTMLElement;
 
-        public get rippleClasses(): Record<string, boolean>
-        {
-            return { rippleable: true };
-        }
-
-        public constructor(...args: Array<any>)
-        {
-            super(...args);
-
-            super.addEventListener("touchstart", x => this.show(x), { passive: true });
-            super.addEventListener("touchend", () => this.hide(), { passive: true });
-            super.addEventListener("touchcancel", () => this.hide());
-
-            super.addEventListener("mousedown", x => this.show(x));
-            super.addEventListener("mouseup", () => this.hide());
-            // super.addEventListener("mouseleave", () => this.hide());
-            super.addEventListener("dragstart", () => this.hide());
-        }
-
-        private show(event: MouseEvent|TouchEvent): void
+        @event("mousedown")
+        @event("touchstart", { passive: true })
+        protected show(event: MouseEvent|TouchEvent): void
         {
             const isTouch = event instanceof TouchEvent;
 
@@ -80,7 +62,9 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
             ripple.dataset.animationStart = `${performance.now()}`;
 
-            this.rippleable.append(ripple);
+            this.rippleable.classList.add("rippleable");
+
+            this.rippleable.appendChild(ripple);
 
             setTimeout
             (
@@ -95,7 +79,11 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
             );
         }
 
-        private hide(): void
+        @event("mouseup")
+        @event("dragstart")
+        @event("touchcancel")
+        @event("touchend", { passive: true })
+        protected hide(): void
         {
             const ripples = this.rippleable.querySelectorAll<HTMLElement>("." + RIPPLE);
 

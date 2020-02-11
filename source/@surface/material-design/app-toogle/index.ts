@@ -9,4 +9,6 @@ import style         from "./index.scss";
 
 @element("smd-app-toogle", template, style)
 export default class AppToogle extends mixer(CustomElement, [colorable, elevatable, themeable])
-{ }
+{
+    protected colorable?: HTMLElement;
+}

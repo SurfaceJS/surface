@@ -222,13 +222,13 @@ export function element(name: string, template?: string, style?: string, options
     };
 }
 
-export function event<K extends keyof HTMLElementEventMap>(type: K): (target: object, propertyKey: string|symbol) => void
+export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean|AddEventListenerOptions): (target: object, propertyKey: string|symbol) => void
 {
     return (target: object, propertyKey: string|symbol) =>
     {
         const action = (element: HTMLElement) =>
         {
-            element.addEventListener(type, (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event));
+            element.addEventListener(type, (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event), options);
         };
 
         getStaticMetadataValue(target.constructor, "postConstruct", []).push(action);

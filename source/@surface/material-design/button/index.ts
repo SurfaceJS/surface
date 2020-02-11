@@ -1,17 +1,23 @@
-import { mixer }                        from "@surface/core/common/object";
-import CustomElement                    from "@surface/custom-element";
-import { attribute, computed, element } from "@surface/custom-element/decorators";
-import colorable                        from "../mixins/colorable";
-import disableable                      from "../mixins/disableable";
-import elevatable                       from "../mixins/elevatable";
-import rippleable                       from "../mixins/rippleable";
-import themeable                        from "../mixins/themeable";
-import template                         from "./index.html";
-import style                            from "./index.scss";
+import { mixer }                               from "@surface/core/common/object";
+import CustomElement                           from "@surface/custom-element";
+import { attribute, computed, element, query } from "@surface/custom-element/decorators";
+import colorable                               from "../mixins/colorable";
+import disableable                             from "../mixins/disableable";
+import elevatable                              from "../mixins/elevatable";
+import rippleable                              from "../mixins/rippleable";
+import themeable                               from "../mixins/themeable";
+import template                                from "./index.html";
+import style                                   from "./index.scss";
 
 @element("smd-button", template, style)
 export default class Button extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
+    @query(".container")
+    protected colorable!: HTMLElement;
+
+    @query(".container")
+    protected rippleable!: HTMLElement;
+
     @attribute
     public block: boolean = false;
 
@@ -37,18 +43,16 @@ export default class Button extends mixer(CustomElement, [colorable, disableable
     public get classes(): Record<string, boolean>
     {
         return {
-            ...super.colorClasses,
             ...super.elevationClasses,
-            ...super.rippleClasses,
             ...super.themeClasses,
-            container: true,
-            block:     this.block,
-            fab:       this.fab,
-            icon:      this.icon,
-            outlined:  this.outlined,
-            rounded:   this.rounded,
-            text:      this.text,
-            tile:      this.tile
+            container:  true,
+            block:      this.block,
+            fab:        this.fab,
+            icon:       this.icon,
+            outlined:   this.outlined,
+            rounded:    this.rounded,
+            text:       this.text,
+            tile:       this.tile
         };
     }
 }

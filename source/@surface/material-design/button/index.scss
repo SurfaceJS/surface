@@ -38,13 +38,13 @@ $icon-font-size: 24px;
     .container
     {
         align-items:      center;
-        border-radius:    4px;
-        height:           inherit;
+        border-radius: 4px;
+        height:        inherit;
         justify-content:  center;
-        min-width:        64px;
-        padding:          0 16px;
-        position:         relative;
-        width:            inherit;
+        min-width:     64px;
+        padding:       0 16px;
+        position:      relative;
+        width:         inherit;
 
         @include set-color("background-color");
 

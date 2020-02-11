@@ -2,10 +2,11 @@
 {
     -webkit-tap-highlight-color: transparent;
 
-    display:     inline-flex;
-    flex:        0 0 auto;
     box-sizing:  border-box;
     caret-color: currentColor;
+    display:     inline-flex;
+    flex:        0 0 auto;
+    font-family: Roboto, sans-serif;
     outline:     0;
 
     .container
@@ -22,10 +23,10 @@
 
         z-index:  inherit;
 
-        box-sizing:  border-box;
-        display:     inline-flex;
-        flex:        0 0 auto;
-        outline:     0;
-        will-change: box-shadow;
+        box-sizing:      border-box;
+        display:         inline-flex;
+        flex:            0 0 auto;
+        outline:         0;
+        will-change:     box-shadow;
     }
 }
