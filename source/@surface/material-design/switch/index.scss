@@ -33,8 +33,7 @@ $transition-transform:        transform        0.3s $curve;
 
         .selection
         {
-            color: gray;
-
+            color:         rgba(0, 0, 0, 0.87);
             position:      absolute;
             border-radius: 50%;
             height:        34px;
@@ -125,31 +124,11 @@ $transition-transform:        transform        0.3s $curve;
 {
     .selection::before
     {
-        background-color: gray;
-
         opacity: 0.2;
     }
 
     &.active .selection::before
     {
-        @include set-theme-color("background-color", "secondary");
-
         opacity: 0.2;
-    }
-}
-
-:host(:hover) .container
-{
-    &.selection::before
-    {
-        background-color: gray;
-        opacity: 1;
-    }
-
-    &.active.selection::before
-    {
-        @include set-theme-color("background-color", "secondary");
-
-        opacity: 1;
     }
 }
