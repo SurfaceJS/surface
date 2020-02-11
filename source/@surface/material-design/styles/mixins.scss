@@ -1,0 +1,36 @@
+@mixin set-theme-color($property, $name)
+{
+
+    &.light
+    {
+        #{$property}: var(--smd--color, var(--smd--light--#{$name}, var(--smd--#{$name})));
+    }
+
+    &.dark
+    {
+        #{$property}: var(--smd--color, var(--smd--dark--#{$name}, var(--smd--#{$name})));
+    }
+
+    &:not(.light, .dark)
+    {
+        #{$property}: var(--smd--color, var(--smd--#{$name}));
+    }
+}
+
+@mixin text-color($property: "color")
+{
+    &.light
+    {
+        #{$property}: var(--smd--text-color, var(--smd--light--text, var(--smd--text)));
+    }
+
+    &.dark
+    {
+        #{$property}: var(--smd--text-color, var(--smd--dark--text, var(--smd--text)));
+    }
+
+    &:not(.light, .dark)
+    {
+        #{$property}: var(--smd--text-color, var(--smd--text));
+    }
+}

@@ -1,0 +1,155 @@
+@import "../styles/container.scss";
+@import "../styles/mixins.scss";
+
+$curve: cubic-bezier(0.25, 0.8, 0.5, 1);
+
+$transition-color:            color            0.3s $curve;
+$transition-background-color: background-color 0.3s $curve;
+$transition-transform:        transform        0.3s $curve;
+
+:host
+{
+    display: inline;
+    .container
+    {
+        align-items:     center;
+        justify-content: center;
+
+        cursor: pointer;
+        transition:
+            $transition-color,
+            $transition-background-color,
+            $transition-transform;
+
+        .track
+        {
+            background-color: rgba(0, 0, 0, 0.38);
+            border-radius:    8px;
+            height:           14px;
+            margin:           2px;
+            opacity:          0.6;
+            width:            36px;
+        }
+
+        .selection
+        {
+            color: gray;
+
+            position:      absolute;
+            border-radius: 50%;
+            height:        34px;
+            width:         34px;
+            transform:     translateX(-11px);
+            transition:    $transition-transform;
+
+            &::before
+            {
+                background-color: currentColor;
+                border-radius:    inherit;
+                bottom:           0;
+                color:            inherit;
+                content:          "";
+                left:             0;
+                opacity:          0;
+                pointer-events:   none;
+                position:         absolute;
+                right:            0;
+                top:              0;
+                transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+            }
+        }
+
+        .thumb
+        {
+            position:      absolute;
+            border-radius: 50%;
+            height:        20px;
+            width:         20px;
+            transform:     translateX(-11px);
+            transition:    inherit;
+
+            background-color: white;
+        }
+
+        .label
+        {
+            @include text-color;
+        }
+
+        &.active
+        {
+            .track
+            {
+                @include set-theme-color("background-color", "secondary");
+            }
+
+            .selection
+            {
+                @include set-theme-color("color", "secondary");
+
+                transform: translateX(11px);
+            }
+
+            .thumb
+            {
+                @include set-theme-color("background-color", "secondary");
+
+                transform: translateX(11px);
+            }
+        }
+
+        &.inset
+        {
+            .track
+            {
+                border-radius: 14px;
+                height:        28px;
+                width:         48px;
+            }
+
+            .selection
+            {
+                height: 38px;
+                width:  38px;
+            }
+        }
+
+        &.labelable .label
+        {
+            padding-left: 4px;
+        }
+    }
+}
+
+:host(:hover) .container
+{
+    .selection::before
+    {
+        background-color: gray;
+
+        opacity: 0.2;
+    }
+
+    &.active .selection::before
+    {
+        @include set-theme-color("background-color", "secondary");
+
+        opacity: 0.2;
+    }
+}
+
+:host(:hover) .container
+{
+    &.selection::before
+    {
+        background-color: gray;
+        opacity: 1;
+    }
+
+    &.active.selection::before
+    {
+        @include set-theme-color("background-color", "secondary");
+
+        opacity: 1;
+    }
+}
