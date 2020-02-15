@@ -34,6 +34,6 @@ export type StaticMetadata =
 {
     observedAttributes?: Array<string>;
     postConstruct?:      Array<<T extends HTMLElement>(target: T) => void>
-    styles?:             Array<string>;
+    styles?:             Array<CSSStyleSheet>;
     template?:           HTMLTemplateElement;
 };

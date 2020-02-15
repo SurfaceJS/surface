@@ -73,6 +73,15 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
     };
 }
 
+function stringToCSSStyleSheet(source: string): CSSStyleSheet
+{
+    const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
+
+    sheet.replaceSync(source);
+
+    return sheet;
+}
+
 export function attribute(converter: Func1<string, unknown>): PropertyDecorator;
 export function attribute(target: ICustomElement, propertyKey: string): void;
 export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: Target, propertyKey: string) => void)|void
@@ -182,18 +191,11 @@ export function element(name: string, template?: string, style?: string, options
 
             templateElement.innerHTML = template || "<slot></slot>";
 
-            if (metadata.styles)
-            {
-                style = [...metadata.styles, style].join("\n");
-            }
-
             if (style)
             {
-                const styleElement = document.createElement("style");
+                const styles = getStaticMetadataValue(target, "styles", []);
 
-                styleElement.innerHTML = style;
-
-                templateElement.content.prepend(styleElement);
+                styles.push(stringToCSSStyleSheet(style));
             }
 
             metadata.template = templateElement;
@@ -252,7 +254,7 @@ export function styles(...styles: Array<string>): <T extends Constructor<HTMLEle
     {
         const $styles = getStaticMetadataValue(constructor, "styles", []);
 
-        $styles.push(...styles);
+        $styles.push(...styles.map(stringToCSSStyleSheet));
 
         return constructor;
     };

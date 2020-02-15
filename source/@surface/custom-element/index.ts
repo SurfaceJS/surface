@@ -32,6 +32,11 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
         const metadata = (this.constructor as Function & { [STATIC_METADATA]?: StaticMetadata })[STATIC_METADATA];
 
+        if (metadata?.styles)
+        {
+            (this[SHADOW_ROOT] as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles ?? [];
+        }
+
         if (metadata?.template)
         {
             this.applyTemplate(metadata.template);
