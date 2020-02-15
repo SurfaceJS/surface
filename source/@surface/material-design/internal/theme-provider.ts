@@ -82,7 +82,7 @@ export default class ThemeProvider
 
     public getColor(name: string): string
     {
-        const path = name.split("--").map(dashedToCamel);
+        const path = name.split(":").map(dashedToCamel);
 
         const color = getValue(materialColors, path)
             ?? getValue(this.themes, path)

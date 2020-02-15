@@ -12,10 +12,10 @@ import style                                          from "./index.scss";
 @element("smd-switch", template, style)
 export class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
-    @query(".container")
+    @query("#container")
     protected colorable!: HTMLElement;
 
-    @query(".selection")
+    @query("#selection")
     protected rippleable!: HTMLElement;
 
     @attribute
@@ -36,33 +36,16 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
         this.value = !this.value;
     }
 
-    @computed("inset", "label", "value")
+    @computed("elevationClasses", "themeClasses", "inset", "flat", "label", "value")
     public get classes(): Record<string, boolean>
     {
-        return { container: true, inset: this.inset, labelable: !!this.label, active: this.value };
-    }
-
-    @computed("themeClasses")
-    public get labelClasses(): Record<string, boolean>
-    {
-        return { label: true, ...this.themeClasses };
-    }
-
-    @computed("themeClasses")
-    public get selectionClasses(): Record<string, boolean>
-    {
-        return { selection: true, ...this.themeClasses };
-    }
-
-    @computed("flat", "themeClasses")
-    public get thumbClasses(): Record<string, boolean>
-    {
-        return { thumb: true, "elevation-3": !this.flat, ...this.themeClasses };
-    }
-
-    @computed("themeClasses")
-    public get trackClasses(): Record<string, boolean>
-    {
-        return { track: true, ...this.themeClasses };
+        return {
+            ...this.elevationClasses,
+            ...this.themeClasses,
+            active:    this.value,
+            flat:      this.flat,
+            inset:     this.inset,
+            labelable: !!this.label,
+        };
     }
 }

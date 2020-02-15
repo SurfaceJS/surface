@@ -30,7 +30,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         {
             this._color = this.getColor(value);
 
-            this.colorable?.style.setProperty("--smd--color", this._color);
+            this.colorable?.style.setProperty("--this-color", this._color);
         }
 
         @attribute
@@ -43,7 +43,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         {
             this._textColor = this.getColor(value);
 
-            this.colorable?.style.setProperty("--smd--text-color", this._textColor);
+            this.colorable?.style.setProperty("--this-text-color", this._textColor);
         }
 
         private getColor(color: string): string

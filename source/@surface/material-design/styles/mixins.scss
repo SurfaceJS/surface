@@ -1,36 +1,98 @@
-@mixin set-theme-color($property, $name)
+@import "./functions.scss";
+@import "./variables.scss";
+
+@mixin container()
 {
+    position: inherit;
 
-    &.light
-    {
-        #{$property}: var(--smd--color, var(--smd--light--#{$name}, var(--smd--#{$name})));
-    }
+    bottom:   inherit;
+    left:     inherit;
+    right:    inherit;
+    top:      inherit;
 
-    &.dark
-    {
-        #{$property}: var(--smd--color, var(--smd--dark--#{$name}, var(--smd--#{$name})));
-    }
+    height:   inherit;
+    width:    inherit;
 
-    &:not(.light, .dark)
+    z-index:  inherit;
+
+    @include flex;
+}
+
+@mixin elevation($elevation)
+{
+    box-shadow: map-get($shadow-key-umbra, $elevation), map-get($shadow-key-penumbra, $elevation), map-get($shadow-key-ambient, $elevation);
+}
+
+@mixin flex
+{
+    box-sizing:  border-box;
+    display:     inline-flex;
+    flex:        0 0 auto;
+    outline:     0;
+    will-change: box-shadow;
+}
+
+@mixin host
+{
+    -webkit-tap-highlight-color: transparent;
+
+    box-sizing:  border-box;
+    caret-color: currentColor;
+    display:     inline-flex;
+    flex:        0 0 auto;
+    font-family: Roboto, sans-serif;
+    outline:     0;
+}
+
+@mixin hover-before
+{
+    &::before
     {
-        #{$property}: var(--smd--color, var(--smd--#{$name}));
+        opacity: 0.2;
     }
 }
 
-@mixin text-color($property: "color")
+@mixin hoverable-before
 {
-    &.light
+    &::before
     {
-        #{$property}: var(--smd--text-color, var(--smd--light--text, var(--smd--text)));
+        background-color: currentColor;
+        border-radius:    inherit;
+        bottom:           0;
+        color:            inherit;
+        content:          "";
+        left:             0;
+        opacity:          0;
+        pointer-events:   none;
+        position:         absolute;
+        right:            0;
+        top:              0;
+        transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+    }
+}
+
+@mixin themed-color($variable, $color, $property, $root)
+{
+    &
+    {
+        #{$property}: var(--#{$variable}, var(--smd-#{$color}, map-get(map-get($default-theme, "light"), $color)));
     }
 
-    &.dark
+    @each $theme in "dark", "light"
     {
-        #{$property}: var(--smd--text-color, var(--smd--dark--text, var(--smd--text)));
+        @at-root #{append-class(&, $root, "#{$theme}")}
+        {
+            #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+        }
     }
+}
 
-    &:not(.light, .dark)
-    {
-        #{$property}: var(--smd--text-color, var(--smd--text));
-    }
+@mixin this-color($color, $property: "color", $root: "#container")
+{
+    @include themed-color("this-color", $color, $property, $root)
+}
+
+@mixin this-text-color($color: "text", $property: "color", $root: "#container")
+{
+    @include themed-color("this-text-color", $color, $property, $root)
 }

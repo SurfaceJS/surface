@@ -1,29 +1,12 @@
-@import "../styles/container.scss";
+@import "../styles/mixins.scss";
 
 $icon-size:      48px;
 $icon-font-size: 24px;
 
-@mixin set-color($property)
-{
-
-    &.light
-    {
-        #{$property}: var(--smd--color, var(--smd--light--secondary, var(--smd--secondary)));
-    }
-
-    &.dark
-    {
-        #{$property}: var(--smd--color, var(--smd--dark--secondary, var(--smd--secondary)));
-    }
-
-    &:not(.light, .dark)
-    {
-        #{$property}: var(--smd--color, var(--smd--secondary));
-    }
-}
-
 :host
 {
+    @include host;
+
     display:         inline-flex;
     align-items:     center;
     cursor:          pointer;
@@ -35,9 +18,13 @@ $icon-font-size: 24px;
     text-transform:  uppercase;
     user-select:     none;
 
-    .container
+    #container
     {
-        align-items:      center;
+        @include container;
+        @include this-color("secondary", "background-color");
+        @include this-text-color;
+
+        align-items:   center;
         border-radius: 4px;
         height:        inherit;
         justify-content:  center;
@@ -46,34 +33,14 @@ $icon-font-size: 24px;
         position:      relative;
         width:         inherit;
 
-        @include set-color("background-color");
-
-        &,
-        &.light
-        {
-            color: var(--smd--text-color, var(--smd--light--text, black));
-        }
-
-        &.dark
-        {
-            color: var(--smd--text-color, var(--smd--dark--text, white));
-        }
-
         &.outlined
         {
-            @include set-color("border-color");
-            @include set-color("color");
+            @include this-color("secondary", "border-color");
+            @include this-color("secondary");
 
             background-color: transparent;
             border-style:     solid;
             border-width:     1px;
-        }
-
-        &.text
-        {
-            @include set-color("color");
-
-            background-color: transparent;
         }
 
         &.rounded
@@ -90,9 +57,10 @@ $icon-font-size: 24px;
             min-width:     inherit;
         }
 
-        &.icon
+        &.icon,
+        &.text
         {
-            @include set-color("color");
+            @include this-color("secondary");
 
             background-color: transparent;
         }
@@ -108,33 +76,13 @@ $icon-font-size: 24px;
             min-width: 100%;
         }
 
-        &::before
-        {
-            background-color: currentColor;
-            border-radius:    inherit;
-            bottom:           0;
-            color:            inherit;
-            content:          "";
-            left:             0;
-            opacity:          0;
-            pointer-events:   none;
-            position:         absolute;
-            right:            0;
-            top:              0;
-            transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
-        }
+        @include hoverable-before;
     }
 }
 
-:host(:hover) .container::before
+:host(:hover) #container
 {
-    opacity: 0.06;
-}
-
-:host(:focus) .container::before,
-:host container:focus::before
-{
-    opacity: 0.12;
+    @include hover-before;
 }
 
 :host([block]),

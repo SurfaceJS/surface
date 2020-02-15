@@ -12,10 +12,10 @@ import style                                   from "./index.scss";
 @element("smd-button", template, style)
 export default class Button extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
-    @query(".container")
+    @query("#container")
     protected colorable!: HTMLElement;
 
-    @query(".container")
+    @query("#container")
     protected rippleable!: HTMLElement;
 
     @attribute

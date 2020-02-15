@@ -1,7 +1,9 @@
-@import "../styles/container.scss";
+@import "../styles/mixins.scss";
 
 :host
 {
+    @include host;
+
     i
     {
         -webkit-font-smoothing: antialiased;

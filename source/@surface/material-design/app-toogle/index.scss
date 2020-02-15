@@ -1,5 +1,9 @@
+@import "../styles/mixins.scss";
+
 :host
 {
+    @include host;
+
     align-items:     center;
     display:         inline-flex;
     flex:            0 0 auto;

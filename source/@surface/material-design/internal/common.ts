@@ -80,10 +80,10 @@ export function generateThemes(raw: DeepPartial<ITheme>|DeepPartial<IThemes>): I
 
 export function generateCssVariables(source: object): Array<string>
 {
-    const defaultWeightPattern = /--500:/;
+    const defaultWeightPattern = /-500:/;
     const accentPattern        = /A[1247]00/;
 
-    const variables = pathfy(source, { keySeparator: "--", keyTranform: x => accentPattern.test(x) ? x : camelToDashed(x) }).map(x => `--smd--${x};`);
+    const variables = pathfy(source, { keySeparator: "-", keyTranform: x => accentPattern.test(x) ? x : camelToDashed(x) }).map(x => `--smd-${x};`);
     const defaults  = variables.filter(x => defaultWeightPattern.test(x)).map(x => x.replace(defaultWeightPattern, ":"));
 
     return defaults.concat(variables);

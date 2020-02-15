@@ -10,7 +10,7 @@ import style                        from "./index.scss";
 @element("smd-app-bar", template, style)
 export default class AppBar extends mixer(CustomElement, [colorable, elevationable, themeable])
 {
-    @query(".container")
+    @query("#container")
     protected colorable!: HTMLElement;
 
     @computed("elevationClasses", "themeClasses")
@@ -18,8 +18,7 @@ export default class AppBar extends mixer(CustomElement, [colorable, elevationab
     {
         return {
             ...super.elevationClasses,
-            ...super.themeClasses,
-            container: true,
+            ...super.themeClasses
         };
     }
 

@@ -25,8 +25,6 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         {
             const isTouch = event instanceof TouchEvent;
 
-            console.log(isTouch);
-
             if (!isTouch && this.firedByTouch)
             {
                 this.firedByTouch = false;
@@ -35,7 +33,6 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
             }
 
             const bounding = this.rippleable.getBoundingClientRect();
-
 
             this.firedByTouch = isTouch;
 
@@ -61,8 +58,6 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
             ripple.style.transform = "scale(0)";
 
             ripple.dataset.animationStart = `${performance.now()}`;
-
-            this.rippleable.classList.add("rippleable");
 
             this.rippleable.appendChild(ripple);
 
@@ -109,6 +104,11 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
                 },
                 timeLeft
             );
+        }
+
+        public connectedCallback(): void
+        {
+            this.rippleable.classList.add("rippleable");
         }
     }
 
