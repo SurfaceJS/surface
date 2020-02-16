@@ -1,10 +1,9 @@
-import Polygon from "@surface/3d-math/polygon";
-import Vector3 from "@surface/3d-math/vector-3";
-import { HSV } from "./converters";
+import Vector4  from "@surface/3d-math/vector-4";
+import { HSVA } from "./converters";
 
 const MAX_DISTANCE = 0.707107;
 
-export type Swatch = { index: number, color: HSV };
+export type Swatch = { index: number, color: HSVA };
 
 function average(...values: Array<number>): number
 {
@@ -20,14 +19,14 @@ function lockValue(value: number, max: number): number
             : value;
 }
 
-function colorFromVector(vector: Vector3): HSV
+function colorFromVector(vector: Vector4): HSVA
 {
-    return { h: vector.z, s: vector.x, v: vector.y };
+    return { h: vector.z, s: vector.x, v: vector.y, a: vector.w };
 }
 
-function* intervalsIterator(index: number, targetIndex: number, target: Vector3, origin: Vector3): IterableIterator<Swatch>
+function* intervalsIterator(index: number, targetIndex: number, target: Vector4, origin: Vector4): IterableIterator<Swatch>
 {
-    if (Vector3.equals(target, origin))
+    if (Vector4.equals(target, origin))
     {
         const color = colorFromVector(target);
 
@@ -40,13 +39,13 @@ function* intervalsIterator(index: number, targetIndex: number, target: Vector3,
     {
         const offset = targetIndex - index;
 
-        const direction  = Vector3.subtract(target, origin);
+        const direction  = Vector4.subtract(target, origin);
         const distance   = Math.min(direction.magnitude, MAX_DISTANCE) / (offset + 1);
         const normalized = direction.normalized;
 
         for (let step = 1; step <= offset; step++)
         {
-            const stepVector = Vector3.add(origin, Vector3.multiply(normalized, step * distance));
+            const stepVector = Vector4.add(origin, Vector4.multiply(normalized, step * distance));
 
             yield { index, color: colorFromVector(stepVector) };
 
@@ -55,9 +54,9 @@ function* intervalsIterator(index: number, targetIndex: number, target: Vector3,
     }
 }
 
-function vectorFromColor(color: HSV): Vector3
+function vectorFromColor(color: HSVA): Vector4
 {
-    return new Vector3(color.s, color.v, color.h);
+    return new Vector4(color.s, color.v, color.h, color.a);
 }
 
 function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end: number }): IterableIterator<Swatch>
@@ -74,11 +73,12 @@ function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end:
         throw new Error("Start range cannot be greater than end range");
     }
 
-    const averageHue = average(...swatches.map(x => x.color.h));
+    const averageHue   = average(...swatches.map(x => x.color.h));
+    const averageAlpha = average(...swatches.map(x => x.color.a));
 
     let index = range.start;
 
-    let origin = new Vector3(0, 1, averageHue);
+    let origin = new Vector4(0, 1, averageHue, averageAlpha);
 
     for (const swatch of swatches)
     {
@@ -108,7 +108,7 @@ function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end:
 
     if (index <= range.end)
     {
-        const target = new Vector3(origin.x, 0, averageHue);
+        const target = new Vector4(origin.x, 0, averageHue, 1);
 
         for (const _node of intervalsIterator(index, range.end + 1, target, origin))
         {
@@ -127,9 +127,21 @@ export function palleteScale(swatches: Array<Swatch>, factor: number): Array<Swa
     const vertices = swatches.map(x => vectorFromColor(x.color));
 
     const height = lockValue(average(...vertices.map(x => x.z)) - 0.5, 1);
+    const alpha  = average(...vertices.map(x => x.w));
 
-    const copy = [...swatches];
+    const origin = new Vector4(0.5, 0.5, height, alpha);
 
-    return Polygon.scale(new Polygon(vertices), new Vector3(0.5, 0.5, height), factor).vertices
-        .map((x, i) => ({ index: copy[i].index, color: colorFromVector(x) }));
+    return vertices.map
+    (
+        (vertice, index) =>
+        {
+            const direction  = Vector4.subtract(vertice, origin);
+            const distance   = direction.magnitude * factor;
+            const normalized = direction.normalized;
+
+            const color = colorFromVector(Vector4.add(origin, Vector4.multiply(normalized, distance)));
+
+            return { index: swatches[index].index, color };
+        }
+    );
 }

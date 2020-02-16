@@ -6,7 +6,7 @@ export default class Vector3
 
     public get magnitude(): number
     {
-        return Math.sqrt((this.x ** 2) + (this.y ** 2) + (this.z ** 2));
+        return Math.sqrt(this.sqrMagnitude);
     }
 
     public get normalized(): Vector3

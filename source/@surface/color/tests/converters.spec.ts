@@ -2,17 +2,17 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
 import
 {
-    hexToHsl,
-    hexToHsv,
-    hexToRgb,
-    hslToHex,
-    hslToRgb,
-    hsvToHex,
-    hsvToRgb,
+    hexToHsla,
+    hexToHsva,
+    hexToRgba,
+    hslaToHex,
+    hslaToRgba,
+    hsvaToHex,
+    hsvaToRgba,
     labToXyz,
-    rgbToHex,
-    rgbToHsl,
-    rgbToHsv,
+    rgbaToHex,
+    rgbaToHsla,
+    rgbaToHsva,
     rgbToXyz,
     xyzToLab,
     xyzToRgb
@@ -23,79 +23,79 @@ from "../internal/converters";
 export default class ColorConvertersSpec
 {
     @test @shouldPass
-    public hexToRgb(): void
+    public hexToRgba(): void
     {
-        assert.deepEqual(hexToRgb("#f44336"), { r: 244, g: 67, b: 54 });
+        assert.deepEqual(hexToRgba("#f44336ff"), { r: 244, g: 67, b: 54, a: 255 });
     }
 
     @test @shouldPass
-    public rgbToHex(): void
+    public rgbaToHex(): void
     {
-        assert.deepEqual(rgbToHex({ r: 244, g: 67, b: 54 }), "#f44336");
+        assert.deepEqual(rgbaToHex({ r: 244, g: 67, b: 54, a: 255 }), "#f44336ff");
     }
 
     @test @shouldPass
-    public hexToHsl(): void
+    public hexToHsla(): void
     {
-        assert.deepEqual(hexToHsl("#f44336"), { h: 0.01140350877192986, s: 0.8962264150943399, l: 0.5843137254901961 });
+        assert.deepEqual(hexToHsla("#f44336ff"), { h: 0.01140350877192986, s: 0.8962264150943399, l: 0.5843137254901961, a: 1 });
     }
 
     @test @shouldPass
-    public hslToHex(): void
+    public hslaToHex(): void
     {
-        assert.deepEqual(hslToHex({ h: 0.01140350877192986, s: 0.8962264150943399, l: 0.5843137254901961 }), "#f44336");
+        assert.deepEqual(hslaToHex({ h: 0.01140350877192986, s: 0.8962264150943399, l: 0.5843137254901961, a: 1 }), "#f44336ff");
     }
 
     @test @shouldPass
-    public hexToHsv(): void
+    public hexToHsva(): void
     {
-        assert.deepEqual(hexToHsv("#f44336"), { h: 0.01140350877192986, s: 0.7786885245901639, v: 0.9568627450980393 });
+        assert.deepEqual(hexToHsva("#f44336"), { h: 0.01140350877192986, s: 0.7786885245901639, v: 0.9568627450980393, a: 1 });
     }
 
     @test @shouldPass
-    public hsvToHex(): void
+    public hsvaToHex(): void
     {
-        assert.deepEqual(hsvToHex({ h: 0.01140350877192986, s: 0.7786885245901639, v: 0.9568627450980393 }), "#f44336");
+        assert.deepEqual(hsvaToHex({ h: 0.01140350877192986, s: 0.7786885245901639, v: 0.9568627450980393, a: 1 }), "#f44336ff");
     }
 
     @test @shouldPass
-    public rgbToHsl(): void
+    public rgbaToHsla(): void
     {
-        assert.deepEqual(rgbToHsl({ r: 51,  g: 153, b: 204 }), { h: 0.5555555555555556,  s: 0.6000000000000001, l: 0.5 });
-        assert.deepEqual(rgbToHsl({ r: 255, g: 51,  b: 82  }), { h: 0.9746732026143792,  s: 1,                  l: 0.6 });
-        assert.deepEqual(rgbToHsl({ r: 255, g: 0,   b: 0   }), { h: 0,                   s: 1,                  l: 0.5 });
-        assert.deepEqual(rgbToHsl({ r: 255, g: 128, b: 0   }), { h: 0.08366013071895417, s: 1,                  l: 0.5 });
-        assert.deepEqual(rgbToHsl({ r: 128, g: 255, b: 0   }), { h: 0.2496732026143792,  s: 1,                  l: 0.5 });
+        assert.deepEqual(rgbaToHsla({ r: 51,  g: 153, b: 204, a: 255 }), { h: 0.5555555555555556,  s: 0.6000000000000001, l: 0.5, a: 1 });
+        assert.deepEqual(rgbaToHsla({ r: 255, g: 51,  b: 82,  a: 255 }), { h: 0.9746732026143792,  s: 1,                  l: 0.6, a: 1 });
+        assert.deepEqual(rgbaToHsla({ r: 255, g: 0,   b: 0,   a: 255 }), { h: 0,                   s: 1,                  l: 0.5, a: 1 });
+        assert.deepEqual(rgbaToHsla({ r: 255, g: 128, b: 0,   a: 255 }), { h: 0.08366013071895417, s: 1,                  l: 0.5, a: 1 });
+        assert.deepEqual(rgbaToHsla({ r: 128, g: 255, b: 0,   a: 255 }), { h: 0.2496732026143792,  s: 1,                  l: 0.5, a: 1 });
     }
 
     @test @shouldPass
-    public hslToRgb(): void
+    public hslaToRgba(): void
     {
-        assert.deepEqual(hslToRgb({ h: 0.5555555555555556,  s: 0.6000000000000001, l: 0.5 }), { r:  51, g: 153, b: 204 });
-        assert.deepEqual(hslToRgb({ h: 0.9746732026143792,  s: 1,                  l: 0.6 }), { r: 255, g: 51,  b: 82  });
-        assert.deepEqual(hslToRgb({ h: 0,                   s: 1,                  l: 0.5 }), { r: 255, g: 0,   b: 0   });
-        assert.deepEqual(hslToRgb({ h: 0.08366013071895417, s: 1,                  l: 0.5 }), { r: 255, g: 128, b: 0   });
-        assert.deepEqual(hslToRgb({ h: 0.2496732026143792,  s: 1,                  l: 0.5 }), { r: 128, g: 255, b: 0   });
+        assert.deepEqual(hslaToRgba({ h: 0.5555555555555556,  s: 0.6000000000000001, l: 0.5, a: 1 }), { r:  51, g: 153, b: 204, a: 255 });
+        assert.deepEqual(hslaToRgba({ h: 0.9746732026143792,  s: 1,                  l: 0.6, a: 1 }), { r: 255, g: 51,  b: 82,  a: 255 });
+        assert.deepEqual(hslaToRgba({ h: 0,                   s: 1,                  l: 0.5, a: 1 }), { r: 255, g: 0,   b: 0,   a: 255 });
+        assert.deepEqual(hslaToRgba({ h: 0.08366013071895417, s: 1,                  l: 0.5, a: 1 }), { r: 255, g: 128, b: 0,   a: 255 });
+        assert.deepEqual(hslaToRgba({ h: 0.2496732026143792,  s: 1,                  l: 0.5, a: 1 }), { r: 128, g: 255, b: 0,   a: 255 });
     }
 
     @test @shouldPass
-    public rgbToHsv(): void
+    public rgbaToHsva(): void
     {
-        assert.deepEqual(rgbToHsv({ r: 51,  g: 153, b: 204 }), { h: 0.5555555555555556,  s: 0.7500000000000001, v: 0.8 });
-        assert.deepEqual(rgbToHsv({ r: 255, g: 51,  b: 82  }), { h: 0.9746732026143792,  s: 0.8,                v: 1   });
-        assert.deepEqual(rgbToHsv({ r: 255, g: 0,   b: 0   }), { h: 0,                   s: 1,                  v: 1   });
-        assert.deepEqual(rgbToHsv({ r: 255, g: 128, b: 0   }), { h: 0.08366013071895417, s: 1,                  v: 1   });
-        assert.deepEqual(rgbToHsv({ r: 128, g: 255, b: 0   }), { h: 0.2496732026143792,  s: 1,                  v: 1   });
+        assert.deepEqual(rgbaToHsva({ r: 51,  g: 153, b: 204, a: 255 }), { h: 0.5555555555555556,  s: 0.7500000000000001, v: 0.8, a: 1 });
+        assert.deepEqual(rgbaToHsva({ r: 255, g: 51,  b: 82,  a: 255 }), { h: 0.9746732026143792,  s: 0.8,                v: 1,   a: 1 });
+        assert.deepEqual(rgbaToHsva({ r: 255, g: 0,   b: 0,   a: 255 }), { h: 0,                   s: 1,                  v: 1,   a: 1 });
+        assert.deepEqual(rgbaToHsva({ r: 255, g: 128, b: 0,   a: 255 }), { h: 0.08366013071895417, s: 1,                  v: 1,   a: 1 });
+        assert.deepEqual(rgbaToHsva({ r: 128, g: 255, b: 0,   a: 255 }), { h: 0.2496732026143792,  s: 1,                  v: 1,   a: 1 });
     }
 
     @test @shouldPass
-    public hsvToRgb(): void
+    public hsvaToRgba(): void
     {
-        assert.deepEqual(hsvToRgb({ h: 0.5555555555555556,  s: 0.7500000000000001, v: 0.8 }), { r:  51, g: 153, b: 204 });
-        assert.deepEqual(hsvToRgb({ h: 0.9746732026143792,  s: 0.8,                v: 1   }), { r: 255, g: 51,  b: 82  });
-        assert.deepEqual(hsvToRgb({ h: 0,                   s: 1,                  v: 1   }), { r: 255, g: 0,   b: 0   });
-        assert.deepEqual(hsvToRgb({ h: 0.08366013071895417, s: 1,                  v: 1   }), { r: 255, g: 128, b: 0   });
-        assert.deepEqual(hsvToRgb({ h: 0.2496732026143792,  s: 1,                  v: 1   }), { r: 128, g: 255, b: 0   });
+        assert.deepEqual(hsvaToRgba({ h: 0.5555555555555556,  s: 0.7500000000000001, v: 0.8, a: 1 }), { r:  51, g: 153, b: 204, a: 255 });
+        assert.deepEqual(hsvaToRgba({ h: 0.9746732026143792,  s: 0.8,                v: 1,   a: 1 }), { r: 255, g: 51,  b: 82,  a: 255 });
+        assert.deepEqual(hsvaToRgba({ h: 0,                   s: 1,                  v: 1,   a: 1 }), { r: 255, g: 0,   b: 0,   a: 255 });
+        assert.deepEqual(hsvaToRgba({ h: 0.08366013071895417, s: 1,                  v: 1,   a: 1 }), { r: 255, g: 128, b: 0,   a: 255 });
+        assert.deepEqual(hsvaToRgba({ h: 0.2496732026143792,  s: 1,                  v: 1,   a: 1 }), { r: 128, g: 255, b: 0,   a: 255 });
     }
 
     @test @shouldPass

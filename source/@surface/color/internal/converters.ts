@@ -1,10 +1,13 @@
 // Reference: https://www.easyrgb.com/en/math.php
 
-export type HSL = { h: number, s: number, l: number };
-export type HSV = { h: number, s: number, v: number };
-export type LAB = { l: number, a: number, b: number };
-export type RGB = { r: number, g: number, b: number };
-export type XYZ = { x: number, y: number, z: number };
+export type HSL  = { h: number, s: number, l: number };
+export type HSLA = HSL & { a: number };
+export type HSV  = { h: number, s: number, v: number };
+export type HSVA = HSV & { a: number };
+export type LAB  = { l: number, a: number, b: number };
+export type RGB  = { r: number, g: number, b: number };
+export type RGBA = RGB & { a: number };
+export type XYZ  = { x: number, y: number, z: number };
 
 const ILLUMINANT_D65 = { X: 95.047, Y: 100, Z: 108.883 };
 
@@ -57,35 +60,14 @@ function toFixed(value: number, digits?: number): number
     return Number.parseFloat(value.toFixed(digits ?? 0));
 }
 
-export function hexToHsl(hex: string): HSL
+export function hexToHsla(hex: string): HSLA
 {
-    return rgbToHsl(hexToRgb(hex));
+    return rgbaToHsla(hexToRgba(hex));
 }
 
-export function hexToHsv(hex: string): HSV
+export function hexToHsva(hex: string): HSVA
 {
-    return rgbToHsv(hexToRgb(hex));
-}
-
-export function hslToHex(hsl: HSL): string
-{
-    return rgbToHex(hslToRgb(hsl));
-}
-
-export function hsvToHex(hsv: HSV): string
-{
-    return rgbToHex(hsvToRgb(hsv));
-}
-
-export function hslToHsv(hsl: HSL): HSV
-{
-    const s = hsl.s * hsl.l <.5? hsl.l : 1- hsl.l;
-
-    return {
-        h: hsl.h,
-        s: s * 2 / (hsl.l +s),
-        v: hsl.l + s,
-    };
+    return rgbaToHsva(hexToRgba(hex));
 }
 
 export function hexToRgb(hex: string): RGB
@@ -95,28 +77,42 @@ export function hexToRgb(hex: string): RGB
     return { r, g, b };
 }
 
-export function hsv2hsl(hsv: HSV): HSL
+export function hexToRgba(hex: string): RGBA
 {
-    const h = (2 - hsv.s) * hsv.v;
+    const [r, g, b, a = 255] = hex.replace("#", "").match(/../g)!.map((x: string) => Number.parseInt(x, 16));
+
+    return { r, g, b, a };
+}
+
+export function hslaToHex(hsla: HSLA): string
+{
+    return rgbaToHex(hslaToRgba(hsla));
+}
+
+export function hslaToHsva(hsla: HSLA): HSVA
+{
+    const s = hsla.s * hsla.l <.5? hsla.l : 1- hsla.l;
 
     return {
-        h: hsv.h,
-        s: hsv.s * hsv.v / ( h < 1 ? h : 2 - h),
-        l: hsv.h / 2
+        h: hsla.h,
+        s: s * 2 / (hsla.l +s),
+        v: hsla.l + s,
+        a: hsla.a
     };
 }
 
-export function hslToRgb(hsl: HSL): RGB
+export function hslaToRgba(hsla: HSLA): RGBA
 {
-    const h = range(hsl.h, 0, 1);
-    const s = range(hsl.s, 0, 1);
-    const l = range(hsl.l, 0, 1);
+    const h = range(hsla.h, 0, 1);
+    const s = range(hsla.s, 0, 1);
+    const l = range(hsla.l, 0, 1);
+    const a = toFixed(range(hsla.a, 0, 1) * 255);
 
     if (s == 0)
     {
         const value = toFixed(l * 255);
 
-        return { r: value, g: value, b: value };
+        return { r: value, g: value, b: value, a };
     }
 
     const v2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
@@ -126,20 +122,38 @@ export function hslToRgb(hsl: HSL): RGB
     const g = toFixed(hueToRgb(v1, v2, h) * 255, 0);
     const b = toFixed(hueToRgb(v1, v2, h - (1 / 3)) * 255, 0);
 
-    return { r, g, b };
+    return { r, g, b, a };
 }
 
-export function hsvToRgb(hsv: HSV): RGB
+export function hsvaToHex(hsva: HSVA): string
 {
-    const h = range(hsv.h, 0, 1);
-    const s = range(hsv.s, 0, 1);
-    const v = range(hsv.v, 0, 1);
+    return rgbaToHex(hsvaToRgba(hsva));
+}
+
+export function hsvaToHsl(hsva: HSVA): HSLA
+{
+    const h = (2 - hsva.s) * hsva.v;
+
+    return {
+        h: hsva.h,
+        s: hsva.s * hsva.v / ( h < 1 ? h : 2 - h),
+        l: hsva.h / 2,
+        a: hsva.a
+    };
+}
+
+export function hsvaToRgba(hsva: HSVA): RGBA
+{
+    const h = range(hsva.h, 0, 1);
+    const s = range(hsva.s, 0, 1);
+    const v = range(hsva.v, 0, 1);
+    const a = toFixed(range(hsva.a, 0, 1) * 255);
 
     if (s == 0)
     {
         const value = toFixed(v * 255);
 
-        return { r: value, g: value, b: value };
+        return { r: value, g: value, b: value, a };
     }
     else
     {
@@ -161,17 +175,17 @@ export function hsvToRgb(hsv: HSV): RGB
         switch (i)
         {
             case 0:
-                return { r: v0, g: v3, b: v1 };
+                return { r: v0, g: v3, b: v1, a };
             case 1:
-                return { r: v2, g: v0, b: v1 };
+                return { r: v2, g: v0, b: v1, a };
             case 2:
-                return { r: v1, g: v0, b: v3 };
+                return { r: v1, g: v0, b: v3, a };
             case 3:
-                return { r: v1, g: v2, b: v0 };
+                return { r: v1, g: v2, b: v0, a };
             case 4:
-                return { r: v3, g: v1, b: v0 };
+                return { r: v3, g: v1, b: v0, a };
             default:
-                return { r: v0, g: v1, b: v2 };
+                return { r: v0, g: v1, b: v2, a };
         }
     }
 }
@@ -191,14 +205,20 @@ export function labToXyz(lab: LAB): XYZ
 
 export function rgbToHex(rgb: RGB): string
 {
-    return "#" + toFixed((rgb.r << 16) + (rgb.g << 8) + (rgb.b)).toString(16).padStart(6, "0");
+    return "#" + [rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, "0")).join("");
 }
 
-export function rgbToHsl(rgb: RGB): HSL
+export function rgbaToHex(rgba: RGBA): string
 {
-    const r = range(rgb.r / 255, 0, 1);
-    const g = range(rgb.g / 255, 0, 1);
-    const b = range(rgb.b / 255, 0, 1);
+    return "#" + [rgba.r, rgba.g, rgba.b, rgba.a].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+
+export function rgbaToHsla(rgba: RGBA): HSLA
+{
+    const r = range(rgba.r / 255, 0, 1);
+    const g = range(rgba.g / 255, 0, 1);
+    const b = range(rgba.b / 255, 0, 1);
+    const a = range(rgba.a / 255, 0, 1);
 
     const min = Math.min(r, g, b);
     const max = Math.max(r, g, b);
@@ -209,7 +229,7 @@ export function rgbToHsl(rgb: RGB): HSL
 
     if (chroma == 0)
     {
-        return { h: 0, s: 0, l };
+        return { h: 0, s: 0, l, a };
     }
     else
     {
@@ -217,15 +237,16 @@ export function rgbToHsl(rgb: RGB): HSL
 
         const h = rgbToHue(r, g, b, chroma, max);
 
-        return { h, s, l };
+        return { h, s, l, a };
     }
 }
 
-export function rgbToHsv(rgb: RGB): HSV
+export function rgbaToHsva(rgba: RGBA): HSVA
 {
-    const r = range(rgb.r / 255, 0, 1);
-    const g = range(rgb.g / 255, 0, 1);
-    const b = range(rgb.b / 255, 0, 1);
+    const r = range(rgba.r / 255, 0, 1);
+    const g = range(rgba.g / 255, 0, 1);
+    const b = range(rgba.b / 255, 0, 1);
+    const a = range(rgba.a / 255, 0, 1);
 
     const min = Math.min(r, g, b);
     const max = Math.max(r, g, b);
@@ -236,7 +257,7 @@ export function rgbToHsv(rgb: RGB): HSV
 
     if (chroma == 0)
     {
-        return { h: 0, s: 0, v };
+        return { h: 0, s: 0, v, a };
     }
     else
     {
@@ -244,7 +265,7 @@ export function rgbToHsv(rgb: RGB): HSV
 
         const h = rgbToHue(r, g, b, chroma, max);
 
-        return { h, s, v };
+        return { h, s, v, a };
     }
 }
 
