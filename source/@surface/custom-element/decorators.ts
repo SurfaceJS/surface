@@ -189,7 +189,8 @@ export function element(name: string, template?: string, style?: string, options
 
             const templateElement = document.createElement("template");
 
-            templateElement.innerHTML = template || "<slot></slot>";
+            // templateElement.innerHTML = template ?? "<slot></slot>";
+            templateElement.innerHTML = `<style>${style}</style>${template ?? "<slot></slot>"}`;
 
             if (style)
             {

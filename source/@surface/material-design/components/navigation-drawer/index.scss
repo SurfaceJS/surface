@@ -17,7 +17,7 @@
     #container
     {
         @include container;
-        @include this-color("background-400", "background-color");
+        @include background-color("background-400");
 
         display:        flex;
         flex-direction: column;

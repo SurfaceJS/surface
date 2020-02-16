@@ -39,10 +39,7 @@ $transition-transform:        transform        0.3s $curve;
                 opacity:          0.6;
                 width:            36px;
 
-                // @include at-class("dark", "background-color", rgba(255, 255, 255, 0.3));
-                // @include at-class("light", "background-color", rgba(0, 0, 0, 0.38));
-
-                @include this-text-color("text", "background-color");
+                @include set-color("background-color", "text", "this-text");
             }
 
             #selection
@@ -55,10 +52,7 @@ $transition-transform:        transform        0.3s $curve;
                 transform:     translateX(-11px);
                 transition:    $transition-transform;
 
-                // @include at-class("dark", "color", rgba(255, 255, 255, 0.87));
-                // @include at-class("light", "color", rgba(0, 0, 0, 0.87));
-
-                @include this-text-color;
+                @include text-color;
 
                 @include hoverable-before;
             }
@@ -73,33 +67,31 @@ $transition-transform:        transform        0.3s $curve;
                 transition:    inherit;
 
                 background-color: white;
-
-                // @include this-text-color("text", "background-color");
             }
         }
 
         #label
         {
-            @include this-text-color;
+            @include text-color;
         }
 
         &.active #component
         {
             #track
             {
-                @include this-color("secondary", "background-color");
+                @include background-color("secondary");
             }
 
             #selection
             {
-                @include this-color("secondary");
+                @include text-color("secondary");
 
                 transform: translateX(11px);
             }
 
             #thumb
             {
-                @include this-color("secondary", "background-color");
+                @include background-color("secondary");
 
                 transform: translateX(11px);
             }

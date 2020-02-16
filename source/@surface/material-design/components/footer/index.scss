@@ -20,6 +20,6 @@
         flex:        0 0 auto;
         padding:     0 10px;
 
-        @include this-color("primary", "background-color");
+        @include background-color("primary");
     }
 }

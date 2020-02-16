@@ -1,6 +1,13 @@
-@function append-class($selector, $target, $class)
+@import "./variables.scss";
+
+@function get-color($theme, $color)
 {
-    @return str-replace("#{$selector}", "#{$target}", "#{$target}.#{$class}");
+    @return map-get(map-get($default-theme, $theme), $color);
+}
+
+@function get-variable($variable, $theme, $color)
+{
+    @return var(--#{$variable}, var(--smd-#{$theme}-#{$color}, #{get-color($theme, $color)}));
 }
 
 @function str-replace($string, $search, $replace)

@@ -14,5 +14,5 @@
     padding:             0;
     position:            relative;
 
-    @include this-text-color("text", "color", "*");
+    @include text-color("text", "*");
 }

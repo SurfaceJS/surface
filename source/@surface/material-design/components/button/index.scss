@@ -7,10 +7,8 @@ $icon-font-size: 24px;
 {
     @include host;
 
-    display:         inline-flex;
     align-items:     center;
     cursor:          pointer;
-    font-family:     "Roboto", sans-serif;
     font-size:       14px;
     font-weight:     500;
     height:          32px;
@@ -21,26 +19,26 @@ $icon-font-size: 24px;
     #container
     {
         @include container;
-        @include this-color("secondary", "background-color");
-        @include this-text-color;
 
-        align-items:   center;
-        border-radius: 4px;
-        height:        inherit;
-        justify-content:  center;
-        min-width:     64px;
-        padding:       0 16px;
-        position:      relative;
-        width:         inherit;
+        align-items:     center;
+        border-radius:   4px;
+        height:          inherit;
+        justify-content: center;
+        min-width:       64px;
+        padding:         0 16px;
+        position:        relative;
+        width:           inherit;
+
+        &:not(.icon):not(.outlined):not(.text)
+        {
+            @include text-color;
+            @include set-color("background-color", "secondary", "this-color");
+        }
 
         &.outlined
         {
-            @include this-color("secondary", "border-color");
-            @include this-color("secondary");
-
-            background-color: transparent !important;
-            border-style:     solid;
-            border-width:     1px;
+            border-style: solid;
+            border-width: 1px;
         }
 
         &.rounded
@@ -48,7 +46,8 @@ $icon-font-size: 24px;
             border-radius: 20px;
         }
 
-        &.fab
+        &.fab,
+        &.icon
         {
             border-radius: 50%;
             font-size:     inherit;
@@ -56,23 +55,14 @@ $icon-font-size: 24px;
             min-width:     inherit;
         }
 
-        &.icon
-        {
-            @extend #container.fab;
-        }
-
-        &.icon
-        {
-            @include this-color("secondary");
-
-            background-color: transparent !important;
-        }
-
+        &.icon,
+        &.outlined,
         &.text
         {
-            @include this-color("secondary");
+            @include set-color("color",        "secondary", "this-color");
+            @include set-color("border-color", "secondary", "this-color");
 
-            background-color: transparent !important;
+            background-color: transparent;
         }
 
         &.tile

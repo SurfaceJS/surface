@@ -1,17 +1,9 @@
 @import "./functions.scss";
 @import "./variables.scss";
 
-@mixin  at-class($class, $property, $value, $root: "#container")
-{
-    @at-root #{append-class(&, $root, "#{$class}")}
-    {
-        #{$property}: #{$value};
-    }
-}
-
 @mixin container()
 {
-    @include inheritance;
+    @include inherits-boundary;
     @include flex;
 }
 
@@ -37,7 +29,8 @@
     caret-color: currentColor;
     display:     inline-flex;
     flex:        0 0 auto;
-    font-family: Roboto, sans-serif;
+    font-family: "Roboto", "sans-serif";
+    font-size:   14px;
     outline:     0;
 }
 
@@ -68,7 +61,7 @@
     }
 }
 
-@mixin inheritance
+@mixin inherits-boundary
 {
     position: inherit;
 
@@ -83,44 +76,76 @@
     z-index:  inherit;
 }
 
-@mixin themed-color($variable, $color, $property, $root)
+@mixin background-color($color, $root: "#container")
+{
+    $light-value: get-variable("this-color", "light", $color);
+    $dark-value:  get-variable("this-color", "dark",  $color);
+
+    @include set-property("background-color", $light-value, $dark-value, $root);
+    @include set-property("border-color",     $light-value, $dark-value, $root);
+}
+
+@mixin set-property($property, $light-value, $dark-value, $root: "#container")
 {
     &
     {
-        #{$property}: var(--#{$variable}, var(--smd-light-#{$color}, map-get(map-get($default-theme, "light"), $color)));
+        #{$property}: #{$light-value};
     }
 
-    @each $theme in "dark", "light"
+    @each $selector in &
     {
         @if ($root == "*")
         {
             @at-root
-            :host-context(.#{$theme}) #{str-replace(#{&}, ":host", "")},
-            :host-context(.light, .dark) #{"#{&} #{$theme}"},
-            #{"#{&} #{$theme}"}
+            :host-context(.dark),
+            :host-context(.light, .dark) .dark,
+            .dark
             {
-                #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+                #{$property}: #{$dark-value};
+            }
+
+            @at-root
+            :host-context(.light),
+            :host-context(.light, .dark) .light,
+            .light
+            {
+                #{$property}: #{$light-value};
             }
         }
         @else
         {
             @at-root
-            :host-context(.#{$theme}) #{str-replace(#{&}, ":host", "")},
-            :host-context(.light, .dark) #{append-class(str-replace(#{&}, ":host", ""), $root, "#{$theme}")},
-            #{append-class(&, $root, "#{$theme}")}
+            #{":host-context(.dark)#{$selector}"},
+            #{":host-context(.light)#{str-replace(#{$selector}, $root, '#{$root}.dark')}"},
+            #{str-replace(#{$selector}, $root, "#{$root}.dark")}
             {
-                #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+                #{$property}: #{$dark-value};
+            }
+
+            @at-root
+            #{":host-context(.light)#{$selector}"},
+            #{":host-context(.dark)#{str-replace(#{$selector}, $root, '#{$root}.light')}"},
+            #{str-replace(#{$selector}, $root, "#{$root}.light")}
+            {
+                #{$property}: #{$light-value};
             }
         }
     }
 }
 
-@mixin this-color($color, $property: "color", $root: "#container")
+@mixin set-color($property, $color, $variable: "this-color", $root: "#container")
 {
-    @include themed-color("this-color", $color, $property, $root)
+    $light-value: get-variable($variable, "light", $color);
+    $dark-value:  get-variable($variable, "dark",  $color);
+
+    @include set-property($property, $light-value, $dark-value, $root);
 }
 
-@mixin this-text-color($color: "text", $property: "color", $root: "#container")
+@mixin text-color($color: "text", $root: "#container")
 {
-    @include themed-color("this-text-color", $color, $property, $root)
+    $light-value: get-variable("this-text-color", "light", $color);
+    $dark-value:  get-variable("this-text-color", "dark",  $color);
+
+    @include set-property("color",       $light-value, $dark-value, $root);
+    @include set-property("caret-color", $light-value, $dark-value, $root);
 }
