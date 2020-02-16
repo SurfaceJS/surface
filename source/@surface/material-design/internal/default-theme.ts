@@ -7,13 +7,13 @@ const defaultTheme: DeepPartial<Omit<IThemes, "default">> =
     dark:
     {
         accent:     materialColors.blue["A200"],
-        background: materialColors.grey["800"],
+        background: { "400": "#363636",  "500": "#1f1f1f" } ,
         error:      materialColors.red,
         info:       materialColors.blue,
         primary:    materialColors.indigo,
         secondary:  materialColors.blue,
         success:    materialColors.green,
-        text:       materialColors.white,
+        text:       "#ffffffb3",
         warning:    materialColors.amber,
     },
     light:
@@ -25,7 +25,7 @@ const defaultTheme: DeepPartial<Omit<IThemes, "default">> =
         primary:    materialColors.blue,
         secondary:  materialColors.indigo,
         success:    materialColors.green,
-        text:       materialColors.white,
+        text:       "#00000099",
         warning:    materialColors.amber,
     }
 };

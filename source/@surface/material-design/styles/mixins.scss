@@ -1,20 +1,17 @@
 @import "./functions.scss";
 @import "./variables.scss";
 
+@mixin  at-class($class, $property, $value, $root: "#container")
+{
+    @at-root #{append-class(&, $root, "#{$class}")}
+    {
+        #{$property}: #{$value};
+    }
+}
+
 @mixin container()
 {
-    position: inherit;
-
-    bottom:   inherit;
-    left:     inherit;
-    right:    inherit;
-    top:      inherit;
-
-    height:   inherit;
-    width:    inherit;
-
-    z-index:  inherit;
-
+    @include inheritance;
     @include flex;
 }
 
@@ -71,18 +68,49 @@
     }
 }
 
+@mixin inheritance
+{
+    position: inherit;
+
+    bottom:   inherit;
+    left:     inherit;
+    right:    inherit;
+    top:      inherit;
+
+    height:   inherit;
+    width:    inherit;
+
+    z-index:  inherit;
+}
+
 @mixin themed-color($variable, $color, $property, $root)
 {
     &
     {
-        #{$property}: var(--#{$variable}, var(--smd-#{$color}, map-get(map-get($default-theme, "light"), $color)));
+        #{$property}: var(--#{$variable}, var(--smd-light-#{$color}, map-get(map-get($default-theme, "light"), $color)));
     }
 
     @each $theme in "dark", "light"
     {
-        @at-root #{append-class(&, $root, "#{$theme}")}
+        @if ($root == "*")
         {
-            #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+            @at-root
+            :host-context(.#{$theme}) #{str-replace(#{&}, ":host", "")},
+            :host-context(.light, .dark) #{"#{&} #{$theme}"},
+            #{"#{&} #{$theme}"}
+            {
+                #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+            }
+        }
+        @else
+        {
+            @at-root
+            :host-context(.#{$theme}) #{str-replace(#{&}, ":host", "")},
+            :host-context(.light, .dark) #{append-class(str-replace(#{&}, ":host", ""), $root, "#{$theme}")},
+            #{append-class(&, $root, "#{$theme}")}
+            {
+                #{$property}: var(--#{$variable}, var(--smd-#{$theme}-#{$color}, var(--smd-#{$color}, map-get(map-get($default-theme, $theme), $color))));
+            }
         }
     }
 }

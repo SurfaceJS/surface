@@ -28,9 +28,18 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
         public set color(value: string)
         {
-            this._color = this.getColor(value);
+            if (value)
+            {
+                this._color = this.getColor(value);
 
-            this.colorable?.style.setProperty("--this-color", this._color);
+                this.colorable?.style.setProperty("--this-color", this._color);
+            }
+            else
+            {
+                this._color = value;
+
+                this.colorable?.style.removeProperty("--this-color");
+            }
         }
 
         @attribute
@@ -41,9 +50,18 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
         public set textColor(value: string)
         {
-            this._textColor = this.getColor(value);
+            if (value)
+            {
+                this._textColor = this.getColor(value);
 
-            this.colorable?.style.setProperty("--this-text-color", this._textColor);
+                this.colorable?.style.setProperty("--this-text-color", this._textColor);
+            }
+            else
+            {
+                this._textColor = value;
+
+                this.colorable?.style.removeProperty("--this-text-color");
+            }
         }
 
         private getColor(color: string): string

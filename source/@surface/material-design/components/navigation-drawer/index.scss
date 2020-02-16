@@ -1,8 +1,7 @@
+@import "../../styles/mixins.scss";
+
 :host
 {
-    display:        flex;
-    flex-direction: column;
-    background:     white;
     box-shadow:
         0px 2px 4px -1px rgba(0, 0, 0, 0.2),
         0px 4px 5px 0px rgba(0, 0, 0, 0.14),
@@ -14,4 +13,13 @@
     top:        64px;
     width:      256px;
     z-index:    0;
+
+    #container
+    {
+        @include container;
+        @include this-color("background-400", "background-color");
+
+        display:        flex;
+        flex-direction: column;
+    }
 }

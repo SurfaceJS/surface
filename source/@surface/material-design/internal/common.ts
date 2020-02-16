@@ -1,22 +1,22 @@
-import { generatePallete, hexToHsv, hsvToHex, palleteScale, Swatch } from "@surface/color";
-import { DeepPartial, Indexer }                                      from "@surface/core";
-import { typeGuard }                                                 from "@surface/core/common/generic";
-import { objectFactory, pathfy }                                     from "@surface/core/common/object";
-import { camelToDashed }                                             from "@surface/core/common/string";
-import { Color }                                                     from "../interfaces/color";
-import ITheme                                                        from "../interfaces/theme";
-import IThemes                                                       from "../interfaces/themes";
+import { generatePallete, hexToHsva, hsvaToHex, palleteScale, Swatch } from "@surface/color";
+import { DeepPartial, Indexer }                                        from "@surface/core";
+import { typeGuard }                                                   from "@surface/core/common/generic";
+import { objectFactory, pathfy }                                       from "@surface/core/common/object";
+import { camelToDashed }                                               from "@surface/core/common/string";
+import { Color }                                                       from "../interfaces/color";
+import ITheme                                                          from "../interfaces/theme";
+import IThemes                                                         from "../interfaces/themes";
 
 function resolveAccentSwatch(swatch: Swatch): [string, string]
 {
     const map: Record<number, number> = { 4: 1, 6: 2, 7: 4, 8: 7 };
 
-    return ["A" + (map[swatch.index] * 100).toString(), hsvToHex(swatch.color)];
+    return ["A" + (map[swatch.index] * 100).toString(), hsvaToHex(swatch.color)];
 }
 
 function resolveSwatch(swatch: Swatch): [string, string]
 {
-    return [swatch.index == 1 ? "50" : ((swatch.index - 1) * 100).toString(), hsvToHex(swatch.color)];
+    return [swatch.index == 1 ? "50" : ((swatch.index - 1) * 100).toString(), hsvaToHex(swatch.color)];
 }
 
 function generateVariations(color: string|Color): Array<[string, string]>
@@ -33,8 +33,8 @@ function generateVariations(color: string|Color): Array<[string, string]>
         return [...base, ...accent] as Array<[string, string]>;
     }
 
-    const baseSwatches   = base.map(([key, value]) => ({ index: key == "50" ? 1 : (Number.parseInt(key) / 100) + 1, color: hexToHsv(value) }));
-    const accentSwatches = accent.map(([key, value]) => ({ index: (Number.parseInt(key.replace("A", "")) / 100), color: hexToHsv(value) }));
+    const baseSwatches   = base.map(([key, value]) => ({ index: key == "50" ? 1 : (Number.parseInt(key) / 100) + 1, color: hexToHsva(value) }));
+    const accentSwatches = accent.map(([key, value]) => ({ index: (Number.parseInt(key.replace("A", "")) / 100), color: hexToHsva(value) }));
 
     const basePallete = baseSwatches.length == 10
         ? baseSwatches

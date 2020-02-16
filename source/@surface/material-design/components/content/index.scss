@@ -1,5 +1,29 @@
+@import "../../styles/mixins.scss";
+
+$screen-offset: 5px;
+
 :host
 {
-    display: block;
-    margin:  64px 0px 36px 256px;
+    position:   static;
+    box-sizing: border-box;
+    display:    inline-flex;
+    flex:       1 0 auto;
+    width:      100%;
+    padding:    64px 0px 32px 256px;
+
+    #container
+    {
+        @include container;
+        @include this-color("background", "background-color");
+
+        display: block;
+
+        #placeholder
+        {
+            display: block;
+            width:   calc(100% - 20px);
+            height:  calc(100% - 20px);
+            margin:  10px;
+        }
+    }
 }

@@ -1,22 +1,18 @@
+@import "../../styles/mixins.scss";
+
 :host
 {
-    display:        flex;
-    flex:           0 0 auto;
-    flex-direction: column;
+    -webkit-backface-visibility: hidden;
 
-    ::slotted(surface-app-header),
-    ::slotted(surface-app-footer)
-    {
-        border: solid 1px red;
-    }
+    backface-visibility: hidden;
+    display:             flex;
+    flex-direction:      column;
+    flex:                1 1 auto;
+    margin:              0;
+    max-width:           100%;
+    min-height:          100vh;
+    padding:             0;
+    position:            relative;
 
-    ::slotted(surface-app-aside)
-    {
-        border: solid 1px green;
-    }
-
-    ::slotted(surface-app-main)
-    {
-        border: solid 1px blue;
-    }
+    @include this-text-color("text", "color", "*");
 }
