@@ -6,8 +6,8 @@ import { Color }                                from "../interfaces/color";
 import ITheme                                   from "../interfaces/theme";
 import IThemes                                  from "../interfaces/themes";
 import { generateCssVariables, generateThemes } from "../internal/common";
-import materialColors                           from "../material-colors";
 import defaultTheme                             from "./default-theme";
+import materialColors                           from "./material-colors";
 
 export default class ThemeProvider
 {

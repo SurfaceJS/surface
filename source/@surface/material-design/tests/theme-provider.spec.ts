@@ -2,8 +2,8 @@ import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
+import materialColors              from "../internal/material-colors";
 import ThemeProvider               from "../internal/theme-provider";
-import materialColors              from "../material-colors";
 
 @suite
 export default class ColorSpec

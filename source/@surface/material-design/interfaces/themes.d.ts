@@ -1,5 +1,4 @@
-import materialColors from "../material-colors";
-import ITheme         from "./theme";
+import ITheme from "./theme";
 
 export default interface IThemes
 {

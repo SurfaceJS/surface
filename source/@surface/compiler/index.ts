@@ -46,7 +46,6 @@ const loaders =
             minimize: true
         }
     },
-    htmlRequire: { loader: "html-require-loader" },
     istanbul:
     {
         loader: "istanbul-instrumenter-loader",
@@ -302,11 +301,7 @@ export default class Compiler
                     },
                     {
                         test: /\.html$/,
-                        use:
-                        [
-                            loaders.htmlRequire,
-                            loaders.html
-                        ]
+                        use:  loaders.html
                     },
                     {
                         test: /\.ts$/,

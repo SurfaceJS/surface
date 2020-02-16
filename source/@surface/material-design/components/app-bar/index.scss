@@ -1,14 +1,14 @@
-@import "../styles/mixins.scss";
+@import "../../styles/mixins.scss";
 
 :host
 {
     @include host;
 
-    bottom:   0;
-    height:   32px;
+    height:   64px;
     left:     0;
     position: fixed;
     right:    0;
+    top:      0;
     z-index:  1;
 
     #container
@@ -18,7 +18,6 @@
         align-items: center;
         display:     inline-flex;
         flex:        0 0 auto;
-        padding:     0 10px;
 
         @include this-color("primary", "background-color");
     }

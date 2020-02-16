@@ -1,6 +1,6 @@
 import { DeepPartial } from "@surface/core";
 import IThemes         from "../interfaces/themes";
-import materialColors  from "../material-colors";
+import materialColors  from "./material-colors";
 
 const defaultTheme: DeepPartial<Omit<IThemes, "default">> =
 {

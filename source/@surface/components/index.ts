@@ -1,6 +1,6 @@
-import CustomElement                 from "@surface/custom-element";
-import { attribute, notify, styles } from "@surface/custom-element/decorators";
-import style                         from "./index.scss";
+import CustomElement          from "@surface/custom-element";
+import { attribute,  styles } from "@surface/custom-element/decorators";
+import style                  from "./index.scss";
 
 @styles(style)
 class Component extends CustomElement
@@ -11,7 +11,6 @@ class Component extends CustomElement
     public disabled: boolean = false;
 
     @attribute
-    @notify("classes")
     public elevation: number = 0;
 
     @attribute
