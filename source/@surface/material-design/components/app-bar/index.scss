@@ -16,8 +16,6 @@
         @include container;
 
         align-items: center;
-        display:     inline-flex;
-        flex:        0 0 auto;
 
         @include background-color("primary");
     }

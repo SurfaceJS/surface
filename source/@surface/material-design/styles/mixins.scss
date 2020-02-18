@@ -97,37 +97,33 @@
         @if ($root == "*")
         {
             @at-root
-            :host-context(.dark),
-            :host-context(.light, .dark) .dark,
-            .dark
+            :host-context(body.light):host
             {
-                #{$property}: #{$dark-value};
+                #{$property}: #{$light-value};
             }
 
             @at-root
-            :host-context(.light),
-            :host-context(.light, .dark) .light,
-            .light
+            :host-context(body.dark):host
             {
-                #{$property}: #{$light-value};
+                #{$property}: #{$dark-value};
             }
         }
         @else
         {
             @at-root
-            #{":host-context(.dark)#{$selector}"},
-            #{":host-context(.light)#{str-replace(#{$selector}, $root, '#{$root}.dark')}"},
-            #{str-replace(#{$selector}, $root, "#{$root}.dark")}
-            {
-                #{$property}: #{$dark-value};
-            }
-
-            @at-root
-            #{":host-context(.light)#{$selector}"},
-            #{":host-context(.dark)#{str-replace(#{$selector}, $root, '#{$root}.light')}"},
+            #{":host-context(body.light)#{$selector}"},
+            #{":host-context(body.dark)#{str-replace(#{$selector}, $root, '#{$root}.light')}"},
             #{str-replace(#{$selector}, $root, "#{$root}.light")}
             {
                 #{$property}: #{$light-value};
+            }
+
+            @at-root
+            #{":host-context(body.dark)#{$selector}"},
+            #{":host-context(body.light)#{str-replace(#{$selector}, $root, '#{$root}.dark')}"},
+            #{str-replace(#{$selector}, $root, "#{$root}.dark")}
+            {
+                #{$property}: #{$dark-value};
             }
         }
     }
