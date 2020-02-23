@@ -2,7 +2,7 @@
 
 :host
 {
-    @include host;
+    @include host-defaults;
 
     height:   64px;
     left:     0;
@@ -13,7 +13,7 @@
 
     #container
     {
-        @include container;
+        @include container-defaults;
 
         align-items: center;
 

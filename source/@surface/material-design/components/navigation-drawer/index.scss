@@ -16,7 +16,7 @@
 
     #container
     {
-        @include container;
+        @include container-defaults;
         @include background-color("background-400");
 
         display:        flex;

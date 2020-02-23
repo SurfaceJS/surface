@@ -1,5 +1,28 @@
 @import "./variables.scss";
 
+@function host($arg)
+{
+    $result: "";
+
+    $selector-index: 0;
+
+    @each $selector in &
+    {
+        $selector-separator: if($selector-index > 0, " ,", "");
+
+        $result: #{$result}#{$selector-separator}#{str-replace("#{$selector}(#{$arg})", ")(", "")};
+
+        $selector-index: $selector-index + 1;
+    }
+
+    @return $result;
+}
+
+@function host-bool($arg)
+{
+    @return "#{host('[#{$arg}]')}, #{host('[#{$arg}=true]')}";
+}
+
 @function get-color($theme, $color)
 {
     @return map-get(map-get($default-theme, $theme), $color);

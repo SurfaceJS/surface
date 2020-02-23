@@ -9,6 +9,13 @@ import themeable                               from "../../mixins/themeable";
 import template                                from "./index.html";
 import style                                   from "./index.scss";
 
+export type Size = ""
+    | "x-small"
+    | "small"
+    | "medium"
+    | "large"
+    | "x-large";
+
 @element("smd-button", template, style)
 export default class Button extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
@@ -29,6 +36,9 @@ export default class Button extends mixer(CustomElement, [colorable, disableable
 
     @attribute
     public rounded: boolean = false;
+
+    @attribute
+    public size: Size = "";
 
     @attribute
     public outlined: boolean = false;

@@ -1,24 +1,189 @@
 @import "../../styles/mixins.scss";
 
-$icon-size:      48px;
-$icon-font-size: 24px;
+$height:
+(
+    x-small: 20px,
+    small:   28px,
+    medium:  32px,
+    large:   44px,
+    x-large: 52px,
+);
+
+$min-width:
+(
+    x-small: 36px,
+    small:   50px,
+    medium:  64px,
+    large:   78px,
+    x-large: 92px,
+);
+
+$padding:
+(
+    x-small: 0 8.8888888889px,
+    small:   0 12.4444444444px,
+    medium:  0 16px,
+    large:   0 19.5555555556px,
+    x-large: 0 23.1111111111px,
+);
+
+$font-size:
+(
+    x-small: 10px,
+    small:   12px,
+    medium:  14px,
+    large:   14px,
+    x-large: 16px,
+);
+
+$icon--height:
+(
+    x-small: 32px,
+    small:   40px,
+    medium:  48px,
+    large:   64px,
+    x-large: 72px,
+);
+
+$icon--font-size:
+(
+    x-small: 18px,
+    small:   24px,
+    medium:  24px,
+    large:   28px,
+    x-large: 32px,
+);
 
 :host
 {
-    @include host;
+    @include host-defaults;
 
     align-items:     center;
     cursor:          pointer;
-    font-size:       14px;
     font-weight:     500;
-    height:          32px;
     justify-content: center;
     text-transform:  uppercase;
     user-select:     none;
 
+    @at-root #{host("[size=x-small]")}
+    {
+        font-size: map-get($font-size, "x-small");
+        height:    map-get($height,    "x-small");
+
+        #container
+        {
+            padding: map-get($padding, "x-small");
+        }
+    }
+
+    @at-root #{host("[size=small]")}
+    {
+        font-size: map-get($font-size, "small");
+        height:    map-get($height,    "small");
+
+        #container
+        {
+            padding: map-get($padding, "small");
+        }
+    }
+
+    @at-root
+    &,
+    #{host("[size=medium]")}
+    {
+        font-size: map-get($font-size, "medium");
+        height:    map-get($height,    "medium");
+
+        #container
+        {
+            padding: map-get($padding, "medium");
+        }
+    }
+
+    @at-root #{host("[size=large]")}
+    {
+        font-size: map-get($font-size, "large");
+        height:    map-get($height,    "large");
+
+        #container
+        {
+            padding: map-get($padding, "large");
+        }
+    }
+
+    @at-root #{host("[size=x-large]")}
+    {
+        font-size: map-get($font-size, "x-large");
+        height:    map-get($height,    "x-large");
+
+        #container
+        {
+            padding: map-get($padding, "x-large");
+        }
+    }
+
+    @at-root
+    #{host-bool("icon")},
+    #{host-bool("fab")}
+    {
+        min-height: 0;
+        min-width:  0;
+
+        @at-root #{host("[size=x-small]")}
+        {
+            font-size: map-get($icon--font-size, "x-small");
+            height:    map-get($icon--height,    "x-small");
+            width:     map-get($icon--height,    "x-small");
+        }
+
+        @at-root #{host("[size=small]")}
+        {
+            font-size: map-get($icon--font-size, "small");
+            height:    map-get($icon--height,    "small");
+            width:     map-get($icon--height,    "small");
+        }
+
+        @at-root
+        &,
+        #{host("[size=medium]")}
+        {
+            font-size: map-get($icon--font-size, "medium");
+            height:    map-get($icon--height,    "medium");
+            width:     map-get($icon--height,    "medium");
+        }
+
+        @at-root #{host("[size=large]")}
+        {
+            font-size: map-get($icon--font-size, "large");
+            height:    map-get($icon--height,    "large");
+            width:     map-get($icon--height,    "large");
+        }
+
+        @at-root #{host("[size=x-large]")}
+        {
+            font-size: map-get($icon--font-size, "x-large");
+            height:    map-get($icon--height,    "x-large");
+            width:     map-get($icon--height,    "x-large");
+        }
+    }
+
+    @at-root
+    #{host-bool("block")}
+    {
+        display:   flex;
+        flex:      0 1 auto;
+        min-width: 100%;
+    }
+
+    @at-root
+    #{host(":hover")}
+    {
+        @include hover-before;
+    }
+
     #container
     {
-        @include container;
+        @include container-defaults;
 
         align-items:     center;
         border-radius:   4px;
@@ -31,7 +196,7 @@ $icon-font-size: 24px;
 
         &:not(.icon):not(.outlined):not(.text)
         {
-            @include text-color;
+            @include set-property("color", "white", "black");
             @include set-color("background-color", "secondary", "this-color");
         }
 
@@ -78,29 +243,4 @@ $icon-font-size: 24px;
 
         @include hoverable-before;
     }
-}
-
-:host(:hover) #container
-{
-    @include hover-before;
-}
-
-:host([block]),
-:host([block=true])
-{
-    display:   flex;
-    flex:      0 1 auto;
-    min-width: 100%;
-}
-
-:host([icon]),
-:host([icon=true]),
-:host([fab]),
-:host([fab=true])
-{
-    font-size:  $icon-font-size;
-    height:     $icon-size;
-    min-height: 0;
-    min-width:  0;
-    width:      $icon-size;
 }

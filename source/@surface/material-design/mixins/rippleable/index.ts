@@ -23,6 +23,8 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         @event("touchstart", { passive: true })
         protected show(event: MouseEvent|TouchEvent): void
         {
+            this.rippleable.classList.add("rippleable");
+
             const isTouch = event instanceof TouchEvent;
 
             if (!isTouch && this.firedByTouch)
@@ -104,11 +106,6 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
                 },
                 timeLeft
             );
-        }
-
-        public connectedCallback(): void
-        {
-            this.rippleable.classList.add("rippleable");
         }
     }
 

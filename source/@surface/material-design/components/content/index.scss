@@ -13,7 +13,7 @@ $screen-offset: 5px;
 
     #container
     {
-        @include container;
+        @include container-defaults;
         @include background-color("background");
 
         display: block;

@@ -8,11 +8,11 @@ $transition-transform:        transform        0.3s $curve;
 
 :host
 {
-    @include host;
+    @include host-defaults;
 
     #container
     {
-        @include container;
+        @include container-defaults;
 
         align-items: center;
         justify-content: center;

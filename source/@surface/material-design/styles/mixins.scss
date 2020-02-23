@@ -1,7 +1,16 @@
 @import "./functions.scss";
 @import "./variables.scss";
 
-@mixin container()
+@mixin background-color($color, $root: "#container")
+{
+    $light-value: get-variable("this-color", "light", $color);
+    $dark-value:  get-variable("this-color", "dark",  $color);
+
+    @include set-property("background-color", $light-value, $dark-value, $root);
+    @include set-property("border-color",     $light-value, $dark-value, $root);
+}
+
+@mixin container-defaults
 {
     @include inherits-boundary;
     @include flex;
@@ -21,7 +30,7 @@
     will-change: box-shadow;
 }
 
-@mixin host
+@mixin host-defaults
 {
     -webkit-tap-highlight-color: transparent;
 
@@ -74,15 +83,6 @@
     width:    inherit;
 
     z-index:  inherit;
-}
-
-@mixin background-color($color, $root: "#container")
-{
-    $light-value: get-variable("this-color", "light", $color);
-    $dark-value:  get-variable("this-color", "dark",  $color);
-
-    @include set-property("background-color", $light-value, $dark-value, $root);
-    @include set-property("border-color",     $light-value, $dark-value, $root);
 }
 
 @mixin set-property($property, $light-value, $dark-value, $root: "#container")
