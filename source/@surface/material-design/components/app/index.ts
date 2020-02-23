@@ -8,3 +8,12 @@ import style         from "./index.scss";
 @element("smd-app", template, style)
 export default class App extends CustomElement
 { }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-app": App;
+    }
+}

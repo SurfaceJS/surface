@@ -29,3 +29,12 @@ export default class Footer extends mixer(CustomElement, [colorable, elevationab
         this.elevation = 3;
     }
 }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-footer": Footer;
+    }
+}

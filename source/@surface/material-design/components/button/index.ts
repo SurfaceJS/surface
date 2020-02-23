@@ -66,3 +66,12 @@ export default class Button extends mixer(CustomElement, [colorable, disableable
         };
     }
 }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-buttom": Button;
+    }
+}

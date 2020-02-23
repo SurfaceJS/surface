@@ -21,3 +21,12 @@ export default class Icon extends CustomElement
         this._name = value;
     }
 }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-icon": Icon;
+    }
+}

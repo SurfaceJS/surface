@@ -15,3 +15,12 @@ export default class AppToogle extends mixer(CustomElement, [colorable, elevatab
 {
     protected colorable?: HTMLElement;
 }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-app-toogle": AppToogle;
+    }
+}

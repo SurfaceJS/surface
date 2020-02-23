@@ -6,3 +6,12 @@ import style         from "./index.scss";
 @element("smd-navigation-drawer", template, style)
 export default class NavigationDrawer extends CustomElement
 { }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-navigation-drawer": NavigationDrawer;
+    }
+}

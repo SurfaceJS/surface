@@ -49,3 +49,12 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
         };
     }
 }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-switch": Switch;
+    }
+}

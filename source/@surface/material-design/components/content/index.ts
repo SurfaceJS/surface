@@ -6,3 +6,12 @@ import style         from "./index.scss";
 @element("smd-content", template, style)
 export default class Content extends CustomElement
 { }
+
+declare global
+{
+    // tslint:disable-next-line:interface-name
+    interface HTMLElementTagNameMap
+    {
+        "smd-content": Content;
+    }
+}
