@@ -41,7 +41,7 @@ $only-icons-size: 60px;
         }
     }
 
-    > #container
+    > #root
     {
         display:          none;
         flex-direction:   column;
@@ -72,7 +72,7 @@ $only-icons-size: 60px;
         background-color: var(--background-color-hover);
     }
 
-    > #container
+    > #root
     {
         display: flex;
     }
@@ -84,7 +84,7 @@ $only-icons-size: 60px;
 }
 
 :host-context(surface-context-menu),
-:host-context(surface-menu-item):host-context(#container)
+:host-context(surface-menu-item):host-context(#root)
 {
     &:host > #root
     {
@@ -120,7 +120,7 @@ $only-icons-size: 60px;
             }
         }        
 
-        > #container
+        > #root
         {
             top: 0;
         }

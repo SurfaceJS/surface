@@ -11,9 +11,9 @@
     right:    0;
     z-index:  1;
 
-    #container
+    #root
     {
-        @include container-defaults;
+        @include root-defaults;
 
         align-items: center;
         display:     inline-flex;

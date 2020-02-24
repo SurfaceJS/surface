@@ -14,9 +14,9 @@
     width:      256px;
     z-index:    0;
 
-    #container
+    #root
     {
-        @include container-defaults;
+        @include root-defaults;
         @include background-color("background-400");
 
         display:        flex;

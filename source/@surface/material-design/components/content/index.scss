@@ -11,9 +11,9 @@ $screen-offset: 5px;
     width:      100%;
     padding:    64px 0px 32px 256px;
 
-    #container
+    #root
     {
-        @include container-defaults;
+        @include root-defaults;
         @include background-color("background");
 
         display: block;

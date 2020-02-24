@@ -70,7 +70,7 @@ $icon--font-size:
         font-size: map-get($font-size, "x-small");
         height:    map-get($height,    "x-small");
 
-        #container
+        #root
         {
             padding: map-get($padding, "x-small");
         }
@@ -81,7 +81,7 @@ $icon--font-size:
         font-size: map-get($font-size, "small");
         height:    map-get($height,    "small");
 
-        #container
+        #root
         {
             padding: map-get($padding, "small");
         }
@@ -94,7 +94,7 @@ $icon--font-size:
         font-size: map-get($font-size, "medium");
         height:    map-get($height,    "medium");
 
-        #container
+        #root
         {
             padding: map-get($padding, "medium");
         }
@@ -105,7 +105,7 @@ $icon--font-size:
         font-size: map-get($font-size, "large");
         height:    map-get($height,    "large");
 
-        #container
+        #root
         {
             padding: map-get($padding, "large");
         }
@@ -116,7 +116,7 @@ $icon--font-size:
         font-size: map-get($font-size, "x-large");
         height:    map-get($height,    "x-large");
 
-        #container
+        #root
         {
             padding: map-get($padding, "x-large");
         }
@@ -181,9 +181,9 @@ $icon--font-size:
         @include hover-before;
     }
 
-    #container
+    #root
     {
-        @include container-defaults;
+        @include root-defaults;
 
         align-items:     center;
         border-radius:   4px;

@@ -1,19 +1,13 @@
 @import "./functions.scss";
 @import "./variables.scss";
 
-@mixin background-color($color, $root: "#container")
+@mixin background-color($color, $root: "#root")
 {
     $light-value: get-variable("this-color", "light", $color);
     $dark-value:  get-variable("this-color", "dark",  $color);
 
     @include set-property("background-color", $light-value, $dark-value, $root);
     @include set-property("border-color",     $light-value, $dark-value, $root);
-}
-
-@mixin container-defaults
-{
-    @include inherits-boundary;
-    @include flex;
 }
 
 @mixin elevation($elevation)
@@ -85,7 +79,13 @@
     z-index:  inherit;
 }
 
-@mixin set-property($property, $light-value, $dark-value, $root: "#container")
+@mixin root-defaults
+{
+    @include inherits-boundary;
+    @include flex;
+}
+
+@mixin set-property($property, $light-value, $dark-value, $root: "#root")
 {
     &
     {
@@ -129,7 +129,7 @@
     }
 }
 
-@mixin set-color($property, $color, $variable: "this-color", $root: "#container")
+@mixin set-color($property, $color, $variable: "this-color", $root: "#root")
 {
     $light-value: get-variable($variable, "light", $color);
     $dark-value:  get-variable($variable, "dark",  $color);
@@ -137,7 +137,7 @@
     @include set-property($property, $light-value, $dark-value, $root);
 }
 
-@mixin text-color($color: "text", $root: "#container")
+@mixin text-color($color: "text", $root: "#root")
 {
     $light-value: get-variable("this-text-color", "light", $color);
     $dark-value:  get-variable("this-text-color", "dark",  $color);

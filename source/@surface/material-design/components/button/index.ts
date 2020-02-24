@@ -19,10 +19,10 @@ export type Size = ""
 @element("smd-button", template, style)
 export default class Button extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
-    @query("#container")
+    @query("#root")
     protected colorable!: HTMLElement;
 
-    @query("#container")
+    @query("#root")
     protected rippleable!: HTMLElement;
 
     @attribute
