@@ -1,6 +1,6 @@
 import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
 import { typeGuard }                             from "@surface/core/common/generic";
-import { injectToConstructor }                   from "@surface/core/common/object";
+import { injectToConstructor, overrideProperty } from "@surface/core/common/object";
 import { camelToDashed }                         from "@surface/core/common/string";
 import Reactive                                  from "@surface/reactive";
 import CustomElement                             from ".";
@@ -29,6 +29,7 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
             target,
             propertyKey,
             {
+                configurable: true,
                 get(this: HTMLElement & { [symbols.SHADOW_ROOT]: ShadowRoot } & Indexer<(Element | null) | NodeListOf<Element>>)
                 {
                     if (!cache || Object.is(this[privateKey as string], undefined))
@@ -52,7 +53,7 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
     return sheet;
 }
 
-export function attribute(converter: Func1<string, unknown>): PropertyDecorator;
+export function attribute(converter: Func1<string, unknown>): (target: Target, propertyKey: string) => void;
 export function attribute(target: ICustomElement, propertyKey: string): void;
 export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: Target, propertyKey: string) => void)|void
 {
@@ -75,70 +76,6 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             };
 
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
-        }
-
-        const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
-
-        if (descriptor)
-        {
-            Object.defineProperty
-            (
-                target,
-                propertyKey,
-                {
-                    configurable: true,
-                    enumerable:   true,
-                    get: descriptor.get,
-                    set(this: HTMLElement & { [symbols.METADATA]: Metadata }, value: unknown)
-                    {
-                        if (!Object.is(descriptor.get?.call(this), undefined))
-                        {
-                            const metadata = this[symbols.METADATA];
-
-                            metadata.reflectingAttribute = true;
-
-                            this.setAttribute(attributeName, `${value}`);
-
-                            metadata.reflectingAttribute = false;
-                        }
-
-                        descriptor.set!.call(this, value);
-                    }
-                }
-            );
-        }
-        else
-        {
-            const privateKey = `_${propertyKey.toString()}`;
-
-            Object.defineProperty
-            (
-                target,
-                propertyKey,
-                {
-                    configurable: true,
-                    enumerable:   true,
-                    get(this: HTMLElement & Indexer)
-                    {
-                        return this[privateKey];
-                    },
-                    set(this: HTMLElement & Indexer & { [symbols.METADATA]: Metadata }, value: unknown)
-                    {
-                        if (!Object.is(this[privateKey], undefined))
-                        {
-                            const metadata = this[symbols.METADATA];
-
-                            metadata.reflectingAttribute = true;
-
-                            this.setAttribute(attributeName, `${value}`);
-
-                            metadata.reflectingAttribute = false;
-                        }
-
-                        this[privateKey] = value;
-                    }
-                }
-            );
         }
 
         let converter: Func1<string, unknown>;
@@ -191,6 +128,22 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
             metadata.attributeChangedCallback = target.attributeChangedCallback;
         }
+
+        const action = (instance: WithMetadata<HTMLElement>, oldValue: unknown, newValue: unknown) =>
+        {
+            if (!Object.is(oldValue, undefined))
+            {
+                const metadata = instance[symbols.METADATA];
+
+                metadata!.reflectingAttribute = true;
+
+                instance.setAttribute(attributeName, `${newValue}`);
+
+                metadata!.reflectingAttribute = false;
+            }
+        };
+
+        return overrideProperty(target as WithMetadata<HTMLElement>, propertyKey, action, null, true);
     };
 
     if (args.length == 1)
@@ -201,7 +154,8 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
     {
         const [target, propertyKey] = args;
 
-        decorator(target, propertyKey);
+         // Reflect.metadata expects that the property decorator returns an descriptor
+        return decorator(target, propertyKey) as unknown as void;
     }
 }
 

@@ -212,6 +212,87 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
+export function overrideProperty<T>(target: T, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
+{
+    let propertyDescriptor: PropertyDescriptor;
+
+    const currentDescriptor = descriptor ?? Object.getOwnPropertyDescriptor(target, property);
+
+    if (currentDescriptor?.set)
+    {
+        propertyDescriptor =
+        {
+            configurable: currentDescriptor.configurable,
+            enumerable:   currentDescriptor.enumerable,
+            get: currentDescriptor.get,
+            set: beforeSetter
+                ? function(this: T, value: unknown)
+                {
+                    const oldValue = currentDescriptor.get?.call(this);
+
+                    if (Object.is(oldValue, value))
+                    {
+                        action(this, oldValue, value);
+
+                        currentDescriptor.set!.call(this, value);
+                    }
+
+                }
+                : function(this: T, value: unknown)
+                {
+                    const oldValue = currentDescriptor.get?.call(this);
+
+                    if (Object.is(oldValue, value))
+                    {
+                        currentDescriptor.set!.call(this, value);
+
+                        action(this, currentDescriptor.get?.call(this), value);
+                    }
+                }
+        };
+    }
+    else
+    {
+        const privateKey = typeof property == "string" ? `_${property.toString()}` : `${property.description}`;
+
+        propertyDescriptor =
+        {
+            configurable: true,
+            get(this: T & Indexer)
+            {
+                return this[privateKey];
+            },
+            set: beforeSetter
+                ? function(this: T & Indexer, value: unknown)
+                {
+                    const oldValue = this[privateKey];
+
+                    if (Object.is(oldValue, value))
+                    {
+                        action(this, this[privateKey], value);
+
+                        (this as Indexer)[privateKey] = value;
+                    }
+                }
+                : function(this: T & Indexer, value: unknown)
+                {
+                    const oldValue = this[privateKey];
+
+                    if (Object.is(oldValue, value))
+                    {
+                        (this as Indexer)[privateKey] = value;
+
+                        action(this, this[privateKey], value);
+                    }
+                }
+        };
+    }
+
+    Object.defineProperty(target, property, propertyDescriptor);
+
+    return propertyDescriptor;
+}
+
 export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): Array<string>
 {
     const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ":" } = options ?? { };
