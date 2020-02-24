@@ -1,8 +1,8 @@
 import { Action, Indexer }                     from "@surface/core";
 import ICustomElement                          from "./interfaces/custom-element";
 import References                              from "./internal/references";
+import StaticMetadata                          from "./internal/static-metadata";
 import { SCOPE, SHADOW_ROOT, STATIC_METADATA } from "./internal/symbols";
-import { StaticMetadata }                      from "./internal/types";
 
 type Scope = Indexer & { host?: HTMLElement };
 

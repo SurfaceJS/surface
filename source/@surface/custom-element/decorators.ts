@@ -5,48 +5,14 @@ import { camelToDashed }                         from "@surface/core/common/stri
 import Reactive                                  from "@surface/reactive";
 import CustomElement                             from ".";
 import ICustomElement                            from "./interfaces/custom-element";
+import Metadata                                  from "./internal/metadata";
+import StaticMetadata                            from "./internal/static-metadata";
 import * as symbols                              from "./internal/symbols";
 import TemplateProcessor                         from "./internal/template-processor";
-import { Metadata, StaticMetadata }              from "./internal/types";
+
+const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
 type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
-
-function clone<T>(source: T, fallback: T): T
-{
-    return Array.isArray(fallback) ? [...(source as T & Array<unknown> ?? fallback)] as unknown as T : { ...(source ?? fallback) };
-}
-
-function getMetadata(target: object & { [symbols.METADATA]?: Metadata }): Metadata
-{
-    return target[symbols.METADATA] = !target.hasOwnProperty(symbols.METADATA) && !!target[symbols.METADATA]
-        ? { ...target[symbols.METADATA] }
-        : target[symbols.METADATA] ?? { };
-}
-
-function getStaticMetadata(target: Function & { [symbols.STATIC_METADATA]?: StaticMetadata }): StaticMetadata
-{
-    return target[symbols.STATIC_METADATA] = !target.hasOwnProperty(symbols.STATIC_METADATA) && !!target[symbols.STATIC_METADATA]
-        ? { ...target[symbols.STATIC_METADATA] }
-        : target[symbols.STATIC_METADATA] ?? { };
-}
-
-function getMetadataValue<K extends keyof Metadata>(target: object & { [symbols.STATIC_METADATA]?: StaticMetadata }, key: K, fallback: Metadata[K]): NonNullable<Metadata[K]>
-{
-    const metadata = getMetadata(target);
-
-    return (metadata[key] = !target.hasOwnProperty(symbols.STATIC_METADATA) && !!target[symbols.STATIC_METADATA]
-        ? clone(metadata[key], fallback)
-        : metadata[key] ?? fallback) as NonNullable<Metadata[K]>;
-}
-
-function getStaticMetadataValue<K extends keyof StaticMetadata>(target: Function & { [symbols.STATIC_METADATA]?: StaticMetadata }, key: K, fallback: StaticMetadata[K]): NonNullable<StaticMetadata[K]>
-{
-    const metadata = getStaticMetadata(target);
-
-    return (metadata[key] = !target.hasOwnProperty(symbols.STATIC_METADATA) && !!target[symbols.STATIC_METADATA]
-        ? clone(metadata[key], fallback)
-        : metadata[key] ?? fallback) as NonNullable<StaticMetadata[K]>;
-}
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, cache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
@@ -92,14 +58,18 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const attributeName = camelToDashed(propertyKey);
 
-        const conversionHandlers = getMetadataValue(target, "conversionHandlers", { });
-        const observedAttributes = getStaticMetadataValue(constructor, "observedAttributes", []);
+        const staticMetadata = StaticMetadata.from(constructor);
 
-        observedAttributes.push(attributeName);
+        staticMetadata.observedAttributes.push(attributeName);
 
         if (!constructor.hasOwnProperty("observedAttributes"))
         {
-            Object.defineProperty(target.constructor, "observedAttributes", { get: () => observedAttributes });
+            const getter = function(this: Constructor & { [symbols.STATIC_METADATA]: StaticMetadata })
+            {
+                return this[symbols.STATIC_METADATA].observedAttributes;
+            };
+
+            Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
         }
 
         let converter: Func1<string, unknown>;
@@ -123,7 +93,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             }
         }
 
-        conversionHandlers[attributeName] = (target: Indexer, value: string) =>
+        staticMetadata.conversionHandlers[attributeName] = (target: Indexer, value: string) =>
         {
             const current   = target[propertyKey];
             const converted = converter(value);
@@ -136,15 +106,15 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const attributeChangedCallback = target.attributeChangedCallback;
 
-        const metadata = getMetadata(target);
+        const metadata = Metadata.from(target);
 
-        const standardBooleans = ["checked", "disabled", "readonly"];
+        type HTMLElementWithConstructorMetadata = HTMLElement & { constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
         if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
         {
-            target.attributeChangedCallback = function(this: HTMLElement & { [symbols.METADATA]?: Metadata }, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+            target.attributeChangedCallback = function(this: HTMLElementWithConstructorMetadata, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
             {
-                this[symbols.METADATA]?.conversionHandlers?.[name]?.(this as Indexer, name == newValue && standardBooleans.includes(name) ? "true" : newValue);
+                this.constructor[symbols.STATIC_METADATA]?.conversionHandlers?.[name]?.(this as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
 
                 attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
             };
@@ -177,7 +147,7 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
             }
         };
 
-        getStaticMetadataValue(target.constructor, "postConstruct", []).push(action);
+        StaticMetadata.from(target.constructor).postConstruct.push(action);
     };
 }
 
@@ -187,7 +157,7 @@ export function element(name: string, template?: string, style?: string, options
     {
         if (typeGuard<typeof CustomElement>(target, target.prototype instanceof CustomElement))
         {
-            const metadata = getStaticMetadata(target);
+            const metadata = StaticMetadata.from(target);
 
             const templateElement = document.createElement("template");
 
@@ -196,9 +166,7 @@ export function element(name: string, template?: string, style?: string, options
 
             if (style)
             {
-                const styles = getStaticMetadataValue(target, "styles", []);
-
-                styles.push(stringToCSSStyleSheet(style));
+                metadata.styles.push(stringToCSSStyleSheet(style));
             }
 
             metadata.template = templateElement;
@@ -236,10 +204,25 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
             element.addEventListener(type, (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event), options);
         };
 
-        getStaticMetadataValue(target.constructor, "postConstruct", []).push(action);
+        StaticMetadata.from(target.constructor).postConstruct.push(action);
     };
 }
 
+export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
+{
+    return <U extends T>(target: U, propertyKey: string) =>
+    {
+        if (typeof target[propertyKey as keyof U] == "function")
+        {
+
+            const action = (instance: HTMLElement) =>
+                Reactive.observe(instance, property as string)[1]
+                    .subscribe({ notify: x => (instance as unknown as Record<string, Function>)[propertyKey](x) });
+
+            StaticMetadata.from(target.constructor).postConstruct.push(action);
+        }
+    };
+}
 
 export function query(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
 {
@@ -255,9 +238,7 @@ export function styles(...styles: Array<string>): <T extends Constructor<HTMLEle
 {
     return <T extends Constructor<HTMLElement>>(constructor: T) =>
     {
-        const $styles = getStaticMetadataValue(constructor, "styles", []);
-
-        $styles.push(...styles.map(stringToCSSStyleSheet));
+        StaticMetadata.from(constructor).styles.push(...styles.map(stringToCSSStyleSheet));
 
         return constructor;
     };

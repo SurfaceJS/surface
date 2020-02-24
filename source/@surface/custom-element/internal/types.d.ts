@@ -22,18 +22,3 @@ export type Bindable<T extends object> = T &
 
 export type Subscriber        = object & { [SUBSCRIPTIONS]?: Array<ISubscription> };
 export type ElementSubscriber = Subscriber & { [LISTENNING]?: boolean };
-
-export type Metadata =
-{
-    attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
-    conversionHandlers?:       Indexer<(target: Indexer, value: string) => void>
-    reflectedAttributes?:      Array<string>;
-};
-
-export type StaticMetadata =
-{
-    observedAttributes?: Array<string>;
-    postConstruct?:      Array<<T extends HTMLElement>(target: T) => void>
-    styles?:             Array<CSSStyleSheet>;
-    template?:           HTMLTemplateElement;
-};
