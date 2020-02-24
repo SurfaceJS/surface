@@ -12,6 +12,10 @@ import TemplateProcessor                         from "./internal/template-proce
 
 const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
+type WithMetadata<T extends object|Function> = T extends Function
+    ? T & { [symbols.STATIC_METADATA]?: StaticMetadata }
+    : T & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
+
 type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, cache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
@@ -58,6 +62,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const attributeName = camelToDashed(propertyKey);
 
+        const metadata       = Metadata.from(target);
         const staticMetadata = StaticMetadata.from(constructor);
 
         staticMetadata.observedAttributes.push(attributeName);
@@ -70,6 +75,70 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             };
 
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
+        }
+
+        const descriptor = Object.getOwnPropertyDescriptor(target, propertyKey);
+
+        if (descriptor)
+        {
+            Object.defineProperty
+            (
+                target,
+                propertyKey,
+                {
+                    configurable: true,
+                    enumerable:   true,
+                    get: descriptor.get,
+                    set(this: HTMLElement & { [symbols.METADATA]: Metadata }, value: unknown)
+                    {
+                        if (!Object.is(descriptor.get?.call(this), undefined))
+                        {
+                            const metadata = this[symbols.METADATA];
+
+                            metadata.reflectingAttribute = true;
+
+                            this.setAttribute(attributeName, `${value}`);
+
+                            metadata.reflectingAttribute = false;
+                        }
+
+                        descriptor.set!.call(this, value);
+                    }
+                }
+            );
+        }
+        else
+        {
+            const privateKey = `_${propertyKey.toString()}`;
+
+            Object.defineProperty
+            (
+                target,
+                propertyKey,
+                {
+                    configurable: true,
+                    enumerable:   true,
+                    get(this: HTMLElement & Indexer)
+                    {
+                        return this[privateKey];
+                    },
+                    set(this: HTMLElement & Indexer & { [symbols.METADATA]: Metadata }, value: unknown)
+                    {
+                        if (!Object.is(this[privateKey], undefined))
+                        {
+                            const metadata = this[symbols.METADATA];
+
+                            metadata.reflectingAttribute = true;
+
+                            this.setAttribute(attributeName, `${value}`);
+
+                            metadata.reflectingAttribute = false;
+                        }
+
+                        this[privateKey] = value;
+                    }
+                }
+            );
         }
 
         let converter: Func1<string, unknown>;
@@ -106,17 +175,18 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const attributeChangedCallback = target.attributeChangedCallback;
 
-        const metadata = Metadata.from(target);
-
-        type HTMLElementWithConstructorMetadata = HTMLElement & { constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
         if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
         {
-            target.attributeChangedCallback = function(this: HTMLElementWithConstructorMetadata, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+            target.attributeChangedCallback = function(this: WithMetadata<HTMLElement>, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
             {
-                this.constructor[symbols.STATIC_METADATA]?.conversionHandlers?.[name]?.(this as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
+                if (!this[symbols.METADATA]!.reflectingAttribute)
+                {
+                    this.constructor[symbols.STATIC_METADATA]!
+                        .conversionHandlers[name]?.(this as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
 
-                attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
+                    attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
+                }
             };
 
             metadata.attributeChangedCallback = target.attributeChangedCallback;

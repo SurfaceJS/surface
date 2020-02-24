@@ -3,7 +3,7 @@ import { METADATA } from "./symbols";
 
 export default class Metadata
 {
-    public reflectedAttributes: Array<string> = [];
+    public reflectingAttribute: boolean = false;
 
     public attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
 
@@ -16,10 +16,6 @@ export default class Metadata
 
     public clone(): Metadata
     {
-        const clone = new Metadata();
-
-        clone.reflectedAttributes = [...this.reflectedAttributes];
-
-        return clone;
+        return new Metadata();
     }
 }
