@@ -11,21 +11,9 @@ const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyD
 export default class FieldInfoSpec
 {
     @test @shouldPass
-    public configurable(): void
-    {
-        expect(propertyInfo.configurable).to.equal(true);
-    }
-
-    @test @shouldPass
     public declaringType(): void
     {
         expect(propertyInfo.declaringType).to.deep.equal(Type.of(Mock));
-    }
-
-    @test @shouldPass
-    public enumerable(): void
-    {
-        expect(propertyInfo.enumerable).to.equal(false);
     }
 
     @test @shouldPass
@@ -71,23 +59,5 @@ export default class FieldInfoSpec
     public readonly(): void
     {
         expect(propertyInfo.readonly).to.equal(false);
-    }
-
-    @test @shouldPass
-    public value(): void
-    {
-        expect(propertyInfo.value).to.equal(undefined);
-    }
-
-    @test @shouldPass
-    public getter(): void
-    {
-        expect(propertyInfo.getter).to.instanceof(Function);
-    }
-
-    @test @shouldPass
-    public setter(): void
-    {
-        expect(propertyInfo.setter).to.instanceof(Function);
     }
 }

@@ -10,21 +10,9 @@ const fieldInfo = new FieldInfo("instanceField", Object.getOwnPropertyDescriptor
 export default class FieldInfoSpec
 {
     @test @shouldPass
-    public configurable(): void
-    {
-        expect(fieldInfo.configurable).to.equal(false);
-    }
-
-    @test @shouldPass
     public declaringType(): void
     {
         expect(fieldInfo.declaringType).to.deep.equal(Type.of(Mock));
-    }
-
-    @test @shouldPass
-    public enumerable(): void
-    {
-        expect(fieldInfo.enumerable).to.equal(false);
     }
 
     @test @shouldPass
@@ -49,11 +37,5 @@ export default class FieldInfoSpec
     public readonly(): void
     {
         expect(fieldInfo.readonly).to.equal(true);
-    }
-
-    @test @shouldPass
-    public value(): void
-    {
-        expect(fieldInfo.value).to.equal(1);
     }
 }

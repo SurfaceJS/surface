@@ -136,15 +136,15 @@ export default class Reactor
                     {
                         get(this: Indexer)
                         {
-                            return member.getter!.call(this);
+                            return member.descriptor.get!.call(this);
                         },
                         set(this: Indexer, value: unknown)
                         {
-                            const oldValue = member.getter!.call(this);
+                            const oldValue = member.descriptor.get!.call(this);
 
                             if (!Object.is(oldValue, value))
                             {
-                                member.setter!.call(this, value);
+                                member.descriptor.set!.call(this, value);
 
                                 Reactor.notify(this, key, value);
                             }

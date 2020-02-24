@@ -6,7 +6,7 @@ import materialColors              from "../internal/material-colors";
 import ThemeProvider               from "../internal/theme-provider";
 
 @suite
-export default class ColorSpec
+export default class ThemeProviderSpec
 {
     @test @shouldPass
     public use(): void

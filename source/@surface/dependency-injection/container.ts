@@ -3,7 +3,7 @@ import IInjections                        from "./internal/interfaces/injections
 import { INJECTIONS }                     from "./internal/symbols";
 
 type InjectableConstructor = Function & { [INJECTIONS]?: IInjections };
-type Factory               = (container: Omit<Container, "register">) => object;
+type Factory               = (container: Container) => object;
 
 export default class Container
 {

@@ -126,7 +126,7 @@ export default class Type
     {
         if (member.descriptor.value instanceof Function)
         {
-            return new MethodInfo(member.key, member.descriptor.value, member.declaringType, member.isOwn, member.isStatic);
+            return new MethodInfo(member.key, member.descriptor, member.declaringType, member.isOwn, member.isStatic);
         }
         else if (!(member.descriptor.value instanceof Function) && (!!member.descriptor.set || !!member.descriptor.get))
         {
@@ -244,7 +244,7 @@ export default class Type
         {
             if (member.descriptor.value instanceof Function)
             {
-                yield new MethodInfo(member.key, member.descriptor.value, member.declaringType, member.isOwn, false);
+                yield new MethodInfo(member.key, member.descriptor, member.declaringType, member.isOwn, false);
             }
         }
     }
@@ -312,7 +312,7 @@ export default class Type
             {
                 if (descriptor.value instanceof Function)
                 {
-                    return new MethodInfo(key, descriptor.value, type, true, true);
+                    return new MethodInfo(key, descriptor, type, true, true);
                 }
                 else if (!(descriptor.value instanceof Function) && (!!descriptor.set || !!descriptor.get))
                 {
@@ -367,7 +367,7 @@ export default class Type
         {
             if (member.descriptor.value instanceof Function)
             {
-                yield new MethodInfo(member.key, member.descriptor.value, member.declaringType, member.isOwn, false);
+                yield new MethodInfo(member.key, member.descriptor, member.declaringType, member.isOwn, false);
             }
         }
     }
