@@ -10,14 +10,14 @@ $transition-transform:        transform        0.3s $curve;
 {
     @include host-defaults;
 
-    #container
+    #root
     {
-        @include container-defaults;
+        @include root-defaults;
 
         align-items: center;
         justify-content: center;
 
-        #component
+        #input
         {
             @include flex;
 
@@ -66,7 +66,7 @@ $transition-transform:        transform        0.3s $curve;
                 transform:     translateX(-11px);
                 transition:    inherit;
 
-                background-color: white;
+                @include set-property("background-color", "white", "#bdbdbd");
             }
         }
 
@@ -75,7 +75,7 @@ $transition-transform:        transform        0.3s $curve;
             @include text-color;
         }
 
-        &.active #component
+        &.checked #input
         {
             #track
             {
@@ -97,7 +97,7 @@ $transition-transform:        transform        0.3s $curve;
             }
         }
 
-        &.inset #component
+        &.inset #input
         {
             #track
             {
@@ -118,14 +118,14 @@ $transition-transform:        transform        0.3s $curve;
             padding-left: 4px;
         }
 
-        &:not(.flat) #component #thumb
+        &:not(.flat) #input #thumb
         {
             @include elevation(3);
         }
     }
 }
 
-:host(:hover) #container #component
+:host(:hover) #root #input
 {
     #selection
     {

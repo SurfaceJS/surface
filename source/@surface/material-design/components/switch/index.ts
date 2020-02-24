@@ -12,11 +12,14 @@ import style                                          from "./index.scss";
 @element("smd-switch", template, style)
 export class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
-    @query("#container")
+    @query("#root")
     protected colorable!: HTMLElement;
 
     @query("#selection")
     protected rippleable!: HTMLElement;
+
+    @attribute
+    public checked: boolean = false;
 
     @attribute
     public flat: boolean = false;
@@ -27,22 +30,19 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
     @attribute
     public label: string = "";
 
-    @attribute
-    public value: boolean = false;
-
     @event("click")
     protected onClick(): void
     {
-        this.value = !this.value;
+        this.checked = !this.checked;
     }
 
-    @computed("elevationClasses", "themeClasses", "inset", "flat", "label", "value")
+    @computed("checked", "elevationClasses", "themeClasses", "inset", "flat", "label")
     public get classes(): Record<string, boolean>
     {
         return {
             ...this.elevationClasses,
             ...this.themeClasses,
-            active:    this.value,
+            checked:   this.checked,
             flat:      this.flat,
             inset:     this.inset,
             labelable: !!this.label,

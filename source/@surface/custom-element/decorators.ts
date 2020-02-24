@@ -138,11 +138,13 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const metadata = getMetadata(target);
 
+        const standardBooleans = ["checked", "disabled", "readonly"];
+
         if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
         {
             target.attributeChangedCallback = function(this: HTMLElement & { [symbols.METADATA]?: Metadata }, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
             {
-                this[symbols.METADATA]?.conversionHandlers?.[name]?.(this as Indexer, newValue);
+                this[symbols.METADATA]?.conversionHandlers?.[name]?.(this as Indexer, name == newValue && standardBooleans.includes(name) ? "true" : newValue);
 
                 attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
             };
