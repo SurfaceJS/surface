@@ -1,8 +1,5 @@
 import { DeepPartial }                          from "@surface/core";
-import { typeGuard }                            from "@surface/core/common/generic";
-import { getValue, merge }                      from "@surface/core/common/object";
-import { dashedToCamel }                        from "@surface/core/common/string";
-import { Color }                                from "../interfaces/color";
+import { merge }                                from "@surface/core/common/object";
 import ITheme                                   from "../interfaces/theme";
 import IThemes                                  from "../interfaces/themes";
 import { generateCssVariables, generateThemes } from "../internal/common";
@@ -33,6 +30,8 @@ export default class ThemeProvider
         this._dark = value;
 
         this.updateStyle();
+
+        value ? document.body.classList.add("dark") : document.body.classList.remove("dark");
     }
 
     public constructor()
@@ -78,18 +77,6 @@ export default class ThemeProvider
                 "}"
             ].join("\n");
         }
-    }
-
-    public getColor(name: string): string
-    {
-        const path = name.split(":").map(dashedToCamel);
-
-        const color = getValue(materialColors, path)
-            ?? getValue(this.themes, path)
-            ?? getValue(this.dark ? this.themes.dark : this.themes.light, path)
-            ?? "#000000";
-
-        return typeGuard<Color>(color, color instanceof Object) ? color["500"] : color as string;
     }
 
     public use(themes: DeepPartial<ITheme>|DeepPartial<IThemes>): void

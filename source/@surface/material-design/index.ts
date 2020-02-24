@@ -10,11 +10,6 @@ export default class MaterialDesign
 
     public static readonly colors = materialColors;
 
-    public static getColor(name: string): string
-    {
-        return this.themeProvider.getColor(name);
-    }
-
     public static useDark(): typeof MaterialDesign
     {
         this.themeProvider.dark = true;
