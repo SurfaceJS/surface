@@ -41,22 +41,25 @@ ProxyHTMLElement.prototype.attachShadow = () => window.document.createElement("d
 
 (window.HTMLElement as Object) = ProxyHTMLElement;
 
+
+
 Object.assign
 (
     global,
     {
+        __registries__:   registries,
+        CSSStyleSheet:    class CSSStyleSheet { public replaceSync(): void { return; } },
         document:         window.document,
-        navigator:        window.navigator,
-        location:         window.location,
-        window:           window,
         DOMTokenList:     window.DOMTokenList,
         Event:            window.Event,
         HTMLElement:      window.HTMLElement,
         HTMLInputElement: window.HTMLInputElement,
+        location:         window.location,
         NamedNodeMap:     window.NamedNodeMap,
+        navigator:        window.navigator,
         Node:             window.Node,
         NodeList:         window.NodeList,
+        window:           window,
         Window:           window.constructor,
-        __registries__:   registries
     }
 );
