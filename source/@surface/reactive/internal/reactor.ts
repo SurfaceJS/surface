@@ -1,9 +1,9 @@
 import { Indexer }                        from "@surface/core";
 import { hasValue, typeGuard }            from "@surface/core/common/generic";
+import { overrideProperty }               from "@surface/core/common/object";
 import Type                               from "@surface/reflection";
 import FieldInfo                          from "@surface/reflection/field-info";
 import MethodInfo                         from "@surface/reflection/method-info";
-import PropertyInfo                       from "@surface/reflection/property-info";
 import IObserver                          from "../interfaces/observer";
 import IPropertySubscription              from "../interfaces/property-subscription";
 import { REACTOR, TRACKED_KEYS, WRAPPED } from "./symbols";
@@ -123,93 +123,9 @@ export default class Reactor
             Reactor.wrapArray(reactor, target, key);
         }
 
-        if (member instanceof PropertyInfo)
+        if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
         {
-            const privateKey = `_${key}`;
-
-            if (!member.readonly)
-            {
-                Object.defineProperty
-                (
-                    target,
-                    key,
-                    {
-                        get(this: Indexer)
-                        {
-                            return member.descriptor.get!.call(this);
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = member.descriptor.get!.call(this);
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                member.descriptor.set!.call(this, value);
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-            else if (privateKey in target)
-            {
-                const hiddenKey = `_${key}_`;
-
-                target[hiddenKey] = target[key];
-
-                Object.defineProperty
-                (
-                    target,
-                    privateKey,
-                    {
-                        get(this: Indexer)
-                        {
-                            return this[hiddenKey];
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = this[hiddenKey];
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                this[hiddenKey] = value;
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-        }
-        else if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
-        {
-            const privateKey = `_${key}`;
-
-            target[privateKey] = target[key];
-
-            Object.defineProperty
-            (
-                target,
-                key,
-                {
-                    get(this: Indexer)
-                    {
-                        return this[privateKey];
-                    },
-                    set(this: Indexer, value: unknown)
-                    {
-                        const oldValue = this[privateKey];
-
-                        if (!Object.is(oldValue, value))
-                        {
-                            this[privateKey] = value;
-
-                            Reactor.notify(this, key, value);
-                        }
-                    }
-                }
-            );
+            overrideProperty(target, key, (instance, _, newValue) => Reactor.notify(instance, key, newValue), member.descriptor);
         }
         else if (!member)
         {
