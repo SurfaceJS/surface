@@ -55,7 +55,14 @@ const loaders =
             produceSourceMap: true
         }
     },
-    resolveUrl: { loader: "resolve-url-loader" },
+    resolveUrl:
+    {
+        loader: "resolve-url-loader",
+        options:
+        {
+            removeCR: true
+        }
+    },
     sass:       { loader: "sass-loader" },
     style:      { loader: "style-loader" },
     thread:
