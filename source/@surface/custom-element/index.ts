@@ -43,7 +43,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
         if (metadata?.styles)
         {
-            (shadowRoot as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles;
+            // (shadowRoot as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles;
         }
 
         if (metadata?.template)

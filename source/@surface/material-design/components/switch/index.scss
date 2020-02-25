@@ -14,7 +14,7 @@ $transition-transform:        transform        0.3s $curve;
     {
         @include root-defaults;
 
-        align-items: center;
+        align-items:     center;
         justify-content: center;
 
         #input

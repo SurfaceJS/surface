@@ -1,0 +1,107 @@
+@import "../../styles/mixins.scss";
+
+$interval: 0.2s;
+
+$transition:
+    color     $interval linear,
+    padding   $interval linear,
+    width     $interval cubic-bezier(1, 0, 1, 0),
+    transform $interval linear;
+
+:host
+{
+    @include host-defaults;
+
+    font-size: 14px;
+
+    #root
+    {
+        @include root-defaults;
+
+        min-width:   100px;
+        min-height:  36px;
+        position:    relative;
+
+        align-items: center;
+
+        transition: $transition;
+
+        fieldset
+        {
+            width: 100%;
+            height:   auto;
+            position: relative;
+
+            border-radius: 5px;
+
+            @include set-color("border-color", "text");
+
+            legend
+            {
+                margin:     0;
+                padding:    0;
+                transition: $transition;
+                font-size:  10px;
+                width:      0px;
+                color:      transparent;
+            }
+
+            #input
+            {
+                margin:         5px;
+                display:        flex;
+                flex-direction: column;
+                flex-grow:      1;
+                flex-wrap:      wrap;
+                height:         auto;
+                min-width:      0;
+                width:          100%;
+
+                outline: none;
+
+                @include text-color("secondary");
+            }
+
+            #label
+            {
+                @include text-color;
+                pointer-events: none;
+
+                transform: translate(0, -15px);
+                position:  absolute;
+
+                height:     20px;
+                line-height:20px;
+                min-height: 8px;
+
+                font-weight: 600;
+
+                transition: $transition;
+            }
+        }
+
+        &.active
+        {
+            fieldset
+            {
+                @include set-color("border-color", "secondary");
+
+                legend
+                {
+                    padding: 3px;
+                    width:   auto
+                }
+
+                #label
+                {
+                    @include text-color("secondary");
+
+                    transform:
+                        translate(-2px, -50px)
+                        scale(0.7);
+                }
+            }
+
+        }
+    }
+}
