@@ -1,13 +1,13 @@
-import { mixer }                                      from "@surface/core/common/object";
-import CustomElement                                  from "@surface/custom-element";
-import { attribute, computed, element, event, query } from "@surface/custom-element/decorators";
-import colorable                                      from "../../mixins/colorable";
-import disableable                                    from "../../mixins/disableable";
-import elevatable                                     from "../../mixins/elevatable";
-import rippleable                                     from "../../mixins/rippleable";
-import themeable                                      from "../../mixins/themeable";
-import template                                       from "./index.html";
-import style                                          from "./index.scss";
+import { mixer }                                               from "@surface/core/common/object";
+import CustomElement                                           from "@surface/custom-element";
+import { attribute, computed, element, event, observe, query } from "@surface/custom-element/decorators";
+import colorable                                               from "../../mixins/colorable";
+import disableable                                             from "../../mixins/disableable";
+import elevatable                                              from "../../mixins/elevatable";
+import rippleable                                              from "../../mixins/rippleable";
+import themeable                                               from "../../mixins/themeable";
+import template                                                from "./index.html";
+import style                                                   from "./index.scss";
 
 @element("smd-switch", template, style)
 export class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
@@ -34,6 +34,12 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
     protected onClick(): void
     {
         this.checked = !this.checked;
+    }
+
+    @observe("checked")
+    protected onChange(_value: boolean)
+    {
+        super.dispatchEvent(new Event("change"));
     }
 
     @computed("checked", "elevationClasses", "themeClasses", "inset", "flat", "label")

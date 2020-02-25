@@ -181,7 +181,7 @@ export function element(name: string, template?: string, style?: string, options
     {
         if (typeGuard<typeof CustomElement>(target, target.prototype instanceof CustomElement))
         {
-            const metadata = StaticMetadata.from(target);
+            const staticMetadata = StaticMetadata.from(target);
 
             const templateElement = document.createElement("template");
 
@@ -190,10 +190,10 @@ export function element(name: string, template?: string, style?: string, options
 
             if (style)
             {
-                metadata.styles.push(stringToCSSStyleSheet(style));
+                staticMetadata.styles.push(stringToCSSStyleSheet(style));
             }
 
-            metadata.template = templateElement;
+            staticMetadata.template = templateElement;
 
             const action = (instance: InstanceType<T> & CustomElement) =>
             {
@@ -201,7 +201,7 @@ export function element(name: string, template?: string, style?: string, options
 
                 instance.onAfterBind?.();
 
-                metadata.postConstruct?.forEach(x => x(instance));
+                staticMetadata.postConstruct?.forEach(x => x(instance));
 
                 return instance;
             };
@@ -241,7 +241,7 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
 
             const action = (instance: HTMLElement) =>
                 Reactive.observe(instance, property as string)[1]
-                    .subscribe({ notify: x => (instance as unknown as Record<string, Function>)[propertyKey](x) });
+                    .subscribe({ notify: x => (instance as object as Record<string, Function>)[propertyKey](x) });
 
             StaticMetadata.from(target.constructor).postConstruct.push(action);
         }
