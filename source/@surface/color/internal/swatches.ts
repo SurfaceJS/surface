@@ -10,56 +10,12 @@ function average(...values: Array<number>): number
     return values.reduce((a, b) => a + b) / values.length;
 }
 
-function lockValue(value: number, max: number): number
-{
-    return value < 0
-        ? value + max
-        : value > max
-            ? value - max
-            : value;
-}
-
 function colorFromVector(vector: Vector4): HSVA
 {
     return { h: vector.z, s: vector.x, v: vector.y, a: vector.w };
 }
 
-function* intervalsIterator(index: number, targetIndex: number, target: Vector4, origin: Vector4): IterableIterator<Swatch>
-{
-    if (Vector4.equals(target, origin))
-    {
-        const color = colorFromVector(target);
-
-        for (let i = index; i < targetIndex; i++)
-        {
-            yield { index: i, color };
-        }
-    }
-    else
-    {
-        const offset = targetIndex - index;
-
-        const direction  = Vector4.subtract(target, origin);
-        const distance   = Math.min(direction.magnitude, MAX_DISTANCE) / (offset + 1);
-        const normalized = direction.normalized;
-
-        for (let step = 1; step <= offset; step++)
-        {
-            const stepVector = Vector4.add(origin, Vector4.multiply(normalized, step * distance));
-
-            yield { index, color: colorFromVector(stepVector) };
-
-            index++;
-        }
-    }
-}
-
-function vectorFromColor(color: HSVA): Vector4
-{
-    return new Vector4(color.s, color.v, color.h, color.a);
-}
-
-function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end: number }): IterableIterator<Swatch>
+function* enumerateInterpolation(swatches: Array<Swatch>, range?: { start: number, end: number }): IterableIterator<Swatch>
 {
     if (swatches.length == 0 || (swatches.length < 2 && !range))
     {
@@ -91,7 +47,7 @@ function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end:
 
         if (index < swatch.index)
         {
-            for (const _node of intervalsIterator(index, swatch.index, target, origin))
+            for (const _node of enumerateIntervals(index, swatch.index, target, origin))
             {
                 yield _node;
             }
@@ -110,19 +66,63 @@ function* palleteIterator(swatches: Array<Swatch>, range?: { start: number, end:
     {
         const target = new Vector4(origin.x, 0, averageHue, 1);
 
-        for (const _node of intervalsIterator(index, range.end + 1, target, origin))
+        for (const _node of enumerateIntervals(index, range.end + 1, target, origin))
         {
             yield _node;
         }
     }
 }
 
-export function generatePallete(swatches: Array<Swatch>, range?: { start: number, end: number }): Array<Swatch>
+function* enumerateIntervals(index: number, targetIndex: number, target: Vector4, origin: Vector4): IterableIterator<Swatch>
 {
-    return Array.from(palleteIterator(swatches, range));
+    if (Vector4.equals(target, origin))
+    {
+        const color = colorFromVector(target);
+
+        for (let i = index; i < targetIndex; i++)
+        {
+            yield { index: i, color };
+        }
+    }
+    else
+    {
+        const offset = targetIndex - index;
+
+        const direction  = Vector4.subtract(target, origin);
+        const distance   = Math.min(direction.magnitude, MAX_DISTANCE) / (offset + 1);
+        const normalized = direction.normalized;
+
+        for (let step = 1; step <= offset; step++)
+        {
+            const stepVector = Vector4.add(origin, Vector4.multiply(normalized, step * distance));
+
+            yield { index, color: colorFromVector(stepVector) };
+
+            index++;
+        }
+    }
 }
 
-export function palleteScale(swatches: Array<Swatch>, factor: number): Array<Swatch>
+function lockValue(value: number, max: number): number
+{
+    return value < 0
+        ? value + max
+        : value > max
+            ? value - max
+            : value;
+}
+
+function vectorFromColor(color: HSVA): Vector4
+{
+    return new Vector4(color.s, color.v, color.h, color.a);
+}
+
+export function interpolateSwatches(swatches: Array<Swatch>, range?: { start: number, end: number }): Array<Swatch>
+{
+    return Array.from(enumerateInterpolation(swatches, range));
+}
+
+export function scaleSwatches(swatches: Array<Swatch>, factor: number): Array<Swatch>
 {
     const vertices = swatches.map(x => vectorFromColor(x.color));
 

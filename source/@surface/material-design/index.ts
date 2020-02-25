@@ -1,8 +1,7 @@
-import { DeepPartial } from "@surface/core";
-import ITheme          from "./interfaces/theme";
-import IThemes         from "./interfaces/themes";
-import materialColors  from "./internal/material-colors";
-import ThemeProvider   from "./internal/theme-provider";
+import IRawPalette    from "./interfaces/raw-palette";
+import IRawTheme      from "./interfaces/raw-theme";
+import materialColors from "./internal/material-colors";
+import ThemeProvider  from "./internal/theme-provider";
 
 export default class MaterialDesign
 {
@@ -24,9 +23,9 @@ export default class MaterialDesign
         return this;
     }
 
-    public static useTheme(themes: DeepPartial<ITheme>|DeepPartial<IThemes>): typeof MaterialDesign
+    public static useTheme(theme: IRawPalette|IRawTheme): typeof MaterialDesign
     {
-        this.themeProvider.use(themes);
+        this.themeProvider.use(theme);
 
         return this;
     }

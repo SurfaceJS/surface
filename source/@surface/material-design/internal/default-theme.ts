@@ -1,8 +1,7 @@
-import { DeepPartial } from "@surface/core";
-import IThemes         from "../interfaces/themes";
-import materialColors  from "./material-colors";
+import IRawTheme      from "../interfaces/raw-theme";
+import materialColors from "./material-colors";
 
-const defaultTheme: DeepPartial<Omit<IThemes, "default">> =
+const defaultTheme: IRawTheme =
 {
     dark:
     {

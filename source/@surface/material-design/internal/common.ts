@@ -1,27 +1,23 @@
-import { generatePallete, hexToHsva, hsvaToHex, palleteScale, Swatch } from "@surface/color";
-import { DeepPartial, Indexer }                                        from "@surface/core";
-import { typeGuard }                                                   from "@surface/core/common/generic";
-import { objectFactory, pathfy }                                       from "@surface/core/common/object";
-import { camelToDashed }                                               from "@surface/core/common/string";
-import { Color }                                                       from "../interfaces/color";
-import ITheme                                                          from "../interfaces/theme";
-import IThemes                                                         from "../interfaces/themes";
+import { hexToHsva, hsvaToHex, interpolateSwatches, scaleSwatches, Swatch } from "@surface/color";
+import { Indexer }                                                          from "@surface/core";
+import { typeGuard }                                                        from "@surface/core/common/generic";
+import { objectFactory, pathfy }                                            from "@surface/core/common/object";
+import { camelToDashed }                                                    from "@surface/core/common/string";
+import IRawPalette                                                          from "../interfaces/raw-palette";
+import IRawTheme                                                            from "../interfaces/raw-theme";
+import IShades                                                              from "../interfaces/shades";
+import ITheme                                                               from "../interfaces/theme";
 
-function resolveAccentSwatch(swatch: Swatch): [string, string]
+type Theme<T extends IRawPalette|IRawTheme> =
+    T extends IRawPalette
+        ? { light: { [K in keyof T]: IShades } }
+        : T extends IRawTheme
+            ? { [K in keyof T]-?: { [K1 in keyof T[K]]: IShades } }
+            : never;
+
+function interpolate(color: string|IShades): Array<[string, string]>
 {
-    const map: Record<number, number> = { 4: 1, 6: 2, 7: 4, 8: 7 };
-
-    return ["A" + (map[swatch.index] * 100).toString(), hsvaToHex(swatch.color)];
-}
-
-function resolveSwatch(swatch: Swatch): [string, string]
-{
-    return [swatch.index == 1 ? "50" : ((swatch.index - 1) * 100).toString(), hsvaToHex(swatch.color)];
-}
-
-function generateVariations(color: string|Color): Array<[string, string]>
-{
-    const entries = typeof color == "string" ? [["500", color]] : Object.entries(color);
+    const entries = typeof color == "string" ? [["500", color]] : Object.entries(color) as Array<[string, string]>;
 
     const base:   Array<Array<string>> = [];
     const accent: Array<Array<string>> = [];
@@ -36,32 +32,44 @@ function generateVariations(color: string|Color): Array<[string, string]>
     const baseSwatches   = base.map(([key, value]) => ({ index: key == "50" ? 1 : (Number.parseInt(key) / 100) + 1, color: hexToHsva(value) }));
     const accentSwatches = accent.map(([key, value]) => ({ index: (Number.parseInt(key.replace("A", "")) / 100), color: hexToHsva(value) }));
 
-    const basePallete = baseSwatches.length == 10
+    const baseInterpolation = baseSwatches.length == 10
         ? baseSwatches
-        : generatePallete(baseSwatches, { start: 1, end: 10 });
+        : interpolateSwatches(baseSwatches, { start: 1, end: 10 });
 
-    const accentPallete = accentSwatches.length == 4
+    const accentInterpolation = accentSwatches.length == 4
         ? accentSwatches
         : accentSwatches.length > 0
-            ? generatePallete(accentSwatches, { start: 1, end: 7 })
-            : palleteScale(basePallete, 1.05);
+            ? interpolateSwatches(accentSwatches, { start: 1, end: 7 })
+            : scaleSwatches(baseInterpolation, 1.05);
 
-    return [...basePallete.map(resolveSwatch), ...accentPallete.filter(x => [4, 6, 7, 8].includes(x.index)).map(resolveAccentSwatch)];
+    return [...baseInterpolation.map(resolveSwatch), ...accentInterpolation.filter(x => [4, 6, 7, 8].includes(x.index)).map(resolveAccentSwatch)];
 }
 
-export function generateThemes(raw: DeepPartial<ITheme>|DeepPartial<IThemes>): IThemes
+function resolveAccentSwatch(swatch: Swatch): [string, string]
+{
+    const map: Record<number, number> = { 4: 1, 6: 2, 7: 4, 8: 7 };
+
+    return ["A" + (map[swatch.index] * 100).toString(), hsvaToHex(swatch.color)];
+}
+
+function resolveSwatch(swatch: Swatch): [string, string]
+{
+    return [swatch.index == 1 ? "50" : ((swatch.index - 1) * 100).toString(), hsvaToHex(swatch.color)];
+}
+
+export function generateTheme<T extends IRawPalette|IRawTheme>(raw: T): Theme<T>
 {
     const themes: Indexer = { };
 
-    if (typeGuard<IThemes>(raw, "dark" in raw || "light" in raw))
+    if (typeGuard<ITheme>(raw, "dark" in raw || "light" in raw))
     {
-        for (const [themeKey, themeValue] of Object.entries(raw) as Array<[string, ITheme]>)
+        for (const [themeKey, themeValue] of Object.entries(raw) as Array<[string, IRawPalette]>)
         {
             const theme: Indexer = themes[themeKey] = { };
 
-            for (const [name, color] of Object.entries(themeValue))
+            for (const [name, color] of Object.entries(themeValue) as Array<[string, string|IShades]>)
             {
-                theme[name] = objectFactory(generateVariations(color));
+                theme[name] = objectFactory(interpolate(color));
             }
         }
     }
@@ -71,11 +79,11 @@ export function generateThemes(raw: DeepPartial<ITheme>|DeepPartial<IThemes>): I
 
         for (const [name, color] of Object.entries(raw))
         {
-            theme[name] = objectFactory(generateVariations(color));
+            theme[name] = objectFactory(interpolate(color));
         }
     }
 
-    return themes as IThemes;
+    return themes as Theme<T>;
 }
 
 export function generateCssVariables(source: object): Array<string>

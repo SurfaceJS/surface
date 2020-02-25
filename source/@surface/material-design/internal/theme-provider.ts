@@ -1,10 +1,10 @@
-import { DeepPartial }                          from "@surface/core";
-import { merge }                                from "@surface/core/common/object";
-import ITheme                                   from "../interfaces/theme";
-import IThemes                                  from "../interfaces/themes";
-import { generateCssVariables, generateThemes } from "../internal/common";
-import defaultTheme                             from "./default-theme";
-import materialColors                           from "./material-colors";
+import { merge }                               from "@surface/core/common/object";
+import IRawPalette                             from "../interfaces/raw-palette";
+import IRawTheme                               from "../interfaces/raw-theme";
+import ITheme                                  from "../interfaces/theme";
+import { generateCssVariables, generateTheme } from "../internal/common";
+import defaultTheme                            from "./default-theme";
+import materialColors                          from "./material-colors";
 
 export default class ThemeProvider
 {
@@ -14,11 +14,11 @@ export default class ThemeProvider
 
     private darkThemeVariables:  Array<string> = [];
     private lightThemeVariables: Array<string> = [];
-    private themesVariables:     Array<string> = [];
+    private themeVariables:      Array<string> = [];
 
     private _dark:  boolean = false;
 
-    public themes: IThemes;
+    public theme: ITheme;
 
     public get dark(): boolean
     {
@@ -38,7 +38,7 @@ export default class ThemeProvider
     {
         this.materialColorsVariables = generateCssVariables(materialColors);
         this.style                   = this.createStyle();
-        this.themes                  = generateThemes(defaultTheme);
+        this.theme                   = generateTheme(defaultTheme) as ITheme;
 
         this.updateVariables();
     }
@@ -56,9 +56,9 @@ export default class ThemeProvider
 
     private updateVariables(): void
     {
-        this.darkThemeVariables  = generateCssVariables(this.themes.dark);
-        this.lightThemeVariables = generateCssVariables(this.themes.light);
-        this.themesVariables     = generateCssVariables(this.themes);
+        this.darkThemeVariables  = generateCssVariables(this.theme.dark);
+        this.lightThemeVariables = generateCssVariables(this.theme.light);
+        this.themeVariables      = generateCssVariables(this.theme);
 
         this.updateStyle();
     }
@@ -73,17 +73,17 @@ export default class ThemeProvider
                 "{",
                 ...this.materialColorsVariables,
                 ...(this.dark ? this.darkThemeVariables : this.lightThemeVariables),
-                ...this.themesVariables,
+                ...this.themeVariables,
                 "}"
             ].join("\n");
         }
     }
 
-    public use(themes: DeepPartial<ITheme>|DeepPartial<IThemes>): void
+    public use(theme: IRawPalette|IRawTheme): void
     {
-        const generated = generateThemes("dark" in themes || "light" in themes ? themes : { light: themes as ITheme });
+        const generated = generateTheme("dark" in theme || "light" in theme ? theme : { light: theme as IRawPalette });
 
-        this.themes = merge([this.themes, generated]);
+        this.theme = merge([this.theme, generated]) as ITheme;
 
         this.updateVariables();
     }

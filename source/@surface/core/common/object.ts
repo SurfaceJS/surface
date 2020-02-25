@@ -297,7 +297,7 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
 
 export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): Array<string>
 {
-    const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ":" } = options ?? { };
+    const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ": " } = options ?? { };
 
     const result: Array<string> = [];
 

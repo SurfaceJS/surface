@@ -1,2 +1,2 @@
 export * from "./internal/converters";
-export * from "./internal/palletes";
+export * from "./internal/swatches";

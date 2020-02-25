@@ -1,4 +1,4 @@
-export type Color =
+export default interface IShades
 {
     "50":   string;
     "100":  string;
@@ -14,4 +14,4 @@ export type Color =
     "A200": string;
     "A400": string;
     "A700": string;
-};
+}
