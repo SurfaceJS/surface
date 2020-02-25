@@ -7,23 +7,36 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
 {
     return <U extends T>(target: U, propertyKey: string) =>
     {
-        if (typeof target[propertyKey as keyof U] == "function")
-        {
-            const metadata = StaticMetadata.from(target.constructor);
+        const metadata = StaticMetadata.from(target.constructor);
 
-            const action = (instance: object) =>
-                Reactive.observe(instance, property as string)[1].subscribe({ notify: x => (instance as Record<string, Function>)[propertyKey](x) });
+        const action = (instance: object) =>
+            Reactive.observe(instance, property as string)[1].subscribe({ notify: x => (instance as Record<string, Function>)[propertyKey](x) });
 
-            metadata.actions.push(action as (instance: object) => void);
-        }
+        metadata.actions.push(action as (instance: object) => void);
     };
 }
 
-export function observable(target: Constructor): Constructor
+export function observable<T extends Constructor>(target: T): T
 {
     const metadata = StaticMetadata.from(target);
 
-    const action = (instance: object) => (metadata.actions.forEach(x => x(instance)), instance);
+    const action = (instance: InstanceType<T>) => (metadata.actions.forEach(x => x(instance)), instance);
 
     return injectToConstructor(target, action);
+}
+
+export function notify<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void
+{
+    return <U extends T>(target: U, propertyKey: string) =>
+    {
+        const action = (instance: object) =>
+        {
+            for (const property of properties)
+            {
+                Reactive.observe(instance, propertyKey)[1].subscribe({ notify: () => Reactive.notify(instance, property as string)});
+            }
+        };
+
+        StaticMetadata.from(target.constructor).actions.push(action);
+    };
 }

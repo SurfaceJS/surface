@@ -212,7 +212,7 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
     return target;
 }
 
-export function overrideProperty<T>(target: T, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
+export function overrideProperty<T>(target: T, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
 {
     let propertyDescriptor: PropertyDescriptor;
 
@@ -230,7 +230,7 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
                 {
                     const oldValue = currentDescriptor.get?.call(this);
 
-                    if (Object.is(oldValue, value))
+                    if (!Object.is(oldValue, value))
                     {
                         action(this, oldValue, value);
 
@@ -242,11 +242,11 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
                 {
                     const oldValue = currentDescriptor.get?.call(this);
 
-                    if (Object.is(oldValue, value))
+                    if (!Object.is(oldValue, value))
                     {
                         currentDescriptor.set!.call(this, value);
 
-                        action(this, currentDescriptor.get?.call(this), value);
+                        action(this, oldValue, value);
                     }
                 }
         };
@@ -254,6 +254,8 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
     else
     {
         const privateKey = typeof property == "string" ? `_${property.toString()}` : `${property.description}`;
+
+        target[privateKey as keyof T] = target[property as keyof T];
 
         propertyDescriptor =
         {
@@ -267,9 +269,9 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
                 {
                     const oldValue = this[privateKey];
 
-                    if (Object.is(oldValue, value))
+                    if (!Object.is(oldValue, value))
                     {
-                        action(this, this[privateKey], value);
+                        action(this, oldValue, value);
 
                         (this as Indexer)[privateKey] = value;
                     }
@@ -278,11 +280,11 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
                 {
                     const oldValue = this[privateKey];
 
-                    if (Object.is(oldValue, value))
+                    if (!Object.is(oldValue, value))
                     {
                         (this as Indexer)[privateKey] = value;
 
-                        action(this, this[privateKey], value);
+                        action(this, oldValue, value);
                     }
                 }
         };
