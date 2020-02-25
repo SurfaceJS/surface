@@ -234,7 +234,7 @@ export default class TemplateProcessor
                         this.directives.push(DirectiveProcessor.process(this.host, childNode, createScope(this.scope)));
                     }
                 }
-                else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "STYLE")
+                else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "style")
                 {
                     childNode[SCOPE] = this.scope;
 
