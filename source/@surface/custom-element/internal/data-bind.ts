@@ -19,11 +19,11 @@ export default class DataBind
         const [reactor, observer, subscription] = lazy ? Reactive.observe(target, path) : Reactive.observe(target, path, listener);
         const subscriptions                     = [] as Array<ISubscription>;
 
-        if (member instanceof HTMLInputElement && !(member as ElementSubscriber)[LISTENNING])
+        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !(member as ElementSubscriber)[LISTENNING])
         {
-            type Key = keyof HTMLInputElement;
+            type Key = keyof HTMLElement;
 
-            const action = function (this: HTMLInputElement)
+            const action = function (this: HTMLElement)
             {
                 observer.notify(this[key as Key]);
             };
