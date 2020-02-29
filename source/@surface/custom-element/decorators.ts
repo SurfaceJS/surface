@@ -49,6 +49,7 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
     const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
 
     sheet.replaceSync(source);
+    sheet.toString = () => source;
 
     return sheet;
 }
@@ -186,7 +187,7 @@ export function element(name: string, template?: string, style?: string, options
             const templateElement = document.createElement("template");
 
             // templateElement.innerHTML = template ?? "<slot></slot>";
-            templateElement.innerHTML = `<style>${style}</style>${template ?? "<slot></slot>"}`;
+            templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
 
             if (style)
             {
