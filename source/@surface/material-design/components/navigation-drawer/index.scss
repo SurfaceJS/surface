@@ -17,9 +17,15 @@
     #root
     {
         @include root-defaults;
-        @include background-color("background-400");
+        @include background-color("background");
 
         display:        flex;
         flex-direction: column;
+
+        #surface
+        {
+            @include inherits-boundary;
+            @include background-color("surface");
+        }
     }
 }

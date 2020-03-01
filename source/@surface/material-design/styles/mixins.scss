@@ -21,6 +21,7 @@
     display:     inline-flex;
     flex:        0 0 auto;
     outline:     0;
+    position:    relative;
     will-change: box-shadow;
 }
 
@@ -28,13 +29,14 @@
 {
     -webkit-tap-highlight-color: transparent;
 
-    box-sizing:  border-box;
-    caret-color: currentColor;
-    display:     inline-flex;
-    flex:        0 0 auto;
-    font-family: "Roboto", "sans-serif";
-    font-size:   14px;
-    outline:     0;
+    box-sizing:     border-box;
+    caret-color:    currentColor;
+    display:        inline-flex;
+    flex:           0 0 auto;
+    font-family:    "Roboto", "sans-serif";
+    font-size:      14px;
+    outline:        0;
+    vertical-align: middle;
 }
 
 @mixin hover-before
@@ -66,15 +68,14 @@
 
 @mixin inherits-boundary
 {
-    position: inherit;
+    height: inherit;
+    width:  inherit;
 
-    bottom:   inherit;
-    left:     inherit;
-    right:    inherit;
-    top:      inherit;
+    max-height: inherit;
+    max-width:  inherit;
 
-    height:   inherit;
-    width:    inherit;
+    min-height: inherit;
+    min-width:  inherit;
 
     z-index:  inherit;
 }

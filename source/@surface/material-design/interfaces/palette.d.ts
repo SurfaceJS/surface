@@ -11,6 +11,7 @@ export default interface IPalette
     primary:    IShades;
     secondary:  IShades;
     success:    IShades;
+    surface:    IShades;
     text:       IShades;
     warning:    IShades;
 }

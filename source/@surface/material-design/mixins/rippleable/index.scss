@@ -6,13 +6,13 @@
 
         .ripple
         {
-            background:     currentColor;
-            border-radius:  50%;
-            color:          inherit;
-            opacity:        0;
-            pointer-events: none;
-            position:       absolute;
-            will-change:    transform, opacity;
+            background-color: currentColor;
+            border-radius:    50%;
+            color:            inherit;
+            opacity:          0;
+            pointer-events:   none;
+            position:         absolute;
+            will-change:      transform, opacity;
         }
 
         .animation-enter

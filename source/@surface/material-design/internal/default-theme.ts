@@ -12,6 +12,7 @@ const defaultTheme: IRawTheme =
         primary:    materialColors.indigo,
         secondary:  materialColors.blue,
         success:    materialColors.green,
+        surface:    "#ffffff14",
         text:       "#ffffffb3",
         warning:    materialColors.amber,
     },
@@ -24,6 +25,7 @@ const defaultTheme: IRawTheme =
         primary:    materialColors.blue,
         secondary:  materialColors.indigo,
         success:    materialColors.green,
+        surface:    "#0000000f",
         text:       "#00000099",
         warning:    materialColors.amber,
     }

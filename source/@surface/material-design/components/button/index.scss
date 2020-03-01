@@ -170,13 +170,11 @@ $icon--font-size:
     @at-root
     #{host-bool("block")}
     {
-        display:   flex;
-        flex:      0 1 auto;
         min-width: 100%;
     }
 
     @at-root
-    #{host(":hover")}
+    #{host(":hover") "#root"}
     {
         @include hover-before;
     }
