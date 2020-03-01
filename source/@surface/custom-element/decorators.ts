@@ -18,7 +18,7 @@ type WithMetadata<T extends object|Function> = T extends Function
 
 type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
-function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, cache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
+function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return (target: HTMLElement, propertyKey: string|symbol) =>
     {
@@ -32,7 +32,7 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
                 configurable: true,
                 get(this: HTMLElement & { [symbols.SHADOW_ROOT]: ShadowRoot } & Indexer<(Element | null) | NodeListOf<Element>>)
                 {
-                    if (!cache || Object.is(this[privateKey as string], undefined))
+                    if (!!nocache || Object.is(this[privateKey as string], undefined))
                     {
                         this[privateKey as string] = fn(this[symbols.SHADOW_ROOT]);
                     }
@@ -249,14 +249,14 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
     };
 }
 
-export function query(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+export function query(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
 {
-    return queryFactory(x => x.querySelector(selector), cache);
+    return queryFactory(x => x.querySelector(selector), nocache);
 }
 
-export function queryAll(selector: string, cache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+export function queryAll(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
 {
-    return queryFactory(x => x.querySelectorAll(selector), cache);
+    return queryFactory(x => x.querySelectorAll(selector), nocache);
 }
 
 export function styles(...styles: Array<string>): <T extends Constructor<HTMLElement>>(target: T) => T
