@@ -249,6 +249,8 @@ export default class TemplateProcessor
                     }
 
                     this.traverseElement(childNode);
+
+                    childNode.dispatchEvent(new Event("bind"));
                 }
             }
 
