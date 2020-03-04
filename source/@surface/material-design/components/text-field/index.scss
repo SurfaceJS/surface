@@ -29,11 +29,19 @@ $transition: $interval linear;
             overflow:      visible;
             #frame
             {
-                display:       flex;
+                display:        flex;
+                flex-direction: column;
                 // margin:        0 0 22px 0;
-                min-height:    52px;
-                position:      relative;
-                width:         100%;
+                min-height:     52px;
+                position:       relative;
+                width:          100%;
+
+                #hidden-label
+                {
+                    height:   0;
+                    color:    transparent;
+                    overflow: hidden;
+                }
 
                 #input
                 {
@@ -49,6 +57,7 @@ $transition: $interval linear;
         #label
         {
             font-weight:      600;
+            overflow:         hidden;
             pointer-events:   none;
             position:         absolute;
             transform-origin: 0 0;
@@ -87,7 +96,17 @@ $transition: $interval linear;
 
             #label
             {
+                width: 100%;
                 @include text-color("secondary");
+            }
+        }
+
+        &.lableable.active,
+        &.lableable.valuable
+        {
+            #label
+            {
+                width: 100%;
             }
         }
 
@@ -142,6 +161,7 @@ $transition: $interval linear;
 
             #label
             {
+                width:     100%;
                 transform: translate(0, 24px);
             }
 
@@ -150,6 +170,7 @@ $transition: $interval linear;
             {
                 #label
                 {
+                    width:     100%;
                     transform:
                         translate(0, 4px)
                         scale(0.75);
@@ -170,13 +191,14 @@ $transition: $interval linear;
                         display: flex;
                         margin:  16px 12px 0 12px;
                         padding: 8px 0;
-                        width:   100%;
+                        width:   calc(100% - 24px);
                     }
                 }
             }
 
             #label
             {
+                width:     calc(100% - 24px);
                 transform: translate(12px, 24px);
             }
 
@@ -209,7 +231,7 @@ $transition: $interval linear;
 
                     @include set-color("border-color", "text-300");
 
-                    #hidden-label
+                    #hidden-legend
                     {
                         // color:       lawngreen;
                         color:       transparent;
@@ -231,13 +253,14 @@ $transition: $interval linear;
 
             #label
             {
+                width:     calc(100% - 30px);
                 transform: translate(14px, 17.5px);
             }
 
             &.lableable.active,
             &.lableable.valuable
             {
-                #inputable #frame #hidden-label
+                #inputable #frame #hidden-legend
                 {
                     padding: 0 4px;
                     width:   auto;
