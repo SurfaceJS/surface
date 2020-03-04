@@ -18,7 +18,6 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
         return this.outlined;
     }
 
-    @query("#input", true)
     protected input!: HTMLElement;
 
     @query("#inputable", true)

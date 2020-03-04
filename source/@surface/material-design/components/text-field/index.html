@@ -3,12 +3,12 @@
         <template #if="host.outlined">
             <fieldset id="frame">
                 <legend id="hidden-label">{host.label || "-"}</legend>
-                <span id="input" contenteditable="true" ::text-content="host.value">{host.value}</span>
+                <span id="input" on:bind="host.input = this" contenteditable="true" ::text-content="host.value">{host.value}</span>
             </fieldset>
         </template>
         <template #else>
             <span id="frame">
-                <span id="input" contenteditable="true" ::text-content="host.value">{host.value}</span>
+                <span id="input" on:bind="host.input = this" contenteditable="true" ::text-content="host.value">{host.value}</span>
             </span>
         </template>
     </span>
