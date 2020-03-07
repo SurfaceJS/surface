@@ -2,7 +2,8 @@
 
 $interval: 0.2s;
 
-$transition: $interval linear;
+$transition:
+    $interval linear;
 
 :host
 {
@@ -11,6 +12,8 @@ $transition: $interval linear;
     font-size:   16px;
     font-weight: 400;
     min-width:   100px;
+
+    vertical-align: top;
 
     #root
     {
@@ -21,34 +24,39 @@ $transition: $interval linear;
 
         #inputable
         {
-            display:       flex;
-            margin:        0 0 22px 0;
-            min-height:    52px;
-            position:      relative;
-            width:         100%;
-            overflow:      visible;
+            display:    flex;
+            height:     inherit;
+            min-height: 52px;
+            overflow:   visible;
+            position:   relative;
+            width:      100%;
+
             #frame
             {
                 display:        flex;
                 flex-direction: column;
-                // margin:        0 0 22px 0;
                 min-height:     52px;
                 position:       relative;
                 width:          100%;
 
                 #hidden-label
                 {
-                    height:   0;
-                    color:    transparent;
-                    overflow: hidden;
+                    height:      0;
+                    color:       transparent;
+                    overflow:    hidden;
+                    white-space: nowrap;
                 }
 
                 #input
                 {
-                    display:   flex;
-                    margin:    16px 0 0 0;
-                    min-width: 30px;
-                    outline:   none;
+                    display:       flex;
+                    margin:        16px 0 0 0;
+                    min-width:     30px;
+                    outline:       none;
+                    overflow:      hidden;
+                    text-overflow: ellipsis;
+                    white-space:   nowrap;
+
                     @include   set-property("color", "var(--this-text-color, black)", "var(--this-text-color, white)");
                 }
             }
@@ -60,23 +68,49 @@ $transition: $interval linear;
             overflow:         hidden;
             pointer-events:   none;
             position:         absolute;
+            text-overflow:    ellipsis;
             transform-origin: 0 0;
             transition:       $transition;
+            white-space:      nowrap;
 
             @include text-color;
         }
 
-        #hint
+        #footer
         {
-            bottom:      2px;
-            font-size:   12px;
-            font-weight: 400;
-            height:      0;
-            opacity:     0;
-            overflow:    hidden;
-            position:    absolute;
-            transform:   translateY(-16px);
-            transition:  $transition;
+            display:       flex;
+            flex-grow:     0;
+            overflow:      hidden;
+            position:      relative;
+            text-overflow: ellipsis;
+            width:         100%;
+
+            #hint
+            {
+                flex:             1 1 auto;
+                font-size:        12px;
+                font-weight:      400;
+                max-height:       0;
+                min-width:        1px;
+                opacity:          0;
+                overflow-wrap:    break-word;
+                position:         relative;
+                transform-origin: 50% 0;
+                transform:        scaleY(0);
+                transition:       $transition;
+            }
+
+            #counter
+            {
+                flex:        0 1 auto;
+                font-size:   12px;
+                font-weight: 400;
+                line-height: 12px;
+                margin:      4px 0 4px 8px;
+                min-height:  14px;
+                position:    relative;
+                white-space: nowrap;
+            }
         }
 
         &.active
@@ -96,8 +130,7 @@ $transition: $interval linear;
 
             #label
             {
-                width: 100%;
-                @include text-color("secondary");
+                @include text-color("primary");
             }
         }
 
@@ -112,20 +145,23 @@ $transition: $interval linear;
 
         &.hintable
         {
-            #hint
+            #footer #hint
             {
-                height:    15px;
-                opacity:   1;
-                transform: translateY(0);
+                margin:     4px 0 4px 0;
+                max-height: 56px;
+                opacity:    1;
+                transform:  scaleY(1);
             }
         }
 
         &.filled,
         &.outlined
         {
-            #hint
+            #footer
             {
-                left: 12px;
+                margin-left:  12px;
+                margin-right: 12px;
+                width:        calc(100% - 24px);
             }
         }
 
@@ -170,7 +206,7 @@ $transition: $interval linear;
             {
                 #label
                 {
-                    width:     100%;
+                    width: calc(100% + 30px);
                     transform:
                         translate(0, 4px)
                         scale(0.75);
@@ -241,6 +277,7 @@ $transition: $interval linear;
                         overflow:    hidden;
                         padding:     0;
                         transition:  $transition;
+                        white-space: nowrap;
                         width:       0;
                     }
 
@@ -262,8 +299,9 @@ $transition: $interval linear;
             {
                 #inputable #frame #hidden-legend
                 {
-                    padding: 0 4px;
-                    width:   auto;
+                    max-width: calc(100% - 30px);
+                    padding:   0 4px;
+                    width:     auto;
                 }
 
                 #label

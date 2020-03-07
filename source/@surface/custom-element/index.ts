@@ -1,20 +1,14 @@
-import { Action, Indexer }                     from "@surface/core";
-import ICustomElement                          from "./interfaces/custom-element";
-import References                              from "./internal/references";
-import StaticMetadata                          from "./internal/static-metadata";
-import { SCOPE, SHADOW_ROOT, STATIC_METADATA } from "./internal/symbols";
+import { Action, Indexer }        from "@surface/core";
+import ICustomElement             from "./interfaces/custom-element";
+import References                 from "./internal/references";
+import StaticMetadata             from "./internal/static-metadata";
+import { SCOPE, STATIC_METADATA } from "./internal/symbols";
 
 type Scope = Indexer & { host?: HTMLElement };
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
     private readonly _references: References;
-
-    protected readonly [SHADOW_ROOT]: ShadowRoot;
-
-    protected [SCOPE]: Scope = { };
-
-    public onAfterBind?: Action;
 
     protected get scope(): Scope
     {
@@ -26,15 +20,21 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         return this._references;
     }
 
+    protected [SCOPE]: Scope = { };
+
+    public shadowRoot!: ShadowRoot;
+
+    public onAfterBind?: Action;
+
     public constructor()
     {
         super();
 
-        const shadowRoot = this[SHADOW_ROOT] = this.attachShadow({ mode: "closed" });
+        this.attachShadow({ mode: "open" });
 
-        this.applyMetadata(shadowRoot);
+        this.applyMetadata(this.shadowRoot);
 
-        this._references = new References(shadowRoot);
+        this._references = new References(this.shadowRoot);
     }
 
     private applyMetadata(shadowRoot: ShadowRoot): void

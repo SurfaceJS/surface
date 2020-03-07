@@ -12,10 +12,6 @@ import TemplateProcessor                         from "./internal/template-proce
 
 const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
-type WithMetadata<T extends object|Function> = T extends Function
-    ? T & { [symbols.STATIC_METADATA]?: StaticMetadata }
-    : T & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
-
 type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
@@ -30,11 +26,16 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
             propertyKey,
             {
                 configurable: true,
-                get(this: HTMLElement & { [symbols.SHADOW_ROOT]: ShadowRoot } & Indexer<(Element | null) | NodeListOf<Element>>)
+                get(this: HTMLElement & Indexer<(Element | null) | NodeListOf<Element>>)
                 {
+                    if (!this.shadowRoot)
+                    {
+                        throw Error("Can't query a closed shadow root");
+                    }
+
                     if (!!nocache || Object.is(this[privateKey as string], undefined))
                     {
-                        this[privateKey as string] = fn(this[symbols.SHADOW_ROOT]);
+                        this[privateKey as string] = fn(this.shadowRoot);
                     }
 
                     return this[privateKey as string];
@@ -116,11 +117,11 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
         {
-            target.attributeChangedCallback = function(this: WithMetadata<HTMLElement>, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+            target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
             {
-                if (!this[symbols.METADATA]!.reflectingAttribute)
+                if (!Metadata.from(this).reflectingAttribute)
                 {
-                    this.constructor[symbols.STATIC_METADATA]!
+                    StaticMetadata.from(this.constructor)
                         .conversionHandlers[name]?.(this as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
 
                     attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
@@ -130,11 +131,11 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             metadata.attributeChangedCallback = target.attributeChangedCallback;
         }
 
-        const action = (instance: WithMetadata<HTMLElement>, oldValue: unknown, newValue: unknown) =>
+        const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown) =>
         {
             if (!Object.is(oldValue, undefined))
             {
-                const metadata = instance[symbols.METADATA];
+                const metadata = Metadata.from(instance);
 
                 metadata!.reflectingAttribute = true;
 
@@ -144,7 +145,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             }
         };
 
-        return overrideProperty(target as WithMetadata<HTMLElement>, propertyKey, action, null, true);
+        return overrideProperty(target as HTMLElement, propertyKey, action, null, true);
     };
 
     if (args.length == 1)
@@ -198,7 +199,7 @@ export function element(name: string, template?: string, style?: string, options
 
             const action = (instance: InstanceType<T> & CustomElement) =>
             {
-                TemplateProcessor.process(instance, instance[symbols.SHADOW_ROOT], { host: instance });
+                TemplateProcessor.process(instance, instance.shadowRoot, { host: instance });
 
                 instance.onAfterBind?.();
 

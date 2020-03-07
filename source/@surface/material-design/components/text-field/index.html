@@ -4,16 +4,35 @@
             <fieldset id="frame">
                 <legend id="hidden-legend">{host.label || "-"}</legend>
                 <span id="hidden-label">{host.label || "-"}</span>
-                <span id="input" on:bind="host.input = this" contenteditable="true" ::text-content="host.value">{host.value}</span>
+                <span
+                    id             ="input"
+                    contenteditable="true"
+                    on:bind        ="host.input = this"
+                    on:input       ="host.handleInput.bind(host)"
+                    on:paste       ="host.handlePaste.bind(host)"
+                    :text-content  ="host.value"
+                >
+                </span>
             </fieldset>
         </template>
         <template #else>
             <span id="frame">
                 <span id="hidden-label">{host.label || "-"}</span>
-                <span id="input" on:bind="host.input = this" contenteditable="true" ::text-content="host.value">{host.value}</span>
+                <span
+                    id             ="input"
+                    contenteditable="true"
+                    on:bind        ="host.input = this"
+                    on:input       ="host.handleInput.bind(host)"
+                    on:paste       ="host.handlePaste.bind(host)"
+                    :text-content  ="host.value"
+                >
+                </span>
             </span>
         </template>
     </span>
-    <span id="hint">{host.hint}</span>
+    <span id="footer">
+        <span id="hint">{host.hint}</span>
+        <span id="counter">0 / 0</span>
+    </span>
     <span id="label">{host.label}</span>
 </span>
