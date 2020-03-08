@@ -1,3 +1,5 @@
+import Queue from "@surface/collection/queue";
+
 type Action   = () => unknown;
 type Callback = (value: unknown) => void;
 
@@ -5,7 +7,7 @@ export default class ParallelWorker
 {
     public static readonly default = new ParallelWorker();
 
-    private readonly stack: Array<[Action, Callback]> = [];
+    private readonly queue: Queue<[Action, Callback]> = new Queue();
 
     private readonly interval: number;
 
@@ -27,9 +29,9 @@ export default class ParallelWorker
     {
         this.running = true;
 
-        while (this.stack.length > 0)
+        while (this.queue.length > 0)
         {
-            const [action, callback] = this.stack.shift()!;
+            const [action, callback] = this.queue.dequeue()!;
 
             const start = window.performance.now();
 
@@ -56,7 +58,7 @@ export default class ParallelWorker
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
     {
-        const promise = new Promise<ReturnType<TAction>>(resolve => this.stack.push([action, resolve as Callback]));
+        const promise = new Promise<ReturnType<TAction>>(resolve => this.queue.enqueue([action, resolve as Callback]));
 
         if (!this.running)
         {
