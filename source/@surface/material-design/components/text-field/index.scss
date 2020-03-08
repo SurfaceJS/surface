@@ -62,7 +62,8 @@ $transition:
             }
 
         }
-        #label
+        #label,
+        #placeholder
         {
             font-weight:      600;
             overflow:         hidden;
@@ -74,6 +75,12 @@ $transition:
             white-space:      nowrap;
 
             @include text-color;
+        }
+
+        #placeholder
+        {
+            opacity:    0;
+            transition: none;
         }
 
         #footer
@@ -102,6 +109,7 @@ $transition:
 
             #counter
             {
+                display:     none;
                 flex:        0 1 auto;
                 font-size:   12px;
                 font-weight: 400;
@@ -110,47 +118,6 @@ $transition:
                 min-height:  14px;
                 position:    relative;
                 white-space: nowrap;
-            }
-        }
-
-        &.active
-        {
-            #inputable
-            {
-                .ripple
-                {
-                    @include set-color("color", "secondary");
-                }
-
-                #frame
-                {
-                    @include text-color("secondary");
-                }
-            }
-
-            #label
-            {
-                @include text-color("primary");
-            }
-        }
-
-        &.lableable.active,
-        &.lableable.valuable
-        {
-            #label
-            {
-                width: 100%;
-            }
-        }
-
-        &.hintable
-        {
-            #footer #hint
-            {
-                margin:     4px 0 4px 0;
-                max-height: 56px;
-                opacity:    1;
-                transform:  scaleY(1);
             }
         }
 
@@ -195,14 +162,14 @@ $transition:
                 }
             }
 
-            #label
+            #label,
+            #placeholder
             {
                 width:     100%;
                 transform: translate(0, 24px);
             }
 
-            &.lableable.active,
-            &.lableable.valuable
+            &.active-label:not(.single-line)
             {
                 #label
                 {
@@ -232,14 +199,14 @@ $transition:
                 }
             }
 
-            #label
+            #label,
+            #placeholder
             {
                 width:     calc(100% - 24px);
                 transform: translate(12px, 24px);
             }
 
-            &.lableable.active,
-            &.lableable.valuable
+            &.active-label:not(.single-line)
             {
                 #label
                 {
@@ -269,7 +236,6 @@ $transition:
 
                     #hidden-legend
                     {
-                        // color:       lawngreen;
                         color:       transparent;
                         font-size:   12px;
                         line-height: 0;
@@ -288,18 +254,18 @@ $transition:
                 }
             }
 
-            #label
+            #label,
+            #placeholder
             {
                 width:     calc(100% - 30px);
                 transform: translate(14px, 17.5px);
             }
 
-            &.lableable.active,
-            &.lableable.valuable
+            &.active-label:not(.single-line)
             {
                 #inputable #frame #hidden-legend
                 {
-                    max-width: calc(100% - 30px);
+                    max-width: calc(100% - 24px);
                     padding:   0 4px;
                     width:     auto;
                 }
@@ -316,6 +282,60 @@ $transition:
             {
                 @include set-color("border-color", "secondary");
             }
+        }
+
+        &.single-line #label
+        {
+            transition: none;
+        }
+
+        &.active
+        {
+            #inputable
+            {
+                .ripple
+                {
+                    @include set-color("color", "secondary");
+                }
+
+                #frame
+                {
+                    @include text-color("secondary");
+                }
+            }
+
+            &:not(.single-line) #label
+            {
+                @include text-color("primary");
+            }
+        }
+
+        &.active-value.single-line #label
+        {
+            opacity: 0;
+        }
+
+        &.active-label:not(.single-line) #label
+        {
+            width: 100%;
+        }
+
+        &.active-placeholder #placeholder
+        {
+            opacity: 0.5;
+        }
+
+        &.active-counter #footer #counter
+        {
+            display: block;
+        }
+
+        &.active-hint #footer #hint
+        {
+            margin:     4px 0 4px 0;
+            max-height: 56px;
+            opacity:    1;
+            transform:  scaleY(1);
         }
     }
 }

@@ -42,6 +42,9 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
     public hint: string = "";
 
     @attribute
+    public inline: boolean = false;
+
+    @attribute
     public label: string = "";
 
     @attribute
@@ -54,7 +57,10 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
     public persistentHint: boolean = false;
 
     @attribute
-    public inline: boolean = false;
+    public placeholder: string = "";
+
+    @attribute
+    public singleLine: boolean = false;
 
     @attribute
     public value: string = "";
@@ -69,18 +75,20 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
         return this._selectionStart;
     }
 
-    @computed("active", "counter", "inline", "filled", "label", "outlined", "persistentHint", "value")
+    @computed("active", "counter", "inline", "filled", "label", "outlined", "persistentHint", "placeholder", "singleLine", "value")
     public get classes(): Record<string, boolean>
     {
         return {
-            active:      this.active,
-            counterable: this.counter,
-            filled:      this.filled,
-            hintable:    !!this.hint && (this.active || this.persistentHint),
-            inline:      this.inline,
-            lableable:   !!this.label,
-            outlined:    this.outlined,
-            valuable:    !!this.value
+            "active":             this.active,
+            "active-counter":     this.counter,
+            "active-hint":        !!this.hint && (this.active || this.persistentHint),
+            "active-label":       !!this.label && (this.active || !!this.value || !!this.placeholder),
+            "active-placeholder": !!this.placeholder && !this.value,
+            "active-value":       !!this.value,
+            "filled":             this.filled,
+            "inline":             this.inline,
+            "outlined":           this.outlined,
+            "single-line":        this.singleLine,
         };
     }
 

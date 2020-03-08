@@ -2,8 +2,8 @@
     <span id="inputable" class="rippleable">
         <template #if="host.outlined">
             <fieldset id="frame">
-                <legend id="hidden-legend">{host.label || "-"}</legend>
-                <span id="hidden-label">{host.label || "-"}</span>
+                <legend id="hidden-legend">{host.label}</legend>
+                <span id="hidden-label">{host.label}</span>
                 <span
                     id             ="input"
                     contenteditable="true"
@@ -17,7 +17,7 @@
         </template>
         <template #else>
             <span id="frame">
-                <span id="hidden-label">{host.label || "-"}</span>
+                <span id="hidden-label">{host.label}</span>
                 <span
                     id             ="input"
                     contenteditable="true"
@@ -32,7 +32,13 @@
     </span>
     <span id="footer">
         <span id="hint">{host.hint}</span>
-        <span id="counter">0 / 0</span>
+        <template #if="host.maxLenght > 0">
+            <span id="counter">{host.value.length} / {host.maxLenght}</span>
+        </template>
+        <template #else>
+            <span id="counter">{host.value.length}</span>
+        </template>
     </span>
     <span id="label">{host.label}</span>
+    <span id="placeholder">{host.placeholder}</span>
 </span>
