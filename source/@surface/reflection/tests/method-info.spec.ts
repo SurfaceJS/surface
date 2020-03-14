@@ -5,7 +5,7 @@ import ParameterInfo               from "../parameter-info";
 import Type                        from "../type";
 import Mock                        from "./fixtures/mock";
 
-const methodInfo = new MethodInfo("instanceMethod", Mock.prototype.instanceMethod, Type.of(Mock), false, false);
+const methodInfo = new MethodInfo("instanceMethod", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethod")!, Type.of(Mock), false, false);
 
 @suite
 export default class FieldInfoSpec
@@ -43,7 +43,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
 
         const metadata =
         {
@@ -64,7 +64,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public withParameters(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParameters", Mock.prototype.instanceMethodWithParameters, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo("instanceMethodWithParameters", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParameters")!, Type.of(Mock), false, false);
 
         const parameters =
         [
@@ -80,7 +80,7 @@ export default class FieldInfoSpec
     @test @shouldPass
     public withParametersMetadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Mock.prototype.instanceMethodWithParametersMetadata, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
 
         const parameters =
         [

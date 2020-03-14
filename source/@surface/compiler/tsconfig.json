@@ -3,6 +3,6 @@
     "compilerOptions":
     {
         "typeRoots": ["./@types", "./node_modules/@types"],
-        "types":     ["node", "webpack"] 
+        "types":     ["node", "webpack"]
     }
 }

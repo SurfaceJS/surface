@@ -1,7 +1,14 @@
-import { shouldFail, shouldPass, suite, test }              from "@surface/test-suite";
-import * as chai                                            from "chai";
-import { Indexer }                                          from "../..";
-import { merge, objectFactory, proxyFrom, structuralEqual } from "../../common/object";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import * as chai                               from "chai";
+import { Indexer }                             from "../..";
+import
+{
+    merge,
+    objectFactory,
+    pathfy,
+    proxyFrom,
+    structuralEqual
+} from "../../common/object";
 
 @suite
 export default class CommonObjectSpec
@@ -12,7 +19,7 @@ export default class CommonObjectSpec
         const target = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { }};
         const source = { c: { b: true, c: { a: 2, c: 3 }}, e: 1, f: [1], g: { }, i: undefined, h: undefined };
 
-        const actual = merge(target, source);
+        const actual = merge([target, source]);
 
         const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3}}, e: 1, f: [1], g: { }, h: { }};
 
@@ -22,27 +29,28 @@ export default class CommonObjectSpec
     @test @shouldPass
     public mergeCombineArrays(): void
     {
-        const target = { values: [1, 2, 3] };
-        const source = { values: [4, 5, 6] };
+        const first  = { values: [1, 2, 3] };
+        const second = { values: [4, 5, 6] };
 
-        const actual = merge(target, source, true);
+        const actual = merge([first, second], true);
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
-        chai.expect(actual).to.deep.equal(expect);
+        chai.assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
     public mergeCombineMutiplesObjects(): void
     {
-        const target = { a: 1, b: "2", c: { d: 3 }};
-        const source = [{ c: { e: true }}, { f: [1], g: { }}];
+        const first  = { a: 1, b: "2", c: { d: 3 }};
+        const second = { c: { e: true } };
+        const third  = { f: [1], g: { } };
 
-        const actual = merge(target, source);
+        const actual = merge([first, second, third]);
 
         const expect = { a: 1, b: "2", c: { d: 3, e: true }, f: [1], g: { }};
 
-        chai.expect(actual).to.deep.equal(expect);
+        chai.assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -65,6 +73,30 @@ export default class CommonObjectSpec
         };
 
         chai.expect(actual).to.deep.equal(expected);
+    }
+
+    @test @shouldFail
+    public pathfy(): void
+    {
+        const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
+
+        const expected = ["a: 1", "b.c: 3", "e.f.g: 4"];
+
+        const actual = pathfy(source);
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public pathfyWithOptions(): void
+    {
+        const source = { a: 1, b: { c: 3 }, e: { f: { g: 4 } } };
+
+        const expected = ["a = 1", "b-c = 3", "e-f-g = 4"];
+
+        const actual = pathfy(source, { keySeparator: "-", valueSeparator: " = " });
+
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail

@@ -14,6 +14,8 @@ const windowWrapper = wrapper.prototype;
 
 export function createScope(scope: Indexer): Indexer
 {
+    scope["$class"] = classMap;
+
     const handler: ProxyHandler<Indexer> =
     {
         get: (target, key) => key in target ? target[key as string] : (windowWrapper as Indexer)[key as string],
@@ -25,6 +27,14 @@ export function createScope(scope: Indexer): Indexer
     return new Proxy(scope, handler);
 }
 
+export function classMap(classes: Record<string, boolean>): string
+{
+    return Object.entries(classes)
+        .filter(x => x[1])
+        .map(x => x[0])
+        .join(" ");
+}
+
 export function pushSubscription(target: Subscriber, subscription: ISubscription): void
 {
     (target[SUBSCRIPTIONS] = target[SUBSCRIPTIONS] ?? []).push(subscription);
@@ -33,6 +43,13 @@ export function pushSubscription(target: Subscriber, subscription: ISubscription
 export function scapeBrackets(value: string)
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
+}
+
+export function styleMap(rules: Record<string, boolean>): string
+{
+    return Object.entries(rules)
+        .map(([key, value]) => `${key}: ${value}` )
+        .join("; ");
 }
 
 export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>

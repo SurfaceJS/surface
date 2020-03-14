@@ -1,9 +1,9 @@
 import { Indexer }                        from "@surface/core";
 import { hasValue, typeGuard }            from "@surface/core/common/generic";
+import { overrideProperty }               from "@surface/core/common/object";
 import Type                               from "@surface/reflection";
 import FieldInfo                          from "@surface/reflection/field-info";
 import MethodInfo                         from "@surface/reflection/method-info";
-import PropertyInfo                       from "@surface/reflection/property-info";
 import IObserver                          from "../interfaces/observer";
 import IPropertySubscription              from "../interfaces/property-subscription";
 import { REACTOR, TRACKED_KEYS, WRAPPED } from "./symbols";
@@ -123,93 +123,9 @@ export default class Reactor
             Reactor.wrapArray(reactor, target, key);
         }
 
-        if (member instanceof PropertyInfo)
+        if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
         {
-            const privateKey = `_${key}`;
-
-            if (!member.readonly)
-            {
-                Object.defineProperty
-                (
-                    target,
-                    key,
-                    {
-                        get(this: Indexer)
-                        {
-                            return member.getter!.call(this);
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = member.getter!.call(this);
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                member.setter!.call(this, value);
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-            else if (privateKey in target)
-            {
-                const hiddenKey = `_${key}_`;
-
-                target[hiddenKey] = target[key];
-
-                Object.defineProperty
-                (
-                    target,
-                    privateKey,
-                    {
-                        get(this: Indexer)
-                        {
-                            return this[hiddenKey];
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = this[hiddenKey];
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                this[hiddenKey] = value;
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-        }
-        else if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
-        {
-            const privateKey = `_${key}`;
-
-            target[privateKey] = target[key];
-
-            Object.defineProperty
-            (
-                target,
-                key,
-                {
-                    get(this: Indexer)
-                    {
-                        return this[privateKey];
-                    },
-                    set(this: Indexer, value: unknown)
-                    {
-                        const oldValue = this[privateKey];
-
-                        if (!Object.is(oldValue, value))
-                        {
-                            this[privateKey] = value;
-
-                            Reactor.notify(this, key, value);
-                        }
-                    }
-                }
-            );
+            overrideProperty(target, key, (instance, _, newValue) => Reactor.notify(instance, key, newValue), member.descriptor);
         }
         else if (!member)
         {
@@ -228,7 +144,10 @@ export default class Reactor
 
         for (const registry of this.registries.values())
         {
-            registry.notify(value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(value);
+            }
         }
 
         for (const subscriptions of this.propertySubscriptions.values())
@@ -264,7 +183,10 @@ export default class Reactor
 
         for (const registry of this.registries.values())
         {
-            registry.notify(target, key, value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(target, key, value);
+            }
         }
 
         for (const subscription of this.propertySubscriptions.get(key) ?? [])
@@ -328,18 +250,13 @@ export default class Reactor
     }
 
     public notify(value: unknown): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
+    public notify<TTarget extends object|Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
+    public notify<TTarget extends object|Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
     public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
     {
-        if (Reactor.stack.includes(this))
-        {
-            return;
-        }
+        Reactor.stack.push(this);
 
         const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
-
-        Reactor.stack.push(this);
 
         if (args.length == 1)
         {
@@ -381,7 +298,7 @@ export default class Reactor
         {
             dependency.unregister();
 
-            if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
+            if (typeGuard<Reactiveable>(value, value instanceof Object))
             {
                 const reactor = value[REACTOR] ?? new Reactor();
 

@@ -7,10 +7,12 @@ import Type                         from "@surface/reflection";
 import FieldInfo                    from "@surface/reflection/field-info";
 import
 {
+    classMap,
     createScope,
     enumerateExpresssionAttributes,
     pushSubscription,
-    scapeBrackets
+    scapeBrackets,
+    styleMap
 }
 from "./common";
 import DataBind               from "./data-bind";
@@ -126,7 +128,23 @@ export default class TemplateProcessor
                     {
                         const expression = parse(rawExpression);
 
-                        const notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
+                        let notify: Action;
+
+                        if (attributeName == "class" || attributeName == "style")
+                        {
+                            const attribute = document.createAttribute(attributeName);
+
+                            element.setAttributeNode(attribute);
+
+                            notify = attributeName == "class"
+                                ? () => attribute.value = classMap(expression.evaluate(scope) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(expression.evaluate(scope) as Record<string, boolean>);
+                        }
+                        else
+                        {
+                            notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
+                        }
+
 
                         let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
 
@@ -209,14 +227,14 @@ export default class TemplateProcessor
 
             for (const childNode of (Array.from(node.childNodes) as Iterable<Bindable<Element>>))
             {
-                if (typeGuard<Element, HTMLTemplateElement>(childNode, x => x.nodeName == "TEMPLATE"))
+                if (typeGuard<HTMLTemplateElement>(childNode, childNode.nodeName == "TEMPLATE"))
                 {
                     if (childNode.parentNode)
                     {
                         this.directives.push(DirectiveProcessor.process(this.host, childNode, createScope(this.scope)));
                     }
                 }
-                else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "STYLE")
+                else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "SCRIPT" && childNode.nodeName != "STYLE")
                 {
                     childNode[SCOPE] = this.scope;
 
@@ -231,6 +249,8 @@ export default class TemplateProcessor
                     }
 
                     this.traverseElement(childNode);
+
+                    childNode.dispatchEvent(new Event("bind"));
                 }
             }
 

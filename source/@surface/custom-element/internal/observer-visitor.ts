@@ -25,6 +25,8 @@ import IListener                 from "@surface/reactive/interfaces/listener";
 import ISubscription             from "@surface/reactive/interfaces/subscription";
 import DataBind                  from "./data-bind";
 
+const PRIMITIVES = ["string", "boolean", "number"];
+
 export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly scope: Indexer;
@@ -195,18 +197,21 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             this.rollback();
         }
-        else if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
+        else if (!PRIMITIVES.includes(typeof this.evaluate(expression.object)))
         {
-            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : `${this.evaluate(expression.property)}`;
-
-            if (!this.brokenPath)
+            if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
             {
-                this.stack.unshift(key);
+                const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : `${this.evaluate(expression.property)}`;
+
+                if (!this.brokenPath)
+                {
+                    this.stack.unshift(key);
+                }
             }
-        }
-        else
-        {
-            super.visit(expression.property);
+            else
+            {
+                super.visit(expression.property);
+            }
         }
 
         super.visit(expression.object);

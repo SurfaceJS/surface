@@ -1,15 +1,15 @@
-import { Action2, Func2, Indexer, Nullable } from "@surface/core";
-import { contains }                          from "@surface/core/common/array";
-import { assert, typeGuard }                 from "@surface/core/common/generic";
-import Expression                            from "@surface/expression";
-import Evaluate                              from "@surface/expression/evaluate";
-import IArrowFunctionExpression              from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression                           from "@surface/expression/interfaces/expression";
-import ISubscription                         from "@surface/reactive/interfaces/subscription";
-import { enumerateRange }                    from "./common";
-import ObserverVisitor                       from "./observer-visitor";
-import ParallelWorker                        from "./parallel-worker";
-import parse                                 from "./parse";
+import { Func2, Indexer, Nullable } from "@surface/core";
+import { contains }                 from "@surface/core/common/array";
+import { assert, typeGuard }        from "@surface/core/common/generic";
+import Expression                   from "@surface/expression";
+import Evaluate                     from "@surface/expression/evaluate";
+import IArrowFunctionExpression     from "@surface/expression/interfaces/arrow-function-expression";
+import IExpression                  from "@surface/expression/interfaces/expression";
+import ISubscription                from "@surface/reactive/interfaces/subscription";
+import { enumerateRange }           from "./common";
+import ObserverVisitor              from "./observer-visitor";
+import ParallelWorker               from "./parallel-worker";
+import parse                        from "./parse";
 import
 {
     INJECTED_TEMPLATES,
@@ -130,8 +130,8 @@ export default class DirectiveProcessor
 
     private static async processConditionalDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
-        const start = document.createComment("if-directive-start");
-        const end   = document.createComment("if-directive-end");
+        const start = document.createComment("");
+        const end   = document.createComment("");
 
         const expressions:   Array<[IExpression, HTMLTemplateElement]> = [];
         const subscriptions: Array<ISubscription>                      = [];
@@ -144,7 +144,7 @@ export default class DirectiveProcessor
             {
                 subscriptions.forEach(x => x.unsubscribe());
 
-                return;
+                return Promise.resolve();
             }
 
             DirectiveProcessor.removeBindingsInRange(start, end);
@@ -176,7 +176,7 @@ export default class DirectiveProcessor
 
         let simbling = template.nextElementSibling;
 
-        while (simbling && typeGuard<Element, HTMLTemplateElement>(simbling, x => x.tagName == "TEMPLATE"))
+        while (simbling && typeGuard<HTMLTemplateElement>(simbling, simbling.tagName == "TEMPLATE"))
         {
             if (simbling.hasAttribute(HASH_ELSE_IF))
             {
@@ -214,8 +214,8 @@ export default class DirectiveProcessor
 
     private static async processForDirectives(host: Bindable<Element|Node>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
-        const start = document.createComment("for-directive-start");
-        const end   = document.createComment("for-directive-end");
+        const start = document.createComment("");
+        const end   = document.createComment("");
 
         const forExpression = /(?:const|var|let)\s+(.*)\s+(in|of)\s+(.*)/;
         const rawExpression = template.getAttribute(HASH_FOR)!;
@@ -244,7 +244,7 @@ export default class DirectiveProcessor
                 index++;
             }
 
-            return promises;
+            return Promise.all(promises) as unknown as Promise<void>;
         };
 
         const forOfIterator = (elements: Array<unknown>, action: Func2<unknown, number, Promise<void>>) =>
@@ -258,10 +258,10 @@ export default class DirectiveProcessor
                 index++;
             }
 
-            return promises;
+            return Promise.all(promises) as unknown as Promise<void>;
         };
 
-        const notifyFactory = (iterator: Action2<Array<unknown>, Func2<unknown, number, Promise<void>>>) =>
+        const notifyFactory = (iterator: Func2<Array<unknown>, Func2<unknown, number, Promise<void>>, Promise<void>>) =>
         {
             let changedTree = false;
             const tree = document.createDocumentFragment();
@@ -274,8 +274,8 @@ export default class DirectiveProcessor
                         ? { ...Evaluate.pattern(scope, (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0], element), ...scope, [SUBSCRIPTIONS]: [] }
                         : { ...scope, [aliasExpression]: element, [SUBSCRIPTIONS]: [] };
 
-                    const rowStart = document.createComment(`for-directive-element[${index}]-start`);
-                    const rowEnd   = document.createComment(`for-directive-element[${index}]-end`);
+                    const rowStart = document.createComment("");
+                    const rowEnd   = document.createComment("");
 
                     tree.appendChild(rowStart);
 
@@ -375,8 +375,8 @@ export default class DirectiveProcessor
 
     private static async processInjectorDirectives(host: Bindable<Element>, template: HTMLTemplateElement, parent: Node, scope: Indexer): Promise<void>
     {
-        const start = document.createComment("injector-directive-start");
-        const end   = document.createComment("injector-directive-end");
+        const start = document.createComment("");
+        const end   = document.createComment("");
 
         const injectorKey   = template.getAttribute(__INJECTOR__)!;
         const injectorScope = template.getAttribute(`${HASH_INJECTOR}:${injectorKey}`);

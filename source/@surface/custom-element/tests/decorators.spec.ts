@@ -1,9 +1,9 @@
 import "./fixtures/dom";
 
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                              from "chai";
-import CustomElement                           from "..";
-import { attribute, element }                  from "../decorators";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                  from "chai";
+import CustomElement               from "..";
+import { attribute, element }      from "../decorators";
 
 @suite
 export default class DecoratorsSpec
@@ -151,47 +151,5 @@ export default class DecoratorsSpec
         }
 
         expect(() => new Mock()).to.not.throw();
-    }
-
-    @test @shouldFail
-    public elementDecoratorOnNonHtmlElementSubclass(): void
-    {
-        class Mock
-        { }
-
-        expect(() => element("mock-element")(Mock))
-            .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
-    }
-
-    @test @shouldFail
-    public attributeDecoratorOnNonHtmlElementSubclass(): void
-    {
-        class Mock
-        {
-
-            private _value: Object = 1;
-            public get value(): Object
-            {
-                return this._value;
-            }
-
-            public set value(value: Object)
-            {
-                this._value = value;
-            }
-        }
-
-        expect(() => attribute(Mock.prototype, "value", Object.getOwnPropertyDescriptor(Mock.prototype, "value")!))
-            .to.throw(TypeError, "Target is not an valid instance of HTMLElement");
-    }
-
-    @test @shouldFail
-    public decorateNonHtmlElementSubclass(): void
-    {
-        class Mock
-        { }
-
-        expect(() => element("mock-element")(Mock))
-            .to.throw(TypeError, "Target is not an valid subclass of HTMLElement");
     }
 }

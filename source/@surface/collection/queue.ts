@@ -1,29 +1,47 @@
-import { Func1, Nullable } from "@surface/core";
-import Enumerable          from "@surface/enumerable";
+import { Func1 }  from "@surface/core";
+import Enumerable from "@surface/enumerable";
 
-const SOURCE = Symbol("queue:source");
+type Node<T> = { value: T, next?: Node<T> };
 
 export default class Queue<T> extends Enumerable<T>
 {
-    private readonly [SOURCE]: Array<T>;
+    private _length: number = 0;
+    private node: Node<T>|null = null;
+    private lastNode: Node<T>|null = null;
 
-    public constructor(...data: Array<T>)
+    public get current(): T|null
+    {
+        return this.node?.value ?? null;
+    }
+
+    public get length(): number
+    {
+        return this._length;
+    }
+
+    public constructor(items?: Iterable<T>)
     {
         super();
-        this[SOURCE] = data;
+
+        if (items)
+        {
+            Array.from(items).forEach(this.enqueue.bind(this));
+        }
     }
 
     public *[Symbol.iterator](): Iterator<T>
     {
-        while (this[SOURCE].length > 0)
+        if (this.node)
         {
-            yield this[SOURCE].pop()!;
-        }
-    }
+            yield this.node.value;
 
-    public clear(): void
-    {
-        this[SOURCE].splice(0, this[SOURCE].length);
+            let node: Node<T>|undefined = this.node;
+
+            while (node = node?.next)
+            {
+                yield node.value;
+            }
+        }
     }
 
     /**
@@ -38,19 +56,44 @@ export default class Queue<T> extends Enumerable<T>
     {
         if (predicate)
         {
-            return this[SOURCE].filter(predicate).length;
+            return super.count(predicate);
         }
 
-        return this[SOURCE].length;
+        return this.length;
     }
 
-    public dequeue(): Nullable<T>
+    public clear(): void
     {
-        return this[SOURCE].pop();
+        this.node = null;
+        this._length = 0;
     }
 
-    public enqueue(item: T): void
+    public enqueue(value: T): void
     {
-        this[SOURCE].push(item);
+        const node = { value };
+
+        if (this.node)
+        {
+            this.lastNode!.next = node;
+        }
+        else
+        {
+            this.node = node;
+        }
+
+        this.lastNode = node;
+
+        this._length++;
+    }
+
+    public dequeue(): T|null
+    {
+        const value = this.node?.value;
+
+        this.node = this.node?.next ?? null;
+
+        this._length--;
+
+        return value ?? null;
     }
 }
