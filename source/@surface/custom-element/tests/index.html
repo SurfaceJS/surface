@@ -1,0 +1,33 @@
+<span value='Hello {host.name}' on:click='host.handler' ::value-a='host.value' :value-b='host.x++'>
+    Some {'interpolation'} here
+</span>
+<span #inject:tile='{ title }'>
+    <h1>{title}</h1>
+</span>
+<hr>
+<span #if='host.status == 1'>
+    Active
+</span>
+<span #else-if='host.status == 2'>
+    Waiting
+</span>
+<span #else>
+    Suspended
+</span>
+<span #injector:value='{ name: host.name }'>
+    Default {name}
+</span>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Status</th>
+    </tr>
+    <tr #for='const item of host.items'>
+        <th>{item.id}</th>
+        <th>{item.name}</th>
+        <th>{item.status}</th>
+    </tr>
+</table>
+<hr>
+<span>{host.footer}</span>
