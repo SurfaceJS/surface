@@ -1130,7 +1130,8 @@ export default class Parser
         if (this.match("+") || this.match("-") || this.match("~") || this.match("!") || this.matchKeyword("typeof"))
         {
             const token = this.nextToken();
-            return new UnaryExpression(this.inheritGrammar(this.updateExpression), token.raw as UnaryOperator);
+
+            return new UnaryExpression(this.inheritGrammar(this.unaryExpression), token.raw as UnaryOperator);
         }
         else
         {

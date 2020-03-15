@@ -1246,6 +1246,13 @@ export const validExpressions: Array<ParseExpectedSpec> =
     },
     {
         scope:    scope,
+        raw:      "!!true",
+        value:    true,
+        toString: "!!true",
+        type:     UnaryExpression
+    },
+    {
+        scope:    scope,
         raw:      "typeof 1",
         value:    "number",
         toString: "typeof 1",
