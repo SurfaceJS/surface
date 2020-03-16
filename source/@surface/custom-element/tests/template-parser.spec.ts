@@ -1,17 +1,17 @@
 import "./fixtures/dom";
 
-import Expression                  from "@surface/expression";
-import IArrowFunctionExpression    from "@surface/expression/interfaces/arrow-function-expression";
-import { shouldFail, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import ITemplateDescriptor         from "../internal/interfaces/template-descriptor";
-import InterpolatedExpression      from "../internal/interpolated-expression";
-import TemplateParser              from "../internal/template-parser";
+import Expression                              from "@surface/expression";
+import IArrowFunctionExpression                from "@surface/expression/interfaces/arrow-function-expression";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                              from "chai";
+import ITemplateDescriptor                     from "../internal/interfaces/template-descriptor";
+import InterpolatedExpression                  from "../internal/interpolated-expression";
+import TemplateParser                          from "../internal/template-parser";
 
 @suite
 export default class TemplateParserSpec
 {
-    @test
+    @shouldPass @test
     public analyze(): void
     {
         const template = document.createElement("template");
@@ -51,6 +51,7 @@ export default class TemplateParserSpec
             "</table>",
             "<hr>",
             "<span>{host.footer}</span>",
+            "<!---->",
         ].join("");
 
         const expected: ITemplateDescriptor =
@@ -291,89 +292,89 @@ export default class TemplateParserSpec
             lookup: [[0], [0, 0], [1], [3], [4], [5], [6], [7, 0, 1], [9, 0]],
         };
 
-        const actual = TemplateParser.parse(template)[1];
+        const actual = TemplateParser.parseReference(template);
 
         assert.deepEqual(actual, expected);
     }
 
-    @test
+    @shouldPass @test
     public decomposeIfAndFor(): void
     {
         const template = document.createElement("template");
 
         template.innerHTML = "<span #if=\"true\" #for='const item of items'>{item.value}</span>";
 
-        const expected = "<template #if=\"true\"><template #for=\"const item of items\" __decomposed__=\"\"><span></span></template></template>";
+        const expected = "<template><template><span></span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
 
-    @test
+    @shouldPass @test
     public decomposeIfAndInjector(): void
     {
         const template = document.createElement("template");
 
         template.innerHTML = "<span #if=\"true\" #injector:value=\"source\">Placeholder</span>";
 
-        const expected = "<template #if=\"true\"><template #injector:value=\"source\" __decomposed__=\"\"><span>Placeholder</span></template></template>";
+        const expected = "<template><template><span>Placeholder</span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
 
-    @test
+    @shouldPass @test
+    public decomposeForAndInjector(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span #for=\"const [key, value] of items\" #injector:[key]=\"source\">{source.value}</span>";
+
+        const expected = "<template><template><span></span></template></template>";
+
+        const actual = TemplateParser.parse(template)[0].innerHTML;
+
+        assert.equal(actual, expected);
+    }
+
+    @shouldPass @test
     public decomposeIfAndInject(): void
     {
         const template = document.createElement("template");
 
         template.innerHTML = "<span #if=\"true\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template #if=\"true\"><template #inject:value=\"source\" __decomposed__=\"\"><span></span></template></template>";
+        const expected = "<template><template><span></span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
 
-    @test
-    public decomposeForAndInjector(): void
-    {
-        const template = document.createElement("template");
-
-        template.innerHTML = "<span #for=\"const item of items\" #injector:value=\"source\">{source.value}</span>";
-
-        const expected = "<template #for=\"const item of items\"><template #injector:value=\"source\" __decomposed__=\"\"><span></span></template></template>";
-
-        const actual = TemplateParser.parse(template)[0].innerHTML;
-
-        assert.equal(actual, expected);
-    }
-
-    @test
+    @shouldPass @test
     public decomposeForAndInject(): void
     {
         const template = document.createElement("template");
 
         template.innerHTML = "<span #for=\"const item of items\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template #for=\"const item of items\"><template #inject:value=\"source\" __decomposed__=\"\"><span></span></template></template>";
+        const expected = "<template><template><span></span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
 
-    @test
+    @shouldPass @test
     public decomposeInjectorAndInject(): void
     {
         const template = document.createElement("template");
 
         template.innerHTML = "<span #injector:value=\"source\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template #injector:value=\"source\"><template #inject:value=\"source\" __decomposed__=\"\"><span></span></template></template>";
+        const expected = "<template><template><span></span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
@@ -387,6 +388,6 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #for='item of items'></span>";
 
-        assert.throw(() => TemplateParser.parse(template));
+        assert.throw(() => TemplateParser.parse(template), `Invalid #for directive expression: item of items`);
     }
 }

@@ -16,7 +16,8 @@ import InterpolatedExpression                            from "./interpolated-ex
 import parse                                             from "./parse";
 import { dinamicKey, forExpression, interpolation }      from "./patterns";
 
-const DECOMPOSED    = "__DECOMPOSED__";
+const DECOMPOSED = Symbol("custom-element:decomposed");
+
 const HASH_ELSE     = "#else";
 const HASH_ELSE_IF  = "#else-if";
 const HASH_FOR      = "#for";
@@ -37,24 +38,21 @@ export default class TemplateParser
 
     public static parse(template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
     {
-        return new TemplateParser().parse(template.cloneNode(true) as HTMLTemplateElement);
+        const clone      = template.cloneNode(true) as HTMLTemplateElement;
+        const descriptor = new TemplateParser().parse(clone);
+
+        return [clone, descriptor];
     }
 
-    private copyChilds(newElement: HTMLTemplateElement, oldElement: HTMLTemplateElement): void
+    public static parseReference(template: HTMLTemplateElement): ITemplateDescriptor
     {
-        oldElement.innerHTML = "";
-
-        // tslint:disable-next-line:prefer-for-of
-        for (let index = 0; index < newElement.content.childNodes.length; index++)
-        {
-            oldElement.content.appendChild(newElement.content.childNodes[index]);
-        }
+        return new TemplateParser().parse(template);
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
     private decomposeDirectives(element: Element): HTMLTemplateElement
     {
-        if (!element.hasAttribute(DECOMPOSED))
+        if (!this.hasDecomposed(element))
         {
             const template = this.elementToTemplate(element);
 
@@ -149,6 +147,11 @@ export default class TemplateParser
         return this.stack.join("-");
     }
 
+    private hasDecomposed(element: Element & { [DECOMPOSED]?: boolean }): boolean
+    {
+        return !!element[DECOMPOSED];
+    }
+
     private hasDirectives(attributes: Array<string>): boolean
     {
         return attributes.some
@@ -203,16 +206,16 @@ export default class TemplateParser
 
         const decomposed = this.decomposeDirectives(innerTemplate);
 
-        decomposed.setAttribute(DECOMPOSED, "");
+        this.setDecomposed(decomposed);
 
         template.content.appendChild(decomposed);
     }
 
-    private parse(template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
+    private parse(template: HTMLTemplateElement): ITemplateDescriptor
     {
         this.traverseNode(template.content);
 
-        return [template, { elements: this.elements, directives: this.directives, lookup: this.lookup }];
+        return { elements: this.elements, directives: this.directives, lookup: this.lookup };
     }
 
     private parseAttributes(element: Element): void
@@ -262,13 +265,12 @@ export default class TemplateParser
 
         const directives = this.mapDirectives(template.attributes);
 
+        /* istanbul ignore else */
         if (directives.if)
         {
             const branches: Array<IIfStatementBranch> = [];
 
-            const [parsed, descriptor] = TemplateParser.parse(template);
-
-            this.copyChilds(parsed, template);
+            const descriptor = TemplateParser.parseReference(template);
 
             const conditionalBranchDescriptor: IIfStatementBranch =
             {
@@ -281,7 +283,7 @@ export default class TemplateParser
 
             let nextElementSibling = template.nextElementSibling;
 
-            // template.setAttribute(HASH_IF, "");
+            template.removeAttribute(HASH_IF);
 
             this.saveLookup();
 
@@ -302,9 +304,7 @@ export default class TemplateParser
 
                 this.stack.push(index);
 
-                const [parsed, descriptor] = TemplateParser.parse(simblingTemplate);
-
-                this.copyChilds(parsed, simblingTemplate);
+                const descriptor = TemplateParser.parseReference(simblingTemplate);
 
                 const conditionalBranchDescriptor: IIfStatementBranch =
                 {
@@ -315,8 +315,8 @@ export default class TemplateParser
 
                 branches.push(conditionalBranchDescriptor);
 
-                // simblingTemplate.setAttribute(HASH_ELSE_IF, "");
-                // simblingTemplate.removeAttribute(HASH_ELSE);
+                simblingTemplate.removeAttribute(HASH_ELSE_IF);
+                simblingTemplate.removeAttribute(HASH_ELSE);
 
                 nextElementSibling = simblingTemplate.nextElementSibling;
 
@@ -348,9 +348,7 @@ export default class TemplateParser
                 ? (parse(`(${aliasExpression}) => 0`) as IArrowFunctionExpression).parameters[0]
                 : aliasExpression;
 
-            const [parsed, descriptor] = TemplateParser.parse(template);
-
-            this.copyChilds(parsed, template);
+            const descriptor = TemplateParser.parseReference(template);
 
             const loopDescriptor: IForStatement =
             {
@@ -364,7 +362,7 @@ export default class TemplateParser
 
             this.directives.loop.push(loopDescriptor);
 
-            // template.setAttribute(HASH_FOR, "");
+            template.removeAttribute(HASH_FOR);
 
             this.saveLookup();
         }
@@ -372,9 +370,7 @@ export default class TemplateParser
         {
             const { key, value } = directives.injector;
 
-            const [parsed, descriptor] = TemplateParser.parse(template);
-
-            this.copyChilds(parsed, template);
+            const descriptor = TemplateParser.parseReference(template);
 
             const injectionDescriptor: IInjectorStatement =
             {
@@ -386,7 +382,7 @@ export default class TemplateParser
 
             this.directives.injector.push(injectionDescriptor);
 
-            // template.setAttribute(HASH_INJECTOR + ":" + key, "");
+            template.removeAttribute(HASH_INJECTOR + ":" + key);
 
             this.saveLookup();
         }
@@ -394,9 +390,7 @@ export default class TemplateParser
         {
             const { key, value } = directives.inject;
 
-            const [parsed, descriptor] = TemplateParser.parse(template);
-
-            this.copyChilds(parsed, template);
+            const descriptor = TemplateParser.parseReference(template);
 
             const injectionDescriptor: IInjectStatement =
             {
@@ -408,7 +402,7 @@ export default class TemplateParser
 
             this.directives.inject.push(injectionDescriptor);
 
-            // template.removeAttribute(HASH_INJECT + ":" + key);
+            template.removeAttribute(HASH_INJECT + ":" + key);
 
             this.saveLookup();
         }
@@ -454,13 +448,18 @@ export default class TemplateParser
         this.lookup.push([...this.stack]);
     }
 
+    private setDecomposed(element: Element & { [DECOMPOSED]?: boolean }): void
+    {
+        element[DECOMPOSED] = true;
+    }
+
     private traverseNode(node: Node): void
     {
         for (let index = 0; index < node.childNodes.length; index++)
         {
             const childNode = node.childNodes[index];
 
-            if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "SCRIPT" && childNode.nodeName != "STYLE")
+            if ((childNode.nodeType == Node.ELEMENT_NODE || childNode.nodeType == Node.TEXT_NODE) && childNode.nodeName != "SCRIPT" && childNode.nodeName != "STYLE")
             {
                 this.stack.push(index);
 
@@ -483,7 +482,7 @@ export default class TemplateParser
                         this.parseAttributes(childNode);
                     }
                 }
-                else if (childNode.nodeType == Node.TEXT_NODE)
+                else
                 {
                     this.parseTextNode(childNode);
                 }
