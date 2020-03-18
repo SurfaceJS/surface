@@ -1,7 +1,6 @@
 import "./fixtures/dom";
 
 import Expression                              from "@surface/expression";
-import IArrowFunctionExpression                from "@surface/expression/interfaces/arrow-function-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import ITemplateDescriptor                     from "../internal/interfaces/template-descriptor";
@@ -65,19 +64,19 @@ export default class TemplateParserSpec
                             name:       "value",
                             key:        "value",
                             expression: InterpolatedExpression.parse("Hello {host.name}"),
-                            type:       "interpolation"
+                            type:       "interpolation",
                         },
                         {
                             name:       "click",
                             key:        "click",
                             expression: Expression.parse("host.handler"),
-                            type:       "event"
+                            type:       "event",
                         },
                         {
                             name:       "value-a",
                             key:        "valueA",
-                            expression: Expression.parse("host.value"),
-                            type:       "twoway"
+                            expression: Expression.literal("host.value"),
+                            type:       "twoway",
                         },
                         {
                             name:       "value-b",
@@ -97,6 +96,7 @@ export default class TemplateParserSpec
                 },
                 {
                     attributes: [],
+                    path:       "9",
                     textNodes:
                     [
                         {
@@ -104,7 +104,6 @@ export default class TemplateParserSpec
                             expression: InterpolatedExpression.parse("{host.footer}"),
                         }
                     ],
-                    path: "9",
                 }
             ],
             directives:
@@ -165,39 +164,7 @@ export default class TemplateParserSpec
                         ]
                     }
                 ],
-                inject:
-                [
-                    {
-                        descriptor:
-                        {
-                            directives:
-                            {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
-                            },
-                            elements:
-                            [
-                                {
-                                    attributes: [],
-                                    path:       "0-0",
-                                    textNodes:
-                                    [
-                                        {
-                                            path:      "0-0-0",
-                                            expression: InterpolatedExpression.parse("{title}")
-                                        }
-                                    ],
-                                }
-                            ],
-                            lookup: [[0, 0, 0]],
-                        },
-                        pattern: (Expression.parse("({ title }) => 0") as IArrowFunctionExpression).parameters[0],
-                        key:     "title",
-                        path:    "1"
-                    }
-                ],
+                inject: [],
                 injector:
                 [
                     {
@@ -224,7 +191,7 @@ export default class TemplateParserSpec
                                     ]
                                 }
                             ],
-                            lookup: [[0, 0]],
+                            lookup: [[0], [0, 0]],
                         },
                         expression: Expression.parse("({ name: host.name })"),
                         key:        "value",
@@ -280,7 +247,7 @@ export default class TemplateParserSpec
                                     path: "0-2"
                                 }
                             ],
-                            lookup: [[0, 0, 0], [0, 1, 0], [0, 2, 0]],
+                            lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
                         },
                         destructured: false,
                         expression:   Expression.member(Expression.identifier("host"), Expression.identifier("items"), false),
@@ -289,7 +256,7 @@ export default class TemplateParserSpec
                     }
                 ],
             },
-            lookup: [[0], [0, 0], [1], [3], [4], [5], [6], [7, 0, 1], [9, 0]],
+            lookup: [[0], [0, 0], [3], [4], [5], [6], [7, 0, 1], [9], [9, 0]],
         };
 
         const actual = TemplateParser.parseReference(template);
@@ -304,7 +271,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #if=\"true\" #for='const item of items'>{item.value}</span>";
 
-        const expected = "<template><template><span></span></template></template>";
+        const expected = "<template><template><span> </span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
@@ -332,7 +299,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #for=\"const [key, value] of items\" #injector:[key]=\"source\">{source.value}</span>";
 
-        const expected = "<template><template><span></span></template></template>";
+        const expected = "<template><template><span> </span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
@@ -346,7 +313,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #if=\"true\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template><template><span></span></template></template>";
+        const expected = "<template><template #inject:value=\"source\"><span>{source.value}</span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
@@ -360,7 +327,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #for=\"const item of items\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template><template><span></span></template></template>";
+        const expected = "<template><template #inject:value=\"source\"><span>{source.value}</span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 
@@ -374,7 +341,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #injector:value=\"source\" #inject:value=\"source\">{source.value}</span>";
 
-        const expected = "<template><template><span></span></template></template>";
+        const expected = "<template><template #inject:value=\"source\"><span>{source.value}</span></template></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 

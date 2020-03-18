@@ -1,13 +1,13 @@
 import { contains }                                      from "@surface/core/common/array";
 import { assert, typeGuard }                             from "@surface/core/common/generic";
 import { dashedToCamel }                                 from "@surface/core/common/string";
+import Expression                                        from "@surface/expression";
 import IArrowFunctionExpression                          from "@surface/expression/interfaces/arrow-function-expression";
 import { enumerateExpresssionAttributes, scapeBrackets } from "./common";
 import IAttributeDescriptor                              from "./interfaces/attribute-descriptor";
 import IDirectivesDescriptor                             from "./interfaces/directives-descriptor";
 import IElementDescriptor                                from "./interfaces/element-descriptor";
 import IForStatement                                     from "./interfaces/for-statement";
-import IInjectStatement                                  from "./interfaces/inject-statement";
 import IInjectorStatement                                from "./interfaces/injector-statement";
 import ITemplateDescriptor                               from "./interfaces/template-descriptor";
 import ITextNodeDescriptor                               from "./interfaces/text-node-descriptor";
@@ -238,7 +238,11 @@ export default class TemplateParser
                         ? "event"
                         : "interpolation";
 
-            const expression = type == "interpolation" ? InterpolatedExpression.parse(attribute.value) : parse(attribute.value);
+            const expression = type == "interpolation"
+                ? InterpolatedExpression.parse(attribute.value)
+                : type == "twoway"
+                    ? Expression.literal(attribute.value)
+                    : parse(attribute.value);
 
             if (isEvent || isOneWay || isTwoWay)
             {
@@ -375,7 +379,7 @@ export default class TemplateParser
             const injectionDescriptor: IInjectorStatement =
             {
                 descriptor,
-                expression: parse(`(${value})`),
+                expression: parse(`(${value || "{}"})`),
                 key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : key,
                 path:       this.getPath()
             };
@@ -386,26 +390,26 @@ export default class TemplateParser
 
             this.saveLookup();
         }
-        else if (directives.inject)
-        {
-            const { key, value } = directives.inject;
+        // else if (directives.inject)
+        // {
+            // const { key, value } = directives.inject;
 
-            const descriptor = TemplateParser.parseReference(template);
+            // const descriptor = TemplateParser.parseReference(template);
 
-            const injectionDescriptor: IInjectStatement =
-            {
-                descriptor,
-                pattern:    (parse(`(${value}) => 0`) as IArrowFunctionExpression).parameters[0],
-                key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : key,
-                path:       this.getPath()
-            };
+            // const injectionDescriptor: IInjectStatement =
+            // {
+            //     descriptor,
+            //     pattern:    (parse(`(${value}) => 0`) as IArrowFunctionExpression).parameters[0],
+            //     key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : key,
+            //     path:       this.getPath()
+            // };
 
-            this.directives.inject.push(injectionDescriptor);
+            // this.directives.inject.push(injectionDescriptor);
 
-            template.removeAttribute(HASH_INJECT + ":" + key);
+            // template.removeAttribute(HASH_INJECT + ":" + directives.inject.key);
 
-            this.saveLookup();
-        }
+            // this.saveLookup();
+        // }
     }
 
     private parseTextNode(element: ChildNode): void
@@ -416,7 +420,7 @@ export default class TemplateParser
         {
             const rawExpression = element.nodeValue;
 
-            element.nodeValue = "";
+            element.nodeValue = " ";
 
             const expression = InterpolatedExpression.parse(rawExpression);
 
@@ -429,10 +433,15 @@ export default class TemplateParser
             if (relatives.length > 0)
             {
                 relatives[relatives.length - 1].textNodes.push(textNodeDescriptor);
+
             }
             else
             {
-                this.elements.push({ attributes: [], path: this.stack.slice(0, this.stack.length - 1).join("-"), textNodes: [textNodeDescriptor] });
+                const parentPath = this.stack.slice(0, this.stack.length - 1);
+
+                this.lookup.push([...parentPath]);
+
+                this.elements.push({ attributes: [], path: parentPath.join("-"), textNodes: [textNodeDescriptor] });
             }
 
             this.saveLookup();
