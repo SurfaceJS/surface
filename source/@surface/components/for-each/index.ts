@@ -1,5 +1,4 @@
-import { Indexer, Nullable }  from "@surface/core";
-import CustomElement          from "@surface/custom-element";
+import { Nullable }           from "@surface/core";
 import Enumerable             from "@surface/enumerable";
 import Component              from "..";
 import { attribute, element } from "../decorators";
@@ -92,7 +91,7 @@ export default class ForEach extends Component
     {
         if (this.template)
         {
-            CustomElement.clearDirectives(this.childNodes);
+            // CustomElement.clearDirectives(this.childNodes);
 
             super.innerHTML = "";
 
@@ -119,13 +118,13 @@ export default class ForEach extends Component
 
             if (sequence.any())
             {
-                for (const item of sequence)
+                for (const _ of sequence)
                 {
                     const content = this.template.content.cloneNode(true);
 
                     content.normalize();
 
-                    CustomElement.processDirectives(this, content, { ...super.context, index, item } as Indexer); //TODO - Review binding order
+                    // CustomElement.processDirectives(this, content, { ...super.context, index, item } as Indexer); //TODO - Review binding order
 
                     super.appendChild(content);
 

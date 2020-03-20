@@ -1,5 +1,4 @@
 import { typeGuard }          from "@surface/core/common/generic";
-import CustomElement          from "@surface/custom-element";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import style                  from "./index.scss";
@@ -37,7 +36,7 @@ export default class Switch extends Component
     {
         const template = this.templates.get(this.value);
 
-        CustomElement.clearDirectives(this.childNodes);
+        // CustomElement.clearDirectives(this.childNodes);
 
         super.innerHTML = "";
 
@@ -47,7 +46,7 @@ export default class Switch extends Component
 
             content.normalize();
 
-            CustomElement.processDirectives(this, content, super.context);
+            // CustomElement.processDirectives(this, content, super.context);
 
             super.appendChild(content);
         }
@@ -57,7 +56,7 @@ export default class Switch extends Component
 
     public appendChild<T extends Node>(element: T): T
     {
-        if (typeGuard<Node, HTMLTemplateElement>(element, x => x.nodeName == "template"))
+        if (typeGuard<HTMLTemplateElement>(element, element.nodeName == "template"))
         {
             this.templates.set(element.getAttribute("when") || "default", element);
         }

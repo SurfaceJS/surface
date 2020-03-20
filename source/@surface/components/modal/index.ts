@@ -178,7 +178,7 @@ export default class Modal extends Component
         }
     }
 
-    protected attributeChangedCallback(): void
+    public attributeChangedCallback(): void
     {
         if (this.visible)
         {
