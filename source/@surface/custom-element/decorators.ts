@@ -5,9 +5,11 @@ import { camelToDashed }                         from "@surface/core/common/stri
 import Reactive                                  from "@surface/reactive";
 import CustomElement                             from ".";
 import ICustomElement                            from "./interfaces/custom-element";
-import Metadata                                  from "./internal/metadata";
-import StaticMetadata                            from "./internal/static-metadata";
+import Metadata                                  from "./internal/metadata/metadata";
+import PrototypeMetadata                         from "./internal/metadata/prototype-metadata";
+import StaticMetadata                            from "./internal/metadata/static-metadata";
 import * as symbols                              from "./internal/symbols";
+import TemplateParser                            from "./internal/template-parser";
 import TemplateProcessor                         from "./internal/template-processor";
 
 const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
@@ -65,8 +67,8 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         const attributeName = camelToDashed(propertyKey);
 
-        const metadata       = Metadata.from(target);
-        const staticMetadata = StaticMetadata.from(constructor);
+        const prototypeMetadata = PrototypeMetadata.from(target);
+        const staticMetadata    = StaticMetadata.from(constructor);
 
         staticMetadata.observedAttributes.push(attributeName);
 
@@ -115,7 +117,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
         const attributeChangedCallback = target.attributeChangedCallback;
 
 
-        if (!attributeChangedCallback || attributeChangedCallback != metadata.attributeChangedCallback)
+        if (!attributeChangedCallback || attributeChangedCallback != prototypeMetadata.attributeChangedCallback)
         {
             target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
             {
@@ -128,7 +130,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
                 }
             };
 
-            metadata.attributeChangedCallback = target.attributeChangedCallback;
+            prototypeMetadata.attributeChangedCallback = target.attributeChangedCallback;
         }
 
         const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown) =>
@@ -190,6 +192,8 @@ export function element(name: string, template?: string, style?: string, options
             // templateElement.innerHTML = template ?? "<slot></slot>";
             templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
 
+            const descriptor = TemplateParser.parseReference(templateElement);
+
             if (style)
             {
                 staticMetadata.styles.push(stringToCSSStyleSheet(style));
@@ -199,7 +203,7 @@ export function element(name: string, template?: string, style?: string, options
 
             const action = (instance: InstanceType<T> & CustomElement) =>
             {
-                TemplateProcessor.process(instance, instance.shadowRoot, { host: instance });
+                TemplateProcessor.process({ host: instance }, instance, instance.shadowRoot, descriptor);
 
                 instance.onAfterBind?.();
 

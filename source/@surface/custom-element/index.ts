@@ -1,10 +1,12 @@
-import { Action, Indexer }        from "@surface/core";
-import ICustomElement             from "./interfaces/custom-element";
-import References                 from "./internal/references";
-import StaticMetadata             from "./internal/static-metadata";
-import { SCOPE, STATIC_METADATA } from "./internal/symbols";
+import { Action }          from "@surface/core";
+import ICustomElement      from "./interfaces/custom-element";
+import StaticMetadata      from "./internal/metadata/static-metadata";
+import TemplateMetadata    from "./internal/metadata/template-metadata";
+import References          from "./internal/references";
+import { STATIC_METADATA } from "./internal/symbols";
+import { Scope }           from "./internal/types";
 
-type Scope = Indexer & { host?: HTMLElement };
+
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
@@ -12,15 +14,13 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
     protected get scope(): Scope
     {
-        return this[SCOPE];
+        return TemplateMetadata.from(this).scope;
     }
 
     public get references(): References
     {
         return this._references;
     }
-
-    protected [SCOPE]: Scope = { };
 
     public shadowRoot!: ShadowRoot;
 

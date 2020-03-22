@@ -1,9 +1,10 @@
 import { Indexer, Nullable } from "@surface/core";
 import ISubscription         from "@surface/reactive/interfaces/subscription";
+import Metadata              from "./metadata/metadata";
 import { nativeEvents }      from "./native-events";
 import { interpolation }     from "./patterns";
-import { SUBSCRIPTIONS }     from "./symbols";
-import { Subscriber }        from "./types";
+// import { SUBSCRIPTIONS }     from "./symbols";
+// import { Subscriber }        from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -35,9 +36,9 @@ export function classMap(classes: Record<string, boolean>): string
         .join(" ");
 }
 
-export function pushSubscription(target: Subscriber, subscription: ISubscription): void
+export function pushSubscription(target: object, subscription: ISubscription): void
 {
-    (target[SUBSCRIPTIONS] = target[SUBSCRIPTIONS] ?? []).push(subscription);
+    Metadata.from(target).subscriptions.push(subscription);
 }
 
 export function scapeBrackets(value: string)

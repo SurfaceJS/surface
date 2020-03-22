@@ -17,7 +17,7 @@ export default class ParallelWorker
 
     public constructor(interval?: number)
     {
-        this.interval = interval ?? 16.17;
+        this.interval = interval ?? 33.33;
     }
 
     public static async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>

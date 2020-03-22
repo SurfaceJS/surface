@@ -4,8 +4,9 @@ import ITemplateDescriptor from "./template-descriptor";
 
 export default interface IInjectStatement
 {
-    descriptor: ITemplateDescriptor;
-    pattern:    IPattern;
-    key:        string|IExpression;
-    path:       string;
+    descriptor:   ITemplateDescriptor;
+    destructured: boolean;
+    key:          IExpression;
+    path:         string;
+    pattern:      string|IPattern;
 }

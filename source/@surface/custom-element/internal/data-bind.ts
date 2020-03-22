@@ -1,25 +1,26 @@
-import { Indexer }                       from "@surface/core";
-import { getKeyMember }                  from "@surface/core/common/object";
-import Reactive                          from "@surface/reactive";
-import IPropertyListener                 from "@surface/reactive/interfaces/property-listener";
-import PropertyListener                  from "@surface/reactive/property-listener";
-import PropertySubscription              from "@surface/reactive/property-subscription";
-import IListener                         from "../../reactive/interfaces/listener";
-import IReactor                          from "../../reactive/interfaces/reactor";
-import ISubscription                     from "../../reactive/interfaces/subscription";
-import { pushSubscription }              from "./common";
-import { LISTENNING, SUBSCRIPTIONS }     from "./symbols";
-import { ElementSubscriber, Subscriber } from "./types";
+import { Indexer }          from "@surface/core";
+import { getKeyMember }     from "@surface/core/common/object";
+import Reactive             from "@surface/reactive";
+import IPropertyListener    from "@surface/reactive/interfaces/property-listener";
+import PropertyListener     from "@surface/reactive/property-listener";
+import PropertySubscription from "@surface/reactive/property-subscription";
+import IListener            from "../../reactive/interfaces/listener";
+import IReactor             from "../../reactive/interfaces/reactor";
+import ISubscription        from "../../reactive/interfaces/subscription";
+import { pushSubscription } from "./common";
+import Metadata             from "./metadata/metadata";
 
 export default class DataBind
 {
-    public static oneWay(target: Subscriber, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): [IReactor, ISubscription]
+    public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): [IReactor, ISubscription]
     {
         const [key, member]                     = getKeyMember(target, path);
         const [reactor, observer, subscription] = lazy ? Reactive.observe(target, path) : Reactive.observe(target, path, listener);
         const subscriptions                     = [] as Array<ISubscription>;
 
-        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !(member as ElementSubscriber)[LISTENNING])
+        const metadata = Metadata.from(member);
+
+        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !metadata.hasListener)
         {
             type Key = keyof HTMLElement;
 
@@ -36,13 +37,13 @@ export default class DataBind
                 {
                     member.removeEventListener("input", action);
 
-                    (member as ElementSubscriber)[LISTENNING] = false;
+                    metadata.hasListener = false;
                 }
             };
 
             subscriptions.push(subscription);
 
-            (member as ElementSubscriber)[LISTENNING] = true;
+            metadata.hasListener = true;
         }
 
         let subscriptionsHandler: ISubscription;
@@ -65,7 +66,7 @@ export default class DataBind
         return [reactor, subscriptionsHandler];
     }
 
-    public static twoWay(left: Subscriber, leftPath: string, right: Subscriber, rightPath: string): void
+    public static twoWay(left: object, leftPath: string, right: object, rightPath: string): void
     {
         const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
         const [rightKey, rightMember] = getKeyMember(right, rightPath);
@@ -90,15 +91,11 @@ export default class DataBind
         pushSubscription(right, leftSubscription);
     }
 
-    public static unbind(target: Subscriber): void
+    public static unbind(target: object): void
     {
-        const subscriptions = target[SUBSCRIPTIONS];
+        const metadata = Metadata.from(target);
 
-        if (subscriptions)
-        {
-            subscriptions.forEach(x => x.unsubscribe());
-
-            target[SUBSCRIPTIONS] = [];
-        }
+        metadata.subscriptions.forEach(x => x.unsubscribe());
+        metadata.subscriptions = [];
     }
 }

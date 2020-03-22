@@ -8,6 +8,7 @@ import IAttributeDescriptor                              from "./interfaces/attr
 import IDirectivesDescriptor                             from "./interfaces/directives-descriptor";
 import IElementDescriptor                                from "./interfaces/element-descriptor";
 import IForStatement                                     from "./interfaces/for-statement";
+import IInjectStatement                                  from "./interfaces/inject-statement";
 import IInjectorStatement                                from "./interfaces/injector-statement";
 import ITemplateDescriptor                               from "./interfaces/template-descriptor";
 import ITextNodeDescriptor                               from "./interfaces/text-node-descriptor";
@@ -52,6 +53,8 @@ export default class TemplateParser
     // tslint:disable-next-line:cyclomatic-complexity
     private decomposeDirectives(element: Element): HTMLTemplateElement
     {
+        // TODO: Review inject priority
+
         if (!this.hasDecomposed(element))
         {
             const template = this.elementToTemplate(element);
@@ -380,7 +383,7 @@ export default class TemplateParser
             {
                 descriptor,
                 expression: parse(`(${value || "{}"})`),
-                key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : key,
+                key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : Expression.literal(key),
                 path:       this.getPath()
             };
 
@@ -390,37 +393,38 @@ export default class TemplateParser
 
             this.saveLookup();
         }
-        // else if (directives.inject)
-        // {
-            // const { key, value } = directives.inject;
+        else if (directives.inject)
+        {
+            const { key, value } = directives.inject;
 
-            // const descriptor = TemplateParser.parseReference(template);
+            const descriptor = TemplateParser.parseReference(template);
 
-            // const injectionDescriptor: IInjectStatement =
-            // {
-            //     descriptor,
-            //     pattern:    (parse(`(${value}) => 0`) as IArrowFunctionExpression).parameters[0],
-            //     key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : key,
-            //     path:       this.getPath()
-            // };
+            const injectionDescriptor: IInjectStatement =
+            {
+                descriptor,
+                destructured: value.startsWith("{"),
+                key:          dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : Expression.literal(key),
+                path:         this.getPath(),
+                pattern:      (parse(`(${value}) => 0`) as IArrowFunctionExpression).parameters[0],
+            };
 
-            // this.directives.inject.push(injectionDescriptor);
+            this.directives.inject.push(injectionDescriptor);
 
-            // template.removeAttribute(HASH_INJECT + ":" + directives.inject.key);
+            template.removeAttribute(HASH_INJECT + ":" + directives.inject.key);
 
-            // this.saveLookup();
-        // }
+            this.saveLookup();
+        }
     }
 
-    private parseTextNode(element: ChildNode): void
+    private parseTextNode(node: ChildNode): void
     {
-        assert(element.nodeValue);
+        assert(node.nodeValue);
 
-        if (interpolation.test(element.nodeValue))
+        if (interpolation.test(node.nodeValue))
         {
-            const rawExpression = element.nodeValue;
+            const rawExpression = node.nodeValue;
 
-            element.nodeValue = " ";
+            node.nodeValue = " ";
 
             const expression = InterpolatedExpression.parse(rawExpression);
 
@@ -428,27 +432,29 @@ export default class TemplateParser
 
             const textNodeDescriptor: ITextNodeDescriptor = { path, expression };
 
-            const relatives = this.elements.filter(x => path.startsWith(x.path));
+            const rawParentPath = this.stack.slice(0, this.stack.length - 1);
 
-            if (relatives.length > 0)
+            this.lookup.push([...rawParentPath]);
+
+            const parentPath = rawParentPath.join("-");
+
+            const element = this.elements.find(x => x.path == parentPath);
+
+            if (element)
             {
-                relatives[relatives.length - 1].textNodes.push(textNodeDescriptor);
+                element.textNodes.push(textNodeDescriptor);
 
             }
             else
             {
-                const parentPath = this.stack.slice(0, this.stack.length - 1);
-
-                this.lookup.push([...parentPath]);
-
-                this.elements.push({ attributes: [], path: parentPath.join("-"), textNodes: [textNodeDescriptor] });
+                this.elements.push({ attributes: [], path: parentPath, textNodes: [textNodeDescriptor] });
             }
 
             this.saveLookup();
         }
         else
         {
-            element.nodeValue = scapeBrackets(element.nodeValue);
+            node.nodeValue = scapeBrackets(node.nodeValue);
         }
     }
 

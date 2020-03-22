@@ -1,5 +1,5 @@
 import { Indexer }         from "@surface/core";
-import { STATIC_METADATA } from "../internal/symbols";
+import { STATIC_METADATA } from "../symbols";
 
 export default class StaticMetadata
 {

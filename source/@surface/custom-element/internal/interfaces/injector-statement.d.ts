@@ -5,6 +5,6 @@ export default interface IInjectorStatement
 {
     descriptor: ITemplateDescriptor;
     expression: IExpression;
-    key:        string|IExpression;
+    key:        IExpression;
     path:       string;
 }

@@ -1,6 +1,7 @@
 import "./fixtures/dom";
 
 import Expression                              from "@surface/expression";
+import IArrowFunctionExpression                from "@surface/expression/interfaces/arrow-function-expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import ITemplateDescriptor                     from "../internal/interfaces/template-descriptor";
@@ -164,7 +165,40 @@ export default class TemplateParserSpec
                         ]
                     }
                 ],
-                inject: [],
+                inject:
+                [
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                inject:   [],
+                                injector: [],
+                                logical:  [],
+                                loop:     [],
+                            },
+                            elements:
+                            [
+                                {
+                                    attributes: [],
+                                    path:       "0-0",
+                                    textNodes:
+                                    [
+                                        {
+                                            path: "0-0-0",
+                                            expression: InterpolatedExpression.parse("{title}")
+                                        }
+                                    ]
+                                }
+                            ],
+                            lookup: [[0, 0], [0, 0, 0]],
+                        },
+                        destructured: true,
+                        pattern:      (Expression.parse("({ title }) => 0") as IArrowFunctionExpression).parameters[0],
+                        key:          Expression.literal("title"),
+                        path:         "1"
+                    },
+                ],
                 injector:
                 [
                     {
@@ -194,7 +228,7 @@ export default class TemplateParserSpec
                             lookup: [[0], [0, 0]],
                         },
                         expression: Expression.parse("({ name: host.name })"),
-                        key:        "value",
+                        key:        Expression.literal("value"),
                         path:       "6"
                     },
                 ],
@@ -256,7 +290,7 @@ export default class TemplateParserSpec
                     }
                 ],
             },
-            lookup: [[0], [0, 0], [3], [4], [5], [6], [7, 0, 1], [9], [9, 0]],
+            lookup: [[0], [0, 0], [1], [3], [4], [5], [6], [7, 0, 1], [9], [9, 0]],
         };
 
         const actual = TemplateParser.parseReference(template);
