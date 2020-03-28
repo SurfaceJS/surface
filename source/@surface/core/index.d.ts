@@ -1,12 +1,15 @@
 // tslint:disable:no-any
 
-export type Constructor<T = object>                                 = new (...args: Array<any>) => T;
 export type Action                                                  = () => void;
 export type Action1<T1>                                             = (arg: T1) => void;
 export type Action2<T1, T2>                                         = (arg1: T1, arg2: T2) => void;
 export type Action3<T1, T2, T3>                                     = (arg1: T1, arg2: T2, arg3: T3) => void;
+export type AsyncAction1<T1>                                        = (arg: T1) => Promise<void>;
+export type AsyncAction2<T1, T2>                                    = (arg1: T1, arg2: T2) => Promise<void>;
+export type AsyncAction3<T1, T2, T3>                                = (arg1: T1, arg2: T2, arg3: T3) => Promise<void>;
 export type ClassDecoratorOf<T>                                     = (target: Constructor<T>) => Constructor<T> | void;
 export type Combine<T extends Array<any>>                           = UnionToIntersection<ValuesOf<T>>;
+export type Constructor<T = object>                                 = new (...args: Array<any>) => T;
 export type DeepPartial<T>                                          = { [K in keyof T]?: T[K] extends T[K]|undefined ? DeepPartial<T[K]> : Partial<T[K]> };
 export type DeepRequired<T>                                         = { [K in keyof T]-?: T[K] extends T[K]|undefined ? DeepRequired<T[K]> : Required<T[K]> };
 export type FieldsOf<T>                                             = { [K in keyof T]: T[K] };
@@ -22,8 +25,8 @@ export type KeysOfType<T extends object, U>                         = { [K in ke
 export type KeyValue<T, K extends keyof T = keyof T>                = [K, T[K]];
 export type Merge<T extends object, U extends object>               = { [K in keyof (T & U)]: K extends keyof T ? T[K] : K extends keyof U ? U[K] : never };
 export type MethodsOf<T extends object>                             = KeysOfType<T, Function>;
-export type Mixin<T extends Array<Constructor>>                     = Constructor<Combine<{ [K in keyof T]: T[K] extends Constructor<infer U> ? U : never }>>;
 export type Mixer<C extends Constructor, A extends Array<Function>> = Constructor<Combine<{ [K in keyof A]: A[K] extends <T extends C>(superClass: T) => infer U ? InstanceType<C & U>: never }>>;
+export type Mixin<T extends Array<Constructor>>                     = Constructor<Combine<{ [K in keyof T]: T[K] extends Constructor<infer U> ? U : never }>>;
 export type Nullable<T = Object>                                    = T|null|undefined;
 export type OnlyOfType<T extends object, U>                         = Pick<T, KeysOfType<T, U>>;
 export type Overwrite<T, U>                                         = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] };

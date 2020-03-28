@@ -1,21 +1,14 @@
 import { Action }          from "@surface/core";
 import ICustomElement      from "./interfaces/custom-element";
 import StaticMetadata      from "./internal/metadata/static-metadata";
-import TemplateMetadata    from "./internal/metadata/template-metadata";
 import References          from "./internal/references";
 import { STATIC_METADATA } from "./internal/symbols";
-import { Scope }           from "./internal/types";
 
 
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
     private readonly _references: References;
-
-    protected get scope(): Scope
-    {
-        return TemplateMetadata.from(this).scope;
-    }
 
     public get references(): References
     {

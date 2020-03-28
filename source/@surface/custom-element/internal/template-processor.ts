@@ -1,13 +1,13 @@
 import { Action, Action1, Action2, Indexer, Nullable } from "@surface/core";
-import { assert, typeGuard }                           from "@surface/core/common/generic";
-import { getKeyMember }                                from "@surface/core/common/object";
-import Evaluate                                        from "@surface/expression/evaluate";
-import IExpression                                     from "@surface/expression/interfaces/expression";
-import IPattern                                        from "@surface/expression/interfaces/pattern";
-import NodeType                                        from "@surface/expression/node-type";
-import ISubscription                                   from "@surface/reactive/interfaces/subscription";
-import Type                                            from "@surface/reflection";
-import FieldInfo                                       from "@surface/reflection/field-info";
+import { assert, typeGuard }                                from "@surface/core/common/generic";
+import { getKeyMember }                                     from "@surface/core/common/object";
+import Evaluate                                             from "@surface/expression/evaluate";
+import IExpression                                          from "@surface/expression/interfaces/expression";
+import IPattern                                             from "@surface/expression/interfaces/pattern";
+import NodeType                                             from "@surface/expression/node-type";
+import ISubscription                                        from "@surface/reactive/interfaces/subscription";
+import Type                                                 from "@surface/reflection";
+import FieldInfo                                            from "@surface/reflection/field-info";
 import
 {
     classMap,
@@ -56,7 +56,7 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.delete(host);
         }
 
-        new TemplateProcessor(host, node, descriptor).process(scope);
+        return new TemplateProcessor(host, node, descriptor).process(scope);
     }
 
     private buildLookup(node: Node, source: Array<Array<number>>, offset: number): Record<string, Element>
@@ -113,18 +113,6 @@ export default class TemplateProcessor
         return child;
     }
 
-    private findInjector(node: Node): TemplateMetadata
-    {
-        assert(node.parentNode);
-
-        if (TemplateMetadata.hasMetadata(node.parentNode))
-        {
-            return TemplateMetadata.from(node.parentNode);
-        }
-
-        return this.findInjector(node.parentNode);
-    }
-
     private process(scope: Scope): void
     {
         for (const descriptor of this.descriptor.elements)
@@ -133,8 +121,6 @@ export default class TemplateProcessor
 
             const templateMetadata = TemplateMetadata.from(element);
 
-            templateMetadata.scope = scope;
-
             this.processAttributes(createScope({ this: element, ...scope }), element, descriptor.attributes);
             this.processTextNode(createScope({ this: element, ...scope }), descriptor.textNodes);
 
@@ -142,7 +128,6 @@ export default class TemplateProcessor
             {
                 const lookup = this.buildLookup(node, this.descriptor.lookup, offset);
 
-                TemplateMetadata.from(element).scope = { };
                 DataBind.unbind(element);
 
                 for (const textNodeDescriptor of descriptor.textNodes)
@@ -158,22 +143,7 @@ export default class TemplateProcessor
             element.dispatchEvent(new Event("bind"));
         }
 
-        this.processDirectives(createScope(scope), this.descriptor.directives, this.lookup);
-
-        // if (!this.host.isConnected)
-        // {
-        //     const connectedCallback = (this.host as ICustomElement).connectedCallback;
-
-        //     (this.host as ICustomElement).connectedCallback = function(this: Element)
-        //     {
-        //         TemplateMetadata.from(this).processed = true;
-        //         connectedCallback?.call(this);
-        //     };
-        // }
-        // else
-        // {
-        //     TemplateMetadata.from(this).processed = true;
-        // }
+        return this.processDirectives(createScope(scope), this.descriptor.directives, this.lookup);
     }
 
     private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDescriptor>): void
@@ -269,7 +239,7 @@ export default class TemplateProcessor
         }
     }
 
-    private processConditionalDirectives(scope: Scope, templates: Array<HTMLTemplateElement>, branches: Array<IIfStatementBranch>): void
+    private async processConditionalDirectives(scope: Scope, templates: Array<HTMLTemplateElement>, branches: Array<IIfStatementBranch>): Promise<void>
     {
         assert(templates[0].parentNode);
 
@@ -298,7 +268,7 @@ export default class TemplateProcessor
             {
                 if (expression.evaluate(scope))
                 {
-                    const content = this.processTemplate(scope, this.host, template, descriptor);
+                    const content = this.processTemplate(scope, this.host, template, descriptor, TemplateMetadata.from(start.parentNode!));
 
                     end.parentNode.insertBefore(content, end);
 
@@ -325,7 +295,7 @@ export default class TemplateProcessor
             templates[index].remove();
         }
 
-        notify();
+        await notify();
     }
 
     private processDirectives(scope: Scope, directives: IDirectivesDescriptor, lookup: Record<string, Element>): void
@@ -334,27 +304,30 @@ export default class TemplateProcessor
         {
             const template = lookup[statement.path] as HTMLTemplateElement;
 
-            const metadata = this.findInjector(template);
+            assert(template.parentNode);
 
-            metadata.scope = scope;
+            const metadata = TemplateMetadata.hasMetadata(template.parentNode)
+                ? TemplateMetadata.from(template.parentNode)
+                    : null;
 
-            const key = statement.key.evaluate(scope) as string;
+            template.remove();
 
-            metadata.defaultInjectors.delete(key);
-
-            const action = metadata.injectors.get(key);
-
-            if (action)
+            if (metadata)
             {
-                action(this.host, template, statement);
-            }
-            else
-            {
-                template.remove();
+                const key = `${statement.key.evaluate(scope)}`;
 
-                metadata.injections.set(key, [template, statement]);
+                const action = metadata.injectors.get(key);
 
-                metadata.defaultInjectors.get(key)?.(this.host);
+                if (action)
+                {
+                    action(scope, this.host, template, statement);
+                }
+                else
+                {
+                    template.remove();
+
+                    metadata.injections.set(key, { scope, template, statement });
+                }
             }
         }
 
@@ -380,7 +353,7 @@ export default class TemplateProcessor
         }
     }
 
-    private processForDirectives(scope: Scope, template: HTMLTemplateElement, statement: IForStatement): void
+    private async processForDirectives(scope: Scope, template: HTMLTemplateElement, statement: IForStatement): Promise<void>
     {
         assert(template.parentNode);
 
@@ -388,6 +361,9 @@ export default class TemplateProcessor
 
         const start = document.createComment("");
         const end   = document.createComment("");
+
+        parent.replaceChild(end, template);
+        parent.insertBefore(start, end);
 
         let cache: Array<[unknown, ChildNode, ChildNode]> = [];
 
@@ -429,7 +405,7 @@ export default class TemplateProcessor
 
                     tree.appendChild(rowStart);
 
-                    const content = this.processTemplate(mergedScope, this.host, template, statement.descriptor);
+                    const content = this.processTemplate(mergedScope, this.host, template, statement.descriptor, TemplateMetadata.from(start.parentNode!));
 
                     if (index < cache.length)
                     {
@@ -452,6 +428,8 @@ export default class TemplateProcessor
                     tree.appendChild(content);
 
                     tree.appendChild(rowEnd);
+
+                    return;
                 }
                 else if (changedTree)
                 {
@@ -472,7 +450,11 @@ export default class TemplateProcessor
 
                     tree.replaceChild(rowStart, clone);
                     tree.appendChild(rowEnd);
+
+                    return Promise.resolve();
                 }
+
+                return Promise.resolve();
             };
 
             return () =>
@@ -511,10 +493,8 @@ export default class TemplateProcessor
 
         TemplateMetadata.from(start).onRemoved = () => subscription.unsubscribe();
 
-        parent.replaceChild(end, template);
-        parent.insertBefore(start, end);
 
-        notify();
+        await notify();
     }
 
     private processInjectorDirectives(scope: Scope, template: HTMLTemplateElement, statement: IInjectorStatement): void
@@ -531,33 +511,60 @@ export default class TemplateProcessor
         parent.replaceChild(end, template);
         parent.insertBefore(start, end);
 
-        const factory = (host: Node, template: HTMLTemplateElement, injectStatement: IInjectStatement) =>
+        let handle = 0;
+
+        const factory = async (localScope: Scope, host: Node, template: HTMLTemplateElement, injectStatement?: IInjectStatement) =>
         {
+            clearTimeout(handle);
+
+            TemplateMetadata.from(start).onRemoved?.();
+
+            if (start.nextSibling != end)
+            {
+                this.disposeInRange(start, end);
+            }
+
             let subscription: ISubscription;
 
-            const task = () =>
-            {
-                if (!end.parentNode)
+            const task = injectStatement
+                ? () =>
                 {
-                    subscription.unsubscribe();
+                    if (!end.parentNode)
+                    {
+                        subscription.unsubscribe();
 
-                    return;
+                        return;
+                    }
+
+                    this.disposeInRange(start, end);
+
+                    const { elementScope, scopeAlias } = typeGuard<IPattern>(injectStatement.pattern, injectStatement.destructured)
+                        ? { elementScope: Evaluate.pattern(scope, injectStatement.pattern, statement.expression.evaluate(scope)), scopeAlias: "" }
+                        : { elementScope: statement.expression.evaluate(scope) as Indexer, scopeAlias: injectStatement.pattern };
+
+                    const mergedScope = injectStatement.destructured
+                        ? { ...elementScope, ...localScope }
+                        : { [scopeAlias]: elementScope, ...localScope };
+
+                    const content = this.processTemplate(mergedScope, host, template, injectStatement.descriptor, TemplateMetadata.from(start.parentNode!));
+
+                    end.parentNode.insertBefore(content, end);
                 }
+                : () =>
+                {
+                    if (!end.parentNode)
+                    {
+                        subscription.unsubscribe();
 
-                this.disposeInRange(start, end);
+                        return;
+                    }
 
-                const { elementScope, scopeAlias } = typeGuard<IPattern>(injectStatement.pattern, injectStatement.destructured)
-                    ? { elementScope: Evaluate.pattern(scope, injectStatement.pattern, statement.expression.evaluate(scope)), scopeAlias: "" }
-                    : { elementScope: statement.expression.evaluate(scope) as Indexer, scopeAlias: injectStatement.pattern };
+                    this.disposeInRange(start, end);
 
-                const mergedScope = injectStatement.destructured
-                    ? { ...elementScope, ...templateMetadata.scope }
-                    : { [scopeAlias]: elementScope, ...templateMetadata.scope };
+                    const content = this.processTemplate(scope, host, template, statement.descriptor, TemplateMetadata.from(start.parentNode!));
 
-                const content = this.processTemplate(mergedScope, host, template, injectStatement.descriptor);
-
-                end.parentNode.insertBefore(content, end);
-            };
+                    end.parentNode.insertBefore(content, end);
+                };
 
             const notify = async () => await ParallelWorker.run(task);
 
@@ -565,39 +572,11 @@ export default class TemplateProcessor
 
             TemplateMetadata.from(start).onRemoved = () => subscription.unsubscribe();
 
-            notify();
+
+            await notify();
         };
 
-        const defaultFactory = (host: Node) =>
-        {
-            let subscription: ISubscription;
-
-            const task = () =>
-            {
-                if (!end.parentNode)
-                {
-                    subscription.unsubscribe();
-
-                    return;
-                }
-
-                this.disposeInRange(start, end);
-
-                const content = this.processTemplate(scope, host, template, statement.descriptor);
-
-                end.parentNode.insertBefore(content, end);
-            };
-
-            const notify = async () => await ParallelWorker.run(task);
-
-            subscription = ObserverVisitor.observe(statement.expression, scope, { notify }, true);
-
-            TemplateMetadata.from(start).onRemoved = () => subscription.unsubscribe();
-
-            notify();
-        };
-
-        const key = statement.key.evaluate(scope) as string;
+        const key = `${statement.key.evaluate(scope)}`;
 
         if (this.host.isConnected)
         {
@@ -605,19 +584,18 @@ export default class TemplateProcessor
 
             if (injection)
             {
-                factory(this.host, injection[0], injection[1]);
+                factory(injection.scope, this.host, injection.template, injection.statement);
             }
             else
             {
-                defaultFactory(this.host);
+                factory(scope, this.host, template);
             }
         }
         else
         {
-            (this.host as Element).setAttribute("__has-injectors__", "");
-
             templateMetadata.injectors.set(key, factory);
-            templateMetadata.defaultInjectors.set(key, defaultFactory);
+
+            handle = setTimeout(() => factory(scope, this.host, template));
         }
     }
 
@@ -637,11 +615,13 @@ export default class TemplateProcessor
         }
     }
 
-    private processTemplate(scope: Indexer, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor): Element
+    private processTemplate(scope: Indexer, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor, metadata: TemplateMetadata): Element
     {
         const content = template.content.cloneNode(true) as Element;
 
         content.normalize();
+
+        TemplateMetadata.set(content, metadata);
 
         TemplateProcessor.process(scope, host, content, descriptor);
 
