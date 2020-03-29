@@ -1,4 +1,3 @@
-import { Indexer }               from "@surface/core";
 import ExpressionVisitor         from "@surface/expression/expression-visitor";
 import IArrayPattern             from "@surface/expression/interfaces/array-pattern";
 import IArrowFunctionExpression  from "@surface/expression/interfaces/arrow-function-expression";
@@ -24,12 +23,13 @@ import NodeType                  from "@surface/expression/node-type";
 import IListener                 from "@surface/reactive/interfaces/listener";
 import ISubscription             from "@surface/reactive/interfaces/subscription";
 import DataBind                  from "./data-bind";
+import { Scope }                 from "./types";
 
 const PRIMITIVES = ["string", "boolean", "number"];
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly scope: Indexer;
+    private readonly scope: Scope;
 
     private readonly cache: Map<IExpression, unknown> = new Map();
 
@@ -38,14 +38,14 @@ export default class ObserverVisitor extends ExpressionVisitor
     private brokenPath: boolean       = false;
     private stack:      Array<string> = [];
 
-    private constructor(scope: Indexer)
+    private constructor(scope: Scope)
     {
         super();
 
         this.scope = scope;
     }
 
-    public static observe(expression: IExpression, scope: Indexer, listener: IListener, lazy: boolean): ISubscription
+    public static observe(scope: Scope, expression: IExpression, listener: IListener, lazy: boolean): ISubscription
     {
         const visitor       = new ObserverVisitor(scope);
         const subscriptions = [] as Array<ISubscription>;

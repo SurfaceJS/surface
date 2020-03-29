@@ -22,7 +22,7 @@ export class ObserverVisitorSpec
 
         let observers = 0;
 
-        const subscription = ObserverVisitor.observe(expression, observableExpression.scope, { notify: () => observers++ }, false);
+        const subscription = ObserverVisitor.observe(observableExpression.scope, expression, { notify: () => observers++ }, false);
 
         chai.expect(observers, "observers").to.equal(observableExpression.observers);
 
@@ -46,7 +46,7 @@ export class ObserverVisitorSpec
 
         let observers = 0;
 
-        ObserverVisitor.observe(expression, unobservableExpression.scope, { notify: () => observers++ }, false);
+        ObserverVisitor.observe(unobservableExpression.scope, expression, { notify: () => observers++ }, false);
 
         chai.expect(observers == 0).to.equal(true);
     }

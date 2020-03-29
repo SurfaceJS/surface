@@ -7,7 +7,6 @@ import PropertySubscription from "@surface/reactive/property-subscription";
 import IListener            from "../../reactive/interfaces/listener";
 import IReactor             from "../../reactive/interfaces/reactor";
 import ISubscription        from "../../reactive/interfaces/subscription";
-import { pushSubscription } from "./common";
 import Metadata             from "./metadata/metadata";
 
 export default class DataBind
@@ -66,7 +65,7 @@ export default class DataBind
         return [reactor, subscriptionsHandler];
     }
 
-    public static twoWay(left: object, leftPath: string, right: object, rightPath: string): void
+    public static twoWay(left: object, leftPath: string, right: object, rightPath: string): [ISubscription, ISubscription]
     {
         const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
         const [rightKey, rightMember] = getKeyMember(right, rightPath);
@@ -87,15 +86,6 @@ export default class DataBind
             rightReactor.setPropertySubscription(rightKey, leftSubscription);
         }
 
-        pushSubscription(left, rightSubscription);
-        pushSubscription(right, leftSubscription);
-    }
-
-    public static unbind(target: object): void
-    {
-        const metadata = Metadata.from(target);
-
-        metadata.subscriptions.forEach(x => x.unsubscribe());
-        metadata.subscriptions = [];
+        return [leftSubscription, rightSubscription];
     }
 }

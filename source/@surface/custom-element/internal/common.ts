@@ -1,6 +1,4 @@
 import { Indexer, Nullable } from "@surface/core";
-import ISubscription         from "@surface/reactive/interfaces/subscription";
-import Metadata              from "./metadata/metadata";
 import { nativeEvents }      from "./native-events";
 import { interpolation }     from "./patterns";
 // import { SUBSCRIPTIONS }     from "./symbols";
@@ -34,11 +32,6 @@ export function classMap(classes: Record<string, boolean>): string
         .filter(x => x[1])
         .map(x => x[0])
         .join(" ");
-}
-
-export function pushSubscription(target: object, subscription: ISubscription): void
-{
-    Metadata.from(target).subscriptions.push(subscription);
 }
 
 export function scapeBrackets(value: string)

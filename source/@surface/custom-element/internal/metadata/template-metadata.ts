@@ -10,13 +10,9 @@ type Target = object & { [TEMPLATE_METADATA]?: TemplateMetadata };
 
 export default class TemplateMetadata
 {
-    public processed: boolean = false;
-
+    public defaults:   Map<string, Action>    = new Map();
     public injections: Map<string, Injection> = new Map();
-    public injectors:  Map<string, Factory>  = new Map();
-
-    public dispose?:   (node: Node, offset: number) => void;
-    public onRemoved?: Action;
+    public injectors:  Map<string, Factory>   = new Map();
 
     public static from(target: Target): TemplateMetadata
     {

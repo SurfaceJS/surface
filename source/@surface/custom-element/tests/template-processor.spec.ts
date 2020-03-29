@@ -3,7 +3,6 @@ import "./fixtures/dom";
 import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import TemplateMetadata            from "../internal/metadata/template-metadata";
 import TemplateParser              from "../internal/template-parser";
 import TemplateProcessor           from "../internal/template-processor";
 
@@ -413,8 +412,6 @@ export default class TemplateProcessorSpec
         process(host, hostRoot);
         process(root, host);
 
-        TemplateMetadata.from(host).processed = true;
-
         await render();
 
         assert.equal(host.querySelector("span"), null);
@@ -486,8 +483,6 @@ export default class TemplateProcessorSpec
         root.appendChild(host);
 
         childHost.item = ["Value", 1];
-
-        TemplateMetadata.from(root).processed = true;
 
         process(childHost, childHostRoot);
         process(host, childHost);

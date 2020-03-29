@@ -4,6 +4,7 @@ export type Action                                                  = () => void
 export type Action1<T1>                                             = (arg: T1) => void;
 export type Action2<T1, T2>                                         = (arg1: T1, arg2: T2) => void;
 export type Action3<T1, T2, T3>                                     = (arg1: T1, arg2: T2, arg3: T3) => void;
+export type AsyncAction                                             = () => Promise<void>;
 export type AsyncAction1<T1>                                        = (arg: T1) => Promise<void>;
 export type AsyncAction2<T1, T2>                                    = (arg1: T1, arg2: T2) => Promise<void>;
 export type AsyncAction3<T1, T2, T3>                                = (arg1: T1, arg2: T2, arg3: T3) => Promise<void>;
