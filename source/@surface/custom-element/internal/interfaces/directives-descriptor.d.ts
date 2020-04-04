@@ -1,12 +1,12 @@
-import IForStatement      from "./for-statement";
-import IInjectStatement   from "./inject-statement";
-import IInjectorStatement from "./injector-statement";
-import IIfStatement       from "./If-statement";
+import IChoiceDirective   from "./choice-directive";
+import IInjectDirective   from "./inject-directive";
+import IInjectorDirective from "./injector-directive";
+import ILoopDirective      from "./loop-directive";
 
 export default interface IDirectivesDescriptor
 {
-    logical:     Array<IIfStatement>;
-    inject:      Array<IInjectStatement>;
-    injector:    Array<IInjectorStatement>;
-    loop:        Array<IForStatement>;
+    logical:  Array<IChoiceDirective>;
+    inject:   Array<IInjectDirective>;
+    injector: Array<IInjectorDirective>;
+    loop:     Array<ILoopDirective>;
 }

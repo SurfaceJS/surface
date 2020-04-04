@@ -1,14 +1,13 @@
-import { Action, Action1, Action2, AsyncAction, Indexer, Nullable } from "@surface/core";
-import { assert, typeGuard }                                        from "@surface/core/common/generic";
-import { getKeyMember }                                             from "@surface/core/common/object";
-import IDisposable                                                  from "@surface/core/interfaces/disposable";
-import Evaluate                                                     from "@surface/expression/evaluate";
-import IExpression                                                  from "@surface/expression/interfaces/expression";
-import IPattern                                                     from "@surface/expression/interfaces/pattern";
-import NodeType                                                     from "@surface/expression/node-type";
-import ISubscription                                                from "@surface/reactive/interfaces/subscription";
-import Type                                                         from "@surface/reflection";
-import FieldInfo                                                    from "@surface/reflection/field-info";
+import { Action, Action1, Action2, AsyncAction, Indexer, Nullable, } from "@surface/core";
+import { assert, typeGuard }                                         from "@surface/core/common/generic";
+import { getKeyMember }                                              from "@surface/core/common/object";
+import IDisposable                                                   from "@surface/core/interfaces/disposable";
+import Evaluate                                                      from "@surface/expression/evaluate";
+import IExpression                                                   from "@surface/expression/interfaces/expression";
+import IPattern                                                      from "@surface/expression/interfaces/pattern";
+import ISubscription                                                 from "@surface/reactive/interfaces/subscription";
+import Type                                                          from "@surface/reflection";
+import FieldInfo                                                     from "@surface/reflection/field-info";
 import
 {
     classMap,
@@ -17,19 +16,21 @@ import
     styleMap
 }
 from "./common";
-import DataBind              from "./data-bind";
-import IAttributeDescriptor  from "./interfaces/attribute-descriptor";
-import IDirectivesDescriptor from "./interfaces/directives-descriptor";
-import IForStatement         from "./interfaces/for-statement";
-import IInjectStatement      from "./interfaces/inject-statement";
-import IInjectorStatement    from "./interfaces/injector-statement";
-import ITemplateDescriptor   from "./interfaces/template-descriptor";
-import ITextNodeDescriptor   from "./interfaces/text-node-descriptor";
-import IIfStatementBranch    from "./interfaces/If-branch-statement";
-import TemplateMetadata      from "./metadata/template-metadata";
-import ObserverVisitor       from "./observer-visitor";
-import ParallelWorker        from "./parallel-worker";
-import { Scope }             from "./types";
+import DataBind               from "./data-bind";
+import directiveRegistry      from "./directive-registry";
+import IAttributeDescriptor   from "./interfaces/attribute-descriptor";
+import IChoiceDirectiveBranch from "./interfaces/choice-directive-branch";
+import IDirective             from "./interfaces/directive";
+import IDirectivesDescriptor  from "./interfaces/directives-descriptor";
+import IInjectDirective       from "./interfaces/inject-directive";
+import IInjectorDirective     from "./interfaces/injector-directive";
+import ILoopDirective         from "./interfaces/loop-directive";
+import ITemplateDescriptor    from "./interfaces/template-descriptor";
+import ITextNodeDescriptor    from "./interfaces/text-node-descriptor";
+import TemplateMetadata       from "./metadata/template-metadata";
+import ObserverVisitor        from "./observer-visitor";
+import ParallelWorker         from "./parallel-worker";
+import { Scope }              from "./types";
 
 export default class TemplateProcessor
 {
@@ -100,20 +101,30 @@ export default class TemplateProcessor
     private process(scope: Scope): IDisposable
     {
         const subscriptions: Array<ISubscription> = [];
+        const disposables:  Array<IDisposable> = [];
 
         for (const descriptor of this.descriptor.elements)
         {
             const element = this.lookup[descriptor.path];
 
-            subscriptions.push(...this.processAttributes(createScope({ this: element, ...scope }), element, descriptor.attributes));
-            subscriptions.push(...this.processTextNode(createScope({ this: element, ...scope }), descriptor.textNodes));
+            const localScope = createScope({ this: element, ...scope });
+
+            subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
+            disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
+            subscriptions.push(...this.processTextNode(localScope, descriptor.textNodes));
 
             element.dispatchEvent(new Event("bind"));
         }
 
-        const disposable = this.processDirectives(createScope(scope), this.descriptor.directives, this.lookup);
+        disposables.push(this.processTemplateDirectives(createScope(scope), this.descriptor.directives, this.lookup));
 
-        return { dispose: () => (subscriptions.forEach(x => x.unsubscribe()), disposable.dispose()) };
+        return {
+            dispose: () =>
+            {
+                subscriptions.forEach(x => x.unsubscribe());
+                disposables.forEach(x => x.dispose());
+            }
+        };
     }
 
     private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDescriptor>): Array<ISubscription>
@@ -130,15 +141,7 @@ export default class TemplateProcessor
         {
             const action = () =>
             {
-                if (descriptor.type == "event")
-                {
-                    const action = descriptor.expression.type == NodeType.ArrowFunctionExpression || descriptor.expression.type == NodeType.Identifier || descriptor.expression.type == NodeType.MemberExpression
-                        ? descriptor.expression.evaluate(scope) as Action1<Event>
-                        : () => descriptor.expression.evaluate(scope);
-
-                    element.addEventListener(descriptor.name, action);
-                }
-                else if (descriptor.type == "oneway" || descriptor.type == "twoway")
+                if (descriptor.type == "oneway" || descriptor.type == "twoway")
                 {
                     const elementMember = Type.from(element).getMember(descriptor.key);
 
@@ -213,7 +216,21 @@ export default class TemplateProcessor
         return subscriptions;
     }
 
-    private processConditionalDirective(scope: Scope, templates: Array<HTMLTemplateElement>, branches: Array<IIfStatementBranch>): IDisposable
+    private processElementDirectives(scope: Scope, element: Element, directives: Array<IDirective>): Array<IDisposable>
+    {
+        const disposables: Array<IDisposable> = [];
+
+        for (const directive of directives)
+        {
+            const handlerConstructor = directiveRegistry.get(directive.name)!;
+
+            disposables.push(new handlerConstructor(scope, element, directive.key, directive.expression));
+        }
+
+        return disposables;
+    }
+
+    private processConditionalDirective(scope: Scope, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceDirectiveBranch>): IDisposable
     {
         assert(templates[0].parentNode);
 
@@ -283,13 +300,13 @@ export default class TemplateProcessor
         return { dispose };
     }
 
-    private processDirectives(scope: Scope, directives: IDirectivesDescriptor, lookup: Record<string, Element>): IDisposable
+    private processTemplateDirectives(scope: Scope, directives: IDirectivesDescriptor, lookup: Record<string, Element>): IDisposable
     {
         const disposables: Array<IDisposable> = [];
 
-        for (const statement of directives.inject)
+        for (const directive of directives.inject)
         {
-            const template = lookup[statement.path] as HTMLTemplateElement;
+            const template = lookup[directive.path] as HTMLTemplateElement;
 
             assert(template.parentNode);
 
@@ -301,50 +318,51 @@ export default class TemplateProcessor
 
             if (metadata)
             {
-                const key = `${statement.key.evaluate(scope)}`;
+                const key = `${directive.key.evaluate(scope)}`;
 
                 const action = metadata.injectors.get(key);
 
                 if (action)
                 {
-                    action(scope, this.host, template, statement);
+                    action(scope, this.host, template, directive);
                 }
                 else
                 {
                     template.remove();
 
-                    metadata.injections.set(key, { scope, template, statement });
+                    metadata.injections.set(key, { scope, template, directive });
                 }
 
                 disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
             }
         }
 
-        for (const statement of directives.logical)
+        for (const directive of directives.logical)
         {
-            const templates = statement.branches.map(x => lookup[x.path]) as Array<HTMLTemplateElement>;
+            const templates = directive.branches.map(x => lookup[x.path]) as Array<HTMLTemplateElement>;
 
-            disposables.push(this.processConditionalDirective(scope, templates, statement.branches));
+            disposables.push(this.processConditionalDirective(scope, templates, directive.branches));
         }
 
-        for (const statement of directives.loop)
+        for (const directive of directives.loop)
         {
-            const template = lookup[statement.path] as HTMLTemplateElement;
+            const template = lookup[directive.path] as HTMLTemplateElement;
 
-            disposables.push(this.processForDirective(scope, template, statement));
+            disposables.push(this.processForDirective(scope, template, directive));
+            // disposables.push(new ForDirective(scope, this.host, template, directive));
         }
 
-        for (const statement of directives.injector)
+        for (const directive of directives.injector)
         {
-            const template = lookup[statement.path] as HTMLTemplateElement;
+            const template = lookup[directive.path] as HTMLTemplateElement;
 
-            disposables.push(this.processInjectorDirective(scope, template, statement));
+            disposables.push(this.processInjectorDirective(scope, template, directive));
         }
 
         return { dispose: () => disposables.forEach(disposable => disposable.dispose()) };
     }
 
-    private processForDirective(scope: Scope, template: HTMLTemplateElement, statement: IForStatement): IDisposable
+    private processForDirective(scope: Scope, template: HTMLTemplateElement, directive: ILoopDirective): IDisposable
     {
         assert(template.parentNode);
 
@@ -380,16 +398,16 @@ export default class TemplateProcessor
 
             const action = (element: unknown) =>
             {
-                const mergedScope = typeGuard<IPattern>(statement.alias, statement.destructured)
-                    ? { ...Evaluate.pattern(scope, statement.alias, element), ...scope }
-                    : { ...scope, [statement.alias]: element };
+                const mergedScope = typeGuard<IPattern>(directive.alias, directive.destructured)
+                    ? { ...Evaluate.pattern(scope, directive.alias, element), ...scope }
+                    : { ...scope, [directive.alias]: element };
 
                 const rowStart = document.createComment("");
                 const rowEnd   = document.createComment("");
 
                 tree.appendChild(rowStart);
 
-                const [content, disposable] = this.processTemplate(mergedScope, this.host, template, statement.descriptor, TemplateMetadata.from(start.parentNode!));
+                const [content, disposable] = this.processTemplate(mergedScope, this.host, template, directive.descriptor, TemplateMetadata.from(start.parentNode!));
 
                 cache.push([rowStart, rowEnd, disposable]);
 
@@ -400,7 +418,7 @@ export default class TemplateProcessor
 
             const task = () =>
             {
-                const elements = statement.expression.evaluate(scope) as Array<Element>;
+                const elements = directive.expression.evaluate(scope) as Array<Element>;
 
                 for (const [rowStart, rowEnd, disposable] of cache)
                 {
@@ -422,11 +440,11 @@ export default class TemplateProcessor
             return task;
         };
 
-        const task = taskFactory(statement.operator == "in" ? forInIterator : forOfIterator);
+        const task = taskFactory(directive.operator == "in" ? forInIterator : forOfIterator);
 
         const notify = async () => await ParallelWorker.run(task);
 
-        const subscription = ObserverVisitor.observe(scope, statement.expression, { notify }, true);
+        const subscription = ObserverVisitor.observe(scope, directive.expression, { notify }, true);
 
         this.fireAsync(notify);
 
@@ -457,7 +475,7 @@ export default class TemplateProcessor
         return { dispose };
     }
 
-    private processInjectorDirective(scope: Scope, template: HTMLTemplateElement, statement: IInjectorStatement): IDisposable
+    private processInjectorDirective(scope: Scope, template: HTMLTemplateElement, directive: IInjectorDirective): IDisposable
     {
         assert(template.parentNode);
 
@@ -473,31 +491,31 @@ export default class TemplateProcessor
 
         let handle = 0;
 
-        const key = `${statement.key.evaluate(scope)}`;
+        const key = `${directive.key.evaluate(scope)}`;
 
         let currentDisposable: IDisposable|null = null;
         let subscription:      ISubscription|null = null;
 
-        const factory = (localScope: Scope, host: Node, template: HTMLTemplateElement, injectStatement?: IInjectStatement) =>
+        const factory = (localScope: Scope, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective) =>
         {
             clearTimeout(handle);
 
-            const task = injectStatement
+            const task = injectDirective
                 ? () =>
                 {
                     currentDisposable?.dispose();
 
                     this.removeInRange(start, end);
 
-                    const { elementScope, scopeAlias } = typeGuard<IPattern>(injectStatement.pattern, injectStatement.destructured)
-                        ? { elementScope: Evaluate.pattern(scope, injectStatement.pattern, statement.expression.evaluate(scope)), scopeAlias: "" }
-                        : { elementScope: statement.expression.evaluate(scope) as Indexer, scopeAlias: injectStatement.pattern };
+                    const { elementScope, scopeAlias } = typeGuard<IPattern>(injectDirective.pattern, injectDirective.destructured)
+                        ? { elementScope: Evaluate.pattern(scope, injectDirective.pattern, directive.expression.evaluate(scope)), scopeAlias: "" }
+                        : { elementScope: directive.expression.evaluate(scope) as Indexer, scopeAlias: injectDirective.pattern };
 
-                    const mergedScope = injectStatement.destructured
+                    const mergedScope = injectDirective.destructured
                         ? { ...elementScope, ...localScope }
                         : { [scopeAlias]: elementScope, ...localScope };
 
-                    const [content, disposable] = this.processTemplate(mergedScope, host, template, injectStatement.descriptor, TemplateMetadata.from(start.parentNode!));
+                    const [content, disposable] = this.processTemplate(mergedScope, host, template, injectDirective.descriptor, TemplateMetadata.from(start.parentNode!));
 
                     end.parentNode!.insertBefore(content, end);
 
@@ -509,7 +527,7 @@ export default class TemplateProcessor
 
                     this.removeInRange(start, end);
 
-                    const [content, disposable] = this.processTemplate(scope, host, template, statement.descriptor, TemplateMetadata.from(start.parentNode!));
+                    const [content, disposable] = this.processTemplate(scope, host, template, directive.descriptor, TemplateMetadata.from(start.parentNode!));
 
                     end.parentNode!.insertBefore(content, end);
 
@@ -518,7 +536,7 @@ export default class TemplateProcessor
 
             const notify = async () => await ParallelWorker.run(task);
 
-            subscription = ObserverVisitor.observe(scope, statement.expression, { notify }, true);
+            subscription = ObserverVisitor.observe(scope, directive.expression, { notify }, true);
 
             this.fireAsync(notify);
         };
@@ -541,7 +559,7 @@ export default class TemplateProcessor
             const injection = metadata.injections.get(key);
 
             injection
-                ? factory(injection.scope, this.host, injection.template, injection.statement)
+                ? factory(injection.scope, this.host, injection.template, injection.directive)
                 : factory(scope, this.host, template);
         }
         else

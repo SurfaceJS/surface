@@ -1,9 +1,8 @@
 import IExpression from "@surface/expression/interfaces/expression";
 
-export default interface IAttributeDescriptor
+export default interface IDirective
 {
     expression: IExpression;
-    key:        string;
+    key:        IExpression;
     name:       string;
-    type:       "oneway"|"twoway"|"interpolation";
 }

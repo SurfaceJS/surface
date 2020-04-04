@@ -1,10 +1,10 @@
-import { Action }          from "@surface/core";
-import ICustomElement      from "./interfaces/custom-element";
-import StaticMetadata      from "./internal/metadata/static-metadata";
-import References          from "./internal/references";
-import { STATIC_METADATA } from "./internal/symbols";
-
-
+import { Action }                      from "@surface/core";
+import ICustomElement                  from "./interfaces/custom-element";
+import directiveRegistry               from "./internal/directive-registry";
+import StaticMetadata                  from "./internal/metadata/static-metadata";
+import References                      from "./internal/references";
+import { STATIC_METADATA }             from "./internal/symbols";
+import { DirectiveHandlerConstructor } from "./internal/types";
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
@@ -28,6 +28,11 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         this.applyMetadata(this.shadowRoot);
 
         this._references = new References(this.shadowRoot);
+    }
+
+    public static registerDirective<T extends DirectiveHandlerConstructor>(name: string, handlerConstructor: T): void
+    {
+        directiveRegistry.set(name, handlerConstructor);
     }
 
     private applyMetadata(shadowRoot: ShadowRoot): void

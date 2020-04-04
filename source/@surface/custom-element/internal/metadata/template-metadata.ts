@@ -1,10 +1,10 @@
 import { Action }            from "@surface/core";
-import IInjectStatement      from "../interfaces/inject-statement";
+import IInjectDirective      from "../interfaces/inject-directive";
 import { TEMPLATE_METADATA } from "../symbols";
 import { Scope }             from "../types";
 
-type Factory   = (scope: Scope, host: Node, template: HTMLTemplateElement, injectStatement?: IInjectStatement) => void;
-type Injection = { scope: Scope, template: HTMLTemplateElement, statement: IInjectStatement };
+type Factory   = (scope: Scope, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective) => void;
+type Injection = { scope: Scope, template: HTMLTemplateElement, directive: IInjectDirective };
 
 type Target = object & { [TEMPLATE_METADATA]?: TemplateMetadata };
 

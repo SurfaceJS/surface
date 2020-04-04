@@ -14,6 +14,7 @@ const windowWrapper = wrapper.prototype;
 export function createScope(scope: Indexer): Indexer
 {
     scope["$class"] = classMap;
+    scope["$style"] = styleMap;
 
     const handler: ProxyHandler<Indexer> =
     {
@@ -63,7 +64,7 @@ export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr
         else if
         (
             attribute.name.startsWith(":")
-            || attribute.name.startsWith("on:")
+            || attribute.name.startsWith("#")
             || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
         )
         {
