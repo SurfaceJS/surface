@@ -121,8 +121,8 @@ export default class TemplateProcessor
         return {
             dispose: () =>
             {
-                subscriptions.forEach(x => x.unsubscribe());
-                disposables.forEach(x => x.dispose());
+                subscriptions.splice(0).forEach(x => x.unsubscribe());
+                disposables.splice(0).forEach(x => x.dispose());
             }
         };
     }
@@ -359,7 +359,7 @@ export default class TemplateProcessor
             disposables.push(this.processInjectorDirective(scope, template, directive));
         }
 
-        return { dispose: () => disposables.forEach(disposable => disposable.dispose()) };
+        return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
     }
 
     private processForDirective(scope: Scope, template: HTMLTemplateElement, directive: ILoopDirective): IDisposable

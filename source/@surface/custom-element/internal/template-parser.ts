@@ -67,12 +67,6 @@ export default class TemplateParser
 
             template[DIRECTIVE] = directive;
 
-            // istanbul ignore if
-            if (!TemplateParser.testEnviroment)
-            {
-                template.removeAttribute(directive.name);
-            }
-
             if (directives.length > 0)
             {
                 const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
@@ -367,6 +361,12 @@ export default class TemplateParser
             this.directives.inject.push(injectionDescriptor);
 
             this.saveLookup();
+        }
+
+        // istanbul ignore if
+        if (!TemplateParser.testEnviroment)
+        {
+            template.removeAttribute(directive.name);
         }
     }
 
