@@ -2,7 +2,7 @@ import { Action1 } from "@surface/core";
 import IDisposable from "@surface/core/interfaces/disposable";
 import IExpression from "@surface/expression/interfaces/expression";
 import NodeType    from "@surface/expression/node-type";
-import { Scope }   from "../types";
+import { Scope }   from "../../types";
 
 export default class EventDirectiveHandler implements IDisposable
 {

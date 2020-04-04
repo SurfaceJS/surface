@@ -2,8 +2,8 @@ import { Action }      from "@surface/core";
 import IDisposable     from "@surface/core/interfaces/disposable";
 import IExpression     from "@surface/expression/interfaces/expression";
 import ISubscription   from "@surface/reactive/interfaces/subscription";
-import ObserverVisitor from "../observer-visitor";
-import { Scope }       from "../types";
+import ObserverVisitor from "../../observer-visitor";
+import { Scope }       from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {

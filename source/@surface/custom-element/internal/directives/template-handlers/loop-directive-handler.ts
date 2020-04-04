@@ -1,23 +1,21 @@
-import { Action1, Nullable }    from "@surface/core";
+import { Action1 }              from "@surface/core";
 import { assert, typeGuard }    from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
 import IPattern                 from "@surface/expression/interfaces/pattern";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
-import ILoopDirective           from "../interfaces/loop-directive";
-import TemplateMetadata         from "../metadata/template-metadata";
-import ObserverVisitor          from "../observer-visitor";
-import ParallelWorker           from "../parallel-worker";
-import { Scope }                from "../types";
-import TemplateDirectiveHandler from "./template-directive-handler";
+import ILoopDirective           from "../../interfaces/loop-directive";
+import TemplateMetadata         from "../../metadata/template-metadata";
+import ObserverVisitor          from "../../observer-visitor";
+import ParallelWorker           from "../../parallel-worker";
+import { Scope }                from "../../types";
+import TemplateDirectiveHandler from "./";
 
-export default class ForDirectiveHandler extends TemplateDirectiveHandler
+export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly cache:        Array<[ChildNode, ChildNode, IDisposable]> = [];
     private readonly end:          Comment;
-    private readonly host:         Node;
     private readonly iterator:     (elements: unknown[], action: Action1<unknown>) => void;
-    private readonly scope:        Scope;
     private readonly start:        Comment;
     private readonly directive:    ILoopDirective;
     private readonly subscription: ISubscription;
@@ -26,10 +24,8 @@ export default class ForDirectiveHandler extends TemplateDirectiveHandler
 
     public constructor(scope: Scope, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
     {
-        super();
+        super(scope, host);
 
-        this.scope     = scope;
-        this.host      = host;
         this.template  = template;
         this.directive = directive;
 
@@ -123,8 +119,6 @@ export default class ForDirectiveHandler extends TemplateDirectiveHandler
             rowStart.remove();
             rowEnd.remove();
         }
-
-        (this.cache as Nullable) = null;
 
         this.subscription.unsubscribe();
 

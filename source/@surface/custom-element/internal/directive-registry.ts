@@ -1,4 +1,4 @@
-import EventDirectiveHandler           from "./directive-handlers/on-directive-handler";
+import EventDirectiveHandler           from "./directives/handlers/on-directive-handler";
 import { DirectiveHandlerConstructor } from "./types";
 
 const directiveRegistry = new Map<string, DirectiveHandlerConstructor>();
