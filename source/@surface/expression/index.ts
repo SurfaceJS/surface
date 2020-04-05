@@ -61,6 +61,7 @@ import ArrayPattern              from "./internal/patterns/array-pattern";
 import AssignmentPattern         from "./internal/patterns/assignment-pattern";
 import ObjectPattern             from "./internal/patterns/object-pattern";
 import RestElement               from "./internal/patterns/rest-element";
+import TypeGuard                 from "./internal/type-guard";
 import
 {
     AssignmentOperator,
@@ -73,6 +74,8 @@ import
 
 export default abstract class Expression
 {
+    public static TypeGuard = TypeGuard;
+
     private static wrapParenthesis<T extends IExpression>(expression: T): T
     {
         const toString = expression.toString;

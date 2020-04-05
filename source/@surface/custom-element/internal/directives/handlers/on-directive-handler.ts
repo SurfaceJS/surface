@@ -1,31 +1,42 @@
 import { Action1 } from "@surface/core";
 import IDisposable from "@surface/core/interfaces/disposable";
+import Expression  from "@surface/expression";
 import IExpression from "@surface/expression/interfaces/expression";
-import NodeType    from "@surface/expression/node-type";
 import { Scope }   from "../../types";
 
 export default class EventDirectiveHandler implements IDisposable
 {
     private readonly action: Action1<Event>;
 
-    protected readonly element:    Element;
-    protected readonly expression: IExpression;
-    protected readonly name:       string;
-    protected readonly scope:      Scope;
+    private readonly element:    Element;
+    private readonly name:       string;
 
     public constructor(scope: Scope, element: Element, key: IExpression, expression: IExpression)
     {
-        this.scope      = scope;
-        this.element    = element;
-        this.expression = expression;
+        this.element = element;
+        this.name    = `${key.evaluate(scope)}`;
 
-        this.name = `${key.evaluate(scope)}`;
-
-        this.action = expression.type == NodeType.ArrowFunctionExpression || expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression
-            ? expression.evaluate(scope) as Action1<Event>
-            : () => expression.evaluate(scope);
+        this.action = this.evaluate(scope, expression);
 
         this.element.addEventListener(this.name, this.action);
+    }
+
+    private evaluate(scope: Scope, expression: IExpression): Action1<Event>
+    {
+        if (Expression.TypeGuard.isArrowFunctionExpression(expression) || Expression.TypeGuard.isIdentifier(expression))
+        {
+            return expression.evaluate(scope) as Action1<Event>;
+        }
+        else if (Expression.TypeGuard.isMemberExpression(expression))
+        {
+            const action = expression.evaluate(scope) as Function;
+
+            return action.bind(expression.object.evaluate(scope)) as Action1<Event>;
+        }
+        else
+        {
+            return () => expression.evaluate(scope);
+        }
     }
 
     public dispose(): void
