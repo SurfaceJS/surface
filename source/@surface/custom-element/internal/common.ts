@@ -1,8 +1,4 @@
 import { Indexer, Nullable } from "@surface/core";
-import { nativeEvents }      from "./native-events";
-import { interpolation }     from "./patterns";
-// import { SUBSCRIPTIONS }     from "./symbols";
-// import { Subscriber }        from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -45,36 +41,6 @@ export function styleMap(rules: Record<string, boolean>): string
     return Object.entries(rules)
         .map(([key, value]) => `${key}: ${value}` )
         .join("; ");
-}
-
-export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
-{
-    for (const attribute of Array.from(element.attributes))
-    {
-        if (attribute.name.startsWith("*"))
-        {
-            const wrapper = document.createAttribute(attribute.name.replace(/^\*/, ""));
-
-            wrapper.value = attribute.value;
-            element.removeAttributeNode(attribute);
-            element.setAttributeNode(wrapper);
-
-            yield wrapper;
-        }
-        else if
-        (
-            attribute.name.startsWith(":")
-            || attribute.name.startsWith("#")
-            || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
-        )
-        {
-            yield attribute;
-        }
-        else
-        {
-            attribute.value = scapeBrackets(attribute.value);
-        }
-    }
 }
 
 export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>

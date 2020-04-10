@@ -1,36 +1,50 @@
-import { contains }                                      from "@surface/core/common/array";
-import { assert, typeGuard }                             from "@surface/core/common/generic";
-import { dashedToCamel }                                 from "@surface/core/common/string";
-import Expression                                        from "@surface/expression";
-import IArrowFunctionExpression                          from "@surface/expression/interfaces/arrow-function-expression";
-import { enumerateExpresssionAttributes, scapeBrackets } from "./common";
-import directiveRegistry                                 from "./directive-registry";
-import IAttributeDescriptor                              from "./interfaces/attribute-descriptor";
-import IChoiceDirectiveBranch                            from "./interfaces/choice-directive-branch";
-import IDirectivesDescriptor                             from "./interfaces/directives-descriptor";
-import IElementDescriptor                                from "./interfaces/element-descriptor";
-import IInjectDirective                                  from "./interfaces/inject-directive";
-import IInjectorDirective                                from "./interfaces/injector-directive";
-import ILoopDirective                                    from "./interfaces/loop-directive";
-import ITemplateDescriptor                               from "./interfaces/template-descriptor";
-import ITextNodeDescriptor                               from "./interfaces/text-node-descriptor";
-import InterpolatedExpression                            from "./interpolated-expression";
-import parse                                             from "./parse";
-import { dinamicKey, forExpression, interpolation }      from "./patterns";
+import { Indexer }                      from "@surface/core";
+import { contains }                     from "@surface/core/common/array";
+import { assert, typeGuard }            from "@surface/core/common/generic";
+import { dashedToCamel }                from "@surface/core/common/string";
+import Enumerable                       from "@surface/enumerable";
+import Expression                       from "@surface/expression";
+import IArrowFunctionExpression         from "@surface/expression/interfaces/arrow-function-expression";
+import { scapeBrackets }                from "./common";
+import directiveRegistry                from "./directive-registry";
+import IAttributeDescriptor             from "./interfaces/attribute-descriptor";
+import IChoiceDirectiveBranch           from "./interfaces/choice-directive-branch";
+import IDirectivesDescriptor            from "./interfaces/directives-descriptor";
+import IElementDescriptor               from "./interfaces/element-descriptor";
+import IInjectDirective                 from "./interfaces/inject-directive";
+import IInjectorDirective               from "./interfaces/injector-directive";
+import ILoopDirective                   from "./interfaces/loop-directive";
+import ITemplateDescriptor              from "./interfaces/template-descriptor";
+import ITextNodeDescriptor              from "./interfaces/text-node-descriptor";
+import InterpolatedExpression           from "./interpolated-expression";
+import { nativeEvents }                 from "./native-events";
+import parse                            from "./parse";
+import { forExpression, interpolation } from "./patterns";
 
 const DECOMPOSED = Symbol("custom-element:decomposed");
 const DIRECTIVE  = Symbol("custom-element:directive");
 
-const HASH_ELSE     = "#else";
-const HASH_ELSE_IF  = "#else-if";
-const HASH_FOR      = "#for";
-const HASH_IF       = "#if";
-const HASH_INJECT   = "#inject";
-const HASH_INJECTOR = "#injector";
+const HASH_ELSE         = "#else";
+const HASH_ELSE_IF      = "#else-if";
+const HASH_FOR          = "#for";
+const HASH_IF           = "#if";
+const HASH_INJECT       = "#inject";
+const HASH_INJECTOR     = "#injector";
+const HASH_INJECT_KEY   = "#inject-key";
+const HASH_INJECTOR_KEY = "#injector-key";
 
-const templateDirectives = [HASH_IF, HASH_ELSE_IF, HASH_ELSE, HASH_FOR, HASH_INJECT, HASH_INJECTOR];
+const templateDirectives =
+[
+    HASH_IF,
+    HASH_ELSE_IF,
+    HASH_ELSE,
+    HASH_FOR,
+    HASH_INJECT,
+    HASH_INJECT_KEY,
+    HASH_INJECTOR,
+    HASH_INJECTOR_KEY
+];
 
-// type DirectivesMap = Partial<Record<"inject"|"injector"|"if"|"elseIf"|"else"|"for", KeyValue>>;
 type Directive = { key: string, name: string, type: string, value: string };
 
 export default class TemplateParser
@@ -41,6 +55,7 @@ export default class TemplateParser
     private readonly elements:   Array<IElementDescriptor> = [];
     private readonly lookup:     Array<Array<number>>      = [];
     private readonly stack:      Array<number>             = [];
+
     private offsetIndex: number = 0;
 
     public static parse(template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
@@ -74,6 +89,7 @@ export default class TemplateParser
                 directives.forEach(x => template.removeAttribute(x.name));
 
                 innerTemplate.removeAttribute(directive.name);
+                innerTemplate.removeAttribute(directive.name + "-key");
 
                 this.nest(template, innerTemplate);
             }
@@ -126,22 +142,71 @@ export default class TemplateParser
         return element.getAttributeNames().some(attribute => templateDirectives.findIndex(directive => attribute.startsWith(directive)) > -1);
     }
 
-    private enumerateDirectives(attributes: NamedNodeMap): Array<Directive>
+    private *enumerateAttributes(element: Element): Iterable<Attr>
     {
-        return Array.from(attributes).map
-        (
-            attribute =>
+        for (const attribute of Array.from(element.attributes))
+        {
+            if (attribute.name.startsWith("*"))
             {
-                const [type, key] = attribute.name.split(":");
+                const wrapper = document.createAttribute(attribute.name.replace(/^\*/, ""));
 
-                return { key, type, name: attribute.name, value: attribute.value };
+                wrapper.value = attribute.value;
+                element.removeAttributeNode(attribute);
+                element.setAttributeNode(wrapper);
+
+                yield wrapper;
             }
-        );
+            else if
+            (
+                attribute.name.startsWith(":")
+                || attribute.name.startsWith("#")
+                || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
+            )
+            {
+                yield attribute;
+            }
+            else
+            {
+                attribute.value = scapeBrackets(attribute.value);
+            }
+        }
+    }
+
+    private enumerateDirectives(namedNodeMap: NamedNodeMap): Iterable<Directive>;
+    private enumerateDirectives(namedNodeMap: NamedNodeMap & Indexer<Attr>): Iterable<Directive>
+    {
+        const KEYED_DIRECTIVES = [HASH_INJECT, HASH_INJECTOR];
+
+        return Enumerable.from(namedNodeMap)
+            .where(x => !x.name.endsWith("-key"))
+            .select
+            (
+                attribute =>
+                {
+                    for (const directive of KEYED_DIRECTIVES)
+                    {
+                        if (attribute.name == directive || attribute.name.startsWith(directive + ":"))
+                        {
+                            const directiveKey = `${directive}-key`;
+
+                            const [_type, _key = namedNodeMap[directiveKey]] = attribute.name.split(":");
+
+                            const [type, key] = typeof _key == "string"
+                                ? [_type, `'${_key}'`]
+                                : [_type, `${namedNodeMap[directiveKey]?.value ?? "'default'"}`];
+
+                            return { key, type, name: attribute.name, value: attribute.value };
+                        }
+                    }
+
+                    return { key: "", type: attribute.name, name: attribute.name, value: attribute.value };
+                }
+            );
     }
 
     private nest(template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement): void
     {
-        Array.from(template.content.childNodes).forEach(x => x.remove());
+        Enumerable.from(template.content.childNodes).forEach(x => x.remove());
 
         const decomposed = this.decomposeDirectives(innerTemplate);
 
@@ -161,11 +226,11 @@ export default class TemplateParser
     {
         const elementDescriptor: IElementDescriptor = { attributes: [], directives: [], path: this.stack.join("-"), textNodes: [] };
 
-        for (const attribute of enumerateExpresssionAttributes(element))
+        for (const attribute of this.enumerateAttributes(element))
         {
             if (attribute.name.startsWith("#"))
             {
-                const [rawName, rawKey = ""] = attribute.name.split(":");
+                const [rawName, rawKey] = attribute.name.split(":");
 
                 const name = rawName.replace("#", "");
 
@@ -174,7 +239,10 @@ export default class TemplateParser
                     throw new Error(`Unregistered directive #${name}.`);
                 }
 
-                const key        = dinamicKey.test(rawKey) ? parse(dinamicKey.exec(rawKey)![1]) : Expression.literal(rawKey);
+                const key = !!rawKey
+                    ? Expression.literal(rawKey)
+                    : parse((element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "key"]?.value ?? "'default'");
+
                 const expression = parse(attribute.value);
 
                 elementDescriptor.directives.push({ name, key, expression });
@@ -184,7 +252,7 @@ export default class TemplateParser
             }
             else
             {
-                const name     = attribute.name.replace(/^(on)?::?/, "");
+                const name     = attribute.name.replace(/^::?/, "");
                 const key      = dashedToCamel(name);
                 const isTwoWay = attribute.name.startsWith("::");
                 const isOneWay = !isTwoWay && attribute.name.startsWith(":");
@@ -252,7 +320,10 @@ export default class TemplateParser
 
             const lastIndex = this.stack.pop()!;
 
-            const parentChildNodes = Array.from(template.parentNode!.childNodes).slice(lastIndex, template.parentNode!.childNodes.length);
+            const parentChildNodes = Enumerable.from(template.parentNode!.childNodes)
+                .skip(lastIndex)
+                .take(template.parentNode!.childNodes.length - lastIndex)
+                .toArray();
 
             let index = 0;
 
@@ -264,9 +335,9 @@ export default class TemplateParser
 
                 const value = simblingDirective!.type == HASH_ELSE ? "true" : simblingDirective!.value;
 
-                index = parentChildNodes.indexOf(nextElementSibling) + lastIndex;
+                index = parentChildNodes.indexOf(nextElementSibling);
 
-                this.stack.push(index);
+                this.stack.push(index + lastIndex);
 
                 const descriptor = TemplateParser.parseReference(simblingTemplate);
 
@@ -286,7 +357,7 @@ export default class TemplateParser
                 this.stack.pop();
             }
 
-            this.offsetIndex = index - lastIndex;
+            this.offsetIndex = index;
 
             this.stack.push(lastIndex);
 
@@ -335,7 +406,7 @@ export default class TemplateParser
             {
                 descriptor,
                 expression: parse(`(${value || "{}"})`),
-                key:        dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : Expression.literal(key),
+                key:        parse(key),
                 path:       this.getPath()
             };
 
@@ -353,7 +424,7 @@ export default class TemplateParser
             {
                 descriptor,
                 destructured: value.startsWith("{"),
-                key:          dinamicKey.test(key) ? parse(dinamicKey.exec(key)![1]) : Expression.literal(key),
+                key:          parse(key),
                 path:         this.getPath(),
                 pattern:      (parse(`(${value}) => 0`) as IArrowFunctionExpression).parameters[0],
             };
@@ -367,6 +438,7 @@ export default class TemplateParser
         if (!TemplateParser.testEnviroment)
         {
             template.removeAttribute(directive.name);
+            template.removeAttribute(directive.name + "-key");
         }
     }
 

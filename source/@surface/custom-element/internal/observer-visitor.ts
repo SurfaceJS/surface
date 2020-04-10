@@ -193,7 +193,7 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        if (expression.optional)
+        if (expression.optional || (expression.computed && expression.property.type != NodeType.Literal))
         {
             this.rollback();
         }

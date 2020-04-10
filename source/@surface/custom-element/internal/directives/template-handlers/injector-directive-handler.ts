@@ -21,9 +21,10 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
     private readonly start:     Comment;
     private readonly template:  HTMLTemplateElement;
 
-    private currentDisposable: IDisposable|null = null;
+    private currentDisposable: IDisposable|null   = null;
+    private disposed:          boolean            = false;
     private subscription:      ISubscription|null = null;
-    private timer:             number = 0;
+    private timer:             number             = 0;
 
     public constructor(scope: Scope, host: Node, template: HTMLTemplateElement, directive: IInjectorDirective)
     {
@@ -108,6 +109,11 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
     private task(): void
     {
+        if (this.disposed)
+        {
+            return;
+        }
+
         this.currentDisposable?.dispose();
 
         this.removeInRange(this.start, this.end);
@@ -121,15 +127,20 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
     public dispose(): void
     {
-        this.currentDisposable?.dispose();
+        if (!this.disposed)
+        {
+            this.currentDisposable?.dispose();
 
-        this.subscription!.unsubscribe();
+            this.subscription!.unsubscribe();
 
-        this.metadata.injectors.delete(this.key);
+            this.metadata.injectors.delete(this.key);
 
-        this.removeInRange(this.start, this.end);
+            this.removeInRange(this.start, this.end);
 
-        this.start.remove();
-        this.end.remove();
+            this.start.remove();
+            this.end.remove();
+
+            this.disposed = true;
+        }
     }
 }

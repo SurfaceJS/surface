@@ -22,6 +22,8 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     private readonly template:     HTMLTemplateElement;
     private readonly tree:         DocumentFragment;
 
+    private disposed: boolean = false;
+
     public constructor(scope: Scope, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
     {
         super(scope, host);
@@ -87,6 +89,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     private task(): void
     {
+        if (this.disposed)
+        {
+            return;
+        }
+
         const elements = this.directive.expression.evaluate(this.scope) as Array<Element>;
 
         for (const [rowStart, rowEnd, disposable] of this.cache)
@@ -108,23 +115,28 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     public dispose(): void
     {
-        for (const entry of this.cache)
+        if (!this.disposed)
         {
-            const [rowStart, rowEnd, disposable] = entry;
+            for (const entry of this.cache)
+            {
+                const [rowStart, rowEnd, disposable] = entry;
 
-            disposable.dispose();
+                disposable.dispose();
 
-            super.removeInRange(rowStart, rowEnd);
+                super.removeInRange(rowStart, rowEnd);
 
-            rowStart.remove();
-            rowEnd.remove();
+                rowStart.remove();
+                rowEnd.remove();
+            }
+
+            this.subscription.unsubscribe();
+
+            super.removeInRange(this.start, this.end);
+
+            this.start.remove();
+            this.end.remove();
+
+            this.disposed = true;
         }
-
-        this.subscription.unsubscribe();
-
-        super.removeInRange(this.start, this.end);
-
-        this.start.remove();
-        this.end.remove();
     }
 }

@@ -14,8 +14,8 @@ export function hasValue<T>(value: Nullable<T>): value is NonNullable<T>
     return value !== null && value !== undefined;
 }
 
-export function isIterable(source: { [Symbol.iterator]?: Function }): source is Iterable<unknown>;
-export function isIterable<T>(source: { [Symbol.iterator]?: Function }): source is Iterable<T>;
+export function isIterable(source: object): source is Iterable<unknown>;
+export function isIterable<T>(source: object): source is Iterable<T>;
 export function isIterable(source: { [Symbol.iterator]?: Function }): source is Iterable<unknown>
 {
     return typeof source[Symbol.iterator] == "function";

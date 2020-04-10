@@ -20,7 +20,7 @@ export default class TemplateParserSpec
 
         template.innerHTML =
         [
-            "<span value='Hello {host.name}' #on:click='host.handler' #on:[key]='host[key]' ::value-a='host.value' :value-b='host.x + host.y'>",
+            "<span value='Hello {host.name}' #on:click='host.handler' ::value-a='host.value' :value-b='host.x + host.y'>",
             "Some {'interpolation'} here",
             "</span>",
             "<span #inject:title='{ title }'>",
@@ -87,11 +87,6 @@ export default class TemplateParserSpec
                         {
                             expression: Expression.parse("host.handler"),
                             key:        Expression.literal("click"),
-                            name:       "on",
-                        },
-                        {
-                            expression: Expression.parse("host[key]"),
-                            key:        Expression.identifier("key"),
                             name:       "on",
                         }
                     ],
@@ -391,6 +386,20 @@ export default class TemplateParserSpec
         template.innerHTML = "<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #injector:value=\"source\" #for=\"const item of items\">{source.value}</span>";
 
         const expected = "<template #inject:value=\"source\"><template #if=\"true\"><template #injector:value=\"source\"><template #for=\"const item of items\"><span class=\"foo\"> </span></template></template></template></template>";
+
+        const actual = TemplateParser.parse(template)[0].innerHTML;
+
+        assert.equal(actual, expected);
+    }
+
+    @shouldPass @test
+    public decomposeInjectorWithInjectorKey(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span #injector=\"source\" #injector-key=\"key\">{source.value}</span>";
+
+        const expected = "<template #injector=\"source\" #injector-key=\"key\"><span> </span></template>";
 
         const actual = TemplateParser.parse(template)[0].innerHTML;
 

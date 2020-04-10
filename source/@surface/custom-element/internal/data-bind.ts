@@ -13,9 +13,9 @@ export default class DataBind
 {
     public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): [IReactor, ISubscription]
     {
-        const [key, member]                     = getKeyMember(target, path);
-        const [reactor, observer, subscription] = lazy ? Reactive.observe(target, path) : Reactive.observe(target, path, listener);
-        const subscriptions                     = [] as Array<ISubscription>;
+        const [key, member]                      = getKeyMember(target, path);
+        const [reactor, observer, _subscription] = lazy ? Reactive.observe(target, path) : Reactive.observe(target, path, listener);
+        const subscriptions                      = [] as Array<ISubscription>;
 
         const metadata = Metadata.from(member);
 
@@ -45,7 +45,7 @@ export default class DataBind
             metadata.hasListener = true;
         }
 
-        let subscriptionsHandler: ISubscription;
+        let subscription: ISubscription;
 
         if ("update" in listener)
         {
@@ -53,16 +53,16 @@ export default class DataBind
 
             propertySubscription.onUnsubscribe(() => subscriptions.forEach(x => x.unsubscribe()));
 
-            subscriptionsHandler = propertySubscription;
+            subscription = propertySubscription;
         }
         else
         {
-            subscriptions.push(subscription ?? observer.subscribe(listener));
+            subscriptions.push(_subscription ?? observer.subscribe(listener));
 
-            subscriptionsHandler = { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+            subscription = { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
         }
 
-        return [reactor, subscriptionsHandler];
+        return [reactor, subscription];
     }
 
     public static twoWay(left: object, leftPath: string, right: object, rightPath: string): [ISubscription, ISubscription]

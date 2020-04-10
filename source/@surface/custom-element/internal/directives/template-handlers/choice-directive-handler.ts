@@ -18,6 +18,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private readonly subscriptions: Array<ISubscription>                                           = [];
 
     private currentDisposable: IDisposable|null = null;
+    private disposed:          boolean          = false;
 
     public constructor(scope: Scope, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceDirectiveBranch>)
     {
@@ -35,10 +36,10 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
-        const listener = { notify };
-
         for (let index = 0; index < branches.length; index++)
         {
+            const listener = { notify };
+
             const branche = branches[index];
 
             this.subscriptions.push(ObserverVisitor.observe(scope, branche.expression, listener, true));
@@ -51,8 +52,13 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
         this.fireAsync(notify);
     }
 
-    public task(): void
+    private task(): void
     {
+        if (this.disposed)
+        {
+            return;
+        }
+
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
 
@@ -75,13 +81,18 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
     public dispose(): void
     {
-        this.currentDisposable?.dispose();
+        if (!this.disposed)
+        {
+            this.currentDisposable?.dispose();
 
-        this.subscriptions.forEach(x => x.unsubscribe());
+            this.subscriptions.forEach(x => x.unsubscribe());
 
-        this.removeInRange(this.start, this.end);
+            this.removeInRange(this.start, this.end);
 
-        this.start.remove();
-        this.end.remove();
+            this.start.remove();
+            this.end.remove();
+
+            this.disposed = true;
+        }
     }
 }

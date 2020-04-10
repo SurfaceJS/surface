@@ -12,7 +12,6 @@ export default class ParallelWorker
     private readonly interval: number;
 
     private expended: number  = 0;
-    private lastRun:  number  = 0;
     private running:  boolean = false;
 
     public constructor(interval?: number)
@@ -51,22 +50,17 @@ export default class ParallelWorker
             }
         }
 
-        this.running = false;
-
-        this.lastRun = window.performance.now();
+        this.expended = 0;
+        this.running  = false;
     }
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
     {
-        const promise = new Promise<ReturnType<TAction>>(resolve => this.queue.enqueue([action, resolve as Callback]));
-
         if (!this.running)
         {
-            this.expended = window.performance.now() - this.lastRun;
-
-            this.execute();
+            window.setTimeout(() => this.execute());
         }
 
-        return await promise;
+        return await new Promise(resolve => this.queue.enqueue([action, resolve as Callback]));
     }
 }

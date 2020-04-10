@@ -7,11 +7,11 @@ import { Scope }       from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
-    protected readonly element:      Element;
-    protected readonly expression:   IExpression;
-    protected readonly key:          IExpression;
-    protected readonly scope:        Scope;
-    protected readonly subscription: ISubscription;
+    protected readonly element:       Element;
+    protected readonly expression:    IExpression;
+    protected readonly key:           IExpression;
+    protected readonly scope:         Scope;
+    protected readonly subscriptions: Array<ISubscription> = [];
 
     protected onAfterBind?: Action;
     protected onAfterUnbind?: Action;
@@ -27,18 +27,21 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.subscription = ObserverVisitor.observe(scope, expression, { notify: value => this.onChange(value) }, false);
+        this.subscriptions.push(ObserverVisitor.observe(scope, expression, { notify: () => this.keyHandler(`${key.evaluate(scope)}`) }, false));
+        this.subscriptions.push(ObserverVisitor.observe(scope, key,        { notify: () => this.valueHandler(expression.evaluate(scope)) }, false));
 
         this.onAfterBind?.();
     }
 
-    protected abstract onChange(value: unknown): void;
+    protected abstract keyHandler(value: string): void;
+
+    protected abstract valueHandler(value: unknown): void;
 
     public dispose(): void
     {
         this.onBeforeUnbind?.();
 
-        this.subscription.unsubscribe();
+        this.subscriptions.forEach(x => x.unsubscribe());
 
         this.onAfterUnbind?.();
     }
