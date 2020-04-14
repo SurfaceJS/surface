@@ -1,20 +1,29 @@
 import "./fixtures/dom";
 
-import { Indexer }                 from "@surface/core";
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import TemplateParser              from "../internal/template-parser";
-import TemplateProcessor           from "../internal/template-processor";
+import { Indexer }                             from "@surface/core";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                              from "chai";
+import ParallelWorker                          from "../internal/parallel-worker";
+import TemplateParser                          from "../internal/template-parser";
+import TemplateProcessor                       from "../internal/template-processor";
 
-const render = async (interval?: number) => await new Promise(resolve => setTimeout(resolve, interval ?? 0));
+const getHost = <T = { }>() =>
+{
+    const host = document.createElement("div");
+
+    host.attachShadow({ mode: "open" });
+
+    return host as unknown as HTMLElement & { shadowRoot: ShadowRoot } & T;
+};
+const render = async () => (await new Promise(x => window.setTimeout(x, 0)), await ParallelWorker.done());
 
 // declare var chai: never;
 
-function process(host: Element, element: Element, scope?: Indexer): void
+function process(host: Element, root: Node, scope?: Indexer): void
 {
     const template = document.createElement("template");
 
-    for (const child of Array.from(element.childNodes))
+    for (const child of Array.from(root.childNodes))
     {
         template.content.appendChild(child);
     }
@@ -23,10 +32,10 @@ function process(host: Element, element: Element, scope?: Indexer): void
 
     for (const child of Array.from(template.content.childNodes))
     {
-        element.appendChild(child);
+        root.appendChild(child);
     }
 
-    TemplateProcessor.process(scope ?? { host }, host, element, descriptor);
+    TemplateProcessor.process(scope ?? { host }, host, root, descriptor);
 }
 
 @suite
@@ -35,45 +44,39 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithoutAttributes(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("span");
+        const host= getHost();
 
-        process(host, element);
+        process(host, host.shadowRoot);
     }
 
     @test @shouldPass
     public elementWithAttributes(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
-        element.innerHTML = "<span value='1'>Text</span>";
+        host.shadowRoot.innerHTML = "<span value='1'>Text</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        if (element.firstElementChild)
+        if (host.shadowRoot.firstElementChild)
         {
-            assert.equal(element.firstElementChild.getAttribute("value"), "1");
+            assert.equal(host.shadowRoot.firstElementChild.getAttribute("value"), "1");
         }
     }
 
     @test @shouldPass
     public elementWithAttributeInterpolation(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
         host.lang = "pt-br";
-        element.innerHTML = "<input type='text' lang='{host.lang}' parent='{host.tagName}'>Text</input>";
+        host.shadowRoot.innerHTML = "<input type='text' lang='{host.lang}' parent='{host.tagName}'>Text</input>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        if (element.firstElementChild)
+        if (host.shadowRoot.firstElementChild)
         {
-            const input = element.firstElementChild as HTMLSpanElement;
+            const input = host.shadowRoot.firstElementChild as HTMLSpanElement;
             assert.equal(input.lang, "pt-br");
             assert.equal(input.getAttribute("lang"), "pt-br");
             assert.equal(input.getAttribute("parent"), "DIV");
@@ -87,50 +90,44 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithAttributeCompoundInterpolation(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
         host.lang = "pt-br";
-        element.innerHTML = "<span data-text='Tag lang: {host.lang}'>Text</span>";
+        host.shadowRoot.innerHTML = "<span data-text='Tag lang: {host.lang}'>Text</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        assert.equal(element.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
+        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
 
         host.lang = "en-us";
 
-        assert.equal(element.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
+        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
     }
 
     @test @shouldPass
     public elementWithAttributeInterpolationExpression(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
-        element.innerHTML = "<span has-childs='Has childs: {this.childNodes.length > 0}'></span>";
+        host.shadowRoot.innerHTML = "<span has-childs='Has childs: {this.childNodes.length > 0}'></span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        assert.equal(element.firstElementChild!.getAttribute("has-childs"), "Has childs: false");
+        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("has-childs"), "Has childs: false");
     }
 
     @test @shouldPass
     public elementWithOneWayDataBinding(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
-        element.innerHTML = "<span :foo='host.tagName'</span>";
+        host.shadowRoot.innerHTML = "<span :foo='host.tagName'</span>";
 
-        const span = element.firstElementChild as HTMLSpanElement & { foo?: string };
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { foo?: string };
 
         span.foo = "";
 
-        process(host, element, { host });
+        process(host, host.shadowRoot, { host });
 
         assert.equal(span.foo, "DIV");
     }
@@ -138,15 +135,13 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithOneWayDataBindingToWindowFallback(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
-        element.innerHTML = "<span lang='{Node.name}'</span>";
+        host.shadowRoot.innerHTML = "<span lang='{Node.name}'</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        const span = element.firstElementChild as HTMLSpanElement;
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement;
 
         assert.equal(span.lang, "Node");
     }
@@ -154,21 +149,19 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithTwoWayDataBinding(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div") as HTMLDivElement & { value?: string };
-        const hostRoot = document.createElement("div");
+        const host = getHost<{ value?: string }>();
 
         host.id = "host";
         host.id = "hostRoot";
 
-        hostRoot.innerHTML = "<span ::value='host.value'</span>";
+        host.shadowRoot.innerHTML = "<span ::value='host.value'</span>";
 
-        const span = hostRoot.firstElementChild as HTMLSpanElement & { value?: string };
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
 
         host.value = "";
         span.value = "";
 
-        process(host, hostRoot);
+        process(host, host.shadowRoot);
 
         host.value = "foo";
 
@@ -204,19 +197,17 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithAttributesWithEventBind(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
         let clicked = false;
 
         host.click = () => clicked = true;
 
-        element.innerHTML = "<span on:click='host.click'>Text</span>";
+        host.shadowRoot.innerHTML = "<span #on:click='host.click'>Text</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        element.firstElementChild!.dispatchEvent(new Event("click"));
+        host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
         assert.equal(clicked, true);
     }
@@ -224,19 +215,17 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithAttributesWithExpressionEventBind(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div") as HTMLDivElement & { method?: Function };
-        const element  = document.createElement("div");
+        const host = getHost<{ method?: Function }>();
 
         let clicked = false;
 
         host.method = (value: boolean) => clicked = value;
 
-        element.innerHTML = "<span on:click='host.method(true)'>Text</span>";
+        host.shadowRoot.innerHTML = "<span #on:click='host.method(true)'>Text</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        element.firstElementChild!.dispatchEvent(new Event("click"));
+        host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
         assert.equal(clicked, true);
     }
@@ -244,148 +233,127 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithTextNodeInterpolation(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
         host.id = "01";
-        element.innerHTML = "<span>Host id: {host.id}</span>";
+        host.shadowRoot.innerHTML = "<span>Host id: {host.id}</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        assert.equal(element.firstElementChild!.innerHTML, "Host id: 01");
+        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 01");
 
         host.id = "02";
 
-        assert.equal(element.firstElementChild!.innerHTML, "Host id: 02");
+        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 02");
     }
 
     @test @shouldPass
     public elementWithTextNodeInterpolationExpression(): void
     {
-        const document = window.document;
-        const host     = document.createElement("div");
-        const element  = document.createElement("div");
+        const host = getHost();
 
         host.id = "01";
-        element.innerHTML = "<span>{host.id == '01'}</span>";
+        host.shadowRoot.innerHTML = "<span>{host.id == '01'}</span>";
 
-        process(host, element);
+        process(host, host.shadowRoot);
 
-        assert.equal(element.firstElementChild!.innerHTML, "true");
+        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "true");
 
         host.id = "02";
 
-        assert.equal(element.firstElementChild!.innerHTML, "false");
+        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "false");
     }
 
     @test @shouldPass
     public async templateWithoutDirective(): Promise<void>
     {
-        const root = document.createElement("div");
-        const host = document.createElement("div");
+        const root = getHost();
+        const host = getHost();
 
-        host.innerHTML = "<template>World</template>";
+        root.innerHTML = "<template>World</template>";
+        host.innerHTML = "<span>Hello </span><span>!!!</span>";
 
-        const element = document.createElement("div");
+        root.shadowRoot.appendChild(host);
 
-        root.appendChild(host);
-        host.appendChild(element);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-        element.innerHTML = "<span>Hello </span><span>!!!</span>";
-
-        process(host, element);
-        process(root, host);
-
-        await render();
-
-        assert.equal(host.innerHTML, "<template>World</template><div><span>Hello </span><span>!!!</span></div>");
+        assert.equal(host.innerHTML, "<span>Hello </span><span>!!!</span>");
     }
 
     @test @shouldPass
     public async templateWithInjectDirective(): Promise<void>
     {
-        const root     = document.createElement("div");
-        const host     = document.createElement("div");
-        const hostRoot = document.createElement("div");
+        const root = getHost();
+        const host = getHost();
 
-        root.id     = "root";
-        host.id     = "host";
-        hostRoot.id = "hostRoot";
+        root.id = "root";
+        host.id = "host";
 
-        hostRoot.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
+        host.innerHTML            = "<template #inject:items>World</template>";
 
-        host.innerHTML = "<template #inject:items>World</template>";
+        root.shadowRoot.appendChild(host);
 
-        host.appendChild(hostRoot);
-        root.appendChild(host);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-        process(host, hostRoot);
-        process(root, host);
+        await render();
 
-        assert.equal(root.querySelector("div")?.textContent, "Hello World!!!");
+        assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
-    public async templateWithInjectAndScopeDirective(): Promise<void>
+    public async templateWithInjectAndInjectorDirective(): Promise<void>
     {
-        const root     = document.createElement("div");
-        const host     = document.createElement("div") as HTMLDivElement & { item?: { value: string } };
-        const hostRoot = document.createElement("div");
+        const root = getHost();
+        const host = getHost<{ item?: { value: string } }>();
 
         host.item = { value: "People" };
 
         host.innerHTML = "<template #inject:item='{ item }'>{item.value}</template>";
 
-        root.appendChild(host);
-        host.appendChild(hostRoot);
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:item='({ item: host.item })'></template><span>!!!</span>";
 
-        hostRoot.innerHTML = "<span>Hello </span><template #injector:item='{ item: host.item }'></template><span>!!!</span>";
+        root.shadowRoot.appendChild(host);
 
-        process(host, hostRoot);
-        process(root, host);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-        assert.equal(root.querySelector("div")?.textContent, "Hello People!!!");
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Hello People!!!");
 
         host.item = { value: "World" };
 
         await render();
 
-        assert.equal(root.querySelector("div")?.textContent, "Hello World!!!");
-
-        hostRoot.innerHTML = "";
-
-        host.item = { value: "" };
-
-        assert.equal(hostRoot.childNodes.length, 0);
+        assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
     public async templateWithInjectorDirectiveWithDefault(): Promise<void>
     {
-        const root     = document.createElement("div");
-        const host     = document.createElement("div");
-        const hostRoot = document.createElement("div");
+        const root = getHost();
+        const host = getHost();
 
-        root.appendChild(host);
-        host.appendChild(hostRoot);
+        root.shadowRoot.appendChild(host);
 
-        hostRoot.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
 
-        process(host, hostRoot);
-        process(root, host);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
         await render();
 
-        assert.equal(root.querySelector("div")?.textContent, "Hello Default!!!");
+        assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
     }
 
     @test @shouldPass
     public async templateWithInjectAndConditionalDirectives(): Promise<void>
     {
-        const root     = document.createElement("div");
-        const host     = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number, boolean]> };
-        const hostRoot = document.createElement("div");
+        const root = getHost();
+        const host = getHost<{ items?: Array<[string, number, boolean]> }>();
 
         host.innerHTML    =
         `
@@ -396,25 +364,19 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        hostRoot.innerHTML =
-        `
-            <template #for="const item of host.items" #injector:items="{ item }">
-                <span>Default</span>
-            </template>
-        `;
+        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #injector:items="({ item })"><span>Default</span></template>`;
 
-        root.appendChild(host);
-        host.appendChild(hostRoot);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-        host.condition = false;
-        host.items     = [];
+        host.items = [];
 
-        process(host, hostRoot);
-        process(root, host);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
         await render();
 
-        assert.equal(host.querySelector("span"), null);
+        assert.equal(host.shadowRoot.querySelector("span"), null);
 
         host.items =
         [
@@ -422,13 +384,12 @@ export default class TemplateProcessorSpec
             ["Two",   2, true],
             ["Three", 3, true]
         ];
-        host.condition = true;
 
         await render();
 
-        assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-        assert.equal(host.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
 
         host.items =
         [
@@ -439,25 +400,20 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.querySelector("span:nth-child(2)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Three: 3");
     }
 
     @test @shouldPass
     public async templateWithInjectAndInjectorDirectives(): Promise<void>
     {
-        const root          = document.createElement("div");
-        const host          = document.createElement("div");
-        const childHost     = document.createElement("div") as HTMLDivElement & { item?: [string, number] };
-        const childHostRoot = document.createElement("div");
+        const root      = getHost();
+        const host      = getHost();
+        const childHost = getHost<{ item?: [string, number] }>();
 
-        /*
-
-         */
-
-        childHostRoot.innerHTML =
+        childHost.shadowRoot.innerHTML =
         `
-            <template #injector:items2="{ item: host.item }">
+            <template #injector:items2="({ item: host.item })">
                 <span>Injector 2</span>
             </template>
         `;
@@ -465,7 +421,7 @@ export default class TemplateProcessorSpec
         childHost.innerHTML =
         `
             <template #inject:items2="{ item }">
-                <template #injector:items1="{ item }">
+                <template #injector:items1="({ item })">
                     <span>Injector 1</span>
                 </template>
             </template>
@@ -478,615 +434,562 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        childHost.appendChild(childHostRoot);
-        host.appendChild(childHost);
-        root.appendChild(host);
+
+        host.shadowRoot.appendChild(childHost);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
         childHost.item = ["Value", 1];
 
-        process(childHost, childHostRoot);
-        process(host, childHost);
-        process(root, host);
+        process(childHost, childHost.shadowRoot);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
         await render();
 
-        assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "Value: 1");
+        assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
     }
 
-    // @test @shouldPass
-    // public async templateWithConditionalDirective(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { order?: number };
+    @test @shouldPass
+    public async templateWithConditionalDirective(): Promise<void>
+    {
+        const host = getHost<{ order?: number }>();
 
-    //     host.order = 1;
+        host.order = 1;
 
-    //     const element = document.createElement("div");
+        host.shadowRoot.innerHTML = `<template #if="host.order == 1"><span>First</span></template><template>Ignore me</template>>`;
 
-    //     host.appendChild(element);
+        process(host, host.shadowRoot);
 
-    //     element.innerHTML = `<template #if="host.order == 1"><span>First</span></template><template>Ignore me</template>>`;
+        await render();
 
-    //     process(host, element);
+        assert.equal(host.shadowRoot.firstElementChild?.textContent, "First");
 
-    //     await render();
+        host.order = 2;
 
-    //     assert.equal(element.firstElementChild?.textContent, "First");
+        await render();
 
-    //     host.order = 2;
+        assert.equal(host.shadowRoot.firstElementChild?.textContent, "");
 
-    //     await render();
+        host.shadowRoot.innerHTML = "";
 
-    //     assert.equal(element.firstElementChild?.textContent, "");
+        host.order = 0;
 
-    //     element.innerHTML = "";
+        assert.equal(host.shadowRoot.childNodes.length, 0);
+    }
 
-    //     host.order = 0;
+    @test @shouldPass
+    public async templateWithMultiplesConditionalDirective(): Promise<void>
+    {
+        const host = getHost<{ order?: number }>();
 
-    //     assert.equal(element.childNodes.length, 0);
-    // }
+        host.order = 1;
 
-    // @test @shouldPass
-    // public async templateWithMultiplesConditionalDirective(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { order?: number };
+        host.shadowRoot.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
 
-    //     host.order = 1;
+        process(host, host.shadowRoot);
 
-    //     const element = document.createElement("div");
+        await render();
 
-    //     host.appendChild(element);
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "First");
 
-    //     element.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+        host.order = 2;
 
-    //     process(host, element);
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Second");
 
-    //     assert.equal(element.childNodes[1].textContent, "First");
+        host.order = 3;
 
-    //     host.order = 2;
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
+    }
 
-    //     assert.equal(element.childNodes[1].textContent, "Second");
+    @test @shouldPass
+    public async templateWithForInLoopDirective(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<number> }>();
 
-    //     host.order = 3;
+        host.elements = [1];
 
-    //     await render();
+        host.shadowRoot.innerHTML = `<template #for="const index in host.elements"><span>Element: {index}</span></template>`;
 
-    //     assert.equal(element.childNodes[1].textContent, "Last");
+        process(host, host.shadowRoot);
 
-    //     element.innerHTML = "";
+        await render();
 
-    //     host.order = 0;
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
 
-    //     assert.equal(element.childNodes.length, 0);
-    // }
+        host.elements = [1, 2];
 
-    // @test @shouldPass
-    // public async templateWithForInLoopDirective(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
+        await render();
 
-    //     host.elements = [1];
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 1");
 
-    //     const element = document.createElement("div");
+        host.elements = [1, 2, 3];
 
-    //     host.appendChild(element);
+        await render();
 
-    //     element.innerHTML = `<template #for="const index in host.elements"><span>Element: {index}</span></template>`;
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 2");
 
-    //     process(host, element);
+        host.elements = [2];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 0");
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
+    }
 
-    //     host.elements = [1, 2];
+    @test @shouldPass
+    public async templateWithForOfLoopDirective(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<number> }>();
 
-    //     await render();
+        host.elements = [1];
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 0");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 1");
+        host.shadowRoot.innerHTML = `<template #for="const index of host.elements"><span>Element: {index}</span></template>`;
 
-    //     host.elements = [1, 2, 3];
+        process(host, host.shadowRoot);
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 0");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 1");
-    //     assert.equal(element.childNodes[8].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
 
-    //     host.elements = [2];
+        host.elements = [1, 2];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 0");
-    // }
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
 
-    // @test @shouldPass
-    // public async templateWithForOfLoopDirective(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<number> };
+        host.elements = [1, 2, 3];
 
-    //     host.elements = [1];
+        await render();
 
-    //     const element = document.createElement("div");
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 3");
 
-    //     host.appendChild(element);
+        host.elements = [2];
 
-    //     element.innerHTML = `<template #for="const index of host.elements"><span>Element: {index}</span></template>`;
+        await render();
 
-    //     process(host, element);
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 2");
 
-    //     await render();
+        host.elements = [1, 2, 3];
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1");
+        await render();
 
-    //     host.elements = [1, 2];
+        host.elements = [3, 2, 1];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 3");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 1");
+    }
 
-    //     host.elements = [1, 2, 3];
+    @test @shouldPass
+    public async templateWithLoopDirectiveWithArrayDestructuring(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<[number, number]> }>();
 
-    //     await render();
+        host.elements = [[1, 2]];
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 2");
-    //     assert.equal(element.childNodes[8].textContent, "Element: 3");
+        host.shadowRoot.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>`;
 
-    //     host.elements = [2];
+        process(host, host.shadowRoot);
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
 
-    //     host.elements = [1, 2, 3];
+        host.elements = [[1, 2], [2, 4]];
 
-    //     await render();
+        await render();
 
-    //     host.elements = [3, 2, 1];
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
 
-    //     await render();
+        host.elements = [[1, 2], [2, 4], [3, 6]];
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 3");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 2");
-    //     assert.equal(element.childNodes[8].textContent, "Element: 1");
+        await render();
 
-    //     element.innerHTML = "";
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
 
-    //     host.elements = [];
+        host.elements = [[2, 4]];
 
-    //     assert.equal(element.childNodes.length, 0);
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public async templateWithLoopDirectiveWithArrayDestructuring(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, number]> };
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+    }
 
-    //     host.elements = [[1, 2]];
+    @test @shouldPass
+    public async templateWithLoopDirectiveWithArrayDestructuringDeepNested(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<[number, { item: { name: string } }]> }>();
 
-    //     const element = document.createElement("div");
+        host.elements = [[1, { item: { name: "one" } }]];
 
-    //     host.appendChild(element);
+        host.shadowRoot.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {index}, Name: {name}</span></template>`;
 
-    //     element.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>`;
+        process(host, host.shadowRoot);
 
-    //     process(host, element);
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }]
+        ];
 
-    //     host.elements = [[1, 2], [2, 4]];
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2, Name: two");
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        host.elements =
+        [
+            [1, { item: { name: "one" } }],
+            [2, { item: { name: "two" } }],
+            [3, { item: { name: "three" } }]
+        ];
 
-    //     host.elements = [[1, 2], [2, 4], [3, 6]];
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2, Name: two");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 3, Name: three");
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-    //     assert.equal(element.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        host.elements = [[2, { item: { name: "two" } }]];
 
-    //     host.elements = [[2, 4]];
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 2, Name: two");
+    }
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
-    // }
+    @test @shouldPass
+    public async templateWithLoopDirectiveWithObjectDestructuring(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<{ values: [number, number]}> }>();
 
-    // @test @shouldPass
-    // public async templateWithLoopDirectiveWithArrayDestructuringDeepNested(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<[number, { item: { name: string } }]> };
+        host.elements = [{ values: [1, 2] }];
 
-    //     host.elements = [[1, { item: { name: "one" } }]];
+        host.shadowRoot.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
 
-    //     const element = document.createElement("div");
+        process(host, host.shadowRoot);
 
-    //     host.appendChild(element);
+        await render();
 
-    //     element.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {index}, Name: {name}</span></template>`;
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
 
-    //     process(host, element);
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+        ];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1, Name: one");
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
 
-    //     host.elements =
-    //     [
-    //         [1, { item: { name: "one" } }],
-    //         [2, { item: { name: "two" } }]
-    //     ];
+        host.elements =
+        [
+            { values: [1, 2] },
+            { values: [2, 4] },
+            { values: [3, 6] },
+        ];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1, Name: one");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 2, Name: two");
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
 
-    //     host.elements =
-    //     [
-    //         [1, { item: { name: "one" } }],
-    //         [2, { item: { name: "two" } }],
-    //         [3, { item: { name: "three" } }]
-    //     ];
+        host.elements = [{ values: [2, 4] }];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 1, Name: one");
-    //     assert.equal(element.childNodes[5].textContent, "Element: 2, Name: two");
-    //     assert.equal(element.childNodes[8].textContent, "Element: 3, Name: three");
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+    }
 
-    //     host.elements = [[2, { item: { name: "two" } }]];
+    @test @shouldPass
+    public async templateWithLoopDirectiveWithObjectDestructuringDeepNested(): Promise<void>
+    {
+        const host = getHost<{ elements?: Array<{ values: [number, [[number]]]}> }>();
 
-    //     await render();
+        host.elements = [{ values: [1, [[2]]] }];
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element: 2, Name: two");
-    // }
+        host.shadowRoot.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
 
-    // @test @shouldPass
-    // public async templateWithLoopDirectiveWithObjectDestructuring(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, number]}> };
+        process(host, host.shadowRoot);
 
-    //     host.elements = [{ values: [1, 2] }];
+        await render();
 
-    //     const element = document.createElement("div");
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
 
-    //     host.appendChild(element);
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] }
+        ];
 
-    //     element.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        await render();
 
-    //     process(host, element);
+        assert.equal(host.shadowRoot.childElementCount, 2);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
 
-    //     await render();
+        host.elements =
+        [
+            { values: [1, [[2]]] },
+            { values: [2, [[4]]] },
+            { values: [3, [[6]]] },
+        ];
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        await render();
 
-    //     host.elements =
-    //     [
-    //         { values: [1, 2] },
-    //         { values: [2, 4] },
-    //     ];
+        assert.equal(host.shadowRoot.childElementCount, 3);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
 
-    //     await render();
+        host.elements = [{ values: [2, [[4]]] }];
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        await render();
 
-    //     host.elements =
-    //     [
-    //         { values: [1, 2] },
-    //         { values: [2, 4] },
-    //         { values: [3, 6] },
-    //     ];
+        assert.equal(host.shadowRoot.childElementCount, 1);
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+    }
 
-    //     await render();
+    @test @shouldPass
+    public async templateWithConditionalAndLoopDirectives(): Promise<void>
+    {
+        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-    //     assert.equal(element.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
 
-    //     host.elements = [{ values: [2, 4] }];
+        host.shadowRoot.innerHTML =
+        `
+            <template #if="host.condition" #for="const [key, value] of host.items">
+                <span>{key}: {value}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
 
-    //     await render();
+        process(host, host.shadowRoot);
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public async templateWithLoopDirectiveWithObjectDestructuringDeepNested(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { elements?: Array<{ values: [number, [[number]]]}> };
+        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
 
-    //     host.elements = [{ values: [1, [[2]]] }];
+        host.condition = true;
 
-    //     const element = document.createElement("div");
+        await render();
 
-    //     host.appendChild(element);
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
 
-    //     element.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        host.condition = false;
 
-    //     process(host, element);
+        await render();
 
-    //     await render();
+        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
+    }
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+    @test @shouldPass
+    public async templateWithConditionalAndInjectorDirectives(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost<{ condition?: boolean, item?: [string, number] }>();
 
-    //     host.elements =
-    //     [
-    //         { values: [1, [[2]]] },
-    //         { values: [2, [[4]]] }
-    //     ];
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{key}: {value}</span>
+            </template>
+        `;
 
-    //     await render();
+        host.shadowRoot.innerHTML =
+        `
+            <template #if="host.condition" #injector:items="({ item: host.item })">
+                <span>Default</span>
+            </template>
+        `;
 
-    //     assert.equal(element.childElementCount, 2);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     host.elements =
-    //     [
-    //         { values: [1, [[2]]] },
-    //         { values: [2, [[4]]] },
-    //         { values: [3, [[6]]] },
-    //     ];
+        host.condition = false;
+        host.item      = ["One", 1];
 
-    //     await render();
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-    //     assert.equal(element.childElementCount, 3);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-    //     assert.equal(element.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-    //     assert.equal(element.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        await render();
 
-    //     host.elements = [{ values: [2, [[4]]] }];
+        assert.equal(host.shadowRoot.querySelector("span"), null);
 
-    //     await render();
+        host.condition = true;
 
-    //     assert.equal(element.childElementCount, 1);
-    //     assert.equal(element.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
-    // }
+        await render();
 
-    // @test @shouldPass
-    // public async templateWithConditionalAndLoopDirectives(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+    }
 
-    //     host.condition = false;
-    //     host.items     =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3],
-    //     ];
+    @test @shouldPass
+    public async templateWithLoopAndConditionalDirectives(): Promise<void>
+    {
+        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
 
-    //     const element = document.createElement("div");
-    //     host.appendChild(element);
+        host.condition = false;
+        host.items     =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3],
+        ];
 
-    //     element.innerHTML =
-    //     `
-    //         <template #if="host.condition" #for="const [key, value] of host.items">
-    //             <span>{key}: {value}</span>
-    //         </template>
-    //         <template #else>
-    //             <span>Empty</span>
-    //         </template>
-    //     `;
+        host.shadowRoot.innerHTML =
+        `
+            <template #if="host.condition" #for="const [key, value] of host.items">
+                <span>{key}: {value}</span>
+            </template>
+            <template #else>
+                <span>Empty</span>
+            </template>
+        `;
 
-    //     process(host, element);
+        process(host, host.shadowRoot);
 
-    //     await render();
+        await render();
 
-    //     assert.equal(host.querySelector("span")?.textContent, "Empty");
+        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
 
-    //     host.condition = true;
+        host.condition = true;
 
-    //     await render();
+        await render();
 
-    //     assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-    //     assert.equal(host.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-    //     assert.equal(host.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+    }
 
-    //     host.condition = false;
+    @test @shouldPass
+    public async templateWithLoopAndInjectorDirectives(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
 
-    //     await render();
+        host.innerHTML    =
+        `
+            <template #inject:items="{ item: [key, value] }">
+                <span>{key}: {value}</span>
+            </template>
+        `;
 
-    //     assert.equal(host.querySelector("span")?.textContent, "Empty");
-    // }
+        host.shadowRoot.innerHTML =
+        `
+            <template #for="const item of host.items" #injector:items="({ item })">
+                <span>Default</span>
+            </template>
+        `;
 
-    // @test @shouldPass
-    // public async templateWithConditionalAndInjectorDirectives(): Promise<void>
-    // {
-    //     const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, item?: [string, number] };
-    //     const content = document.createElement("div");
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     host.innerHTML    =
-    //     `
-    //         <template #inject:items="{ item: [key, value] }">
-    //             <span>{key}: {value}</span>
-    //         </template>
-    //     `;
+        host.condition = false;
+        host.items     = [];
 
-    //     content.innerHTML =
-    //     `
-    //         <template #injector:items="{ item: host.item }" #if="host.condition">
-    //             <span>Default</span>
-    //         </template>
-    //     `;
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-    //     host.appendChild(content);
+        await render();
 
-    //     host.condition = false;
-    //     host.item      = ["One", 1];
+        assert.equal(host.shadowRoot.querySelector("span"), null);
 
-    //     process(host, content);
+        host.items =
+        [
+            ["One",   1],
+            ["Two",   2],
+            ["Three", 3]
+        ];
 
-    //     await render();
+        await render();
 
-    //     assert.equal(host.querySelector("span"), null);
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+    }
 
-    //     host[PROCESSED] = true;
+    @test @shouldFail
+    public elementWithOneWayDataBindingToReadonlyProperty(): void
+    {
+        const host = getHost<{ value?: string }>();
 
-    //     host.condition = true;
+        host.value = "foo";
 
-    //     await render();
+        host.shadowRoot.innerHTML = "<span :value='host.value'</span>";
 
-    //     assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-    // }
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
 
-    // @test @shouldPass
-    // public async templateWithLoopAndConditionalDirectives(): Promise<void>
-    // {
-    //     const host = document.createElement("div") as HTMLDivElement & { condition?: boolean, items?: Array<[string, number]> };
+        Object.defineProperty(span, "value", { value: "", writable: false });
 
-    //     host.condition = false;
-    //     host.items     =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3],
-    //     ];
+        assert.throw(() => process(host, host.shadowRoot), "Property value of HTMLSpanElement is readonly");
+    }
 
-    //     const element = document.createElement("div");
-    //     host.appendChild(element);
+    @test @shouldFail
+    public elementWithTwoWayDataBindingToReadonlyProperty(): void
+    {
+        const host = getHost<{ value?: string }>();
 
-    //     element.innerHTML =
-    //     `
-    //         <template #for="const [key, value] of host.items" #if="host.condition">
-    //             <span>{key}: {value}</span>
-    //         </template>
-    //         <template #else>
-    //             <span>Empty</span>
-    //         </template>
-    //     `;
+        Object.defineProperty(host, "value", { value: "", writable: false });
 
-    //     process(host, element);
+        host.shadowRoot.innerHTML = "<span ::value='host.value'</span>";
 
-    //     await render();
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
 
-    //     assert.equal(host.querySelector("span")?.textContent, "Empty");
+        span.value = "foo";
 
-    //     host.condition = true;
-
-    //     await render();
-
-    //     assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-    //     assert.equal(host.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-    //     assert.equal(host.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
-    // }
-
-    // @test @shouldPass
-    // public async templateWithLoopAndInjectorDirectives(): Promise<void>
-    // {
-    //     const host    = document.createElement("div") as HTMLDivElement & { [PROCESSED]?: boolean, condition?: boolean, items?: Array<[string, number]> };
-    //     const content = document.createElement("div");
-
-    //     host.innerHTML    =
-    //     `
-    //         <template #inject:items="{ item: [key, value] }">
-    //             <span>{key}: {value}</span>
-    //         </template>
-    //     `;
-
-    //     content.innerHTML =
-    //     `
-    //         <template #for="const item of host.items" #injector:items="{ item }">
-    //             <span>Default</span>
-    //         </template>
-    //     `;
-
-    //     host.appendChild(content);
-
-    //     host.condition = false;
-    //     host.items     = [];
-
-    //     process(host, content);
-
-    //     await render();
-
-    //     assert.equal(host.querySelector("span"), null);
-
-    //     host[PROCESSED] = true;
-
-    //     host.items =
-    //     [
-    //         ["One",   1],
-    //         ["Two",   2],
-    //         ["Three", 3]
-    //     ];
-
-    //     await render();
-
-    //     assert.equal(host.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-    //     assert.equal(host.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-    //     assert.equal(host.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
-    // }
-
-    // @test @shouldFail
-    // public elementWithOneWayDataBindingToReadonlyProperty(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div") as HTMLDivElement & { value?: string };
-    //     const element  = document.createElement("div");
-
-    //     host.value = "foo";
-
-    //     element.innerHTML = "<span :value='host.value'</span>";
-
-    //     const span = element.firstElementChild as HTMLSpanElement & { value?: string };
-
-    //     Object.defineProperty(span, "value", { value: "", writable: false });
-
-    //     assert.equal(() => process(host, element)).to.throw("Property value of HTMLSpanElement is readonly");
-    // }
-
-    // @test @shouldFail
-    // public elementWithTwoWayDataBindingToReadonlyProperty(): void
-    // {
-    //     const document = window.document;
-    //     const host     = document.createElement("div") as HTMLDivElement & { value?: string };
-    //     const element  = document.createElement("div");
-
-    //     Object.defineProperty(host, "value", { value: "", writable: false });
-
-    //     element.innerHTML = "<span ::value='host.value'</span>";
-
-    //     const span = element.firstElementChild as HTMLSpanElement & { value?: string };
-
-    //     span.value = "foo";
-
-    //     assert.equal(() => process(host, element)).to.throw("Property value of HTMLDivElement is readonly");
-    // }
+        assert.throw(() => process(host, host.shadowRoot), "Property value of HTMLDivElement is readonly");
+    }
 }

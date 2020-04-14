@@ -23,25 +23,15 @@ Object.assign
             },
             async whenDefined(_name: string)
             {
-                return await new Promise(resolve => setTimeout(resolve, 0));
+                return await new Promise(resolve => window.setTimeout(resolve, 0));
             }
         } as CustomElementRegistry,
         requestAnimationFrame(callback: FrameRequestCallback)
         {
-            setTimeout(callback, 0);
+            process.nextTick(callback);
         }
     }
 );
-
-function ProxyHTMLElement() { return; }
-
-ProxyHTMLElement.prototype = window.HTMLElement.prototype;
-
-ProxyHTMLElement.prototype.attachShadow = () => window.document.createElement("div") as unknown as ShadowRoot;
-
-(window.HTMLElement as Object) = ProxyHTMLElement;
-
-
 
 Object.assign
 (
