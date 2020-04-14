@@ -10,7 +10,7 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
         const metadata = StaticMetadata.from(target.constructor);
 
         const action = (instance: object) =>
-            Reactive.observe(instance, property as string)[1].subscribe({ notify: x => (instance as Record<string, Function>)[propertyKey](x) });
+            Reactive.observe(instance, property as string).observer.subscribe({ notify: x => (instance as Record<string, Function>)[propertyKey](x) });
 
         metadata.actions.push(action as (instance: object) => void);
     };
@@ -33,7 +33,7 @@ export function notify<T extends object>(...properties: Array<keyof T>): <U exte
         {
             for (const property of properties)
             {
-                Reactive.observe(instance, propertyKey)[1].subscribe({ notify: () => Reactive.notify(instance, property as string)});
+                Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string)});
             }
         };
 

@@ -20,74 +20,34 @@ import IThisExpression           from "@surface/expression/interfaces/this-expre
 import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
 import TypeGuard                 from "@surface/expression/internal/type-guard";
 import NodeType                  from "@surface/expression/node-type";
-import IListener                 from "@surface/reactive/interfaces/listener";
-import ISubscription             from "@surface/reactive/interfaces/subscription";
-import DataBind                  from "./data-bind";
-import { Scope }                 from "./types";
 
-const PRIMITIVES = ["string", "boolean", "number"];
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly scope: Scope;
-
-    private readonly cache: Map<IExpression, unknown> = new Map();
-
     private readonly paths: Array<Array<string>> = [];
 
     private brokenPath: boolean       = false;
     private stack:      Array<string> = [];
 
-    private constructor(scope: Scope)
+    public static observe(expression: IExpression): Array<Array<string>>
     {
-        super();
-
-        this.scope = scope;
-    }
-
-    public static observe(scope: Scope, expression: IExpression, listener: IListener, lazy: boolean): ISubscription
-    {
-        const visitor       = new ObserverVisitor(scope);
-        const subscriptions = [] as Array<ISubscription>;
+        const visitor = new ObserverVisitor();
 
         visitor.visit(expression);
 
         visitor.commit();
 
-        for (const path of visitor.paths)
-        {
-            if (path.length > 1)
-            {
-                subscriptions.push(DataBind.oneWay(scope, path, listener, lazy)[1]);
-            }
-        }
-
-        return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) } ;
+        return visitor.paths;
     }
 
     private commit(): void
     {
-        if (this.stack.length > 0)
+        if (this.stack.length > 1)
         {
             this.paths.push([...this.stack]);
-            this.stack = [];
         }
-    }
 
-    private evaluate(expression: IExpression): unknown
-    {
-        if (this.cache.has(expression))
-        {
-            return this.cache.get(expression);
-        }
-        else
-        {
-            const value = expression.evaluate(this.scope);
-
-            this.cache.set(expression, value);
-
-            return value;
-        }
+        this.stack = [];
     }
 
     private reset(): void
@@ -193,25 +153,21 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        if (expression.optional || (expression.computed && expression.property.type != NodeType.Literal))
+        if (expression.computed && expression.property.type != NodeType.Literal)
+        {
+            this.reset();
+
+            super.visit(expression.property);
+        }
+        else if (expression.optional)
         {
             this.rollback();
         }
-        else if (!PRIMITIVES.includes(typeof this.evaluate(expression.object)))
+        else if (!this.brokenPath)
         {
-            if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
-            {
-                const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : `${this.evaluate(expression.property)}`;
+            const key = TypeGuard.isIdentifier(expression.property) ? expression.property.name : `${expression.property.evaluate({ })}`;
 
-                if (!this.brokenPath)
-                {
-                    this.stack.unshift(key);
-                }
-            }
-            else
-            {
-                super.visit(expression.property);
-            }
+            this.stack.unshift(key);
         }
 
         super.visit(expression.object);

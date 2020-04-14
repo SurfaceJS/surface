@@ -85,7 +85,7 @@ export default class ReactiveSpec
 
         const listener = { notify: (x: number) => receiver.instance.value = x };
 
-        const [, observer] = Reactive.observe(emmiter, "instance.value");
+        const { observer } = Reactive.observe(emmiter, "instance.value");
 
         observer.subscribe(listener);
 
@@ -106,7 +106,7 @@ export default class ReactiveSpec
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const receiver = { instance: { name: "Receiver", value: 2 }};
 
-        const observer = Reactive.observe(emmiter.instance, "value")[1];
+        const { observer } = Reactive.observe(emmiter.instance, "value");
 
         observer.subscribe({ notify: x => receiver.instance.value = x });
 
@@ -395,7 +395,7 @@ export default class ReactiveSpec
         const emmiter  = { instance: { name: "Emmiter",  value: 1 }};
         const receiver = { instance: { name: "Receiver", value: 2 }};
 
-        const subscription = Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x })[2];
+        const { subscription } = Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x });
 
         chai.expect(emmiter.instance.value == receiver.instance.value, "#1").to.equal(true);
 

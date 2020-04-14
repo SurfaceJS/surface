@@ -18,6 +18,7 @@ import ITemplateDescriptor              from "./interfaces/template-descriptor";
 import ITextNodeDescriptor              from "./interfaces/text-node-descriptor";
 import InterpolatedExpression           from "./interpolated-expression";
 import { nativeEvents }                 from "./native-events";
+import ObserverVisitor                  from "./observer-visitor";
 import parse                            from "./parse";
 import { forExpression, interpolation } from "./patterns";
 
@@ -206,7 +207,7 @@ export default class TemplateParser
 
     private nest(template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement): void
     {
-        Enumerable.from(template.content.childNodes).forEach(x => x.remove());
+        Array.from(template.content.childNodes).forEach(x => x.remove());
 
         const decomposed = this.decomposeDirectives(innerTemplate);
 
@@ -243,9 +244,11 @@ export default class TemplateParser
                     ? Expression.literal(rawKey)
                     : parse((element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "key"]?.value ?? "'default'");
 
-                const expression = parse(attribute.value);
+                const expression       = parse(attribute.value);
+                const keyObservables   = ObserverVisitor.observe(key);
+                const valueObservables = ObserverVisitor.observe(expression);
 
-                elementDescriptor.directives.push({ name, key, expression });
+                elementDescriptor.directives.push({ name, key, value: expression, keyObservables, valueObservables });
 
                 element.removeAttributeNode(attribute);
 
@@ -278,7 +281,9 @@ export default class TemplateParser
                     attribute.value = "";
                 }
 
-                const attributeDescriptor: IAttributeDescriptor = { name: name, key, expression, type };
+                const observables = ObserverVisitor.observe(expression);
+
+                const attributeDescriptor: IAttributeDescriptor = { name, key, expression, observables, type };
 
                 elementDescriptor.attributes.push(attributeDescriptor);
             }
@@ -304,12 +309,14 @@ export default class TemplateParser
             const branches: Array<IChoiceDirectiveBranch> = [];
 
             const descriptor = TemplateParser.parseReference(template);
+            const expression = parse(directive.value);
 
             const conditionalBranchDescriptor: IChoiceDirectiveBranch =
             {
                 descriptor,
-                expression: parse(directive.value),
-                path:       this.getPath(),
+                expression,
+                path:        this.getPath(),
+                observables: ObserverVisitor.observe(expression),
             };
 
             branches.push(conditionalBranchDescriptor);
@@ -340,12 +347,14 @@ export default class TemplateParser
                 this.stack.push(index + lastIndex);
 
                 const descriptor = TemplateParser.parseReference(simblingTemplate);
+                const expression = parse(value);
 
                 const conditionalBranchDescriptor: IChoiceDirectiveBranch =
                 {
-                    descriptor: descriptor,
-                    expression: parse(value),
-                    path:       this.getPath(),
+                    descriptor,
+                    expression,
+                    path:        this.getPath(),
+                    observables: ObserverVisitor.observe(expression),
                 };
 
                 branches.push(conditionalBranchDescriptor);
@@ -381,15 +390,17 @@ export default class TemplateParser
                 : aliasExpression;
 
             const descriptor = TemplateParser.parseReference(template);
+            const expression = parse(iterableExpression);
 
             const loopDescriptor: ILoopDirective =
             {
                 alias,
                 descriptor,
                 destructured,
+                expression,
                 operator,
-                expression: parse(iterableExpression),
-                path:       this.getPath(),
+                path:        this.getPath(),
+                observables: ObserverVisitor.observe(expression),
             };
 
             this.directives.loop.push(loopDescriptor);
@@ -400,14 +411,19 @@ export default class TemplateParser
         {
             const { key, value } = directive;
 
-            const descriptor = TemplateParser.parseReference(template);
+            const descriptor    = TemplateParser.parseReference(template);
+            const expression    = parse(`${value || "({ })"}`);
+            const keyExpression = parse(key);
+
+            const observables = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
 
             const injectionDescriptor: IInjectorDirective =
             {
                 descriptor,
-                expression: parse(`(${value || "{}"})`),
-                key:        parse(key),
-                path:       this.getPath()
+                expression,
+                observables,
+                key:  parse(key),
+                path: this.getPath(),
             };
 
             this.directives.injector.push(injectionDescriptor);
@@ -452,11 +468,12 @@ export default class TemplateParser
 
             node.nodeValue = " ";
 
-            const expression = InterpolatedExpression.parse(rawExpression);
+            const expression  = InterpolatedExpression.parse(rawExpression);
+            const observables = ObserverVisitor.observe(expression);
 
             const path = this.stack.join("-");
 
-            const textNodeDescriptor: ITextNodeDescriptor = { path, expression };
+            const textNodeDescriptor: ITextNodeDescriptor = { path, expression, observables };
 
             const rawParentPath = this.stack.slice(0, this.stack.length - 1);
 

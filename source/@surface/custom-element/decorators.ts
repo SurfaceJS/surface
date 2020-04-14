@@ -171,7 +171,7 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
         {
             for (const property of properties)
             {
-                Reactive.observe(instance, property as string)[1].subscribe({ notify: () => Reactive.notify(instance, propertyKey)});
+                Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey)});
             }
         };
 
@@ -246,7 +246,8 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
         {
 
             const action = (instance: HTMLElement) =>
-                Reactive.observe(instance, property as string)[1]
+                Reactive.observe(instance, property as string)
+                    .observer
                     .subscribe({ notify: x => (instance as object as Record<string, Function>)[propertyKey](x) });
 
             StaticMetadata.from(target.constructor).postConstruct.push(action);

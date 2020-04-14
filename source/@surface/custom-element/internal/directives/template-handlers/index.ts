@@ -24,15 +24,15 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
 
     protected processTemplate(scope: Scope, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor, metadata: TemplateMetadata): [Element, IDisposable]
     {
-        const content = template.content.cloneNode(true) as Element;
+        const root = template.content.cloneNode(true) as Element;
 
-        content.normalize();
+        root.normalize();
 
-        TemplateMetadata.set(content, metadata);
+        TemplateMetadata.set(root, metadata);
 
-        const disposable = TemplateProcessor.process(scope, host, content, descriptor);
+        const disposable = TemplateProcessor.process(scope, host, root, descriptor);
 
-        return [content, disposable];
+        return [root, disposable];
     }
 
     protected removeInRange(start: ChildNode, end: ChildNode): void

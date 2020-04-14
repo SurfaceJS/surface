@@ -36,7 +36,7 @@ export default class TemplateParserSpec
             "<span #else>",
             "Suspended",
             "</span>",
-            "<span #injector:value='{ name: host.name }'>",
+            "<span #injector:value='({ name: host.name })'>",
             "Default {name}",
             "</span>",
             "<table>",
@@ -64,37 +64,43 @@ export default class TemplateParserSpec
                     attributes:
                     [
                         {
-                            name:       "value",
-                            key:        "value",
-                            expression: InterpolatedExpression.parse("Hello {host.name}"),
-                            type:       "interpolation",
+                            expression:  InterpolatedExpression.parse("Hello {host.name}"),
+                            key:         "value",
+                            name:        "value",
+                            observables: [["host", "name"]],
+                            type:        "interpolation",
                         },
                         {
-                            name:       "value-a",
-                            key:        "valueA",
-                            expression: Expression.literal("host.value"),
-                            type:       "twoway",
+                            name:        "value-a",
+                            key:         "valueA",
+                            expression:  Expression.literal("host.value"),
+                            observables: [],
+                            type:        "twoway",
                         },
                         {
-                            name:       "value-b",
-                            key:        "valueB",
-                            expression: Expression.parse("host.x + host.y"),
-                            type:       "oneway"
+                            name:        "value-b",
+                            key:         "valueB",
+                            expression:  Expression.parse("host.x + host.y"),
+                            observables: [["host", "x"], ["host", "y"]],
+                            type:        "oneway"
                         },
                     ],
                     directives:
                     [
                         {
-                            expression: Expression.parse("host.handler"),
-                            key:        Expression.literal("click"),
-                            name:       "on",
+                            key:              Expression.literal("click"),
+                            keyObservables:   [],
+                            name:             "on",
+                            value:            Expression.parse("host.handler"),
+                            valueObservables: [["host", "handler"]]
                         }
                     ],
                     textNodes:
                     [
                         {
-                            path: "0-0",
-                            expression: InterpolatedExpression.parse("Some {'interpolation'} here"),
+                            path:        "0-0",
+                            expression:  InterpolatedExpression.parse("Some {'interpolation'} here"),
+                            observables: []
                         }
                     ],
                     path: "0",
@@ -106,8 +112,9 @@ export default class TemplateParserSpec
                     textNodes:
                     [
                         {
-                            path: "9-0",
-                            expression: InterpolatedExpression.parse("{host.footer}"),
+                            path:        "9-0",
+                            expression:  InterpolatedExpression.parse("{host.footer}"),
+                            observables: [["host", "footer"]]
                         }
                     ],
                 }
@@ -134,6 +141,7 @@ export default class TemplateParserSpec
                                 },
                                 expression: Expression.parse("host.status == 1"),
                                 path:       "3",
+                                observables: [["host", "status"]]
                             },
                             {
                                 descriptor:
@@ -150,6 +158,7 @@ export default class TemplateParserSpec
                                 },
                                 expression: Expression.parse("host.status == 2"),
                                 path:       "4",
+                                observables: [["host", "status"]]
                             },
                             {
                                 descriptor:
@@ -166,6 +175,7 @@ export default class TemplateParserSpec
                                 },
                                 expression: Expression.parse("true"),
                                 path:       "5",
+                                observables: []
                             }
                         ]
                     }
@@ -191,8 +201,9 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path: "0-0-0",
-                                            expression: InterpolatedExpression.parse("{title}")
+                                            path:        "0-0-0",
+                                            expression:  InterpolatedExpression.parse("{title}"),
+                                            observables: []
                                         }
                                     ]
                                 }
@@ -226,17 +237,19 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path: "0-0",
-                                            expression: InterpolatedExpression.parse("Default {name}")
+                                            path:        "0-0",
+                                            expression:  InterpolatedExpression.parse("Default {name}"),
+                                            observables: []
                                         }
                                     ]
                                 }
                             ],
                             lookup: [[0], [0, 0]],
                         },
-                        expression: Expression.parse("({ name: host.name })"),
-                        key:        Expression.literal("value"),
-                        path:       "6"
+                        expression:  Expression.parse("({ name: host.name })"),
+                        key:         Expression.literal("value"),
+                        path:        "6",
+                        observables: [["host", "name"]]
                     },
                 ],
                 loop:
@@ -260,8 +273,9 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path: "0-0-0",
-                                            expression: InterpolatedExpression.parse("{item.id}")
+                                            path:        "0-0-0",
+                                            expression:  InterpolatedExpression.parse("{item.id}"),
+                                            observables: [["item", "id"]]
                                         },
                                     ],
                                     path: "0-0"
@@ -272,8 +286,9 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path: "0-1-0",
-                                            expression: InterpolatedExpression.parse("{item.name}")
+                                            path:        "0-1-0",
+                                            expression:  InterpolatedExpression.parse("{item.name}"),
+                                            observables: [["item", "name"]]
                                         },
                                     ],
                                     path: "0-1"
@@ -284,8 +299,9 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path: "0-2-0",
-                                            expression: InterpolatedExpression.parse("{item.status}")
+                                            path:        "0-2-0",
+                                            expression:  InterpolatedExpression.parse("{item.status}"),
+                                            observables: [["item", "status"]]
                                         },
                                     ],
                                     path: "0-2"
@@ -294,9 +310,10 @@ export default class TemplateParserSpec
                             lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
                         },
                         destructured: false,
-                        expression:   Expression.member(Expression.identifier("host"), Expression.identifier("items"), false),
+                        expression:   Expression.parse("host.items"),
                         operator:     "of",
-                        path:         "7-0-1"
+                        path:         "7-0-1",
+                        observables: [["host", "items"]]
                     }
                 ],
             },

@@ -62,13 +62,13 @@ export default class Reactive
         return Reactive.getReactor(target)?.observers.has(key as string) ?? false;
     }
 
-    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): [IReactor, IObserver<TTarget[TKey]>];
-    public static observe(target: object, path: string|Array<string>): [IReactor, IObserver];
-    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>): [IReactor, IObserver<TTarget[TKey]>, ISubscription];
-    public static observe(target: object, path: string|Array<string>, listener: IListener): [IReactor, IObserver, ISubscription];
-    public static observe(...args: [Indexer, string|Array<string>, IListener?]): [IReactor, IObserver]|[IReactor, IObserver, ISubscription]
+    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): { reactor: IReactor, observer: IObserver<TTarget[TKey]> };
+    public static observe(target: object, path: string|Array<string>): { reactor: IReactor, observer: IObserver };
+    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>, lazy?: boolean): { reactor: IReactor, observer: IObserver<TTarget[TKey]>, subscription: ISubscription };
+    public static observe(target: object, path: string|Array<string>, listener: IListener, lazy?: boolean): { reactor: IReactor, observer: IObserver, subscription: ISubscription };
+    public static observe(...args: [Indexer, string|Array<string>, IListener?, boolean?]): { reactor: IReactor, observer: IObserver, subscription?: ISubscription }
     {
-        const [target, pathOrKeys, listener] = args;
+        const [target, pathOrKeys, listener, lazy] = args;
 
         const keys = Array.isArray(pathOrKeys) ? pathOrKeys : pathOrKeys.split(".");
 
@@ -80,12 +80,15 @@ export default class Reactive
             {
                 const subscription = observer.subscribe(listener);
 
-                observer.notify(getValue(target, keys));
+                if (!lazy)
+                {
+                    observer.notify(getValue(target, keys));
+                }
 
-                return [reactor, observer, subscription];
+                return { reactor, observer, subscription };
             }
 
-            return [reactor, observer];
+            return { reactor, observer };
         }
         else
         {
@@ -97,12 +100,15 @@ export default class Reactive
             {
                 const subscription = observer.subscribe(listener);
 
-                observer.notify(target[key]);
+                if (!lazy)
+                {
+                    observer.notify(target[key]);
+                }
 
-                return [reactor, observer, subscription];
+                return { reactor, observer, subscription };
             }
 
-            return [reactor, observer];
+            return { reactor, observer };
         }
     }
 

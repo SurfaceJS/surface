@@ -1,10 +1,11 @@
-import { Action1 }     from "@surface/core";
-import IDisposable     from "@surface/core/interfaces/disposable";
-import Expression      from "@surface/expression";
-import IExpression     from "@surface/expression/interfaces/expression";
-import ISubscription   from "@surface/reactive/interfaces/subscription";
-import ObserverVisitor from "../../observer-visitor";
-import { Scope }       from "../../types";
+import { Action1 }   from "@surface/core";
+import IDisposable   from "@surface/core/interfaces/disposable";
+import IExpression   from "@surface/expression/interfaces/expression";
+import TypeGuard     from "@surface/expression/internal/type-guard";
+import ISubscription from "@surface/reactive/interfaces/subscription";
+import DataBind      from "../../data-bind";
+import IDirective    from "../../interfaces/directive";
+import { Scope }     from "../../types";
 
 export default class EventDirectiveHandler implements IDisposable
 {
@@ -14,14 +15,14 @@ export default class EventDirectiveHandler implements IDisposable
 
     private key: string = "";
 
-    public constructor(scope: Scope, element: Element, key: IExpression, expression: IExpression)
+    public constructor(scope: Scope, element: Element, directive: IDirective)
     {
         this.element = element;
-        this.action  = this.evaluate(scope, expression);
+        this.action  = this.evaluate(scope, directive.value);
 
-        const notify = () => this.keyHandler(`${key.evaluate(scope)}`);
+        const notify = () => this.keyHandler(`${directive.key.evaluate(scope)}`);
 
-        this.subscription = ObserverVisitor.observe(scope, key, { notify }, false);
+        this.subscription = DataBind.observe(scope, directive.keyObservables, { notify }, false);
 
         notify();
     }
@@ -47,11 +48,11 @@ export default class EventDirectiveHandler implements IDisposable
 
     private evaluate(scope: Scope, expression: IExpression): Action1<Event>
     {
-        if (Expression.TypeGuard.isArrowFunctionExpression(expression) || Expression.TypeGuard.isIdentifier(expression))
+        if (TypeGuard.isArrowFunctionExpression(expression) || TypeGuard.isIdentifier(expression))
         {
             return expression.evaluate(scope) as Action1<Event>;
         }
-        else if (Expression.TypeGuard.isMemberExpression(expression))
+        else if (TypeGuard.isMemberExpression(expression))
         {
             const action = expression.evaluate(scope) as Function;
 

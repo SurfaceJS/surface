@@ -19,11 +19,6 @@ export default class TemplateMetadata
         return target[TEMPLATE_METADATA] = target[TEMPLATE_METADATA] ?? new TemplateMetadata();
     }
 
-    public static hasMetadata(target: Target): boolean
-    {
-        return !!target[TEMPLATE_METADATA];
-    }
-
     public static set(target: Target, metadata: TemplateMetadata): void
     {
         target[TEMPLATE_METADATA] = metadata;

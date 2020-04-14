@@ -1,5 +1,4 @@
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/core";
-import { isIterable }                             from "@surface/core/common/generic";
 import IComparer                                  from "./interfaces/comparer";
 import IGroup                                     from "./interfaces/group";
 import ILookup                                    from "./interfaces/lookup";
@@ -1029,19 +1028,19 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        if (isIterable<TSource>(this.source))
-        {
-            for (const element of this.source)
-            {
-                yield element;
-            }
-        }
-        else
+        if ("length" in this.source)
         {
             // tslint:disable-next-line:prefer-for-of
             for (let index = 0; index < this.source.length; index++)
             {
                 yield this.source[index];
+            }
+        }
+        else
+        {
+            for (const element of this.source)
+            {
+                yield element;
             }
         }
     }

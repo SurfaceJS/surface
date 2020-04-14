@@ -1,8 +1,9 @@
-import IExpression from "@surface/expression/interfaces/expression";
+import IExpression         from "@surface/expression/interfaces/expression";
+import IKeyValueObservable from "./key-value-observable";
 
-export default interface IDirective
+export default interface IDirective extends IKeyValueObservable
 {
-    expression: IExpression;
+    value: IExpression;
     key:        IExpression;
     name:       string;
 }

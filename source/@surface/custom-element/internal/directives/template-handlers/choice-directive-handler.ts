@@ -2,10 +2,10 @@ import { assert }               from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import IExpression              from "@surface/expression/interfaces/expression";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
+import DataBind                 from "../../data-bind";
 import IChoiceDirectiveBranch   from "../../interfaces/choice-directive-branch";
 import ITemplateDescriptor      from "../../interfaces/template-descriptor";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import ObserverVisitor          from "../../observer-visitor";
 import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
@@ -42,7 +42,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
             const branche = branches[index];
 
-            this.subscriptions.push(ObserverVisitor.observe(scope, branche.expression, listener, true));
+            this.subscriptions.push(DataBind.observe(scope, branche.observables, listener, true));
 
             this.branches.push([branche.expression, templates[index], branche.descriptor]);
 

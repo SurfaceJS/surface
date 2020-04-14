@@ -4,10 +4,10 @@ import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
 import IPattern                 from "@surface/expression/interfaces/pattern";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
+import DataBind                 from "../../data-bind";
 import IInjectDirective         from "../../interfaces/inject-directive";
 import IInjectorDirective       from "../../interfaces/injector-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import ObserverVisitor          from "../../observer-visitor";
 import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
@@ -45,6 +45,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
         parent.insertBefore(this.start, this.end);
 
         this.metadata.defaults.set(this.key, this.defaultInjection.bind(this));
+        this.metadata.injectors.set(this.key, this.inject.bind(this));
 
         if (this.host.isConnected)
         {
@@ -56,20 +57,18 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
         }
         else
         {
-            this.metadata.injectors.set(this.key, this.inject.bind(this));
-
             this.defaultInjection();
         }
     }
 
     private defaultInjection()
     {
-        this.timer = setTimeout(() => this.inject(this.scope, this.host, this.template));
+        this.timer = window.setTimeout(() => this.inject(this.scope, this.host, this.template));
     }
 
     private inject(localScope: Scope, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective): void
     {
-        clearTimeout(this.timer);
+        window.clearTimeout(this.timer);
 
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
@@ -102,7 +101,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(task);
 
-        this.subscription = ObserverVisitor.observe(this.scope, this.directive.expression, { notify }, true);
+        this.subscription = DataBind.observe(this.scope, this.directive.observables, { notify }, true);
 
         this.fireAsync(notify);
     }

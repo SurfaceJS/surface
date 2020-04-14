@@ -23,7 +23,6 @@ import IDirectivesDescriptor    from "./interfaces/directives-descriptor";
 import ITemplateDescriptor      from "./interfaces/template-descriptor";
 import ITextNodeDescriptor      from "./interfaces/text-node-descriptor";
 import TemplateMetadata         from "./metadata/template-metadata";
-import ObserverVisitor          from "./observer-visitor";
 import { Scope }                from "./types";
 
 export default class TemplateProcessor
@@ -39,7 +38,7 @@ export default class TemplateProcessor
         this.host       = host;
         this.descriptor = descriptor;
 
-        this.lookup = this.buildLookup(root, descriptor.lookup, 0);
+        this.lookup = this.buildLookup(root, descriptor.lookup);
     }
 
     public static process(scope: Scope, host: Node|Element, node: Node, descriptor: ITemplateDescriptor): IDisposable
@@ -54,7 +53,7 @@ export default class TemplateProcessor
         return new TemplateProcessor(host, node, descriptor).process(scope);
     }
 
-    private buildLookup(node: Node, source: Array<Array<number>>, offset: number): Record<string, Element>
+    private buildLookup(node: Node, source: Array<Array<number>>): Record<string, Element>
     {
         const lookup: Record<string, Element> = { };
 
@@ -62,7 +61,7 @@ export default class TemplateProcessor
         {
             if (entry.length > 0)
             {
-                lookup[entry.join("-")] = this.findElement(node, entry, offset) as Element;
+                lookup[entry.join("-")] = this.findElement(node, entry) as Element;
             }
             else
             {
@@ -73,15 +72,15 @@ export default class TemplateProcessor
         return lookup;
     }
 
-    private findElement(node: Node, indexes: Array<number>, offset: number): Node
+    private findElement(node: Node, indexes: Array<number>): Node
     {
         const [index, ...remaining] = indexes;
 
-        const child = node.childNodes[index + offset];
+        const child = node.childNodes[index];
 
         if (remaining.length > 0)
         {
-            return this.findElement(child, remaining, 0);
+            return this.findElement(child, remaining);
         }
 
         return child;
@@ -159,7 +158,7 @@ export default class TemplateProcessor
                             notify = () => (element as Indexer)[descriptor.key] = descriptor.expression.evaluate(scope);
                         }
 
-                        let subscription = ObserverVisitor.observe(scope, descriptor.expression, { notify }, true);
+                        let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
 
                         notify();
 
@@ -185,7 +184,7 @@ export default class TemplateProcessor
 
                     const notify = () => attribute.value = `${(descriptor.expression.evaluate(scope) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = ObserverVisitor.observe(scope, descriptor.expression, { notify }, true);
+                    let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
 
                     subscriptions.push(subscription);
 
@@ -214,7 +213,7 @@ export default class TemplateProcessor
         {
             const handlerConstructor = directiveRegistry.get(directive.name)!;
 
-            disposables.push(new handlerConstructor(scope, element, directive.key, directive.expression));
+            disposables.push(new handlerConstructor(scope, element, directive));
         }
 
         return disposables;
@@ -230,31 +229,26 @@ export default class TemplateProcessor
 
             assert(template.parentNode);
 
-            const metadata = TemplateMetadata.hasMetadata(template.parentNode)
-                ? TemplateMetadata.from(template.parentNode)
-                    : null;
+            const metadata = TemplateMetadata.from(template.parentNode);
 
             template.remove();
 
-            if (metadata)
+            const key = `${directive.key.evaluate(scope)}`;
+
+            const action = metadata.injectors.get(key);
+
+            if (action)
             {
-                const key = `${directive.key.evaluate(scope)}`;
-
-                const action = metadata.injectors.get(key);
-
-                if (action)
-                {
-                    action(scope, this.host, template, directive);
-                }
-                else
-                {
-                    template.remove();
-
-                    metadata.injections.set(key, { scope, template, directive });
-                }
-
-                disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
+                action(scope, this.host, template, directive);
             }
+            else
+            {
+                template.remove();
+
+                metadata.injections.set(key, { scope, template, directive });
+            }
+
+            disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
         }
 
         for (const directive of directives.logical)
@@ -291,7 +285,7 @@ export default class TemplateProcessor
 
             const notify = () => node.nodeValue = `${(descriptor.expression.evaluate(scope) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = ObserverVisitor.observe(scope, descriptor.expression, { notify }, true);
+            const subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
 
             subscriptions.push(subscription);
 

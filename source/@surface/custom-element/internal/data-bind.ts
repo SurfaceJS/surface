@@ -9,13 +9,28 @@ import IReactor             from "../../reactive/interfaces/reactor";
 import ISubscription        from "../../reactive/interfaces/subscription";
 import Metadata             from "./metadata/metadata";
 
+const PRIMITIVES = [ "boolean", "number", "string"];
+
 export default class DataBind
 {
-    public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): [IReactor, ISubscription]
+    public static observe(target: Indexer, observables: Array<Array<string>>, listener: IListener, lazy?: boolean): ISubscription
     {
-        const [key, member]                      = getKeyMember(target, path);
-        const [reactor, observer, _subscription] = lazy ? Reactive.observe(target, path) : Reactive.observe(target, path, listener);
-        const subscriptions                      = [] as Array<ISubscription>;
+        const subscriptions = observables.map(path => DataBind.oneWay(target, path, listener, lazy).subscription);
+
+        return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+    }
+
+    public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
+    {
+        const [key, member] = getKeyMember(target, path);
+
+        if (PRIMITIVES.includes(typeof member))
+        {
+            return { subscription: { unsubscribe: () => null }};
+        }
+
+        const { reactor, observer, subscription: _subscription } = Reactive.observe(target, path, listener, lazy);
+        const subscriptions                                      = [] as Array<ISubscription>;
 
         const metadata = Metadata.from(member);
 
@@ -62,7 +77,7 @@ export default class DataBind
             subscription = { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
         }
 
-        return [reactor, subscription];
+        return { reactor, subscription };
     }
 
     public static twoWay(left: object, leftPath: string, right: object, rightPath: string): [ISubscription, ISubscription]
@@ -73,15 +88,15 @@ export default class DataBind
         const leftListener  = new PropertyListener(rightMember as Indexer, rightKey);
         const rightListener = new PropertyListener(leftMember as Indexer, leftKey);
 
-        const [leftReactor,  leftSubscription]  = DataBind.oneWay(left, leftPath, leftListener, false);
-        const [rightReactor, rightSubscription] = DataBind.oneWay(right, rightPath, rightListener, false);
+        const { reactor: leftReactor,  subscription: leftSubscription }  = DataBind.oneWay(left, leftPath, leftListener);
+        const { reactor: rightReactor, subscription: rightSubscription } = DataBind.oneWay(right, rightPath, rightListener);
 
-        if ("update" in rightSubscription)
+        if (leftReactor && "update" in rightSubscription)
         {
             leftReactor.setPropertySubscription(leftKey, rightSubscription);
         }
 
-        if ("update" in leftSubscription)
+        if (rightReactor && "update" in leftSubscription)
         {
             rightReactor.setPropertySubscription(rightKey, leftSubscription);
         }
