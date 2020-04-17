@@ -4,9 +4,9 @@ import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
 import IPattern                 from "@surface/expression/interfaces/pattern";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
+import DataBind                 from "../../data-bind";
 import ILoopDirective           from "../../interfaces/loop-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import ObserverVisitor          from "../../observer-visitor";
 import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
@@ -46,7 +46,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(() => this.task());
 
-        this.subscription = ObserverVisitor.observe(scope, directive.expression, { notify }, true);
+        this.subscription = DataBind.observe(scope, directive.observables, { notify }, true);
 
         super.fireAsync(notify);
     }
@@ -57,18 +57,18 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             ? { ...Evaluate.pattern(this.scope, this.directive.alias, element), ...this.scope }
             : { ...this.scope, [this.directive.alias]: element };
 
-        const rowStart = document.createComment("");
-        const rowEnd   = document.createComment("");
+        const start = document.createComment("");
+        const end   = document.createComment("");
 
-        this.tree.appendChild(rowStart);
+        this.tree.appendChild(start);
 
         const [content, disposable] = super.processTemplate(mergedScope, this.host, this.template, this.directive.descriptor, TemplateMetadata.from(this.start.parentNode!));
 
-        this.cache.push([rowStart, rowEnd, disposable]);
+        this.cache.push([start, end, disposable]);
 
         this.tree.appendChild(content);
 
-        this.tree.appendChild(rowEnd);
+        this.tree.appendChild(end);
     }
 
     private forOfIterator(elements: Array<unknown>): void
@@ -96,14 +96,14 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const elements = this.directive.expression.evaluate(this.scope) as Array<Element>;
 
-        for (const [rowStart, rowEnd, disposable] of this.cache)
+        for (const [start, end, disposable] of this.cache)
         {
             disposable.dispose();
 
-            super.removeInRange(rowStart, rowEnd);
+            super.removeInRange(start, end);
 
-            rowStart.remove();
-            rowEnd.remove();
+            start.remove();
+            end.remove();
         }
 
         this.cache.splice(0);
@@ -119,14 +119,14 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             for (const entry of this.cache)
             {
-                const [rowStart, rowEnd, disposable] = entry;
+                const [start, end, disposable] = entry;
 
                 disposable.dispose();
 
-                super.removeInRange(rowStart, rowEnd);
+                super.removeInRange(start, end);
 
-                rowStart.remove();
-                rowEnd.remove();
+                start.remove();
+                end.remove();
             }
 
             this.subscription.unsubscribe();
