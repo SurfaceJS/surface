@@ -10,14 +10,14 @@
         "@surface/expression": "0.0.0",
         "@surface/reactive": "0.0.0",
         "@surface/reflection": "0.0.0",
-        "tslib": "1.10.0"
+        "tslib": "1.11.1"
     },
     "description": "Base class used to define custom elements.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "@types/jsdom": "12.2.4",
+        "@types/jsdom": "16.2.1",
         "chai": "4.2.0",
-        "jsdom": "15.2.1"
+        "jsdom": "16.2.2"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

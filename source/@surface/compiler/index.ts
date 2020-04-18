@@ -41,18 +41,9 @@ const loaders =
         loader: "html-loader",
         options:
         {
-            attrs:    ["img:src", "link:href", "script:src"],
-            esModule: true,
-            minimize: true
-        }
-    },
-    istanbul:
-    {
-        loader: "istanbul-instrumenter-loader",
-        options:
-        {
-            esModules:        true,
-            produceSourceMap: true
+            attributes: true,
+            esModule:   true,
+            minimize:   true
         }
     },
     resolveUrl:
