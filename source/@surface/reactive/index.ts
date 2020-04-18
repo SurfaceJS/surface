@@ -12,7 +12,7 @@ import PropertySubscription       from "./property-subscription";
 
 export default class Reactive
 {
-    private static observePath(target: Indexer, path: Array<string>): [IReactor, IReactor, IObserver]
+    private static observePath(target: Indexer, path: Array<string>): { root: IReactor, dependency: IReactor, observer: IObserver }
     {
         const [key, ...keys] = path;
 
@@ -27,21 +27,21 @@ export default class Reactive
 
             const value = target[key] as Indexer;
 
-            const [endpoint, dependency, observer] = Reactive.observePath(value, keys);
+            const { root, dependency, observer } = Reactive.observePath(value, keys);
 
             reactor.dependencies.set(key, dependency);
 
-            return [endpoint, reactor, observer];
+            return { root, dependency: reactor, observer };
         }
         else
         {
-            const [reactor, observer] = Reactive.observeProperty(target, key);
+            const { reactor, observer } = Reactive.observeProperty(target, key);
 
-            return [reactor, reactor, observer];
+            return { root: reactor, dependency: reactor, observer };
         }
     }
 
-    private static observeProperty(target: Indexer, key: string): [IReactor, IObserver]
+    private static observeProperty(target: Indexer, key: string): { reactor: IReactor, observer: IObserver }
     {
         const reactor = Reactor.makeReactive(target, key);
 
@@ -49,7 +49,7 @@ export default class Reactive
 
         reactor.observers.set(key, observer);
 
-        return [reactor, observer];
+        return { reactor, observer };
     }
 
     public static getReactor(target: object|Indexer|Array<unknown>): Nullable<IReactor>
@@ -74,7 +74,7 @@ export default class Reactive
 
         if (keys.length > 1)
         {
-            const [reactor, , observer] = Reactive.observePath(target, keys);
+            const { root: reactor, observer } = Reactive.observePath(target, keys);
 
             if (listener)
             {
@@ -94,7 +94,7 @@ export default class Reactive
         {
             const key = keys[0];
 
-            const [reactor, observer] = Reactive.observeProperty(target, key);
+            const { reactor, observer } = Reactive.observeProperty(target, key);
 
             if (listener)
             {
@@ -119,14 +119,14 @@ export default class Reactive
         const leftKeys  = Array.isArray(leftPath)  ? leftPath  : leftPath.split(".");
         const rightKeys = Array.isArray(rightPath) ? rightPath : rightPath.split(".");
 
-        const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
-        const [rightKey, rightMember] = getKeyMember(right, rightPath);
+        const { key: leftKey,  member: leftMember }  = getKeyMember(left, leftPath);
+        const { key: rightKey, member: rightMember } = getKeyMember(right, rightPath);
 
         const leftListener  = new PropertyListener(rightMember, rightKey);
         const rightListener = new PropertyListener(leftMember, leftKey);
 
-        const [leftReactor, , leftObserver]   = Reactive.observePath(left, leftKeys);
-        const [rightReactor, , rightObserver] = Reactive.observePath(right, rightKeys);
+        const { root: leftReactor,  observer: leftObserver }  = Reactive.observePath(left, leftKeys);
+        const { root: rightReactor, observer: rightObserver } = Reactive.observePath(right, rightKeys);
 
         leftObserver.subscribe(leftListener);
         leftListener.notify(leftMember[leftKey]);

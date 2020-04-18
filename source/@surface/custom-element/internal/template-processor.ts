@@ -43,6 +43,7 @@ export default class TemplateProcessor
 
     public static process(scope: Scope, host: Node|Element, node: Node, descriptor: ITemplateDescriptor): IDisposable
     {
+        /* istanbul ignore if */
         if (TemplateProcessor.postProcessing.has(host))
         {
             TemplateProcessor.postProcessing.get(host)!.forEach(action => action());
@@ -120,8 +121,9 @@ export default class TemplateProcessor
     {
         const constructor = window.customElements.get(element.localName);
 
-        const processor = constructor && !(element instanceof constructor) ?
-            TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
+        /* istanbul ignore next */
+        const processor = constructor && !(element instanceof constructor)
+            ? TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
             : null;
 
         const subscriptions: Array<ISubscription> = [];
@@ -166,7 +168,7 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const [targetProperty, target] = getKeyMember(scope, descriptor.expression.evaluate({ }) as string);
+                        const { key: targetProperty, member: target } = getKeyMember(scope, descriptor.expression.evaluate({ }) as string);
 
                         const targetMember = Type.from(target).getMember(targetProperty);
 
@@ -192,6 +194,7 @@ export default class TemplateProcessor
                 }
             };
 
+            /* istanbul ignore else */
             if (!processor)
             {
                 action();

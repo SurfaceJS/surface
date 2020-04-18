@@ -15,7 +15,7 @@ const getHost = <T = { }>() =>
 
     return host as unknown as HTMLElement & { shadowRoot: ShadowRoot } & T;
 };
-const render = async () => (await new Promise(x => window.setTimeout(x, 0)), await ParallelWorker.done());
+const render = async () => await ParallelWorker.done();
 
 // declare var chai: never;
 
@@ -133,6 +133,34 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
+    public elementWithClassOneWayDataBinding(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span :class='({ closed: true })'</span>";
+
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { foo?: string };
+
+        process(host, host.shadowRoot, { host });
+
+        assert.isTrue(span.classList.contains("closed"));
+    }
+
+    @test @shouldPass
+    public elementWithStyleOneWayDataBinding(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span :style='({ display: `none` })'</span>";
+
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { foo?: string };
+
+        process(host, host.shadowRoot, { host });
+
+        assert.equal(span.style.display, "none");
+    }
+
+    @test @shouldPass
     public elementWithOneWayDataBindingToWindowFallback(): void
     {
         const host = getHost();
@@ -171,28 +199,6 @@ export default class TemplateProcessorSpec
 
         assert.equal(host.value, "foo");
     }
-
-    // // @test @shouldPass
-    // // public async customElementWithTwoWayDataBinding(): Promise<void>
-    // // {
-    // //     const document = window.document;
-    // //     const host     = document.createElement("div") as HTMLDivElement & { value?: string };
-    // //     const element  = new MockParent();
-
-    // //     const postProcessing = (TemplateProcessor as Indexer).postProcessing as Map<Node, Array<Action>>;
-
-    // //     const action = Array.from(postProcessing.values())[0];
-
-    // //     postProcessing.clear();
-
-    // //     postProcessing.set()
-
-    // //     process(host, element);
-
-    // //     await render();
-
-    // //     assert.equal(host.value, 0);
-    // // }
 
     @test @shouldPass
     public elementWithAttributesWithEventBind(): void
@@ -344,6 +350,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
+        await new Promise(x => window.setTimeout(x));
         await render();
 
         assert.equal(host.shadowRoot.textContent, "Hello Default!!!");

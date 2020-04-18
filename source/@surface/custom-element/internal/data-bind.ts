@@ -22,7 +22,8 @@ export default class DataBind
 
     public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
     {
-        const [key, member] = getKeyMember(target, path);
+        const foo = getKeyMember(target, path);
+        const { key, member } = foo;
 
         if (PRIMITIVES.includes(typeof member))
         {
@@ -82,8 +83,8 @@ export default class DataBind
 
     public static twoWay(left: object, leftPath: string, right: object, rightPath: string): [ISubscription, ISubscription]
     {
-        const [leftKey,  leftMember]  = getKeyMember(left, leftPath);
-        const [rightKey, rightMember] = getKeyMember(right, rightPath);
+        const { key: leftKey,  member: leftMember  } = getKeyMember(left, leftPath);
+        const { key: rightKey, member: rightMember } = getKeyMember(right, rightPath);
 
         const leftListener  = new PropertyListener(rightMember as Indexer, rightKey);
         const rightListener = new PropertyListener(leftMember as Indexer, leftKey);

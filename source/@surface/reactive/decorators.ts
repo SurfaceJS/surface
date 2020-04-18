@@ -1,5 +1,5 @@
 import { Constructor }         from "@surface/core";
-import { injectToConstructor } from "@surface/core/common/object";
+import { overrideConstructor } from "@surface/core/common/object";
 import Reactive                from ".";
 import StaticMetadata          from "./internal/static-metadata";
 
@@ -22,7 +22,7 @@ export function observable<T extends Constructor>(target: T): T
 
     const action = (instance: InstanceType<T>) => (metadata.actions.forEach(x => x(instance)), instance);
 
-    return injectToConstructor(target, action);
+    return overrideConstructor(target, action);
 }
 
 export function notify<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void

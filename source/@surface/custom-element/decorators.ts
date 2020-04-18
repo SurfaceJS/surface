@@ -1,9 +1,7 @@
 import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
-import { typeGuard }                             from "@surface/core/common/generic";
-import { injectToConstructor, overrideProperty } from "@surface/core/common/object";
+import { overrideConstructor, overrideProperty } from "@surface/core/common/object";
 import { camelToDashed }                         from "@surface/core/common/string";
 import Reactive                                  from "@surface/reactive";
-import CustomElement                             from ".";
 import ICustomElement                            from "./interfaces/custom-element";
 import Metadata                                  from "./internal/metadata/metadata";
 import PrototypeMetadata                         from "./internal/metadata/prototype-metadata";
@@ -179,49 +177,42 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
     };
 }
 
-export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<HTMLElement>>(target: T) => T
+export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
-    return <T extends Constructor<HTMLElement>>(target: T) =>
+    return <T extends Constructor<ICustomElement>>(target: T) =>
     {
-        if (typeGuard<typeof CustomElement>(target, target.prototype instanceof CustomElement))
+        const staticMetadata = StaticMetadata.from(target);
+
+        const templateElement = document.createElement("template");
+
+        // templateElement.innerHTML = template ?? "<slot></slot>";
+        templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
+
+        const descriptor = TemplateParser.parseReference(templateElement);
+
+        if (style)
         {
-            const staticMetadata = StaticMetadata.from(target);
-
-            const templateElement = document.createElement("template");
-
-            // templateElement.innerHTML = template ?? "<slot></slot>";
-            templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
-
-            const descriptor = TemplateParser.parseReference(templateElement);
-
-            if (style)
-            {
-                staticMetadata.styles.push(stringToCSSStyleSheet(style));
-            }
-
-            staticMetadata.template = templateElement;
-
-            const action = (instance: InstanceType<T> & CustomElement) =>
-            {
-                TemplateProcessor.process({ host: instance }, instance, instance.shadowRoot, descriptor);
-
-                instance.onAfterBind?.();
-
-                staticMetadata.postConstruct?.forEach(x => x(instance));
-
-                return instance;
-            };
-
-            const proxy = injectToConstructor(target, action);
-
-            window.customElements.define(name, proxy, options);
-
-            return proxy;
+            staticMetadata.styles.push(stringToCSSStyleSheet(style));
         }
 
-        window.customElements.define(name, target, options);
+        staticMetadata.template = templateElement;
 
-        return target;
+        const action = (instance: InstanceType<T> & ICustomElement) =>
+        {
+            TemplateProcessor.process({ host: instance }, instance, instance.shadowRoot, descriptor);
+
+            instance.bindedCallback?.();
+
+            staticMetadata.postConstruct?.forEach(x => x(instance));
+
+            return instance;
+        };
+
+        const proxy = overrideConstructor(target, action);
+
+        window.customElements.define(name, proxy, options);
+
+        return proxy;
     };
 }
 

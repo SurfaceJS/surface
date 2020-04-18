@@ -36,11 +36,6 @@ export default class MenuItem extends CustomElement
         super.setAttribute("label", value);
     }
 
-    public constructor()
-    {
-        super();
-    }
-
     private onClick(): void
     {
         if (this.parentElement instanceof ContexMenu)
@@ -89,7 +84,7 @@ export default class MenuItem extends CustomElement
         }
     }
 
-    protected connectedCallback(): void
+    public connectedCallback(): void
     {
         const hasItems = this.items.any();
 
@@ -122,7 +117,7 @@ export default class MenuItem extends CustomElement
         }
     }
 
-    protected disconnectedCallback(): void
+    public disconnectedCallback(): void
     {
         super.removeEventListener("click", this.onClick);
         super.removeEventListener("mouseleave", this.onMouseLeave);

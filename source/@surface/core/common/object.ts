@@ -57,8 +57,8 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
-export function getKeyMember<T extends object>(target: T, path: string|Array<string>): [string, T];
-export function getKeyMember(target: Indexer, path: string|Array<string>): [string, Indexer]
+export function getKeyMember<T extends object>(target: T, path: string|Array<string>): { key: string, member: T };
+export function getKeyMember(target: Indexer, path: string|Array<string>): { key: string, member: Indexer }
 {
     const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
 
@@ -68,10 +68,7 @@ export function getKeyMember(target: Indexer, path: string|Array<string>): [stri
         {
             const member = target[key];
 
-            if (member instanceof Object)
-            {
-                return getKeyMember(member as Indexer, keys);
-            }
+            return getKeyMember(member as Indexer, keys);
         }
         else
         {
@@ -80,52 +77,20 @@ export function getKeyMember(target: Indexer, path: string|Array<string>): [stri
         }
     }
 
-    return [key, target];
+    return { key, member: target };
 }
 
-export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string|Array<string>): [string, TValue];
-export function getKeyValue(target: Indexer, path: string|Array<string>): [string, unknown]
+export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string|Array<string>): { key: string, value: TValue };
+export function getKeyValue(target: Indexer, path: string|Array<string>): { key: string, value: unknown }
 {
-    const [key, member] = getKeyMember(target, path);
+    const { key, member } = getKeyMember(target, path);
 
-    return [key, member[key]];
+    return { key, value: member[key] };
 }
 
 export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string|Array<string>): T|undefined
 {
-    try
-    {
-        return getKeyValue<TTarget, T>(target, path)[1];
-    }
-    catch
-    {
-        return undefined;
-    }
-}
-
-/**
- * Inject an action to be executed after instantiation.
- * @param constructor target constructor
- * @param action action to be executed
- */
-export function injectToConstructor<T extends Constructor>(constructor: T, action: Func1<InstanceType<T>, InstanceType<T>>): T
-{
-    const proxy =
-    {
-        [constructor.name]: function(...args: Array<unknown>)
-        {
-            const instance = Reflect.construct(constructor, args, new.target) as InstanceType<T>;
-
-            return action(instance);
-        }
-    }[constructor.name];
-
-    Object.setPrototypeOf(proxy, Object.getPrototypeOf(constructor));
-    Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(constructor));
-
-    proxy.prototype.constructor = proxy;
-
-    return proxy as unknown as T;
+    return getKeyValue<TTarget, T>(target, path).value;
 }
 
 /**
@@ -210,6 +175,31 @@ export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer):
         }
     }
     return target;
+}
+
+/**
+ * Inject an action to be executed after instantiation.
+ * @param constructor target constructor
+ * @param action action to be executed
+ */
+export function overrideConstructor<T extends Constructor>(constructor: T, action: Func1<InstanceType<T>, InstanceType<T>>): T
+{
+    const proxy =
+    {
+        [constructor.name]: function(...args: Array<unknown>)
+        {
+            const instance = Reflect.construct(constructor, args, new.target) as InstanceType<T>;
+
+            return action(instance);
+        }
+    }[constructor.name];
+
+    Object.setPrototypeOf(proxy, Object.getPrototypeOf(constructor));
+    Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(constructor));
+
+    proxy.prototype.constructor = proxy;
+
+    return proxy as unknown as T;
 }
 
 export function overrideProperty<T>(target: T, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor

@@ -114,7 +114,7 @@ export default class ForEach extends Component
                 sequence = Enumerable.range(this.start, this.end) as Enumerable<unknown>;
             }
 
-            let index = this.start;
+            // let index = this.start;
 
             if (sequence.any())
             {
@@ -128,7 +128,7 @@ export default class ForEach extends Component
 
                     super.appendChild(content);
 
-                    index++;
+                    // index++;
                 }
 
                 super.dispatchEvent(new Event("change"));
