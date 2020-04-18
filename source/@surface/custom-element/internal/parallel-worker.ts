@@ -11,9 +11,10 @@ export default class ParallelWorker
 
     private readonly interval: number;
 
-    private expended: number      = 0;
-    private resolve:  Action|null = null;
-    private running:  boolean     = false;
+    private _done:    Promise<void> = Promise.resolve();
+    private expended: number        = 0;
+    private resolve:  Action|null   = null;
+    private running:  boolean       = false;
 
     public constructor(interval?: number)
     {
@@ -63,20 +64,17 @@ export default class ParallelWorker
         this.resolve = null;
     }
 
-    public async done(): Promise<void>
+    public done(): Promise<void>
     {
-        if (this.queue.length > 0 && !this.resolve)
-        {
-            return await new Promise(resolve => this.resolve = resolve);
-        }
-
-        return await Promise.resolve();
+        return this._done;
     }
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
     {
         if (!this.running)
         {
+            this._done = new Promise(resolve => this.resolve = resolve);
+
             window.setTimeout(() => this.execute());
         }
 

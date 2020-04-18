@@ -1,4 +1,4 @@
-import { Action1 }              from "@surface/core";
+import { Action2, Nullable }              from "@surface/core";
 import { assert, typeGuard }    from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
@@ -11,11 +11,13 @@ import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
 
+type Cache = { start: Comment, end: Comment, value: unknown, disposable: IDisposable };
+
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly cache:        Array<[ChildNode, ChildNode, IDisposable]> = [];
+    private readonly cache:        Array<Cache> = [];
     private readonly end:          Comment;
-    private readonly iterator:     (elements: unknown[], action: Action1<unknown>) => void;
+    private readonly iterator:     (elements: Iterable<unknown>, action: Action2<unknown, number>) => number;
     private readonly start:        Comment;
     private readonly directive:    ILoopDirective;
     private readonly subscription: ISubscription;
@@ -44,47 +46,107 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         parent.replaceChild(this.end, template);
         parent.insertBefore(this.start, this.end);
 
-        const notify = async () => await ParallelWorker.run(() => this.task());
+        const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
         this.subscription = DataBind.observe(scope, directive.observables, { notify }, true);
 
         super.fireAsync(notify);
     }
 
-    private action(element: unknown): void
+    private action(value: unknown, index: number): void
     {
-        const mergedScope = typeGuard<IPattern>(this.directive.alias, this.directive.destructured)
-            ? { ...Evaluate.pattern(this.scope, this.directive.alias, element), ...this.scope }
-            : { ...this.scope, [this.directive.alias]: element };
+        if (index >= this.cache.length || !Object.is(this.cache[index].value, value))
+        {
+            const mergedScope = typeGuard<IPattern>(this.directive.alias, this.directive.destructured)
+                ? { ...Evaluate.pattern(this.scope, this.directive.alias, value), ...this.scope }
+                : { ...this.scope, [this.directive.alias]: value };
 
-        const start = document.createComment("");
-        const end   = document.createComment("");
+            const start = document.createComment("");
+            const end   = document.createComment("");
 
-        this.tree.appendChild(start);
+            const [content, disposable] = super.processTemplate(mergedScope, this.host, this.template, this.directive.descriptor, TemplateMetadata.from(this.start.parentNode!));
 
-        const [content, disposable] = super.processTemplate(mergedScope, this.host, this.template, this.directive.descriptor, TemplateMetadata.from(this.start.parentNode!));
+            if (index < this.cache.length)
+            {
+                const entry = this.cache[index];
 
-        this.cache.push([start, end, disposable]);
+                entry.disposable.dispose();
 
-        this.tree.appendChild(content);
+                this.removeInRange(entry.start, entry.end);
 
-        this.tree.appendChild(end);
+                entry.start.remove();
+                entry.end.remove();
+
+                this.cache[index] = { start, end, disposable, value };
+            }
+            else
+            {
+                this.cache.push({ start, end, disposable, value });
+            }
+
+            this.tree.appendChild(start);
+
+            this.tree.appendChild(content);
+
+            this.tree.appendChild(end);
+        }
+        else
+        {
+            const { start, end } = this.cache[index];
+
+            let simbling: Nullable<ChildNode> = null;
+
+            const clone = start.cloneNode() as Comment;
+
+            this.tree.appendChild(clone);
+
+            while ((simbling = start.nextSibling) && simbling != end)
+            {
+                this.tree.appendChild(simbling);
+            }
+
+            this.tree.replaceChild(start, clone);
+            this.tree.appendChild(end);
+        }
     }
 
-    private forOfIterator(elements: Array<unknown>): void
+    private clearCache(index: number)
     {
+        for (const entry of this.cache.splice(index))
+        {
+            const { start, end, disposable } = entry;
+
+            disposable.dispose();
+
+            super.removeInRange(start, end);
+
+            start.remove();
+            end.remove();
+        }
+    }
+
+    private forOfIterator(elements: Iterable<unknown>): number
+    {
+        let index = 0;
+
         for (const element of elements)
         {
-            this.action(element);
+            this.action(element, index++);
         }
+
+        return index;
     }
 
-    private forInIterator(elements: Array<unknown>): void
+    private forInIterator(elements: Iterable<unknown>): number
     {
+        let index = 0;
+
         for (const element in elements)
         {
-            this.action(element);
+            this.action(element, index++);
         }
+
+        return index;
     }
 
     private task(): void
@@ -94,21 +156,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             return;
         }
 
-        const elements = this.directive.expression.evaluate(this.scope) as Array<Element>;
+        const elements = this.directive.expression.evaluate(this.scope) as Iterable<unknown>;
 
-        for (const [start, end, disposable] of this.cache)
-        {
-            disposable.dispose();
+        const index = this.iterator(elements, this.action);
 
-            super.removeInRange(start, end);
-
-            start.remove();
-            end.remove();
-        }
-
-        this.cache.splice(0);
-
-        this.iterator(elements, this.action);
+        this.clearCache(index);
 
         this.end.parentNode!.insertBefore(this.tree, this.end);
     }
@@ -117,9 +169,9 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     {
         if (!this.disposed)
         {
-            for (const entry of this.cache)
+            for (const entry of this.cache.splice(0))
             {
-                const [start, end, disposable] = entry;
+                const { start, end, disposable } = entry;
 
                 disposable.dispose();
 
