@@ -1,6 +1,7 @@
 import { Indexer }                        from "@surface/core";
 import { hasValue, typeGuard }            from "@surface/core/common/generic";
 import { overrideProperty }               from "@surface/core/common/object";
+import IDisposable                        from "@surface/core/interfaces/disposable";
 import Type                               from "@surface/reflection";
 import FieldInfo                          from "@surface/reflection/field-info";
 import MethodInfo                         from "@surface/reflection/method-info";
@@ -10,7 +11,7 @@ import { REACTOR, TRACKED_KEYS, WRAPPED } from "./symbols";
 
 export type Reactiveable<T = Indexer> = T & { [TRACKED_KEYS]?: Array<string|number>, [REACTOR]?: Reactor, [WRAPPED]?: boolean };
 
-export default class Reactor
+export default class Reactor implements IDisposable
 {
     private static readonly stack: Array<Reactor> = [];
 
@@ -247,6 +248,24 @@ export default class Reactor
         }
 
         this.registries.clear();
+    }
+
+    public dispose(): void
+    {
+        this.unregister();
+
+        for (const dependency of this.dependencies.values())
+        {
+            dependency.dispose();
+        }
+
+        for (const propertySubscription of this.propertySubscriptions.values())
+        {
+            for (const subscription of propertySubscription.values())
+            {
+                subscription.unsubscribe();
+            }
+        }
     }
 
     public notify(value: unknown): void;

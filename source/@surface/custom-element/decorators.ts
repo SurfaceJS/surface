@@ -2,6 +2,7 @@ import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
 import { overrideConstructor, overrideProperty } from "@surface/core/common/object";
 import { camelToDashed }                         from "@surface/core/common/string";
 import Reactive                                  from "@surface/reactive";
+import ISubscription                             from "@surface/reactive/interfaces/subscription";
 import ICustomElement                            from "./interfaces/custom-element";
 import Metadata                                  from "./internal/metadata/metadata";
 import PrototypeMetadata                         from "./internal/metadata/prototype-metadata";
@@ -167,10 +168,14 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
     {
         const action = (instance: HTMLElement) =>
         {
+            const subscriptions: Array<ISubscription> = [];
+
             for (const property of properties)
             {
-                Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey)});
+                subscriptions.push(Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey)}));
             }
+
+            return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
         };
 
         StaticMetadata.from(target.constructor).postConstruct.push(action);
@@ -203,7 +208,9 @@ export function element(name: string, template?: string, style?: string, options
 
             instance.bindedCallback?.();
 
-            staticMetadata.postConstruct?.forEach(x => x(instance));
+            const metadata = Metadata.from(instance);
+
+            staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
 
             return instance;
         };
@@ -222,7 +229,11 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
     {
         const action = (element: HTMLElement) =>
         {
-            element.addEventListener(type, (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event), options);
+            const listener = (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event);
+
+            element.addEventListener(type, listener, options);
+
+            return { dispose: () => element.removeEventListener(type, listener) };
         };
 
         StaticMetadata.from(target.constructor).postConstruct.push(action);
@@ -237,9 +248,13 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
         {
 
             const action = (instance: HTMLElement) =>
-                Reactive.observe(instance, property as string)
-                    .observer
-                    .subscribe({ notify: x => (instance as object as Record<string, Function>)[propertyKey](x) });
+            {
+                const notify = (value: unknown) => (instance as object as Record<string, Function>)[propertyKey](value);
+
+                const subscription = Reactive.observe(instance, property as string).observer.subscribe({ notify });
+
+                return { dispose: () => subscription.unsubscribe() };
+            };
 
             StaticMetadata.from(target.constructor).postConstruct.push(action);
         }

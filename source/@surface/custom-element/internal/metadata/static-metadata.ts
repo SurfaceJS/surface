@@ -1,12 +1,13 @@
 import { Indexer }         from "@surface/core";
+import IDisposable         from "@surface/core/interfaces/disposable";
 import { STATIC_METADATA } from "../symbols";
 
 export default class StaticMetadata
 {
-    public conversionHandlers: Indexer<(target: Indexer, value: string) => void> = { };
-    public observedAttributes: Array<string>                                     = [];
-    public postConstruct:      Array<<T extends HTMLElement>(target: T) => void> = [];
-    public styles:             Array<CSSStyleSheet>                              = [];
+    public conversionHandlers: Indexer<(target: Indexer, value: string) => void>        = { };
+    public observedAttributes: Array<string>                                            = [];
+    public postConstruct:      Array<<T extends HTMLElement>(target: T) => IDisposable> = [];
+    public styles:             Array<CSSStyleSheet>                                     = [];
 
     public template?: HTMLTemplateElement;
 

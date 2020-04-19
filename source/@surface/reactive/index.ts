@@ -4,6 +4,7 @@ import IListener                  from "./interfaces/listener";
 import IObserver                  from "./interfaces/observer";
 import IReactor                   from "./interfaces/reactor";
 import ISubscription              from "./interfaces/subscription";
+import Metadata                   from "./internal/metadata";
 import Reactor                    from "./internal/reactor";
 import { REACTOR }                from "./internal/symbols";
 import Observer                   from "./observer";
@@ -50,6 +51,12 @@ export default class Reactive
         reactor.observers.set(key, observer);
 
         return { reactor, observer };
+    }
+
+    public static dispose<T extends object>(target: T): void
+    {
+        Metadata.from(target).disposables.forEach(x => x.dispose());
+        Reactive.getReactor(target)?.dispose();
     }
 
     public static getReactor(target: object|Indexer|Array<unknown>): Nullable<IReactor>

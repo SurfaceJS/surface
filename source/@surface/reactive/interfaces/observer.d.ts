@@ -1,7 +1,5 @@
-import { Action1 }       from "@surface/core";
-import IListener         from "./listener";
-import IPropertyListener from "./property-listener";
-import ISubscription     from "./subscription";
+import IListener     from "./listener";
+import ISubscription from "./subscription";
 
 export default interface IObserver<T = unknown>
 {

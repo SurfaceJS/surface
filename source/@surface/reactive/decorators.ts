@@ -1,6 +1,7 @@
 import { Constructor }         from "@surface/core";
 import { overrideConstructor } from "@surface/core/common/object";
 import Reactive                from ".";
+import ISubscription           from "./interfaces/subscription";
 import StaticMetadata          from "./internal/static-metadata";
 
 export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
@@ -10,9 +11,19 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
         const metadata = StaticMetadata.from(target.constructor);
 
         const action = (instance: object) =>
-            Reactive.observe(instance, property as string).observer.subscribe({ notify: x => (instance as Record<string, Function>)[propertyKey](x) });
+        {
+            let subscription: ISubscription;
 
-        metadata.actions.push(action as (instance: object) => void);
+            const notify = (value: unknown) => (instance as Record<string, Function>)[propertyKey](value);
+
+            subscription = Reactive
+                .observe(instance, property as string).observer
+                .subscribe({ notify });
+
+            return { dispose: () => subscription.unsubscribe() };
+        };
+
+        metadata.actions.push(action);
     };
 }
 
@@ -31,10 +42,14 @@ export function notify<T extends object>(...properties: Array<keyof T>): <U exte
     {
         const action = (instance: object) =>
         {
+            const subscriptions: Array<ISubscription> = [];
+
             for (const property of properties)
             {
-                Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string)});
+                subscriptions.push(Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string)}));
             }
+
+            return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
         };
 
         StaticMetadata.from(target.constructor).actions.push(action);

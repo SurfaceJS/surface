@@ -1,15 +1,16 @@
+import IDisposable         from "@surface/core/interfaces/disposable";
 import { STATIC_METADATA } from "./symbols";
 
 export default class StaticMetadata
 {
-    public actions: Array<(instance: object) => void> = [];
+    public actions: Array<(instance: object) => IDisposable> = [];
 
     public static from (target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata
-{
-    return target[STATIC_METADATA] = !target.hasOwnProperty(STATIC_METADATA) && !!target[STATIC_METADATA]
-        ? target[STATIC_METADATA]!.clone()
-        : target[STATIC_METADATA] ?? new StaticMetadata();
-}
+    {
+        return target[STATIC_METADATA] = !target.hasOwnProperty(STATIC_METADATA) && !!target[STATIC_METADATA]
+            ? target[STATIC_METADATA]!.clone()
+            : target[STATIC_METADATA] ?? new StaticMetadata();
+    }
 
     public clone(): StaticMetadata
     {

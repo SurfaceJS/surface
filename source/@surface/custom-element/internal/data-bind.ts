@@ -24,7 +24,9 @@ export default class DataBind
     {
         const { key, member } = getKeyMember(target, path);
 
-        if (PRIMITIVES.includes(typeof member))
+        const type = typeof member;
+
+        if (type != "object" && PRIMITIVES.includes(type))
         {
             if (key in member.constructor.prototype)
             {
