@@ -1,12 +1,11 @@
-import { Action2, Nullable }              from "@surface/core";
-import { assert, typeGuard }    from "@surface/core/common/generic";
+import { Action2, Nullable }    from "@surface/core";
+import { typeGuard }            from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
 import IPattern                 from "@surface/expression/interfaces/pattern";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
 import DataBind                 from "../../data-bind";
 import ILoopDirective           from "../../interfaces/loop-directive";
-import TemplateMetadata         from "../../metadata/template-metadata";
 import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
@@ -26,9 +25,9 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     private disposed: boolean = false;
 
-    public constructor(scope: Scope, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
+    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
     {
-        super(scope, host);
+        super(scope, context, host);
 
         this.template  = template;
         this.directive = directive;
@@ -39,9 +38,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.iterator = directive.operator == "in" ? this.forInIterator : this.forOfIterator;
 
-        assert(this.template.parentNode);
-
-        const parent = this.template.parentNode;
+        const parent = this.template.parentNode!;
 
         parent.replaceChild(this.end, template);
         parent.insertBefore(this.start, this.end);
@@ -64,7 +61,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             const start = document.createComment("");
             const end   = document.createComment("");
 
-            const [content, disposable] = super.processTemplate(mergedScope, this.host, this.template, this.directive.descriptor, TemplateMetadata.from(this.start.parentNode!));
+            const [content, disposable] = super.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
 
             if (index < this.cache.length)
             {

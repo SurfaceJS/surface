@@ -3,8 +3,8 @@ import IInjectDirective      from "../interfaces/inject-directive";
 import { TEMPLATE_METADATA } from "../symbols";
 import { Scope }             from "../types";
 
-type Factory   = (scope: Scope, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective) => void;
-type Injection = { scope: Scope, template: HTMLTemplateElement, directive: IInjectDirective };
+type Factory   = (scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective) => void;
+type Injection = { scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective };
 
 type Target = object & { [TEMPLATE_METADATA]?: TemplateMetadata };
 

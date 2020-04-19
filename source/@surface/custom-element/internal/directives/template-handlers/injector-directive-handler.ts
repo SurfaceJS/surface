@@ -26,9 +26,9 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
     private subscription:      ISubscription|null = null;
     private timer:             number             = 0;
 
-    public constructor(scope: Scope, host: Node, template: HTMLTemplateElement, directive: IInjectorDirective)
+    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectorDirective)
     {
-        super(scope, host);
+        super(scope, context, host);
 
         this.template  = template;
         this.directive = directive;
@@ -52,8 +52,8 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
             const injection = this.metadata.injections.get(this.key);
 
             injection
-                ? this.inject(injection.scope, this.host, injection.template, injection.directive)
-                : this.inject(scope, this.host, this.template);
+                ? this.inject(injection.scope, injection.context, injection.host, injection.template, injection.directive)
+                : this.inject(scope, this.context, this.host, this.template);
         }
         else
         {
@@ -63,10 +63,10 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
     private defaultInjection()
     {
-        this.timer = window.setTimeout(() => this.inject(this.scope, this.host, this.template));
+        this.timer = window.setTimeout(() => this.inject(this.scope, this.context, this.host, this.template));
     }
 
-    private inject(localScope: Scope, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective): void
+    private inject(localScope: Scope, context: Node, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective): void
     {
         window.clearTimeout(this.timer);
 
@@ -91,7 +91,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
                     ? { ...elementScope, ...localScope }
                     : { [scopeAlias]: elementScope, ...localScope };
 
-                const [content, disposable] = this.processTemplate(mergedScope, host, template, injectDirective.descriptor, TemplateMetadata.from(this.start.parentNode!));
+                const [content, disposable] = this.processTemplate(mergedScope, context, host, template, injectDirective.descriptor);
 
                 this.end.parentNode!.insertBefore(content, this.end);
 
@@ -117,7 +117,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
         this.removeInRange(this.start, this.end);
 
-        const [content, disposable] = this.processTemplate(this.scope, this.host, this.template, this.directive.descriptor, TemplateMetadata.from(this.start.parentNode!));
+        const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, this.template, this.directive.descriptor);
 
         this.end.parentNode!.insertBefore(content, this.end);
 

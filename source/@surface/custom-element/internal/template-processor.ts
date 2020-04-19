@@ -41,7 +41,7 @@ export default class TemplateProcessor
         this.lookup = this.buildLookup(root, descriptor.lookup);
     }
 
-    public static process(scope: Scope, host: Node|Element, node: Node, descriptor: ITemplateDescriptor): IDisposable
+    public static process(scope: Scope, context: Node|null, host: Node|Element, node: Node, descriptor: ITemplateDescriptor): IDisposable
     {
         /* istanbul ignore if */
         if (TemplateProcessor.postProcessing.has(host))
@@ -51,7 +51,7 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.delete(host);
         }
 
-        return new TemplateProcessor(host, node, descriptor).process(scope);
+        return new TemplateProcessor(host, node, descriptor).process(scope, context);
     }
 
     private buildLookup(node: Node, source: Array<Array<number>>): Record<string, Element>
@@ -88,7 +88,7 @@ export default class TemplateProcessor
     }
 
 
-    private process(scope: Scope): IDisposable
+    private process(scope: Scope, context: Node|null): IDisposable
     {
         const subscriptions: Array<ISubscription> = [];
         const disposables:   Array<IDisposable>   = [];
@@ -97,7 +97,7 @@ export default class TemplateProcessor
         {
             const element = this.lookup[descriptor.path];
 
-            const localScope = createScope({ this: element, ...scope });
+            const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
             subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
             disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
@@ -106,7 +106,7 @@ export default class TemplateProcessor
             element.dispatchEvent(new Event("bind"));
         }
 
-        disposables.push(this.processTemplateDirectives(createScope(scope), this.descriptor.directives, this.lookup));
+        disposables.push(this.processTemplateDirectives(createScope(scope), context, this.descriptor.directives, this.lookup));
 
         return {
             dispose: () =>
@@ -222,7 +222,7 @@ export default class TemplateProcessor
         return disposables;
     }
 
-    private processTemplateDirectives(scope: Scope, directives: IDirectivesDescriptor, lookup: Record<string, Element>): IDisposable
+    private processTemplateDirectives(scope: Scope, context: Node|null, directives: IDirectivesDescriptor, lookup: Record<string, Element>): IDisposable
     {
         const disposables: Array<IDisposable> = [];
 
@@ -232,7 +232,9 @@ export default class TemplateProcessor
 
             assert(template.parentNode);
 
-            const metadata = TemplateMetadata.from(template.parentNode);
+            const currentContext = context ?? template.parentNode;
+
+            const metadata = TemplateMetadata.from(currentContext);
 
             template.remove();
 
@@ -242,13 +244,13 @@ export default class TemplateProcessor
 
             if (action)
             {
-                action(scope, this.host, template, directive);
+                action(scope, currentContext, this.host, template, directive);
             }
             else
             {
                 template.remove();
 
-                metadata.injections.set(key, { scope, template, directive });
+                metadata.injections.set(key, { scope, template, directive, context: currentContext, host: this.host });
             }
 
             disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
@@ -258,21 +260,33 @@ export default class TemplateProcessor
         {
             const templates = directive.branches.map(x => lookup[x.path]) as Array<HTMLTemplateElement>;
 
-            disposables.push(new ChoiceDirectiveHandler(scope, this.host, templates, directive.branches));
+            assert(templates[0].parentNode);
+
+            const currentContext = context ?? templates[0].parentNode;
+
+            disposables.push(new ChoiceDirectiveHandler(scope, currentContext, this.host, templates, directive.branches));
         }
 
         for (const directive of directives.loop)
         {
             const template = lookup[directive.path] as HTMLTemplateElement;
 
-            disposables.push(new LoopDirectiveHandler(scope, this.host, template, directive));
+            assert(template.parentNode);
+
+            const currentContext = context ?? template.parentNode;
+
+            disposables.push(new LoopDirectiveHandler(scope, currentContext, this.host, template, directive));
         }
 
         for (const directive of directives.injector)
         {
             const template = lookup[directive.path] as HTMLTemplateElement;
 
-            disposables.push(new InjectorDirectiveHandler(scope, this.host, template, directive));
+            assert(template.parentNode);
+
+            const currentContext = context ?? template.parentNode;
+
+            disposables.push(new InjectorDirectiveHandler(scope, currentContext, this.host, template, directive));
         }
 
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };

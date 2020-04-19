@@ -35,7 +35,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
         root.appendChild(child);
     }
 
-    TemplateProcessor.process(scope ?? { host }, host, root, descriptor);
+    TemplateProcessor.process(scope ?? { host }, null, host, root, descriptor);
 }
 
 @suite

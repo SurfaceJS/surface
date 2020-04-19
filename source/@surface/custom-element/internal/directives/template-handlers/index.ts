@@ -3,19 +3,20 @@ import IDisposable         from "@surface/core/interfaces/disposable";
 import { enumerateRange }  from "../../common";
 import ITemplateDescriptor from "../../interfaces/template-descriptor";
 import Metadata            from "../../metadata/metadata";
-import TemplateMetadata    from "../../metadata/template-metadata";
 import TemplateProcessor   from "../../template-processor";
 import { Scope }           from "../../types";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {
-    protected readonly host:  Node;
-    protected readonly scope: Scope;
+    protected readonly context: Node;
+    protected readonly host:    Node;
+    protected readonly scope:   Scope;
 
-    protected constructor(scope: Scope, host: Node)
+    protected constructor(scope: Scope, context: Node, host: Node)
     {
-        this.scope = scope;
-        this.host  = host;
+        this.scope   = scope;
+        this.context = context;
+        this.host    = host;
     }
 
     protected async fireAsync(action: AsyncAction): Promise<void>
@@ -23,15 +24,13 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
         await action();
     }
 
-    protected processTemplate(scope: Scope, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor, metadata: TemplateMetadata): [Element, IDisposable]
+    protected processTemplate(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor): [Element, IDisposable]
     {
         const root = template.content.cloneNode(true) as Element;
 
         root.normalize();
 
-        TemplateMetadata.set(root, metadata);
-
-        const disposable = TemplateProcessor.process(scope, host, root, descriptor);
+        const disposable = TemplateProcessor.process(scope, context, host, root, descriptor);
 
         return [root, disposable];
     }

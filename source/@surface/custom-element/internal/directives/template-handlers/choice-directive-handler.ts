@@ -5,7 +5,6 @@ import ISubscription            from "@surface/reactive/interfaces/subscription"
 import DataBind                 from "../../data-bind";
 import IChoiceDirectiveBranch   from "../../interfaces/choice-directive-branch";
 import ITemplateDescriptor      from "../../interfaces/template-descriptor";
-import TemplateMetadata         from "../../metadata/template-metadata";
 import ParallelWorker           from "../../parallel-worker";
 import { Scope }                from "../../types";
 import TemplateDirectiveHandler from "./";
@@ -20,9 +19,9 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private currentDisposable: IDisposable|null = null;
     private disposed:          boolean          = false;
 
-    public constructor(scope: Scope, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceDirectiveBranch>)
+    public constructor(scope: Scope, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceDirectiveBranch>)
     {
-        super(scope, host);
+        super(scope, context, host);
 
         this.start = document.createComment("");
         this.end   = document.createComment("");
@@ -68,7 +67,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
         {
             if (expression.evaluate(this.scope))
             {
-                const [content, disposable] = this.processTemplate(this.scope, this.host, template, descriptor, TemplateMetadata.from(this.start.parentNode!));
+                const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, template, descriptor);
 
                 this.currentDisposable = disposable;
 
