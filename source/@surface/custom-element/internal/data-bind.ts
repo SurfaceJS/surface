@@ -13,21 +13,25 @@ const PRIMITIVES = [ "boolean", "number", "string"];
 
 export default class DataBind
 {
-    public static observe(target: Indexer, observables: Array<Array<string>>, listener: IListener, lazy?: boolean): ISubscription
+    public static observe(target: object, observables: Array<Array<string>>, listener: IListener, lazy?: boolean): ISubscription
     {
         const subscriptions = observables.map(path => DataBind.oneWay(target, path, listener, lazy).subscription);
 
         return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
     }
 
-    public static oneWay(target: object, path: string|Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
+    public static oneWay(target: object, path: Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
     {
-        const foo = getKeyMember(target, path);
-        const { key, member } = foo;
+        const { key, member } = getKeyMember(target, path);
 
         if (PRIMITIVES.includes(typeof member))
         {
-            return { subscription: { unsubscribe: () => null }};
+            if (key in member.constructor.prototype)
+            {
+                return DataBind.oneWay(target, path.slice(0, path.length - 1), listener, lazy);
+            }
+
+            throw new Error(`Invalid property path: ${path.join(".")}`);
         }
 
         const { reactor, observer, subscription: _subscription } = Reactive.observe(target, path, listener, lazy);
@@ -89,8 +93,8 @@ export default class DataBind
         const leftListener  = new PropertyListener(rightMember as Indexer, rightKey);
         const rightListener = new PropertyListener(leftMember as Indexer, leftKey);
 
-        const { reactor: leftReactor,  subscription: leftSubscription }  = DataBind.oneWay(left, leftPath, leftListener);
-        const { reactor: rightReactor, subscription: rightSubscription } = DataBind.oneWay(right, rightPath, rightListener);
+        const { reactor: leftReactor,  subscription: leftSubscription }  = DataBind.oneWay(left, [leftPath], leftListener);
+        const { reactor: rightReactor, subscription: rightSubscription } = DataBind.oneWay(right, [rightPath], rightListener);
 
         if (leftReactor && "update" in rightSubscription)
         {

@@ -1,6 +1,5 @@
 import "./fixtures/dom";
 
-import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
 import DataBind                    from "../internal/data-bind";
@@ -15,7 +14,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = 2;
 
@@ -29,7 +28,7 @@ export default class DataBindSpec
 
         Object.defineProperty(target, "value", { value: target.value, writable: false });
 
-        DataBind.oneWay(target, "value", { notify: () => undefined }); // Todo: Review if should throw error or not
+        DataBind.oneWay(target, ["value"], { notify: () => undefined }); // Todo: Review if should throw error or not
 
         assert.isTrue(true);
     }
@@ -55,7 +54,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = 2;
 
@@ -83,7 +82,7 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.setValue(2);
 
@@ -97,7 +96,7 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
@@ -114,7 +113,7 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute as Indexer, "value", { notify: () => value = attribute.value });
+        DataBind.oneWay(attribute, ["value"], { notify: () => value = attribute.value });
 
         attribute.value = "2";
         assert.equal(value, "2");
@@ -140,7 +139,7 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left as Indexer, "value", right as Indexer, "value");
+        DataBind.twoWay(left, "value", right, "value");
 
         left.value = 2;
 
@@ -160,6 +159,6 @@ export default class DataBindSpec
 
         DataBind.observe(target, [["value", "length"]], { notify: () => observed = true } );
 
-        assert.isFalse(observed);
+        assert.isTrue(observed);
     }
 }
