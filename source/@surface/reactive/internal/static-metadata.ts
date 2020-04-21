@@ -1,5 +1,6 @@
-import IDisposable         from "@surface/core/interfaces/disposable";
-import { STATIC_METADATA } from "./symbols";
+import IDisposable from "@surface/core/interfaces/disposable";
+
+const STATIC_METADATA = Symbol("reactive:static-metadata");
 
 export default class StaticMetadata
 {

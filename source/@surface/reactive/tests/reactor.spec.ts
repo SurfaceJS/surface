@@ -1,10 +1,9 @@
-import { tuple }                               from "@surface/core/common/generic";
+import { Indexer }                             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Reactive                                from "..";
 import { notify, observable }                  from "../decorators";
+import Metadata                                from "../internal/metadata";
 import Reactor                                 from "../internal/reactor";
-import { REACTOR, TRACKED_KEYS }               from "../internal/symbols";
 import Observer                                from "../observer";
 import PropertySubscription                    from "../property-subscription";
 
@@ -17,8 +16,6 @@ export default class ReactorSpec
         class Emitter
         {
             private _value: number = 0;
-
-            public [TRACKED_KEYS]: Array<string> = [];
 
             public get value(): number
             {
@@ -41,8 +38,6 @@ export default class ReactorSpec
         {
             @notify("value")
             private _value: number = 0;
-
-            public [TRACKED_KEYS]: Array<string> = [];
 
             public get value(): number
             {
@@ -67,7 +62,7 @@ export default class ReactorSpec
 
         const instanceEmmiter         = new Emitter();
         const instanceReadonlyEmmiter = new ReadonlyEmitter();
-        const rawEmmiter              = { value: 0, nonReactiveValue: 1, [TRACKED_KEYS]: [] };
+        const rawEmmiter              = { value: 0, nonReactiveValue: 1 };
 
         Object.defineProperty(rawEmmiter, "nonReactiveValue", { value: 1, writable: false });
 
@@ -81,18 +76,18 @@ export default class ReactorSpec
         instanceEmmiterValueObserver.subscribe({ notify: x => instanceEmmiterValueListener = x });
         rawEmmiterValueObserver.subscribe({ notify: x => rawEmmiterValueListerner = x });
 
-        Reactor.makeReactive(instanceEmmiter, "getValue").observers.set("getValue", instanceEmmiterGetValueObserver);
-        Reactor.makeReactive(instanceEmmiter, "value").observers.set("value", instanceEmmiterValueObserver);
-        Reactor.makeReactive(instanceReadonlyEmmiter, "nonReactiveValue");
-        Reactor.makeReactive(instanceReadonlyEmmiter, "value").observers.set("value", instanceReadonlyEmmiterObserver);
+        Reactor.makeReactive(instanceEmmiter as Indexer, "getValue").observers.set("getValue", instanceEmmiterGetValueObserver);
+        Reactor.makeReactive(instanceEmmiter as Indexer, "value").observers.set("value", instanceEmmiterValueObserver);
+        Reactor.makeReactive(instanceReadonlyEmmiter as Indexer, "nonReactiveValue");
+        Reactor.makeReactive(instanceReadonlyEmmiter as Indexer, "value").observers.set("value", instanceReadonlyEmmiterObserver);
         Reactor.makeReactive(rawEmmiter, "nonReactiveValue");
         Reactor.makeReactive(rawEmmiter, "value").observers.set("value", rawEmmiterValueObserver);
 
         assert.doesNotThrow(() => Reactor.makeReactive(rawEmmiter, "value"));
 
-        assert.deepEqual(instanceEmmiter[TRACKED_KEYS],         ["getValue", "value"]);
-        assert.deepEqual(instanceReadonlyEmmiter[TRACKED_KEYS], ["_value", "nonReactiveValue", "value"]);
-        assert.deepEqual(rawEmmiter[TRACKED_KEYS],              ["nonReactiveValue", "value"]);
+        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         ["getValue", "value"]);
+        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, ["_value", "nonReactiveValue", "value"]);
+        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              ["nonReactiveValue", "value"]);
 
         rawEmmiter.value = rawEmmiter.value;
 
@@ -119,27 +114,32 @@ export default class ReactorSpec
     @test @shouldPass
     public makeReactiveArray(): void
     {
-        const emmiter  = { values: tuple({ value: 0 }, [{ value: 0 }]) };
-        const listener = { values: tuple({ value: 0 }, [{ value: 0 }]) };
+        const emmiter  = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
+        const listener = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
 
-        const values0Observer       = new Observer<{ value: number }>();
-        const values1Observer       = new Observer<[{ value: number }]>();
-        const values01Observer      = new Observer<{ value: number }>();
-        const values01ValueObserver = new Observer<number>();
+        const values0Observer       = new Observer<Array<{ value: number }>>();
+        const values10Observer      = new Observer<{ value: number }>();
+        const values10ValueObserver = new Observer<number>();
+        const values1Observer       = new Observer<Array<{ value: number }>>();
+        const values20Observer      = new Observer<Array<{ value: number }>>();
 
         values0Observer.subscribe({ notify: x => listener.values[0] = x });
+        values10Observer.subscribe({ notify: x => listener.values[1][0] = x });
+        values10ValueObserver.subscribe({ notify: x => listener.values[1][0].value = x });
         values1Observer.subscribe({ notify: x => listener.values[1] = x });
-        values01Observer.subscribe({ notify: x => listener.values[1][0] = x });
-        values01ValueObserver.subscribe({ notify: x => listener.values[1][0].value = x });
+        values20Observer.subscribe({ notify: x => listener.values[2] = x });
 
-        Reactor.makeReactive(emmiter.values, 0).observers.set("0", values0Observer);
-        Reactor.makeReactive(emmiter.values, 1).observers.set("1", values1Observer);
-        Reactor.makeReactive(emmiter.values[1], 0).observers.set("0", values01Observer);
-        Reactor.makeReactive(emmiter.values[1][0], "value").observers.set("value", values01ValueObserver);
+        Reactor.makeReactive(emmiter.values       as Indexer, 0).observers.set("0", values0Observer);
+        Reactor.makeReactive(emmiter.values[1]    as Indexer, 0).observers.set("0", values10Observer);
+        Reactor.makeReactive(emmiter.values[1][0] as Indexer, "value").observers.set("value", values10ValueObserver);
+        Reactor.makeReactive(emmiter.values       as Indexer, 1).observers.set("1", values1Observer);
 
-        assert.instanceOf(Reactive.getReactor(emmiter.values),       Reactor);
-        assert.instanceOf(Reactive.getReactor(emmiter.values[1]),    Reactor);
-        assert.instanceOf(Reactive.getReactor(emmiter.values[1][0]), Reactor);
+        Metadata.of(emmiter.values)!.reactor.dependencies.set("1", Metadata.of(emmiter.values[1])!.reactor);
+        Metadata.of(emmiter.values[1])!.reactor.dependencies.set("0", Metadata.of(emmiter.values[1][0])!.reactor);
+
+        assert.instanceOf(Metadata.of(emmiter.values)!.reactor,       Reactor);
+        assert.instanceOf(Metadata.of(emmiter.values[1])!.reactor,    Reactor);
+        assert.instanceOf(Metadata.of(emmiter.values[1][0])!.reactor, Reactor);
 
         emmiter.values[1][0].value = 1;
 
@@ -149,25 +149,47 @@ export default class ReactorSpec
 
         assert.deepEqual(listener.values[1][0], emmiter.values[1][0]);
 
+        const old = emmiter.values[1];
+
+        emmiter.values[1] = [{ value: 1 }];
+
+        assert.deepEqual(listener.values[1], emmiter.values[1]);
+
+        emmiter.values[1] = old;
+
+        assert.deepEqual(listener.values[1], emmiter.values[1]);
+
         emmiter.values[1] = [{ value: 3 }];
 
         assert.deepEqual(listener.values[1], emmiter.values[1]);
 
-        emmiter.values[0] = { value: 4 };
+        emmiter.values[0] = [{ value: 4 }];
 
         assert.deepEqual(listener.values[0], emmiter.values[0]);
 
+        emmiter.values[2] = [{ value: 1 }, { value: 2 }, { value: 3 }];
+
+        assert.notDeepEqual(listener.values[2], emmiter.values[2]);
+
+        Reactor.makeReactive(emmiter.values as Indexer, 2).observers.set("2", values20Observer);
+
+        emmiter.values[2].shift();
+
+        assert.deepEqual(listener.values[2][0], emmiter.values[2][0]);
+
         emmiter.values[1].pop();
 
-        assert.deepEqual(listener.values, [{ value: 4 }, []]);
+        assert.deepEqual(listener.values[1], []);
 
         emmiter.values.pop();
 
-        assert.deepEqual(listener.values, [{ value: 4 }, []]);
+        assert.deepEqual(emmiter.values,  [[{ value: 4 }], []]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], [], [{ value: 2 }, { value: 3 }]]);
 
         emmiter.values.pop();
 
-        assert.deepEqual(listener.values, [{ value: 4 }, []]);
+        assert.deepEqual(emmiter.values,  [[{ value: 4 }]]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], [], [{ value: 2 }, { value: 3 }]]);
     }
 
     @test @shouldPass
@@ -346,7 +368,6 @@ export default class ReactorSpec
         const subscription = new PropertySubscription(listener, observer);
 
         reactor.setPropertySubscription("a", subscription);
-        reactor.setPropertySubscription("a", new PropertySubscription({ notify: () => null, update: () => null }, new Observer()));
 
         reactor.notify({ a: { value: 2 } });
 
@@ -381,14 +402,76 @@ export default class ReactorSpec
         reactorA.dependencies.set("a", reactorB);
         reactorB.dependencies.set("b", reactor);
 
-        const newValue = { b: { value: 1, [REACTOR]: undefined }, [REACTOR]: undefined };
+        const newValue = { b: { value: 1 }};
 
         reactorA.update("a", newValue);
         reactorA.update("a", newValue);
         reactorA.update("a", null);
 
-        assert.notEqual(newValue[REACTOR], undefined);
-        assert.notEqual(newValue.b[REACTOR], undefined);
+        assert.notEqual(Metadata.of(newValue), undefined);
+        assert.notEqual(Metadata.of(newValue.b), undefined);
+    }
+
+    @test @shouldPass
+    public dispose(): void
+    {
+        let notified = false;
+
+        const target = { value: 1 };
+
+        const reactor = Reactor.makeReactive(target, "value");
+
+        const observer = new Observer();
+
+        observer.subscribe({ notify: () => notified = true });
+
+        reactor.observers.set("value", observer);
+
+        target.value = 2;
+
+        assert.isTrue(notified);
+
+        reactor.dispose();
+
+        reactor.dispose(); // Coverage
+
+        notified = false;
+
+        target.value = 1;
+
+        assert.isFalse(notified);
+    }
+
+    @test @shouldPass
+    public disposePropertySubscription(): void
+    {
+        const emmiter  = { host: { a: { value: 1 } } };
+        const receiver = { host: { a: { value: 1 } } };
+
+        const hostReactor = Reactor.makeReactive(emmiter.host, "a");
+        const reactor = Reactor.makeReactive(emmiter.host.a, "value");
+
+        hostReactor.dependencies.set("a", reactor);
+
+        const listener = { notify: (x: number) => receiver.host.a.value = x, update: (x: typeof emmiter["host"]) => receiver.host = x };
+        const observer = new Observer<number>();
+
+        observer.subscribe(listener);
+
+        const subscription = new PropertySubscription(listener, observer);
+
+        reactor.setPropertySubscription("a", subscription);
+        reactor.setPropertySubscription("a", subscription); // Coverage
+
+        reactor.notify({ a: { value: 2 } });
+
+        assert.equal(receiver.host.a.value, 2);
+
+        hostReactor.dispose();
+
+        reactor.notify({ a: { value: 3 } });
+
+        assert.equal(receiver.host.a.value, 2);
     }
 
     @test @shouldFail

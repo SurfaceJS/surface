@@ -1,4 +1,4 @@
-import { Indexer, Nullable }      from "@surface/core";
+import { Indexer }                from "@surface/core";
 import { getKeyMember, getValue } from "@surface/core/common/object";
 import IListener                  from "./interfaces/listener";
 import IObserver                  from "./interfaces/observer";
@@ -6,7 +6,6 @@ import IReactor                   from "./interfaces/reactor";
 import ISubscription              from "./interfaces/subscription";
 import Metadata                   from "./internal/metadata";
 import Reactor                    from "./internal/reactor";
-import { REACTOR }                from "./internal/symbols";
 import Observer                   from "./observer";
 import PropertyListener           from "./property-listener";
 import PropertySubscription       from "./property-subscription";
@@ -55,18 +54,23 @@ export default class Reactive
 
     public static dispose<T extends object>(target: T): void
     {
-        Metadata.from(target).disposables.forEach(x => x.dispose());
-        Reactive.getReactor(target)?.dispose();
+        const metadata = Metadata.of(target);
+
+        if (metadata)
+        {
+            metadata.disposables.forEach(x => x.dispose());
+            metadata.reactor.dispose();
+        }
     }
 
-    public static getReactor(target: object|Indexer|Array<unknown>): Nullable<IReactor>
+    public static getReactor(target: object): IReactor|undefined
     {
-        return (target as { [REACTOR]?: IReactor })[REACTOR];
+        return Metadata.of(target)?.reactor;
     }
 
     public static hasObserver<T extends Indexer>(target: T, key: keyof T): boolean
     {
-        return Reactive.getReactor(target)?.observers.has(key as string) ?? false;
+        return Metadata.of(target)?.reactor.observers.has(key as string) ?? false;
     }
 
     public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): { reactor: IReactor, observer: IObserver<TTarget[TKey]> };
@@ -155,6 +159,15 @@ export default class Reactive
     public static notify(target: object, key: string): void;
     public static notify(target: Indexer, key: string): void
     {
-        Reactive.getReactor(target)?.notify(target, key);
+        const reactor = Metadata.of(target)?.reactor;
+
+        if (reactor)
+        {
+            reactor.notify(target, key);
+        }
+        else
+        {
+            throw new Error("Target is not reactive");
+        }
     }
 }
