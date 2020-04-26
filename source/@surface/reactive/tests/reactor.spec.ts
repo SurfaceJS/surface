@@ -1,4 +1,5 @@
 import { Indexer }                             from "@surface/core";
+import { hasValue }                            from "@surface/core/common/generic";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import { notify, observable }                  from "../decorators";
@@ -124,8 +125,8 @@ export default class ReactorSpec
         const values20Observer      = new Observer<Array<{ value: number }>>();
 
         values0Observer.subscribe({ notify: x => listener.values[0] = x });
-        values10Observer.subscribe({ notify: x => listener.values[1][0] = x });
-        values10ValueObserver.subscribe({ notify: x => listener.values[1][0].value = x });
+        values10Observer.subscribe({ notify: x => hasValue(listener.values?.[1]) ? listener.values[1][0] = x : null });
+        values10ValueObserver.subscribe({ notify: x => hasValue(listener.values?.[1]?.[0]) ? listener.values[1][0].value = x : null });
         values1Observer.subscribe({ notify: x => listener.values[1] = x });
         values20Observer.subscribe({ notify: x => listener.values[2] = x });
 
@@ -179,17 +180,17 @@ export default class ReactorSpec
 
         emmiter.values[1].pop();
 
-        assert.deepEqual(listener.values[1], []);
+        assert.deepEqual(listener.values[1] as unknown as [undefined], [undefined]);
 
         emmiter.values.pop();
 
-        assert.deepEqual(emmiter.values,  [[{ value: 4 }], []]);
-        assert.deepEqual(listener.values, [[{ value: 4 }], [], [{ value: 2 }, { value: 3 }]]);
+        assert.deepEqual(emmiter.values,  [[{ value: 4 }], [undefined]]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], [undefined], undefined]);
 
         emmiter.values.pop();
 
         assert.deepEqual(emmiter.values,  [[{ value: 4 }]]);
-        assert.deepEqual(listener.values, [[{ value: 4 }], [], [{ value: 2 }, { value: 3 }]]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], undefined, undefined]);
     }
 
     @test @shouldPass
@@ -235,11 +236,11 @@ export default class ReactorSpec
 
         reactor.notify(null);
 
-        assert.equal(receiver.value, 1);
+        assert.equal(receiver.value, undefined);
 
         reactor.notify(emmiter, "value", null as unknown as number);
 
-        assert.equal(receiver.value, 1);
+        assert.equal(receiver.value, null);
 
         reactor.notify({ value: 2 });
 

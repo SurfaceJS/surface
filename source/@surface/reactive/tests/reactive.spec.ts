@@ -328,8 +328,8 @@ export default class ReactiveSpec
 
         (emmiterA.instance as Nullable) = null;
 
-        assert.equal(receiverA1.instance.deep.path.value, 30, "#23");
-        assert.equal(receiverA2.instance.deep.path.value, 30, "#24");
+        assert.equal(receiverA1.instance.deep.path.value, undefined, "#23");
+        assert.equal(receiverA2.instance.deep, undefined, "#24");
 
         emmiterA.instance = { name: "new A old null", deep: { path: { value: 10 } } };
 
@@ -369,7 +369,7 @@ export default class ReactiveSpec
         (left.instance as Nullable) = null;
 
         assert.equal(left.instance, null, "#07");
-        assert.equal(right.instance.deep.path.value, 15, "#08 - right.instance.deep.path.value should not be affected by left[instance = null]");
+        assert.equal(right.instance.deep.path.value, undefined, "#08 - right.instance.deep.path.value should be undefined");
 
         left.instance = { name: "left[old null, new instance].deep.path.value: 30", deep: { path: { id: 1, value: 30 } } };
 
@@ -427,7 +427,7 @@ export default class ReactiveSpec
         (leftA.instance as Nullable) = null;
 
         assert.equal(leftA.instance, null, "#14");
-        assert.equal(rightA.instance.deep.path.value, 15, "#15 - rightA.instance.deep.path.value should not be affected by leftA[instance = null]");
+        assert.equal(rightA.instance.deep.path.value, undefined, "#15 - rightA.instance.deep.path.value should be undefined");
         assert.equal(leftB.instance.deep.path.value, 20,  "#16 - leftB.instance.deep.path.value should not be affected by leftA[instance = null]");
         assert.equal(rightB.instance.deep.path.value, 20, "#17 - rightB.instance.deep.path.value should not be affected by leftA[instance = null]");
 
@@ -532,6 +532,6 @@ export default class ReactiveSpec
     @test @shouldFail
     public notifyNotReactiveTarget(): void
     {
-        assert.throws(() => Reactive.notify({ }, "value"));
+        assert.throws(() => Reactive.notify({ }, "value"), "Target is not reactive");
     }
 }

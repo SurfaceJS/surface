@@ -1,5 +1,4 @@
 import { Indexer }           from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
 import { overrideProperty }  from "@surface/core/common/object";
 import IDisposable           from "@surface/core/interfaces/disposable";
 import Type                  from "@surface/reflection";
@@ -92,6 +91,8 @@ export default class Reactor implements IDisposable
                 {
                     const elements = fn.apply(this, args);
 
+                    reactor.update(key, this[Number(key)]);
+
                     reactor.notify(target, key);
 
                     return elements;
@@ -142,11 +143,6 @@ export default class Reactor implements IDisposable
 
     private notifyValue(value: Indexer): void
     {
-        if (!hasValue(value))
-        {
-            return;
-        }
-
         for (const registry of this.registries.values())
         {
             if (!Reactor.stack.includes(registry))
@@ -163,29 +159,20 @@ export default class Reactor implements IDisposable
             }
         }
 
+
         for (const [key, dependency] of this.dependencies)
         {
-            dependency.notify(value[key]);
+            dependency.notify(value?.[key]);
         }
 
         for (const [key, observer] of this.observers)
         {
-            const keyValue = value[key];
-
-            if (hasValue(keyValue))
-            {
-                observer.notify(keyValue);
-            }
+            observer.notify(value?.[key]);
         }
     }
 
     private notifyTargetKeyValue(target: Indexer, key: string, value: Indexer): void
     {
-        if (!hasValue(value))
-        {
-            return;
-        }
-
         for (const registry of this.registries.values())
         {
             if (!Reactor.stack.includes(registry))
