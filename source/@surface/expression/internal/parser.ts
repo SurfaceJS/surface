@@ -983,7 +983,7 @@ export default class Parser
             // case NodeType.AssignmentPattern: Never reached
             // case NodeType.AssignmentProperty: Never reached
             case NodeType.Identifier:
-            case NodeType.Literal:
+            // case NodeType.Literal:
             case NodeType.ObjectPattern:
             case NodeType.RestElement:
                 return node;
@@ -1037,7 +1037,11 @@ export default class Parser
                 {
                     if (element)
                     {
-                        if (element.type == NodeType.SpreadElement && index < expression.elements.length - 1)
+                        if (element.type == NodeType.Literal)
+                        {
+                            throw this.syntaxError(Messages.invalidDestructuringAssignmentTarget);
+                        }
+                        else if (element.type == NodeType.SpreadElement && index < expression.elements.length - 1)
                         {
                             throw this.syntaxError(Messages.restParameterMustBeLastFormalParameter);
                         }

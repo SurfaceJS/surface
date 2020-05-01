@@ -1460,6 +1460,11 @@ export const invalidExpressions: Array<InvalidParseExpectedSpec> =
     },
     {
         scope:   scope,
+        raw:     "([1]) => 0",
+        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 8, 9)
+    },
+    {
+        scope:   scope,
         raw:     "({ x: 1 }) => 1",
         error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 11, 12)
     },
