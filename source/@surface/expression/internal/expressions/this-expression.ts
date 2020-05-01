@@ -1,7 +1,8 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { Indexer }     from "@surface/core";
+import { hasValue }    from "@surface/core/common/generic";
+import IExpression     from "../../interfaces/expression";
+import IThisExpression from "../../interfaces/this-expression";
+import NodeType        from "../../node-type";
 
 export default class ThisExpression implements IExpression
 {
@@ -10,6 +11,11 @@ export default class ThisExpression implements IExpression
     public get type(): NodeType
     {
         return NodeType.ThisExpression;
+    }
+
+    public clone(): IThisExpression
+    {
+        return new ThisExpression();
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

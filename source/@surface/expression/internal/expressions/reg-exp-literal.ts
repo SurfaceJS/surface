@@ -1,6 +1,7 @@
 import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
 import ILiteral              from "../../interfaces/literal";
+import IRegExpLiteral        from "../../interfaces/reg-exp-literal";
 import NodeType              from "../../node-type";
 
 export default class RegExpLiteral implements ILiteral
@@ -49,6 +50,11 @@ export default class RegExpLiteral implements ILiteral
     {
         this._flags   = flags;
         this._pattern = pattern;
+    }
+
+    public clone(): IRegExpLiteral
+    {
+        return new RegExpLiteral(this.pattern, this.flags);
     }
 
     public evaluate(_?: Indexer, useCache?: boolean): RegExp

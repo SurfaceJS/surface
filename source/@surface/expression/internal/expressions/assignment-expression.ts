@@ -1,5 +1,6 @@
 import { Func3, Indexer }     from "@surface/core";
 import { hasValue }           from "@surface/core/common/generic";
+import IAssignmentExpression  from "../../interfaces/assignment-expression";
 import IExpression            from "../../interfaces/expression";
 import IIdentifier            from "../../interfaces/identifier";
 import IMemberExpression      from "../../interfaces/member-expression";
@@ -78,6 +79,11 @@ export default class AssignmentExpression implements IExpression
         this._operator = operator;
 
         this.operation = assignmentOperations[operator];
+    }
+
+    public clone(): IAssignmentExpression
+    {
+        return new AssignmentExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

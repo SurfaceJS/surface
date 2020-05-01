@@ -1,5 +1,6 @@
 import { Indexer }        from "@surface/core";
 import { hasValue }       from "@surface/core/common/generic";
+import IBinaryExpression  from "../../interfaces/binary-expression";
 import IExpression        from "../../interfaces/expression";
 import NodeType           from "../../node-type";
 import { BinaryOperator } from "../../types";
@@ -85,6 +86,11 @@ export default class BinaryExpression implements IExpression
         this._operator = operator;
         this._right    = right;
         this.operation = binaryFunctions[this.operator];
+    }
+
+    public clone(): IBinaryExpression
+    {
+        return new BinaryExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

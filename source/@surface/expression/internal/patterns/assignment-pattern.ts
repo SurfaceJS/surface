@@ -1,7 +1,8 @@
-import IExpression from "../../interfaces/expression";
-import IPattern    from "../../interfaces/pattern";
-import NodeType    from "../../node-type";
-import { PATTERN } from "../../symbols";
+import IAssignmentPattern from "../../interfaces/assignment-pattern";
+import IExpression        from "../../interfaces/expression";
+import IPattern           from "../../interfaces/pattern";
+import NodeType           from "../../node-type";
+import { PATTERN }        from "../../symbols";
 
 export default class AssignmentPattern implements IPattern
 {
@@ -41,6 +42,11 @@ export default class AssignmentPattern implements IPattern
     {
         this._left  = left;
         this._right = right;
+    }
+
+    public clone(): IAssignmentPattern
+    {
+        return new AssignmentPattern(this.left.clone(), this.right.clone());
     }
 
     public toString(): string

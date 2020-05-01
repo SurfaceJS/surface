@@ -1,9 +1,11 @@
-import IExpression from "../../interfaces/expression";
-import IPattern    from "../../interfaces/pattern";
-import NodeType    from "../../node-type";
-import TypeGuard   from "../type-guard";
+import IAssignmentProperty from "../../interfaces/assignment-property";
+import IExpression         from "../../interfaces/expression";
+import INode               from "../../interfaces/node";
+import IPattern            from "../../interfaces/pattern";
+import NodeType            from "../../node-type";
+import TypeGuard           from "../type-guard";
 
-export default class AssignmentProperty
+export default class AssignmentProperty implements INode
 {
     private _computed: boolean;
     public get computed(): boolean
@@ -64,6 +66,11 @@ export default class AssignmentProperty
         this._value      = value;
         this._computed   = computed;
         this._shorthand  = shorthand;
+    }
+
+    public clone(): IAssignmentProperty
+    {
+        return new AssignmentProperty(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
     }
 
     public toString(): string

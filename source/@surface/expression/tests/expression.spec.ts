@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                               from "chai";
+import { assert }                                         from "chai";
 import Expression                                         from "..";
 import Messages                                           from "../internal/messages";
 import NodeType                                           from "../node-type";
@@ -21,8 +21,18 @@ export default class ExpressionSpec
     {
         const expression = expressionFactoryExpected.factory();
 
-        chai.expect(expression.type).to.equal(expressionFactoryExpected.type);
-        chai.expect(expression.toString()).to.equal(expressionFactoryExpected.toString);
+        assert.equal(expression.type, expressionFactoryExpected.type);
+        assert.equal(expression.toString(), expressionFactoryExpected.toString);
+
+        const clone = expression.clone();
+
+        if (expression.hasOwnProperty("toString"))
+        {
+            clone.clone    = expression.clone;
+            clone.toString = expression.toString;
+        }
+
+        assert.deepEqual(expression, clone);
     }
 
     @test @shouldPass
@@ -30,7 +40,7 @@ export default class ExpressionSpec
     {
         const expression = Expression.parse("this");
 
-        chai.expect(expression.type).to.equal(NodeType.ThisExpression);
+        assert.equal(expression.type, NodeType.ThisExpression);
     }
 
     @test @shouldPass
@@ -38,12 +48,12 @@ export default class ExpressionSpec
     {
         const expression = Expression.regex("foo", "gi");
 
-        chai.expect(expression.pattern, "pattern").to.equal("foo");
-        chai.expect(expression.flags, "flags").to.equal("gi");
-        chai.expect(expression.value, "value").to.equal(null);
-        chai.expect(expression.evaluate(), "evaluate").to.deep.equal(/foo/gi);
-        chai.expect(expression.evaluate(void 0, true), "evaluate with cache").to.deep.equal(/foo/gi);
-        chai.expect(expression.toString(), "toString").to.deep.equal("/foo/gi");
+        assert.equal(expression.pattern, "foo", "pattern");
+        assert.equal(expression.flags, "gi", "flags");
+        assert.equal(expression.value, null, "value");
+        assert.deepEqual(expression.evaluate(), /foo/gi, "evaluate");
+        assert.deepEqual(expression.evaluate(void 0, true), /foo/gi, "evaluate with cache");
+        assert.deepEqual(expression.toString(), "/foo/gi", "toString");
     }
 
     @shouldFail
@@ -58,18 +68,17 @@ export default class ExpressionSpec
         }
         catch (error)
         {
-            chai.expect(error.message).to.equal(evaluationErrorExpected.error.message);
-            chai.expect(error).to.includes(evaluationErrorExpected.error);
+            assert.equal(error.message, evaluationErrorExpected.error.message);
         }
     }
 
     @test @shouldFail
     public arrowFunctionWithDuplicatedParameters()
     {
-        const parameters    = [Expression.identifier("a"), Expression.identifier("a") ];
-        const body          = Expression.identifier("x");
+        const parameters = [Expression.identifier("a"), Expression.identifier("a") ];
+        const body       = Expression.identifier("x");
 
-        chai.expect(() => Expression.arrowFunction(parameters, body)).to.throw(Messages.duplicateParameterNameNotAllowedInThisContext);
+        assert.throws(() => Expression.arrowFunction(parameters, body), Messages.duplicateParameterNameNotAllowedInThisContext);
     }
 
     @test @shouldFail
@@ -79,6 +88,6 @@ export default class ExpressionSpec
         const body          = Expression.identifier("x");
         const arrowFunction = Expression.arrowFunction(parameters, body);
 
-        chai.expect(arrowFunction.evaluate({ })).to.throw(Messages.illegalPropertyInDeclarationContext);
+        assert.throws(arrowFunction.evaluate({ }) as () => void, Messages.illegalPropertyInDeclarationContext);
     }
 }

@@ -1,7 +1,8 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { Indexer }         from "@surface/core";
+import { hasValue }        from "@surface/core/common/generic";
+import IExpression         from "../../interfaces/expression";
+import ISequenceExpression from "../../interfaces/sequence-expression";
+import NodeType            from "../../node-type";
 
 export default class SequenceExpression implements IExpression
 {
@@ -27,6 +28,11 @@ export default class SequenceExpression implements IExpression
     public constructor(expressions: Array<IExpression>)
     {
         this._expressions = expressions;
+    }
+
+    public clone(): ISequenceExpression
+    {
+        return new SequenceExpression(this.expressions.map(x => x.clone()));
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

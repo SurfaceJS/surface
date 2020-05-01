@@ -1,6 +1,7 @@
-import IPattern    from "../../interfaces/pattern";
-import NodeType    from "../../node-type";
-import { PATTERN } from "../../symbols";
+import IArrayPattern from "../../interfaces/array-pattern";
+import IPattern      from "../../interfaces/pattern";
+import NodeType      from "../../node-type";
+import { PATTERN }   from "../../symbols";
 
 export default class ArrayPattern implements IPattern
 {
@@ -27,6 +28,11 @@ export default class ArrayPattern implements IPattern
     public constructor(elements: Array<IPattern|null>)
     {
         this._elements = elements;
+    }
+
+    public clone(): IArrayPattern
+    {
+        return new ArrayPattern(this.elements.map(x => x?.clone() ?? null));
     }
 
     public toString(): string

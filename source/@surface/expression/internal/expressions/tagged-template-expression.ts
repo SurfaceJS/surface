@@ -1,11 +1,12 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import { format }            from "@surface/core/common/string";
-import IExpression           from "../../interfaces/expression";
-import NodeType              from "../../node-type";
-import Messages              from "../messages";
-import TypeGuard             from "../type-guard";
-import TemplateLiteral       from "./template-literal";
+import { Indexer, Nullable }     from "@surface/core";
+import { hasValue }              from "@surface/core/common/generic";
+import { format }                from "@surface/core/common/string";
+import IExpression               from "../../interfaces/expression";
+import ITaggedTemplateExpression from "../../interfaces/tagged-template-expression";
+import NodeType                  from "../../node-type";
+import Messages                  from "../messages";
+import TypeGuard                 from "../type-guard";
+import TemplateLiteral           from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression
 {
@@ -40,10 +41,15 @@ export default class TaggedTemplateExpression implements IExpression
         return NodeType.TaggedTemplateExpression;
     }
 
-    public constructor(callee: IExpression, quasis: TemplateLiteral)
+    public constructor(callee: IExpression, quasi: TemplateLiteral)
     {
         this._callee = callee,
-        this._quasi  = quasis;
+        this._quasi  = quasi;
+    }
+
+    public clone(): ITaggedTemplateExpression
+    {
+        return new TaggedTemplateExpression(this.callee.clone(), this.quasi.clone());
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

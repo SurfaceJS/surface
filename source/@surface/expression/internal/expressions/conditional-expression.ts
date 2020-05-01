@@ -1,7 +1,8 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { Indexer }            from "@surface/core";
+import { hasValue }           from "@surface/core/common/generic";
+import IConditionalExpression from "../../interfaces/conditional-expression";
+import IExpression            from "../../interfaces/expression";
+import NodeType               from "../../node-type";
 
 export default class ConditionalExpression implements IExpression
 {
@@ -53,6 +54,11 @@ export default class ConditionalExpression implements IExpression
         this._test       = test;
         this._consequent = consequent;
         this._alternate  = alternate;
+    }
+
+    public clone(): IConditionalExpression
+    {
+        return new ConditionalExpression(this.test.clone(), this.alternate.clone(), this.consequent.clone());
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown
