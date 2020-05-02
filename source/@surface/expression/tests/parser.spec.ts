@@ -3,6 +3,7 @@ import { assert }                                         from "chai";
 import ParenthesizedExpression                            from "../internal/expressions/parenthesized-expression";
 import Parser                                             from "../internal/parser";
 import TypeGuard                                          from "../internal/type-guard";
+import SyntaxError                                        from "../syntax-error";
 import
 {
     invalidExpressions,
@@ -10,6 +11,25 @@ import
     InvalidParseExpectedSpec,
     ParseExpectedSpec
 } from "./expectations/parser-expected";
+
+type RawSyntaxError = Pick<SyntaxError, "message"|"lineNumber"|"index"|"column">|Pick<ReferenceError, "message">;
+
+function toRaw(error: SyntaxError|ReferenceError): RawSyntaxError
+{
+    if (error instanceof SyntaxError)
+    {
+        return {
+            message:    error.message,
+            lineNumber: error.lineNumber,
+            index:      error.index,
+            column:     error.column
+        };
+    }
+    else
+    {
+        return { message: error.message };
+    }
+}
 
 @suite
 export default class ParserSpec
@@ -103,7 +123,7 @@ export default class ParserSpec
         }
         catch (error)
         {
-            assert.equal(error.message, invalidParseExpectedSpec.error.message);
+            assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
         }
     }
 }
