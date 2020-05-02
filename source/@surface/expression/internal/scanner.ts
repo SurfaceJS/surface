@@ -1249,7 +1249,7 @@ export default class Scanner
 
         const charCode = this.source.charCodeAt(this.index);
 
-        if (Character.isWhiteSpace(charCode))
+        if (Character.isWhiteSpace(charCode) || Character.isLineTerminator(charCode))
         {
             this.advance();
             return this.nextToken();
