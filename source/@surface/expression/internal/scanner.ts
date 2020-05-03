@@ -1249,9 +1249,21 @@ export default class Scanner
 
         const charCode = this.source.charCodeAt(this.index);
 
-        if (Character.isWhiteSpace(charCode) || Character.isLineTerminator(charCode))
+        if (Character.isWhiteSpace(charCode))
         {
             this.advance();
+
+            return this.nextToken();
+        }
+
+        if (Character.isLineTerminator(charCode))
+        {
+            this.lineNumber++;
+
+            this.advance();
+
+            this.lineStart = this.index;
+
             return this.nextToken();
         }
 
