@@ -1,8 +1,9 @@
-import Expression       from "@surface/expression";
-import IArrayExpression from "@surface/expression/interfaces/array-expression";
-import IExpression      from "@surface/expression/interfaces/expression";
-import SyntaxError      from "@surface/expression/syntax-error";
-import parse            from "./parse";
+import { assert }                                from "@surface/core/common/generic";
+import Expression                                from "@surface/expression";
+import IArrayExpression                          from "@surface/expression/interfaces/array-expression";
+import IExpression                               from "@surface/expression/interfaces/expression";
+import SyntaxError                               from "@surface/expression/syntax-error";
+import { getOffsetSyntaxError, parseExpression } from "./parsers";
 
 const stringTokens = ["\"", "'", "`"];
 
@@ -14,7 +15,9 @@ export default class InterpolatedExpression
 
     private readonly expressions: Array<IExpression> = [];
 
-    private index: number = 0;
+    private expressionEnd:   number = 0;
+    private expressionStart: number = 0;
+    private index:           number = 0;
 
     private get current(): string
     {
@@ -83,13 +86,13 @@ export default class InterpolatedExpression
 
             if (!this.eof)
             {
-                const innerStart = this.index + 1;
+                this.expressionStart = this.index + 1;
 
                 if (this.scanBalance())
                 {
-                    const innerEnd = this.index - 1;
+                    this.expressionEnd = this.index - 1;
 
-                    const expression = parse(this.source.substring(innerStart, innerEnd));
+                    const expression = parseExpression(this.source.substring(this.expressionStart, this.expressionEnd));
 
                     this.expressions.push(expression);
 
@@ -100,21 +103,15 @@ export default class InterpolatedExpression
                 }
                 else
                 {
-                    throw Error("Unexpected end of expression");
+                    throw new SyntaxError("Unexpected end of expression", (this.source.match(/\n/g)?.length ?? 0) + 1, this.source.length - 1, this.source.length);
                 }
             }
         }
         catch (error)
         {
-            /* istanbul ignore else */
-            if (error instanceof SyntaxError)
-            {
-                throw new Error(`${error.message} at posistion ${error.index}`);
-            }
-            else
-            {
-                throw error;
-            }
+            assert(error instanceof SyntaxError);
+
+            throw getOffsetSyntaxError(this.source, this.source.substring(this.expressionStart, this.expressionEnd), error);
         }
     }
 
