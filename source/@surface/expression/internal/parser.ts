@@ -225,7 +225,7 @@ export default class Parser
         {
             if (!TypeGuard.isIdentifier(left) && !TypeGuard.isMemberExpression(left))
             {
-                throw new ReferenceError(Messages.invalidLeftHandSideInAssignment);
+                throw this.syntaxError(lookahead, Messages.invalidLeftHandSideInAssignment);
             }
 
             const token = this.nextToken();
@@ -260,7 +260,7 @@ export default class Parser
             {
                 if (this.match("="))
                 {
-                    throw new ReferenceError(Messages.invalidLeftHandSideInAssignment);
+                    throw this.syntaxError(this.lookahead, Messages.invalidLeftHandSideInAssignment);
                 }
 
                 if (this.match("=>"))
@@ -1198,11 +1198,14 @@ export default class Parser
         if (this.match("++") || this.match("--"))
         {
             const operator   = this.nextToken().raw as UpdateOperator;
+
+            const lookahead = this.lookahead;
+
             const expression = this.inheritGrammar(this.leftHandSideExpression, true);
 
             if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
             {
-                throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPrefixOperation);
+                throw this.syntaxError(lookahead, Messages.invalidLeftHandSideExpressionInPrefixOperation);
             }
 
             return new UpdateExpression(expression, operator, true);
