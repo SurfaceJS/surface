@@ -1,1 +1,1 @@
-export const INJECTIONS = Symbol("dependency-injection:has-injections");
+export const INJECTIONS = Symbol("dependency-injection:injections");

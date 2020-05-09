@@ -2,7 +2,7 @@ import { Constructor, Indexer, Nullable } from "../core";
 import IInjections                        from "./internal/interfaces/injections";
 import { INJECTIONS }                     from "./internal/symbols";
 
-export type Factory = (container: Container) => object;
+type Factory               = (container: Container) => object;
 type InjectableConstructor = Function & { [INJECTIONS]?: IInjections };
 
 export default class Container
