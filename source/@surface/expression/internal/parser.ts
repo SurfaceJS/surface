@@ -1212,16 +1212,19 @@ export default class Parser
         }
         else
         {
+            const lookahead = this.lookahead;
+
             const expression = this.inheritGrammar(this.leftHandSideExpression, true);
 
             if (this.match("++") || this.match("--"))
             {
                 if (!TypeGuard.isIdentifier(expression) && !TypeGuard.isMemberExpression(expression))
                 {
-                    throw new ReferenceError(Messages.invalidLeftHandSideExpressionInPostfixOperation);
+                    throw this.syntaxError(lookahead, Messages.invalidLeftHandSideExpressionInPostfixOperation);
                 }
 
                 const operator = this.nextToken().raw as UpdateOperator;
+
                 return new UpdateExpression(expression, operator, false);
             }
 
