@@ -6,7 +6,7 @@
     "description": "Oriented object test suite powered by mocha.",
     "dependencies": {
         "@surface/core": "0.0.3",
-        "tslib": "1.11.1"
+        "tslib": "1.11.2"
     },
     "devDependencies": {
         "chai": "4.2.0"

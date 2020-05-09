@@ -7,7 +7,7 @@
         "@surface/collection": "0.0.0",
         "@surface/core": "0.0.3",
         "@surface/enumerable": "0.0.5",
-        "tslib": "1.11.1"
+        "tslib": "1.11.2"
     },
     "description": "Client/Server Side Router.",
     "devDependencies": {

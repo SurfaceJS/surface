@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/core": "0.0.3",
-        "tslib": "1.11.1"
+        "tslib": "1.11.2"
     },
     "description": "Enumerable module the provides many methods to iterate through of collections.",
     "devDependencies": {
