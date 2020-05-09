@@ -9,8 +9,6 @@ const stringTokens = ["\"", "'", "`"];
 
 export default class InterpolatedExpression
 {
-    private static readonly cache: Record<string, IArrayExpression> = { };
-
     private readonly source: string;
 
     private readonly expressions: Array<IExpression> = [];
@@ -36,12 +34,7 @@ export default class InterpolatedExpression
 
     public static parse(source: string): IArrayExpression
     {
-        if (source in InterpolatedExpression.cache)
-        {
-            return InterpolatedExpression.cache[source];
-        }
-
-        return InterpolatedExpression.cache[source] = new InterpolatedExpression(source).scan();
+        return new InterpolatedExpression(source).scan();
     }
 
     private advance(): void

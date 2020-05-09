@@ -1,8 +1,8 @@
 import { Indexer }              from "@surface/core";
-import { assert, typeGuard }    from "@surface/core/common/generic";
+import { assert }               from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
-import IPattern                 from "@surface/expression/interfaces/pattern";
+import TypeGuard                from "@surface/expression/internal/type-guard";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
 import DataBind                 from "../../data-bind";
 import IInjectDirective         from "../../interfaces/inject-directive";
@@ -83,11 +83,13 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
                 this.removeInRange(this.start, this.end);
 
-                const { elementScope, scopeAlias } = typeGuard<IPattern>(injectDirective.pattern, injectDirective.destructured)
-                    ? { elementScope: Evaluate.pattern(this.scope, injectDirective.pattern, this.directive.expression.evaluate(this.scope)), scopeAlias: "" }
-                    : { elementScope: this.directive.expression.evaluate(this.scope) as Indexer, scopeAlias: injectDirective.pattern };
+                let destructured = false;
 
-                const mergedScope = injectDirective.destructured
+                const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
+                    ? { elementScope: Evaluate.pattern(this.scope, injectDirective.pattern, this.directive.expression.evaluate(this.scope)), scopeAlias: "" }
+                    : { elementScope: this.directive.expression.evaluate(this.scope) as Indexer, scopeAlias: injectDirective.pattern.name };
+
+                const mergedScope = destructured
                     ? { ...elementScope, ...localScope }
                     : { [scopeAlias]: elementScope, ...localScope };
 

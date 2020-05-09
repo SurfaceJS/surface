@@ -1,8 +1,7 @@
 import { Action2, Nullable }    from "@surface/core";
-import { typeGuard }            from "@surface/core/common/generic";
 import IDisposable              from "@surface/core/interfaces/disposable";
 import Evaluate                 from "@surface/expression/evaluate";
-import IPattern                 from "@surface/expression/interfaces/pattern";
+import TypeGuard                from "@surface/expression/internal/type-guard";
 import ISubscription            from "@surface/reactive/interfaces/subscription";
 import DataBind                 from "../../data-bind";
 import ILoopDirective           from "../../interfaces/loop-directive";
@@ -54,9 +53,9 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     {
         if (index >= this.cache.length || !Object.is(this.cache[index].value, value))
         {
-            const mergedScope = typeGuard<IPattern>(this.directive.alias, this.directive.destructured)
-                ? { ...Evaluate.pattern(this.scope, this.directive.alias, value), ...this.scope }
-                : { ...this.scope, [this.directive.alias]: value };
+            const mergedScope = TypeGuard.isIdentifier(this.directive.left)
+                ? { ...this.scope, [this.directive.left.name]: value }
+                : { ...Evaluate.pattern(this.scope, this.directive.left, value), ...this.scope };
 
             const start = document.createComment("");
             const end   = document.createComment("");
@@ -153,7 +152,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             return;
         }
 
-        const elements = this.directive.expression.evaluate(this.scope) as Iterable<unknown>;
+        const elements = this.directive.right.evaluate(this.scope) as Iterable<unknown>;
 
         const index = this.iterator(elements, this.action);
 

@@ -7,7 +7,6 @@ import IAssignmentProperty       from "@surface/expression/interfaces/assignment
 import ICallExpression           from "@surface/expression/interfaces/call-expression";
 import ICoalesceExpression       from "@surface/expression/interfaces/coalesce-expression";
 import IConditionalExpression    from "@surface/expression/interfaces/conditional-expression";
-import IExpression               from "@surface/expression/interfaces/expression";
 import IIdentifier               from "@surface/expression/interfaces/identifier";
 import IMemberExpression         from "@surface/expression/interfaces/member-expression";
 import INewExpression            from "@surface/expression/interfaces/new-expression";
@@ -29,7 +28,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     private brokenPath: boolean       = false;
     private stack:      Array<string> = [];
 
-    public static observe(expression: IExpression): Array<Array<string>>
+    public static observe(expression: INode): Array<Array<string>>
     {
         const visitor = new ObserverVisitor();
 

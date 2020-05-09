@@ -1,5 +1,6 @@
 import { assert }               from "@surface/core/common/generic";
 import Expression               from "@surface/expression";
+import IArrayExpression         from "@surface/expression/interfaces/array-expression";
 import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
 import IExpression              from "@surface/expression/interfaces/expression";
 import IIdentifier              from "@surface/expression/interfaces/identifier";
@@ -7,6 +8,7 @@ import INode                    from "@surface/expression/interfaces/node";
 import IPattern                 from "@surface/expression/interfaces/pattern";
 import TypeGuard                from "@surface/expression/internal/type-guard";
 import SyntaxError              from "@surface/expression/syntax-error";
+import InterpolatedExpression   from "./interpolated-expression";
 import { forExpression }        from "./patterns";
 
 const cache: Record<string, INode> = { };
@@ -46,6 +48,16 @@ export function parseExpression(expression: string): IExpression
     return cache[expression] = Expression.parse(expression);
 }
 
+export function parseInterpolation(expression: string): IArrayExpression
+{
+    if (expression in cache)
+    {
+        return cache[expression].clone() as IArrayExpression;
+    }
+
+    return cache[expression] = InterpolatedExpression.parse(expression);
+}
+
 export function parseDestructuredPattern(expression: string): IPattern
 {
     if (expression in cache)
@@ -69,7 +81,7 @@ export function parseDestructuredPattern(expression: string): IPattern
     }
 }
 
-export function parseForLoopStatement(expression: string): { operator: "of"|"in", left: IPattern|IIdentifier, right: IExpression, destructured: boolean }
+export function parseForLoopStatement(expression: string): { operator: "of"|"in", left: IPattern|IIdentifier, right: IExpression }
 {
     if (!forExpression.test(expression))
     {
@@ -88,5 +100,5 @@ export function parseForLoopStatement(expression: string): { operator: "of"|"in"
         throw getOffsetSyntaxError(expression, rawLeft, new SyntaxError("Invalid left-hand side in for-loop", 1, 0, 1));
     }
 
-    return { left, right, operator, destructured };
+    return { left, right, operator };
 }

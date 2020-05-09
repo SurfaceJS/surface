@@ -362,7 +362,7 @@ export default class TemplateProcessorSpec
         const root = getHost();
         const host = getHost<{ items?: Array<[string, number, boolean]> }>();
 
-        host.innerHTML    =
+        host.innerHTML =
         `
             <template #inject:items="{ item: [key, value, visible] }">
                 <template #if="visible">

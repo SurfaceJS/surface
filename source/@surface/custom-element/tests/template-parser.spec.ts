@@ -1,14 +1,46 @@
 import "./fixtures/dom";
 
-import Expression                              from "@surface/expression";
-import IArrowFunctionExpression                from "@surface/expression/interfaces/arrow-function-expression";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import ITemplateDescriptor                     from "../internal/interfaces/template-descriptor";
-import InterpolatedExpression                  from "../internal/interpolated-expression";
-import TemplateParser                          from "../internal/template-parser";
+import { Action }                                                        from "@surface/core";
+import IIdentifier                                                       from "@surface/expression/interfaces/identifier";
+import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
+import { assert }                                                        from "chai";
+import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
+import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
+import TemplateParseError                                                from "../internal/template-parse-error";
+import TemplateParser                                                    from "../internal/template-parser";
 
 TemplateParser.testEnviroment = true;
+
+type RawError = { message: string }|Pick<TemplateParseError, "message"|"stack">;
+
+function tryAction(action: Action): RawError
+{
+    try
+    {
+        action();
+    }
+    catch (error)
+    {
+        return toRaw(error);
+    }
+
+    return toRaw(new TemplateParseError("", ""));
+}
+
+function toRaw(error: Error): RawError
+{
+    if (error instanceof TemplateParseError)
+    {
+        return {
+            message: error.message,
+            stack:   error.stack,
+        };
+    }
+    else
+    {
+        return { message: error.message };
+    }
+}
 
 @suite
 export default class TemplateParserSpec
@@ -23,7 +55,13 @@ export default class TemplateParserSpec
             "<span value='Hello {host.name}' #on:click='host.handler' ::value-a='host.value' :value-b='host.x + host.y'>",
             "Some {'interpolation'} here",
             "</span>",
+            "<span #inject>",
+            "Empty",
+            "</span>",
             "<span #inject:title='{ title }'>",
+            "<h1>{title}</h1>",
+            "</span>",
+            "<span #inject='{ title }' #inject-key='dynamicInjectKey'>",
             "<h1>{title}</h1>",
             "</span>",
             "<hr>",
@@ -36,19 +74,25 @@ export default class TemplateParserSpec
             "<span #else>",
             "Suspended",
             "</span>",
+            "<span #injector>",
+            "Default Empty",
+            "</span>",
             "<span #injector:value='({ name: host.name })'>",
             "Default {name}",
             "</span>",
+            "<span #injector='({ name: host.name })' #injector-key='dynamicInjectorKey'>",
+            "Default {name}",
+            "</span>",
             "<table>",
-            "<tr>",
+            "<tr #on='host.handler' #on-key='dynamicOnKey' >",
             "<th>Id</th>",
             "<th>Name</th>",
             "<th>Status</th>",
             "</tr>",
-            "<tr #for='const item of host.items'>",
-            "<th>{item.id}</th>",
-            "<th>{item.name}</th>",
-            "<th>{item.status}</th>",
+            "<tr onclick='fn({ clicked })' #for='const item of host.items'>",
+            "<td>{item.id}</td>",
+            "<td>{item.name}</td>",
+            "<td>{item.status}</td>",
             "</tr>",
             "</table>",
             "<hr>",
@@ -64,7 +108,7 @@ export default class TemplateParserSpec
                     attributes:
                     [
                         {
-                            expression:  InterpolatedExpression.parse("Hello {host.name}"),
+                            expression:  parseInterpolation("Hello {host.name}"),
                             key:         "value",
                             name:        "value",
                             observables: [["host", "name"]],
@@ -73,14 +117,14 @@ export default class TemplateParserSpec
                         {
                             name:        "value-a",
                             key:         "valueA",
-                            expression:  Expression.literal("host.value"),
+                            expression:  parseExpression("'host.value'"),
                             observables: [],
                             type:        "twoway",
                         },
                         {
                             name:        "value-b",
                             key:         "valueB",
-                            expression:  Expression.parse("host.x + host.y"),
+                            expression:  parseExpression("host.x + host.y"),
                             observables: [["host", "x"], ["host", "y"]],
                             type:        "oneway"
                         },
@@ -88,10 +132,10 @@ export default class TemplateParserSpec
                     directives:
                     [
                         {
-                            key:              Expression.literal("click"),
+                            key:              parseExpression("'click'"),
                             keyObservables:   [],
                             name:             "on",
-                            value:            Expression.parse("host.handler"),
+                            value:            parseExpression("host.handler"),
                             valueObservables: [["host", "handler"]]
                         }
                     ],
@@ -99,7 +143,7 @@ export default class TemplateParserSpec
                     [
                         {
                             path:        "0-0",
-                            expression:  InterpolatedExpression.parse("Some {'interpolation'} here"),
+                            expression:  parseInterpolation("Some {'interpolation'} here"),
                             observables: []
                         }
                     ],
@@ -107,13 +151,28 @@ export default class TemplateParserSpec
                 },
                 {
                     attributes: [],
+                    directives:
+                    [
+                        {
+                            key:              parseExpression("dynamicOnKey"),
+                            keyObservables:   [],
+                            name:             "on",
+                            value:            parseExpression("host.handler"),
+                            valueObservables: [["host", "handler"]]
+                        }
+                    ],
+                    path:       "11-0-0",
+                    textNodes:  [],
+                },
+                {
+                    attributes: [],
                     directives: [],
-                    path:       "9",
+                    path:       "13",
                     textNodes:
                     [
                         {
-                            path:        "9-0",
-                            expression:  InterpolatedExpression.parse("{host.footer}"),
+                            path:        "13-0",
+                            expression:  parseInterpolation("{host.footer}"),
                             observables: [["host", "footer"]]
                         }
                     ],
@@ -139,42 +198,42 @@ export default class TemplateParserSpec
                                     elements: [],
                                     lookup:   [],
                                 },
-                                expression: Expression.parse("host.status == 1"),
-                                path:       "3",
-                                observables: [["host", "status"]]
-                            },
-                            {
-                                descriptor:
-                                {
-                                    directives:
-                                    {
-                                        inject:   [],
-                                        injector: [],
-                                        logical:  [],
-                                        loop:     [],
-                                    },
-                                    elements: [],
-                                    lookup:   [],
-                                },
-                                expression: Expression.parse("host.status == 2"),
-                                path:       "4",
-                                observables: [["host", "status"]]
-                            },
-                            {
-                                descriptor:
-                                {
-                                    directives:
-                                    {
-                                        inject:   [],
-                                        injector: [],
-                                        logical:  [],
-                                        loop:     [],
-                                    },
-                                    elements: [],
-                                    lookup:   [],
-                                },
-                                expression: Expression.parse("true"),
+                                expression: parseExpression("host.status == 1"),
                                 path:       "5",
+                                observables: [["host", "status"]]
+                            },
+                            {
+                                descriptor:
+                                {
+                                    directives:
+                                    {
+                                        inject:   [],
+                                        injector: [],
+                                        logical:  [],
+                                        loop:     [],
+                                    },
+                                    elements: [],
+                                    lookup:   [],
+                                },
+                                expression: parseExpression("host.status == 2"),
+                                path:       "6",
+                                observables: [["host", "status"]]
+                            },
+                            {
+                                descriptor:
+                                {
+                                    directives:
+                                    {
+                                        inject:   [],
+                                        injector: [],
+                                        logical:  [],
+                                        loop:     [],
+                                    },
+                                    elements: [],
+                                    lookup:   [],
+                                },
+                                expression: parseExpression("true"),
+                                path:       "7",
                                 observables: []
                             }
                         ]
@@ -182,6 +241,23 @@ export default class TemplateParserSpec
                 ],
                 inject:
                 [
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                inject:   [],
+                                injector: [],
+                                logical:  [],
+                                loop:     [],
+                            },
+                            elements: [],
+                            lookup:   [],
+                        },
+                        key:     parseExpression("'default'"),
+                        path:    "1",
+                        pattern: parseDestructuredPattern("__scope__"),
+                    },
                     {
                         descriptor:
                         {
@@ -202,7 +278,7 @@ export default class TemplateParserSpec
                                     [
                                         {
                                             path:        "0-0-0",
-                                            expression:  InterpolatedExpression.parse("{title}"),
+                                            expression:  parseInterpolation("{title}"),
                                             observables: []
                                         }
                                     ]
@@ -210,14 +286,63 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
-                        destructured: true,
-                        pattern:      (Expression.parse("({ title }) => 0") as IArrowFunctionExpression).parameters[0],
-                        key:          Expression.literal("title"),
-                        path:         "1"
+                        pattern: parseDestructuredPattern("{ title }"),
+                        key:     parseExpression("'title'"),
+                        path:    "2"
+                    },
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                inject:   [],
+                                injector: [],
+                                logical:  [],
+                                loop:     [],
+                            },
+                            elements:
+                            [
+                                {
+                                    attributes: [],
+                                    directives: [],
+                                    path:       "0-0",
+                                    textNodes:
+                                    [
+                                        {
+                                            path:        "0-0-0",
+                                            expression:  parseInterpolation("{title}"),
+                                            observables: []
+                                        }
+                                    ]
+                                }
+                            ],
+                            lookup: [[0, 0], [0, 0, 0]],
+                        },
+                        pattern: parseDestructuredPattern("{ title }"),
+                        key:     parseExpression("dynamicInjectKey"),
+                        path:    "3"
                     },
                 ],
                 injector:
                 [
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                inject:   [],
+                                injector: [],
+                                logical:  [],
+                                loop:     [],
+                            },
+                            elements: [],
+                            lookup:   [],
+                        },
+                        expression:  parseExpression("({ })"),
+                        key:         parseExpression("'default'"),
+                        path:        "8",
+                        observables: []
+                    },
                     {
                         descriptor:
                         {
@@ -238,7 +363,7 @@ export default class TemplateParserSpec
                                     [
                                         {
                                             path:        "0-0",
-                                            expression:  InterpolatedExpression.parse("Default {name}"),
+                                            expression:  parseInterpolation("Default {name}"),
                                             observables: []
                                         }
                                     ]
@@ -246,16 +371,49 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0], [0, 0]],
                         },
-                        expression:  Expression.parse("({ name: host.name })"),
-                        key:         Expression.literal("value"),
-                        path:        "6",
+                        expression:  parseExpression("({ name: host.name })"),
+                        key:         parseExpression("'value'"),
+                        path:        "9",
+                        observables: [["host", "name"]]
+                    },
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                inject:   [],
+                                injector: [],
+                                logical:  [],
+                                loop:     [],
+                            },
+                            elements:
+                            [
+                                {
+                                    attributes: [],
+                                    directives: [],
+                                    path:       "0",
+                                    textNodes:
+                                    [
+                                        {
+                                            path:        "0-0",
+                                            expression:  parseInterpolation("Default {name}"),
+                                            observables: []
+                                        }
+                                    ]
+                                }
+                            ],
+                            lookup: [[0], [0, 0]],
+                        },
+                        expression:  parseExpression("({ name: host.name })"),
+                        key:         parseExpression("dynamicInjectorKey"),
+                        path:        "10",
                         observables: [["host", "name"]]
                     },
                 ],
                 loop:
                 [
                     {
-                        alias: "item",
+                        left: parseExpression("item") as IIdentifier,
                         descriptor:
                         {
                             directives:
@@ -274,7 +432,7 @@ export default class TemplateParserSpec
                                     [
                                         {
                                             path:        "0-0-0",
-                                            expression:  InterpolatedExpression.parse("{item.id}"),
+                                            expression:  parseInterpolation("{item.id}"),
                                             observables: [["item", "id"]]
                                         },
                                     ],
@@ -287,7 +445,7 @@ export default class TemplateParserSpec
                                     [
                                         {
                                             path:        "0-1-0",
-                                            expression:  InterpolatedExpression.parse("{item.name}"),
+                                            expression:  parseInterpolation("{item.name}"),
                                             observables: [["item", "name"]]
                                         },
                                     ],
@@ -300,7 +458,7 @@ export default class TemplateParserSpec
                                     [
                                         {
                                             path:        "0-2-0",
-                                            expression:  InterpolatedExpression.parse("{item.status}"),
+                                            expression:  parseInterpolation("{item.status}"),
                                             observables: [["item", "status"]]
                                         },
                                     ],
@@ -309,20 +467,33 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
                         },
-                        destructured: false,
-                        expression:   Expression.parse("host.items"),
-                        operator:     "of",
-                        path:         "7-0-1",
+                        right:       parseExpression("host.items"),
+                        operator:    "of",
+                        path:        "11-0-1",
                         observables: [["host", "items"]]
                     }
                 ],
             },
-            lookup: [[0], [0, 0], [1], [3], [4], [5], [6], [7, 0, 1], [9], [9, 0]],
+            lookup: [[0], [0, 0], [1], [2], [3], [5], [6], [7], [8], [9], [10], [11, 0, 0], [11, 0, 1], [13], [13, 0]],
         };
 
         const actual = TemplateParser.parseReference(template);
 
         assert.deepEqual(actual, expected);
+    }
+
+    @shouldPass @test
+    public escapeAttributes(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span *style=\"display: {host.display}\"></span>";
+
+        const expected = "<span style=\"\"></span>";
+
+        const actual = TemplateParser.parse(template)[0].innerHTML;
+
+        assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -442,9 +613,15 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #for='item of items'></span>";
+        template.innerHTML = "<span #inject:items='items' #if='true' #for='x item of items'></span>";
 
-        assert.throw(() => TemplateParser.parse(template), `Invalid #for directive expression: item of items.`);
+        const message = "Error parsing \"x item of items\" in \"#for='x item of items'\": Unexpected token item at position 2";
+        const stack   = "#inject:items='items'\n   #if='true'\n      #for='x item of items'";
+
+        const actual   = tryAction(() => TemplateParser.parse(template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -454,7 +631,13 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #for='const item of items'></span><span #else-if></span>";
 
-        assert.throw(() => TemplateParser.parse(template), `Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.`);
+        const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
+        const stack   = "...1 other(s) node(s)\n<span #else-if=\"\">";
+
+        const actual   = tryAction(() => TemplateParser.parse(template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -464,7 +647,13 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<span #for='const item of items'></span><span #else></span>";
 
-        assert.throw(() => TemplateParser.parse(template), `Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.`);
+        const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
+        const stack   = "...1 other(s) node(s)\n<span #else=\"\">";
+
+        const actual   = tryAction(() => TemplateParser.parse(template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -472,8 +661,14 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #foo='bar'></span>";
+        template.innerHTML = "<div><div></div><span><span #foo='bar'></span></span></div>";
 
-        assert.throw(() => TemplateParser.parse(template), `Unregistered directive #foo.`);
+        const message = "Unregistered directive #foo.";
+        const stack   = "<div>\n   ...1 other(s) node(s)\n   <span>\n      <span #foo=\"bar\">";
+
+        const actual   = tryAction(() => TemplateParser.parse(template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 }
