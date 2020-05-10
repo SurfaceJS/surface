@@ -117,7 +117,7 @@ export default class TemplateParserSpec
                         {
                             name:        "value-a",
                             key:         "valueA",
-                            expression:  parseExpression("'host.value'"),
+                            expression:  parseExpression("host.value"),
                             observables: [],
                             type:        "twoway",
                         },
@@ -477,7 +477,7 @@ export default class TemplateParserSpec
             lookup: [[0], [0, 0], [1], [2], [3], [5], [6], [7], [8], [9], [10], [11, 0, 0], [11, 0, 1], [13], [13, 0]],
         };
 
-        const actual = TemplateParser.parseReference(template);
+        const actual = TemplateParser.parseReference("x-component", template);
 
         assert.deepEqual(actual, expected);
     }
@@ -491,7 +491,7 @@ export default class TemplateParserSpec
 
         const expected = "<span style=\"\"></span>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -505,7 +505,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #if=\"true\"><template #for=\"const item of items\"><span> </span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -519,7 +519,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #if=\"true\"><template #injector:value=\"source\"><span>Placeholder</span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -533,7 +533,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #for=\"const [key, value] of items\"><template #injector:[key]=\"source\"><span> </span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -547,7 +547,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #if=\"true\"><template #inject:value=\"source\"><span> </span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -561,7 +561,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #for=\"const item of items\"><template #inject:value=\"source\"><span> </span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -575,7 +575,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #inject:value=\"source\"><template #if=\"true\"><template #injector:value=\"source\"><template #for=\"const item of items\"><span class=\"foo\"> </span></template></template></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -589,7 +589,7 @@ export default class TemplateParserSpec
 
         const expected = "<template #injector=\"source\" #injector-key=\"key\"><span> </span></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
     }
@@ -603,9 +603,73 @@ export default class TemplateParserSpec
 
         const expected = "<template #injector:value=\"source\"><template #inject:value=\"source\"><span> </span></template></template>";
 
-        const actual = TemplateParser.parse(template)[0].innerHTML;
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
         assert.equal(actual, expected);
+    }
+
+    @shouldFail @test
+    public ErrorParsingTextNode(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<div>This is a invalid expression: {++true}</div>";
+
+        const message = "Error parsing \"This is a invalid expression: {++true}\": Invalid left-hand side expression in prefix operation at position 33";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         This is a invalid expression: {++true}";
+
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public InvalidTwoWayDataBind(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<x-foo ::value='host.value1 || host.value2'></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host.value1 || host.value2\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host.value1 || host.value2\">";
+
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public InvalidTwoWayDataBindWithDinamicProperty(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<x-foo ::value=\"host[a + b]\"></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host[a + b]\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host[a + b]\">";
+
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public InvalidTwoWayDataBindWithOptionalProperty(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<x-foo ::value=\"host?.value\"></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host?.value\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host?.value\">";
+
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -616,9 +680,9 @@ export default class TemplateParserSpec
         template.innerHTML = "<span #inject:items='items' #if='true' #for='x item of items'></span>";
 
         const message = "Error parsing \"x item of items\" in \"#for='x item of items'\": Unexpected token item at position 2";
-        const stack   = "#inject:items='items'\n   #if='true'\n      #for='x item of items'";
+        const stack   = "<x-component>\n   #shadow-root\n      #inject:items='items'\n         #if='true'\n            #for='x item of items'";
 
-        const actual   = tryAction(() => TemplateParser.parse(template));
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         assert.deepEqual(actual, expected);
@@ -632,9 +696,9 @@ export default class TemplateParserSpec
         template.innerHTML = "<span #for='const item of items'></span><span #else-if></span>";
 
         const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
-        const stack   = "...1 other(s) node(s)\n<span #else-if=\"\">";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"\">";
 
-        const actual   = tryAction(() => TemplateParser.parse(template));
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         assert.deepEqual(actual, expected);
@@ -648,9 +712,9 @@ export default class TemplateParserSpec
         template.innerHTML = "<span #for='const item of items'></span><span #else></span>";
 
         const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
-        const stack   = "...1 other(s) node(s)\n<span #else=\"\">";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else=\"\">";
 
-        const actual   = tryAction(() => TemplateParser.parse(template));
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         assert.deepEqual(actual, expected);
@@ -661,12 +725,12 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<div><div></div><span><span #foo='bar'></span></span></div>";
+        template.innerHTML = "<div><div></div><section><span #foo='bar'></span></section></div>";
 
         const message = "Unregistered directive #foo.";
-        const stack   = "<div>\n   ...1 other(s) node(s)\n   <span>\n      <span #foo=\"bar\">";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
 
-        const actual   = tryAction(() => TemplateParser.parse(template));
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
         assert.deepEqual(actual, expected);

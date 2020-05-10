@@ -193,7 +193,7 @@ export function element(name: string, template?: string, style?: string, options
         // templateElement.innerHTML = template ?? "<slot></slot>";
         templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
 
-        const descriptor = TemplateParser.parseReference(templateElement);
+        const descriptor = TemplateParser.parseReference(name, templateElement);
 
         if (style)
         {

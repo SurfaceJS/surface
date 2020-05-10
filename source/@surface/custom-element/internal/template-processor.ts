@@ -1,7 +1,7 @@
 import { Action, Indexer } from "@surface/core";
 import { assert }          from "@surface/core/common/generic";
-import { getKeyMember }    from "@surface/core/common/object";
 import IDisposable         from "@surface/core/interfaces/disposable";
+import TypeGuard           from "@surface/expression/internal/type-guard";
 import ISubscription       from "@surface/reactive/interfaces/subscription";
 import Type                from "@surface/reflection";
 import FieldInfo           from "@surface/reflection/field-info";
@@ -168,7 +168,12 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        const { key: targetProperty, member: target } = getKeyMember(scope, descriptor.expression.evaluate({ }) as string);
+                        assert(TypeGuard.isMemberExpression(descriptor.expression));
+
+                        const target         = descriptor.expression.object.evaluate(scope) as object;
+                        const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
+                            ? descriptor.expression.property.name
+                            : descriptor.expression.property.evaluate(scope) as string;
 
                         const targetMember = Type.from(target).getMember(targetProperty);
 

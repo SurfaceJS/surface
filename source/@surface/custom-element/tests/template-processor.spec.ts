@@ -28,7 +28,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
         template.content.appendChild(child);
     }
 
-    const descriptor = TemplateParser.parseReference(template);
+    const descriptor = TemplateParser.parseReference("x-component", template);
 
     for (const child of Array.from(template.content.childNodes))
     {

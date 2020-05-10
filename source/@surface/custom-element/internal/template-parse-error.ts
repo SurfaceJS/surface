@@ -4,6 +4,6 @@ export default class TemplateParseError extends Error
     {
         super(message);
 
-        this.stack = stack;
+        this.stack = message + "\n" + stack;
     }
 }

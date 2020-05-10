@@ -4,8 +4,10 @@ import { assert, typeGuard }                                                    
 import { dashedToCamel }                                                                        from "@surface/core/common/string";
 import Enumerable                                                                               from "@surface/enumerable";
 import Expression                                                                               from "@surface/expression";
+import IExpression                                                                              from "@surface/expression/interfaces/expression";
 import IPattern                                                                                 from "@surface/expression/interfaces/pattern";
 import Identifier                                                                               from "@surface/expression/internal/expressions/identifier";
+import TypeGuard                                                                                from "@surface/expression/internal/type-guard";
 import SyntaxError                                                                              from "@surface/expression/syntax-error";
 import { scapeBrackets }                                                                        from "./common";
 import directiveRegistry                                                                        from "./directive-registry";
@@ -18,7 +20,6 @@ import IInjectorDirective                                                       
 import ILoopDirective                                                                           from "./interfaces/loop-directive";
 import ITemplateDescriptor                                                                      from "./interfaces/template-descriptor";
 import ITextNodeDescriptor                                                                      from "./interfaces/text-node-descriptor";
-import InterpolatedExpression                                                                   from "./interpolated-expression";
 import { nativeEvents }                                                                         from "./native-events";
 import ObserverVisitor                                                                          from "./observer-visitor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./parsers";
@@ -65,41 +66,47 @@ export default class TemplateParser
     private readonly directives: IDirectivesDescriptor     = { logical: [], inject: [], injector: [], loop: [] };
     private readonly elements:   Array<IElementDescriptor> = [];
     private readonly lookup:     Array<Array<number>>      = [];
+    private readonly name:       string;
     private readonly stack:      Array<number>             = [];
 
     private offsetIndex: number = 0;
 
-    public static parse(template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
+    public constructor(name: string)
+    {
+        this.name = name;
+    }
+
+    public static parse(name: string, template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
     {
         const clone      = template.cloneNode(true) as HTMLTemplateElement;
-        const descriptor = new TemplateParser().parse(clone);
+        const descriptor = new TemplateParser(name).parse(clone);
 
         return [clone, descriptor];
     }
 
-    public static parseReference(template: HTMLTemplateElement): ITemplateDescriptor
+    public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
     {
-        return new TemplateParser().parse(template);
+        return new TemplateParser(name).parse(template);
     }
 
-    private buildStack(element: Element): string
+    private buildStack(node: Element|Text): string
     {
         const stack: Array<Array<string>> = [];
 
-        const entry = [this.getTag(element)];
+        const entry = [this.getTag(node)];
 
-        assert(element.parentNode);
+        assert(node.parentNode);
 
-        const index = Array.from(element.parentNode.childNodes).indexOf(element as ChildNode);
+        const index = Array.from(node.parentNode.childNodes).indexOf(node as ChildNode);
 
         if (index > 0)
         {
             entry.push(`...${index} other(s) node(s)`);
         }
 
-        let parent = element.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-            ? this.getLooseParent(element.parentNode)
-            : element.parentNode;
+        let parent = node.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE
+            ? this.getLooseParent(node.parentNode)
+            : node.parentNode;
 
         stack.push(entry.reverse());
 
@@ -120,6 +127,9 @@ export default class TemplateParser
                 ? this.getLooseParent(parent.parentNode!)
                 : parent.parentNode;
         }
+
+        stack.push(["#shadow-root"]);
+        stack.push([`<${this.name}>`]);
 
         return stack.reverse().map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
     }
@@ -192,16 +202,21 @@ export default class TemplateParser
         return this.stack.join("-");
     }
 
-    private getTag(element: Element & { [DIRECTIVE]?: Directive }): string
+    private getTag(node: (Element|Text) & { [DIRECTIVE]?: Directive }): string
     {
-        if (element.nodeName == "TEMPLATE" && element[DIRECTIVE])
+        if (node.nodeName == "TEMPLATE" && node[DIRECTIVE])
         {
-            const directive = element[DIRECTIVE]!;
+            const directive = node[DIRECTIVE]!;
 
             return `${directive.name}='${directive.value}'`;
         }
 
-        return element.outerHTML.replace(element.innerHTML, "").replace(`</${element.nodeName.toLowerCase()}>`, "");
+        if (typeGuard<Text>(node, node.nodeType == Node.TEXT_NODE))
+        {
+            return node.nodeValue!;
+        }
+
+        return node.outerHTML.replace(node.innerHTML, "").replace(`</${node.nodeName.toLowerCase()}>`, "");
     }
 
     private hasDecomposed(element: Element & { [DECOMPOSED]?: boolean }): boolean
@@ -330,10 +345,11 @@ export default class TemplateParser
             }
             else
             {
-                const name     = attribute.name.replace(/^::?/, "");
-                const key      = dashedToCamel(name);
-                const isTwoWay = attribute.name.startsWith("::");
-                const isOneWay = !isTwoWay && attribute.name.startsWith(":");
+                const name            = attribute.name.replace(/^::?/, "");
+                const key             = dashedToCamel(name);
+                const isTwoWay        = attribute.name.startsWith("::");
+                const isOneWay        = !isTwoWay && attribute.name.startsWith(":");
+                const isInterpolation = !isOneWay && !isTwoWay;
 
                 const type = isOneWay
                     ? "oneway"
@@ -341,23 +357,25 @@ export default class TemplateParser
                         ? "twoway"
                         : "interpolation";
 
-                const expression = type == "interpolation"
+                const expression = isInterpolation
                     ? this.tryParseExpression(parseInterpolation, attribute.value, element, errorMessages.valueExpression(attribute.name, attribute.value))
-                    : type == "twoway"
-                        ? Expression.literal(attribute.value)
-                        : this.tryParseExpression(parseExpression, attribute.value, element, errorMessages.valueExpression(attribute.name, attribute.value));
+                    : this.tryParseExpression(parseExpression, attribute.value, element, errorMessages.valueExpression(attribute.name, attribute.value));
 
-
-                if (isOneWay || isTwoWay)
+                if (isTwoWay && !this.validateMemberExpression(expression, true))
                 {
-                    element.removeAttributeNode(attribute);
+                    throw new TemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.buildStack(element));
                 }
-                else
+
+                const observables = !isTwoWay ? ObserverVisitor.observe(expression) : [];
+
+                if (isInterpolation)
                 {
                     attribute.value = "";
                 }
-
-                const observables = ObserverVisitor.observe(expression);
+                else
+                {
+                    element.removeAttributeNode(attribute);
+                }
 
                 const attributeDescriptor: IAttributeDescriptor = { name, key, expression, observables, type };
 
@@ -385,7 +403,7 @@ export default class TemplateParser
             const branches: Array<IChoiceDirectiveBranch> = [];
 
             const expression = this.tryParseExpression(parseExpression, directive.value, template, errorMessages.valueExpression(directive.name, directive.value));
-            const descriptor = TemplateParser.parseReference(template);
+            const descriptor = TemplateParser.parseReference(this.name, template);
 
             const conditionalBranchDescriptor: IChoiceDirectiveBranch =
             {
@@ -423,7 +441,7 @@ export default class TemplateParser
                 this.stack.push(index + lastIndex);
 
                 const expression = this.tryParseExpression(parseExpression, value, template, errorMessages.valueExpression(simblingDirective!.name, simblingDirective!.value));
-                const descriptor = TemplateParser.parseReference(simblingTemplate);
+                const descriptor = TemplateParser.parseReference(this.name, simblingTemplate);
 
                 const conditionalBranchDescriptor: IChoiceDirectiveBranch =
                 {
@@ -454,7 +472,7 @@ export default class TemplateParser
 
             const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, template, errorMessages.valueExpression(directive.name, directive.value));
 
-            const descriptor = TemplateParser.parseReference(template);
+            const descriptor = TemplateParser.parseReference(this.name, template);
 
             const loopDescriptor: ILoopDirective =
             {
@@ -477,7 +495,7 @@ export default class TemplateParser
             const keyExpression = this.tryParseExpression(parseExpression, key, template, errorMessages.keyExpression(directive.name, directive.value));
             const expression    = this.tryParseExpression(parseExpression, `${value || "({ })"}`, template, errorMessages.valueExpression(directive.name, directive.value));
             const observables   = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
-            const descriptor    = TemplateParser.parseReference(template);
+            const descriptor    = TemplateParser.parseReference(this.name, template);
 
             const injectionDescriptor: IInjectorDirective =
             {
@@ -501,7 +519,7 @@ export default class TemplateParser
             const keyExpression = this.tryParseExpression(parseExpression, key, element, errorMessages.keyExpression(directive.name, directive.value));
             const pattern       = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, template, errorMessages.valueExpression(directive.name, directive.value)) as IPattern|Identifier;
 
-            const descriptor = TemplateParser.parseReference(template);
+            const descriptor = TemplateParser.parseReference(this.name, template);
 
             const injectionDescriptor: IInjectDirective =
             {
@@ -524,7 +542,7 @@ export default class TemplateParser
         }
     }
 
-    private parseTextNode(node: ChildNode): void
+    private parseTextNode(node: Text): void
     {
         assert(node.nodeValue);
 
@@ -532,9 +550,7 @@ export default class TemplateParser
         {
             const rawExpression = node.nodeValue;
 
-            node.nodeValue = " ";
-
-            const expression  = InterpolatedExpression.parse(rawExpression);
+            const expression  = this.tryParseExpression(parseInterpolation, rawExpression, node, `"${rawExpression}"`);
             const observables = ObserverVisitor.observe(expression);
             const path        = this.stack.join("-");
 
@@ -554,6 +570,8 @@ export default class TemplateParser
 
                 this.elements.push({ attributes: [], directives: [], path: parentPath, textNodes: [textNodeDescriptor] });
             }
+
+            node.nodeValue = " ";
 
             this.saveLookup();
         }
@@ -619,7 +637,7 @@ export default class TemplateParser
                 }
                 else
                 {
-                    this.parseTextNode(childNode);
+                    this.parseTextNode(childNode as Text);
                 }
 
                 this.traverseNode(childNode);
@@ -630,7 +648,7 @@ export default class TemplateParser
     }
 
     // tslint:disable-next-line: no-any
-    private tryParseExpression<TParser extends (expression: string) => any>(parser: TParser, expression: string, element: Element, description: string): ReturnType<TParser>
+    private tryParseExpression<TParser extends (expression: string) => any>(parser: TParser, expression: string, node: Element|Text, description: string): ReturnType<TParser>
     {
         try
         {
@@ -640,7 +658,21 @@ export default class TemplateParser
         {
             assert(error instanceof SyntaxError);
 
-            throw new TemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.buildStack(element));
+            throw new TemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.buildStack(node));
         }
+    }
+
+    private validateMemberExpression(expression: IExpression, root: boolean): boolean
+    {
+        if (!root && (TypeGuard.isThisExpression(expression) || TypeGuard.isIdentifier(expression)))
+        {
+            return true;
+        }
+        else if (TypeGuard.isMemberExpression(expression) && !expression.optional && (!expression.computed || TypeGuard.isLiteral(expression.property)))
+        {
+            return this.validateMemberExpression(expression.object, false);
+        }
+
+        return false;
     }
 }
