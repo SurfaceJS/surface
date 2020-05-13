@@ -1,5 +1,5 @@
 import IAttributeDescriptor from "./attribute-descriptor";
-import IDirective    from "./directive";
+import IDirective           from "./directive";
 import ITextNodeDescriptor  from "./text-node-descriptor";
 
 export default interface IElementDescriptor

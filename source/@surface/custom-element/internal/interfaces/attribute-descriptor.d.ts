@@ -1,7 +1,8 @@
 import IExpression from "@surface/expression/interfaces/expression";
 import IObservable from "./observable";
+import ITraceable  from "./traceable";
 
-export default interface IAttributeDescriptor extends IObservable
+export default interface IAttributeDescriptor extends IObservable, ITraceable
 {
     expression: IExpression;
     key:        string;

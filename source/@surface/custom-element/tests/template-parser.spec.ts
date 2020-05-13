@@ -113,6 +113,12 @@ export default class TemplateParserSpec
                             name:        "value",
                             observables: [["host", "name"]],
                             type:        "interpolation",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
+                            ]
                         },
                         {
                             name:        "value-a",
@@ -120,13 +126,25 @@ export default class TemplateParserSpec
                             expression:  parseExpression("host.value"),
                             observables: [],
                             type:        "twoway",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
+                            ]
                         },
                         {
                             name:        "value-b",
                             key:         "valueB",
                             expression:  parseExpression("host.x + host.y"),
                             observables: [["host", "x"], ["host", "y"]],
-                            type:        "oneway"
+                            type:        "oneway",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
+                            ]
                         },
                     ],
                     directives:
@@ -136,7 +154,13 @@ export default class TemplateParserSpec
                             keyObservables:   [],
                             name:             "on",
                             value:            parseExpression("host.handler"),
-                            valueObservables: [["host", "handler"]]
+                            valueObservables: [["host", "handler"]],
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
+                            ]
                         }
                     ],
                     textNodes:
@@ -144,7 +168,14 @@ export default class TemplateParserSpec
                         {
                             path:        "0-0",
                             expression:  parseInterpolation("Some {'interpolation'} here"),
-                            observables: []
+                            observables: [],
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["Some {'interpolation'} here"],
+                            ]
                         }
                     ],
                     path: "0",
@@ -158,7 +189,15 @@ export default class TemplateParserSpec
                             keyObservables:   [],
                             name:             "on",
                             value:            parseExpression("host.handler"),
-                            valueObservables: [["host", "handler"]]
+                            valueObservables: [["host", "handler"]],
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...11 other(s) node(s)", "<table>"],
+                                ["<tbody>"],
+                                ["<tr #on=\"host.handler\" #on-key=\"dynamicOnKey\">"]
+                            ]
                         }
                     ],
                     path:       "11-0-0",
@@ -173,7 +212,14 @@ export default class TemplateParserSpec
                         {
                             path:        "13-0",
                             expression:  parseInterpolation("{host.footer}"),
-                            observables: [["host", "footer"]]
+                            observables: [["host", "footer"]],
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...13 other(s) node(s)", "<span>"],
+                                ["{host.footer}"]
+                            ]
                         }
                     ],
                 }
@@ -198,9 +244,15 @@ export default class TemplateParserSpec
                                     elements: [],
                                     lookup:   [],
                                 },
-                                expression: parseExpression("host.status == 1"),
-                                path:       "5",
-                                observables: [["host", "status"]]
+                                expression:  parseExpression("host.status == 1"),
+                                observables: [["host", "status"]],
+                                path:        "5",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...5 other(s) node(s)", "<span #if=\"host.status == 1\">"]
+                                ]
                             },
                             {
                                 descriptor:
@@ -215,9 +267,15 @@ export default class TemplateParserSpec
                                     elements: [],
                                     lookup:   [],
                                 },
-                                expression: parseExpression("host.status == 2"),
-                                path:       "6",
-                                observables: [["host", "status"]]
+                                expression:  parseExpression("host.status == 2"),
+                                observables: [["host", "status"]],
+                                path:        "6",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...6 other(s) node(s)", "<span #else-if=\"host.status == 2\">"]
+                                ]
                             },
                             {
                                 descriptor:
@@ -232,9 +290,15 @@ export default class TemplateParserSpec
                                     elements: [],
                                     lookup:   [],
                                 },
-                                expression: parseExpression("true"),
-                                path:       "7",
-                                observables: []
+                                expression:  parseExpression("true"),
+                                observables: [],
+                                path:        "7",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...7 other(s) node(s)", "<span #else>"]
+                                ]
                             }
                         ]
                     }
@@ -254,9 +318,15 @@ export default class TemplateParserSpec
                             elements: [],
                             lookup:   [],
                         },
-                        key:     parseExpression("'default'"),
-                        path:    "1",
-                        pattern: parseDestructuredPattern("__scope__"),
+                        key:        parseExpression("'default'"),
+                        path:       "1",
+                        pattern:    parseDestructuredPattern("__scope__"),
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...1 other(s) node(s)", "<span #inject>"]
+                        ]
                     },
                     {
                         descriptor:
@@ -277,18 +347,32 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-0-0",
                                             expression:  parseInterpolation("{title}"),
-                                            observables: []
+                                            observables: [],
+                                            path:        "0-0-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...2 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
+                                                ["<h1>"],
+                                                ["{title}"]
+                                            ]
                                         }
                                     ]
                                 }
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
-                        pattern: parseDestructuredPattern("{ title }"),
-                        key:     parseExpression("'title'"),
-                        path:    "2"
+                        key:         parseExpression("'title'"),
+                        path:        "2",
+                        pattern:     parseDestructuredPattern("{ title }"),
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...2 other(s) node(s)", "<span #inject:title=\"{ title }\">"]
+                        ]
                     },
                     {
                         descriptor:
@@ -309,18 +393,32 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-0-0",
                                             expression:  parseInterpolation("{title}"),
-                                            observables: []
+                                            observables: [],
+                                            path:        "0-0-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"dynamicInjectKey\">"],
+                                                ["<h1>"],
+                                                ["{title}"]
+                                            ]
                                         }
                                     ]
                                 }
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
-                        pattern: parseDestructuredPattern("{ title }"),
-                        key:     parseExpression("dynamicInjectKey"),
-                        path:    "3"
+                        key:        parseExpression("dynamicInjectKey"),
+                        path:       "3",
+                        pattern:    parseDestructuredPattern("{ title }"),
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"dynamicInjectKey\">"]
+                        ]
                     },
                 ],
                 injector:
@@ -340,8 +438,14 @@ export default class TemplateParserSpec
                         },
                         expression:  parseExpression("({ })"),
                         key:         parseExpression("'default'"),
+                        observables: [],
                         path:        "8",
-                        observables: []
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...8 other(s) node(s)", "<span #injector>"]
+                        ]
                     },
                     {
                         descriptor:
@@ -362,9 +466,16 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-0",
                                             expression:  parseInterpolation("Default {name}"),
-                                            observables: []
+                                            observables: [],
+                                            path:        "0-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...9 other(s) node(s)", "<span #injector:value=\"({ name: host.name })\">"],
+                                                ["Default {name}"],
+                                            ]
                                         }
                                     ]
                                 }
@@ -373,8 +484,14 @@ export default class TemplateParserSpec
                         },
                         expression:  parseExpression("({ name: host.name })"),
                         key:         parseExpression("'value'"),
+                        observables: [["host", "name"]],
                         path:        "9",
-                        observables: [["host", "name"]]
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...9 other(s) node(s)", "<span #injector:value=\"({ name: host.name })\">"]
+                        ]
                     },
                     {
                         descriptor:
@@ -395,9 +512,16 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-0",
                                             expression:  parseInterpolation("Default {name}"),
-                                            observables: []
+                                            observables: [],
+                                            path:        "0-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"dynamicInjectorKey\">"],
+                                                ["Default {name}"],
+                                            ]
                                         }
                                     ]
                                 }
@@ -406,8 +530,14 @@ export default class TemplateParserSpec
                         },
                         expression:  parseExpression("({ name: host.name })"),
                         key:         parseExpression("dynamicInjectorKey"),
+                        observables: [["host", "name"]],
                         path:        "10",
-                        observables: [["host", "name"]]
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"dynamicInjectorKey\">"]
+                        ]
                     },
                 ],
                 loop:
@@ -431,9 +561,19 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-0-0",
                                             expression:  parseInterpolation("{item.id}"),
-                                            observables: [["item", "id"]]
+                                            observables: [["item", "id"]],
+                                            path:        "0-0-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...11 other(s) node(s)", "<table>"],
+                                                ["<tbody>"],
+                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                ["<td>"],
+                                                ["{item.id}"],
+                                            ]
                                         },
                                     ],
                                     path: "0-0"
@@ -444,9 +584,19 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-1-0",
                                             expression:  parseInterpolation("{item.name}"),
-                                            observables: [["item", "name"]]
+                                            observables: [["item", "name"]],
+                                            path:        "0-1-0",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...11 other(s) node(s)", "<table>"],
+                                                ["<tbody>"],
+                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                ["...1 other(s) node(s)", "<td>"],
+                                                ["{item.name}"],
+                                            ]
                                         },
                                     ],
                                     path: "0-1"
@@ -457,9 +607,19 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            path:        "0-2-0",
                                             expression:  parseInterpolation("{item.status}"),
-                                            observables: [["item", "status"]]
+                                            observables: [["item", "status"]],
+                                            path:        "0-2-0",
+                                            stackTrace:
+                                            [
+                                              ["<x-component>"],
+                                              ["#shadow-root"],
+                                              ["...11 other(s) node(s)", "<table>"],
+                                              ["<tbody>"],
+                                              ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                              ["...2 other(s) node(s)", "<td>"],
+                                              ["{item.status}"]
+                                            ]
                                         },
                                     ],
                                     path: "0-2"
@@ -467,10 +627,18 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
                         },
-                        right:       parseExpression("host.items"),
+                        observables: [["host", "items"]],
                         operator:    "of",
                         path:        "11-0-1",
-                        observables: [["host", "items"]]
+                        right:       parseExpression("host.items"),
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...11 other(s) node(s)", "<table>"],
+                            ["<tbody>"],
+                            ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"]
+                        ]
                     }
                 ],
             },
@@ -677,10 +845,12 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #inject:items='items' #if='true' #for='x item of items'></span>";
+        template.innerHTML = "<div #inject:items='items' #if='false'><span #injector:items='items' #if='true' #for='x item of items'></span></div>";
 
         const message = "Error parsing \"x item of items\" in \"#for='x item of items'\": Unexpected token item at position 2";
-        const stack   = "<x-component>\n   #shadow-root\n      #inject:items='items'\n         #if='true'\n            #for='x item of items'";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #injector:items=\"items\" #if=\"true\" #for=\"x item of items\">";
+
+        // TemplateParser.parse("x-component", template);
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -696,7 +866,7 @@ export default class TemplateParserSpec
         template.innerHTML = "<span #for='const item of items'></span><span #else-if></span>";
 
         const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
-        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"\">";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if>";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -712,7 +882,7 @@ export default class TemplateParserSpec
         template.innerHTML = "<span #for='const item of items'></span><span #else></span>";
 
         const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
-        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else=\"\">";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else>";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));

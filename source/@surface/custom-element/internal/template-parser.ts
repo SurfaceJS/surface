@@ -13,7 +13,6 @@ import { scapeBrackets }                                                        
 import directiveRegistry                                                                        from "./directive-registry";
 import IAttributeDescriptor                                                                     from "./interfaces/attribute-descriptor";
 import IChoiceDirectiveBranch                                                                   from "./interfaces/choice-directive-branch";
-import IDirectivesDescriptor                                                                    from "./interfaces/directives-descriptor";
 import IElementDescriptor                                                                       from "./interfaces/element-descriptor";
 import IInjectDirective                                                                         from "./interfaces/inject-directive";
 import IInjectorDirective                                                                       from "./interfaces/injector-directive";
@@ -26,9 +25,8 @@ import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parse
 import { interpolation }                                                                        from "./patterns";
 import TemplateParseError                                                                       from "./template-parse-error";
 
-const DECOMPOSED     = Symbol("custom-element:decomposed");
-const DIRECTIVE      = Symbol("custom-element:directive");
-const TEMPLATE_OWNER = Symbol("custom-element:template-owner");
+const DECOMPOSED = Symbol("custom-element:decomposed");
+const DIRECTIVE  = Symbol("custom-element:directive");
 
 const HASH_ELSE         = "#else";
 const HASH_ELSE_IF      = "#else-if";
@@ -57,81 +55,63 @@ const errorMessages =
     valueExpression: (name: string, value: string) => `"${value}" in "${name}='${value}'"`,
 };
 
-type Directive = { key: string, name: string, type: string, value: string };
+type Directive  = { key: string, name: string, type: string, value: string };
 
 export default class TemplateParser
 {
     public static testEnviroment: boolean = false;
 
-    private readonly directives: IDirectivesDescriptor     = { logical: [], inject: [], injector: [], loop: [] };
-    private readonly elements:   Array<IElementDescriptor> = [];
-    private readonly lookup:     Array<Array<number>>      = [];
+    private readonly indexStack: Array<number> = [];
     private readonly name:       string;
-    private readonly stack:      Array<number>             = [];
+    private readonly stackTrace: Array<Array<string>>;
+    private readonly templateDescriptor: ITemplateDescriptor =
+    {
+        elements: [],
+        directives:
+        {
+            logical:  [],
+            loop:     [],
+            inject:   [],
+            injector: []
+        },
+        lookup: []
+    };
+
+    private readonly parent: TemplateParser|null;
 
     private offsetIndex: number = 0;
 
-    public constructor(name: string)
+    public constructor(name: string, parent: TemplateParser|null)
     {
-        this.name = name;
+        this.name   = name;
+        this.parent = parent;
+
+        this.stackTrace = this.parent
+            ? [...this.parent.stackTrace]
+            : [[`<${name}>`], ["#shadow-root"]];
+    }
+
+    private static internalParse(name: string, template: HTMLTemplateElement, parent: TemplateParser): ITemplateDescriptor
+    {
+        return new TemplateParser(name, parent).parse(template);
     }
 
     public static parse(name: string, template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
     {
         const clone      = template.cloneNode(true) as HTMLTemplateElement;
-        const descriptor = new TemplateParser(name).parse(clone);
+        const descriptor = new TemplateParser(name, null).parse(clone);
 
         return [clone, descriptor];
     }
 
     public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
     {
-        return new TemplateParser(name).parse(template);
+        return new TemplateParser(name, null).parse(template);
     }
 
-    private buildStack(node: Element|Text): string
+    private buildStack(): string
     {
-        const stack: Array<Array<string>> = [];
-
-        const entry = [this.getTag(node)];
-
-        assert(node.parentNode);
-
-        const index = Array.from(node.parentNode.childNodes).indexOf(node as ChildNode);
-
-        if (index > 0)
-        {
-            entry.push(`...${index} other(s) node(s)`);
-        }
-
-        let parent = node.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-            ? this.getLooseParent(node.parentNode)
-            : node.parentNode;
-
-        stack.push(entry.reverse());
-
-        while (parent)
-        {
-            const parentEntry = [this.getTag(parent as Element)];
-
-            const index = Array.from(parent.parentNode!.childNodes).indexOf(parent as Node as ChildNode);
-
-            if (index > 0)
-            {
-                parentEntry.push(`...${index} other(s) node(s)`);
-            }
-
-            stack.push(parentEntry.reverse());
-
-            parent = parent.parentNode!.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-                ? this.getLooseParent(parent.parentNode!)
-                : parent.parentNode;
-        }
-
-        stack.push(["#shadow-root"]);
-        stack.push([`<${this.name}>`]);
-
-        return stack.reverse().map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
+        return this.stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -141,15 +121,13 @@ export default class TemplateParser
         {
             const template = this.elementToTemplate(element);
 
-            this.setLooseParent(template.content, template);
-
             const [directive, ...directives] = this.enumerateDirectives(template.attributes);
 
             template[DIRECTIVE] = directive;
 
             if (directives.length > 0)
             {
-                const innerTemplate = template.cloneNode(true) as HTMLTemplateElement;
+                const innerTemplate = template.cloneNode(false) as HTMLTemplateElement;
 
                 directives.forEach(x => template.removeAttribute(x.name));
 
@@ -186,40 +164,31 @@ export default class TemplateParser
 
             element.parentNode!.replaceChild(template, element);
 
+            this.setDecomposed(clone);
+
             return template;
         }
 
         return element as HTMLTemplateElement;
     }
 
-    private getLooseParent(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }): HTMLTemplateElement|null
-    {
-        return element[TEMPLATE_OWNER] ?? null;
-    }
-
     private getPath(): string
     {
-        return this.stack.join("-");
+        return this.indexStack.join("-");
     }
 
-    private getTag(node: (Element|Text) & { [DIRECTIVE]?: Directive }): string
+    private nodeToString(node: Node): string;
+    private nodeToString(node: (Element|Text)): string
     {
-        if (node.nodeName == "TEMPLATE" && node[DIRECTIVE])
-        {
-            const directive = node[DIRECTIVE]!;
-
-            return `${directive.name}='${directive.value}'`;
-        }
-
         if (typeGuard<Text>(node, node.nodeType == Node.TEXT_NODE))
         {
-            return node.nodeValue!;
+            return node.nodeValue ?? "";
         }
 
-        return node.outerHTML.replace(node.innerHTML, "").replace(`</${node.nodeName.toLowerCase()}>`, "");
+        return `<${node.nodeName.toLowerCase()}${node.attributes.length == 0 ? "" : " "}${Array.from(node.attributes).map(x => !x.value ? x.name : `${x.name}="${x.value}"`).join(" ")}>`;
     }
 
-    private hasDecomposed(element: Element & { [DECOMPOSED]?: boolean }): boolean
+    private hasDecomposed(element: Node & { [DECOMPOSED]?: boolean }): boolean
     {
         return !!element[DECOMPOSED];
     }
@@ -293,7 +262,7 @@ export default class TemplateParser
 
     private nest(template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement): void
     {
-        Array.from(template.content.childNodes).forEach(x => x.remove());
+        innerTemplate.content.appendChild(template.content);
 
         const decomposed = this.decomposeDirectives(innerTemplate);
 
@@ -306,12 +275,20 @@ export default class TemplateParser
     {
         this.traverseNode(template.content);
 
-        return { elements: this.elements, directives: this.directives, lookup: this.lookup };
+        return this.templateDescriptor;
     }
 
     private parseAttributes(element: Element & { [DIRECTIVE]?: Directive }): void
     {
-        const elementDescriptor: IElementDescriptor = { attributes: [], directives: [], path: this.stack.join("-"), textNodes: [] };
+        const elementDescriptor: IElementDescriptor =
+        {
+            attributes: [],
+            directives: [],
+            path:       this.indexStack.join("-"),
+            textNodes:  [],
+        };
+
+        const stackTrace = element.attributes.length > 0 ? [...this.stackTrace] : [];
 
         for (const attribute of this.enumerateAttributes(element))
         {
@@ -325,7 +302,7 @@ export default class TemplateParser
 
                     if (!directiveRegistry.has(name))
                     {
-                        throw new TemplateParseError(`Unregistered directive #${name}.`, this.buildStack(element));
+                        throw new TemplateParseError(`Unregistered directive #${name}.`, this.buildStack());
                     }
 
                     const dinamicKey = (element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "-key"]?.value ?? "'default'";
@@ -338,7 +315,7 @@ export default class TemplateParser
                     const keyObservables   = ObserverVisitor.observe(key);
                     const valueObservables = ObserverVisitor.observe(expression);
 
-                    elementDescriptor.directives.push({ name, key, value: expression, keyObservables, valueObservables });
+                    elementDescriptor.directives.push({ name, key, value: expression, keyObservables, valueObservables, stackTrace });
 
                     element.removeAttributeNode(attribute);
                 }
@@ -363,7 +340,7 @@ export default class TemplateParser
 
                 if (isTwoWay && !this.validateMemberExpression(expression, true))
                 {
-                    throw new TemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.buildStack(element));
+                    throw new TemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.buildStack());
                 }
 
                 const observables = !isTwoWay ? ObserverVisitor.observe(expression) : [];
@@ -377,7 +354,7 @@ export default class TemplateParser
                     element.removeAttributeNode(attribute);
                 }
 
-                const attributeDescriptor: IAttributeDescriptor = { name, key, expression, observables, type };
+                const attributeDescriptor: IAttributeDescriptor = { name, key, expression, observables, type, stackTrace };
 
                 elementDescriptor.attributes.push(attributeDescriptor);
             }
@@ -385,7 +362,7 @@ export default class TemplateParser
 
         if (elementDescriptor.attributes.length > 0 || elementDescriptor.directives.length > 0)
         {
-            this.elements.push(elementDescriptor);
+            this.templateDescriptor.elements.push(elementDescriptor);
 
             this.saveLookup();
         }
@@ -397,18 +374,21 @@ export default class TemplateParser
 
         const directive = template[DIRECTIVE]!;
 
+        const stackTrace = [...this.stackTrace];
+
         /* istanbul ignore else */
         if (directive.type == HASH_IF)
         {
             const branches: Array<IChoiceDirectiveBranch> = [];
 
             const expression = this.tryParseExpression(parseExpression, directive.value, template, errorMessages.valueExpression(directive.name, directive.value));
-            const descriptor = TemplateParser.parseReference(this.name, template);
+            const descriptor = TemplateParser.internalParse(this.name, template, this);
 
             const conditionalBranchDescriptor: IChoiceDirectiveBranch =
             {
                 descriptor,
                 expression,
+                stackTrace,
                 path:        this.getPath(),
                 observables: ObserverVisitor.observe(expression),
             };
@@ -419,7 +399,8 @@ export default class TemplateParser
 
             this.saveLookup();
 
-            const lastIndex = this.stack.pop()!;
+            const lastIndex = this.indexStack.pop()!;
+            const lastStack = this.stackTrace.pop()!;
 
             const parentChildNodes = Enumerable.from(template.parentNode!.childNodes)
                 .skip(lastIndex)
@@ -438,10 +419,17 @@ export default class TemplateParser
 
                 index = parentChildNodes.indexOf(nextElementSibling);
 
-                this.stack.push(index + lastIndex);
+                const currentIndex = index + lastIndex;
+
+                this.indexStack.push(currentIndex);
+
+                if (!this.hasDecomposed(nextElementSibling))
+                {
+                    this.pushToStack(nextElementSibling, currentIndex);
+                }
 
                 const expression = this.tryParseExpression(parseExpression, value, template, errorMessages.valueExpression(simblingDirective!.name, simblingDirective!.value));
-                const descriptor = TemplateParser.parseReference(this.name, simblingTemplate);
+                const descriptor = TemplateParser.internalParse(this.name, simblingTemplate, this);
 
                 const conditionalBranchDescriptor: IChoiceDirectiveBranch =
                 {
@@ -449,6 +437,7 @@ export default class TemplateParser
                     expression,
                     path:        this.getPath(),
                     observables: ObserverVisitor.observe(expression),
+                    stackTrace:  [...this.stackTrace]
                 };
 
                 branches.push(conditionalBranchDescriptor);
@@ -457,14 +446,16 @@ export default class TemplateParser
 
                 this.saveLookup();
 
-                this.stack.pop();
+                this.indexStack.pop();
+                this.stackTrace.pop();
             }
 
             this.offsetIndex = index;
 
-            this.stack.push(lastIndex);
+            this.indexStack.push(lastIndex);
+            this.stackTrace.push(lastStack);
 
-            this.directives.logical.push({ branches });
+            this.templateDescriptor.directives.logical.push({ branches });
         }
         else if (directive.type == HASH_FOR)
         {
@@ -472,7 +463,7 @@ export default class TemplateParser
 
             const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, template, errorMessages.valueExpression(directive.name, directive.value));
 
-            const descriptor = TemplateParser.parseReference(this.name, template);
+            const descriptor = TemplateParser.internalParse(this.name, template, this);
 
             const loopDescriptor: ILoopDirective =
             {
@@ -480,11 +471,12 @@ export default class TemplateParser
                 left,
                 operator,
                 right,
+                stackTrace,
                 observables: ObserverVisitor.observe(right),
                 path:        this.getPath(),
             };
 
-            this.directives.loop.push(loopDescriptor);
+            this.templateDescriptor.directives.loop.push(loopDescriptor);
 
             this.saveLookup();
         }
@@ -495,18 +487,19 @@ export default class TemplateParser
             const keyExpression = this.tryParseExpression(parseExpression, key, template, errorMessages.keyExpression(directive.name, directive.value));
             const expression    = this.tryParseExpression(parseExpression, `${value || "({ })"}`, template, errorMessages.valueExpression(directive.name, directive.value));
             const observables   = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
-            const descriptor    = TemplateParser.parseReference(this.name, template);
+            const descriptor    = TemplateParser.internalParse(this.name, template, this);
 
             const injectionDescriptor: IInjectorDirective =
             {
                 descriptor,
                 expression,
                 observables,
+                stackTrace,
                 key:  parseExpression(key),
                 path: this.getPath(),
             };
 
-            this.directives.injector.push(injectionDescriptor);
+            this.templateDescriptor.directives.injector.push(injectionDescriptor);
 
             this.saveLookup();
         }
@@ -519,17 +512,18 @@ export default class TemplateParser
             const keyExpression = this.tryParseExpression(parseExpression, key, element, errorMessages.keyExpression(directive.name, directive.value));
             const pattern       = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, template, errorMessages.valueExpression(directive.name, directive.value)) as IPattern|Identifier;
 
-            const descriptor = TemplateParser.parseReference(this.name, template);
+            const descriptor = TemplateParser.internalParse(this.name, template, this);
 
             const injectionDescriptor: IInjectDirective =
             {
                 descriptor,
                 pattern,
+                stackTrace,
                 key:  keyExpression,
                 path: this.getPath(),
             };
 
-            this.directives.inject.push(injectionDescriptor);
+            this.templateDescriptor.directives.inject.push(injectionDescriptor);
 
             this.saveLookup();
         }
@@ -552,13 +546,13 @@ export default class TemplateParser
 
             const expression  = this.tryParseExpression(parseInterpolation, rawExpression, node, `"${rawExpression}"`);
             const observables = ObserverVisitor.observe(expression);
-            const path        = this.stack.join("-");
+            const path        = this.indexStack.join("-");
 
-            const textNodeDescriptor: ITextNodeDescriptor = { path, expression, observables };
+            const textNodeDescriptor: ITextNodeDescriptor = { path, expression, observables, stackTrace: [...this.stackTrace] };
 
-            const rawParentPath = this.stack.slice(0, this.stack.length - 1);
+            const rawParentPath = this.indexStack.slice(0, this.indexStack.length - 1);
             const parentPath    = rawParentPath.join("-");
-            const element       = this.elements.find(x => x.path == parentPath);
+            const element       = this.templateDescriptor.elements.find(x => x.path == parentPath);
 
             if (element)
             {
@@ -566,9 +560,9 @@ export default class TemplateParser
             }
             else
             {
-                this.lookup.push([...rawParentPath]);
+                this.templateDescriptor.lookup.push([...rawParentPath]);
 
-                this.elements.push({ attributes: [], directives: [], path: parentPath, textNodes: [textNodeDescriptor] });
+                this.templateDescriptor.elements.push({ attributes: [], directives: [], path: parentPath, textNodes: [textNodeDescriptor] });
             }
 
             node.nodeValue = " ";
@@ -581,19 +575,28 @@ export default class TemplateParser
         }
     }
 
+    private pushToStack(node: Node, index: number): void
+    {
+        const stackEntry: Array<string> = [];
+
+        if (index > 0)
+        {
+            stackEntry.push(`...${index} other(s) node(s)`);
+        }
+
+        stackEntry.push(this.nodeToString(node));
+
+        this.stackTrace.push(stackEntry);
+    }
+
     private saveLookup(): void
     {
-        this.lookup.push([...this.stack]);
+        this.templateDescriptor.lookup.push([...this.indexStack]);
     }
 
     private setDecomposed(element: Element & { [DECOMPOSED]?: boolean }): void
     {
         element[DECOMPOSED] = true;
-    }
-
-    private setLooseParent(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }, template: HTMLTemplateElement): void
-    {
-        element[TEMPLATE_OWNER] = template;
     }
 
     private traverseNode(node: Node): void
@@ -604,18 +607,23 @@ export default class TemplateParser
 
             if ((childNode.nodeType == Node.ELEMENT_NODE || childNode.nodeType == Node.TEXT_NODE) && childNode.nodeName != "SCRIPT" && childNode.nodeName != "STYLE")
             {
-                this.stack.push(index);
+                this.indexStack.push(index);
+
+                if (!this.hasDecomposed(childNode))
+                {
+                    this.pushToStack(childNode, index);
+                }
 
                 if (typeGuard<Element>(childNode, childNode.nodeType == Node.ELEMENT_NODE))
                 {
                     if (childNode.hasAttribute(HASH_ELSE_IF))
                     {
-                        throw new TemplateParseError(`Unexpected ${HASH_ELSE_IF} directive. ${HASH_ELSE_IF} must be used in an element next to an element that uses the ${HASH_ELSE_IF} directive.`, this.buildStack(childNode));
+                        throw new TemplateParseError(`Unexpected ${HASH_ELSE_IF} directive. ${HASH_ELSE_IF} must be used in an element next to an element that uses the ${HASH_ELSE_IF} directive.`, this.buildStack());
                     }
 
                     if (childNode.hasAttribute(HASH_ELSE))
                     {
-                        throw new TemplateParseError(`Unexpected ${HASH_ELSE} directive. ${HASH_ELSE} must be used in an element next to an element that uses the ${HASH_IF} or ${HASH_ELSE_IF} directive.`, this.buildStack(childNode));
+                        throw new TemplateParseError(`Unexpected ${HASH_ELSE} directive. ${HASH_ELSE} must be used in an element next to an element that uses the ${HASH_IF} or ${HASH_ELSE_IF} directive.`, this.buildStack());
                     }
 
                     if (this.hasTemplateDirectives(childNode))
@@ -626,7 +634,8 @@ export default class TemplateParser
 
                         index += this.offsetIndex;
 
-                        this.stack.pop();
+                        this.indexStack.pop();
+                        this.stackTrace.pop();
 
                         continue;
                     }
@@ -642,7 +651,8 @@ export default class TemplateParser
 
                 this.traverseNode(childNode);
 
-                this.stack.pop();
+                this.indexStack.pop();
+                this.stackTrace.pop();
             }
         }
     }
@@ -658,7 +668,7 @@ export default class TemplateParser
         {
             assert(error instanceof SyntaxError);
 
-            throw new TemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.buildStack(node));
+            throw new TemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.buildStack());
         }
     }
 

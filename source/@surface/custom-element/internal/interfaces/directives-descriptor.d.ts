@@ -1,7 +1,7 @@
 import IChoiceDirective   from "./choice-directive";
 import IInjectDirective   from "./inject-directive";
 import IInjectorDirective from "./injector-directive";
-import ILoopDirective      from "./loop-directive";
+import ILoopDirective     from "./loop-directive";
 
 export default interface IDirectivesDescriptor
 {

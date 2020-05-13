@@ -87,7 +87,6 @@ export default class TemplateProcessor
         return child;
     }
 
-
     private process(scope: Scope, context: Node|null): IDisposable
     {
         const subscriptions: Array<ISubscription> = [];
