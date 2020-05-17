@@ -1,16 +1,16 @@
-import { Indexer }              from "@surface/core";
-import { assert }               from "@surface/core/common/generic";
-import IDisposable              from "@surface/core/interfaces/disposable";
-import Evaluate                 from "@surface/expression/evaluate";
-import TypeGuard                from "@surface/expression/internal/type-guard";
-import ISubscription            from "@surface/reactive/interfaces/subscription";
-import DataBind                 from "../../data-bind";
-import IInjectDirective         from "../../interfaces/inject-directive";
-import IInjectorDirective       from "../../interfaces/injector-directive";
-import TemplateMetadata         from "../../metadata/template-metadata";
-import ParallelWorker           from "../../parallel-worker";
-import { Scope }                from "../../types";
-import TemplateDirectiveHandler from "./";
+import { Indexer }                                   from "@surface/core";
+import { assert }                                    from "@surface/core/common/generic";
+import IDisposable                                   from "@surface/core/interfaces/disposable";
+import TypeGuard                                     from "@surface/expression/internal/type-guard";
+import ISubscription                                 from "@surface/reactive/interfaces/subscription";
+import { tryEvaluateExpression, tryEvaluatePattern } from "../../common";
+import DataBind                                      from "../../data-bind";
+import IInjectDirective                              from "../../interfaces/inject-directive";
+import IInjectorDirective                            from "../../interfaces/injector-directive";
+import TemplateMetadata                              from "../../metadata/template-metadata";
+import ParallelWorker                                from "../../parallel-worker";
+import { Scope }                                     from "../../types";
+import TemplateDirectiveHandler                      from "./";
 
 export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -86,8 +86,8 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
                 let destructured = false;
 
                 const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
-                    ? { elementScope: Evaluate.pattern(this.scope, injectDirective.pattern, this.directive.expression.evaluate(this.scope)), scopeAlias: "" }
-                    : { elementScope: this.directive.expression.evaluate(this.scope) as Indexer, scopeAlias: injectDirective.pattern.name };
+                    ? { elementScope: tryEvaluatePattern(this.scope, injectDirective.pattern, tryEvaluateExpression(this.scope, this.directive.expression, this.directive.stackTrace), injectDirective.stackTrace), scopeAlias: "" }
+                    : { elementScope: tryEvaluateExpression(this.scope, this.directive.expression, this.directive.stackTrace) as Indexer, scopeAlias: injectDirective.pattern.name };
 
                 const mergedScope = destructured
                     ? { ...elementScope, ...localScope }

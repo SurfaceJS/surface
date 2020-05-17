@@ -1,4 +1,11 @@
-import { Indexer, Nullable } from "@surface/core";
+import { Indexer, Nullable }   from "@surface/core";
+import { assert }              from "@surface/core/common/generic";
+import Evaluate                from "@surface/expression/evaluate";
+import IExpression             from "@surface/expression/interfaces/expression";
+import IPattern                from "@surface/expression/interfaces/pattern";
+import TemplateEvaluationError from "./errors/template-evaluation-error";
+import TemplateParseError      from "./errors/template-parse-error";
+import { Scope }               from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -8,6 +15,11 @@ wrapper.prototype.constructor = wrapper;
 const windowWrapper = wrapper.prototype;
 
 const TEMPLATE_OWNER = Symbol("custom-element:template-owner");
+
+function buildStackTrace(stackTrace: Array<Array<string>>): string
+{
+    return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
+}
 
 export function createScope(scope: Indexer): Indexer
 {
@@ -33,59 +45,6 @@ export function classMap(classes: Record<string, boolean>): string
         .join(" ");
 }
 
-export function domPath(element: Element): string
-{
-    const stack: Array<Array<string>> = [];
-
-    const entry = [getTag(element)];
-
-    if (element.parentNode)
-    {
-        const index = Array.from(element.parentNode.childNodes).indexOf(element as ChildNode);
-
-        if (index > 0)
-        {
-            entry.push(`...${index} other(s) node(s)`);
-        }
-    }
-
-    let parent = element.parentNode?.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-        ? getTemplateOwner(element.parentNode)
-        : element.parentNode;
-
-    stack.push(entry.reverse());
-
-    while (parent)
-    {
-        const parentEntry = [getTag(parent as Element)];
-
-        if (parent.parentNode)
-        {
-            const index = Array.from(parent.parentNode.childNodes).indexOf(parent as Node as ChildNode);
-
-            if (index > 0)
-            {
-                parentEntry.push(`...${index} other(s) node(s)`);
-            }
-
-            stack.push(parentEntry.reverse());
-        }
-
-        parent = parent.parentNode?.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-            ? getTemplateOwner(parent.parentNode)
-            : parent.parentNode;
-    }
-
-    return stack.reverse().map((entry, i) => entry.map(value => "\t".repeat(i) + value).join("\n")).join("\n");
-}
-
-export function getTag(element: Element): string
-{
-    return element.nodeType == Node.DOCUMENT_FRAGMENT_NODE
-        ? element.nodeName
-        : element.outerHTML.replace(element.innerHTML, "").replace(`</${element.nodeName.toLowerCase()}>`, "");
-}
-
 export function getTemplateOwner(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }): HTMLTemplateElement|null
 {
     return element[TEMPLATE_OWNER] ?? null;
@@ -106,6 +65,44 @@ export function styleMap(rules: Record<string, boolean>): string
     return Object.entries(rules)
         .map(([key, value]) => `${key}: ${value}` )
         .join("; ");
+}
+
+export function tryEvaluateExpression(scope: Scope, expression: IExpression, stackTrace: Array<Array<string>>): unknown
+{
+    try
+    {
+        return expression.evaluate(scope);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateEvaluationError(error.message, stackTrace);
+    }
+}
+
+export function throwTemplateEvaluationError(message: string, stackTrace: Array<Array<string>>): never
+{
+    throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
+}
+
+export function throwTemplateParseError(message: string, stackTrace: Array<Array<string>>): never
+{
+    throw new TemplateParseError(message, buildStackTrace(stackTrace));
+}
+
+export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, stackTrace: Array<Array<string>>): Indexer
+{
+    try
+    {
+        return Evaluate.pattern(scope, pattern, value);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateEvaluationError(error.message, stackTrace);
+    }
 }
 
 export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>

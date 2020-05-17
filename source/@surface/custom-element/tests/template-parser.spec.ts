@@ -4,9 +4,9 @@ import { Action }                                                        from "@
 import IIdentifier                                                       from "@surface/expression/interfaces/identifier";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
+import TemplateParseError                                                from "../internal/errors/template-parse-error";
 import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
 import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
-import TemplateParseError                                                from "../internal/template-parse-error";
 import TemplateParser                                                    from "../internal/template-parser";
 
 TemplateParser.testEnviroment = true;

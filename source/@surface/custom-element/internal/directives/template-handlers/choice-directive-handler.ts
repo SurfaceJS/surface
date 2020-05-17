@@ -1,20 +1,25 @@
-import { assert }               from "@surface/core/common/generic";
-import IDisposable              from "@surface/core/interfaces/disposable";
-import IExpression              from "@surface/expression/interfaces/expression";
-import ISubscription            from "@surface/reactive/interfaces/subscription";
-import DataBind                 from "../../data-bind";
-import IChoiceDirectiveBranch   from "../../interfaces/choice-directive-branch";
-import ITemplateDescriptor      from "../../interfaces/template-descriptor";
-import ParallelWorker           from "../../parallel-worker";
-import { Scope }                from "../../types";
-import TemplateDirectiveHandler from "./";
+import { assert }                from "@surface/core/common/generic";
+import IDisposable               from "@surface/core/interfaces/disposable";
+import ISubscription             from "@surface/reactive/interfaces/subscription";
+import { tryEvaluateExpression } from "../../common";
+import DataBind                  from "../../data-bind";
+import IChoiceDirectiveBranch    from "../../interfaces/choice-directive-branch";
+import ParallelWorker            from "../../parallel-worker";
+import { Scope }                 from "../../types";
+import TemplateDirectiveHandler  from "./";
+
+type Choice =
+{
+    branche:  IChoiceDirectiveBranch;
+    template: HTMLTemplateElement;
+};
 
 export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
+    private readonly choices:       Array<Choice> = [];
     private readonly end:           Comment;
-    private readonly branches:      Array<[IExpression, HTMLTemplateElement, ITemplateDescriptor]> = [];
     private readonly start:         Comment;
-    private readonly subscriptions: Array<ISubscription>                                           = [];
+    private readonly subscriptions: Array<ISubscription> = [];
 
     private currentDisposable: IDisposable|null = null;
     private disposed:          boolean          = false;
@@ -39,13 +44,14 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
         {
             const listener = { notify };
 
-            const branche = branches[index];
+            const branche  = branches[index];
+            const template = templates[index];
 
             this.subscriptions.push(DataBind.observe(scope, branche.observables, listener, true));
 
-            this.branches.push([branche.expression, templates[index], branche.descriptor]);
+            this.choices.push({ branche, template });
 
-            templates[index].remove();
+            template.remove();
         }
 
         this.fireAsync(notify);
@@ -63,11 +69,11 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.removeInRange(this.start, this.end);
 
-        for (const [expression, template, descriptor] of this.branches)
+        for (const choice of this.choices)
         {
-            if (expression.evaluate(this.scope))
+            if (tryEvaluateExpression(this.scope, choice.branche.expression, choice.branche.stackTrace))
             {
-                const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, template, descriptor);
+                const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
 
                 this.currentDisposable = disposable;
 

@@ -1,9 +1,9 @@
-import { Action }    from "@surface/core";
-import IDisposable   from "@surface/core/interfaces/disposable";
-import ISubscription from "@surface/reactive/interfaces/subscription";
-import DataBind      from "../../data-bind";
-import IDirective    from "../../interfaces/directive";
-import { Scope }     from "../../types";
+import IDisposable               from "@surface/core/interfaces/disposable";
+import ISubscription             from "@surface/reactive/interfaces/subscription";
+import { tryEvaluateExpression } from "../../common";
+import DataBind                  from "../../data-bind";
+import IDirective                from "../../interfaces/directive";
+import { Scope }                 from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
@@ -12,10 +12,8 @@ export default abstract class DirectiveHandler implements IDisposable
     protected readonly scope:         Scope;
     protected readonly subscriptions: Array<ISubscription> = [];
 
-    protected onAfterBind?: Action;
-    protected onAfterUnbind?: Action;
-    protected onBeforeBind?: Action;
-    protected onBeforeUnbind?: Action;
+    protected key!: string;
+    protected value: unknown;
 
     public constructor(scope: Scope, element: Element, directive: IDirective)
     {
@@ -25,15 +23,41 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.subscriptions.push(DataBind.observe(scope, directive.keyObservables,   { notify: () => this.keyHandler(`${directive.key.evaluate(scope)}`) }));
-        this.subscriptions.push(DataBind.observe(scope, directive.valueObservables, { notify: () => this.valueHandler(directive.value.evaluate(scope)) }));
+        this.subscriptions.push(DataBind.observe(scope, directive.keyObservables,   { notify: this.keyNotify.bind(this) },   true));
+        this.subscriptions.push(DataBind.observe(scope, directive.valueObservables, { notify: this.valueNotify.bind(this) }, true));
+
+        this.keyNotify();
+        this.valueNotify();
 
         this.onAfterBind?.();
     }
 
-    protected abstract keyHandler(value: string): void;
+    private keyNotify(): void
+    {
+        const oldKey = this.key;
+        const newKey = `${tryEvaluateExpression(this.scope, this.directive.key, this.directive.stackTrace)}`;
 
-    protected abstract valueHandler(value: unknown): void;
+        this.key = newKey;
+
+        this.onKeyChange?.(oldKey, newKey);
+    }
+
+    private valueNotify(): void
+    {
+        const oldValue = this.value;
+        const newValue = tryEvaluateExpression(this.scope, this.directive.value, this.directive.stackTrace);
+
+        this.value = newValue;
+
+        this.onValueChange?.(oldValue, newValue);
+    }
+
+    protected onAfterBind?(): void;
+    protected onAfterUnbind?(): void;
+    protected onBeforeBind?(): void;
+    protected onBeforeUnbind?(): void;
+    protected onKeyChange?(oldKey: string, newKey: string): void;
+    protected onValueChange?(oldValue: unknown, newValue: unknown): void;
 
     public dispose(): void
     {

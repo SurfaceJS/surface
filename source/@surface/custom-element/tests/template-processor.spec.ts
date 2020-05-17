@@ -1,20 +1,78 @@
 import "./fixtures/dom";
 
-import { Indexer }                             from "@surface/core";
+import { Action, Indexer }                     from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
+import directiveRegistry                       from "../internal/directive-registry";
+import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
+import TemplateProcessError                    from "../internal/errors/template-process-error";
 import ParallelWorker                          from "../internal/parallel-worker";
 import TemplateParser                          from "../internal/template-parser";
 import TemplateProcessor                       from "../internal/template-processor";
+import CustomDirectiveHandler                  from "./fixtures/custom-directive";
+
+type RawError = { message: string }|Pick<TemplateProcessError, "message"|"stack">;
+
+class XComponent extends HTMLElement { }
+
+window.customElements.define("x-component", XComponent);
+
+directiveRegistry.set("custom", CustomDirectiveHandler);
+
+function tryAction(action: Action): RawError
+{
+    try
+    {
+        action();
+    }
+    catch (error)
+    {
+        return toRaw(error);
+    }
+
+    return toRaw(new TemplateProcessError("", ""));
+}
+
+async function tryActionAsync(action: Action): Promise<RawError>
+{
+    try
+    {
+        action();
+
+        await render();
+    }
+    catch (error)
+    {
+        return toRaw(error);
+    }
+
+    return toRaw(new TemplateProcessError("", ""));
+}
+
+function toRaw(error: Error): RawError
+{
+    if (error instanceof TemplateProcessError || error instanceof TemplateEvaluationError)
+    {
+        return {
+            message: error.message,
+            stack:   error.stack,
+        };
+    }
+    else
+    {
+        return { message: error.message };
+    }
+}
 
 const getHost = <T = { }>() =>
 {
-    const host = document.createElement("div");
+    const host = document.createElement("x-component") as XComponent;
 
     host.attachShadow({ mode: "open" });
 
-    return host as unknown as HTMLElement & { shadowRoot: ShadowRoot } & T;
+    return host as unknown as XComponent & { shadowRoot: ShadowRoot } & T;
 };
+
 const render = async () => await ParallelWorker.done();
 
 // declare var chai: never;
@@ -35,7 +93,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
         root.appendChild(child);
     }
 
-    TemplateProcessor.process(scope ?? { host }, null, host, root, descriptor);
+    TemplateProcessor.process({ scope: scope ?? { host }, host, root, descriptor });
 }
 
 @suite
@@ -44,7 +102,7 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithoutAttributes(): void
     {
-        const host= getHost();
+        const host = getHost();
 
         process(host, host.shadowRoot);
     }
@@ -79,7 +137,7 @@ export default class TemplateProcessorSpec
             const input = host.shadowRoot.firstElementChild as HTMLSpanElement;
             assert.equal(input.lang, "pt-br");
             assert.equal(input.getAttribute("lang"), "pt-br");
-            assert.equal(input.getAttribute("parent"), "DIV");
+            assert.equal(input.getAttribute("parent"), "X-COMPONENT");
 
             host.lang = "en-us";
             assert.equal(input.lang, "en-us");
@@ -129,7 +187,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot, { host });
 
-        assert.equal(span.foo, "DIV");
+        assert.equal(span.foo, "X-COMPONENT");
     }
 
     @test @shouldPass
@@ -219,7 +277,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithAttributesWithExpressionEventBind(): void
+    public elementWithEventDirectiveBind(): void
     {
         const host = getHost<{ method?: Function }>();
 
@@ -234,6 +292,46 @@ export default class TemplateProcessorSpec
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
         assert.equal(clicked, true);
+    }
+
+    @test @shouldPass
+    public elementWithEventDirectiveBindArrowFunction(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #on:click='() => window.name = \"clicked\"'>Text</span>";
+
+        process(host, host.shadowRoot);
+
+        host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
+
+        assert.equal(window.name, "clicked");
+    }
+
+    @test @shouldPass
+    public elementWithEventDirectiveBodyExpression(): void
+    {
+        const host = getHost<{ clicked: boolean }>();
+
+        host.shadowRoot.innerHTML = "<span #on:click='host.clicked = true'>Text</span>";
+
+        process(host, host.shadowRoot);
+
+        host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
+
+        assert.equal(host.clicked, true);
+    }
+
+    @test @shouldPass
+    public elementWithCustomDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #custom:directive=\"'Hello World!!!'\"></span>";
+
+        process(host, host.shadowRoot);
+
+        assert.equal(host.shadowRoot.firstElementChild!.textContent, "directive: Hello World!!!");
     }
 
     @test @shouldPass
@@ -971,32 +1069,263 @@ export default class TemplateProcessorSpec
     @test @shouldFail
     public elementWithOneWayDataBindingToReadonlyProperty(): void
     {
-        const host = getHost<{ value?: string }>();
+        const host = getHost();
 
-        host.value = "foo";
+        host.shadowRoot.innerHTML = "<span :node-type='host.value'></span>";
 
-        host.shadowRoot.innerHTML = "<span :value='host.value'</span>";
+        const message = "Property nodeType of <span> is readonly";
+        const stack   = "<x-component>\n   #shadow-root\n      <span :node-type=\"host.value\">";
 
-        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
 
-        Object.defineProperty(span, "value", { value: "", writable: false });
+        assert.deepEqual(actual, expected);
+    }
 
-        assert.throw(() => process(host, host.shadowRoot), "Property value of HTMLSpanElement is readonly");
+    @test @shouldFail
+    public async elementWithOneWayDataBindingToReadonlyPropertyInsideTemplate(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #if='true' :node-type='host.value'></span>";
+
+        const message = "Property nodeType of <span> is readonly";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public evaluationErrorOneWayDataBinding(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span :name='host.foo()'></span>";
+
+        const message = "Error evaluating \"host.foo()\" - host.foo is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.foo()\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public evaluationErrorEventBind(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #on:click=\"host.fn\"></span>";
+
+        const message = "host.fn is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"host.fn\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    // Can't capture error
+    // @test @shouldPass
+    // public evaluationErrorEventBodyExpression(): void
+    // {
+    //     const host = getHost();
+
+    //     host.shadowRoot.innerHTML = "<span #on:click=\"host.value = { value }\"></span>";
+
+    //     const message = "value is not defined";
+    //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
+
+    //     const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
+    //     const expected = toRaw(new TemplateProcessError(message, stack));
+
+    //     assert.deepEqual(actual, expected);
+
+    // }
+
+    // Can't capture error
+    // @test @shouldPass
+    // public evaluationErrorEventArrowFunction(): void
+    // {
+    //     const host = getHost();
+
+    //     host.shadowRoot.innerHTML = "<span #on:click=\"() => host.fn()\"></span>";
+
+    //     const message = "host.fn is not defined";
+    //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
+
+    //     const actual   = tryAction(() => process(host, host.shadowRoot));
+    //     const expected = toRaw(new TemplateProcessError(message, stack));
+
+    //     assert.deepEqual(actual, expected);
+    // }
+
+    @test @shouldPass
+    public evaluationErrorCustomDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #custom:directive=\"({ value })\"></span>";
+
+        const message = "value is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom:directive=\"({ value })\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public evaluationErrorTextNodeInterpolation(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span><h1>This is a text {host.interpolation()}</h1></span>";
+
+        const message = "Error evaluating \"\"This is a text \"host.interpolation()\" - host.interpolation is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span>\n         <h1>\n            This is a text {host.interpolation()}";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async evaluationErrorChoiceDirective(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<h1>Title</h1><template #for='index of [1]' #if='host.isOk()'></template>";
+
+        const message = "host.isOk is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #for=\"index of [1]\" #if=\"host.isOk()\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async evaluationErrorLoopDirective(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<h1>Title</h1><span #for='index of host.elements()'></span>";
+
+        const message = "host.elements is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"index of host.elements()\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async evaluationErrorDestructuredLoopDirective(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<h1>Title</h1><span #for='{ x = host.getValue() } of [{ }]'></span>";
+
+        const message = "host.getValue is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"{ x = host.getValue() } of [{ }]\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async evaluationErrorInjectorDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject:items=\"{ item: [key, value] }\"></template>";
+
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #injector:items=\"({ item })\"></template></div>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        process(host, host.shadowRoot);
+
+        const message = "item is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #injector:items=\"({ item })\">";
+
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async evaluationErrorInjectDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject:items=\"{ item: value = lastItem }\"></template>";
+
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #injector:items=\"({ })\"></template></div>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        process(host, host.shadowRoot);
+
+        const message = "lastItem is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject:items=\"{ item: value = lastItem }\">";
+
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
     public elementWithTwoWayDataBindingToReadonlyProperty(): void
     {
+        const host = getHost();
+
+        Object.defineProperty(host, "value", { value: "", writable: false });
+
+        host.shadowRoot.innerHTML = "<span ::value='host.value'></span>";
+
+        const message = "Property value of XComponent is readonly in ::\"value='host.value'\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <span ::value=\"host.value\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async elementWithTwoWayDataBindingToReadonlyPropertyInsideTemplate(): Promise<void>
+    {
         const host = getHost<{ value?: string }>();
 
         Object.defineProperty(host, "value", { value: "", writable: false });
 
-        host.shadowRoot.innerHTML = "<span ::value='host.value'</span>";
+        host.shadowRoot.innerHTML = "<span #for='const letter in host.nodeName' #if='true' ::value='host.value'></span>";
 
-        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
+        const message = "Property value of XComponent is readonly in ::\"value='host.value'\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #for=\"const letter in host.nodeName\" #if=\"true\" ::value=\"host.value\">";
 
-        span.value = "foo";
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new TemplateProcessError(message, stack));
 
-        assert.throw(() => process(host, host.shadowRoot), "Property value of HTMLDivElement is readonly");
+        assert.deepEqual(actual, expected);
     }
 }

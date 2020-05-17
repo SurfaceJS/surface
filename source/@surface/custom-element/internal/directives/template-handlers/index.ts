@@ -28,9 +28,7 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
     {
         const root = template.content.cloneNode(true) as Element;
 
-        root.normalize();
-
-        const disposable = TemplateProcessor.process(scope, context, host, root, descriptor);
+        const disposable = TemplateProcessor.process({ scope, context, host, root, descriptor });
 
         return [root, disposable];
     }

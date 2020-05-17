@@ -1,11 +1,12 @@
-import { Action1 }   from "@surface/core";
-import IDisposable   from "@surface/core/interfaces/disposable";
-import IExpression   from "@surface/expression/interfaces/expression";
-import TypeGuard     from "@surface/expression/internal/type-guard";
-import ISubscription from "@surface/reactive/interfaces/subscription";
-import DataBind      from "../../data-bind";
-import IDirective    from "../../interfaces/directive";
-import { Scope }     from "../../types";
+import { Action1 }                                             from "@surface/core";
+import IDisposable                                             from "@surface/core/interfaces/disposable";
+import IExpression                                             from "@surface/expression/interfaces/expression";
+import TypeGuard                                               from "@surface/expression/internal/type-guard";
+import ISubscription                                           from "@surface/reactive/interfaces/subscription";
+import { throwTemplateEvaluationError, tryEvaluateExpression } from "../../common";
+import DataBind                                                from "../../data-bind";
+import IDirective                                              from "../../interfaces/directive";
+import { Scope }                                               from "../../types";
 
 export default class EventDirectiveHandler implements IDisposable
 {
@@ -18,9 +19,9 @@ export default class EventDirectiveHandler implements IDisposable
     public constructor(scope: Scope, element: Element, directive: IDirective)
     {
         this.element = element;
-        this.action  = this.evaluate(scope, directive.value);
+        this.action  = this.evaluate(scope, directive.value, directive.stackTrace);
 
-        const notify = () => this.keyHandler(`${directive.key.evaluate(scope)}`);
+        const notify = () => this.keyHandler(`${tryEvaluateExpression(scope, directive.key, directive.stackTrace)}`);
 
         this.subscription = DataBind.observe(scope, directive.keyObservables, { notify }, false);
 
@@ -46,7 +47,7 @@ export default class EventDirectiveHandler implements IDisposable
     }
 
 
-    private evaluate(scope: Scope, expression: IExpression): Action1<Event>
+    private evaluate(scope: Scope, expression: IExpression, stackTrace: Array<Array<string>>): Action1<Event>
     {
         if (TypeGuard.isArrowFunctionExpression(expression) || TypeGuard.isIdentifier(expression))
         {
@@ -54,13 +55,18 @@ export default class EventDirectiveHandler implements IDisposable
         }
         else if (TypeGuard.isMemberExpression(expression))
         {
-            const action = expression.evaluate(scope) as Function;
+            const action = tryEvaluateExpression(scope, expression, stackTrace) as Function;
 
-            return action.bind(expression.object.evaluate(scope)) as Action1<Event>;
+            if (!action)
+            {
+                throwTemplateEvaluationError(`${expression} is not defined`, stackTrace);
+            }
+
+            return action.bind(expression.object.evaluate(scope, true)) as Action1<Event>;
         }
         else
         {
-            return () => expression.evaluate(scope);
+            return () => tryEvaluateExpression(scope, expression, stackTrace);
         }
     }
 

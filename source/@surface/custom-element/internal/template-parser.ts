@@ -9,7 +9,7 @@ import IPattern                                                                 
 import Identifier                                                                               from "@surface/expression/internal/expressions/identifier";
 import TypeGuard                                                                                from "@surface/expression/internal/type-guard";
 import SyntaxError                                                                              from "@surface/expression/syntax-error";
-import { scapeBrackets }                                                                        from "./common";
+import { scapeBrackets, throwTemplateParseError }                                               from "./common";
 import directiveRegistry                                                                        from "./directive-registry";
 import IAttributeDescriptor                                                                     from "./interfaces/attribute-descriptor";
 import IChoiceDirectiveBranch                                                                   from "./interfaces/choice-directive-branch";
@@ -23,7 +23,6 @@ import { nativeEvents }                                                         
 import ObserverVisitor                                                                          from "./observer-visitor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./parsers";
 import { interpolation }                                                                        from "./patterns";
-import TemplateParseError                                                                       from "./template-parse-error";
 
 const DECOMPOSED = Symbol("custom-element:decomposed");
 const DIRECTIVE  = Symbol("custom-element:directive");
@@ -107,11 +106,6 @@ export default class TemplateParser
     public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
     {
         return new TemplateParser(name, null).parse(template);
-    }
-
-    private buildStack(): string
-    {
-        return this.stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -302,7 +296,7 @@ export default class TemplateParser
 
                     if (!directiveRegistry.has(name))
                     {
-                        throw new TemplateParseError(`Unregistered directive #${name}.`, this.buildStack());
+                        throwTemplateParseError(`Unregistered directive #${name}.`, this.stackTrace);
                     }
 
                     const dinamicKey = (element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "-key"]?.value ?? "'default'";
@@ -340,7 +334,7 @@ export default class TemplateParser
 
                 if (isTwoWay && !this.validateMemberExpression(expression, true))
                 {
-                    throw new TemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.buildStack());
+                    throwTemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.stackTrace);
                 }
 
                 const observables = !isTwoWay ? ObserverVisitor.observe(expression) : [];
@@ -618,12 +612,12 @@ export default class TemplateParser
                 {
                     if (childNode.hasAttribute(HASH_ELSE_IF))
                     {
-                        throw new TemplateParseError(`Unexpected ${HASH_ELSE_IF} directive. ${HASH_ELSE_IF} must be used in an element next to an element that uses the ${HASH_ELSE_IF} directive.`, this.buildStack());
+                        throwTemplateParseError(`Unexpected ${HASH_ELSE_IF} directive. ${HASH_ELSE_IF} must be used in an element next to an element that uses the ${HASH_ELSE_IF} directive.`, this.stackTrace);
                     }
 
                     if (childNode.hasAttribute(HASH_ELSE))
                     {
-                        throw new TemplateParseError(`Unexpected ${HASH_ELSE} directive. ${HASH_ELSE} must be used in an element next to an element that uses the ${HASH_IF} or ${HASH_ELSE_IF} directive.`, this.buildStack());
+                        throwTemplateParseError(`Unexpected ${HASH_ELSE} directive. ${HASH_ELSE} must be used in an element next to an element that uses the ${HASH_IF} or ${HASH_ELSE_IF} directive.`, this.stackTrace);
                     }
 
                     if (this.hasTemplateDirectives(childNode))
@@ -668,7 +662,7 @@ export default class TemplateParser
         {
             assert(error instanceof SyntaxError);
 
-            throw new TemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.buildStack());
+            throwTemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.stackTrace);
         }
     }
 
