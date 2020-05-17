@@ -20,7 +20,7 @@ export type Func3<T1, T2, T3, TResult>                              = (arg1: T1,
 export type Func<TResult>                                           = () => TResult;
 export type IgnoreKeysOfType<T extends object, U>                   = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>                       = { [K in IgnoreKeysOfType<T, U>]: T[K] };
-export type Indexer<T = unknown>                                    = object & { [key: string]: T|undefined; [key: number]: T|undefined; };
+export type Indexer<T = unknown>                                    = object & Record<string|number, T|undefined>;
 export type IndexesOf<T extends any[]>                              = ValuesOf<{ [K in keyof T]: K }>;
 export type KeysOfType<T extends object, U>                         = { [K in keyof T]: T[K] extends U ? K : never }[keyof T];
 export type KeyValue<T, K extends keyof T = keyof T>                = [K, T[K]];

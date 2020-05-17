@@ -13,12 +13,12 @@
         "@surface/reflection": "0.0.0",
         "material-design-icons-iconfont": "5.0.1",
         "resize-observer-polyfill": "1.5.1",
-        "tslib": "1.11.2"
+        "tslib": "2.0.0"
     },
     "description": "Surface web components",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
-        "@types/jsdom": "16.2.1",
+        "@types/jsdom": "16.2.3",
         "chai": "4.2.0",
         "jsdom": "16.2.2"
     },

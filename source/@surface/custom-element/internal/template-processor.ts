@@ -183,7 +183,7 @@ export default class TemplateProcessor
                         }
                         else
                         {
-                            notify = () => (element as Indexer)[descriptor.key] = this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace);
+                            notify = () => (element as unknown as Indexer)[descriptor.key] = this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace);
                         }
 
                         let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
@@ -212,7 +212,7 @@ export default class TemplateProcessor
                             throw new TemplateProcessError(`Property ${targetProperty} of ${target.constructor.name} is readonly in ::"${descriptor.name}='${rawExpression}'"`, this.buildStack(descriptor));
                         }
 
-                        subscriptions.push(...DataBind.twoWay(target, targetProperty, element as Indexer, descriptor.key));
+                        subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
                     }
                 }
                 else

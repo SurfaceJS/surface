@@ -77,10 +77,10 @@ export default class ReactorSpec
         instanceEmmiterValueObserver.subscribe({ notify: x => instanceEmmiterValueListener = x });
         rawEmmiterValueObserver.subscribe({ notify: x => rawEmmiterValueListerner = x });
 
-        Reactor.makeReactive(instanceEmmiter as Indexer, "getValue").observers.set("getValue", instanceEmmiterGetValueObserver);
-        Reactor.makeReactive(instanceEmmiter as Indexer, "value").observers.set("value", instanceEmmiterValueObserver);
-        Reactor.makeReactive(instanceReadonlyEmmiter as Indexer, "nonReactiveValue");
-        Reactor.makeReactive(instanceReadonlyEmmiter as Indexer, "value").observers.set("value", instanceReadonlyEmmiterObserver);
+        Reactor.makeReactive(instanceEmmiter, "getValue").observers.set("getValue", instanceEmmiterGetValueObserver);
+        Reactor.makeReactive(instanceEmmiter, "value").observers.set("value", instanceEmmiterValueObserver);
+        Reactor.makeReactive(instanceReadonlyEmmiter, "nonReactiveValue");
+        Reactor.makeReactive(instanceReadonlyEmmiter, "value").observers.set("value", instanceReadonlyEmmiterObserver);
         Reactor.makeReactive(rawEmmiter, "nonReactiveValue");
         Reactor.makeReactive(rawEmmiter, "value").observers.set("value", rawEmmiterValueObserver);
 

@@ -12,7 +12,7 @@
         "@surface/router": "0.0.0",
         "@surface/view": "0.0.0",
         "@surface/view-host": "0.0.0",
-        "tslib": "1.11.2"
+        "tslib": "2.0.0"
     },
     "description": "Web component view manager.",
     "devDependencies": {

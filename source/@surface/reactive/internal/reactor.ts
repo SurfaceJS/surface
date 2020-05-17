@@ -105,6 +105,7 @@ export default class Reactor implements IDisposable
         }
     }
 
+    public static makeReactive(target: object, keyOrIndex: string|number): Reactor;
     public static makeReactive(target: Indexer, keyOrIndex: string|number): Reactor
     {
         const key      = keyOrIndex.toString();

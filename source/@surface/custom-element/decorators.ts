@@ -123,7 +123,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
                 if (!Metadata.from(this).reflectingAttribute)
                 {
                     StaticMetadata.from(this.constructor)
-                        .conversionHandlers[name]?.(this as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
+                        .conversionHandlers[name]?.(this as unknown as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
 
                     attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
                 }
@@ -229,7 +229,7 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
     {
         const action = (element: HTMLElement) =>
         {
-            const listener = (event: HTMLElementEventMap[K]) => (element as Indexer<Function>)[propertyKey as string]!.call(element, event);
+            const listener = (event: HTMLElementEventMap[K]) => (element as unknown as Indexer<Function>)[propertyKey as string]!.call(element, event);
 
             element.addEventListener(type, listener, options);
 

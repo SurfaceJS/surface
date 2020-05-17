@@ -28,7 +28,7 @@ export function createScope(scope: Indexer): Indexer
 
     const handler: ProxyHandler<Indexer> =
     {
-        get: (target, key) => key in target ? target[key as string] : (windowWrapper as Indexer)[key as string],
+        get: (target, key) => key in target ? target[key as string] : (windowWrapper as unknown as Indexer)[key as string],
         has: (target, key) => key in target || key in windowWrapper,
         getOwnPropertyDescriptor: (target, key) =>
             Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
