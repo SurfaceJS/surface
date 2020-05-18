@@ -1,8 +1,8 @@
-import ArgumentOutOfRangeError                 from "@surface/core/errors/argument-out-of-range-error";
-import { Enumerable }                          from "@surface/enumerable";
+import { ArgumentOutOfRangeError }             from "@surface/core";
+import Enumerable                              from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import List                                    from "../list";
+import List                                    from "../internal/list";
 
 @suite
 export default class ListSpec

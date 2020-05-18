@@ -1,9 +1,8 @@
-import { Indexer } from "@surface/core";
-import { format }  from "@surface/core/common/string";
-import Expression  from "../..";
-import INode       from "../../interfaces/node";
-import Messages    from "../../internal/messages";
-import NodeType    from "../../node-type";
+import { Indexer, format } from "@surface/core";
+import Expression          from "../..";
+import INode               from "../../internal/interfaces/node";
+import Messages            from "../../internal/messages";
+import NodeType            from "../../internal/node-type";
 
 export type ExpressionFactoryExpected = { method: string, toString: string, type: NodeType, factory: () => INode };
 export type EvaluationErrorExpected   = { error: Error, raw: string, scope: Indexer };

@@ -1,12 +1,11 @@
-import { Indexer }                             from "@surface/core";
-import { hasValue }                            from "@surface/core/common/generic";
+import { Indexer, hasValue }                   from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import { notify, observable }                  from "../decorators";
+import { notify, observable }                  from "../internal/decorators";
 import Metadata                                from "../internal/metadata";
 import Reactor                                 from "../internal/reactor";
-import Observer                                from "../observer";
-import PropertySubscription                    from "../property-subscription";
+import Observer                                from "../internal/observer";
+import PropertySubscription                    from "../internal/property-subscription";
 
 @suite
 export default class ReactorSpec

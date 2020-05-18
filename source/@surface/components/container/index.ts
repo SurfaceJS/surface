@@ -1,4 +1,4 @@
-import { dashedToCamel } from "@surface/core/common/string";
+import { dashedToCamel } from "@surface/core";
 import CustomElement     from "@surface/custom-element";
 import { element }       from "../decorators";
 import template          from "./index.html";

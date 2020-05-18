@@ -1,13 +1,43 @@
-import { Nullable }     from "@surface/core";
-import { tuple }        from "@surface/core/common/generic";
-import { format }       from "@surface/core/common/string";
-import IExpression      from "../interfaces/expression";
-import INode            from "../interfaces/node";
-import IPattern         from "../interfaces/pattern";
-import ITemplateLiteral from "../interfaces/template-literal";
-import NodeType         from "../node-type";
-import SyntaxError      from "../syntax-error";
-import TypeGuard                from "../type-guard";
+import { format, Nullable, tuple } from "@surface/core";
+import { hasDuplicated }           from "./common";
+import AssignmentProperty          from "./elements/assignment-property";
+import Property                    from "./elements/property";
+import SpreadElement               from "./elements/spread-element";
+import TemplateElement             from "./elements/template-element";
+import ArrayExpression             from "./expressions/array-expression";
+import ArrowFunctionExpression     from "./expressions/arrow-function-expression";
+import AssignmentExpression        from "./expressions/assignment-expression";
+import BinaryExpression            from "./expressions/binary-expression";
+import CallExpression              from "./expressions/call-expression";
+import CoalesceExpression          from "./expressions/coalesce-expression";
+import ConditionalExpression       from "./expressions/conditional-expression";
+import Identifier                  from "./expressions/identifier";
+import Literal                     from "./expressions/literal";
+import LogicalExpression           from "./expressions/logical-expression";
+import MemberExpression            from "./expressions/member-expression";
+import NewExpression               from "./expressions/new-expression";
+import ObjectExpression            from "./expressions/object-expression";
+import ParenthesizedExpression     from "./expressions/parenthesized-expression";
+import SequenceExpression          from "./expressions/sequence-expression";
+import TaggedTemplateExpression    from "./expressions/tagged-template-expression";
+import TemplateLiteral             from "./expressions/template-literal";
+import ThisExpression              from "./expressions/this-expression";
+import UnaryExpression             from "./expressions/unary-expression";
+import UpdateExpression            from "./expressions/update-expression";
+import IExpression                 from "./interfaces/expression";
+import INode                       from "./interfaces/node";
+import IPattern                    from "./interfaces/pattern";
+import ITemplateLiteral            from "./interfaces/template-literal";
+import Messages                    from "./messages";
+import NodeType                    from "./node-type";
+import ArrayPattern                from "./patterns/array-pattern";
+import AssignmentPattern           from "./patterns/assignment-pattern";
+import ObjectPattern               from "./patterns/object-pattern";
+import RestElement                 from "./patterns/rest-element";
+import Scanner, { Token }          from "./scanner";
+import SyntaxError                 from "./syntax-error";
+import TokenType                   from "./token-type";
+import TypeGuard                   from "./type-guard";
 import
 {
     AssignmentOperator,
@@ -17,39 +47,7 @@ import
     LogicalOperator,
     UnaryOperator,
     UpdateOperator,
-} from "../types";
-import { hasDuplicated }        from "./common";
-import AssignmentProperty       from "./elements/assignment-property";
-import Property                 from "./elements/property";
-import SpreadElement            from "./elements/spread-element";
-import TemplateElement          from "./elements/template-element";
-import ArrayExpression          from "./expressions/array-expression";
-import ArrowFunctionExpression  from "./expressions/arrow-function-expression";
-import AssignmentExpression     from "./expressions/assignment-expression";
-import BinaryExpression         from "./expressions/binary-expression";
-import CallExpression           from "./expressions/call-expression";
-import CoalesceExpression       from "./expressions/coalesce-expression";
-import ConditionalExpression    from "./expressions/conditional-expression";
-import Identifier               from "./expressions/identifier";
-import Literal                  from "./expressions/literal";
-import LogicalExpression        from "./expressions/logical-expression";
-import MemberExpression         from "./expressions/member-expression";
-import NewExpression            from "./expressions/new-expression";
-import ObjectExpression         from "./expressions/object-expression";
-import ParenthesizedExpression  from "./expressions/parenthesized-expression";
-import SequenceExpression       from "./expressions/sequence-expression";
-import TaggedTemplateExpression from "./expressions/tagged-template-expression";
-import TemplateLiteral          from "./expressions/template-literal";
-import ThisExpression           from "./expressions/this-expression";
-import UnaryExpression          from "./expressions/unary-expression";
-import UpdateExpression         from "./expressions/update-expression";
-import Messages                 from "./messages";
-import ArrayPattern             from "./patterns/array-pattern";
-import AssignmentPattern        from "./patterns/assignment-pattern";
-import ObjectPattern            from "./patterns/object-pattern";
-import RestElement              from "./patterns/rest-element";
-import Scanner, { Token }       from "./scanner";
-import TokenType                from "./token-type";
+} from "./types";
 
 export default class Parser
 {

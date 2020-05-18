@@ -1,6 +1,6 @@
 import { Nullable }  from "@surface/core";
 import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
+import { element }   from "@surface/custom-element";
 import View          from "@surface/view";
 import Enumerable    from "../enumerable";
 import template      from "./index.html";

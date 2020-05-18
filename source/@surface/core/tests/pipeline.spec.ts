@@ -1,7 +1,7 @@
 import { suite, test }                  from "@surface/test-suite";
 import chai                             from "chai";
-import { camelToText, format, toTitle } from "../common/string";
-import Pipeline                         from "../pipeline";
+import { camelToText, format, toTitle } from "../internal/common/string";
+import Pipeline                         from "../internal/pipeline";
 
 @suite
 export default class PipelineSepc

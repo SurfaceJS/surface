@@ -1,12 +1,8 @@
-import { Indexer }           from "@surface/core";
-import { overrideProperty }  from "@surface/core/common/object";
-import IDisposable           from "@surface/core/interfaces/disposable";
-import Type                  from "@surface/reflection";
-import FieldInfo             from "@surface/reflection/field-info";
-import MethodInfo            from "@surface/reflection/method-info";
-import IObserver             from "../interfaces/observer";
-import IPropertySubscription from "../interfaces/property-subscription";
-import Metadata              from "./metadata";
+import { Indexer, overrideProperty, IDisposable } from "@surface/core";
+import Type, { FieldInfo, MethodInfo }            from "@surface/reflection";
+import IObserver                                  from "./interfaces/observer";
+import IPropertySubscription                      from "./interfaces/property-subscription";
+import Metadata                                   from "./metadata";
 
 const IS_REACTIVE = Symbol("reactive:is-reactive");
 type ReactiveArray = Array<unknown> & Indexer & { [IS_REACTIVE]?: boolean };

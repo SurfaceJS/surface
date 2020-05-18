@@ -1,5 +1,5 @@
-import ExpressionVisitor from "../../expression-visitor";
-import IExpression       from "../../interfaces/expression";
+import ExpressionVisitor from "../../internal/expression-visitor";
+import IExpression       from "../../internal/interfaces/expression";
 
 export default class FixtureVisitor extends ExpressionVisitor
 {

@@ -1,7 +1,7 @@
 import "./fixtures/dom";
 
 import { Action }                                                        from "@surface/core";
-import IIdentifier                                                       from "@surface/expression/interfaces/identifier";
+import { IIdentifier }                                                   from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error";

@@ -1,12 +1,7 @@
-import { Action, Indexer } from "@surface/core";
-import { assert }          from "@surface/core/common/generic";
-import IDisposable         from "@surface/core/interfaces/disposable";
-import IArrayExpression    from "@surface/expression/interfaces/array-expression";
-import IExpression         from "@surface/expression/interfaces/expression";
-import TypeGuard           from "@surface/expression/type-guard";
-import ISubscription       from "@surface/reactive/interfaces/subscription";
-import Type                from "@surface/reflection";
-import FieldInfo           from "@surface/reflection/field-info";
+import { assert, Action, Indexer, IDisposable }     from "@surface/core";
+import { IArrayExpression, IExpression, TypeGuard } from "@surface/expression";
+import { ISubscription }                            from "@surface/reactive";
+import Type, { FieldInfo }                          from "@surface/reflection";
 import
 {
     classMap,

@@ -1,7 +1,7 @@
-import IArrayPattern from "../../interfaces/array-pattern";
-import IPattern      from "../../interfaces/pattern";
-import NodeType      from "../../node-type";
-import { PATTERN }   from "../../symbols";
+import IArrayPattern from "../interfaces/array-pattern";
+import IPattern      from "../interfaces/pattern";
+import NodeType      from "../node-type";
+import { PATTERN }   from "../symbols";
 
 export default class ArrayPattern implements IPattern
 {

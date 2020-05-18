@@ -1,10 +1,9 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import IArrayExpression      from "../../interfaces/array-expression";
-import IExpression           from "../../interfaces/expression";
-import ISpreadElement        from "../../interfaces/spread-element";
-import NodeType              from "../../node-type";
-import TypeGuard             from "../../type-guard";
+import { Indexer, Nullable, hasValue } from "@surface/core";
+import IArrayExpression                from "../interfaces/array-expression";
+import IExpression                     from "../interfaces/expression";
+import ISpreadElement                  from "../interfaces/spread-element";
+import NodeType                        from "../node-type";
+import TypeGuard                       from "../type-guard";
 
 export default class ArrayExpression implements IExpression
 {

@@ -2,7 +2,7 @@ import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-su
 import { assert }                                         from "chai";
 import Expression                                         from "..";
 import Messages                                           from "../internal/messages";
-import NodeType                                           from "../node-type";
+import NodeType                                           from "../internal/node-type";
 import
 {
     evaluationsExpected,

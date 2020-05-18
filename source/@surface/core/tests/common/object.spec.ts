@@ -8,7 +8,7 @@ import
     pathfy,
     proxyFrom,
     structuralEqual
-} from "../../common/object";
+} from "../../internal/common/object";
 
 @suite
 export default class CommonObjectSpec

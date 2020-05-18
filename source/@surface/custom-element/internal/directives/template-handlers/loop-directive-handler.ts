@@ -1,7 +1,6 @@
-import { Action2, Nullable }                         from "@surface/core";
-import IDisposable                                   from "@surface/core/interfaces/disposable";
-import TypeGuard                                     from "@surface/expression/type-guard";
-import ISubscription                                 from "@surface/reactive/interfaces/subscription";
+import { Action2, IDisposable, Nullable }            from "@surface/core";
+import { TypeGuard }                                 from "@surface/expression";
+import { ISubscription }                             from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern } from "../../common";
 import DataBind                                      from "../../data-bind";
 import ILoopDirective                                from "../../interfaces/loop-directive";

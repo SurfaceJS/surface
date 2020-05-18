@@ -1,6 +1,6 @@
 import "./fixtures/dom";
 
-import SyntaxError                             from "@surface/expression/syntax-error";
+import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import InterpolatedExpression                  from "../internal/interpolated-expression";

@@ -2,7 +2,7 @@
 import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import PropertyListener            from "../property-listener";
+import PropertyListener            from "../internal/property-listener";
 
 @suite
 export default class PropertyListenerSpec

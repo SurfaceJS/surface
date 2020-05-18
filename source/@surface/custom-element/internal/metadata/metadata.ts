@@ -1,5 +1,5 @@
-import IDisposable  from "@surface/core/interfaces/disposable";
-import { METADATA } from "../symbols";
+import { IDisposable } from "@surface/core";
+import { METADATA }    from "../symbols";
 
 export default class Metadata
 {

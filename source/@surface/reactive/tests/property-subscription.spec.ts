@@ -2,9 +2,9 @@ import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import Reactor                     from "../internal/reactor";
-import Observer                    from "../observer";
-import PropertyListener            from "../property-listener";
-import PropertySubscription        from "../property-subscription";
+import Observer                    from "../internal/observer";
+import PropertyListener            from "../internal/property-listener";
+import PropertySubscription        from "../internal/property-subscription";
 
 @suite
 export default class PropertySubscriptionSpec

@@ -1,9 +1,8 @@
-import { Func1, Indexer, Nullable } from "@surface/core";
-import { hasValue }                 from "@surface/core/common/generic";
-import IExpression                  from "../../interfaces/expression";
-import IUnaryExpression             from "../../interfaces/unary-expression";
-import NodeType                     from "../../node-type";
-import { UnaryOperator }            from "../../types";
+import { Func1, Indexer, Nullable, hasValue } from "@surface/core";
+import IExpression                            from "../interfaces/expression";
+import IUnaryExpression                       from "../interfaces/unary-expression";
+import NodeType                               from "../node-type";
+import { UnaryOperator }                      from "../types";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 

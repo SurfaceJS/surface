@@ -1,8 +1,6 @@
-import { Action1 }                                             from "@surface/core";
-import IDisposable                                             from "@surface/core/interfaces/disposable";
-import IExpression                                             from "@surface/expression/interfaces/expression";
-import TypeGuard                                               from "@surface/expression/type-guard";
-import ISubscription                                           from "@surface/reactive/interfaces/subscription";
+import { Action1, IDisposable }                                from "@surface/core";
+import { IExpression, TypeGuard }                              from "@surface/expression";
+import { ISubscription }                                       from "@surface/reactive";
 import { throwTemplateEvaluationError, tryEvaluateExpression } from "../../common";
 import DataBind                                                from "../../data-bind";
 import IDirective                                              from "../../interfaces/directive";

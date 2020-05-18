@@ -1,8 +1,7 @@
-import { Indexer }            from "@surface/core";
-import { hasValue }           from "@surface/core/common/generic";
-import IConditionalExpression from "../../interfaces/conditional-expression";
-import IExpression            from "../../interfaces/expression";
-import NodeType               from "../../node-type";
+import { Indexer, hasValue }  from "@surface/core";
+import IConditionalExpression from "../interfaces/conditional-expression";
+import IExpression            from "../interfaces/expression";
+import NodeType               from "../node-type";
 
 export default class ConditionalExpression implements IExpression
 {

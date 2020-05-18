@@ -1,5 +1,5 @@
-import { Func1 }                        from "@surface/core";
-import { Enumerable }                   from "@surface/enumerable";
+import { Func1 }                           from "@surface/core";
+import Enumerable                          from "@surface/enumerable";
 import IDataProvider, { Criteria, Result } from "../interfaces/data-provider";
 
 export default class DataProvider<T extends Object> implements IDataProvider<T>

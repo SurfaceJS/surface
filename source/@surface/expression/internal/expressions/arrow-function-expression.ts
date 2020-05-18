@@ -1,11 +1,9 @@
-import { Indexer, Nullable }    from "@surface/core";
-import { hasValue }             from "@surface/core/common/generic";
-import { proxyFrom }            from "@surface/core/common/object";
-import Evaluate                 from "../../evaluate";
-import IArrowFunctionExpression from "../../interfaces/arrow-function-expression";
-import IExpression              from "../../interfaces/expression";
-import IPattern                 from "../../interfaces/pattern";
-import NodeType                 from "../../node-type";
+import { Indexer, Nullable, hasValue, proxyFrom } from "@surface/core";
+import Evaluate                                   from "../evaluate";
+import IArrowFunctionExpression                   from "../interfaces/arrow-function-expression";
+import IExpression                                from "../interfaces/expression";
+import IPattern                                   from "../interfaces/pattern";
+import NodeType                                   from "../node-type";
 
 export default class ArrowFunctionExpression implements IExpression
 {

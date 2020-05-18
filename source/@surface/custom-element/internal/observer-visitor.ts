@@ -1,24 +1,26 @@
-import ExpressionVisitor         from "@surface/expression/expression-visitor";
-import IArrayPattern             from "@surface/expression/interfaces/array-pattern";
-import IArrowFunctionExpression  from "@surface/expression/interfaces/arrow-function-expression";
-import IAssignmentExpression     from "@surface/expression/interfaces/assignment-expression";
-import IAssignmentPattern        from "@surface/expression/interfaces/assignment-pattern";
-import IAssignmentProperty       from "@surface/expression/interfaces/assignment-property";
-import ICallExpression           from "@surface/expression/interfaces/call-expression";
-import ICoalesceExpression       from "@surface/expression/interfaces/coalesce-expression";
-import IConditionalExpression    from "@surface/expression/interfaces/conditional-expression";
-import IIdentifier               from "@surface/expression/interfaces/identifier";
-import IMemberExpression         from "@surface/expression/interfaces/member-expression";
-import INewExpression            from "@surface/expression/interfaces/new-expression";
-import INode                     from "@surface/expression/interfaces/node";
-import IParenthesizedExpression  from "@surface/expression/interfaces/parenthesized-expression";
-import IProperty                 from "@surface/expression/interfaces/property";
-import IRestElement              from "@surface/expression/interfaces/rest-element";
-import ITaggedTemplateExpression from "@surface/expression/interfaces/tagged-template-expression";
-import IThisExpression           from "@surface/expression/interfaces/this-expression";
-import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
-import NodeType                  from "@surface/expression/node-type";
-import TypeGuard                 from "@surface/expression/type-guard";
+import
+{
+    ExpressionVisitor,
+    IArrayPattern,
+    IArrowFunctionExpression,
+    IAssignmentExpression,
+    IAssignmentPattern,
+    IAssignmentProperty,
+    ICallExpression,
+    ICoalesceExpression,
+    IConditionalExpression,
+    IIdentifier,
+    IMemberExpression,
+    INewExpression,
+    INode,
+    IParenthesizedExpression,
+    IProperty,
+    IRestElement,
+    ITaggedTemplateExpression,IThisExpression,
+    IUpdateExpression,
+    NodeType,
+    TypeGuard
+} from "@surface/expression";
 
 
 export default class ObserverVisitor extends ExpressionVisitor

@@ -1,10 +1,9 @@
-import { AsyncAction }     from "@surface/core";
-import IDisposable         from "@surface/core/interfaces/disposable";
-import { enumerateRange }  from "../../common";
-import ITemplateDescriptor from "../../interfaces/template-descriptor";
-import Metadata            from "../../metadata/metadata";
-import TemplateProcessor   from "../../template-processor";
-import { Scope }           from "../../types";
+import { AsyncAction, IDisposable } from "@surface/core";
+import { enumerateRange }           from "../../common";
+import ITemplateDescriptor          from "../../interfaces/template-descriptor";
+import Metadata                     from "../../metadata/metadata";
+import TemplateProcessor            from "../../template-processor";
+import { Scope }                    from "../../types";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {

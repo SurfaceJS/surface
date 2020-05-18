@@ -1,8 +1,7 @@
-import { Indexer }     from "@surface/core";
-import { hasValue }    from "@surface/core/common/generic";
-import IExpression     from "../../interfaces/expression";
-import IThisExpression from "../../interfaces/this-expression";
-import NodeType        from "../../node-type";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import IThisExpression       from "../interfaces/this-expression";
+import NodeType              from "../node-type";
 
 export default class ThisExpression implements IExpression
 {
