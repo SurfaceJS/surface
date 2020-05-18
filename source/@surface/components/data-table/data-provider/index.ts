@@ -1,7 +1,5 @@
-import { element }                         from "@surface/custom-element/decorators";
 import IDataProvider, { Criteria, Result } from "../interfaces/data-provider";
 
-@element("surface-data-provider")
 export default class DataProvider<T extends object> extends HTMLElement implements IDataProvider<T>
 {
     public get createUrl(): string
@@ -78,3 +76,5 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
         throw new Error("Method not implemented.");
     }
 }
+
+window.customElements.define("surface-data-provider", DataProvider);

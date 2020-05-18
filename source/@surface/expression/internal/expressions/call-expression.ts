@@ -1,11 +1,12 @@
 import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
 import { format }            from "@surface/core/common/string";
+import ICallExpression       from "../../interfaces/call-expression";
 import IExpression           from "../../interfaces/expression";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
+import TypeGuard             from "../../type-guard";
 import Messages              from "../messages";
-import TypeGuard             from "../type-guard";
 
 export default class CallExpression implements IExpression
 {
@@ -57,6 +58,11 @@ export default class CallExpression implements IExpression
         this._arguments = $arguments;
         this._callee    = callee;
         this._optional  = !!optional;
+    }
+
+    public clone(): ICallExpression
+    {
+        return new CallExpression(this.callee.clone(), this.arguments.map(x => x.clone()), this.optional);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

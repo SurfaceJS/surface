@@ -19,9 +19,9 @@ export default class PropertySubscription<TValue = unknown, TTarget extends Inde
     {
         this.observer.unsubscribe(this.listener);
 
-        while (this.actions.length > 0)
+        for (const action of this.actions.splice(0))
         {
-            this.actions.pop()!();
+            action();
         }
     }
 

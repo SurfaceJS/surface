@@ -1,4 +1,5 @@
 import IAssignmentProperty from "../../interfaces/assignment-property";
+import IObjectPattern      from "../../interfaces/object-pattern";
 import IPattern            from "../../interfaces/pattern";
 import IRestElement        from "../../interfaces/rest-element";
 import NodeType            from "../../node-type";
@@ -29,6 +30,11 @@ export default class ObjectPattern implements IPattern
     public constructor(properties: Array<IAssignmentProperty|IRestElement>)
     {
         this._properties = properties;
+    }
+
+    public clone(): IObjectPattern
+    {
+        return new ObjectPattern(this.properties.map(x => x.clone()));
     }
 
     public toString(): string

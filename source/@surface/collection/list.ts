@@ -171,7 +171,7 @@ export default class List<T> extends Enumerable<T>
     {
         if (typeof indexOritem == "number")
         {
-            this[SOURCE].splice(indexOritem, count || 1);
+            this[SOURCE].splice(indexOritem, count ?? 1);
         }
         else
         {

@@ -1,8 +1,9 @@
-import { Indexer, Nullable }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
-import TypeGuard    from "../type-guard";
+import { Indexer, Nullable } from "@surface/core";
+import { hasValue }          from "@surface/core/common/generic";
+import IExpression           from "../../interfaces/expression";
+import IMemberExpression     from "../../interfaces/member-expression";
+import NodeType              from "../../node-type";
+import TypeGuard             from "../../type-guard";
 
 export default class MemberExpression implements IExpression
 {
@@ -67,6 +68,11 @@ export default class MemberExpression implements IExpression
         this._property = property;
         this._computed = computed;
         this._optional = !!optional;
+    }
+
+    public clone(): IMemberExpression
+    {
+        return new MemberExpression(this.object.clone(), this.property.clone(), this.computed, this.optional);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

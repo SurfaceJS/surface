@@ -2,6 +2,7 @@ import { Indexer }  from "@surface/core";
 import { hasValue } from "@surface/core/common/generic";
 import { format }   from "@surface/core/common/string";
 import IExpression  from "../../interfaces/expression";
+import IIdentifier  from "../../interfaces/identifier";
 import IPattern     from "../../interfaces/pattern";
 import NodeType     from "../../node-type";
 import { PATTERN }  from "../../symbols";
@@ -33,6 +34,11 @@ export default class Identifier implements IExpression, IPattern
     public constructor(name: string)
     {
         this._name = name;
+    }
+
+    public clone(): IIdentifier
+    {
+        return new Identifier(this.name);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

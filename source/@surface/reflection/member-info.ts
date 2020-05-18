@@ -9,6 +9,12 @@ export default abstract class MemberInfo
         return this._declaringType;
     }
 
+    private readonly _descriptor: PropertyDescriptor;
+    public get descriptor(): PropertyDescriptor
+    {
+        return this._descriptor;
+    }
+
     private readonly _isOwn: boolean;
     public get isOwn(): boolean
     {
@@ -42,9 +48,10 @@ export default abstract class MemberInfo
         return this._metadata;
     }
 
-    protected constructor(key: string|symbol, declaringType: Type, isOwn: boolean, isStatic: boolean)
+    protected constructor(key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
         this._key           = key;
+        this._descriptor    = descriptor;
         this._declaringType = declaringType;
         this._isOwn         = isOwn;
         this._isStatic      = isStatic;

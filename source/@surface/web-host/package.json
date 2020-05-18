@@ -5,12 +5,11 @@
     },
     "dependencies": {
         "@surface/collection": "0.0.0",
-        "@surface/common": "0.0.8",
         "@surface/core": "0.0.3",
         "@surface/enumerable": "0.0.5",
         "@surface/reflection": "0.0.0",
         "@surface/router": "0.0.0",
-        "tslib": "1.10.0"
+        "tslib": "2.0.0"
     },
     "description": "Simple web host for @surface projects.",
     "devDependencies": {

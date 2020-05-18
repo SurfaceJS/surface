@@ -2,8 +2,8 @@ import { Constructor, Indexer, Nullable } from "../core";
 import IInjections                        from "./internal/interfaces/injections";
 import { INJECTIONS }                     from "./internal/symbols";
 
+type Factory               = (container: Container) => object;
 type InjectableConstructor = Function & { [INJECTIONS]?: IInjections };
-type Factory               = (container: Omit<Container, "register">) => object;
 
 export default class Container
 {

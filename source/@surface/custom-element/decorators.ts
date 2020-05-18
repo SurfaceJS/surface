@@ -1,206 +1,282 @@
-import { Func1, Func2, Indexer, Nullable } from "@surface/core";
-import { typeGuard }                       from "@surface/core/common/generic";
-import { structuralEqual }                 from "@surface/core/common/object";
-import { camelToDashed }                   from "@surface/core/common/string";
-import Type                                from "@surface/reflection";
-import CustomElement                       from ".";
-import { LifeCycle }                       from "./interfaces/types";
-import * as symbols                        from "./internal/symbols";
-import TemplateProcessor                   from "./internal/template-processor";
+import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
+import { overrideConstructor, overrideProperty } from "@surface/core/common/object";
+import { camelToDashed }                         from "@surface/core/common/string";
+import Reactive                                  from "@surface/reactive";
+import ISubscription                             from "@surface/reactive/interfaces/subscription";
+import ICustomElement                            from "./interfaces/custom-element";
+import Metadata                                  from "./internal/metadata/metadata";
+import PrototypeMetadata                         from "./internal/metadata/prototype-metadata";
+import StaticMetadata                            from "./internal/metadata/static-metadata";
+import * as symbols                              from "./internal/symbols";
+import TemplateParser                            from "./internal/template-parser";
+import TemplateProcessor                         from "./internal/template-processor";
 
-type ProxyFuncion          = Function & { [symbols.PROXY_FUNCION]?: boolean };
-type AttributteConvertable =
-{
-    [symbols.CONVERTERS]?:           Record<string, Func2<Indexer, string, unknown>>;
-    [symbols.OBSERVED_ATTRIBUTES]?:  Array<string|symbol>;
-    [symbols.REFLECTED_ATTRIBUTES]?: Array<string>;
-};
+const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
-export function attribute<T>(converter: Func1<string, T>): PropertyDecorator;
-export function attribute<T extends object>(target: object, propertyKey: string|symbol, descriptor: PropertyDescriptor): void;
-export function attribute(...args: [Func1<string, unknown>]|[object, string|symbol, PropertyDescriptor]): PropertyDecorator|void
+type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
+
+function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
-    const decorator = (target: object, propertyKey: string|symbol, descriptor: PropertyDescriptor) =>
+    return (target: HTMLElement, propertyKey: string|symbol) =>
     {
-        if (typeGuard<object, LifeCycle<HTMLElement> & AttributteConvertable & Indexer>(target, x => x instanceof HTMLElement) && typeof propertyKey == "string")
+        const privateKey = typeof propertyKey == "string" ? `_${propertyKey.toString()}` : Symbol(propertyKey.toString());
+
+        Object.defineProperty
+        (
+            target,
+            propertyKey,
+            {
+                configurable: true,
+                get(this: HTMLElement & Indexer<(Element | null) | NodeListOf<Element>>)
+                {
+                    if (!this.shadowRoot)
+                    {
+                        throw Error("Can't query a closed shadow root");
+                    }
+
+                    if (!!nocache || Object.is(this[privateKey as string], undefined))
+                    {
+                        this[privateKey as string] = fn(this.shadowRoot);
+                    }
+
+                    return this[privateKey as string];
+                }
+            }
+        );
+    };
+}
+
+function stringToCSSStyleSheet(source: string): CSSStyleSheet
+{
+    const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
+
+    sheet.replaceSync(source);
+    sheet.toString = () => source;
+
+    return sheet;
+}
+
+export function attribute(converter: Func1<string, unknown>): (target: Target, propertyKey: string) => void;
+export function attribute(target: ICustomElement, propertyKey: string): void;
+export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: Target, propertyKey: string) => void)|void
+{
+    const decorator = (target: Target, propertyKey: string) =>
+    {
+        const constructor = target.constructor;
+
+        const attributeName = camelToDashed(propertyKey);
+
+        const prototypeMetadata = PrototypeMetadata.from(target);
+        const staticMetadata    = StaticMetadata.from(constructor);
+
+        staticMetadata.observedAttributes.push(attributeName);
+
+        if (!constructor.hasOwnProperty("observedAttributes"))
         {
-            const attributeName = camelToDashed(propertyKey);
-
-            const observedAttributes = target[symbols.OBSERVED_ATTRIBUTES] = target.hasOwnProperty(symbols.OBSERVED_ATTRIBUTES) ?
-                target[symbols.OBSERVED_ATTRIBUTES]!
-                : !!target[symbols.OBSERVED_ATTRIBUTES] ?
-                    [...(target[symbols.OBSERVED_ATTRIBUTES] || [])]
-                    : [];
-
-            observedAttributes.push(attributeName);
-
-            if (!target.constructor.hasOwnProperty("observedAttributes"))
+            const getter = function(this: Constructor & { [symbols.STATIC_METADATA]: StaticMetadata })
             {
-                Object.defineProperty(target.constructor, "observedAttributes", { get: () => target[symbols.OBSERVED_ATTRIBUTES] });
-            }
+                return this[symbols.STATIC_METADATA].observedAttributes;
+            };
 
-            if (descriptor.get && descriptor.set)
-            {
-                const setter = descriptor.set;
+            Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
+        }
 
-                descriptor.set = function(this: HTMLElement & AttributteConvertable, value: unknown)
-                {
-                    if (!Object.is(descriptor.get!.call(this), value))
-                    {
-                        const refletedAttributes = this[symbols.REFLECTED_ATTRIBUTES] = this[symbols.REFLECTED_ATTRIBUTES] || [];
+        let converter: Func1<string, unknown>;
 
-                        setter.call(this, value);
-
-                        refletedAttributes.push(attributeName);
-
-                        this.setAttribute(attributeName, `${value}`);
-
-                        refletedAttributes.splice(refletedAttributes.indexOf(attributeName), 1);
-                    }
-                };
-
-                const type = Type.from(target);
-
-                const methodInfo = type.getMethod("attributeChangedCallback");
-                const callback   = (methodInfo && methodInfo.invoke || null) as Nullable<ProxyFuncion>;
-
-                let converter: Func1<string, unknown>;
-
-                if (args.length == 1)
-                {
-                    converter = args[0];
-                }
-                else
-                {
-                    switch (type.getField(propertyKey)!.metadata["design:type"])
-                    {
-                        case Boolean:
-                            converter = x => x == "true";
-                            break;
-                        case Number:
-                            converter = x => Number.parseFloat(x) || 0;
-                            break;
-                        default:
-                            converter = x => x;
-                    }
-                }
-
-                const converters = target[symbols.CONVERTERS] = target.hasOwnProperty(symbols.CONVERTERS) ?
-                    target[symbols.CONVERTERS]!
-                    : !!target[symbols.CONVERTERS] ?
-                        {...target[symbols.CONVERTERS] }
-                        : { };
-
-                const conversionHandler = (target: Indexer, value: string) =>
-                {
-                    const current   = target[propertyKey];
-                    const converted = converter(value);
-
-                    if (!structuralEqual(current, converted))
-                    {
-                        target[propertyKey] = converted;
-                    }
-                };
-
-                converters[attributeName] = conversionHandler;
-
-                if (!callback || !callback[symbols.PROXY_FUNCION])
-                {
-                    target.attributeChangedCallback = function(this: HTMLElement & AttributteConvertable, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
-                    {
-                        const reflectedAttributes = this[symbols.REFLECTED_ATTRIBUTES] || [];
-
-                        if (reflectedAttributes.includes(name))
-                        {
-                            return;
-                        }
-
-                        this[symbols.CONVERTERS]![name](this, newValue);
-
-                        if (callback)
-                        {
-                            callback.call(this, name, oldValue, newValue, namespace);
-                        }
-                    };
-
-                    if (callback)
-                    {
-                        callback[symbols.PROXY_FUNCION] = true;
-                    }
-
-                    (target.attributeChangedCallback as ProxyFuncion)[symbols.PROXY_FUNCION] = true;
-                }
-            }
+        if (args.length == 1)
+        {
+            converter = args[0];
         }
         else
         {
-            throw new TypeError("Target is not an valid instance of HTMLElement");
+            switch (Reflect.getMetadata("design:type", target, propertyKey))
+            {
+                case Boolean:
+                    converter = x => x === "" || x == "true";
+                    break;
+                case Number:
+                    converter = x => Number.parseFloat(x) || 0;
+                    break;
+                default:
+                    converter = x => x;
+            }
         }
+
+        staticMetadata.conversionHandlers[attributeName] = (target: Indexer, value: string) =>
+        {
+            const current   = target[propertyKey];
+            const converted = converter(value);
+
+            if (!Object.is(current, converted))
+            {
+                target[propertyKey] = converted;
+            }
+        };
+
+        const attributeChangedCallback = target.attributeChangedCallback;
+
+
+        if (!attributeChangedCallback || attributeChangedCallback != prototypeMetadata.attributeChangedCallback)
+        {
+            target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+            {
+                if (!Metadata.from(this).reflectingAttribute)
+                {
+                    StaticMetadata.from(this.constructor)
+                        .conversionHandlers[name]?.(this as unknown as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
+
+                    attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
+                }
+            };
+
+            prototypeMetadata.attributeChangedCallback = target.attributeChangedCallback;
+        }
+
+        const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown) =>
+        {
+            if (!Object.is(oldValue, undefined))
+            {
+                const metadata = Metadata.from(instance);
+
+                metadata.reflectingAttribute = true;
+
+                instance.setAttribute(attributeName, `${newValue}`);
+
+                metadata.reflectingAttribute = false;
+            }
+        };
+
+        return overrideProperty(target as HTMLElement, propertyKey, action, null, true);
     };
 
     if (args.length == 1)
     {
-        return decorator as Function as PropertyDecorator; // Waiting type definition fix;
+        return decorator;
     }
     else
     {
-        const [target, propertyKey, descriptor] = args;
-        decorator(target, propertyKey, descriptor);
+        const [target, propertyKey] = args;
+
+         // Reflect.metadata expects that the property decorator returns an descriptor
+        return decorator(target, propertyKey) as unknown as void;
     }
 }
 
-export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): ClassDecorator
+export function computed<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void
 {
-    return <T extends Function>(target: T) =>
+    return <U extends T>(target: U & { [symbols.METADATA]?: Metadata }, propertyKey: string) =>
     {
-        if (typeGuard<Function, typeof HTMLElement>(target, x => x.prototype instanceof HTMLElement))
+        const action = (instance: HTMLElement) =>
         {
-            if (typeGuard<Function, typeof CustomElement>(target, x => x.prototype instanceof CustomElement))
+            const subscriptions: Array<ISubscription> = [];
+
+            for (const property of properties)
             {
-                const templateElement = document.createElement("template");
-
-                templateElement.innerHTML = template || "<slot></slot>";
-
-                if (style)
-                {
-                    const styleElement = document.createElement("style");
-                    styleElement.innerHTML = style;
-                    templateElement.content.appendChild(styleElement);
-                }
-
-                Object.defineProperty(target, symbols.TEMPLATE, { get: () => templateElement } );
-
-                const proxy = function(this: CustomElement, ...args: Array<unknown>)
-                {
-                    const instance = Reflect.construct(target, args, new.target) as CustomElement;
-
-                    TemplateProcessor.process(instance, instance[symbols.SHADOW_ROOT], { host: instance });
-
-                    if (instance.onAfterBind)
-                    {
-                        instance.onAfterBind();
-                    }
-
-                    return instance;
-                };
-
-                Object.setPrototypeOf(proxy, Object.getPrototypeOf(target));
-                Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(target));
-
-                proxy.prototype.constructor = proxy;
-
-                window.customElements.define(name, proxy, options);
-
-                return proxy as Function as T;
+                subscriptions.push(Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey)}));
             }
 
-            window.customElements.define(name, target, options);
+            return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
+        };
 
-            return target;
-        }
-        else
+        StaticMetadata.from(target.constructor).postConstruct.push(action);
+    };
+}
+
+export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
+{
+    return <T extends Constructor<ICustomElement>>(target: T) =>
+    {
+        const staticMetadata = StaticMetadata.from(target);
+
+        const templateElement = document.createElement("template");
+
+        // templateElement.innerHTML = template ?? "<slot></slot>";
+        templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
+
+        const descriptor = TemplateParser.parseReference(name, templateElement);
+
+        if (style)
         {
-            throw new TypeError("Target is not an valid subclass of HTMLElement");
+            staticMetadata.styles.push(stringToCSSStyleSheet(style));
         }
+
+        staticMetadata.template = templateElement;
+
+        const action = (instance: InstanceType<T> & ICustomElement) =>
+        {
+            TemplateProcessor.process({ scope: { host: instance }, host: instance, root: instance.shadowRoot, descriptor });
+
+            instance.bindedCallback?.();
+
+            const metadata = Metadata.from(instance);
+
+            staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
+
+            return instance;
+        };
+
+        const proxy = overrideConstructor(target, action);
+
+        window.customElements.define(name, proxy, options);
+
+        return proxy;
+    };
+}
+
+export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean|AddEventListenerOptions): (target: object, propertyKey: string|symbol) => void
+{
+    return (target: object, propertyKey: string|symbol) =>
+    {
+        const action = (element: HTMLElement) =>
+        {
+            const listener = (event: HTMLElementEventMap[K]) => (element as unknown as Indexer<Function>)[propertyKey as string]!.call(element, event);
+
+            element.addEventListener(type, listener, options);
+
+            return { dispose: () => element.removeEventListener(type, listener) };
+        };
+
+        StaticMetadata.from(target.constructor).postConstruct.push(action);
+    };
+}
+
+export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
+{
+    return <U extends T>(target: U, propertyKey: string) =>
+    {
+        if (typeof target[propertyKey as keyof U] == "function")
+        {
+
+            const action = (instance: HTMLElement) =>
+            {
+                const notify = (value: unknown) => (instance as object as Record<string, Function>)[propertyKey](value);
+
+                const subscription = Reactive.observe(instance, property as string).observer.subscribe({ notify });
+
+                return { dispose: () => subscription.unsubscribe() };
+            };
+
+            StaticMetadata.from(target.constructor).postConstruct.push(action);
+        }
+    };
+}
+
+export function query(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+{
+    return queryFactory(x => x.querySelector(selector), nocache);
+}
+
+export function queryAll(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+{
+    return queryFactory(x => x.querySelectorAll(selector), nocache);
+}
+
+export function styles(...styles: Array<string>): <T extends Constructor<HTMLElement>>(target: T) => T
+{
+    return <T extends Constructor<HTMLElement>>(constructor: T) =>
+    {
+        StaticMetadata.from(constructor).styles.push(...styles.map(stringToCSSStyleSheet));
+
+        return constructor;
     };
 }

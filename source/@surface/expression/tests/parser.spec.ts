@@ -1,8 +1,9 @@
 import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                                          from "chai";
+import { assert }                                         from "chai";
 import ParenthesizedExpression                            from "../internal/expressions/parenthesized-expression";
 import Parser                                             from "../internal/parser";
-import TypeGuard                                          from "../internal/type-guard";
+import SyntaxError                                        from "../syntax-error";
+import TypeGuard                                          from "../type-guard";
 import
 {
     invalidExpressions,
@@ -10,6 +11,25 @@ import
     InvalidParseExpectedSpec,
     ParseExpectedSpec
 } from "./expectations/parser-expected";
+
+type RawSyntaxError = Pick<SyntaxError, "message"|"lineNumber"|"index"|"column">|Pick<ReferenceError, "message">;
+
+function toRaw(error: SyntaxError|ReferenceError): RawSyntaxError
+{
+    if (error instanceof SyntaxError)
+    {
+        return {
+            message:    error.message,
+            lineNumber: error.lineNumber,
+            index:      error.index,
+            column:     error.column
+        };
+    }
+    else
+    {
+        return { message: error.message };
+    }
+}
 
 @suite
 export default class ParserSpec
@@ -60,19 +80,21 @@ export default class ParserSpec
             expression = expression.argument;
         }
 
+        assert.deepEqual(expression, expression.clone(), "clone");
+
         if (parseExpectedSpec.value instanceof Function)
         {
-            chai.expect((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), "evaluate").to.deep.equal(parseExpectedSpec.value.toString());
-            chai.expect((expression.evaluate(parseExpectedSpec.scope, true) as Function).toString(), "evaluate using cache").to.deep.equal(parseExpectedSpec.value.toString());
+            assert.equal((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate");
+            assert.equal((expression.evaluate(parseExpectedSpec.scope, true) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate using cache");
         }
         else
         {
-            chai.expect(expression.evaluate(parseExpectedSpec.scope), "evaluate").to.deep.equal(parseExpectedSpec.value);
-            chai.expect(expression.evaluate(parseExpectedSpec.scope, true), "evaluate using cache").to.deep.equal(parseExpectedSpec.value);
+            assert.deepEqual(expression.evaluate(parseExpectedSpec.scope), parseExpectedSpec.value, "evaluate");
+            assert.deepEqual(expression.evaluate(parseExpectedSpec.scope, true), parseExpectedSpec.value, "evaluate using cache");
         }
 
-        chai.expect(expression, "instanceof").instanceof(parseExpectedSpec.type);
-        chai.expect(expression.toString(), "toString").to.equal(parseExpectedSpec.toString);
+        assert.instanceOf(expression, parseExpectedSpec.type, "instanceof");
+        assert.equal(expression.toString(), parseExpectedSpec.toString, "toString");
     }
 
     @shouldPass
@@ -83,10 +105,10 @@ export default class ParserSpec
 
         const expression = Parser.parse("((a && b) || x && y)");
 
-        chai.expect(expression.evaluate(scope), "evaluate").to.deep.equal(false);
-        chai.expect(expression.evaluate(scope, true), "evaluate using cache").to.deep.equal(false);
-        chai.expect(expression, "instanceof").instanceof(ParenthesizedExpression);
-        chai.expect(expression.toString(), "toString").to.equal("((a && b) || x && y)");
+        assert.equal(expression.evaluate(scope), false, "evaluate");
+        assert.equal(expression.evaluate(scope, true), false, "evaluate using cache");
+        assert.instanceOf(expression, ParenthesizedExpression, "instanceof");
+        assert.equal(expression.toString(), "((a && b) || x && y)", "toString");
     }
 
     @shouldFail
@@ -101,8 +123,7 @@ export default class ParserSpec
         }
         catch (error)
         {
-            chai.expect(error.message).to.equal(invalidParseExpectedSpec.error.message);
-            chai.expect(error).to.includes(invalidParseExpectedSpec.error);
+            assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
         }
     }
 }

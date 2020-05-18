@@ -1,6 +1,7 @@
 import { Indexer }         from "@surface/core";
 import { hasValue }        from "@surface/core/common/generic";
 import IExpression         from "../../interfaces/expression";
+import ILogicalExpression  from "../../interfaces/logical-expression";
 import NodeType            from "../../node-type";
 import { LogicalOperator } from "../../types";
 
@@ -65,6 +66,11 @@ export default class LogicalExpression implements IExpression
         this._operator = operator;
         this._right    = right;
         this.operation = binaryFunctions[this.operator];
+    }
+
+    public clone(): ILogicalExpression
+    {
+        return new LogicalExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): unknown

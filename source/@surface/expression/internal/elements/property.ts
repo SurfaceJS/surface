@@ -1,7 +1,8 @@
 import IExpression from "../../interfaces/expression";
 import INode       from "../../interfaces/node";
+import IProperty   from "../../interfaces/property";
 import NodeType    from "../../node-type";
-import TypeGuard   from "../type-guard";
+import TypeGuard   from "../../type-guard";
 
 export default class Property implements INode
 {
@@ -64,6 +65,11 @@ export default class Property implements INode
         this._value      = value;
         this._computed   = computed;
         this._shorthand  = shorthand;
+    }
+
+    public clone(): IProperty
+    {
+        return new Property(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
     }
 
     public toString(): string

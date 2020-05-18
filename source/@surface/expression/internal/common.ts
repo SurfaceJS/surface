@@ -1,7 +1,10 @@
 import IPattern  from "../interfaces/pattern";
-import TypeGuard from "./type-guard";
+import TypeGuard from "../type-guard";
+import { Token } from "./scanner";
 
-export function hasDuplicated(parameters: Array<IPattern>): boolean
+export function hasDuplicated(parameters: Array<IPattern>): boolean;
+export function hasDuplicated(parameters: Array<IPattern>, lookeaheads: Array<Token>): { result: true, token: Token }|{ result: false, token: null };
+export function hasDuplicated(parameters: Array<IPattern>, lookeaheads?: Array<Token>): boolean|{ result: boolean, token: Token|null }
 {
     const cache = new Set<string>();
 
@@ -60,13 +63,20 @@ export function hasDuplicated(parameters: Array<IPattern>): boolean
         return false;
     };
 
-    for (const parameter of parameters)
+    if (lookeaheads)
     {
-        if (isDuplicated(parameter))
+        for (let index = 0; index < parameters.length; index++)
         {
-            return true;
+            if (isDuplicated(parameters[index]))
+            {
+                return { result: true, token: lookeaheads[index] };
+            }
         }
-    }
 
-    return false;
+        return { result: false, token: null };
+    }
+    else
+    {
+        return parameters.some(isDuplicated);
+    }
 }

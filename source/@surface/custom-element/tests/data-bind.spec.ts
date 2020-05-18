@@ -1,8 +1,7 @@
 import "./fixtures/dom";
 
-import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                   from "chai";
+import { assert }                  from "chai";
 import DataBind                    from "../internal/data-bind";
 
 @suite
@@ -15,11 +14,11 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = 2;
 
-        chai.expect(changed).to.equal(true);
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -29,9 +28,9 @@ export default class DataBindSpec
 
         Object.defineProperty(target, "value", { value: target.value, writable: false });
 
-        DataBind.oneWay(target, "value", { notify: () => undefined }); // Todo: Review if should throw error or not
+        DataBind.oneWay(target, ["value"], { notify: () => undefined }); // Todo: Review if should throw error or not
 
-        chai.expect(true);
+        assert.isTrue(true);
     }
 
     @test @shouldPass
@@ -55,11 +54,11 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = 2;
 
-        chai.expect(changed).to.equal(true);
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -83,11 +82,11 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.setValue(2);
 
-        chai.expect(changed).to.equal(true);
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -97,12 +96,12 @@ export default class DataBindSpec
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], { notify: () => changed = true });
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
-        chai.expect(changed).to.equal(true);
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -114,27 +113,11 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute as Indexer, "value", { notify: () => value = attribute.value });
+        DataBind.oneWay(attribute, ["value"], { notify: () => value = attribute.value });
 
         attribute.value = "2";
-        chai.expect(value).to.equal("2");
+        assert.equal(value, "2");
     }
-
-    // Deprecated
-    // @test @shouldPass
-    // public oneWayPropertyAttributeDataBind(): void
-    // {
-    //     const target = document.createElement("div");
-    //     target.lang = "pt-br";
-
-    //     let value = target.lang;
-    //     DataBind.oneWay(target, "lang", { notify: () => value = target.lang });
-
-    //     target.setAttribute("lang", "en-us");
-    //     target.setAttribute("lang1", "en-us");
-    //     chai.expect(value, "value").to.equal("en-us");
-    //     chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
-    // }
 
     @test @shouldPass
     public twoWayObjectDataBind(): void
@@ -156,14 +139,26 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left as Indexer, "value", right as Indexer, "value");
+        DataBind.twoWay(left, "value", right, "value");
 
         left.value = 2;
 
-        chai.expect(right.value).to.equal(2);
+        assert.equal(right.value, 2);
 
         right.value = 3;
 
-        chai.expect(left.value).to.equal(3);
+        assert.equal(left.value, 3);
+    }
+
+    @test @shouldPass
+    public observe(): void
+    {
+        const target  = { value: "string" };
+
+        let observed = false;
+
+        DataBind.observe(target, [["value", "length"]], { notify: () => observed = true } );
+
+        assert.isTrue(observed);
     }
 }

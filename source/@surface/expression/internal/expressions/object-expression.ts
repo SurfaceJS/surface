@@ -1,10 +1,11 @@
 import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
 import IExpression           from "../../interfaces/expression";
+import IObjectExpression     from "../../interfaces/object-expression";
 import IProperty             from "../../interfaces/property";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
-import TypeGuard             from "../type-guard";
+import TypeGuard             from "../../type-guard";
 
 export default class ObjectExpression implements IExpression
 {
@@ -30,6 +31,11 @@ export default class ObjectExpression implements IExpression
     public constructor(properties: Array<IProperty|ISpreadElement>)
     {
         this._properties = properties;
+    }
+
+    public clone(): IObjectExpression
+    {
+        return new ObjectExpression(this.properties.map(x => x.clone()));
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): Indexer

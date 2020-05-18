@@ -26,6 +26,11 @@ export default class Literal implements ILiteral
         this._value = value;
     }
 
+    public clone(): ILiteral
+    {
+        return new Literal(this.value);
+    }
+
     public evaluate(): LiteralValue
     {
         return this.value;

@@ -28,7 +28,7 @@ import ITemplateLiteral          from "./interfaces/template-literal";
 import IThisExpression           from "./interfaces/this-expression";
 import IUnaryExpression          from "./interfaces/unary-expression";
 import IUpdateExpression         from "./interfaces/update-expression";
-import TypeGuard                 from "./internal/type-guard";
+import TypeGuard                 from "./type-guard";
 
 export default abstract class ExpressionVisitor
 {

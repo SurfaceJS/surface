@@ -2,52 +2,35 @@ import "./fixtures/dom";
 
 import Expression           from "@surface/expression";
 import { batchTest, suite } from "@surface/test-suite";
-import * as chai            from "chai";
+import { assert }           from "chai";
 import ObserverVisitor      from "../internal/observer-visitor";
 import
 {
     observableExpressions,
     unobservableExpressions,
-    ObservableExpression,
-    UnobservableExpression
+    ObservableExpression
 } from "./expectations/observer-visitor-expected";
 
 @suite
 export class ObserverVisitorSpec
 {
-    @batchTest(observableExpressions, x => `observable expression ${x.expression}; should have ${x.observers} observers and ${x.observers * 2} notifications`)
+    @batchTest(observableExpressions, x => `observable expression ${x.expression}; expected paths: ${x.expected.map(x => `[${x}]`)}`)
     public observableExpressions(observableExpression: ObservableExpression): void
     {
         const expression = Expression.parse(observableExpression.expression);
 
-        let observers = 0;
+        const actual = ObserverVisitor.observe(expression);
 
-        const subscription = ObserverVisitor.observe(expression, observableExpression.scope, { notify: () => observers++ }, false);
-
-        chai.expect(observers, "observers").to.equal(observableExpression.observers);
-
-        observableExpression.change(observableExpression.scope);
-
-        chai.expect(observers, "notifications").to.equal(observableExpression.observers * 2);
-
-        observers = 0;
-
-        subscription.unsubscribe();
-
-        observableExpression.change(observableExpression.scope);
-
-        chai.expect(observers == 0, "unsubscribe").to.equal(true);
+        assert.deepEqual(actual, observableExpression.expected);
     }
 
-    @batchTest(unobservableExpressions, x => `unobservable expression ${x.expression}; shouldn't have observers`)
-    public unobservableExpressions(unobservableExpression: UnobservableExpression): void
+    @batchTest(unobservableExpressions, x => `unobservable expression ${x}; shouldn't have observers`)
+    public unobservableExpressions(unobservableExpression: string): void
     {
-        const expression = Expression.parse(unobservableExpression.expression);
+        const expression = Expression.parse(unobservableExpression);
 
-        let observers = 0;
+        const paths = ObserverVisitor.observe(expression);
 
-        ObserverVisitor.observe(expression, unobservableExpression.scope, { notify: () => observers++ }, false);
-
-        chai.expect(observers == 0).to.equal(true);
+        assert.equal(paths.length, 0);
     }
 }

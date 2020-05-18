@@ -108,8 +108,8 @@ export function makePath(targetPath: string, mode?: number): void
     }
 
     const parentDir = path.dirname(targetPath.toString());
-    // tslint:disable-next-line:no-magic-numbers
-    mode = mode || parseInt("0777", 8) & (~process.umask());
+
+    mode = mode ?? 0o777;
 
     if (!fs.existsSync(parentDir))
     {
@@ -135,5 +135,5 @@ export async function makePathAsync(path: string): Promise<void>;
 export async function makePathAsync(path: string, mode:  number): Promise<void>;
 export async function makePathAsync(targetPath: string, mode?: number): Promise<void>
 {
-    await Promise.resolve(makePath(targetPath, mode || mode || parseInt("0777", 8) & (~process.umask())));
+    await Promise.resolve(makePath(targetPath, mode ?? 0o777));
 }

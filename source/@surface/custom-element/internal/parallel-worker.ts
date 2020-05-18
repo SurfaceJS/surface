@@ -1,3 +1,6 @@
+import Queue       from "@surface/collection/queue";
+import { Action1 } from "@surface/core";
+
 type Action   = () => unknown;
 type Callback = (value: unknown) => void;
 
@@ -5,17 +8,24 @@ export default class ParallelWorker
 {
     public static readonly default = new ParallelWorker();
 
-    private readonly stack: Array<[Action, Callback]> = [];
+    private readonly queue: Queue<[Action, Callback]> = new Queue();
 
     private readonly interval: number;
 
-    private expended: number  = 0;
-    private lastRun:  number  = 0;
-    private running:  boolean = false;
+    private _done:    Promise<void> = Promise.resolve();
+    private expended: number        = 0;
+    private resolve:  Action|null   = null;
+    private reject:   Action1<unknown>|null   = null;
+    private running:  boolean       = false;
 
     public constructor(interval?: number)
     {
         this.interval = interval ?? 16.17;
+    }
+
+    public static done(): Promise<void>
+    {
+        return ParallelWorker.default.done();
     }
 
     public static async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
@@ -25,46 +35,65 @@ export default class ParallelWorker
 
     private execute(): void
     {
+        let rejected = false;
         this.running = true;
 
-        while (this.stack.length > 0)
+        while (this.queue.length > 0)
         {
-            const [action, callback] = this.stack.shift()!;
+            const [action, callback] = this.queue.dequeue()!;
 
             const start = window.performance.now();
 
-            callback(action());
-
-            const end = window.performance.now();
-
-            this.expended += (end - start);
-
-            if (this.expended > this.interval)
+            try
             {
-                this.expended = 0;
+                callback(action());
 
-                window.requestAnimationFrame(() => this.execute());
+                const end = window.performance.now();
 
-                return;
+                this.expended += (end - start);
+
+                if (this.expended > this.interval)
+                {
+                    this.expended = 0;
+
+                    window.requestAnimationFrame(() => this.execute());
+
+                    return;
+                }
+            }
+            catch (error)
+            {
+                this.reject?.(error);
+                this.reject = null;
+
+                rejected = true;
             }
         }
 
-        this.running = false;
+        this.expended = 0;
+        this.running  = false;
 
-        this.lastRun = window.performance.now();
+        if (!rejected)
+        {
+            this.resolve?.();
+            this.resolve = null;
+        }
+    }
+
+    public done(): Promise<void>
+    {
+        return this._done;
     }
 
     public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
     {
-        const promise = new Promise<ReturnType<TAction>>(resolve => this.stack.push([action, resolve as Callback]));
-
         if (!this.running)
         {
-            this.expended = window.performance.now() - this.lastRun;
+            this._done = new Promise((resolve, reject) => (this.resolve = resolve, this.reject = reject));
 
-            this.execute();
+            window.setTimeout(() => this.execute());
         }
 
-        return await promise;
+        return await new Promise(resolve => this.queue.enqueue([action, resolve as Callback]));
     }
 }

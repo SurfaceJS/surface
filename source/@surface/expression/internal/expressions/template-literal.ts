@@ -2,6 +2,7 @@ import { Indexer, Nullable } from "@surface/core";
 import { hasValue }          from "@surface/core/common/generic";
 import IExpression           from "../../interfaces/expression";
 import ITemplateElement      from "../../interfaces/template-element";
+import ITemplateLiteral      from "../../interfaces/template-literal";
 import NodeType              from "../../node-type";
 
 export default class TemplateLiteral implements IExpression
@@ -41,6 +42,11 @@ export default class TemplateLiteral implements IExpression
     {
         this._expressions = expressions;
         this._quasis      = quasis;
+    }
+
+    public clone(): ITemplateLiteral
+    {
+        return new TemplateLiteral(this.quasis.map(x => x.clone()), this.expressions.map(x => x.clone()));
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): string

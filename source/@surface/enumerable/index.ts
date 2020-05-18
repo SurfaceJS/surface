@@ -18,7 +18,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Create a enumerable object from a iterable source
      * @param source Source used to create the iterable object
      */
-    public static from<TSource>(source: Iterable<TSource>): Enumerable<TSource>
+    public static from<TSource>(source: Iterable<TSource>|ArrayLike<TSource>): Enumerable<TSource>
     {
         return new EnumerableIterator(source);
     }
@@ -1021,16 +1021,27 @@ class DistinctIterator<TSource> extends Enumerable<TSource>
 
 class EnumerableIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>)
+    public constructor(private source: Iterable<TSource>|ArrayLike<TSource>)
     {
         super();
     }
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        for (const element of this.source)
+        if ("length" in this.source)
         {
-            yield element;
+            // tslint:disable-next-line:prefer-for-of
+            for (let index = 0; index < this.source.length; index++)
+            {
+                yield this.source[index];
+            }
+        }
+        else
+        {
+            for (const element of this.source)
+            {
+                yield element;
+            }
         }
     }
 

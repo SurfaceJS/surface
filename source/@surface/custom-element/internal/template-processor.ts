@@ -1,167 +1,235 @@
-import { Action, Action1, Indexer } from "@surface/core";
-import { assert, typeGuard }        from "@surface/core/common/generic";
-import { getKeyMember }             from "@surface/core/common/object";
-import { dashedToCamel }            from "@surface/core/common/string";
-import NodeType                     from "@surface/expression/node-type";
-import Type                         from "@surface/reflection";
-import FieldInfo                    from "@surface/reflection/field-info";
+import { Action, Indexer } from "@surface/core";
+import { assert }          from "@surface/core/common/generic";
+import IDisposable         from "@surface/core/interfaces/disposable";
+import IArrayExpression    from "@surface/expression/interfaces/array-expression";
+import IExpression         from "@surface/expression/interfaces/expression";
+import TypeGuard           from "@surface/expression/type-guard";
+import ISubscription       from "@surface/reactive/interfaces/subscription";
+import Type                from "@surface/reflection";
+import FieldInfo           from "@surface/reflection/field-info";
 import
 {
+    classMap,
     createScope,
-    enumerateExpresssionAttributes,
-    pushSubscription,
-    scapeBrackets
+    styleMap,
+    throwTemplateEvaluationError
 }
 from "./common";
-import DataBind               from "./data-bind";
-import DirectiveProcessor     from "./directive-processor";
-import InterpolatedExpression from "./interpolated-expression";
-import ObserverVisitor        from "./observer-visitor";
-import parse                  from "./parse";
-import { interpolation }      from "./patterns";
-import
+import DataBind                 from "./data-bind";
+import directiveRegistry        from "./directive-registry";
+import ChoiceDirectiveHandler   from "./directives/template-handlers/choice-directive-handler";
+import InjectorDirectiveHandler from "./directives/template-handlers/injector-directive-handler";
+import LoopDirectiveHandler     from "./directives/template-handlers/loop-directive-handler";
+import TemplateProcessError     from "./errors/template-process-error";
+import IAttributeDescriptor     from "./interfaces/attribute-descriptor";
+import IDirective               from "./interfaces/directive";
+import IDirectivesDescriptor    from "./interfaces/directives-descriptor";
+import ITemplateDescriptor      from "./interfaces/template-descriptor";
+import ITextNodeDescriptor      from "./interfaces/text-node-descriptor";
+import ITraceable               from "./interfaces/traceable";
+import TemplateMetadata         from "./metadata/template-metadata";
+import { Scope }                from "./types";
+
+interface ITemplateProcessorData
 {
-    ON_PROCESS,
-    PROCESSED,
-    SCOPE
+    descriptor: ITemplateDescriptor;
+    host:       Node|Element;
+    root:       Node;
+    scope:      Scope;
+    context?:   Node;
 }
-from "./symbols";
-import { Bindable } from "./types";
+
+interface ITemplateDirectivesData
+{
+    directives: IDirectivesDescriptor;
+    scope:      Scope;
+    context?:   Node;
+}
 
 export default class TemplateProcessor
 {
     private static readonly postProcessing: Map<Node, Array<Action>> = new Map();
 
-    private readonly directives: Array<Promise<void>> = [];
+    private readonly descriptor: ITemplateDescriptor;
+    private readonly host:       Node;
+    private readonly lookup:     Record<string, Element>;
 
-    private readonly host:  Node|Element;
-    private readonly scope: Indexer;
 
-    private constructor(host: Node|Element, scope: Indexer)
+    private constructor(data: ITemplateProcessorData)
     {
-        this.host  = host;
-        this.scope = { host, ...scope };
+        this.host       = data.host;
+        this.descriptor = data.descriptor;
+
+        this.lookup = this.buildLookup(data.root, data.descriptor.lookup);
     }
 
-    public static process(host: Node|Element, node: Node, scope?: Indexer): Promise<void>
+    public static process(data: ITemplateProcessorData): IDisposable
     {
-        const processor = new TemplateProcessor(host, scope ?? { });
-
-        if (TemplateProcessor.postProcessing.has(host))
+        /* istanbul ignore if */
+        if (TemplateProcessor.postProcessing.has(data.host))
         {
-            TemplateProcessor.postProcessing.get(host)!.forEach(action => action());
+            TemplateProcessor.postProcessing.get(data.host)!.forEach(action => action());
 
-            TemplateProcessor.postProcessing.delete(host);
+            TemplateProcessor.postProcessing.delete(data.host);
         }
 
-        processor.traverseElement(node);
-
-        return Promise.all(processor.directives) as unknown as Promise<void>;
+        return new TemplateProcessor(data).process(data.scope, data.context);
     }
 
-    public static clear(node: Bindable<Node>)
+    private buildLookup(node: Node, source: Array<Array<number>>): Record<string, Element>
     {
-        if (node[PROCESSED])
-        {
-            DataBind.unbind(node);
+        const lookup: Record<string, Element> = { };
 
-            node[SCOPE]     = undefined;
-            node[PROCESSED] = false;
+        for (const entry of source)
+        {
+            if (entry.length > 0)
+            {
+                lookup[entry.join("-")] = this.findElement(node, entry) as Element;
+            }
+            else
+            {
+                lookup[""] = node as Element;
+            }
         }
 
-        for (const element of node.childNodes as unknown as Iterable<Bindable<Element>>)
-        {
-            TemplateProcessor.clear(element);
-        }
+        return lookup;
     }
 
-    private processAttributes(element: Element): void
+    private buildStack(traceable: ITraceable): string
+    {
+        return traceable.stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
+    }
+
+    private findElement(node: Node, indexes: Array<number>): Node
+    {
+        const [index, ...remaining] = indexes;
+
+        const child = node.childNodes[index];
+
+        if (remaining.length > 0)
+        {
+            return this.findElement(child, remaining);
+        }
+
+        return child;
+    }
+
+    private process(scope: Scope, context?: Node): IDisposable
+    {
+        const subscriptions: Array<ISubscription> = [];
+        const disposables:   Array<IDisposable>   = [];
+
+        for (const descriptor of this.descriptor.elements)
+        {
+            const element = this.lookup[descriptor.path];
+
+            const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
+
+            subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
+            disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
+            subscriptions.push(...this.processTextNode(localScope, descriptor.textNodes));
+
+            element.dispatchEvent(new Event("bind"));
+        }
+
+        disposables.push(this.processTemplateDirectives({ scope: createScope(scope), context, directives: this.descriptor.directives }));
+
+        return {
+            dispose: () =>
+            {
+                subscriptions.splice(0).forEach(x => x.unsubscribe());
+                disposables.splice(0).forEach(x => x.dispose());
+            }
+        };
+    }
+
+    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDescriptor>): Array<ISubscription>
     {
         const constructor = window.customElements.get(element.localName);
 
-        const processor = constructor && !(element instanceof constructor) ?
-            TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
+        /* istanbul ignore next */
+        const processor = constructor && !(element instanceof constructor)
+            ? TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
             : null;
 
-        for (const attribute of enumerateExpresssionAttributes(element))
+        const subscriptions: Array<ISubscription> = [];
+
+        for (const descriptor of attributeDescriptors)
         {
-            const scope = createScope({ this: element, ...this.scope });
-
-            const rawExpression = attribute.value;
-            const attributeName = attribute.name.replace(/^(on)?::?/, "");
-            const isEvent       = attribute.name.startsWith("on:");
-            const isTwoWay      = attribute.name.startsWith("::");
-            const isOneWay      = !isTwoWay && attribute.name.startsWith(":");
-
-            attribute.value = "";
-
-            if (isEvent || isOneWay || isTwoWay)
-            {
-                element.removeAttributeNode(attribute);
-            }
-
             const action = () =>
             {
-                if (isEvent)
+                if (descriptor.type == "oneway" || descriptor.type == "twoway")
                 {
-                    const expression = parse(rawExpression);
-
-                    const action = expression.type == NodeType.ArrowFunctionExpression || expression.type == NodeType.Identifier || expression.type == NodeType.MemberExpression
-                        ? expression.evaluate(scope) as Action1<Event>
-                        : () => expression.evaluate(scope);
-
-                    element.addEventListener(attributeName, action);
-                }
-                else if (isOneWay || isTwoWay)
-                {
-                    const elementProperty = dashedToCamel(attributeName);
-                    const elementMember   = Type.from(element).getMember(elementProperty);
+                    const elementMember = Type.from(element).getMember(descriptor.key);
 
                     if (elementMember instanceof FieldInfo && elementMember.readonly)
                     {
-                        throw new Error(`Property ${elementProperty} of ${element.constructor.name} is readonly`);
+                        throw new TemplateProcessError(`Property ${descriptor.key} of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
                     }
 
-                    if (isOneWay)
+                    if (descriptor.type == "oneway")
                     {
-                        const expression = parse(rawExpression);
+                        let notify: Action;
 
-                        const notify = () => (element as Indexer)[elementProperty] = expression.evaluate(scope);
+                        if (descriptor.name == "class" || descriptor.name == "style")
+                        {
+                            const attribute = document.createAttribute(descriptor.name);
 
-                        let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+                            element.setAttributeNode(attribute);
+
+                            notify = descriptor.name == "class"
+                                ? () => attribute.value = classMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>);
+                        }
+                        else
+                        {
+                            notify = () => (element as unknown as Indexer)[descriptor.key] = this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace);
+                        }
+
+                        let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
 
                         notify();
 
-                        pushSubscription(element, subscription);
+                        subscriptions.push(subscription);
                     }
                     else
                     {
-                        const [targetProperty, target] = getKeyMember(scope, rawExpression);
+                        assert(TypeGuard.isMemberExpression(descriptor.expression));
+
+                        const target         = this.tryEvaluate(descriptor.expression.object, scope, descriptor.stackTrace) as object;
+                        const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
+                            ? descriptor.expression.property.name
+                            : descriptor.expression.property.evaluate(scope) as string;
 
                         const targetMember = Type.from(target).getMember(targetProperty);
 
                         if (targetMember instanceof FieldInfo && targetMember.readonly)
                         {
-                            throw new Error(`Property ${targetProperty} of ${target.constructor.name} is readonly`);
+                            const rawExpression = descriptor.expression.toString();
+
+                            element.setAttribute(`::${descriptor.name}`, rawExpression);
+
+                            throw new TemplateProcessError(`Property ${targetProperty} of ${target.constructor.name} is readonly in ::"${descriptor.name}='${rawExpression}'"`, this.buildStack(descriptor));
                         }
 
-                        DataBind.twoWay(target, targetProperty, element as Indexer, elementProperty);
+                        subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
                     }
                 }
                 else
                 {
-                    const expression = InterpolatedExpression.parse(rawExpression);
+                    const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = () => attribute.value = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
+                    const notify = () => attribute.value = `${(descriptor.expression.evaluate(scope) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+                    let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
 
-                    pushSubscription(element, subscription);
+                    subscriptions.push(subscription);
 
                     notify();
                 }
             };
 
+            /* istanbul ignore else */
             if (!processor)
             {
                 action();
@@ -171,70 +239,136 @@ export default class TemplateProcessor
                 processor.push(action);
             }
         }
+
+        return subscriptions;
     }
 
-    private processTextNode(element: Element): void
+    private processElementDirectives(scope: Scope, element: Element, directives: Array<IDirective>): Array<IDisposable>
     {
-        assert(element.nodeValue);
+        const disposables: Array<IDisposable> = [];
 
-        if (interpolation.test(element.nodeValue))
+        for (const directive of directives)
         {
-            const scope = createScope({ this: element.parentElement, ...this.scope });
+            const handlerConstructor = directiveRegistry.get(directive.name)!;
 
-            const rawExpression = element.nodeValue;
+            disposables.push(new handlerConstructor(scope, element, directive));
+        }
 
-            element.nodeValue = "";
+        return disposables;
+    }
 
-            const expression = InterpolatedExpression.parse(rawExpression);
+    private processTemplateDirectives(data: ITemplateDirectivesData): IDisposable
+    {
+        const disposables: Array<IDisposable> = [];
 
-            const notify = () => element.nodeValue = `${expression.evaluate(scope).reduce((previous, current) => `${previous}${current}`)}`;
+        for (const directive of data.directives.inject)
+        {
+            const template = this.lookup[directive.path] as HTMLTemplateElement;
 
-            const subscription = ObserverVisitor.observe(expression, scope, { notify }, true);
+            assert(template.parentNode);
 
-            pushSubscription(element, subscription);
+            const currentContext = data.context ?? template.parentNode;
+
+            const metadata = TemplateMetadata.from(currentContext);
+
+            template.remove();
+
+            const key = `${directive.key.evaluate(data.scope)}`;
+
+            const action = metadata.injectors.get(key);
+
+            if (action)
+            {
+                action(data.scope, currentContext, this.host, template, directive);
+            }
+            else
+            {
+                template.remove();
+
+                metadata.injections.set(key, { scope: data.scope, template, directive, context: currentContext, host: this.host });
+            }
+
+            disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
+        }
+
+        for (const directive of data.directives.logical)
+        {
+            const templates = directive.branches.map(x => this.lookup[x.path]) as Array<HTMLTemplateElement>;
+
+            assert(templates[0].parentNode);
+
+            const currentContext = data.context ?? templates[0].parentNode;
+
+            disposables.push(new ChoiceDirectiveHandler(data.scope, currentContext, this.host, templates, directive.branches));
+        }
+
+        for (const directive of data.directives.loop)
+        {
+            const template = this.lookup[directive.path] as HTMLTemplateElement;
+
+            assert(template.parentNode);
+
+            const currentContext = data.context ?? template.parentNode;
+
+            disposables.push(new LoopDirectiveHandler(data.scope, currentContext, this.host, template, directive));
+        }
+
+        for (const directive of data.directives.injector)
+        {
+            const template = this.lookup[directive.path] as HTMLTemplateElement;
+
+            assert(template.parentNode);
+
+            const currentContext = data.context ?? template.parentNode;
+
+            disposables.push(new InjectorDirectiveHandler(data.scope, currentContext, this.host, template, directive));
+        }
+
+        return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
+    }
+
+    private processTextNode(scope: Scope, descriptors: Array<ITextNodeDescriptor>): Array<ISubscription>
+    {
+        const subscriptions: Array<ISubscription> = [];
+
+        for (const descriptor of descriptors)
+        {
+            const node = this.lookup[descriptor.path];
+
+            const notify = () => node.nodeValue = `${(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace, true) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+
+            const subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+
+            subscriptions.push(subscription);
 
             notify();
         }
-        else
-        {
-            element.nodeValue = scapeBrackets(element.nodeValue);
-        }
+
+        return subscriptions;
     }
 
-    private traverseElement(node: Bindable<Node>): void
+    private tryEvaluate(expression: IExpression, scope: Scope, stackTrace: Array<Array<string>>, isTextNode?: boolean): unknown
     {
-        if (!node[PROCESSED])
+        try
         {
-            node[ON_PROCESS]?.();
+            return expression.evaluate(scope);
+        }
+        catch (error)
+        {
+            assert(error instanceof Error);
 
-            for (const childNode of (Array.from(node.childNodes) as Iterable<Bindable<Element>>))
+            let rawExpression: string;
+
+            if (isTextNode)
             {
-                if (typeGuard<Element, HTMLTemplateElement>(childNode, x => x.nodeName == "TEMPLATE"))
-                {
-                    if (childNode.parentNode)
-                    {
-                        this.directives.push(DirectiveProcessor.process(this.host, childNode, createScope(this.scope)));
-                    }
-                }
-                else if ((childNode.nodeType == Node.ELEMENT_NODE || Node.TEXT_NODE) && childNode.nodeName != "STYLE")
-                {
-                    childNode[SCOPE] = this.scope;
-
-                    if (childNode.attributes?.length > 0)
-                    {
-                        this.processAttributes(childNode);
-                    }
-
-                    if (childNode.nodeType == Node.TEXT_NODE)
-                    {
-                        this.processTextNode(childNode);
-                    }
-
-                    this.traverseElement(childNode);
-                }
+                rawExpression = (expression as IArrayExpression).elements.map(x => (x as IExpression).toString()).join("");
+            }
+            else
+            {
+                rawExpression = expression.toString();
             }
 
-            node[PROCESSED] = true;
+            throwTemplateEvaluationError(`Error evaluating "${rawExpression}" - ${error.message}`, stackTrace);
         }
     }
 }

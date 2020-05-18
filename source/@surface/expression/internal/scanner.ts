@@ -1,4 +1,3 @@
-import { Nullable } from "@surface/core";
 import SyntaxError  from "../syntax-error";
 import Character    from "./character";
 import Messages     from "./messages";
@@ -12,7 +11,7 @@ export type Token =
     raw:        string;
     start:      number;
     type:       TokenType;
-    value:      Nullable<Object>;
+    value:      unknown;
     flags?:     string;
     head?:      boolean;
     octal?:     boolean;
@@ -1253,6 +1252,18 @@ export default class Scanner
         if (Character.isWhiteSpace(charCode))
         {
             this.advance();
+
+            return this.nextToken();
+        }
+
+        if (Character.isLineTerminator(charCode))
+        {
+            this.lineNumber++;
+
+            this.advance();
+
+            this.lineStart = this.index;
+
             return this.nextToken();
         }
 

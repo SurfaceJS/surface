@@ -14,7 +14,7 @@ export default class ListSpec
     }
 
     @test @shouldPass
-    public createEmptyFromArray(): void
+    public createFromArray(): void
     {
         const list = new List([1, 2, 3]);
 
@@ -25,7 +25,7 @@ export default class ListSpec
     }
 
     @test @shouldPass
-    public createEmptyFromIterable(): void
+    public createFromIterable(): void
     {
         const list = new List(Enumerable.from([1, 2, 3]));
 

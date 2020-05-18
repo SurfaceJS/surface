@@ -75,8 +75,10 @@ export default abstract class Expression
 {
     private static wrapParenthesis<T extends IExpression>(expression: T): T
     {
+        const clone    = expression.clone;
         const toString = expression.toString;
 
+        expression.clone    = () => Expression.wrapParenthesis(clone.call(expression));
         expression.toString = () => `(${toString.call(expression)})`;
 
         return expression;

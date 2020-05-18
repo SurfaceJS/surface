@@ -1,6 +1,5 @@
 import { Indexer, Nullable as __Nullable__ } from "@surface/core";
 import { clone, objectFactory }              from "@surface/core/common/object";
-import CustomElement                         from "@surface/custom-element";
 import Enumerable                            from "@surface/enumerable";
 import Component                             from "..";
 import { attribute, element }                from "../decorators";
@@ -296,17 +295,17 @@ export default class DataTable extends Component
                     switch (columnDefinition.fieldType)
                     {
                         case "array":
-                            innerHTML = (arrayTemplate as string).replace(/\$\{(field)\}/g, field);
+                            innerHTML = (arrayTemplate).replace(/\$\{(field)\}/g, field);
                             break;
                         case "boolean":
-                            innerHTML = (booleanTemplate as string).replace(/\$\{(field)\}/g, field);
+                            innerHTML = (booleanTemplate).replace(/\$\{(field)\}/g, field);
                             break;
                         case "number":
-                            innerHTML = (numberTemplate as string).replace(/\$\{(field)\}/g, field);
+                            innerHTML = (numberTemplate).replace(/\$\{(field)\}/g, field);
                             break;
                         case "string":
                         default:
-                            innerHTML = (stringTemplate as string).replace(/\$\{(field)\}/g, field);
+                            innerHTML = (stringTemplate).replace(/\$\{(field)\}/g, field);
                             break;
                     }
                 }
@@ -314,7 +313,7 @@ export default class DataTable extends Component
 
             cell.innerHTML = innerHTML;
 
-            CustomElement.processDirectives(this, cell, { ...super.context, dataTable: this, row, cell });
+            // CustomElement.processDirectives(this, cell, { ...super.context, dataTable: this, row, cell });
 
             index++;
         }
@@ -434,7 +433,7 @@ export default class DataTable extends Component
         await this.refresh();
     }
 
-    protected connectedCallback(): void
+    public connectedCallback(): void
     {
         if (!this.refreshing)
         {
@@ -451,7 +450,7 @@ export default class DataTable extends Component
 
             await this.setPage(this._page);
 
-            super.notify("page");
+            // super.notify("page");
         }
 
         const data = this.createData();
@@ -505,7 +504,7 @@ export default class DataTable extends Component
         {
             for (const row of rows.skip(dataCount))
             {
-                CustomElement.clearDirectives(row);
+                // CustomElement.clearDirectives(row);
                 this.rowGroup.removeChild(row);
             }
         }
@@ -534,7 +533,7 @@ export default class DataTable extends Component
 
             await this.setPage(this.pageCount);
 
-            super.notify("page");
+            // super.notify("page");
         }
         else
         {

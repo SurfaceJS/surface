@@ -1,10 +1,11 @@
-import { Indexer, Nullable }  from "@surface/core";
-import { hasValue }           from "@surface/core/common/generic";
-import { proxyFrom }          from "@surface/core/common/object";
-import Evaluate               from "../../evaluate";
-import IExpression            from "../../interfaces/expression";
-import IPattern               from "../../interfaces/pattern";
-import NodeType               from "../../node-type";
+import { Indexer, Nullable }    from "@surface/core";
+import { hasValue }             from "@surface/core/common/generic";
+import { proxyFrom }            from "@surface/core/common/object";
+import Evaluate                 from "../../evaluate";
+import IArrowFunctionExpression from "../../interfaces/arrow-function-expression";
+import IExpression              from "../../interfaces/expression";
+import IPattern                 from "../../interfaces/pattern";
+import NodeType                 from "../../node-type";
 
 export default class ArrowFunctionExpression implements IExpression
 {
@@ -58,6 +59,11 @@ export default class ArrowFunctionExpression implements IExpression
         }
 
         return currentScope;
+    }
+
+    public clone(): IArrowFunctionExpression
+    {
+        return new ArrowFunctionExpression(this.parameters.map(x => x.clone()), this.body.clone());
     }
 
     public evaluate(scope: Indexer, useCache?: boolean): Function

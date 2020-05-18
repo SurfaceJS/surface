@@ -1,4 +1,3 @@
-import { Indexer }               from "@surface/core";
 import ExpressionVisitor         from "@surface/expression/expression-visitor";
 import IArrayPattern             from "@surface/expression/interfaces/array-pattern";
 import IArrowFunctionExpression  from "@surface/expression/interfaces/arrow-function-expression";
@@ -8,7 +7,6 @@ import IAssignmentProperty       from "@surface/expression/interfaces/assignment
 import ICallExpression           from "@surface/expression/interfaces/call-expression";
 import ICoalesceExpression       from "@surface/expression/interfaces/coalesce-expression";
 import IConditionalExpression    from "@surface/expression/interfaces/conditional-expression";
-import IExpression               from "@surface/expression/interfaces/expression";
 import IIdentifier               from "@surface/expression/interfaces/identifier";
 import IMemberExpression         from "@surface/expression/interfaces/member-expression";
 import INewExpression            from "@surface/expression/interfaces/new-expression";
@@ -19,73 +17,36 @@ import IRestElement              from "@surface/expression/interfaces/rest-eleme
 import ITaggedTemplateExpression from "@surface/expression/interfaces/tagged-template-expression";
 import IThisExpression           from "@surface/expression/interfaces/this-expression";
 import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
-import TypeGuard                 from "@surface/expression/internal/type-guard";
 import NodeType                  from "@surface/expression/node-type";
-import IListener                 from "@surface/reactive/interfaces/listener";
-import ISubscription             from "@surface/reactive/interfaces/subscription";
-import DataBind                  from "./data-bind";
+import TypeGuard                 from "@surface/expression/type-guard";
+
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly scope: Indexer;
-
-    private readonly cache: Map<IExpression, unknown> = new Map();
-
     private readonly paths: Array<Array<string>> = [];
 
     private brokenPath: boolean       = false;
     private stack:      Array<string> = [];
 
-    private constructor(scope: Indexer)
+    public static observe(expression: INode): Array<Array<string>>
     {
-        super();
-
-        this.scope = scope;
-    }
-
-    public static observe(expression: IExpression, scope: Indexer, listener: IListener, lazy: boolean): ISubscription
-    {
-        const visitor       = new ObserverVisitor(scope);
-        const subscriptions = [] as Array<ISubscription>;
+        const visitor = new ObserverVisitor();
 
         visitor.visit(expression);
 
         visitor.commit();
 
-        for (const path of visitor.paths)
-        {
-            if (path.length > 1)
-            {
-                subscriptions.push(DataBind.oneWay(scope, path, listener, lazy)[1]);
-            }
-        }
-
-        return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) } ;
+        return visitor.paths;
     }
 
     private commit(): void
     {
-        if (this.stack.length > 0)
+        if (this.stack.length > 1)
         {
             this.paths.push([...this.stack]);
-            this.stack = [];
         }
-    }
 
-    private evaluate(expression: IExpression): unknown
-    {
-        if (this.cache.has(expression))
-        {
-            return this.cache.get(expression);
-        }
-        else
-        {
-            const value = expression.evaluate(this.scope);
-
-            this.cache.set(expression, value);
-
-            return value;
-        }
+        this.stack = [];
     }
 
     private reset(): void
@@ -191,22 +152,21 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitMemberExpression(expression: IMemberExpression): INode
     {
-        if (expression.optional)
+        if (expression.computed && expression.property.type != NodeType.Literal)
+        {
+            this.reset();
+
+            super.visit(expression.property);
+        }
+        else if (expression.optional)
         {
             this.rollback();
         }
-        else if (expression.property.type == NodeType.Identifier || expression.property.type == NodeType.Literal)
+        else if (!this.brokenPath)
         {
-            const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ? expression.property.name : `${this.evaluate(expression.property)}`;
+            const key = TypeGuard.isIdentifier(expression.property) ? expression.property.name : `${expression.property.evaluate({ })}`;
 
-            if (!this.brokenPath)
-            {
-                this.stack.unshift(key);
-            }
-        }
-        else
-        {
-            super.visit(expression.property);
+            this.stack.unshift(key);
         }
 
         super.visit(expression.object);

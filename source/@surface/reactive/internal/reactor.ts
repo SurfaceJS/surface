@@ -1,16 +1,17 @@
-import { Indexer }                        from "@surface/core";
-import { hasValue, typeGuard }            from "@surface/core/common/generic";
-import Type                               from "@surface/reflection";
-import FieldInfo                          from "@surface/reflection/field-info";
-import MethodInfo                         from "@surface/reflection/method-info";
-import PropertyInfo                       from "@surface/reflection/property-info";
-import IObserver                          from "../interfaces/observer";
-import IPropertySubscription              from "../interfaces/property-subscription";
-import { REACTOR, TRACKED_KEYS, WRAPPED } from "./symbols";
+import { Indexer }           from "@surface/core";
+import { overrideProperty }  from "@surface/core/common/object";
+import IDisposable           from "@surface/core/interfaces/disposable";
+import Type                  from "@surface/reflection";
+import FieldInfo             from "@surface/reflection/field-info";
+import MethodInfo            from "@surface/reflection/method-info";
+import IObserver             from "../interfaces/observer";
+import IPropertySubscription from "../interfaces/property-subscription";
+import Metadata              from "./metadata";
 
-export type Reactiveable<T = Indexer> = T & { [TRACKED_KEYS]?: Array<string|number>, [REACTOR]?: Reactor, [WRAPPED]?: boolean };
+const IS_REACTIVE = Symbol("reactive:is-reactive");
+type ReactiveArray = Array<unknown> & Indexer & { [IS_REACTIVE]?: boolean };
 
-export default class Reactor
+export default class Reactor implements IDisposable
 {
     private static readonly stack: Array<Reactor> = [];
 
@@ -18,6 +19,8 @@ export default class Reactor
     private readonly _observers:            Map<string, IObserver>                  = new Map();
     private readonly propertySubscriptions: Map<string, Set<IPropertySubscription>> = new Map();
     private readonly registries:            Set<Reactor>                            = new Set();
+
+    private disposed: boolean = false;
 
     public get dependencies(): Map<string, Reactor>
     {
@@ -29,23 +32,26 @@ export default class Reactor
         return this._observers;
     }
 
-    private static notify(target: Reactiveable, key: string, value: unknown): void
+    private static notify(target: Indexer, key: string, value: unknown): void
     {
-        const reactor = target[REACTOR]!;
+        const metadata = Metadata.from(target);
 
-        if (Array.isArray(value) && !!!(value as unknown as Reactiveable)[WRAPPED])
+        if (!metadata.reactor.disposed)
         {
-            Reactor.wrapArray(reactor, target, key);
+            if (Array.isArray(value) && !(value as ReactiveArray)[IS_REACTIVE])
+            {
+                Reactor.wrapArray(metadata.reactor, target, key);
+            }
+
+            metadata.reactor.update(key, value);
+
+            metadata.reactor.notify(target, key, value);
         }
-
-        reactor.update(key, value);
-
-        reactor.notify(target, key, value);
     }
 
-    private static wrapArray(reactor: Reactor, target: Array<unknown> & Reactiveable, ): void;
-    private static wrapArray(reactor: Reactor, target: Reactiveable, key: string): void;
-    private static wrapArray(...args: [Reactor, Array<unknown> & Reactiveable]|[Reactor, Reactiveable, string]): void
+    private static wrapArray(reactor: Reactor, target: ReactiveArray): void;
+    private static wrapArray(reactor: Reactor, target: Indexer, key: string): void;
+    private static wrapArray(...args: [Reactor, ReactiveArray]|[Reactor, Indexer, string]): void
     {
         const methods = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
@@ -69,13 +75,13 @@ export default class Reactor
                 Object.defineProperty(target, method, { value: wrappedFn, configurable: true, enumerable: false });
             }
 
-            target[WRAPPED] = true;
+            target[IS_REACTIVE] = true;
         }
         else
         {
-            const [reactor, target, key] = args as [Reactor, Reactiveable, string];
+            const [reactor, target, key] = args as [Reactor, Indexer, string];
 
-            const member = target[key] as Array<unknown> & Reactiveable;
+            const member = target[key] as ReactiveArray;
 
             for (const method of methods)
             {
@@ -85,6 +91,8 @@ export default class Reactor
                 {
                     const elements = fn.apply(this, args);
 
+                    reactor.update(key, this[Number(key)]);
+
                     reactor.notify(target, key);
 
                     return elements;
@@ -93,142 +101,55 @@ export default class Reactor
                 Object.defineProperty(member, method, { value: wrappedFn, configurable: true, enumerable: false });
             }
 
-            member[WRAPPED] = true;
+            member[IS_REACTIVE] = true;
         }
     }
 
-    public static makeReactive<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): Reactor;
-    public static makeReactive(target: Reactiveable, _key: string|number): Reactor
+    public static makeReactive(target: object, keyOrIndex: string|number): Reactor;
+    public static makeReactive(target: Indexer, keyOrIndex: string|number): Reactor
     {
-        const key     = _key.toString();
-        const reactor = target[REACTOR]      = target[REACTOR]      ?? new Reactor();
-        const keys    = target[TRACKED_KEYS] = target[TRACKED_KEYS] ?? [] as Array<string|number>;
+        const key      = keyOrIndex.toString();
+        const metadata = Metadata.from(target);
 
-        if (keys.includes(key))
+        if (metadata.keys.includes(key))
         {
-            return reactor;
+            return metadata.reactor;
         }
 
-        keys.push(key);
+        metadata.keys.push(key);
 
         const member = Type.from(target).getMember(key);
 
-        if (!!!target[WRAPPED] && Array.isArray(target))
+        if (Array.isArray(target) && !(target as ReactiveArray)[IS_REACTIVE])
         {
-            Reactor.wrapArray(reactor, target);
+            Reactor.wrapArray(metadata.reactor, target);
         }
 
-        if (Array.isArray(target[key]) && !!!(target[key] as Reactiveable)[WRAPPED]) //Todo: Investigate context breaking
+        if (Array.isArray(target[key]) && !(target[key] as ReactiveArray)[IS_REACTIVE])
         {
-            Reactor.wrapArray(reactor, target, key);
+            Reactor.wrapArray(metadata.reactor, target, key);
         }
 
-        if (member instanceof PropertyInfo)
+        if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
         {
-            const privateKey = `_${key}`;
-
-            if (!member.readonly)
-            {
-                Object.defineProperty
-                (
-                    target,
-                    key,
-                    {
-                        get(this: Indexer)
-                        {
-                            return member.getter!.call(this);
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = member.getter!.call(this);
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                member.setter!.call(this, value);
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-            else if (privateKey in target)
-            {
-                const hiddenKey = `_${key}_`;
-
-                target[hiddenKey] = target[key];
-
-                Object.defineProperty
-                (
-                    target,
-                    privateKey,
-                    {
-                        get(this: Indexer)
-                        {
-                            return this[hiddenKey];
-                        },
-                        set(this: Indexer, value: unknown)
-                        {
-                            const oldValue = this[hiddenKey];
-
-                            if (!Object.is(oldValue, value))
-                            {
-                                this[hiddenKey] = value;
-
-                                Reactor.notify(this, key, value);
-                            }
-                        }
-                    }
-                );
-            }
-        }
-        else if (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo)
-        {
-            const privateKey = `_${key}`;
-
-            target[privateKey] = target[key];
-
-            Object.defineProperty
-            (
-                target,
-                key,
-                {
-                    get(this: Indexer)
-                    {
-                        return this[privateKey];
-                    },
-                    set(this: Indexer, value: unknown)
-                    {
-                        const oldValue = this[privateKey];
-
-                        if (!Object.is(oldValue, value))
-                        {
-                            this[privateKey] = value;
-
-                            Reactor.notify(this, key, value);
-                        }
-                    }
-                }
-            );
+            overrideProperty(target, key, (instance, _, newValue) => Reactor.notify(instance, key, newValue), member.descriptor);
         }
         else if (!member)
         {
             throw new Error(`Key ${key} does not exists on type ${target.constructor.name}`);
         }
 
-        return reactor;
+        return metadata.reactor;
     }
 
     private notifyValue(value: Indexer): void
     {
-        if (!hasValue(value))
-        {
-            return;
-        }
-
         for (const registry of this.registries.values())
         {
-            registry.notify(value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(value);
+            }
         }
 
         for (const subscriptions of this.propertySubscriptions.values())
@@ -239,32 +160,26 @@ export default class Reactor
             }
         }
 
-        for (const [key, dependency] of this._dependencies)
+
+        for (const [key, dependency] of this.dependencies)
         {
-            dependency.notify(value[key]);
+            dependency.notify(value?.[key]);
         }
 
-        for (const [key, observer] of this._observers)
+        for (const [key, observer] of this.observers)
         {
-            const keyValue = value[key];
-
-            if (hasValue(keyValue))
-            {
-                observer.notify(keyValue);
-            }
+            observer.notify(value?.[key]);
         }
     }
 
     private notifyTargetKeyValue(target: Indexer, key: string, value: Indexer): void
     {
-        if (!hasValue(value))
-        {
-            return;
-        }
-
         for (const registry of this.registries.values())
         {
-            registry.notify(target, key, value);
+            if (!Reactor.stack.includes(registry))
+            {
+                registry.notify(target, key, value);
+            }
         }
 
         for (const subscription of this.propertySubscriptions.get(key) ?? [])
@@ -272,36 +187,36 @@ export default class Reactor
             subscription.update(target);
         }
 
-        this._dependencies.get(key)?.notify(value);
+        this.dependencies.get(key)?.notify(value);
 
-        this._observers.get(key)?.notify(value);
+        this.observers.get(key)?.notify(value);
     }
 
-    private register(target: Reactiveable, registry: Reactor): void
+    private register(target: Indexer, registry: Reactor): void
     {
         if (registry != this)
         {
-            for (const [key, dependency] of this._dependencies)
+            for (const [key, dependency] of this.dependencies)
             {
-                if (registry._dependencies.has(key))
+                if (registry.dependencies.has(key))
                 {
-                    dependency.register(target[key] as Indexer, registry._dependencies.get(key)!);
+                    dependency.register(target[key] as Indexer, registry.dependencies.get(key)!);
                 }
                 else
                 {
                     Reactor.makeReactive(target, key);
 
-                    const value = target[key] as Reactiveable;
+                    const value = target[key] as Indexer;
 
-                    const reactor = value[REACTOR] = value[REACTOR] ?? new Reactor();
+                    const reactor = Metadata.from(value).reactor;
 
-                    registry._dependencies.set(key, reactor);
+                    registry.dependencies.set(key, reactor);
 
                     dependency.register(value, reactor);
                 }
             }
 
-            for (const key of this._observers.keys())
+            for (const key of this.observers.keys())
             {
                 Reactor.makeReactive(target, key);
             }
@@ -314,7 +229,7 @@ export default class Reactor
 
     private unregister(): void
     {
-        for (const dependency of this._dependencies.values())
+        for (const dependency of this.dependencies.values())
         {
             dependency.unregister();
         }
@@ -327,19 +242,41 @@ export default class Reactor
         this.registries.clear();
     }
 
+    public dispose(): void
+    {
+        if (!this.disposed)
+        {
+            this.unregister();
+
+            for (const dependency of this.dependencies.values())
+            {
+                dependency.dispose();
+            }
+
+            for (const propertySubscription of this.propertySubscriptions.values())
+            {
+                for (const subscription of Array.from(propertySubscription.values()))
+                {
+                    subscription.unsubscribe();
+                }
+            }
+
+            this.observers.clear();
+            this.dependencies.clear();
+            this.propertySubscriptions.clear();
+
+            this.disposed = true;
+        }
+    }
+
     public notify(value: unknown): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey): void;
-    public notify<TTarget extends Indexer, TKey extends keyof TTarget>(target: TTarget, key: TKey, value: TTarget[TKey]): void;
+    public notify(target: Indexer, key: string): void;
+    public notify(target: Indexer, key: string, value: unknown): void;
     public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
     {
-        if (Reactor.stack.includes(this))
-        {
-            return;
-        }
+        Reactor.stack.push(this);
 
         const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
-
-        Reactor.stack.push(this);
 
         if (args.length == 1)
         {
@@ -375,17 +312,15 @@ export default class Reactor
 
     public update(key: string, value: unknown)
     {
-        const dependency = this._dependencies.get(key);
+        const dependency = this.dependencies.get(key);
 
         if (dependency)
         {
             dependency.unregister();
 
-            if (typeGuard<unknown, Reactiveable>(value, x => x instanceof Object))
+            if (value instanceof Object)
             {
-                const reactor = value[REACTOR] ?? new Reactor();
-
-                dependency.register(value, reactor);
+                dependency.register(value as Indexer, Metadata.from(value).reactor);
             }
         }
     }

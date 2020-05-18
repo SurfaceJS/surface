@@ -90,7 +90,7 @@ export function makePath(targetPath: string, mode?: string|number): void
 
     const parentDir = path.dirname(targetPath.toString());
     // tslint:disable-next-line:no-magic-numbers
-    mode = mode ?? parseInt("0777", 8) & (~process.umask());
+    mode = mode ?? 0o777;
 
     if (!fs.existsSync(parentDir))
     {

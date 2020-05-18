@@ -13,7 +13,7 @@ container
     .register("baz", Baz)
     .register("foo", Foo)
     .register(InjectableMock)
-    .register("factory", x => new InjectableMock(x.resolve("baz")))
+    .register("factory", (x: Container) => new InjectableMock(x.resolve("baz")))
     .register("injectable-mock", InjectableMock)
     .register(SYMBOL_KEY, InjectableMock);
 

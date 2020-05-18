@@ -1,20 +1,31 @@
-import Expression       from "@surface/expression";
-import IArrayExpression from "@surface/expression/interfaces/array-expression";
-import IExpression      from "@surface/expression/interfaces/expression";
-import SyntaxError      from "@surface/expression/syntax-error";
-import parse            from "./parse";
+import { assert }                                from "@surface/core/common/generic";
+import Expression                                from "@surface/expression";
+import IArrayExpression                          from "@surface/expression/interfaces/array-expression";
+import IExpression                               from "@surface/expression/interfaces/expression";
+import SyntaxError                               from "@surface/expression/syntax-error";
+import { getOffsetSyntaxError, parseExpression } from "./parsers";
 
 const stringTokens = ["\"", "'", "`"];
 
 export default class InterpolatedExpression
 {
-    private static readonly cache: Record<string, IArrayExpression> = { };
-
     private readonly source: string;
 
     private readonly expressions: Array<IExpression> = [];
 
-    private index: number = 0;
+    private expressionEnd:   number = 0;
+    private expressionStart: number = 0;
+    private index:           number = 0;
+
+    private get current(): string
+    {
+        return this.source[this.index];
+    }
+
+    private get eof(): boolean
+    {
+        return this.index == this.source.length;
+    }
 
     private constructor(source: string)
     {
@@ -23,12 +34,7 @@ export default class InterpolatedExpression
 
     public static parse(source: string): IArrayExpression
     {
-        if (source in InterpolatedExpression.cache)
-        {
-            return InterpolatedExpression.cache[source];
-        }
-
-        return InterpolatedExpression.cache[source] = new InterpolatedExpression(source).scan();
+        return new InterpolatedExpression(source).scan();
     }
 
     private advance(): void
@@ -46,25 +52,15 @@ export default class InterpolatedExpression
         this.expressions.push(Expression.literal(textFragment));
     }
 
-    private current(): string
-    {
-        return this.source[this.index];
-    }
-
-    private eof(): boolean
-    {
-        return this.index == this.source.length;
-    }
-
     private parse(start: number): void
     {
         try
         {
             let scaped = false;
 
-            while (!this.eof() && this.current() != "{" || scaped)
+            while (!this.eof && this.current != "{" || scaped)
             {
-                scaped = this.current() == "\\" && !scaped;
+                scaped = this.current == "\\" && !scaped;
 
                 if (scaped && this.source.substring(this.index, this.index + 3) == "\\\\{")
                 {
@@ -81,40 +77,34 @@ export default class InterpolatedExpression
                 this.collectTextFragment(start, this.index + 1);
             }
 
-            if (!this.eof())
+            if (!this.eof)
             {
-                const innerStart = this.index + 1;
+                this.expressionStart = this.index + 1;
 
                 if (this.scanBalance())
                 {
-                    const innerEnd = this.index - 1;
+                    this.expressionEnd = this.index - 1;
 
-                    const expression = parse(this.source.substring(innerStart, innerEnd));
+                    const expression = parseExpression(this.source.substring(this.expressionStart, this.expressionEnd));
 
                     this.expressions.push(expression);
 
-                    if (!this.eof())
+                    if (!this.eof)
                     {
                         this.parse(this.index);
                     }
                 }
                 else
                 {
-                    throw Error("Unexpected end of expression");
+                    throw new SyntaxError("Unexpected end of expression", (this.source.match(/\n/g)?.length ?? 0) + 1, this.source.length - 1, this.source.length);
                 }
             }
         }
         catch (error)
         {
-            /* istanbul ignore else */
-            if (error instanceof SyntaxError)
-            {
-                throw new Error(`${error.message} at posistion ${error.index}`);
-            }
-            else
-            {
-                throw error;
-            }
+            assert(error instanceof SyntaxError);
+
+            throw getOffsetSyntaxError(this.source, this.source.substring(this.expressionStart, this.expressionEnd), error);
         }
     }
 
@@ -131,7 +121,7 @@ export default class InterpolatedExpression
 
         do
         {
-            if (stringTokens.includes(this.current()))
+            if (stringTokens.includes(this.current))
             {
                 if (!this.scanString())
                 {
@@ -139,45 +129,70 @@ export default class InterpolatedExpression
                 }
             }
 
-            if (this.current() == "{")
+            if (this.current == "{")
             {
                 stack++;
             }
 
-            if (this.current() == "}")
+            if (this.current == "}")
             {
                 stack--;
             }
 
             this.advance();
         }
-        while (!this.eof() && stack > 0);
+        while (!this.eof && stack > 0);
 
         return stack == 0;
     }
 
     private scanString(): boolean
     {
-        const token = this.current();
+        const token = this.current;
 
         this.advance();
 
-        let scaped = false;
-
-        while (!this.eof() && this.current() != token || scaped)
+        if (token == this.current)
         {
-            scaped = this.current() == "\\" && !scaped;
-
-            if (!scaped && this.source.substring(this.index, this.index + 2) == "${")
-            {
-                this.advance();
-
-                this.scanBalance();
-            }
-
-            this.advance();
+            return true;
         }
 
-        return this.current() == token;
+        let scaped = false;
+
+        if (token == "`")
+        {
+            do
+            {
+                scaped = this.current == "\\" && !scaped;
+
+                if (!scaped && this.source.substring(this.index, this.index + 2) == "${")
+                {
+                    this.advance();
+
+                    if (!this.scanBalance())
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    this.advance();
+                }
+
+            }
+            while (!this.eof && this.current != token || scaped);
+        }
+        else
+        {
+            do
+            {
+                scaped = this.current == "\\" && !scaped;
+
+                this.advance();
+            }
+            while (!this.eof && this.current != token || scaped);
+        }
+
+        return this.current == token;
     }
 }

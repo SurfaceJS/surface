@@ -1,122 +1,115 @@
-import { Action, Indexer, KeyValue, Nullable }               from "@surface/core";
-import Reactive                                              from "@surface/reactive";
-import References                                            from "./internal/references";
-import { OBSERVED_ATTRIBUTES, SCOPE, SHADOW_ROOT, TEMPLATE } from "./internal/symbols";
-import TemplateProcessor                                     from "./internal/template-processor";
+import { Action, Constructor }         from "@surface/core";
+import ICustomElement                  from "./interfaces/custom-element";
+import directiveRegistry               from "./internal/directive-registry";
+import StaticMetadata                  from "./internal/metadata/static-metadata";
+import References                      from "./internal/references";
+import { STATIC_METADATA }             from "./internal/symbols";
+import { DirectiveHandlerConstructor } from "./internal/types";
 
-export default abstract class CustomElement extends HTMLElement
+export const templateable = <TConstructor extends Constructor<HTMLElement>>(base: TConstructor) =>
 {
-    public static readonly [OBSERVED_ATTRIBUTES]: Nullable<Array<string>>;
-    public static readonly [TEMPLATE]:            Nullable<HTMLTemplateElement>;
-
-    private [SCOPE]: Indexer = { };
-    private readonly [SHADOW_ROOT]: ShadowRoot;
-    private readonly _references:   References;
-
-    protected get context(): Indexer
+    abstract class Templateable extends base
     {
-        return this[SCOPE];
-    }
+        private readonly _references: References;
 
-    public get references(): References
-    {
-        return this._references;
-    }
-
-    public onAfterBind?: Action;
-
-    public constructor();
-    public constructor(shadowRootInit: ShadowRootInit);
-    public constructor(shadowRootInit?: ShadowRootInit)
-    {
-        super();
-        this[SHADOW_ROOT] = this.attachShadow(shadowRootInit || { mode: "closed" });
-
-        const template = (this.constructor as typeof CustomElement)[TEMPLATE];
-
-        if (template)
+        public get references(): References
         {
-            this.applyTemplate(template);
+            return this._references;
         }
 
-        this._references = new References(this[SHADOW_ROOT]);
-    }
+        public shadowRoot!: ShadowRoot;
 
-    /**
-     * Process node tree directives
-     * @param content Node tree to be processed
-     * @param context Context utilized to resolve expressions
-     */
-    protected static processDirectives(host: Node, content: Node, context: Indexer): void
-    {
-        TemplateProcessor.process(host, content, context);
-    }
+        public onAfterBind?: Action;
 
-    /**
-     * Remove binds reference of node tree.
-     * @param content Node tree to be unbinded
-     */
-    protected static clearDirectives(node: Node): void;
-    protected static clearDirectives(childNodes: NodeListOf<ChildNode>): void;
-    protected static clearDirectives(nodeOrChildNodes: Node|NodeListOf<ChildNode>): void
-    {
-        if (nodeOrChildNodes instanceof NodeList)
+        // tslint:disable-next-line:no-any
+        public constructor(...args: Array<any>)
         {
-            nodeOrChildNodes.forEach(x => TemplateProcessor.clear(x));
+            super(...args);
+
+            this.attachShadow({ mode: "open" });
+
+            this.applyMetadata(this.shadowRoot);
+
+            this._references = new References(this.shadowRoot);
         }
-        else
+
+        public static registerDirective<T extends DirectiveHandlerConstructor>(name: string, handlerConstructor: T): void
         {
-            TemplateProcessor.clear(nodeOrChildNodes);
+            directiveRegistry.set(name, handlerConstructor);
         }
-    }
 
-    private applyTemplate(template: HTMLTemplateElement): void
-    {
-        const content = document.importNode(template.content, true);
-
-        content.normalize();
-
-        this[SHADOW_ROOT].appendChild(content);
-    }
-
-    /**
-     * Notify property change.
-     * @param key Property key
-     */
-    protected notify<K extends keyof this>(key: K)
-    {
-        const reactor = Reactive.getReactor(this as unknown as Indexer);
-
-        if (reactor)
+        private applyMetadata(shadowRoot: ShadowRoot): void
         {
-            reactor.notify(this as unknown as Indexer, key as keyof Indexer);
+            const metadata = (this.constructor as Function & { [STATIC_METADATA]?: StaticMetadata })[STATIC_METADATA];
+
+            if (metadata?.styles)
+            {
+                // (shadowRoot as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles;
+            }
+
+            if (metadata?.template)
+            {
+                const content = document.importNode(metadata.template.content, true);
+
+                content.normalize();
+
+                shadowRoot.appendChild(content);
+            }
         }
     }
+    return Templateable;
+};
 
-    /**
-     * Set value to especified object property.
-     * @param target Object instance
-     * @param key    Property key
-     * @param value  Value to set
-     */
-    protected set<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): void;
-    /**
-     * Set value to this intance property.
-     * @param key   Property key
-     * @param value Value to set
-     */
-    protected set<K extends keyof this>(key: K, value: this[K]): void;
-    protected set<T extends object, K extends keyof T>(...args: KeyValue<this>|[T, K, T[K]]): void
-    {
-        if (args.length == 2)
-        {
-            const [key, value] = args;
-            this[key] = value;
-        }
-        else
-        {
-            const [target, key, value] = args;
-            target[key] = value;
-        }
-    }
-}
+// tslint:disable-next-line:variable-name
+
+export default class CustomElement extends templateable(HTMLElement) implements ICustomElement
+{ }
+
+// export default class CustomElement extends HTMLElement implements ICustomElement
+// {
+//     private readonly _references: References;
+
+//     public get references(): References
+//     {
+//         return this._references;
+//     }
+
+//     public shadowRoot!: ShadowRoot;
+
+//     public onAfterBind?: Action;
+
+//     public constructor()
+//     {
+//         super();
+
+//         this.attachShadow({ mode: "open" });
+
+//         this.applyMetadata(this.shadowRoot);
+
+//         this._references = new References(this.shadowRoot);
+//     }
+
+//     public static registerDirective<T extends DirectiveHandlerConstructor>(name: string, handlerConstructor: T): void
+//     {
+//         directiveRegistry.set(name, handlerConstructor);
+//     }
+
+//     private applyMetadata(shadowRoot: ShadowRoot): void
+//     {
+//         const metadata = (this.constructor as Function & { [STATIC_METADATA]?: StaticMetadata })[STATIC_METADATA];
+
+//         if (metadata?.styles)
+//         {
+//             // (shadowRoot as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles;
+//         }
+
+//         if (metadata?.template)
+//         {
+//             const content = document.importNode(metadata.template.content, true);
+
+//             content.normalize();
+
+//             shadowRoot.appendChild(content);
+//         }
+//     }
+// }

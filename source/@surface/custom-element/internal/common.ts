@@ -1,9 +1,11 @@
-import { Indexer, Nullable } from "@surface/core";
-import ISubscription         from "@surface/reactive/interfaces/subscription";
-import { nativeEvents }      from "./native-events";
-import { interpolation }     from "./patterns";
-import { SUBSCRIPTIONS }     from "./symbols";
-import { Subscriber }        from "./types";
+import { Indexer, Nullable }   from "@surface/core";
+import { assert }              from "@surface/core/common/generic";
+import Evaluate                from "@surface/expression/evaluate";
+import IExpression             from "@surface/expression/interfaces/expression";
+import IPattern                from "@surface/expression/interfaces/pattern";
+import TemplateEvaluationError from "./errors/template-evaluation-error";
+import TemplateParseError      from "./errors/template-parse-error";
+import { Scope }               from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -12,11 +14,21 @@ wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
+const TEMPLATE_OWNER = Symbol("custom-element:template-owner");
+
+function buildStackTrace(stackTrace: Array<Array<string>>): string
+{
+    return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
+}
+
 export function createScope(scope: Indexer): Indexer
 {
+    scope["$class"] = classMap;
+    scope["$style"] = styleMap;
+
     const handler: ProxyHandler<Indexer> =
     {
-        get: (target, key) => key in target ? target[key as string] : (windowWrapper as Indexer)[key as string],
+        get: (target, key) => key in target ? target[key as string] : (windowWrapper as unknown as Indexer)[key as string],
         has: (target, key) => key in target || key in windowWrapper,
         getOwnPropertyDescriptor: (target, key) =>
             Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
@@ -25,9 +37,17 @@ export function createScope(scope: Indexer): Indexer
     return new Proxy(scope, handler);
 }
 
-export function pushSubscription(target: Subscriber, subscription: ISubscription): void
+export function classMap(classes: Record<string, boolean>): string
 {
-    (target[SUBSCRIPTIONS] = target[SUBSCRIPTIONS] ?? []).push(subscription);
+    return Object.entries(classes)
+        .filter(x => x[1])
+        .map(x => x[0])
+        .join(" ");
+}
+
+export function getTemplateOwner(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }): HTMLTemplateElement|null
+{
+    return element[TEMPLATE_OWNER] ?? null;
 }
 
 export function scapeBrackets(value: string)
@@ -35,33 +55,53 @@ export function scapeBrackets(value: string)
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 }
 
-export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
+export function setTemplateOwner(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }, template: HTMLTemplateElement): void
 {
-    for (const attribute of Array.from(element.attributes))
+    element[TEMPLATE_OWNER] = template;
+}
+
+export function styleMap(rules: Record<string, boolean>): string
+{
+    return Object.entries(rules)
+        .map(([key, value]) => `${key}: ${value}` )
+        .join("; ");
+}
+
+export function tryEvaluateExpression(scope: Scope, expression: IExpression, stackTrace: Array<Array<string>>): unknown
+{
+    try
     {
-        if (attribute.name.startsWith("*"))
-        {
-            const wrapper = document.createAttribute(attribute.name.replace(/^\*/, ""));
+        return expression.evaluate(scope);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
 
-            wrapper.value = attribute.value;
-            element.removeAttributeNode(attribute);
-            element.setAttributeNode(wrapper);
+        throwTemplateEvaluationError(error.message, stackTrace);
+    }
+}
 
-            yield wrapper;
-        }
-        else if
-        (
-            attribute.name.startsWith(":")
-            || attribute.name.startsWith("on:")
-            || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
-        )
-        {
-            yield attribute;
-        }
-        else
-        {
-            attribute.value = scapeBrackets(attribute.value);
-        }
+export function throwTemplateEvaluationError(message: string, stackTrace: Array<Array<string>>): never
+{
+    throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
+}
+
+export function throwTemplateParseError(message: string, stackTrace: Array<Array<string>>): never
+{
+    throw new TemplateParseError(message, buildStackTrace(stackTrace));
+}
+
+export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, stackTrace: Array<Array<string>>): Indexer
+{
+    try
+    {
+        return Evaluate.pattern(scope, pattern, value);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateEvaluationError(error.message, stackTrace);
     }
 }
 

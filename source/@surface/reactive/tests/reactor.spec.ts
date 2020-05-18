@@ -1,9 +1,10 @@
-import { tuple }                               from "@surface/core/common/generic";
+import { Indexer }                             from "@surface/core";
+import { hasValue }                            from "@surface/core/common/generic";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                               from "chai";
-import Reactive                                from "..";
+import { assert }                              from "chai";
+import { notify, observable }                  from "../decorators";
+import Metadata                                from "../internal/metadata";
 import Reactor                                 from "../internal/reactor";
-import { REACTOR, TRACKED_KEYS }               from "../internal/symbols";
 import Observer                                from "../observer";
 import PropertySubscription                    from "../property-subscription";
 
@@ -16,8 +17,6 @@ export default class ReactorSpec
         class Emitter
         {
             private _value: number = 0;
-
-            public [TRACKED_KEYS]: Array<string> = [];
 
             public get value(): number
             {
@@ -35,11 +34,11 @@ export default class ReactorSpec
             }
         }
 
+        @observable
         class ReadonlyEmitter
         {
+            @notify("value")
             private _value: number = 0;
-
-            public [TRACKED_KEYS]: Array<string> = [];
 
             public get value(): number
             {
@@ -64,7 +63,7 @@ export default class ReactorSpec
 
         const instanceEmmiter         = new Emitter();
         const instanceReadonlyEmmiter = new ReadonlyEmitter();
-        const rawEmmiter              = { value: 0, nonReactiveValue: 1, [TRACKED_KEYS]: [] };
+        const rawEmmiter              = { value: 0, nonReactiveValue: 1 };
 
         Object.defineProperty(rawEmmiter, "nonReactiveValue", { value: 1, writable: false });
 
@@ -85,85 +84,113 @@ export default class ReactorSpec
         Reactor.makeReactive(rawEmmiter, "nonReactiveValue");
         Reactor.makeReactive(rawEmmiter, "value").observers.set("value", rawEmmiterValueObserver);
 
-        chai.expect(() => Reactor.makeReactive(rawEmmiter, "value")).to.not.throw();
-        chai.expect(instanceEmmiter[TRACKED_KEYS]).to.deep.equal(["getValue", "value"]);
-        chai.expect(instanceReadonlyEmmiter[TRACKED_KEYS]).to.deep.equal(["nonReactiveValue", "value"]);
-        chai.expect(rawEmmiter[TRACKED_KEYS]).to.deep.equal(["nonReactiveValue", "value"]);
+        assert.doesNotThrow(() => Reactor.makeReactive(rawEmmiter, "value"));
+
+        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         ["getValue", "value"]);
+        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, ["_value", "nonReactiveValue", "value"]);
+        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              ["nonReactiveValue", "value"]);
 
         rawEmmiter.value = rawEmmiter.value;
 
         rawEmmiter.value = 1;
 
-        chai.expect(rawEmmiterValueListerner).to.equal(rawEmmiter.value);
+        assert.equal(rawEmmiterValueListerner, rawEmmiter.value);
 
         instanceEmmiter.value = instanceEmmiter.value;
 
         instanceEmmiter.value = 1;
 
-        chai.expect(instanceEmmiterValueListener).to.equal(1);
+        assert.equal(instanceEmmiterValueListener, 1);
 
         instanceEmmiter.getValue = () => 3;
 
-        chai.expect(instanceEmmiterGetValueListener).to.equal(instanceEmmiter.getValue);
+        assert.equal(instanceEmmiterGetValueListener, instanceEmmiter.getValue);
 
         instanceReadonlyEmmiter.changeValue();
         instanceReadonlyEmmiter.changeValue();
 
-        chai.expect(instanceReadonlyValueListener).to.equal(instanceReadonlyEmmiter.value);
+        assert.equal(instanceReadonlyValueListener, instanceReadonlyEmmiter.value);
     }
 
     @test @shouldPass
     public makeReactiveArray(): void
     {
-        const emmiter  = { values: tuple({ value: 0 }, [{ value: 0 }]) };
-        const listener = { values: tuple({ value: 0 }, [{ value: 0 }]) };
+        const emmiter  = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
+        const listener = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
 
-        const values0Observer       = new Observer<{ value: number }>();
-        const values1Observer       = new Observer<[{ value: number }]>();
-        const values01Observer      = new Observer<{ value: number }>();
-        const values01ValueObserver = new Observer<number>();
+        const values0Observer       = new Observer<Array<{ value: number }>>();
+        const values10Observer      = new Observer<{ value: number }>();
+        const values10ValueObserver = new Observer<number>();
+        const values1Observer       = new Observer<Array<{ value: number }>>();
+        const values20Observer      = new Observer<Array<{ value: number }>>();
 
         values0Observer.subscribe({ notify: x => listener.values[0] = x });
+        values10Observer.subscribe({ notify: x => hasValue(listener.values?.[1]) ? listener.values[1][0] = x : null });
+        values10ValueObserver.subscribe({ notify: x => hasValue(listener.values?.[1]?.[0]) ? listener.values[1][0].value = x : null });
         values1Observer.subscribe({ notify: x => listener.values[1] = x });
-        values01Observer.subscribe({ notify: x => listener.values[1][0] = x });
-        values01ValueObserver.subscribe({ notify: x => listener.values[1][0].value = x });
+        values20Observer.subscribe({ notify: x => listener.values[2] = x });
 
-        Reactor.makeReactive(emmiter.values, 0).observers.set("0", values0Observer);
-        Reactor.makeReactive(emmiter.values, 1).observers.set("1", values1Observer);
-        Reactor.makeReactive(emmiter.values[1], 0).observers.set("0", values01Observer);
-        Reactor.makeReactive(emmiter.values[1][0], "value").observers.set("value", values01ValueObserver);
+        Reactor.makeReactive(emmiter.values       as Indexer, 0).observers.set("0", values0Observer);
+        Reactor.makeReactive(emmiter.values[1]    as Indexer, 0).observers.set("0", values10Observer);
+        Reactor.makeReactive(emmiter.values[1][0] as Indexer, "value").observers.set("value", values10ValueObserver);
+        Reactor.makeReactive(emmiter.values       as Indexer, 1).observers.set("1", values1Observer);
 
-        chai.expect(Reactive.getReactor(emmiter.values)).to.instanceOf(Reactor);
-        chai.expect(Reactive.getReactor(emmiter.values[1])).to.instanceOf(Reactor);
-        chai.expect(Reactive.getReactor(emmiter.values[1][0])).to.instanceOf(Reactor);
+        Metadata.of(emmiter.values)!.reactor.dependencies.set("1", Metadata.of(emmiter.values[1])!.reactor);
+        Metadata.of(emmiter.values[1])!.reactor.dependencies.set("0", Metadata.of(emmiter.values[1][0])!.reactor);
+
+        assert.instanceOf(Metadata.of(emmiter.values)!.reactor,       Reactor);
+        assert.instanceOf(Metadata.of(emmiter.values[1])!.reactor,    Reactor);
+        assert.instanceOf(Metadata.of(emmiter.values[1][0])!.reactor, Reactor);
 
         emmiter.values[1][0].value = 1;
 
-        chai.expect(listener.values[1][0].value).deep.equal(emmiter.values[1][0].value);
+        assert.deepEqual(listener.values[1][0].value, emmiter.values[1][0].value);
 
         emmiter.values[1][0] = { value: 2 };
 
-        chai.expect(listener.values[1][0]).deep.equal(emmiter.values[1][0]);
+        assert.deepEqual(listener.values[1][0], emmiter.values[1][0]);
+
+        const old = emmiter.values[1];
+
+        emmiter.values[1] = [{ value: 1 }];
+
+        assert.deepEqual(listener.values[1], emmiter.values[1]);
+
+        emmiter.values[1] = old;
+
+        assert.deepEqual(listener.values[1], emmiter.values[1]);
 
         emmiter.values[1] = [{ value: 3 }];
 
-        chai.expect(listener.values[1]).deep.equal(emmiter.values[1]);
+        assert.deepEqual(listener.values[1], emmiter.values[1]);
 
-        emmiter.values[0] = { value: 4 };
+        emmiter.values[0] = [{ value: 4 }];
 
-        chai.expect(listener.values[0]).deep.equal(emmiter.values[0]);
+        assert.deepEqual(listener.values[0], emmiter.values[0]);
+
+        emmiter.values[2] = [{ value: 1 }, { value: 2 }, { value: 3 }];
+
+        assert.notDeepEqual(listener.values[2], emmiter.values[2]);
+
+        Reactor.makeReactive(emmiter.values as Indexer, 2).observers.set("2", values20Observer);
+
+        emmiter.values[2].shift();
+
+        assert.deepEqual(listener.values[2][0], emmiter.values[2][0]);
 
         emmiter.values[1].pop();
 
-        chai.expect(listener.values).deep.equal([{ value: 4 }, []]);
+        assert.deepEqual(listener.values[1] as unknown as [undefined], [undefined]);
 
         emmiter.values.pop();
 
-        chai.expect(listener.values).deep.equal([{ value: 4 }, []]);
+        assert.deepEqual(emmiter.values,  [[{ value: 4 }], [undefined]]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], [undefined], undefined]);
 
         emmiter.values.pop();
 
-        chai.expect(listener.values).deep.equal([{ value: 4 }, []]);
+        assert.deepEqual(emmiter.values,  [[{ value: 4 }]]);
+        assert.deepEqual(listener.values, [[{ value: 4 }], undefined, undefined]);
     }
 
     @test @shouldPass
@@ -176,7 +203,7 @@ export default class ReactorSpec
 
         reactorA.dependencies.set("a", reactorB);
 
-        chai.expect(reactorA.dependencies.get("a")).to.equal(reactorB);
+        assert.equal(reactorA.dependencies.get("a"), reactorB);
     }
 
     @test @shouldPass
@@ -190,7 +217,7 @@ export default class ReactorSpec
 
         reactor.observers.set("a", new Observer());
 
-        chai.expect(reactor.observers.get("a")).to.deep.equal(observer);
+        assert.deepEqual(reactor.observers.get("a"), observer);
     }
 
     @test @shouldPass
@@ -209,23 +236,23 @@ export default class ReactorSpec
 
         reactor.notify(null);
 
-        chai.expect(receiver.value).to.equal(1);
+        assert.equal(receiver.value, undefined);
 
         reactor.notify(emmiter, "value", null as unknown as number);
 
-        chai.expect(receiver.value).to.equal(1);
+        assert.equal(receiver.value, null);
 
         reactor.notify({ value: 2 });
 
-        chai.expect(receiver.value).to.equal(2);
+        assert.equal(receiver.value, 2);
 
         reactor.notify(emmiter, "value");
 
-        chai.expect(receiver.value).to.equal(1);
+        assert.equal(receiver.value, 1);
 
         reactor.notify(emmiter, "value", 3);
 
-        chai.expect(receiver.value).to.equal(3);
+        assert.equal(receiver.value, 3);
     }
 
     @test @shouldPass
@@ -249,7 +276,7 @@ export default class ReactorSpec
 
         reactorA.notify({ a: { b: { value: 2 } }});
 
-        chai.expect(receiver.value).to.equal(2);
+        assert.equal(receiver.value, 2);
     }
 
     @test @shouldPass
@@ -288,42 +315,42 @@ export default class ReactorSpec
 
         emmiterA.a = emmiterB.a;
 
-        chai.expect(oldA.b.value, "#01").to.equal(1);
+        assert.equal(oldA.b.value, 1, "#01");
 
-        chai.expect(receiverA.value, "#02").to.equal(2);
-        chai.expect(receiverB.value, "#03").to.equal(1);
+        assert.equal(receiverA.value, 2, "#02");
+        assert.equal(receiverB.value, 1, "#03");
 
         emmiterA.a.b.value = 3;
 
-        chai.expect(receiverA.value, "#04").to.equal(3);
-        chai.expect(receiverB.value, "#05").to.equal(1);
+        assert.equal(receiverA.value, 3, "#04");
+        assert.equal(receiverB.value, 1, "#05");
 
         emmiterA.a = oldA;
 
-        chai.expect(emmiterB.a.b.value, "#06").to.equal(3);
+        assert.equal(emmiterB.a.b.value, 3, "#06");
 
-        chai.expect(receiverA.value, "#07").to.equal(1);
-        chai.expect(receiverB.value, "#08").to.equal(1);
+        assert.equal(receiverA.value, 1, "#07");
+        assert.equal(receiverB.value, 1, "#08");
 
         emmiterAReactorA.notify({ a: { b: { value: 4 } }});
 
-        chai.expect(receiverA.value, "#09").to.equal(4);
-        chai.expect(receiverB.value, "#10").to.equal(1);
+        assert.equal(receiverA.value, 4, "#09");
+        assert.equal(receiverB.value, 1, "#10");
 
         emmiterAReactorB.notify({ b: { value: 5 } });
 
-        chai.expect(receiverA.value, "#11").to.equal(5);
-        chai.expect(receiverB.value, "#12").to.equal(1);
+        assert.equal(receiverA.value, 5, "#11");
+        assert.equal(receiverB.value, 1, "#12");
 
         emmiterAReactorValue.notify({ value: 6 });
 
-        chai.expect(receiverA.value, "#13").to.equal(6);
-        chai.expect(receiverB.value, "#14").to.equal(1);
+        assert.equal(receiverA.value, 6, "#13");
+        assert.equal(receiverB.value, 1, "#14");
 
         emmiterA.a.b.value = 7;
 
-        chai.expect(receiverA.value, "#15").to.equal(7);
-        chai.expect(receiverB.value, "#16").to.equal(1);
+        assert.equal(receiverA.value, 7, "#15");
+        assert.equal(receiverB.value, 1, "#16");
     }
 
     @test @shouldPass
@@ -342,19 +369,18 @@ export default class ReactorSpec
         const subscription = new PropertySubscription(listener, observer);
 
         reactor.setPropertySubscription("a", subscription);
-        reactor.setPropertySubscription("a", new PropertySubscription({ notify: () => null, update: () => null }, new Observer()));
 
         reactor.notify({ a: { value: 2 } });
 
-        chai.expect(receiver.host.a.value).to.equal(2);
+        assert.equal(receiver.host.a.value, 2);
 
         reactor.notify(emmiter.host, "a");
 
-        chai.expect(receiver.host.a.value).to.equal(1);
+        assert.equal(receiver.host.a.value, 1);
 
         reactor.notify(emmiter.host, "a", { value: 2 });
 
-        chai.expect(receiver.host.a.value).to.equal(1);
+        assert.equal(receiver.host.a.value, 1);
     }
 
     @test @shouldPass
@@ -377,19 +403,81 @@ export default class ReactorSpec
         reactorA.dependencies.set("a", reactorB);
         reactorB.dependencies.set("b", reactor);
 
-        const newValue = { b: { value: 1, [REACTOR]: undefined }, [REACTOR]: undefined };
+        const newValue = { b: { value: 1 }};
 
         reactorA.update("a", newValue);
         reactorA.update("a", newValue);
         reactorA.update("a", null);
 
-        chai.expect(newValue[REACTOR]).to.not.equal(undefined);
-        chai.expect(newValue.b[REACTOR]).to.not.equal(undefined);
+        assert.notEqual(Metadata.of(newValue), undefined);
+        assert.notEqual(Metadata.of(newValue.b), undefined);
+    }
+
+    @test @shouldPass
+    public dispose(): void
+    {
+        let notified = false;
+
+        const target = { value: 1 };
+
+        const reactor = Reactor.makeReactive(target, "value");
+
+        const observer = new Observer();
+
+        observer.subscribe({ notify: () => notified = true });
+
+        reactor.observers.set("value", observer);
+
+        target.value = 2;
+
+        assert.isTrue(notified);
+
+        reactor.dispose();
+
+        reactor.dispose(); // Coverage
+
+        notified = false;
+
+        target.value = 1;
+
+        assert.isFalse(notified);
+    }
+
+    @test @shouldPass
+    public disposePropertySubscription(): void
+    {
+        const emmiter  = { host: { a: { value: 1 } } };
+        const receiver = { host: { a: { value: 1 } } };
+
+        const hostReactor = Reactor.makeReactive(emmiter.host, "a");
+        const reactor = Reactor.makeReactive(emmiter.host.a, "value");
+
+        hostReactor.dependencies.set("a", reactor);
+
+        const listener = { notify: (x: number) => receiver.host.a.value = x, update: (x: typeof emmiter["host"]) => receiver.host = x };
+        const observer = new Observer<number>();
+
+        observer.subscribe(listener);
+
+        const subscription = new PropertySubscription(listener, observer);
+
+        reactor.setPropertySubscription("a", subscription);
+        reactor.setPropertySubscription("a", subscription); // Coverage
+
+        reactor.notify({ a: { value: 2 } });
+
+        assert.equal(receiver.host.a.value, 2);
+
+        hostReactor.dispose();
+
+        reactor.notify({ a: { value: 3 } });
+
+        assert.equal(receiver.host.a.value, 2);
     }
 
     @test @shouldFail
     public makeReactiveInvalidKey(): void
     {
-        chai.expect(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo")).to.Throw("Key foo does not exists on type Object");
+        assert.throw(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo"), "Key foo does not exists on type Object");
     }
 }
