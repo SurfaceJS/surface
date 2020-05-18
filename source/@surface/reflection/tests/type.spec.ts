@@ -1,10 +1,10 @@
 import Enumerable                  from "@surface/enumerable";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import FieldInfo                   from "../field-info";
-import MethodInfo                  from "../method-info";
-import PropertyInfo                from "../property-info";
-import Type                        from "../type";
+import FieldInfo                   from "../internal/field-info";
+import MethodInfo                  from "../internal/method-info";
+import PropertyInfo                from "../internal/property-info";
+import Type                        from "../internal/type";
 import BaseMock                    from "./fixtures/base-mock";
 import Mock                        from "./fixtures/mock";
 

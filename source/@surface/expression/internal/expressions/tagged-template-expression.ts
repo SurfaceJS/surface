@@ -1,12 +1,10 @@
-import { Indexer, Nullable }     from "@surface/core";
-import { hasValue }              from "@surface/core/common/generic";
-import { format }                from "@surface/core/common/string";
-import IExpression               from "../../interfaces/expression";
-import ITaggedTemplateExpression from "../../interfaces/tagged-template-expression";
-import NodeType                  from "../../node-type";
-import TypeGuard                 from "../../type-guard";
-import Messages                  from "../messages";
-import TemplateLiteral           from "./template-literal";
+import { Indexer, Nullable, hasValue, format } from "@surface/core";
+import IExpression                             from "../interfaces/expression";
+import ITaggedTemplateExpression               from "../interfaces/tagged-template-expression";
+import Messages                                from "../messages";
+import NodeType                                from "../node-type";
+import TypeGuard                               from "../type-guard";
+import TemplateLiteral                         from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression
 {

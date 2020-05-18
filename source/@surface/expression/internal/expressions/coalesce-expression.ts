@@ -1,8 +1,7 @@
-import { Indexer }         from "@surface/core";
-import { hasValue }        from "@surface/core/common/generic";
-import ICoalesceExpression from "../../interfaces/coalesce-expression";
-import IExpression         from "../../interfaces/expression";
-import NodeType            from "../../node-type";
+import { Indexer, hasValue } from "@surface/core";
+import ICoalesceExpression   from "../interfaces/coalesce-expression";
+import IExpression           from "../interfaces/expression";
+import NodeType              from "../node-type";
 
 export default class CoalesceExpression implements IExpression
 {

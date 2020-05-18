@@ -1,4 +1,4 @@
-import Queue       from "@surface/collection/queue";
+import { Queue }   from "@surface/collection";
 import { Action1 } from "@surface/core";
 
 type Action   = () => unknown;
@@ -12,11 +12,11 @@ export default class ParallelWorker
 
     private readonly interval: number;
 
-    private _done:    Promise<void> = Promise.resolve();
-    private expended: number        = 0;
-    private resolve:  Action|null   = null;
-    private reject:   Action1<unknown>|null   = null;
-    private running:  boolean       = false;
+    private _done:    Promise<void>         = Promise.resolve();
+    private expended: number                = 0;
+    private resolve:  Action|null           = null;
+    private reject:   Action1<unknown>|null = null;
+    private running:  boolean               = false;
 
     public constructor(interval?: number)
     {

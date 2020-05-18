@@ -1,8 +1,7 @@
-import { Func1, Nullable } from "@surface/core";
-import Hashcode            from "@surface/core/hashcode";
-import IComparer           from "../interfaces/comparer";
-import ILookup             from "../interfaces/lookup";
-import Group               from "./group";
+import { Func1, Nullable, Hashcode } from "@surface/core";
+import IComparer                     from "./interfaces/comparer";
+import ILookup                       from "./interfaces/lookup";
+import Group                         from "./group";
 
 export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<TKey, TElement>>, ILookup<TKey, TElement>
 {

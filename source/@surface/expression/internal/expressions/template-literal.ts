@@ -1,9 +1,8 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import IExpression           from "../../interfaces/expression";
-import ITemplateElement      from "../../interfaces/template-element";
-import ITemplateLiteral      from "../../interfaces/template-literal";
-import NodeType              from "../../node-type";
+import { Indexer, Nullable, hasValue } from "@surface/core";
+import IExpression                     from "../interfaces/expression";
+import ITemplateElement                from "../interfaces/template-element";
+import ITemplateLiteral                from "../interfaces/template-literal";
+import NodeType                        from "../node-type";
 
 export default class TemplateLiteral implements IExpression
 {

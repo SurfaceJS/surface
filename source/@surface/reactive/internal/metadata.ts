@@ -1,6 +1,6 @@
-import IDisposable  from "@surface/core/interfaces/disposable";
-import IReactor     from "../interfaces/reactor";
-import Reactor      from "./reactor";
+import { IDisposable } from "@surface/core";
+import IReactor        from "./interfaces/reactor";
+import Reactor         from "./reactor";
 
 const METADATA = Symbol("reactive:metadata");
 

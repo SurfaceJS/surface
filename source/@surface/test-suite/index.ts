@@ -1,7 +1,13 @@
-import { Action, Constructor, Func1, Indexer, Nullable } from "@surface/core";
-import { camelToText }                                   from "@surface/core/common/string";
-import mocha                                             from "./internal/mocha";
-
+import
+{
+    camelToText,
+    Action,
+    Constructor,
+    Func1,
+    Indexer,
+    Nullable
+} from "@surface/core";
+import mocha from "./internal/mocha";
 import
 {
     AFTER,

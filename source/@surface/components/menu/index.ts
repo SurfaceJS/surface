@@ -1,4 +1,4 @@
-import { dashedToTitle } from "@surface/core/common/string";
+import { dashedToTitle } from "@surface/core";
 import CustomElement     from "@surface/custom-element";
 import Enumerable        from "@surface/enumerable";
 import { element }       from "../decorators";

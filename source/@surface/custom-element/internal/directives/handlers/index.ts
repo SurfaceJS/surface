@@ -1,5 +1,5 @@
-import IDisposable               from "@surface/core/interfaces/disposable";
-import ISubscription             from "@surface/reactive/interfaces/subscription";
+import { IDisposable }           from "@surface/core";
+import { ISubscription }         from "@surface/reactive";
 import { tryEvaluateExpression } from "../../common";
 import DataBind                  from "../../data-bind";
 import IDirective                from "../../interfaces/directive";

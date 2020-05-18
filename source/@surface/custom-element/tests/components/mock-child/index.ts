@@ -1,7 +1,7 @@
 import utils         from "jsdom/lib/jsdom/living/generated/utils";
 import Impl          from "jsdom/lib/jsdom/living/nodes/Node-impl";
-import CustomElement from "../../..";
-import { element }   from "../../../decorators";
+import CustomElement from "../../../internal/custom-element";
+import { element }   from "../../../internal/decorators";
 
 @element("mock-child", "<span>{host.value}</span>")
 export default class MockChild extends CustomElement

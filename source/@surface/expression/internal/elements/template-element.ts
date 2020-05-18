@@ -1,6 +1,6 @@
-import INode            from "../../interfaces/node";
-import ITemplateElement from "../../interfaces/template-element";
-import NodeType         from "../../node-type";
+import INode            from "../interfaces/node";
+import ITemplateElement from "../interfaces/template-element";
+import NodeType         from "../node-type";
 
 export default class TemplateElement implements INode
 {

@@ -1,6 +1,6 @@
 import { Nullable } from "@surface/core";
-import Hashcode     from "@surface/core/hashcode";
-import IComparer    from "../interfaces/comparer";
+import { Hashcode } from "@surface/core";
+import IComparer    from "./interfaces/comparer";
 
 type Slot<TElement> =
 {

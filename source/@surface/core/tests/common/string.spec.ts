@@ -1,6 +1,6 @@
 import { shouldPass, suite, test }     from "@surface/test-suite";
 import * as chai                       from "chai";
-import { capture, captureAll, format } from "../../common/string";
+import { capture, captureAll, format } from "../../internal/common/string";
 
 @suite
 export default class CommonStringtSpec

@@ -1,4 +1,6 @@
+import { StackTrace } from "../types";
+
 export default interface ITraceable
 {
-    stackTrace: Array<Array<string>>;
+    stackTrace: StackTrace;
 }

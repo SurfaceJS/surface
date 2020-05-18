@@ -1,12 +1,11 @@
-import { Func3, Indexer }     from "@surface/core";
-import { hasValue }           from "@surface/core/common/generic";
-import IAssignmentExpression  from "../../interfaces/assignment-expression";
-import IExpression            from "../../interfaces/expression";
-import IIdentifier            from "../../interfaces/identifier";
-import IMemberExpression      from "../../interfaces/member-expression";
-import NodeType               from "../../node-type";
-import TypeGuard              from "../../type-guard";
-import { AssignmentOperator } from "../../types";
+import { Func3, Indexer, hasValue } from "@surface/core";
+import IAssignmentExpression        from "../interfaces/assignment-expression";
+import IExpression                  from "../interfaces/expression";
+import IIdentifier                  from "../interfaces/identifier";
+import IMemberExpression            from "../interfaces/member-expression";
+import NodeType                     from "../node-type";
+import TypeGuard                    from "../type-guard";
+import { AssignmentOperator }       from "../types";
 
 const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string|number, unknown, unknown>> =
 {

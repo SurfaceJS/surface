@@ -1,6 +1,5 @@
-import { Indexer }         from "@surface/core";
-import IDisposable         from "@surface/core/interfaces/disposable";
-import { STATIC_METADATA } from "../symbols";
+import { Indexer, IDisposable } from "@surface/core";
+import { STATIC_METADATA }      from "../symbols";
 
 export default class StaticMetadata
 {

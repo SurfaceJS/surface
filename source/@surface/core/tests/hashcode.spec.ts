@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                   from "chai";
-import Hashcode                    from "../hashcode";
+import Hashcode                    from "../internal/hashcode";
 
 @suite
 export default class HashcodeSpec

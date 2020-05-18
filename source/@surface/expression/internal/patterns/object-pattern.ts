@@ -1,9 +1,9 @@
-import IAssignmentProperty from "../../interfaces/assignment-property";
-import IObjectPattern      from "../../interfaces/object-pattern";
-import IPattern            from "../../interfaces/pattern";
-import IRestElement        from "../../interfaces/rest-element";
-import NodeType            from "../../node-type";
-import { PATTERN }         from "../../symbols";
+import IAssignmentProperty from "../interfaces/assignment-property";
+import IObjectPattern      from "../interfaces/object-pattern";
+import IPattern            from "../interfaces/pattern";
+import IRestElement        from "../interfaces/rest-element";
+import NodeType            from "../node-type";
+import { PATTERN }         from "../symbols";
 
 export default class ObjectPattern implements IPattern
 {

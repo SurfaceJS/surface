@@ -1,7 +1,7 @@
 import { suite, test } from "@surface/test-suite";
 import chai            from "chai";
 import webpack         from "webpack";
-import loader          from "../../loaders/html-require-loader";
+import loader          from "../../internal/loaders/html-require-loader";
 
 @suite
 export default class HtmlImportLoaderSpec

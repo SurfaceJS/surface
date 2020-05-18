@@ -1,4 +1,5 @@
-import { Constructor } from "../core";
+import { Constructor } from "@surface/core";
+import Container       from "./internal/container";
 import IInjections     from "./internal/interfaces/injections";
 import { INJECTIONS }  from "./internal/symbols";
 
@@ -25,3 +26,5 @@ export function inject(key: string|symbol|Constructor): any
         }
     };
 }
+
+export default Container;

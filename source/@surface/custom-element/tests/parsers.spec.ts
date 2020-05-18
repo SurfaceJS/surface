@@ -1,5 +1,4 @@
-import SyntaxError                                                          from "@surface/expression/syntax-error";
-import TypeGuard                                                            from "@surface/expression/type-guard";
+import { SyntaxError, TypeGuard }                                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                              from "@surface/test-suite";
 import { assert }                                                           from "chai";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/parsers";

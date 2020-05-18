@@ -1,12 +1,9 @@
-import { Indexer }  from "@surface/core";
-import { clone }    from "@surface/core/common/object";
-import Type         from "@surface/reflection";
-import MethodInfo   from "@surface/reflection/method-info";
-import PropertyInfo from "@surface/reflection/property-info";
-import Component    from "../..";
-import { element }  from "../../decorators";
-import template     from "./index.html";
-import style        from "./index.scss";
+import { clone, Indexer }                 from "@surface/core";
+import Type, { MethodInfo, PropertyInfo } from "@surface/reflection";
+import Component                          from "../..";
+import { element }                        from "../../decorators";
+import template                           from "./index.html";
+import style                              from "./index.scss";
 
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component

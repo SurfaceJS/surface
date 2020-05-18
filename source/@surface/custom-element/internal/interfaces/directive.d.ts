@@ -1,4 +1,4 @@
-import IExpression         from "@surface/expression/interfaces/expression";
+import { IExpression }     from "@surface/expression";
 import IKeyValueObservable from "./key-value-observable";
 import ITraceable          from "./traceable";
 

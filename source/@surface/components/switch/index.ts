@@ -1,4 +1,4 @@
-import { typeGuard }          from "@surface/core/common/generic";
+import { typeGuard }          from "@surface/core";
 import Component              from "..";
 import { attribute, element } from "../decorators";
 import style                  from "./index.scss";

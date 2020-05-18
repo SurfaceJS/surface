@@ -1,15 +1,16 @@
-import { Indexer }          from "@surface/core";
-import { getKeyMember }     from "@surface/core/common/object";
-import Reactive             from "@surface/reactive";
-import IPropertyListener    from "@surface/reactive/interfaces/property-listener";
-import PropertyListener     from "@surface/reactive/property-listener";
-import PropertySubscription from "@surface/reactive/property-subscription";
-import IListener            from "../../reactive/interfaces/listener";
-import IReactor             from "../../reactive/interfaces/reactor";
-import ISubscription        from "../../reactive/interfaces/subscription";
-import Metadata             from "./metadata/metadata";
+import { getKeyMember, Indexer } from "@surface/core";
+import Reactive,
+{
+    IListener,
+    IPropertyListener,
+    IReactor,
+    ISubscription,
+    PropertyListener,
+    PropertySubscription
+} from "@surface/reactive";
+import Metadata                  from "./metadata/metadata";
 
-const PRIMITIVES = [ "boolean", "number", "string"];
+const PRIMITIVES = ["boolean", "number", "string"];
 
 export default class DataBind
 {

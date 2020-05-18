@@ -1,11 +1,8 @@
-import { Indexer, Nullable }   from "@surface/core";
-import { assert }              from "@surface/core/common/generic";
-import Evaluate                from "@surface/expression/evaluate";
-import IExpression             from "@surface/expression/interfaces/expression";
-import IPattern                from "@surface/expression/interfaces/pattern";
-import TemplateEvaluationError from "./errors/template-evaluation-error";
-import TemplateParseError      from "./errors/template-parse-error";
-import { Scope }               from "./types";
+import { assert, Indexer, Nullable }       from "@surface/core";
+import { Evaluate, IExpression, IPattern } from "@surface/expression";
+import TemplateEvaluationError             from "./errors/template-evaluation-error";
+import TemplateParseError                  from "./errors/template-parse-error";
+import { Scope, StackTrace }               from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -14,9 +11,7 @@ wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
-const TEMPLATE_OWNER = Symbol("custom-element:template-owner");
-
-function buildStackTrace(stackTrace: Array<Array<string>>): string
+function buildStackTrace(stackTrace: StackTrace): string
 {
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
 }
@@ -45,19 +40,9 @@ export function classMap(classes: Record<string, boolean>): string
         .join(" ");
 }
 
-export function getTemplateOwner(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }): HTMLTemplateElement|null
-{
-    return element[TEMPLATE_OWNER] ?? null;
-}
-
 export function scapeBrackets(value: string)
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
-}
-
-export function setTemplateOwner(element: Node & { [TEMPLATE_OWNER]?: HTMLTemplateElement }, template: HTMLTemplateElement): void
-{
-    element[TEMPLATE_OWNER] = template;
 }
 
 export function styleMap(rules: Record<string, boolean>): string
@@ -67,7 +52,17 @@ export function styleMap(rules: Record<string, boolean>): string
         .join("; ");
 }
 
-export function tryEvaluateExpression(scope: Scope, expression: IExpression, stackTrace: Array<Array<string>>): unknown
+export function throwTemplateEvaluationError(message: string, stackTrace: StackTrace): never
+{
+    throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
+}
+
+export function throwTemplateParseError(message: string, stackTrace: StackTrace): never
+{
+    throw new TemplateParseError(message, buildStackTrace(stackTrace));
+}
+
+export function tryEvaluateExpression(scope: Scope, expression: IExpression, stackTrace: StackTrace): unknown
 {
     try
     {
@@ -81,17 +76,7 @@ export function tryEvaluateExpression(scope: Scope, expression: IExpression, sta
     }
 }
 
-export function throwTemplateEvaluationError(message: string, stackTrace: Array<Array<string>>): never
-{
-    throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
-}
-
-export function throwTemplateParseError(message: string, stackTrace: Array<Array<string>>): never
-{
-    throw new TemplateParseError(message, buildStackTrace(stackTrace));
-}
-
-export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, stackTrace: Array<Array<string>>): Indexer
+export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, stackTrace: StackTrace): Indexer
 {
     try
     {

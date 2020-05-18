@@ -1,6 +1,5 @@
-import { assert }                from "@surface/core/common/generic";
-import IDisposable               from "@surface/core/interfaces/disposable";
-import ISubscription             from "@surface/reactive/interfaces/subscription";
+import { assert, IDisposable }   from "@surface/core";
+import { ISubscription }         from "@surface/reactive";
 import { tryEvaluateExpression } from "../../common";
 import DataBind                  from "../../data-bind";
 import IChoiceDirectiveBranch    from "../../interfaces/choice-directive-branch";
