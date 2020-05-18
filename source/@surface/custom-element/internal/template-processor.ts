@@ -3,7 +3,7 @@ import { assert }          from "@surface/core/common/generic";
 import IDisposable         from "@surface/core/interfaces/disposable";
 import IArrayExpression    from "@surface/expression/interfaces/array-expression";
 import IExpression         from "@surface/expression/interfaces/expression";
-import TypeGuard           from "@surface/expression/internal/type-guard";
+import TypeGuard           from "@surface/expression/type-guard";
 import ISubscription       from "@surface/reactive/interfaces/subscription";
 import Type                from "@surface/reflection";
 import FieldInfo           from "@surface/reflection/field-info";

@@ -5,8 +5,8 @@ import IExpression    from "../../interfaces/expression";
 import INewExpression from "../../interfaces/new-expression";
 import ISpreadElement from "../../interfaces/spread-element";
 import NodeType       from "../../node-type";
+import TypeGuard      from "../../type-guard";
 import Messages       from "../messages";
-import TypeGuard      from "../type-guard";
 
 export default class NewExpression implements IExpression
 {

@@ -1,7 +1,7 @@
 import { Indexer }                                   from "@surface/core";
 import { assert }                                    from "@surface/core/common/generic";
 import IDisposable                                   from "@surface/core/interfaces/disposable";
-import TypeGuard                                     from "@surface/expression/internal/type-guard";
+import TypeGuard                                     from "@surface/expression/type-guard";
 import ISubscription                                 from "@surface/reactive/interfaces/subscription";
 import { tryEvaluateExpression, tryEvaluatePattern } from "../../common";
 import DataBind                                      from "../../data-bind";

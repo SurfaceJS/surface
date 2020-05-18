@@ -17,8 +17,8 @@ import IRestElement              from "@surface/expression/interfaces/rest-eleme
 import ITaggedTemplateExpression from "@surface/expression/interfaces/tagged-template-expression";
 import IThisExpression           from "@surface/expression/interfaces/this-expression";
 import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
-import TypeGuard                 from "@surface/expression/internal/type-guard";
 import NodeType                  from "@surface/expression/node-type";
+import TypeGuard                 from "@surface/expression/type-guard";
 
 
 export default class ObserverVisitor extends ExpressionVisitor

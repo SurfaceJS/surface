@@ -1,7 +1,7 @@
 import { Action1 }                                             from "@surface/core";
 import IDisposable                                             from "@surface/core/interfaces/disposable";
 import IExpression                                             from "@surface/expression/interfaces/expression";
-import TypeGuard                                               from "@surface/expression/internal/type-guard";
+import TypeGuard                                               from "@surface/expression/type-guard";
 import ISubscription                                           from "@surface/reactive/interfaces/subscription";
 import { throwTemplateEvaluationError, tryEvaluateExpression } from "../../common";
 import DataBind                                                from "../../data-bind";

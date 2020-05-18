@@ -3,7 +3,7 @@ import { hasValue }          from "@surface/core/common/generic";
 import IExpression           from "../../interfaces/expression";
 import IMemberExpression     from "../../interfaces/member-expression";
 import NodeType              from "../../node-type";
-import TypeGuard             from "../type-guard";
+import TypeGuard             from "../../type-guard";
 
 export default class MemberExpression implements IExpression
 {

@@ -2,7 +2,7 @@ import IExpression from "../../interfaces/expression";
 import INode       from "../../interfaces/node";
 import IProperty   from "../../interfaces/property";
 import NodeType    from "../../node-type";
-import TypeGuard   from "../type-guard";
+import TypeGuard   from "../../type-guard";
 
 export default class Property implements INode
 {

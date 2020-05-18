@@ -6,8 +6,8 @@ import IExpression              from "@surface/expression/interfaces/expression"
 import IIdentifier              from "@surface/expression/interfaces/identifier";
 import INode                    from "@surface/expression/interfaces/node";
 import IPattern                 from "@surface/expression/interfaces/pattern";
-import TypeGuard                from "@surface/expression/internal/type-guard";
 import SyntaxError              from "@surface/expression/syntax-error";
+import TypeGuard                from "@surface/expression/type-guard";
 import InterpolatedExpression   from "./interpolated-expression";
 import { forExpression }        from "./patterns";
 

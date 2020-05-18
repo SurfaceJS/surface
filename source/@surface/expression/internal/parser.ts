@@ -7,6 +7,7 @@ import IPattern         from "../interfaces/pattern";
 import ITemplateLiteral from "../interfaces/template-literal";
 import NodeType         from "../node-type";
 import SyntaxError      from "../syntax-error";
+import TypeGuard                from "../type-guard";
 import
 {
     AssignmentOperator,
@@ -49,7 +50,6 @@ import ObjectPattern            from "./patterns/object-pattern";
 import RestElement              from "./patterns/rest-element";
 import Scanner, { Token }       from "./scanner";
 import TokenType                from "./token-type";
-import TypeGuard                from "./type-guard";
 
 export default class Parser
 {

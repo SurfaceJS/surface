@@ -5,8 +5,8 @@ import IIdentifier           from "../../interfaces/identifier";
 import IMemberExpression     from "../../interfaces/member-expression";
 import IUpdateExpression     from "../../interfaces/update-expression";
 import NodeType              from "../../node-type";
+import TypeGuard             from "../../type-guard";
 import { UpdateOperator }    from "../../types";
-import TypeGuard             from "../type-guard";
 
 type Operation = (object: Record<string|number, number>, property: string|number) => number;
 type Operators = "++*"|"--*"|"*++"|"*--";

@@ -5,7 +5,7 @@ import IObjectPattern from "./interfaces/object-pattern";
 import IPattern       from "./interfaces/pattern";
 import IRestElement   from "./interfaces/rest-element";
 import Messages       from "./internal/messages";
-import TypeGuard      from "./internal/type-guard";
+import TypeGuard      from "./type-guard";
 
 export default class Evaluate
 {

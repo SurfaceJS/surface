@@ -7,8 +7,8 @@ import Expression                                                               
 import IExpression                                                                              from "@surface/expression/interfaces/expression";
 import IPattern                                                                                 from "@surface/expression/interfaces/pattern";
 import Identifier                                                                               from "@surface/expression/internal/expressions/identifier";
-import TypeGuard                                                                                from "@surface/expression/internal/type-guard";
 import SyntaxError                                                                              from "@surface/expression/syntax-error";
+import TypeGuard                                                                                from "@surface/expression/type-guard";
 import { scapeBrackets, throwTemplateParseError }                                               from "./common";
 import directiveRegistry                                                                        from "./directive-registry";
 import IAttributeDescriptor                                                                     from "./interfaces/attribute-descriptor";

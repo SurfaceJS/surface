@@ -5,7 +5,7 @@ import IObjectExpression     from "../../interfaces/object-expression";
 import IProperty             from "../../interfaces/property";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
-import TypeGuard             from "../type-guard";
+import TypeGuard             from "../../type-guard";
 
 export default class ObjectExpression implements IExpression
 {

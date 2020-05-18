@@ -4,7 +4,7 @@ import IArrayExpression      from "../../interfaces/array-expression";
 import IExpression           from "../../interfaces/expression";
 import ISpreadElement        from "../../interfaces/spread-element";
 import NodeType              from "../../node-type";
-import TypeGuard             from "../type-guard";
+import TypeGuard             from "../../type-guard";
 
 export default class ArrayExpression implements IExpression
 {

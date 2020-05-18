@@ -2,8 +2,8 @@ import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-su
 import { assert }                                         from "chai";
 import ParenthesizedExpression                            from "../internal/expressions/parenthesized-expression";
 import Parser                                             from "../internal/parser";
-import TypeGuard                                          from "../internal/type-guard";
 import SyntaxError                                        from "../syntax-error";
+import TypeGuard                                          from "../type-guard";
 import
 {
     invalidExpressions,

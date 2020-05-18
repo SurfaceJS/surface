@@ -4,8 +4,8 @@ import { format }                from "@surface/core/common/string";
 import IExpression               from "../../interfaces/expression";
 import ITaggedTemplateExpression from "../../interfaces/tagged-template-expression";
 import NodeType                  from "../../node-type";
+import TypeGuard                 from "../../type-guard";
 import Messages                  from "../messages";
-import TypeGuard                 from "../type-guard";
 import TemplateLiteral           from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression

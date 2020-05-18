@@ -5,8 +5,8 @@ import IExpression            from "../../interfaces/expression";
 import IIdentifier            from "../../interfaces/identifier";
 import IMemberExpression      from "../../interfaces/member-expression";
 import NodeType               from "../../node-type";
+import TypeGuard              from "../../type-guard";
 import { AssignmentOperator } from "../../types";
-import TypeGuard              from "../type-guard";
 
 const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string|number, unknown, unknown>> =
 {
