@@ -1,14 +1,12 @@
 import { IExpression, IPattern } from "@surface/expression";
-import IObservable               from "./observable";
-import ITemplateDescriptor       from "./template-descriptor";
-import Identifier                from "@surface/expression/internal/expressions/identifier";
-import ITraceable                from "./traceable";
+import IObservable   from "./observable";
+import Identifier    from "@surface/expression/internal/expressions/identifier";
+import ITraceable    from "./traceable";
+import IDescribeable from "./describeable";
 
-export default interface ILoopDirective extends IObservable, ITraceable
+export default interface ILoopDirective extends IDescribeable, IObservable, ITraceable
 {
-    descriptor: ITemplateDescriptor;
-    left:       Identifier|IPattern;
-    operator:   "in"|"of";
-    path:       string;
-    right:      IExpression;
+    left:     Identifier|IPattern;
+    operator: "in"|"of";
+    right:    IExpression;
 }

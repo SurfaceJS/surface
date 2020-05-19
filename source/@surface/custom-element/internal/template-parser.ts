@@ -5,6 +5,7 @@ import { scapeBrackets, throwTemplateParseError }                               
 import directiveRegistry                                                                        from "./directive-registry";
 import IAttributeDescriptor                                                                     from "./interfaces/attribute-descriptor";
 import IChoiceDirectiveBranch                                                                   from "./interfaces/choice-directive-branch";
+import IDirective                                                                               from "./interfaces/directive";
 import IElementDescriptor                                                                       from "./interfaces/element-descriptor";
 import IInjectDirective                                                                         from "./interfaces/inject-directive";
 import IInjectorDirective                                                                       from "./interfaces/injector-directive";
@@ -34,13 +35,15 @@ enum DirectiveType
 
 const directiveTypes = Object.values(DirectiveType);
 
-const errorMessages =
+type Directive  =
 {
-    keyExpression:   (name: string, value: string) => `"${name}" in "${name}='${value}'"`,
-    valueExpression: (name: string, value: string) => `"${value}" in "${name}='${value}'"`,
+    key:    string,
+    name:   string,
+    raw:    string,
+    rawKey: string,
+    type:   DirectiveType,
+    value:  string
 };
-
-type Directive  = { key: string, name: string, type: DirectiveType, value: string };
 
 export default class TemplateParser
 {
@@ -87,6 +90,11 @@ export default class TemplateParser
     public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
     {
         return new TemplateParser(name).parse(template);
+    }
+
+    private attributeToString(attribute: Attr): string
+    {
+        return !attribute.value ? attribute.name : `${attribute.name}="${attribute.value}"`;
     }
 
     // tslint:disable-next-line:cyclomatic-complexity
@@ -160,7 +168,7 @@ export default class TemplateParser
             return node.nodeValue ?? "";
         }
 
-        return `<${node.nodeName.toLowerCase()}${node.attributes.length == 0 ? "" : " "}${Array.from(node.attributes).map(x => !x.value ? x.name : `${x.name}="${x.value}"`).join(" ")}>`;
+        return `<${node.nodeName.toLowerCase()}${node.attributes.length == 0 ? "" : " "}${Array.from(node.attributes).map(this.attributeToString).join(" ")}>`;
     }
 
     private hasDecomposed(element: Node & { [DECOMPOSED]?: boolean }): boolean
@@ -214,23 +222,31 @@ export default class TemplateParser
             (
                 attribute =>
                 {
+                    const raw = this.attributeToString(attribute);
+
                     for (const directive of KEYED_DIRECTIVES)
                     {
                         if (attribute.name == directive || (attribute.name.startsWith(directive + ":")))
                         {
+                            const DEFAULT_KEY = "'default'";
+
                             const directiveKey = `${directive}-key`;
 
                             const [type, _key] = attribute.name.split(":") as [DirectiveType, string|undefined];
 
-                            const key = typeof _key == "string"
-                                ?`'${_key}'`
-                                : `${namedNodeMap[directiveKey]?.value ?? "'default'"}`;
+                            const hasStaticKey = typeof _key == "string";
 
-                            return { key, type, name: attribute.name, value: attribute.value };
+                            const key = hasStaticKey
+                                ?`'${_key}'`
+                                : `${namedNodeMap[directiveKey]?.value ?? DEFAULT_KEY}`;
+
+                            const rawKey = !hasStaticKey && key != DEFAULT_KEY ? `${directiveKey}=\"${key}\"` : "";
+
+                            return { key, type, raw, rawKey, name: attribute.name, value: attribute.value };
                         }
                     }
 
-                    return { key: "", type: attribute.name as DirectiveType, name: attribute.name, value: attribute.value };
+                    return { raw, rawKey: "", key: "", type: attribute.name as DirectiveType, name: attribute.name, value: attribute.value };
                 }
             );
     }
@@ -271,32 +287,47 @@ export default class TemplateParser
             {
                 if (!attribute.name.endsWith("-key"))
                 {
+                    const DEFAULT_KEY       = "'default'";
                     const [rawName, rawKey] = attribute.name.split(":");
-
-                    const name = rawName.replace("#", "");
+                    const name              = rawName.replace("#", "");
 
                     if (!directiveRegistry.has(name))
                     {
                         throwTemplateParseError(`Unregistered directive #${name}.`, this.stackTrace);
                     }
 
-                    const dinamicKey = (element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "-key"]?.value ?? "'default'";
+                    const dinamicKey       = (element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "-key"]?.value ?? DEFAULT_KEY;
+                    const rawKeyExpression = dinamicKey != DEFAULT_KEY ? `${rawName + "-key"}=\"${dinamicKey}\"` : "";
+                    const rawExpression    = `${attribute.name}=\"${attribute.value}\"`;
 
-                    const key = !!rawKey
+                    const keyExpression = !!rawKey
                         ? Expression.literal(rawKey)
-                        : this.tryParseExpression(parseExpression, dinamicKey, errorMessages.keyExpression(attribute.name, attribute.value));
+                        : this.tryParseExpression(parseExpression, dinamicKey, rawKeyExpression);
 
-                    const expression       = this.tryParseExpression(parseExpression, attribute.value, errorMessages.valueExpression(attribute.name, attribute.value));
-                    const keyObservables   = ObserverVisitor.observe(key);
-                    const valueObservables = ObserverVisitor.observe(expression);
+                    const expression     = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
+                    const keyObservables = ObserverVisitor.observe(keyExpression);
+                    const observables    = ObserverVisitor.observe(expression);
 
-                    elementDescriptor.directives.push({ name, key, value: expression, keyObservables, valueObservables, stackTrace });
+                    const descriptor: IDirective =
+                    {
+                        expression,
+                        keyExpression,
+                        keyObservables,
+                        name,
+                        observables,
+                        rawExpression,
+                        rawKeyExpression,
+                        stackTrace,
+                    };
+
+                    elementDescriptor.directives.push(descriptor);
 
                     element.removeAttributeNode(attribute);
                 }
             }
             else
             {
+                const raw             = this.attributeToString(attribute);
                 const name            = attribute.name.replace(/^::?/, "");
                 const key             = dashedToCamel(name);
                 const isTwoWay        = attribute.name.startsWith("::");
@@ -309,9 +340,7 @@ export default class TemplateParser
                         ? "twoway"
                         : "interpolation";
 
-                const expression = isInterpolation
-                    ? this.tryParseExpression(parseInterpolation, attribute.value, errorMessages.valueExpression(attribute.name, attribute.value))
-                    : this.tryParseExpression(parseExpression, attribute.value, errorMessages.valueExpression(attribute.name, attribute.value));
+                const expression = this.tryParseExpression(isInterpolation ? parseInterpolation : parseExpression, attribute.value, raw);
 
                 if (isTwoWay && !this.validateMemberExpression(expression, true))
                 {
@@ -329,7 +358,16 @@ export default class TemplateParser
                     element.removeAttributeNode(attribute);
                 }
 
-                const attributeDescriptor: IAttributeDescriptor = { name, key, expression, observables, type, stackTrace };
+                const attributeDescriptor: IAttributeDescriptor =
+                {
+                    name,
+                    key,
+                    expression,
+                    observables,
+                    type,
+                    rawExpression: raw,
+                    stackTrace,
+                };
 
                 elementDescriptor.attributes.push(attributeDescriptor);
             }
@@ -356,7 +394,7 @@ export default class TemplateParser
         {
             const branches: Array<IChoiceDirectiveBranch> = [];
 
-            const expression = this.tryParseExpression(parseExpression, directive.value, errorMessages.valueExpression(directive.name, directive.value));
+            const expression = this.tryParseExpression(parseExpression, directive.value, directive.raw);
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
             const conditionalBranchDescriptor: IChoiceDirectiveBranch =
@@ -364,8 +402,9 @@ export default class TemplateParser
                 descriptor,
                 expression,
                 stackTrace,
-                path:        this.getPath(),
                 observables: ObserverVisitor.observe(expression),
+                path:        this.getPath(),
+                rawExpression:         directive.raw,
             };
 
             branches.push(conditionalBranchDescriptor);
@@ -388,9 +427,9 @@ export default class TemplateParser
             {
                 let simblingTemplate = this.decomposeDirectives(nextElementSibling);
 
-                const simblingDirective = simblingTemplate[DIRECTIVE];
+                const simblingDirective = simblingTemplate[DIRECTIVE]!;
 
-                const value = simblingDirective!.type == DirectiveType.Else ? "true" : simblingDirective!.value;
+                const value = simblingDirective.type == DirectiveType.Else ? "true" : simblingDirective.value;
 
                 index = parentChildNodes.indexOf(nextElementSibling);
 
@@ -403,16 +442,17 @@ export default class TemplateParser
                     this.pushToStack(nextElementSibling, currentIndex);
                 }
 
-                const expression = this.tryParseExpression(parseExpression, value, errorMessages.valueExpression(simblingDirective!.name, simblingDirective!.value));
+                const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
                 const descriptor = TemplateParser.internalParse(this.name, simblingTemplate, this.stackTrace);
 
                 const conditionalBranchDescriptor: IChoiceDirectiveBranch =
                 {
                     descriptor,
                     expression,
-                    path:        this.getPath(),
                     observables: ObserverVisitor.observe(expression),
-                    stackTrace:  [...this.stackTrace]
+                    path:        this.getPath(),
+                    rawExpression:         simblingDirective.raw,
+                    stackTrace:  [...this.stackTrace],
                 };
 
                 branches.push(conditionalBranchDescriptor);
@@ -436,7 +476,7 @@ export default class TemplateParser
         {
             const value = directive.value;
 
-            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, errorMessages.valueExpression(directive.name, directive.value));
+            const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.raw);
 
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
@@ -449,6 +489,7 @@ export default class TemplateParser
                 stackTrace,
                 observables: ObserverVisitor.observe(right),
                 path:        this.getPath(),
+                rawExpression:         directive.raw,
             };
 
             this.templateDescriptor.directives.loop.push(loopDescriptor);
@@ -457,10 +498,10 @@ export default class TemplateParser
         }
         else if (directive.type == DirectiveType.Injector)
         {
-            const { key, value } = directive;
+            const { key, raw, rawKey, value } = directive;
 
-            const keyExpression = this.tryParseExpression(parseExpression, key, errorMessages.keyExpression(directive.name, directive.value));
-            const expression    = this.tryParseExpression(parseExpression, `${value || "({ })"}`, errorMessages.valueExpression(directive.name, directive.value));
+            const keyExpression = this.tryParseExpression(parseExpression, key, rawKey);
+            const expression    = this.tryParseExpression(parseExpression, `${value || "({ })"}`, raw);
             const observables   = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
             const descriptor    = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
@@ -468,9 +509,11 @@ export default class TemplateParser
             {
                 descriptor,
                 expression,
+                keyExpression,
                 observables,
+                rawExpression: raw,
+                rawKeyExpression: rawKey,
                 stackTrace,
-                key:  parseExpression(key),
                 path: this.getPath(),
             };
 
@@ -480,21 +523,25 @@ export default class TemplateParser
         }
         else if (directive.type == DirectiveType.Inject)
         {
-            const { key, value } = directive;
+            const { key, raw, rawKey, value } = directive;
 
             const destructured = /^\s*\{/.test(value);
 
-            const keyExpression = this.tryParseExpression(parseExpression, key, errorMessages.keyExpression(directive.name, directive.value));
-            const pattern       = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, errorMessages.valueExpression(directive.name, directive.value)) as IPattern|IIdentifier;
+            const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
+            const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, raw) as IPattern|IIdentifier;
+            const observables    = ObserverVisitor.observe(pattern).concat(ObserverVisitor.observe(keyExpression));
 
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
             const injectionDescriptor: IInjectDirective =
             {
                 descriptor,
+                keyExpression,
+                observables,
                 pattern,
+                rawExpression: raw,
+                rawKeyExpression: rawKey,
                 stackTrace,
-                key:  keyExpression,
                 path: this.getPath(),
             };
 
@@ -523,7 +570,7 @@ export default class TemplateParser
             const observables = ObserverVisitor.observe(expression);
             const path        = this.indexStack.join("-");
 
-            const textNodeDescriptor: ITextNodeDescriptor = { path, expression, observables, stackTrace: [...this.stackTrace] };
+            const textNodeDescriptor: ITextNodeDescriptor = { path, expression, observables, rawExpression: rawExpression, stackTrace: [...this.stackTrace] };
 
             const rawParentPath = this.indexStack.slice(0, this.indexStack.length - 1);
             const parentPath    = rawParentPath.join("-");
@@ -633,7 +680,7 @@ export default class TemplateParser
     }
 
     // tslint:disable-next-line: no-any
-    private tryParseExpression<TParser extends (expression: string) => any>(parser: TParser, expression: string, description: string): ReturnType<TParser>
+    private tryParseExpression<TParser extends (expression: string) => any>(parser: TParser, expression: string, rawExpression: string): ReturnType<TParser>
     {
         try
         {
@@ -643,7 +690,7 @@ export default class TemplateParser
         {
             assert(error instanceof SyntaxError);
 
-            throwTemplateParseError(`Error parsing ${description}: ${error.message} at position ${error.index}`, this.stackTrace);
+            throwTemplateParseError(`Parsing error in ${rawExpression}: ${error.message} at position ${error.index}`, this.stackTrace);
         }
     }
 

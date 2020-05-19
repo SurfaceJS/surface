@@ -1,9 +1,8 @@
-import { IDisposable }           from "@surface/core";
-import { ISubscription }         from "@surface/reactive";
-import { tryEvaluateExpression } from "../../common";
-import DataBind                  from "../../data-bind";
-import IDirective                from "../../interfaces/directive";
-import { Scope }                 from "../../types";
+import { IDisposable }                       from "@surface/core";
+import { ISubscription }                     from "@surface/reactive";
+import { tryEvaluateExpression, tryObserve } from "../../common";
+import IDirective                            from "../../interfaces/directive";
+import { Scope }                             from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
@@ -23,8 +22,8 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.subscriptions.push(DataBind.observe(scope, directive.keyObservables,   { notify: this.keyNotify.bind(this) },   true));
-        this.subscriptions.push(DataBind.observe(scope, directive.valueObservables, { notify: this.valueNotify.bind(this) }, true));
+        this.subscriptions.push(tryObserve(scope, directive.keyObservables, { notify: this.keyNotify.bind(this) },   directive.rawKeyExpression, directive.stackTrace, true));
+        this.subscriptions.push(tryObserve(scope, directive.observables,    { notify: this.valueNotify.bind(this) }, directive.rawExpression,    directive.stackTrace, true));
 
         this.keyNotify();
         this.valueNotify();
@@ -35,7 +34,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private keyNotify(): void
     {
         const oldKey = this.key;
-        const newKey = `${tryEvaluateExpression(this.scope, this.directive.key, this.directive.stackTrace)}`;
+        const newKey = `${tryEvaluateExpression(this.scope, this.directive.keyExpression, this.directive.rawKeyExpression, this.directive.stackTrace)}`;
 
         this.key = newKey;
 
@@ -45,7 +44,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private valueNotify(): void
     {
         const oldValue = this.value;
-        const newValue = tryEvaluateExpression(this.scope, this.directive.value, this.directive.stackTrace);
+        const newValue = tryEvaluateExpression(this.scope, this.directive.expression, this.directive.rawExpression, this.directive.stackTrace);
 
         this.value = newValue;
 

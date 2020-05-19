@@ -1,14 +1,13 @@
-import { assert, Indexer, IDisposable }              from "@surface/core";
-import { TypeGuard }                                 from "@surface/expression";
-import { ISubscription }                             from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern } from "../../common";
-import DataBind                                      from "../../data-bind";
-import IInjectDirective                              from "../../interfaces/inject-directive";
-import IInjectorDirective                            from "../../interfaces/injector-directive";
-import TemplateMetadata                              from "../../metadata/template-metadata";
-import ParallelWorker                                from "../../parallel-worker";
-import { Scope }                                     from "../../types";
-import TemplateDirectiveHandler                      from "./";
+import { assert, Indexer, IDisposable }                                      from "@surface/core";
+import { TypeGuard }                                                         from "@surface/expression";
+import { ISubscription }                                                     from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDescriptor } from "../../common";
+import IInjectDirective                                                      from "../../interfaces/inject-directive";
+import IInjectorDirective                                                    from "../../interfaces/injector-directive";
+import TemplateMetadata                                                      from "../../metadata/template-metadata";
+import ParallelWorker                                                        from "../../parallel-worker";
+import { Scope }                                                             from "../../types";
+import TemplateDirectiveHandler                                              from "./";
 
 export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -33,7 +32,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
         this.metadata  = TemplateMetadata.from(this.host);
         this.start     = document.createComment("");
         this.end       = document.createComment("");
-        this.key       = `${directive.key.evaluate(scope)}`;
+        this.key       = `${directive.keyExpression.evaluate(scope)}`;
 
         assert(template.parentNode);
 
@@ -84,8 +83,8 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
                 let destructured = false;
 
                 const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
-                    ? { elementScope: tryEvaluatePattern(this.scope, injectDirective.pattern, tryEvaluateExpression(this.scope, this.directive.expression, this.directive.stackTrace), injectDirective.stackTrace), scopeAlias: "" }
-                    : { elementScope: tryEvaluateExpression(this.scope, this.directive.expression, this.directive.stackTrace) as Indexer, scopeAlias: injectDirective.pattern.name };
+                    ? { elementScope: tryEvaluatePattern(this.scope, injectDirective.pattern, tryEvaluateExpression(this.scope, this.directive.expression,  this.directive.rawExpression, this.directive.stackTrace), injectDirective.rawExpression, injectDirective.stackTrace), scopeAlias: "" }
+                    : { elementScope: tryEvaluateExpression(this.scope, this.directive.expression, this.directive.rawExpression, this.directive.stackTrace) as Indexer, scopeAlias: injectDirective.pattern.name };
 
                 const mergedScope = destructured
                     ? { ...elementScope, ...localScope }
@@ -101,7 +100,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(task);
 
-        this.subscription = DataBind.observe(this.scope, this.directive.observables, { notify }, true);
+        this.subscription = tryObserveByDescriptor(this.scope, this.directive, { notify }, true);
 
         this.fireAsync(notify);
     }

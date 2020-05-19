@@ -1,10 +1,10 @@
 import { IExpression }     from "@surface/expression";
 import IKeyValueObservable from "./key-value-observable";
-import ITraceable          from "./traceable";
+import IKeyValueTraceable  from "./key-value-traceable";
 
-export default interface IDirective extends IKeyValueObservable, ITraceable
+export default interface IDirective extends IKeyValueObservable, IKeyValueTraceable
 {
-    key:   IExpression;
-    name:  string;
-    value: IExpression;
+    expression:    IExpression;
+    keyExpression: IExpression;
+    name:          string;
 }

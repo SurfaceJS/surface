@@ -1,12 +1,10 @@
-import { IExpression }     from "@surface/expression";
-import IObservable         from "./observable";
-import ITemplateDescriptor from "./template-descriptor";
-import ITraceable          from "./traceable";
+import { IExpression }    from "@surface/expression";
+import IObservable        from "./observable";
+import IDescribeable      from "./describeable";
+import IKeyValueTraceable from "./key-value-traceable";
 
-export default interface IInjectorDirective extends IObservable, ITraceable
+export default interface IInjectorDirective extends IDescribeable, IObservable, IKeyValueTraceable
 {
-    descriptor: ITemplateDescriptor;
-    expression: IExpression;
-    key:        IExpression;
-    path:       string;
+    expression:    IExpression;
+    keyExpression: IExpression;
 }

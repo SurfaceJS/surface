@@ -61,7 +61,7 @@ export default class TemplateParserSpec
             "<span #inject:title='{ title }'>",
             "<h1>{title}</h1>",
             "</span>",
-            "<span #inject='{ title }' #inject-key='dynamicInjectKey'>",
+            "<span #inject='{ title }' #inject-key='host.dynamicInjectKey'>",
             "<h1>{title}</h1>",
             "</span>",
             "<hr>",
@@ -80,11 +80,11 @@ export default class TemplateParserSpec
             "<span #injector:value='({ name: host.name })'>",
             "Default {name}",
             "</span>",
-            "<span #injector='({ name: host.name })' #injector-key='dynamicInjectorKey'>",
+            "<span #injector='({ name: host.name })' #injector-key='host.dynamicInjectorKey'>",
             "Default {name}",
             "</span>",
             "<table>",
-            "<tr #on='host.handler' #on-key='dynamicOnKey' >",
+            "<tr #on='host.handler' #on-key='host.dynamicOnKey'>",
             "<th>Id</th>",
             "<th>Name</th>",
             "<th>Status</th>",
@@ -112,49 +112,54 @@ export default class TemplateParserSpec
                             key:         "value",
                             name:        "value",
                             observables: [["host", "name"]],
-                            type:        "interpolation",
+                            rawExpression:         "value=\"Hello {host.name}\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
                                 ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ]
+                            ],
+                            type: "interpolation",
                         },
                         {
                             name:        "value-a",
                             key:         "valueA",
                             expression:  parseExpression("host.value"),
                             observables: [],
-                            type:        "twoway",
+                            rawExpression:         "::value-a=\"host.value\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
                                 ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ]
+                            ],
+                            type: "twoway",
                         },
                         {
                             name:        "value-b",
                             key:         "valueB",
                             expression:  parseExpression("host.x + host.y"),
                             observables: [["host", "x"], ["host", "y"]],
-                            type:        "oneway",
+                            rawExpression:         ":value-b=\"host.x + host.y\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
                                 ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ]
+                            ],
+                            type: "oneway",
                         },
                     ],
                     directives:
                     [
                         {
-                            key:              parseExpression("'click'"),
+                            keyExpression:              parseExpression("'click'"),
                             keyObservables:   [],
                             name:             "on",
-                            value:            parseExpression("host.handler"),
-                            valueObservables: [["host", "handler"]],
+                            rawKeyExpression:           "",
+                            rawExpression:         "#on:click=\"host.handler\"",
+                            expression:            parseExpression("host.handler"),
+                            observables: [["host", "handler"]],
                             stackTrace:
                             [
                                 ["<x-component>"],
@@ -169,6 +174,7 @@ export default class TemplateParserSpec
                             path:        "0-0",
                             expression:  parseInterpolation("Some {'interpolation'} here"),
                             observables: [],
+                            rawExpression:         "Some {'interpolation'} here",
                             stackTrace:
                             [
                                 ["<x-component>"],
@@ -185,18 +191,20 @@ export default class TemplateParserSpec
                     directives:
                     [
                         {
-                            key:              parseExpression("dynamicOnKey"),
-                            keyObservables:   [],
-                            name:             "on",
-                            value:            parseExpression("host.handler"),
-                            valueObservables: [["host", "handler"]],
+                            keyExpression:  parseExpression("host.dynamicOnKey"),
+                            keyObservables: [["host", "dynamicOnKey"]],
+                            name:           "on",
+                            rawKeyExpression:         "#on-key=\"host.dynamicOnKey\"",
+                            rawExpression:            "#on=\"host.handler\"",
+                            expression:     parseExpression("host.handler"),
+                            observables:    [["host", "handler"]],
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
                                 ["...11 other(s) node(s)", "<table>"],
                                 ["<tbody>"],
-                                ["<tr #on=\"host.handler\" #on-key=\"dynamicOnKey\">"]
+                                ["<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">"]
                             ]
                         }
                     ],
@@ -213,6 +221,7 @@ export default class TemplateParserSpec
                             path:        "13-0",
                             expression:  parseInterpolation("{host.footer}"),
                             observables: [["host", "footer"]],
+                            rawExpression:         "{host.footer}",
                             stackTrace:
                             [
                                 ["<x-component>"],
@@ -247,6 +256,7 @@ export default class TemplateParserSpec
                                 expression:  parseExpression("host.status == 1"),
                                 observables: [["host", "status"]],
                                 path:        "5",
+                                rawExpression:         "#if=\"host.status == 1\"",
                                 stackTrace:
                                 [
                                     ["<x-component>"],
@@ -270,6 +280,7 @@ export default class TemplateParserSpec
                                 expression:  parseExpression("host.status == 2"),
                                 observables: [["host", "status"]],
                                 path:        "6",
+                                rawExpression:         "#else-if=\"host.status == 2\"",
                                 stackTrace:
                                 [
                                     ["<x-component>"],
@@ -293,6 +304,7 @@ export default class TemplateParserSpec
                                 expression:  parseExpression("true"),
                                 observables: [],
                                 path:        "7",
+                                rawExpression:         "#else",
                                 stackTrace:
                                 [
                                     ["<x-component>"],
@@ -318,9 +330,12 @@ export default class TemplateParserSpec
                             elements: [],
                             lookup:   [],
                         },
-                        key:        parseExpression("'default'"),
-                        path:       "1",
-                        pattern:    parseDestructuredPattern("__scope__"),
+                        keyExpression:  parseExpression("'default'"),
+                        observables:    [],
+                        path:           "1",
+                        pattern:        parseDestructuredPattern("__scope__"),
+                        rawExpression:            "#inject",
+                        rawKeyExpression:         "",
                         stackTrace:
                         [
                             ["<x-component>"],
@@ -350,6 +365,7 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("{title}"),
                                             observables: [],
                                             path:        "0-0-0",
+                                            rawExpression:         "{title}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
@@ -364,9 +380,12 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
-                        key:         parseExpression("'title'"),
-                        path:        "2",
-                        pattern:     parseDestructuredPattern("{ title }"),
+                        keyExpression:  parseExpression("'title'"),
+                        observables:    [],
+                        path:           "2",
+                        pattern:        parseDestructuredPattern("{ title }"),
+                        rawExpression:            "#inject:title=\"{ title }\"",
+                        rawKeyExpression:         "",
                         stackTrace:
                         [
                             ["<x-component>"],
@@ -396,11 +415,12 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("{title}"),
                                             observables: [],
                                             path:        "0-0-0",
+                                            rawExpression:         "{title}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
-                                                ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"dynamicInjectKey\">"],
+                                                ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
                                                 ["<h1>"],
                                                 ["{title}"]
                                             ]
@@ -410,14 +430,17 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
-                        key:        parseExpression("dynamicInjectKey"),
-                        path:       "3",
-                        pattern:    parseDestructuredPattern("{ title }"),
+                        keyExpression:  parseExpression("host.dynamicInjectKey"),
+                        observables:    [["host", "dynamicInjectKey"]],
+                        path:           "3",
+                        pattern:        parseDestructuredPattern("{ title }"),
+                        rawExpression:            "#inject=\"{ title }\"",
+                        rawKeyExpression:         "#inject-key=\"host.dynamicInjectKey\"",
                         stackTrace:
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"dynamicInjectKey\">"]
+                            ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"]
                         ]
                     },
                 ],
@@ -437,9 +460,11 @@ export default class TemplateParserSpec
                             lookup:   [],
                         },
                         expression:  parseExpression("({ })"),
-                        key:         parseExpression("'default'"),
+                        keyExpression:         parseExpression("'default'"),
                         observables: [],
                         path:        "8",
+                        rawExpression:         "#injector",
+                        rawKeyExpression:      "",
                         stackTrace:
                         [
                             ["<x-component>"],
@@ -469,6 +494,7 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("Default {name}"),
                                             observables: [],
                                             path:        "0-0",
+                                            rawExpression:         "Default {name}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
@@ -483,9 +509,11 @@ export default class TemplateParserSpec
                             lookup: [[0], [0, 0]],
                         },
                         expression:  parseExpression("({ name: host.name })"),
-                        key:         parseExpression("'value'"),
+                        keyExpression:         parseExpression("'value'"),
                         observables: [["host", "name"]],
                         path:        "9",
+                        rawExpression:         "#injector:value=\"({ name: host.name })\"",
+                        rawKeyExpression:      "",
                         stackTrace:
                         [
                             ["<x-component>"],
@@ -515,11 +543,12 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("Default {name}"),
                                             observables: [],
                                             path:        "0-0",
+                                            rawExpression:         "Default {name}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
-                                                ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"dynamicInjectorKey\">"],
+                                                ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"host.dynamicInjectorKey\">"],
                                                 ["Default {name}"],
                                             ]
                                         }
@@ -528,15 +557,17 @@ export default class TemplateParserSpec
                             ],
                             lookup: [[0], [0, 0]],
                         },
-                        expression:  parseExpression("({ name: host.name })"),
-                        key:         parseExpression("dynamicInjectorKey"),
-                        observables: [["host", "name"]],
-                        path:        "10",
+                        expression:    parseExpression("({ name: host.name })"),
+                        keyExpression: parseExpression("host.dynamicInjectorKey"),
+                        observables:   [["host", "name"], ["host", "dynamicInjectorKey"]],
+                        path:          "10",
+                        rawExpression:           "#injector=\"({ name: host.name })\"",
+                        rawKeyExpression:        "#injector-key=\"host.dynamicInjectorKey\"",
                         stackTrace:
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"dynamicInjectorKey\">"]
+                            ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"host.dynamicInjectorKey\">"]
                         ]
                     },
                 ],
@@ -564,6 +595,7 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("{item.id}"),
                                             observables: [["item", "id"]],
                                             path:        "0-0-0",
+                                            rawExpression:         "{item.id}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
@@ -587,6 +619,7 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("{item.name}"),
                                             observables: [["item", "name"]],
                                             path:        "0-1-0",
+                                            rawExpression:         "{item.name}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
@@ -610,6 +643,7 @@ export default class TemplateParserSpec
                                             expression:  parseInterpolation("{item.status}"),
                                             observables: [["item", "status"]],
                                             path:        "0-2-0",
+                                            rawExpression:         "{item.status}",
                                             stackTrace:
                                             [
                                               ["<x-component>"],
@@ -630,6 +664,7 @@ export default class TemplateParserSpec
                         observables: [["host", "items"]],
                         operator:    "of",
                         path:        "11-0-1",
+                        rawExpression:         "#for=\"const item of host.items\"",
                         right:       parseExpression("host.items"),
                         stackTrace:
                         [
@@ -783,7 +818,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<div>This is a invalid expression: {++true}</div>";
 
-        const message = "Error parsing \"This is a invalid expression: {++true}\": Invalid left-hand side expression in prefix operation at position 33";
+        const message = "Parsing error in \"This is a invalid expression: {++true}\": Invalid left-hand side expression in prefix operation at position 33";
         const stack   = "<x-component>\n   #shadow-root\n      <div>\n         This is a invalid expression: {++true}";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
@@ -847,7 +882,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<div #inject:items='items' #if='false'><span #injector:items='items' #if='true' #for='x item of items'></span></div>";
 
-        const message = "Error parsing \"x item of items\" in \"#for='x item of items'\": Unexpected token item at position 2";
+        const message = "Parsing error in \"#for='x item of items'\": Unexpected token item at position 2";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #injector:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
         // TemplateParser.parse("x-component", template);

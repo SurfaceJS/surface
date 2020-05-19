@@ -1,12 +1,11 @@
-import { Action2, IDisposable, Nullable }            from "@surface/core";
-import { TypeGuard }                                 from "@surface/expression";
-import { ISubscription }                             from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern } from "../../common";
-import DataBind                                      from "../../data-bind";
-import ILoopDirective                                from "../../interfaces/loop-directive";
-import ParallelWorker                                from "../../parallel-worker";
-import { Scope }                                     from "../../types";
-import TemplateDirectiveHandler                      from "./";
+import { Action2, IDisposable, Nullable }                                    from "@surface/core";
+import { TypeGuard }                                                         from "@surface/expression";
+import { ISubscription }                                                     from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDescriptor } from "../../common";
+import ILoopDirective                                                        from "../../interfaces/loop-directive";
+import ParallelWorker                                                        from "../../parallel-worker";
+import { Scope }                                                             from "../../types";
+import TemplateDirectiveHandler                                              from "./";
 
 type Cache = { start: Comment, end: Comment, value: unknown, disposable: IDisposable };
 
@@ -43,7 +42,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
-        this.subscription = DataBind.observe(scope, directive.observables, { notify }, true);
+        this.subscription = tryObserveByDescriptor(scope, directive, { notify }, true);
 
         super.fireAsync(notify);
     }
@@ -54,7 +53,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const mergedScope = TypeGuard.isIdentifier(this.directive.left)
                 ? { ...this.scope, [this.directive.left.name]: value }
-                : { ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.stackTrace), ...this.scope };
+                : { ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace), ...this.scope };
 
             const start = document.createComment("");
             const end   = document.createComment("");
@@ -151,7 +150,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             return;
         }
 
-        const elements = tryEvaluateExpression(this.scope, this.directive.right, this.directive.stackTrace) as Iterable<unknown>;
+        const elements = tryEvaluateExpression(this.scope, this.directive.right, this.directive.rawExpression, this.directive.stackTrace) as Iterable<unknown>;
 
         const index = this.iterator(elements, this.action);
 

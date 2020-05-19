@@ -1,13 +1,15 @@
-import { assert, Action, Indexer, IDisposable }     from "@surface/core";
-import { IArrayExpression, IExpression, TypeGuard } from "@surface/expression";
-import { ISubscription }                            from "@surface/reactive";
-import Type, { FieldInfo }                          from "@surface/reflection";
+import { assert, Action, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                            from "@surface/expression";
+import { ISubscription }                        from "@surface/reactive";
+import Type, { FieldInfo }                      from "@surface/reflection";
 import
 {
     classMap,
     createScope,
     styleMap,
-    throwTemplateEvaluationError
+    tryEvaluateExpression,
+    tryEvaluateExpressionByDescriptor,
+    tryObserveByDescriptor,
 }
 from "./common";
 import DataBind                 from "./data-bind";
@@ -159,7 +161,7 @@ export default class TemplateProcessor
 
                     if (elementMember instanceof FieldInfo && elementMember.readonly)
                     {
-                        throw new TemplateProcessError(`Property ${descriptor.key} of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
+                        throw new TemplateProcessError(`Binding error in ${descriptor.rawExpression}: Property ${descriptor.key} of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
                     }
 
                     if (descriptor.type == "oneway")
@@ -173,15 +175,15 @@ export default class TemplateProcessor
                             element.setAttributeNode(attribute);
 
                             notify = descriptor.name == "class"
-                                ? () => attribute.value = classMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>);
+                                ? () => attribute.value = classMap(tryEvaluateExpressionByDescriptor(scope, descriptor) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(tryEvaluateExpressionByDescriptor(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as unknown as Indexer)[descriptor.key] = this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace);
+                            notify = () => (element as unknown as Indexer)[descriptor.key] = tryEvaluateExpressionByDescriptor(scope, descriptor);
                         }
 
-                        let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+                        let subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
 
                         notify();
 
@@ -191,20 +193,20 @@ export default class TemplateProcessor
                     {
                         assert(TypeGuard.isMemberExpression(descriptor.expression));
 
-                        const target         = this.tryEvaluate(descriptor.expression.object, scope, descriptor.stackTrace) as object;
+                        const target         = tryEvaluateExpression(scope, descriptor.expression.object, descriptor.rawExpression, descriptor.stackTrace) as object;
                         const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
                             ? descriptor.expression.property.name
                             : descriptor.expression.property.evaluate(scope) as string;
 
                         const targetMember = Type.from(target).getMember(targetProperty);
 
-                        if (targetMember instanceof FieldInfo && targetMember.readonly)
+                        if (!targetMember || (targetMember instanceof FieldInfo && targetMember.readonly))
                         {
-                            const rawExpression = descriptor.expression.toString();
+                            const message = targetMember
+                                ? `Binding error in ${descriptor.rawExpression}: Property ${targetProperty} of ${target.constructor.name} is readonly`
+                                : `Binding error in ${descriptor.rawExpression}: Property ${targetProperty} does not exists on type ${target.constructor.name}`;
 
-                            element.setAttribute(`::${descriptor.name}`, rawExpression);
-
-                            throw new TemplateProcessError(`Property ${targetProperty} of ${target.constructor.name} is readonly in ::"${descriptor.name}='${rawExpression}'"`, this.buildStack(descriptor));
+                            throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
 
                         subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
@@ -214,9 +216,9 @@ export default class TemplateProcessor
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = () => attribute.value = `${(descriptor.expression.evaluate(scope) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+                    const notify = () => attribute.value = `${(tryEvaluateExpressionByDescriptor(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+                    let subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
 
                     subscriptions.push(subscription);
 
@@ -268,7 +270,7 @@ export default class TemplateProcessor
 
             template.remove();
 
-            const key = `${directive.key.evaluate(data.scope)}`;
+            const key = `${tryEvaluateExpression(data.scope, directive.keyExpression, directive.rawKeyExpression, directive.stackTrace)}`;
 
             const action = metadata.injectors.get(key);
 
@@ -330,9 +332,9 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = () => node.nodeValue = `${(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace, true) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByDescriptor(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+            const subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
 
             subscriptions.push(subscription);
 
@@ -340,30 +342,5 @@ export default class TemplateProcessor
         }
 
         return subscriptions;
-    }
-
-    private tryEvaluate(expression: IExpression, scope: Scope, stackTrace: Array<Array<string>>, isTextNode?: boolean): unknown
-    {
-        try
-        {
-            return expression.evaluate(scope);
-        }
-        catch (error)
-        {
-            assert(error instanceof Error);
-
-            let rawExpression: string;
-
-            if (isTextNode)
-            {
-                rawExpression = (expression as IArrayExpression).elements.map(x => (x as IExpression).toString()).join("");
-            }
-            else
-            {
-                rawExpression = expression.toString();
-            }
-
-            throwTemplateEvaluationError(`Error evaluating "${rawExpression}" - ${error.message}`, stackTrace);
-        }
     }
 }

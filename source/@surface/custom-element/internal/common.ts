@@ -1,8 +1,11 @@
 import { assert, Indexer, Nullable }       from "@surface/core";
 import { Evaluate, IExpression, IPattern } from "@surface/expression";
+import { IListener, ISubscription }        from "@surface/reactive";
+import DataBind                            from "./data-bind";
 import TemplateEvaluationError             from "./errors/template-evaluation-error";
+import TemplateObservationError            from "./errors/template-observation-error";
 import TemplateParseError                  from "./errors/template-parse-error";
-import { Scope, StackTrace }               from "./types";
+import { Observables, Scope, StackTrace }  from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -57,12 +60,17 @@ export function throwTemplateEvaluationError(message: string, stackTrace: StackT
     throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
 }
 
+export function throwTemplateObservationError(message: string, stackTrace: StackTrace): never
+{
+    throw new TemplateObservationError(message, buildStackTrace(stackTrace));
+}
+
 export function throwTemplateParseError(message: string, stackTrace: StackTrace): never
 {
     throw new TemplateParseError(message, buildStackTrace(stackTrace));
 }
 
-export function tryEvaluateExpression(scope: Scope, expression: IExpression, stackTrace: StackTrace): unknown
+export function tryEvaluateExpression(scope: Scope, expression: IExpression, rawExpression: string, stackTrace: StackTrace): unknown
 {
     try
     {
@@ -72,11 +80,16 @@ export function tryEvaluateExpression(scope: Scope, expression: IExpression, sta
     {
         assert(error instanceof Error);
 
-        throwTemplateEvaluationError(error.message, stackTrace);
+        throwTemplateEvaluationError(`Evaluation error in ${rawExpression}: ${error.message}`, stackTrace);
     }
 }
 
-export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, stackTrace: StackTrace): Indexer
+export function tryEvaluateExpressionByDescriptor(scope: Scope, descriptor: { expression: IExpression, rawExpression: string, stackTrace: StackTrace }): unknown
+{
+    return tryEvaluateExpression(scope, descriptor.expression, descriptor.rawExpression, descriptor.stackTrace);
+}
+
+export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
 {
     try
     {
@@ -86,8 +99,32 @@ export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unkno
     {
         assert(error instanceof Error);
 
-        throwTemplateEvaluationError(error.message, stackTrace);
+        throwTemplateEvaluationError(`Evaluation error in ${rawExpression}: ${error.message}`, stackTrace);
     }
+}
+
+export function tryEvaluatePatternByDescriptor(scope: Scope, value: unknown, descriptor: { pattern: IPattern, rawExpression: string, stackTrace: StackTrace}): Indexer
+{
+    return tryEvaluatePattern(scope, descriptor.pattern, value, descriptor.rawExpression, descriptor.stackTrace);
+}
+
+export function tryObserve(scope: Scope, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
+{
+    try
+    {
+        return DataBind.observe(scope, observables, listener, lazy);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateObservationError(`Observation error in ${rawExpression}: ${error.message}`, stackTrace);
+    }
+}
+
+export function tryObserveByDescriptor(scope: Scope, descriptor: { observables: Observables, rawExpression: string, stackTrace: StackTrace }, listener: IListener, lazy?: boolean): ISubscription
+{
+    return tryObserve(scope, descriptor.observables, listener, descriptor.rawExpression, descriptor.stackTrace, lazy);
 }
 
 export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>

@@ -4,14 +4,14 @@ import { Action, Indexer }                     from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import directiveRegistry                       from "../internal/directive-registry";
+import CustomStackError                        from "../internal/errors/custom-stack-error";
 import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
-import TemplateProcessError                    from "../internal/errors/template-process-error";
 import ParallelWorker                          from "../internal/parallel-worker";
 import TemplateParser                          from "../internal/template-parser";
 import TemplateProcessor                       from "../internal/template-processor";
 import CustomDirectiveHandler                  from "./fixtures/custom-directive";
 
-type RawError = { message: string }|Pick<TemplateProcessError, "message"|"stack">;
+type RawError = { message: string }|Pick<CustomStackError, "message"|"stack">;
 
 class XComponent extends HTMLElement { }
 
@@ -30,7 +30,7 @@ function tryAction(action: Action): RawError
         return toRaw(error);
     }
 
-    return toRaw(new TemplateProcessError("", ""));
+    return toRaw(new CustomStackError("", ""));
 }
 
 async function tryActionAsync(action: Action): Promise<RawError>
@@ -46,12 +46,12 @@ async function tryActionAsync(action: Action): Promise<RawError>
         return toRaw(error);
     }
 
-    return toRaw(new TemplateProcessError("", ""));
+    return toRaw(new CustomStackError("", ""));
 }
 
 function toRaw(error: Error): RawError
 {
-    if (error instanceof TemplateProcessError || error instanceof TemplateEvaluationError)
+    if (error instanceof CustomStackError || error instanceof TemplateEvaluationError)
     {
         return {
             message: error.message,
@@ -1067,49 +1067,17 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
-    public elementWithOneWayDataBindingToReadonlyProperty(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span :node-type='host.value'></span>";
-
-        const message = "Property nodeType of <span> is readonly";
-        const stack   = "<x-component>\n   #shadow-root\n      <span :node-type=\"host.value\">";
-
-        const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
-
-        assert.deepEqual(actual, expected);
-    }
-
-    @test @shouldFail
-    public async elementWithOneWayDataBindingToReadonlyPropertyInsideTemplate(): Promise<void>
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span #if='true' :node-type='host.value'></span>";
-
-        const message = "Property nodeType of <span> is readonly";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
-
-        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
-
-        assert.deepEqual(actual, expected);
-    }
-
-    @test @shouldFail
     public evaluationErrorOneWayDataBinding(): void
     {
         const host = getHost();
 
         host.shadowRoot.innerHTML = "<span :name='host.foo()'></span>";
 
-        const message = "Error evaluating \"host.foo()\" - host.foo is not defined";
+        const message = "Evaluation error in :name=\"host.foo()\": host.foo is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.foo()\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1121,11 +1089,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span #on:click=\"host.fn\"></span>";
 
-        const message = "host.fn is not defined";
+        const message = "Evaluation error in #on:click=\"host.fn\": host.fn is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"host.fn\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1142,7 +1110,7 @@ export default class TemplateProcessorSpec
     //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
 
     //     const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
-    //     const expected = toRaw(new TemplateProcessError(message, stack));
+    //     const expected = toRaw(new CustomStackError(message, stack));
 
     //     assert.deepEqual(actual, expected);
 
@@ -1160,7 +1128,7 @@ export default class TemplateProcessorSpec
     //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
 
     //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new TemplateProcessError(message, stack));
+    //     const expected = toRaw(new CustomStackError(message, stack));
 
     //     assert.deepEqual(actual, expected);
     // }
@@ -1172,11 +1140,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span #custom:directive=\"({ value })\"></span>";
 
-        const message = "value is not defined";
+        const message = "Evaluation error in #custom:directive=\"({ value })\": value is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <span #custom:directive=\"({ value })\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1188,11 +1156,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span><h1>This is a text {host.interpolation()}</h1></span>";
 
-        const message = "Error evaluating \"\"This is a text \"host.interpolation()\" - host.interpolation is not defined";
+        const message = "Evaluation error in This is a text {host.interpolation()}: host.interpolation is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <span>\n         <h1>\n            This is a text {host.interpolation()}";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1204,11 +1172,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<h1>Title</h1><template #for='index of [1]' #if='host.isOk()'></template>";
 
-        const message = "host.isOk is not defined";
+        const message = "Evaluation error in #if=\"host.isOk()\": host.isOk is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #for=\"index of [1]\" #if=\"host.isOk()\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1220,11 +1188,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<h1>Title</h1><span #for='index of host.elements()'></span>";
 
-        const message = "host.elements is not defined";
+        const message = "Evaluation error in #for=\"index of host.elements()\": host.elements is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"index of host.elements()\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1236,11 +1204,11 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<h1>Title</h1><span #for='{ x = host.getValue() } of [{ }]'></span>";
 
-        const message = "host.getValue is not defined";
+        const message = "Evaluation error in #for=\"{ x = host.getValue() } of [{ }]\": host.getValue is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"{ x = host.getValue() } of [{ }]\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1260,11 +1228,11 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        const message = "item is not defined";
+        const message = "Evaluation error in #injector:items=\"({ item })\": item is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #injector:items=\"({ item })\">";
 
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
@@ -1284,17 +1252,49 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        const message = "lastItem is not defined";
+        const message = "Evaluation error in #inject:items=\"{ item: value = lastItem }\": lastItem is not defined";
         const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject:items=\"{ item: value = lastItem }\">";
 
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
-    public elementWithTwoWayDataBindingToReadonlyProperty(): void
+    public bindingErrorOneWayReadonlyProperty(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span :node-type='host.value'></span>";
+
+        const message = "Binding error in :node-type=\"host.value\": Property nodeType of <span> is readonly";
+        const stack   = "<x-component>\n   #shadow-root\n      <span :node-type=\"host.value\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async bindingErrorOneWayReadonlyPropertyInsideTemplate(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #if='true' :node-type='host.value'></span>";
+
+        const message = "Binding error in :node-type=\"host.value\": Property nodeType of <span> is readonly";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public bindingErrorTwoWayReadonlyProperty(): void
     {
         const host = getHost();
 
@@ -1302,17 +1302,17 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span ::value='host.value'></span>";
 
-        const message = "Property value of XComponent is readonly in ::\"value='host.value'\"";
+        const message = "Binding error in ::value=\"host.value\": Property value of XComponent is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span ::value=\"host.value\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
-    public async elementWithTwoWayDataBindingToReadonlyPropertyInsideTemplate(): Promise<void>
+    public async bindingErrorTwoWayReadonlyPropertyInsideTemplate(): Promise<void>
     {
         const host = getHost<{ value?: string }>();
 
@@ -1320,11 +1320,75 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span #for='const letter in host.nodeName' #if='true' ::value='host.value'></span>";
 
-        const message = "Property value of XComponent is readonly in ::\"value='host.value'\"";
+        const message = "Binding error in ::value=\"host.value\": Property value of XComponent is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span #for=\"const letter in host.nodeName\" #if=\"true\" ::value=\"host.value\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
-        const expected = toRaw(new TemplateProcessError(message, stack));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorOneWayBinding(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span :name='host.value1'></span>";
+
+        const message = "Observation error in :name=\"host.value1\": Key value1 does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.value1\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorTwoWayBinding(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span ::name='host.value1'></span>";
+
+        const message = "Binding error in ::name=\"host.value1\": Property value1 does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span ::name=\"host.value1\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorAttributeInterpolation(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span name='value: {host.value1}'></span>";
+
+        const message = "Observation error in name=\"value: {host.value1}\": Key value1 does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorTextNodeInterpolation(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span>{host.value1}</span>";
+
+        const message = "Observation error in {host.value1}: Key value1 does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span>\n         {host.value1}";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }

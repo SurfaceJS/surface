@@ -6,6 +6,5 @@ export default interface ITemplateDescriptor
     directives: IDirectivesDescriptor;
     elements:   Array<IElementDescriptor>;
     lookup:     Array<Array<number>>;
-    parent?:     ITemplateDescriptor;
 }
 

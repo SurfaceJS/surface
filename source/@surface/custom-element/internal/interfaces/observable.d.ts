@@ -2,5 +2,5 @@ import { Observables } from "../types";
 
 export default interface IObservable
 {
-    observables:  Observables;
+    observables: Observables;
 }

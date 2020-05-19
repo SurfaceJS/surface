@@ -1,11 +1,10 @@
-import { assert, IDisposable }   from "@surface/core";
-import { ISubscription }         from "@surface/reactive";
-import { tryEvaluateExpression } from "../../common";
-import DataBind                  from "../../data-bind";
-import IChoiceDirectiveBranch    from "../../interfaces/choice-directive-branch";
-import ParallelWorker            from "../../parallel-worker";
-import { Scope }                 from "../../types";
-import TemplateDirectiveHandler  from "./";
+import { assert, IDisposable }                           from "@surface/core";
+import { ISubscription }                                 from "@surface/reactive";
+import { tryEvaluateExpression, tryObserveByDescriptor } from "../../common";
+import IChoiceDirectiveBranch                            from "../../interfaces/choice-directive-branch";
+import ParallelWorker                                    from "../../parallel-worker";
+import { Scope }                                         from "../../types";
+import TemplateDirectiveHandler                          from "./";
 
 type Choice =
 {
@@ -46,7 +45,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             const branche  = branches[index];
             const template = templates[index];
 
-            this.subscriptions.push(DataBind.observe(scope, branche.observables, listener, true));
+            this.subscriptions.push(tryObserveByDescriptor(scope, branche, listener, true));
 
             this.choices.push({ branche, template });
 
@@ -70,7 +69,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         for (const choice of this.choices)
         {
-            if (tryEvaluateExpression(this.scope, choice.branche.expression, choice.branche.stackTrace))
+            if (tryEvaluateExpression(this.scope, choice.branche.expression, choice.branche.rawExpression, choice.branche.stackTrace))
             {
                 const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
 

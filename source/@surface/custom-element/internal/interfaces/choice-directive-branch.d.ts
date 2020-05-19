@@ -1,11 +1,9 @@
 import { IExpression }     from "@surface/expression";
 import IObservable         from "./observable";
-import ITemplateDescriptor from "./template-descriptor";
 import ITraceable          from "./traceable";
+import IDescribeable       from "./describeable";
 
-export default interface IChoiceDirectiveBranch extends IObservable, ITraceable
+export default interface IChoiceDirectiveBranch extends IDescribeable, IObservable, ITraceable
 {
-    descriptor: ITemplateDescriptor;
     expression: IExpression;
-    path:       string;
 }
