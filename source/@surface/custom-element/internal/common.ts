@@ -5,6 +5,8 @@ import DataBind                            from "./data-bind";
 import TemplateEvaluationError             from "./errors/template-evaluation-error";
 import TemplateObservationError            from "./errors/template-observation-error";
 import TemplateParseError                  from "./errors/template-parse-error";
+import IObservable                         from "./interfaces/observable";
+import ITraceable                          from "./interfaces/traceable";
 import { Observables, Scope, StackTrace }  from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
@@ -21,12 +23,17 @@ function buildStackTrace(stackTrace: StackTrace): string
 
 export function createScope(scope: Indexer): Indexer
 {
-    scope["$class"] = classMap;
-    scope["$style"] = styleMap;
+    const properties =
+    {
+        $class: { value: classMap, writable: false, enumerable: true },
+        $style: { value: styleMap, writable: false, enumerable: true },
+    };
+
+    Object.defineProperties(scope, properties);
 
     const handler: ProxyHandler<Indexer> =
     {
-        get: (target, key) => key in target ? target[key as string] : (windowWrapper as unknown as Indexer)[key as string],
+        get: (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
         has: (target, key) => key in target || key in windowWrapper,
         getOwnPropertyDescriptor: (target, key) =>
             Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
@@ -84,9 +91,9 @@ export function tryEvaluateExpression(scope: Scope, expression: IExpression, raw
     }
 }
 
-export function tryEvaluateExpressionByDescriptor(scope: Scope, descriptor: { expression: IExpression, rawExpression: string, stackTrace: StackTrace }): unknown
+export function tryEvaluateExpressionByDirective(scope: Scope, directive: { expression: IExpression } & ITraceable): unknown
 {
-    return tryEvaluateExpression(scope, descriptor.expression, descriptor.rawExpression, descriptor.stackTrace);
+    return tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
 }
 
 export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
@@ -103,9 +110,9 @@ export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unkno
     }
 }
 
-export function tryEvaluatePatternByDescriptor(scope: Scope, value: unknown, descriptor: { pattern: IPattern, rawExpression: string, stackTrace: StackTrace}): Indexer
+export function tryEvaluatePatternByDirective(scope: Scope, value: unknown, directive: { pattern: IPattern } & ITraceable): Indexer
 {
-    return tryEvaluatePattern(scope, descriptor.pattern, value, descriptor.rawExpression, descriptor.stackTrace);
+    return tryEvaluatePattern(scope, directive.pattern, value, directive.rawExpression, directive.stackTrace);
 }
 
 export function tryObserve(scope: Scope, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
@@ -122,9 +129,9 @@ export function tryObserve(scope: Scope, observables: Observables, listener: ILi
     }
 }
 
-export function tryObserveByDescriptor(scope: Scope, descriptor: { observables: Observables, rawExpression: string, stackTrace: StackTrace }, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveByDirective(scope: Scope, directive: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
 {
-    return tryObserve(scope, descriptor.observables, listener, descriptor.rawExpression, descriptor.stackTrace, lazy);
+    return tryObserve(scope, directive.observables, listener, directive.rawExpression, directive.stackTrace, lazy);
 }
 
 export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>

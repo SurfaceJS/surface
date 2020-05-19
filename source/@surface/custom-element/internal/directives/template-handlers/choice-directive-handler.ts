@@ -1,14 +1,14 @@
-import { assert, IDisposable }                           from "@surface/core";
-import { ISubscription }                                 from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByDescriptor } from "../../common";
-import IChoiceDirectiveBranch                            from "../../interfaces/choice-directive-branch";
-import ParallelWorker                                    from "../../parallel-worker";
-import { Scope }                                         from "../../types";
-import TemplateDirectiveHandler                          from "./";
+import { assert, IDisposable }                          from "@surface/core";
+import { ISubscription }                                from "@surface/reactive";
+import { tryEvaluateExpression, tryObserveByDirective } from "../../common";
+import IChoiceBranchDirective                           from "../../interfaces/directives/choice-branch-directive";
+import ParallelWorker                                   from "../../parallel-worker";
+import { Scope }                                        from "../../types";
+import TemplateDirectiveHandler                         from "./";
 
 type Choice =
 {
-    branche:  IChoiceDirectiveBranch;
+    branche:  IChoiceBranchDirective;
     template: HTMLTemplateElement;
 };
 
@@ -22,7 +22,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private currentDisposable: IDisposable|null = null;
     private disposed:          boolean          = false;
 
-    public constructor(scope: Scope, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceDirectiveBranch>)
+    public constructor(scope: Scope, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceBranchDirective>)
     {
         super(scope, context, host);
 
@@ -45,7 +45,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             const branche  = branches[index];
             const template = templates[index];
 
-            this.subscriptions.push(tryObserveByDescriptor(scope, branche, listener, true));
+            this.subscriptions.push(tryObserveByDirective(scope, branche, listener, true));
 
             this.choices.push({ branche, template });
 

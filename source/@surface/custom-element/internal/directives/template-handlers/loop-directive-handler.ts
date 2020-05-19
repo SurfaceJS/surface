@@ -1,11 +1,11 @@
-import { Action2, IDisposable, Nullable }                                    from "@surface/core";
-import { TypeGuard }                                                         from "@surface/expression";
-import { ISubscription }                                                     from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDescriptor } from "../../common";
-import ILoopDirective                                                        from "../../interfaces/loop-directive";
-import ParallelWorker                                                        from "../../parallel-worker";
-import { Scope }                                                             from "../../types";
-import TemplateDirectiveHandler                                              from "./";
+import { Action2, IDisposable, Nullable }                                   from "@surface/core";
+import { TypeGuard }                                                        from "@surface/expression";
+import { ISubscription }                                                    from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
+import ILoopDirective                                                       from "../../interfaces/directives/loop-directive";
+import ParallelWorker                                                       from "../../parallel-worker";
+import { Scope }                                                            from "../../types";
+import TemplateDirectiveHandler                                             from "./";
 
 type Cache = { start: Comment, end: Comment, value: unknown, disposable: IDisposable };
 
@@ -42,7 +42,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
-        this.subscription = tryObserveByDescriptor(scope, directive, { notify }, true);
+        this.subscription = tryObserveByDirective(scope, directive, { notify }, true);
 
         super.fireAsync(notify);
     }

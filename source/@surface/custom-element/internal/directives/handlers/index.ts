@@ -1,12 +1,12 @@
 import { IDisposable }                       from "@surface/core";
 import { ISubscription }                     from "@surface/reactive";
 import { tryEvaluateExpression, tryObserve } from "../../common";
-import IDirective                            from "../../interfaces/directive";
+import ICustomDirective                      from "../../interfaces/directives/custom-directive";
 import { Scope }                             from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
-    protected readonly directive:     IDirective;
+    protected readonly directive:     ICustomDirective;
     protected readonly element:       Element;
     protected readonly scope:         Scope;
     protected readonly subscriptions: Array<ISubscription> = [];
@@ -14,7 +14,7 @@ export default abstract class DirectiveHandler implements IDisposable
     protected key!: string;
     protected value: unknown;
 
-    public constructor(scope: Scope, element: Element, directive: IDirective)
+    public constructor(scope: Scope, element: Element, directive: ICustomDirective)
     {
         this.scope      = scope;
         this.element    = element;

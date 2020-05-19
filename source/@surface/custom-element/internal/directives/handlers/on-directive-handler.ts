@@ -3,7 +3,7 @@ import { TypeGuard }                                           from "@surface/ex
 import { ISubscription }                                       from "@surface/reactive";
 import { throwTemplateEvaluationError, tryEvaluateExpression } from "../../common";
 import DataBind                                                from "../../data-bind";
-import IDirective                                              from "../../interfaces/directive";
+import ICustomDirective                                        from "../../interfaces/directives/custom-directive";
 import { Scope }                                               from "../../types";
 
 export default class EventDirectiveHandler implements IDisposable
@@ -14,7 +14,7 @@ export default class EventDirectiveHandler implements IDisposable
 
     private key: string = "";
 
-    public constructor(scope: Scope, element: Element, directive: IDirective)
+    public constructor(scope: Scope, element: Element, directive: ICustomDirective)
     {
         this.element = element;
         this.action  = this.evaluate(scope, directive);
@@ -45,7 +45,7 @@ export default class EventDirectiveHandler implements IDisposable
     }
 
 
-    private evaluate(scope: Scope, directive: IDirective): Action1<Event>
+    private evaluate(scope: Scope, directive: ICustomDirective): Action1<Event>
     {
         if (TypeGuard.isArrowFunctionExpression(directive.expression) || TypeGuard.isIdentifier(directive.expression))
         {

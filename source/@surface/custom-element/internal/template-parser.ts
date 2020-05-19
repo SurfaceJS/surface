@@ -3,15 +3,15 @@ import Enumerable                                                               
 import Expression, { IExpression, IIdentifier, IPattern, SyntaxError, TypeGuard }               from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                               from "./common";
 import directiveRegistry                                                                        from "./directive-registry";
-import IAttributeDescriptor                                                                     from "./interfaces/attribute-descriptor";
-import IChoiceDirectiveBranch                                                                   from "./interfaces/choice-directive-branch";
-import IDirective                                                                               from "./interfaces/directive";
-import IElementDescriptor                                                                       from "./interfaces/element-descriptor";
-import IInjectDirective                                                                         from "./interfaces/inject-directive";
-import IInjectorDirective                                                                       from "./interfaces/injector-directive";
-import ILoopDirective                                                                           from "./interfaces/loop-directive";
-import ITemplateDescriptor                                                                      from "./interfaces/template-descriptor";
-import ITextNodeDescriptor                                                                      from "./interfaces/text-node-descriptor";
+import IElementDescriptor                                                                       from "./interfaces/descriptors/element-descriptor";
+import ITemplateDescriptor                                                                      from "./interfaces/descriptors/template-descriptor";
+import ITextNodeDescriptor                                                                      from "./interfaces/descriptors/text-node-descriptor";
+import IAttributeDirective                                                                      from "./interfaces/directives/attribute-directive";
+import IChoiceBranchDirective                                                                   from "./interfaces/directives/choice-branch-directive";
+import ICustomDirective                                                                         from "./interfaces/directives/custom-directive";
+import IInjectDirective                                                                         from "./interfaces/directives/inject-directive";
+import IInjectorDirective                                                                       from "./interfaces/directives/injector-directive";
+import ILoopDirective                                                                           from "./interfaces/directives/loop-directive";
 import { nativeEvents }                                                                         from "./native-events";
 import ObserverVisitor                                                                          from "./observer-visitor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./parsers";
@@ -308,7 +308,7 @@ export default class TemplateParser
                     const keyObservables = ObserverVisitor.observe(keyExpression);
                     const observables    = ObserverVisitor.observe(expression);
 
-                    const descriptor: IDirective =
+                    const descriptor: ICustomDirective =
                     {
                         expression,
                         keyExpression,
@@ -358,7 +358,7 @@ export default class TemplateParser
                     element.removeAttributeNode(attribute);
                 }
 
-                const attributeDescriptor: IAttributeDescriptor =
+                const attributeDescriptor: IAttributeDirective =
                 {
                     name,
                     key,
@@ -392,12 +392,12 @@ export default class TemplateParser
         /* istanbul ignore else */
         if (directive.type == DirectiveType.If)
         {
-            const branches: Array<IChoiceDirectiveBranch> = [];
+            const branches: Array<IChoiceBranchDirective> = [];
 
             const expression = this.tryParseExpression(parseExpression, directive.value, directive.raw);
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const conditionalBranchDescriptor: IChoiceDirectiveBranch =
+            const conditionalBranchDescriptor: IChoiceBranchDirective =
             {
                 descriptor,
                 expression,
@@ -445,7 +445,7 @@ export default class TemplateParser
                 const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
                 const descriptor = TemplateParser.internalParse(this.name, simblingTemplate, this.stackTrace);
 
-                const conditionalBranchDescriptor: IChoiceDirectiveBranch =
+                const conditionalBranchDescriptor: IChoiceBranchDirective =
                 {
                     descriptor,
                     expression,

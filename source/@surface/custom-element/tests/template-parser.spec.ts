@@ -5,7 +5,7 @@ import { IIdentifier }                                                   from "@
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error";
-import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
+import ITemplateDescriptor                                               from "../internal/interfaces/descriptors/template-descriptor";
 import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
 import TemplateParser                                                    from "../internal/template-parser";
 
@@ -882,7 +882,7 @@ export default class TemplateParserSpec
 
         template.innerHTML = "<div #inject:items='items' #if='false'><span #injector:items='items' #if='true' #for='x item of items'></span></div>";
 
-        const message = "Parsing error in \"#for='x item of items'\": Unexpected token item at position 2";
+        const message = "Parsing error in #for=\"x item of items\": Unexpected token item at position 2";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #injector:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
         // TemplateParser.parse("x-component", template);

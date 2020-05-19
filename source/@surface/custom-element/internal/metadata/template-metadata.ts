@@ -1,5 +1,5 @@
 import { Action }            from "@surface/core";
-import IInjectDirective      from "../interfaces/inject-directive";
+import IInjectDirective      from "../interfaces/directives/inject-directive";
 import { TEMPLATE_METADATA } from "../symbols";
 import { Scope }             from "../types";
 

@@ -28,10 +28,10 @@ export default class PropertyListenerSpec
 
         listener.update(target.host);
 
-        chai.expect((listener as unknown as Indexer)["target"]).to.equal(target.host);
+        chai.expect((listener as object as Indexer)["target"]).to.equal(target.host);
 
         listener.update({ value: 2 });
 
-        chai.expect((listener as unknown as Indexer)["target"]).to.not.equal(target.host);
+        chai.expect((listener as object as Indexer)["target"]).to.not.equal(target.host);
     }
 }

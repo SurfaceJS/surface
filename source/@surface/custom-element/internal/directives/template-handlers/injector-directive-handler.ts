@@ -1,13 +1,13 @@
-import { assert, Indexer, IDisposable }                                      from "@surface/core";
-import { TypeGuard }                                                         from "@surface/expression";
-import { ISubscription }                                                     from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDescriptor } from "../../common";
-import IInjectDirective                                                      from "../../interfaces/inject-directive";
-import IInjectorDirective                                                    from "../../interfaces/injector-directive";
-import TemplateMetadata                                                      from "../../metadata/template-metadata";
-import ParallelWorker                                                        from "../../parallel-worker";
-import { Scope }                                                             from "../../types";
-import TemplateDirectiveHandler                                              from "./";
+import { assert, Indexer, IDisposable }                                     from "@surface/core";
+import { TypeGuard }                                                        from "@surface/expression";
+import { ISubscription }                                                    from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
+import IInjectDirective                                                     from "../../interfaces/directives/inject-directive";
+import IInjectorDirective                                                   from "../../interfaces/directives/injector-directive";
+import TemplateMetadata                                                     from "../../metadata/template-metadata";
+import ParallelWorker                                                       from "../../parallel-worker";
+import { Scope }                                                            from "../../types";
+import TemplateDirectiveHandler                                             from "./";
 
 export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -100,7 +100,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(task);
 
-        this.subscription = tryObserveByDescriptor(this.scope, this.directive, { notify }, true);
+        this.subscription = tryObserveByDirective(this.scope, this.directive, { notify }, true);
 
         this.fireAsync(notify);
     }

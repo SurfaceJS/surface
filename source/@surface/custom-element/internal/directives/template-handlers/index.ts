@@ -1,6 +1,6 @@
 import { AsyncAction, IDisposable } from "@surface/core";
 import { enumerateRange }           from "../../common";
-import ITemplateDescriptor          from "../../interfaces/template-descriptor";
+import ITemplateDescriptor          from "../../interfaces/descriptors/template-descriptor";
 import Metadata                     from "../../metadata/metadata";
 import TemplateProcessor            from "../../template-processor";
 import { Scope }                    from "../../types";

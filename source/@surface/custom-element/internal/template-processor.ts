@@ -8,23 +8,23 @@ import
     createScope,
     styleMap,
     tryEvaluateExpression,
-    tryEvaluateExpressionByDescriptor,
-    tryObserveByDescriptor,
+    tryEvaluateExpressionByDirective,
+    tryObserveByDirective,
 }
 from "./common";
 import DataBind                 from "./data-bind";
 import directiveRegistry        from "./directive-registry";
 import ChoiceDirectiveHandler   from "./directives/template-handlers/choice-directive-handler";
+import InjectDirectiveHandler   from "./directives/template-handlers/inject-directive-handler";
 import InjectorDirectiveHandler from "./directives/template-handlers/injector-directive-handler";
 import LoopDirectiveHandler     from "./directives/template-handlers/loop-directive-handler";
 import TemplateProcessError     from "./errors/template-process-error";
-import IAttributeDescriptor     from "./interfaces/attribute-descriptor";
-import IDirective               from "./interfaces/directive";
-import IDirectivesDescriptor    from "./interfaces/directives-descriptor";
-import ITemplateDescriptor      from "./interfaces/template-descriptor";
-import ITextNodeDescriptor      from "./interfaces/text-node-descriptor";
+import IDirectivesDescriptor    from "./interfaces/descriptors/directives-descriptor";
+import ITemplateDescriptor      from "./interfaces/descriptors/template-descriptor";
+import ITextNodeDescriptor      from "./interfaces/descriptors/text-node-descriptor";
+import IAttributeDirective      from "./interfaces/directives/attribute-directive";
+import ICustomDirective         from "./interfaces/directives/custom-directive";
 import ITraceable               from "./interfaces/traceable";
-import TemplateMetadata         from "./metadata/template-metadata";
 import { Scope }                from "./types";
 
 interface ITemplateProcessorData
@@ -140,7 +140,7 @@ export default class TemplateProcessor
         };
     }
 
-    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDescriptor>): Array<ISubscription>
+    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDirective>): Array<ISubscription>
     {
         const constructor = window.customElements.get(element.localName);
 
@@ -175,15 +175,15 @@ export default class TemplateProcessor
                             element.setAttributeNode(attribute);
 
                             notify = descriptor.name == "class"
-                                ? () => attribute.value = classMap(tryEvaluateExpressionByDescriptor(scope, descriptor) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(tryEvaluateExpressionByDescriptor(scope, descriptor) as Record<string, boolean>);
+                                ? () => attribute.value = classMap(tryEvaluateExpressionByDirective(scope, descriptor) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(tryEvaluateExpressionByDirective(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as unknown as Indexer)[descriptor.key] = tryEvaluateExpressionByDescriptor(scope, descriptor);
+                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByDirective(scope, descriptor);
                         }
 
-                        let subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
+                        let subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
 
                         notify();
 
@@ -216,9 +216,9 @@ export default class TemplateProcessor
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = () => attribute.value = `${(tryEvaluateExpressionByDescriptor(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+                    const notify = () => attribute.value = `${(tryEvaluateExpressionByDirective(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
+                    let subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
 
                     subscriptions.push(subscription);
 
@@ -240,7 +240,7 @@ export default class TemplateProcessor
         return subscriptions;
     }
 
-    private processElementDirectives(scope: Scope, element: Element, directives: Array<IDirective>): Array<IDisposable>
+    private processElementDirectives(scope: Scope, element: Element, directives: Array<ICustomDirective>): Array<IDisposable>
     {
         const disposables: Array<IDisposable> = [];
 
@@ -266,26 +266,7 @@ export default class TemplateProcessor
 
             const currentContext = data.context ?? template.parentNode;
 
-            const metadata = TemplateMetadata.from(currentContext);
-
-            template.remove();
-
-            const key = `${tryEvaluateExpression(data.scope, directive.keyExpression, directive.rawKeyExpression, directive.stackTrace)}`;
-
-            const action = metadata.injectors.get(key);
-
-            if (action)
-            {
-                action(data.scope, currentContext, this.host, template, directive);
-            }
-            else
-            {
-                template.remove();
-
-                metadata.injections.set(key, { scope: data.scope, template, directive, context: currentContext, host: this.host });
-            }
-
-            disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
+            disposables.push(new InjectDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
         for (const directive of data.directives.logical)
@@ -332,9 +313,9 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByDescriptor(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByDirective(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = tryObserveByDescriptor(scope, descriptor, { notify }, true);
+            const subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
 
             subscriptions.push(subscription);
 
