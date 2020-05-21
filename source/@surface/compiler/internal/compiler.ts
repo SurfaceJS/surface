@@ -1,4 +1,4 @@
-import { merge, Indexer }            from "@surface/core";
+import { deepMergeCombine, Indexer } from "@surface/core";
 import { resolveFile }               from "@surface/io";
 import chalk                         from "chalk";
 import ForkTsCheckerWebpackPlugin    from "fork-ts-checker-webpack-plugin";
@@ -381,7 +381,7 @@ export default class Compiler
             },
         };
 
-        return merge([webpackConfiguration, userWebpack], true);
+        return deepMergeCombine(webpackConfiguration, userWebpack);
     }
 
     /**

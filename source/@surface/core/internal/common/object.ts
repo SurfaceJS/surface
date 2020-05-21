@@ -1,6 +1,44 @@
-import { Combine, Constructor, Func1, Indexer, Mixer } from "../types";
-import Hashcode                                        from "../hashcode";
-import { assert, typeGuard }                           from "./generic";
+import Hashcode                                                     from "../hashcode";
+import { Combine, Constructor, Func1, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                        from "./generic";
+
+function internalDeepMerge(sources: Array<Indexer>, combineArrays: boolean): Indexer
+{
+    const target: Indexer = { };
+
+    for (const current of sources)
+    {
+        for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(current)))
+        {
+            const targetValue  = target[key];
+            const currentValue = current[key];
+
+            if (typeGuard<Indexer>(targetValue, targetValue instanceof Object))
+            {
+                if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
+                {
+                    targetValue.push(...currentValue);
+                }
+                else if (typeGuard<Indexer>(currentValue, currentValue instanceof Object))
+                {
+                    descriptor.value = internalDeepMerge([targetValue, currentValue], combineArrays);
+
+                    Object.defineProperty(target, key, { ...descriptor });
+                }
+                else
+                {
+                    Object.defineProperty(target, key, descriptor);
+                }
+            }
+            else
+            {
+                Object.defineProperty(target, key, descriptor);
+            }
+        }
+    }
+
+    return target;
+}
 
 export function clone<T extends object>(source: T): T;
 export function clone(source: Indexer): Indexer
@@ -97,41 +135,34 @@ export function getValue<TTarget extends object, T = unknown>(target: TTarget, p
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */
-export function merge<TInstances extends Array<object>>(sources: TInstances, combineArrays?: boolean): Combine<TInstances>;
-export function merge(sources: Array<Indexer>, combineArrays?: boolean): Indexer
+export function deepMerge<TSources extends Array<object>>(...sources: TSources): Combine<TSources>
+{
+    return internalDeepMerge(sources as Array<Indexer>, false) as Combine<TSources>;
+}
+
+/**
+ * Deeply merges two or more objects and arrays.
+ * @param sources Objects to merge.
+ */
+export function deepMergeCombine<TSources extends Array<object>>(...sources: TSources): Combine<TSources>
+{
+    return internalDeepMerge(sources as Array<Indexer>, true) as Combine<TSources>;
+}
+
+/**
+ * Merges two or more objects.
+ * @param sources objects to merge
+ * */
+export function merge<T extends Array<object>>(...sources: T): MergeList<T>
 {
     const target: Indexer = { };
 
-    for (const current of sources)
+    for (const source of sources)
     {
-        for (const key of Object.getOwnPropertyNames(current))
-        {
-            const targetValue  = target[key];
-            const currentValue = current[key];
-
-            if (typeGuard<Indexer>(targetValue, targetValue instanceof Object))
-            {
-                if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
-                {
-                    targetValue.push(...currentValue);
-                }
-                else if (typeGuard<Indexer>(currentValue, currentValue instanceof Object))
-                {
-                    target[key] = merge([targetValue, currentValue]);
-                }
-                else if (currentValue != undefined)
-                {
-                    target[key] = currentValue;
-                }
-            }
-            else if (currentValue != undefined)
-            {
-                target[key] = currentValue;
-            }
-        }
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
     }
 
-    return target;
+    return target as MergeList<T>;
 }
 
 
