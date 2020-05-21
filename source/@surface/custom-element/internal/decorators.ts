@@ -210,7 +210,7 @@ export function element(name: string, template?: string, style?: string, options
 
         const action = (instance: InstanceType<T> & ICustomElement) =>
         {
-            TemplateProcessor.process({ scope: { host: instance }, host: instance, root: instance.shadowRoot, descriptor });
+            TemplateProcessor.process({ scope: Object.defineProperty({ }, "host", { value: instance, enumerable: true, writable: false }), host: instance, root: instance.shadowRoot, descriptor });
 
             instance.bindedCallback?.();
 

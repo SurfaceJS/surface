@@ -1,7 +1,7 @@
-import { assert, Action, Indexer, IDisposable } from "@surface/core";
-import { TypeGuard }                            from "@surface/expression";
-import { ISubscription }                        from "@surface/reactive";
-import Type, { FieldInfo }                      from "@surface/reflection";
+import { assert, merge, Action, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                                   from "@surface/expression";
+import { ISubscription }                               from "@surface/reactive";
+import Type, { FieldInfo }                             from "@surface/reflection";
 import
 {
     classMap,
@@ -118,9 +118,9 @@ export default class TemplateProcessor
 
         for (const descriptor of this.descriptor.elements)
         {
-            const element = this.lookup[descriptor.path];
-
-            const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
+            const element    = this.lookup[descriptor.path];
+            const thisScope  = Object.defineProperty({ }, "this", { value: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, enumerable: true, writable: false });
+            const localScope = createScope(merge(scope, thisScope));
 
             subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
             disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));

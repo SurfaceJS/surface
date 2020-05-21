@@ -1,4 +1,4 @@
-import { Action2, IDisposable, Nullable }                                   from "@surface/core";
+import { merge, Action2, IDisposable, Nullable }                            from "@surface/core";
 import { TypeGuard }                                                        from "@surface/expression";
 import { ISubscription }                                                    from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
@@ -52,8 +52,8 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         if (index >= this.cache.length || !Object.is(this.cache[index].value, value))
         {
             const mergedScope = TypeGuard.isIdentifier(this.directive.left)
-                ? { ...this.scope, [this.directive.left.name]: value }
-                : { ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace), ...this.scope };
+                ? merge(this.scope, Object.defineProperty({ }, this.directive.left.name, { value, enumerable: true, writable: false }))
+                : merge(tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace), this.scope);
 
             const start = document.createComment("");
             const end   = document.createComment("");

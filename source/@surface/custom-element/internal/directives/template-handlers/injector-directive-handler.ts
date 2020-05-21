@@ -1,4 +1,4 @@
-import { assert, Indexer, IDisposable }                                     from "@surface/core";
+import { assert, merge, Indexer, IDisposable }                                     from "@surface/core";
 import { TypeGuard }                                                        from "@surface/expression";
 import { ISubscription }                                                    from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
@@ -87,8 +87,8 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
                     : { elementScope: tryEvaluateExpression(this.scope, this.directive.expression, this.directive.rawExpression, this.directive.stackTrace) as Indexer, scopeAlias: injectDirective.pattern.name };
 
                 const mergedScope = destructured
-                    ? { ...elementScope, ...localScope }
-                    : { [scopeAlias]: elementScope, ...localScope };
+                    ? merge(elementScope, localScope)
+                    : merge(Object.defineProperty({ }, scopeAlias, { value: elementScope, enumerable: true, writable: false }), localScope);
 
                 const [content, disposable] = this.processTemplate(mergedScope, context, host, template, injectDirective.descriptor);
 
