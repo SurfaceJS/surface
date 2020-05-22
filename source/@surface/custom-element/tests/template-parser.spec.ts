@@ -74,13 +74,13 @@ export default class TemplateParserSpec
             "<span #else>",
             "Suspended",
             "</span>",
-            "<span #injector>",
+            "<span #placeholder>",
             "Default Empty",
             "</span>",
-            "<span #injector:value='({ name: host.name })'>",
+            "<span #placeholder:value='({ name: host.name })'>",
             "Default {name}",
             "</span>",
-            "<span #injector='({ name: host.name })' #injector-key='host.dynamicInjectorKey'>",
+            "<span #placeholder='({ name: host.name })' #placeholder-key='host.dynamicPlaceholderKey'>",
             "Default {name}",
             "</span>",
             "<table>",
@@ -235,7 +235,7 @@ export default class TemplateParserSpec
             ],
             directives:
             {
-                logical:
+                logicals:
                 [
                     {
                         branches:
@@ -245,10 +245,10 @@ export default class TemplateParserSpec
                                 {
                                     directives:
                                     {
-                                        inject:   [],
-                                        injector: [],
-                                        logical:  [],
-                                        loop:     [],
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
                                     },
                                     elements: [],
                                     lookup:   [],
@@ -269,10 +269,10 @@ export default class TemplateParserSpec
                                 {
                                     directives:
                                     {
-                                        inject:   [],
-                                        injector: [],
-                                        logical:  [],
-                                        loop:     [],
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
                                     },
                                     elements: [],
                                     lookup:   [],
@@ -293,10 +293,10 @@ export default class TemplateParserSpec
                                 {
                                     directives:
                                     {
-                                        inject:   [],
-                                        injector: [],
-                                        logical:  [],
-                                        loop:     [],
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
                                     },
                                     elements: [],
                                     lookup:   [],
@@ -315,17 +315,17 @@ export default class TemplateParserSpec
                         ]
                     }
                 ],
-                inject:
+                injections:
                 [
                     {
                         descriptor:
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements: [],
                             lookup:   [],
@@ -348,10 +348,10 @@ export default class TemplateParserSpec
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements:
                             [
@@ -398,10 +398,10 @@ export default class TemplateParserSpec
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements:
                             [
@@ -444,17 +444,17 @@ export default class TemplateParserSpec
                         ]
                     },
                 ],
-                injector:
+                placeholders:
                 [
                     {
                         descriptor:
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements: [],
                             lookup:   [],
@@ -463,13 +463,13 @@ export default class TemplateParserSpec
                         keyExpression:         parseExpression("'default'"),
                         observables: [],
                         path:        "8",
-                        rawExpression:         "#injector",
+                        rawExpression:         "#placeholder",
                         rawKeyExpression:      "",
                         stackTrace:
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...8 other(s) node(s)", "<span #injector>"]
+                            ["...8 other(s) node(s)", "<span #placeholder>"]
                         ]
                     },
                     {
@@ -477,10 +477,10 @@ export default class TemplateParserSpec
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements:
                             [
@@ -499,7 +499,7 @@ export default class TemplateParserSpec
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
-                                                ["...9 other(s) node(s)", "<span #injector:value=\"({ name: host.name })\">"],
+                                                ["...9 other(s) node(s)", "<span #placeholder:value=\"({ name: host.name })\">"],
                                                 ["Default {name}"],
                                             ]
                                         }
@@ -512,13 +512,13 @@ export default class TemplateParserSpec
                         keyExpression:         parseExpression("'value'"),
                         observables: [["host", "name"]],
                         path:        "9",
-                        rawExpression:         "#injector:value=\"({ name: host.name })\"",
+                        rawExpression:         "#placeholder:value=\"({ name: host.name })\"",
                         rawKeyExpression:      "",
                         stackTrace:
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...9 other(s) node(s)", "<span #injector:value=\"({ name: host.name })\">"]
+                            ["...9 other(s) node(s)", "<span #placeholder:value=\"({ name: host.name })\">"]
                         ]
                     },
                     {
@@ -526,10 +526,10 @@ export default class TemplateParserSpec
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements:
                             [
@@ -548,7 +548,7 @@ export default class TemplateParserSpec
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
-                                                ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"host.dynamicInjectorKey\">"],
+                                                ["...10 other(s) node(s)", "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">"],
                                                 ["Default {name}"],
                                             ]
                                         }
@@ -558,20 +558,20 @@ export default class TemplateParserSpec
                             lookup: [[0], [0, 0]],
                         },
                         expression:    parseExpression("({ name: host.name })"),
-                        keyExpression: parseExpression("host.dynamicInjectorKey"),
-                        observables:   [["host", "name"], ["host", "dynamicInjectorKey"]],
+                        keyExpression: parseExpression("host.dynamicPlaceholderKey"),
+                        observables:   [["host", "name"], ["host", "dynamicPlaceholderKey"]],
                         path:          "10",
-                        rawExpression:           "#injector=\"({ name: host.name })\"",
-                        rawKeyExpression:        "#injector-key=\"host.dynamicInjectorKey\"",
+                        rawExpression:           "#placeholder=\"({ name: host.name })\"",
+                        rawKeyExpression:        "#placeholder-key=\"host.dynamicPlaceholderKey\"",
                         stackTrace:
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...10 other(s) node(s)", "<span #injector=\"({ name: host.name })\" #injector-key=\"host.dynamicInjectorKey\">"]
+                            ["...10 other(s) node(s)", "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">"]
                         ]
                     },
                 ],
-                loop:
+                loops:
                 [
                     {
                         left: parseExpression("item") as IIdentifier,
@@ -579,10 +579,10 @@ export default class TemplateParserSpec
                         {
                             directives:
                             {
-                                inject:   [],
-                                injector: [],
-                                logical:  [],
-                                loop:     [],
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
                             },
                             elements:
                             [
@@ -714,13 +714,13 @@ export default class TemplateParserSpec
     }
 
     @shouldPass @test
-    public decomposeIfAndInjector(): void
+    public decomposeIfAndPlaceholder(): void
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #if=\"true\" #injector:value=\"source\">Placeholder</span>";
+        template.innerHTML = "<span #if=\"true\" #placeholder:value=\"source\">Placeholder</span>";
 
-        const expected = "<template #if=\"true\"><template #injector:value=\"source\"><span>Placeholder</span></template></template>";
+        const expected = "<template #if=\"true\"><template #placeholder:value=\"source\"><span>Placeholder</span></template></template>";
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
@@ -728,13 +728,13 @@ export default class TemplateParserSpec
     }
 
     @shouldPass @test
-    public decomposeForAndInjector(): void
+    public decomposeForAndPlaceholder(): void
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #for=\"const [key, value] of items\" #injector:[key]=\"source\">{source.value}</span>";
+        template.innerHTML = "<span #for=\"const [key, value] of items\" #placeholder:[key]=\"source\">{source.value}</span>";
 
-        const expected = "<template #for=\"const [key, value] of items\"><template #injector:[key]=\"source\"><span> </span></template></template>";
+        const expected = "<template #for=\"const [key, value] of items\"><template #placeholder:[key]=\"source\"><span> </span></template></template>";
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
@@ -774,23 +774,9 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #injector:value=\"source\" #for=\"const item of items\">{source.value}</span>";
+        template.innerHTML = "<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">{source.value}</span>";
 
-        const expected = "<template #inject:value=\"source\"><template #if=\"true\"><template #injector:value=\"source\"><template #for=\"const item of items\"><span class=\"foo\"> </span></template></template></template></template>";
-
-        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
-
-        assert.equal(actual, expected);
-    }
-
-    @shouldPass @test
-    public decomposeInjectorWithInjectorKey(): void
-    {
-        const template = document.createElement("template");
-
-        template.innerHTML = "<span #injector=\"source\" #injector-key=\"key\">{source.value}</span>";
-
-        const expected = "<template #injector=\"source\" #injector-key=\"key\"><span> </span></template>";
+        const expected = "<template #inject:value=\"source\"><template #if=\"true\"><template #placeholder:value=\"source\"><template #for=\"const item of items\"><span class=\"foo\"> </span></template></template></template></template>";
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
@@ -798,13 +784,27 @@ export default class TemplateParserSpec
     }
 
     @shouldPass @test
-    public decomposeInjectorAndInject(): void
+    public decomposePlaceholderWithPlaceholderKey(): void
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #injector:value=\"source\" #inject:value=\"source\">{source.value}</span>";
+        template.innerHTML = "<span #placeholder=\"source\" #placeholder-key=\"key\">{source.value}</span>";
 
-        const expected = "<template #injector:value=\"source\"><template #inject:value=\"source\"><span> </span></template></template>";
+        const expected = "<template #placeholder=\"source\" #placeholder-key=\"key\"><span> </span></template>";
+
+        const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
+
+        assert.equal(actual, expected);
+    }
+
+    @shouldPass @test
+    public decomposePlaceholderAndInject(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span #placeholder:value=\"source\" #inject:value=\"source\">{source.value}</span>";
+
+        const expected = "<template #placeholder:value=\"source\"><template #inject:value=\"source\"><span> </span></template></template>";
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
@@ -880,10 +880,10 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<div #inject:items='items' #if='false'><span #injector:items='items' #if='true' #for='x item of items'></span></div>";
+        template.innerHTML = "<div #inject:items='items' #if='false'><span #placeholder:items='items' #if='true' #for='x item of items'></span></div>";
 
         const message = "Parsing error in #for=\"x item of items\": Unexpected token item at position 2";
-        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #injector:items=\"items\" #if=\"true\" #for=\"x item of items\">";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #placeholder:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
         // TemplateParser.parse("x-component", template);
 

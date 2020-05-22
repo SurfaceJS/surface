@@ -10,8 +10,8 @@ import IAttributeDirective                                                      
 import IChoiceBranchDirective                                                                   from "./interfaces/directives/choice-branch-directive";
 import ICustomDirective                                                                         from "./interfaces/directives/custom-directive";
 import IInjectDirective                                                                         from "./interfaces/directives/inject-directive";
-import IInjectorDirective                                                                       from "./interfaces/directives/injector-directive";
 import ILoopDirective                                                                           from "./interfaces/directives/loop-directive";
+import IPlaceholderDirective                                                                    from "./interfaces/directives/placeholder-directive";
 import { nativeEvents }                                                                         from "./native-events";
 import ObserverVisitor                                                                          from "./observer-visitor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./parsers";
@@ -23,14 +23,14 @@ const DIRECTIVE  = Symbol("custom-element:directive");
 
 enum DirectiveType
 {
-    If          = "#if",
-    ElseIf      = "#else-if",
-    Else        = "#else",
-    For         = "#for",
-    Inject      = "#inject",
-    InjectKey   = "#inject-key",
-    Injector    = "#injector",
-    InjectorKey = "#injector-key",
+    If             = "#if",
+    ElseIf         = "#else-if",
+    Else           = "#else",
+    For            = "#for",
+    Inject         = "#inject",
+    InjectKey      = "#inject-key",
+    Placeholder    = "#placeholder",
+    PlaceholderKey = "#placeholder-key",
 }
 
 const directiveTypes = Object.values(DirectiveType);
@@ -57,10 +57,10 @@ export default class TemplateParser
         elements: [],
         directives:
         {
-            logical:  [],
-            loop:     [],
-            inject:   [],
-            injector: []
+            logicals:  [],
+            loops:     [],
+            injections:   [],
+            placeholders: []
         },
         lookup: []
     };
@@ -214,7 +214,7 @@ export default class TemplateParser
     private enumerateDirectives(namedNodeMap: NamedNodeMap): Iterable<Directive>;
     private enumerateDirectives(namedNodeMap: NamedNodeMap & Indexer<Attr>): Iterable<Directive>
     {
-        const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Injector];
+        const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Placeholder];
 
         return Enumerable.from(namedNodeMap)
             .where(x => !x.name.endsWith("-key"))
@@ -470,7 +470,7 @@ export default class TemplateParser
             this.indexStack.push(lastIndex);
             this.stackTrace.push(lastStack);
 
-            this.templateDescriptor.directives.logical.push({ branches });
+            this.templateDescriptor.directives.logicals.push({ branches });
         }
         else if (directive.type == DirectiveType.For)
         {
@@ -492,11 +492,11 @@ export default class TemplateParser
                 rawExpression:         directive.raw,
             };
 
-            this.templateDescriptor.directives.loop.push(loopDescriptor);
+            this.templateDescriptor.directives.loops.push(loopDescriptor);
 
             this.saveLookup();
         }
-        else if (directive.type == DirectiveType.Injector)
+        else if (directive.type == DirectiveType.Placeholder)
         {
             const { key, raw, rawKey, value } = directive;
 
@@ -505,7 +505,7 @@ export default class TemplateParser
             const observables   = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
             const descriptor    = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const injectionDescriptor: IInjectorDirective =
+            const injectionDescriptor: IPlaceholderDirective =
             {
                 descriptor,
                 expression,
@@ -517,7 +517,7 @@ export default class TemplateParser
                 path: this.getPath(),
             };
 
-            this.templateDescriptor.directives.injector.push(injectionDescriptor);
+            this.templateDescriptor.directives.placeholders.push(injectionDescriptor);
 
             this.saveLookup();
         }
@@ -545,7 +545,7 @@ export default class TemplateParser
                 path: this.getPath(),
             };
 
-            this.templateDescriptor.directives.inject.push(injectionDescriptor);
+            this.templateDescriptor.directives.injections.push(injectionDescriptor);
 
             this.saveLookup();
         }

@@ -1,17 +1,17 @@
-import { assert, merge, Indexer, IDisposable }                                     from "@surface/core";
+import { assert, merge, Indexer, IDisposable }                              from "@surface/core";
 import { TypeGuard }                                                        from "@surface/expression";
 import { ISubscription }                                                    from "@surface/reactive";
+import TemplateDirectiveHandler                                             from ".";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
 import IInjectDirective                                                     from "../../interfaces/directives/inject-directive";
-import IInjectorDirective                                                   from "../../interfaces/directives/injector-directive";
+import IPlaceholderDirective                                                   from "../../interfaces/directives/placeholder-directive";
 import TemplateMetadata                                                     from "../../metadata/template-metadata";
 import ParallelWorker                                                       from "../../parallel-worker";
 import { Scope }                                                            from "../../types";
-import TemplateDirectiveHandler                                             from "./";
 
-export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
+export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive: IInjectorDirective;
+    private readonly directive: IPlaceholderDirective;
     private readonly end:       Comment;
     private readonly key:       string;
     private readonly metadata:  TemplateMetadata;
@@ -23,7 +23,7 @@ export default class InjectorDirectiveHandler extends TemplateDirectiveHandler
     private subscription:      ISubscription|null = null;
     private timer:             number             = 0;
 
-    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectorDirective)
+    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
     {
         super(scope, context, host);
 

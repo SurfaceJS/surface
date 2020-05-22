@@ -394,7 +394,7 @@ export default class TemplateProcessorSpec
         root.id = "root";
         host.id = "host";
 
-        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:items></template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items></template><span>!!!</span>";
         host.innerHTML            = "<template #inject:items>World</template>";
 
         root.shadowRoot.appendChild(host);
@@ -408,7 +408,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectAndInjectorDirective(): Promise<void>
+    public async templateWithInjectAndPlaceholderDirective(): Promise<void>
     {
         const root = getHost();
         const host = getHost<{ item?: { value: string } }>();
@@ -417,7 +417,7 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject:item='{ item }'>{item.value}</template>";
 
-        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:item='({ item: host.item })'></template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:item='({ item: host.item })'></template><span>!!!</span>";
 
         root.shadowRoot.appendChild(host);
 
@@ -436,14 +436,14 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectorDirectiveWithDefault(): Promise<void>
+    public async templateWithPlaceholderDirectiveWithDefault(): Promise<void>
     {
         const root = getHost();
         const host = getHost();
 
         root.shadowRoot.appendChild(host);
 
-        host.shadowRoot.innerHTML = "<span>Hello </span><template #injector:items>Default</template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items>Default</template><span>!!!</span>";
 
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
@@ -469,7 +469,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #injector:items="({ item })"><span>Default</span></template>`;
+        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #placeholder:items="({ item })"><span>Default</span></template>`;
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -510,7 +510,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectAndInjectorDirectives(): Promise<void>
+    public async templateWithInjectAndPlaceholderDirectives(): Promise<void>
     {
         const root      = getHost();
         const host      = getHost();
@@ -518,16 +518,16 @@ export default class TemplateProcessorSpec
 
         childHost.shadowRoot.innerHTML =
         `
-            <template #injector:items2="({ item: host.item })">
-                <span>Injector 2</span>
+            <template #placeholder:items2="({ item: host.item })">
+                <span>Placeholder 2</span>
             </template>
         `;
 
         childHost.innerHTML =
         `
             <template #inject:items2="{ item }">
-                <template #injector:items1="({ item })">
-                    <span>Injector 1</span>
+                <template #placeholder:items1="({ item })">
+                    <span>Placeholder 1</span>
                 </template>
             </template>
         `;
@@ -942,7 +942,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithConditionalAndInjectorDirectives(): Promise<void>
+    public async templateWithConditionalAndPlaceholderDirectives(): Promise<void>
     {
         const root = getHost();
         const host = getHost<{ condition?: boolean, item?: [string, number] }>();
@@ -956,7 +956,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML =
         `
-            <template #if="host.condition" #injector:items="({ item: host.item })">
+            <template #if="host.condition" #placeholder:items="({ item: host.item })">
                 <span>Default</span>
             </template>
         `;
@@ -1020,7 +1020,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithLoopAndInjectorDirectives(): Promise<void>
+    public async templateWithLoopAndPlaceholderDirectives(): Promise<void>
     {
         const root = getHost();
         const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
@@ -1034,7 +1034,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML =
         `
-            <template #for="const item of host.items" #injector:items="({ item })">
+            <template #for="const item of host.items" #placeholder:items="({ item })">
                 <span>Default</span>
             </template>
         `;
@@ -1214,22 +1214,22 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
-    public async evaluationErrorInjectorDirective(): Promise<void>
+    public async evaluationErrorPlaceholderDirective(): Promise<void>
     {
         const root = getHost();
         const host = getHost();
 
         host.innerHTML = "<template #inject:items=\"{ item: [key, value] }\"></template>";
 
-        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #injector:items=\"({ item })\"></template></div>";
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"({ item })\"></template></div>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
 
         process(host, host.shadowRoot);
 
-        const message = "Evaluation error in #injector:items=\"({ item })\": item is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #injector:items=\"({ item })\">";
+        const message = "Evaluation error in #placeholder:items=\"({ item })\": item is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #placeholder:items=\"({ item })\">";
 
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1245,7 +1245,7 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject:items=\"{ item: value = lastItem }\"></template>";
 
-        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #injector:items=\"({ })\"></template></div>";
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"({ })\"></template></div>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);

@@ -12,20 +12,20 @@ import
     tryObserveByDirective,
 }
 from "./common";
-import DataBind                 from "./data-bind";
-import directiveRegistry        from "./directive-registry";
-import ChoiceDirectiveHandler   from "./directives/template-handlers/choice-directive-handler";
-import InjectDirectiveHandler   from "./directives/template-handlers/inject-directive-handler";
-import InjectorDirectiveHandler from "./directives/template-handlers/injector-directive-handler";
-import LoopDirectiveHandler     from "./directives/template-handlers/loop-directive-handler";
-import TemplateProcessError     from "./errors/template-process-error";
-import IDirectivesDescriptor    from "./interfaces/descriptors/directives-descriptor";
-import ITemplateDescriptor      from "./interfaces/descriptors/template-descriptor";
-import ITextNodeDescriptor      from "./interfaces/descriptors/text-node-descriptor";
-import IAttributeDirective      from "./interfaces/directives/attribute-directive";
-import ICustomDirective         from "./interfaces/directives/custom-directive";
-import ITraceable               from "./interfaces/traceable";
-import { Scope }                from "./types";
+import DataBind                    from "./data-bind";
+import directiveRegistry           from "./directive-registry";
+import ChoiceDirectiveHandler      from "./directives/template-handlers/choice-directive-handler";
+import InjectDirectiveHandler      from "./directives/template-handlers/inject-directive-handler";
+import LoopDirectiveHandler        from "./directives/template-handlers/loop-directive-handler";
+import PlaceholderDirectiveHandler from "./directives/template-handlers/placeholder-directive-handler";
+import TemplateProcessError        from "./errors/template-process-error";
+import IDirectivesDescriptor       from "./interfaces/descriptors/directives-descriptor";
+import ITemplateDescriptor         from "./interfaces/descriptors/template-descriptor";
+import ITextNodeDescriptor         from "./interfaces/descriptors/text-node-descriptor";
+import IAttributeDirective         from "./interfaces/directives/attribute-directive";
+import ICustomDirective            from "./interfaces/directives/custom-directive";
+import ITraceable                  from "./interfaces/traceable";
+import { Scope }                   from "./types";
 
 interface ITemplateProcessorData
 {
@@ -258,7 +258,7 @@ export default class TemplateProcessor
     {
         const disposables: Array<IDisposable> = [];
 
-        for (const directive of data.directives.inject)
+        for (const directive of data.directives.injections)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -269,7 +269,7 @@ export default class TemplateProcessor
             disposables.push(new InjectDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
-        for (const directive of data.directives.logical)
+        for (const directive of data.directives.logicals)
         {
             const templates = directive.branches.map(x => this.lookup[x.path]) as Array<HTMLTemplateElement>;
 
@@ -280,7 +280,7 @@ export default class TemplateProcessor
             disposables.push(new ChoiceDirectiveHandler(data.scope, currentContext, this.host, templates, directive.branches));
         }
 
-        for (const directive of data.directives.loop)
+        for (const directive of data.directives.loops)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -291,7 +291,7 @@ export default class TemplateProcessor
             disposables.push(new LoopDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
-        for (const directive of data.directives.injector)
+        for (const directive of data.directives.placeholders)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -299,7 +299,7 @@ export default class TemplateProcessor
 
             const currentContext = data.context ?? template.parentNode;
 
-            disposables.push(new InjectorDirectiveHandler(data.scope, currentContext, this.host, template, directive));
+            disposables.push(new PlaceholderDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
