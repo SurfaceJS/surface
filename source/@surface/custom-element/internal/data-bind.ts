@@ -40,10 +40,10 @@ export default class DataBind
         const { reactor, observer, subscription: _subscription } = Reactive.observe(target, path, listener, lazy);
         const subscriptions                                      = [] as Array<ISubscription>;
 
-        const metadata = Metadata.from(member);
-
-        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !metadata.hasListener)
+        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !Metadata.of(member)?.hasListener)
         {
+            const metadata = Metadata.from(member);
+
             type Key = keyof HTMLElement;
 
             const action = function (this: HTMLElement)

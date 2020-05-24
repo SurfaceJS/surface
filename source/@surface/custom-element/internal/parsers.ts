@@ -24,9 +24,12 @@ function parseStatement<TParser extends (expression: string) => any>(parser: TPa
     }
     catch (error)
     {
-        assert(error instanceof SyntaxError);
+        if (error instanceof SyntaxError)
+        {
+            throw getOffsetSyntaxError(statement, expression, error);
+        }
 
-        throw getOffsetSyntaxError(statement, expression, error);
+        throw error;
     }
 }
 
@@ -87,7 +90,7 @@ export function parseForLoopStatement(expression: string): { operator: "of"|"in"
 {
     if (!forExpression.test(expression))
     {
-        throw new Error(`Invalid for-loop statement: ${expression}`);
+        throw new Error("Invalid for-loop statement");
     }
 
     const [, rawLeft, operator, rawRigth] = Array.from(forExpression.exec(expression)!) as [string, string, "in"|"of", string];

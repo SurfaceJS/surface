@@ -693,9 +693,12 @@ export default class TemplateParser
         }
         catch (error)
         {
-            assert(error instanceof SyntaxError);
+            assert(error instanceof Error);
 
-            throwTemplateParseError(`Parsing error in ${rawExpression}: ${error.message} at position ${error.index}`, this.stackTrace);
+            const message = `Parsing error in ${rawExpression}: ${error.message}`
+                + (error instanceof SyntaxError ? `in at position ${error.index}` : "");
+
+            throwTemplateParseError(message, this.stackTrace);
         }
     }
 
