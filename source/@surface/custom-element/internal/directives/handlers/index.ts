@@ -1,15 +1,22 @@
 import { IDisposable }                       from "@surface/core";
 import { ISubscription }                     from "@surface/reactive";
-import { tryEvaluateExpression, tryObserve } from "../../common";
+import
+{
+    tryEvaluateExpressionByTraceable,
+    tryEvaluateKeyExpressionByTraceable,
+    tryObserveByObservable,
+    tryObserveKeyByObservable
+} from "../../common";
 import ICustomDirective                      from "../../interfaces/directives/custom-directive";
 import { Scope }                             from "../../types";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
-    protected readonly directive:     ICustomDirective;
-    protected readonly element:       Element;
-    protected readonly scope:         Scope;
-    protected readonly subscriptions: Array<ISubscription> = [];
+    protected readonly directive:       ICustomDirective;
+    protected readonly element:         Element;
+    protected readonly scope:           Scope;
+    protected readonly subscription:    ISubscription;
+    protected readonly keySubscription: ISubscription;
 
     protected key!: string;
     protected value: unknown;
@@ -22,8 +29,8 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.subscriptions.push(tryObserve(scope, directive.keyObservables, { notify: this.keyNotify.bind(this) },   directive.rawKeyExpression, directive.stackTrace, true));
-        this.subscriptions.push(tryObserve(scope, directive.observables,    { notify: this.valueNotify.bind(this) }, directive.rawExpression,    directive.stackTrace, true));
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.keyNotify.bind(this) }, true);
+        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.valueNotify.bind(this) }, true);
 
         this.keyNotify();
         this.valueNotify();
@@ -34,7 +41,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private keyNotify(): void
     {
         const oldKey = this.key;
-        const newKey = `${tryEvaluateExpression(this.scope, this.directive.keyExpression, this.directive.rawKeyExpression, this.directive.stackTrace)}`;
+        const newKey = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
 
         this.key = newKey;
 
@@ -44,7 +51,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private valueNotify(): void
     {
         const oldValue = this.value;
-        const newValue = tryEvaluateExpression(this.scope, this.directive.expression, this.directive.rawExpression, this.directive.stackTrace);
+        const newValue = tryEvaluateExpressionByTraceable(this.scope, this.directive);
 
         this.value = newValue;
 
@@ -62,7 +69,8 @@ export default abstract class DirectiveHandler implements IDisposable
     {
         this.onBeforeUnbind?.();
 
-        this.subscriptions.forEach(x => x.unsubscribe());
+        this.keySubscription.unsubscribe();
+        this.subscription.unsubscribe();
 
         this.onAfterUnbind?.();
     }

@@ -1,25 +1,33 @@
-import { assert, merge, Indexer, IDisposable }                              from "@surface/core";
-import { TypeGuard }                                                        from "@surface/expression";
-import { ISubscription }                                                    from "@surface/reactive";
-import TemplateDirectiveHandler                                             from ".";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
-import IInjectDirective                                                     from "../../interfaces/directives/inject-directive";
-import IPlaceholderDirective                                                   from "../../interfaces/directives/placeholder-directive";
-import TemplateMetadata                                                     from "../../metadata/template-metadata";
-import ParallelWorker                                                       from "../../parallel-worker";
-import { Scope }                                                            from "../../types";
+import { assert, merge, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                           from "@surface/expression";
+import { ISubscription }                       from "@surface/reactive";
+import TemplateDirectiveHandler                from ".";
+import
+{
+    tryEvaluateExpressionByTraceable,
+    tryEvaluateKeyExpressionByTraceable,
+    tryEvaluatePatternByTraceable,
+    tryObserveByObservable,
+    tryObserveKeyByObservable
+} from "../../common";
+import IInjectDirective      from "../../interfaces/directives/inject-directive";
+import IPlaceholderDirective from "../../interfaces/directives/placeholder-directive";
+import TemplateMetadata      from "../../metadata/template-metadata";
+import ParallelWorker        from "../../parallel-worker";
+import { Scope }             from "../../types";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly directive: IPlaceholderDirective;
-    private readonly end:       Comment;
-    private readonly key:       string;
-    private readonly metadata:  TemplateMetadata;
-    private readonly start:     Comment;
-    private readonly template:  HTMLTemplateElement;
+    private readonly end:             Comment;
+    private readonly keySubscription: ISubscription;
+    private readonly metadata:        TemplateMetadata;
+    private readonly start:           Comment;
+    private readonly template:        HTMLTemplateElement;
 
     private currentDisposable: IDisposable|null   = null;
     private disposed:          boolean            = false;
+    private key:               string             = "";
     private subscription:      ISubscription|null = null;
     private timer:             number             = 0;
 
@@ -32,7 +40,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.metadata  = TemplateMetadata.from(this.host);
         this.start     = document.createComment("");
         this.end       = document.createComment("");
-        this.key       = `${directive.keyExpression.evaluate(scope)}`;
 
         assert(template.parentNode);
 
@@ -41,26 +48,23 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         parent.replaceChild(this.end, template);
         parent.insertBefore(this.start, this.end);
 
-        this.metadata.defaults.set(this.key, this.defaultInjection.bind(this));
-        this.metadata.injectors.set(this.key, this.inject.bind(this));
+        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, { notify: this.onKeyChange.bind(this) }, true);
 
-        if (this.host.isConnected)
-        {
-            const injection = this.metadata.injections.get(this.key);
-
-            injection
-                ? this.inject(injection.scope, injection.context, injection.host, injection.template, injection.directive)
-                : this.inject(scope, this.context, this.host, this.template);
-        }
-        else
-        {
-            this.defaultInjection();
-        }
+        this.onKeyChange();
     }
 
-    private defaultInjection()
+    private applyInjection(): void
     {
-        this.timer = window.setTimeout(() => this.inject(this.scope, this.context, this.host, this.template));
+        const injection = this.metadata.injections.get(this.key);
+
+        injection
+            ? this.inject(injection.scope, injection.context, injection.host, injection.template, injection.directive)
+            : this.inject(this.scope, this.context, this.host, this.template);
+    }
+
+    private applyLazyInjection(): void
+    {
+        this.timer = window.setTimeout(() => this.applyInjection());
     }
 
     private inject(localScope: Scope, context: Node, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective): void
@@ -76,6 +80,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         const task = injectDirective
             ? () =>
             {
+                if (this.disposed)
+                {
+                    return;
+                }
+
                 this.currentDisposable?.dispose();
 
                 this.removeInRange(this.start, this.end);
@@ -83,8 +92,8 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
                 let destructured = false;
 
                 const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
-                    ? { elementScope: tryEvaluatePattern(this.scope, injectDirective.pattern, tryEvaluateExpression(this.scope, this.directive.expression,  this.directive.rawExpression, this.directive.stackTrace), injectDirective.rawExpression, injectDirective.stackTrace), scopeAlias: "" }
-                    : { elementScope: tryEvaluateExpression(this.scope, this.directive.expression, this.directive.rawExpression, this.directive.stackTrace) as Indexer, scopeAlias: injectDirective.pattern.name };
+                    ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), injectDirective), scopeAlias: "" }
+                    : { elementScope: tryEvaluateExpressionByTraceable(this.scope, this.directive) as Indexer, scopeAlias: injectDirective.pattern.name };
 
                 const mergedScope = destructured
                     ? merge(elementScope, localScope)
@@ -100,9 +109,32 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         const notify = async () => await ParallelWorker.run(task);
 
-        this.subscription = tryObserveByDirective(this.scope, this.directive, { notify }, true);
+        this.subscription = tryObserveByObservable(this.scope, this.directive, { notify }, true);
 
         this.fireAsync(notify);
+    }
+
+    private onKeyChange(): void
+    {
+        if (this.key)
+        {
+            this.metadata.defaults.delete(this.key);
+            this.metadata.placeholders.delete(this.key);
+        }
+
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
+
+        this.metadata.defaults.set(this.key, this.applyLazyInjection.bind(this));
+        this.metadata.placeholders.set(this.key, this.inject.bind(this));
+
+        if (this.host.isConnected)
+        {
+            this.applyInjection();
+        }
+        else
+        {
+            this.applyLazyInjection();
+        }
     }
 
     private task(): void
@@ -129,9 +161,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         {
             this.currentDisposable?.dispose();
 
+            this.keySubscription.unsubscribe();
             this.subscription!.unsubscribe();
 
-            this.metadata.injectors.delete(this.key);
+            this.metadata.defaults.delete(this.key);
+            this.metadata.placeholders.delete(this.key);
 
             this.removeInRange(this.start, this.end);
 

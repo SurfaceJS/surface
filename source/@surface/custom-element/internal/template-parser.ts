@@ -304,7 +304,7 @@ export default class TemplateParser
                         ? Expression.literal(rawKey)
                         : this.tryParseExpression(parseExpression, dinamicKey, rawKeyExpression);
 
-                    const expression     = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
+                    const expression     = this.tryParseExpression(parseExpression, attribute.value || "undefined", rawExpression);
                     const keyObservables = ObserverVisitor.observe(keyExpression);
                     const observables    = ObserverVisitor.observe(expression);
 
@@ -478,18 +478,19 @@ export default class TemplateParser
 
             const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.raw);
 
-            const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const descriptor  = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const observables = ObserverVisitor.observe(right);
 
             const loopDescriptor: ILoopDirective =
             {
                 descriptor,
                 left,
+                observables,
                 operator,
                 right,
                 stackTrace,
-                observables: ObserverVisitor.observe(right),
-                path:        this.getPath(),
-                rawExpression:         directive.raw,
+                path:          this.getPath(),
+                rawExpression: directive.raw,
             };
 
             this.templateDescriptor.directives.loops.push(loopDescriptor);
@@ -500,21 +501,23 @@ export default class TemplateParser
         {
             const { key, raw, rawKey, value } = directive;
 
-            const keyExpression = this.tryParseExpression(parseExpression, key, rawKey);
-            const expression    = this.tryParseExpression(parseExpression, `${value || "({ })"}`, raw);
-            const observables   = ObserverVisitor.observe(expression).concat(ObserverVisitor.observe(keyExpression));
-            const descriptor    = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
+            const expression     = this.tryParseExpression(parseExpression, `${value || "undefined"}`, raw);
+            const keyObservables = ObserverVisitor.observe(keyExpression);
+            const observables    = ObserverVisitor.observe(expression);
+            const descriptor     = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
             const injectionDescriptor: IPlaceholderDirective =
             {
                 descriptor,
                 expression,
                 keyExpression,
+                keyObservables,
                 observables,
-                rawExpression: raw,
-                rawKeyExpression: rawKey,
                 stackTrace,
-                path: this.getPath(),
+                rawExpression:    raw,
+                rawKeyExpression: rawKey,
+                path:             this.getPath(),
             };
 
             this.templateDescriptor.directives.placeholders.push(injectionDescriptor);
@@ -529,7 +532,8 @@ export default class TemplateParser
 
             const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
             const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, raw) as IPattern|IIdentifier;
-            const observables    = ObserverVisitor.observe(pattern).concat(ObserverVisitor.observe(keyExpression));
+            const keyObservables = ObserverVisitor.observe(keyExpression);
+            const observables    = ObserverVisitor.observe(pattern);
 
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
@@ -537,12 +541,13 @@ export default class TemplateParser
             {
                 descriptor,
                 keyExpression,
+                keyObservables,
                 observables,
                 pattern,
-                rawExpression: raw,
-                rawKeyExpression: rawKey,
                 stackTrace,
-                path: this.getPath(),
+                rawExpression:    raw,
+                rawKeyExpression: rawKey,
+                path:             this.getPath(),
             };
 
             this.templateDescriptor.directives.injections.push(injectionDescriptor);

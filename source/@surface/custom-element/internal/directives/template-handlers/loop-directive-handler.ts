@@ -1,7 +1,7 @@
 import { merge, Action2, IDisposable, Nullable }                            from "@surface/core";
 import { TypeGuard }                                                        from "@surface/expression";
 import { ISubscription }                                                    from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByDirective } from "../../common";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                       from "../../interfaces/directives/loop-directive";
 import ParallelWorker                                                       from "../../parallel-worker";
 import { Scope }                                                            from "../../types";
@@ -42,7 +42,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
-        this.subscription = tryObserveByDirective(scope, directive, { notify }, true);
+        this.subscription = tryObserveByObservable(scope, directive, { notify }, true);
 
         super.fireAsync(notify);
     }

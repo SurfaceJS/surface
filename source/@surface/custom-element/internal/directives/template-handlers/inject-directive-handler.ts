@@ -1,21 +1,25 @@
-import { IDisposable }                                  from "@surface/core";
-import { ISubscription }                                from "@surface/reactive";
-import TemplateDirectiveHandler                         from ".";
-import { tryEvaluateExpression, tryObserveByDirective } from "../../common";
-import IInjectDirective                                 from "../../interfaces/directives/inject-directive";
-import TemplateMetadata                                 from "../../metadata/template-metadata";
-import { Scope }                                        from "../../types";
+import { ISubscription }        from "@surface/reactive";
+import TemplateDirectiveHandler from ".";
+import
+{
+    tryEvaluateKeyExpressionByTraceable,
+    tryObserveByObservable,
+    tryObserveKeyByObservable
+} from "../../common";
+import IInjectDirective from "../../interfaces/directives/inject-directive";
+import TemplateMetadata from "../../metadata/template-metadata";
+import { Scope }        from "../../types";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive: IInjectDirective;
-    private readonly metadata:  TemplateMetadata;
-    private readonly template:  HTMLTemplateElement;
+    private readonly directive:       IInjectDirective;
+    private readonly keySubscription: ISubscription;
+    private readonly metadata:        TemplateMetadata;
+    private readonly subscription:    ISubscription;
+    private readonly template:        HTMLTemplateElement;
 
-    private currentDisposable: IDisposable|null   = null;
-    private disposed:          boolean            = false;
-    private key:               string;
-    private subscription:      ISubscription|null = null;
+    private disposed: boolean = false;
+    private key:      string  = "";
 
     public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective)
     {
@@ -24,44 +28,53 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
         this.template  = template;
         this.directive = directive;
         this.metadata  = TemplateMetadata.from(context);
-        this.key       = `${directive.keyExpression.evaluate(scope)}`;
-
-        const notify = this.task.bind(this);
-
-        this.subscription = tryObserveByDirective(scope, directive, { notify }, true);
-
-        notify();
 
         template.remove();
+
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.task.bind(this) }, true);
+        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.task.bind(this) }, true);
+
+        this.task();
     }
 
     private task(): void
     {
-        this.currentDisposable?.dispose();
+        if (this.disposed)
+        {
+            return;
+        }
 
-        this.key = `${tryEvaluateExpression(this.scope, this.directive.keyExpression, this.directive.rawKeyExpression, this.directive.stackTrace)}`;
+        this.disposeCurrentInjection();
 
-        const action = this.metadata.injectors.get(this.key);
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
+
+        this.metadata.injections.set(this.key, { scope: this.scope, template: this.template, directive: this.directive, context: this.context, host: this.host });
+
+        const action = this.metadata.placeholders.get(this.key);
 
         if (action)
         {
             action(this.scope, this.context, this.host, this.template, this.directive);
         }
-        else
-        {
-            this.metadata.injections.set(this.key, { scope: this.scope, template: this.template, directive: this.directive, context: this.context, host: this.host });
-        }
+    }
 
-        this.currentDisposable = { dispose: () => (this.metadata.injections.delete(this.key), this.metadata.defaults.get(this.key)?.()) };
+    private disposeCurrentInjection(): void
+    {
+        if (this.key)
+        {
+            this.metadata.injections.delete(this.key);
+            this.metadata.defaults.get(this.key)?.();
+        }
     }
 
     public dispose(): void
     {
         if (!this.disposed)
         {
-            this.currentDisposable?.dispose();
+            this.disposeCurrentInjection();
 
-            this.subscription!.unsubscribe();
+            this.keySubscription.unsubscribe();
+            this.subscription.unsubscribe();
 
             this.disposed = true;
         }

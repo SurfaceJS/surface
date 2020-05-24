@@ -73,7 +73,8 @@ const getHost = <T = { }>() =>
     return host as unknown as XComponent & { shadowRoot: ShadowRoot } & T;
 };
 
-const render = async () => await ParallelWorker.done();
+const timeout = async () => await new Promise(x => setTimeout(x, 0));
+const render  = async () => await ParallelWorker.done();
 
 // declare var chai: never;
 
@@ -386,7 +387,26 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectDirective(): Promise<void>
+    public async templateWithPlaceholderDirectiveWithDefault(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        root.shadowRoot.appendChild(host);
+
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items>Default</template><span>!!!</span>";
+
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
+
+        await new Promise(x => window.setTimeout(x));
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
+    }
+
+    @test @shouldPass
+    public async templateWithInjectAndPlaceholderDirective(): Promise<void>
     {
         const root = getHost();
         const host = getHost();
@@ -408,7 +428,108 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithInjectAndPlaceholderDirective(): Promise<void>
+    public async templateWithDynamicInjectAndPlaceholderDirective(): Promise<void>
+    {
+        const root = getHost<{ injectKey: string }>();
+        const host = getHost<{ placeholderKey: string }>();
+
+        root.injectKey = "";
+        host.placeholderKey = "key-a";
+
+        host.shadowRoot.innerHTML = "<template #placeholder #placeholder-key='host.placeholderKey'>Placeholder Key: {host.placeholderKey}</template>";
+        host.innerHTML            = "<template #inject #inject-key='host.injectKey'>Inject Key: {host.injectKey}</template>";
+
+        root.shadowRoot.appendChild(host);
+
+        // document.body.append(root);
+
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
+
+        await timeout();
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+
+        root.injectKey = "key-a";
+
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
+
+        root.injectKey = "key-b";
+
+        await timeout();
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+
+        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+
+        root.injectKey = "key-a";
+        host.placeholderKey = "key-b";
+
+        await timeout();
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
+
+        host.placeholderKey = "key-a";
+
+        await timeout();
+        await render();
+
+        assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
+    }
+
+    @test @shouldPass
+    public async templateWithInjectAndPlaceholderDirectiveFowarding(): Promise<void>
+    {
+        const root      = getHost();
+        const host      = getHost();
+        const childHost = getHost<{ item?: [string, number] }>();
+
+        childHost.shadowRoot.innerHTML =
+        `
+            <template #placeholder:items2="({ item: host.item })">
+                <span>Placeholder 2</span>
+            </template>
+        `;
+
+        childHost.innerHTML =
+        `
+            <template #inject:items2="{ item }">
+                <template #placeholder:items1="({ item })">
+                    <span>Placeholder 1</span>
+                </template>
+            </template>
+        `;
+
+        host.innerHTML =
+        `
+            <template #inject:items1="{ item }">
+                <span>{item[0]}: {item[1]}</span>
+            </template>
+        `;
+
+
+        host.shadowRoot.appendChild(childHost);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        childHost.item = ["Value", 1];
+
+        process(childHost, childHost.shadowRoot);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
+
+        await render();
+
+        assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
+    }
+
+    @test @shouldPass
+    public async templateWithInjectAndPlaceholderDirectiveWithScope(): Promise<void>
     {
         const root = getHost();
         const host = getHost<{ item?: { value: string } }>();
@@ -433,25 +554,6 @@ export default class TemplateProcessorSpec
         await render();
 
         assert.equal(host.shadowRoot.textContent, "Hello World!!!");
-    }
-
-    @test @shouldPass
-    public async templateWithPlaceholderDirectiveWithDefault(): Promise<void>
-    {
-        const root = getHost();
-        const host = getHost();
-
-        root.shadowRoot.appendChild(host);
-
-        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items>Default</template><span>!!!</span>";
-
-        process(host, host.shadowRoot);
-        process(root, root.shadowRoot);
-
-        await new Promise(x => window.setTimeout(x));
-        await render();
-
-        assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
     }
 
     @test @shouldPass
@@ -507,52 +609,6 @@ export default class TemplateProcessorSpec
 
         assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
         assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Three: 3");
-    }
-
-    @test @shouldPass
-    public async templateWithInjectAndPlaceholderDirectives(): Promise<void>
-    {
-        const root      = getHost();
-        const host      = getHost();
-        const childHost = getHost<{ item?: [string, number] }>();
-
-        childHost.shadowRoot.innerHTML =
-        `
-            <template #placeholder:items2="({ item: host.item })">
-                <span>Placeholder 2</span>
-            </template>
-        `;
-
-        childHost.innerHTML =
-        `
-            <template #inject:items2="{ item }">
-                <template #placeholder:items1="({ item })">
-                    <span>Placeholder 1</span>
-                </template>
-            </template>
-        `;
-
-        host.innerHTML =
-        `
-            <template #inject:items1="{ item }">
-                <span>{item[0]}: {item[1]}</span>
-            </template>
-        `;
-
-
-        host.shadowRoot.appendChild(childHost);
-        root.shadowRoot.appendChild(host);
-        document.body.appendChild(root);
-
-        childHost.item = ["Value", 1];
-
-        process(childHost, childHost.shadowRoot);
-        process(host, host.shadowRoot);
-        process(root, root.shadowRoot);
-
-        await render();
-
-        assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
     }
 
     @test @shouldPass
@@ -1181,6 +1237,7 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
+
     @test @shouldFail
     public async evaluationErrorLoopDirective(): Promise<void>
     {
@@ -1238,6 +1295,22 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
+    public async evaluationPlaceholderKeyDirective(): Promise<void>
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<h1>Title</h1><template #placeholder #placeholder-key='key'></template>";
+
+        const message = "Evaluation error in #placeholder-key=\"key\": key is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #placeholder #placeholder-key=\"key\">";
+
+        const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
     public async evaluationErrorInjectDirective(): Promise<void>
     {
         const root = getHost();
@@ -1262,13 +1335,37 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
+    public async evaluationErrorInjectKeyDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject #inject-key='key'></template>";
+
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder></template></div>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        process(host, host.shadowRoot);
+
+        const message = "Evaluation error in #inject-key=\"key\": key is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"key\">";
+
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
     public bindingErrorOneWayReadonlyProperty(): void
     {
         const host = getHost();
 
         host.shadowRoot.innerHTML = "<span :node-type='host.value'></span>";
 
-        const message = "Binding error in :node-type=\"host.value\": Property nodeType of <span> is readonly";
+        const message = "Binding error in :node-type=\"host.value\": Property \"nodeType\" of <span> is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span :node-type=\"host.value\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
@@ -1284,7 +1381,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span #if='true' :node-type='host.value'></span>";
 
-        const message = "Binding error in :node-type=\"host.value\": Property nodeType of <span> is readonly";
+        const message = "Binding error in :node-type=\"host.value\": Property \"nodeType\" of <span> is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
@@ -1302,7 +1399,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span ::value='host.value'></span>";
 
-        const message = "Binding error in ::value=\"host.value\": Property value of XComponent is readonly";
+        const message = "Binding error in ::value=\"host.value\": Property \"value\" of XComponent is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span ::value=\"host.value\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
@@ -1320,7 +1417,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span #for='const letter in host.nodeName' #if='true' ::value='host.value'></span>";
 
-        const message = "Binding error in ::value=\"host.value\": Property value of XComponent is readonly";
+        const message = "Binding error in ::value=\"host.value\": Property \"value\" of XComponent is readonly";
         const stack   = "<x-component>\n   #shadow-root\n      <span #for=\"const letter in host.nodeName\" #if=\"true\" ::value=\"host.value\">";
 
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
@@ -1336,7 +1433,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span :name='host.value1'></span>";
 
-        const message = "Observation error in :name=\"host.value1\": Key value1 does not exists on type XComponent";
+        const message = "Observation error in :name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
         const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.value1\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
@@ -1352,7 +1449,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span ::name='host.value1'></span>";
 
-        const message = "Binding error in ::name=\"host.value1\": Property value1 does not exists on type XComponent";
+        const message = "Binding error in ::name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
         const stack   = "<x-component>\n   #shadow-root\n      <span ::name=\"host.value1\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
@@ -1368,7 +1465,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span name='value: {host.value1}'></span>";
 
-        const message = "Observation error in name=\"value: {host.value1}\": Key value1 does not exists on type XComponent";
+        const message = "Observation error in name=\"value: {host.value1}\": Property \"value1\" does not exists on type XComponent";
         const stack   = "<x-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
@@ -1384,8 +1481,180 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span>{host.value1}</span>";
 
-        const message = "Observation error in {host.value1}: Key value1 does not exists on type XComponent";
+        const message = "Observation error in {host.value1}: Property \"value1\" does not exists on type XComponent";
         const stack   = "<x-component>\n   #shadow-root\n      <span>\n         {host.value1}";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async observationErrorPlaceholderDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject></template>";
+
+        host.shadowRoot.innerHTML = "<template #placeholder:item=\"({ item: host.item })\"></template>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        const message = "Observation error in #placeholder:item=\"({ item: host.item })\": Property \"item\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"({ item: host.item })\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async observationErrorPlaceholderKeyDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject></template>";
+
+        host.shadowRoot.innerHTML = "<template #placeholder #placeholder-key=\"host.key\"></template>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        const message = "Observation error in #placeholder-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async observationErrorInjectDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject=\"{ item = host.item }\"></template>";
+
+        host.shadowRoot.innerHTML = "<template #placeholder></template>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        process(host, host.shadowRoot);
+
+        const message = "Observation error in #inject=\"{ item = host.item }\": Property \"item\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject=\"{ item = host.item }\">";
+
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public async observationErrorInjectKeyDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        host.innerHTML = "<template #inject #inject-key=\"host.key\"></template>";
+
+        host.shadowRoot.innerHTML = "<template #placeholder></template>";
+
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
+
+        process(host, host.shadowRoot);
+
+        const message = "Observation error in #inject-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"host.key\">";
+
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorChoiceDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<template #if=\"host.key\"></template>";
+
+        const message = "Observation error in #if=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #if=\"host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorLoopDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<template #for=\"const keys of host.key\"></template>";
+
+        const message = "Observation error in #for=\"const keys of host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #for=\"const keys of host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorOnKeyDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #on=\"x => x\" #on-key=\"host.key\"></span>";
+
+        const message = "Observation error in #on-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #on=\"x => x\" #on-key=\"host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorCustomDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #custom=\"host.key\"></span>";
+
+        const message = "Observation error in #custom=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public observationErrorCustomKeyDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<span #custom #custom-key=\"host.key\"></span>";
+
+        const message = "Observation error in #custom-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom #custom-key=\"host.key\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));

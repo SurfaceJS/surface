@@ -477,6 +477,6 @@ export default class ReactorSpec
     @test @shouldFail
     public makeReactiveInvalidKey(): void
     {
-        assert.throw(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo"), "Key foo does not exists on type Object");
+        assert.throw(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo"), "Property \"foo\" does not exists on type Object");
     }
 }

@@ -8,8 +8,8 @@ import
     createScope,
     styleMap,
     tryEvaluateExpression,
-    tryEvaluateExpressionByDirective,
-    tryObserveByDirective,
+    tryEvaluateExpressionByTraceable,
+    tryObserveByObservable,
 }
 from "./common";
 import DataBind                    from "./data-bind";
@@ -161,7 +161,7 @@ export default class TemplateProcessor
 
                     if (elementMember instanceof FieldInfo && elementMember.readonly)
                     {
-                        throw new TemplateProcessError(`Binding error in ${descriptor.rawExpression}: Property ${descriptor.key} of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
+                        throw new TemplateProcessError(`Binding error in ${descriptor.rawExpression}: Property "${descriptor.key}" of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
                     }
 
                     if (descriptor.type == "oneway")
@@ -175,15 +175,15 @@ export default class TemplateProcessor
                             element.setAttributeNode(attribute);
 
                             notify = descriptor.name == "class"
-                                ? () => attribute.value = classMap(tryEvaluateExpressionByDirective(scope, descriptor) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(tryEvaluateExpressionByDirective(scope, descriptor) as Record<string, boolean>);
+                                ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByDirective(scope, descriptor);
+                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
                         }
 
-                        let subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
+                        let subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
                         notify();
 
@@ -203,8 +203,8 @@ export default class TemplateProcessor
                         if (!targetMember || (targetMember instanceof FieldInfo && targetMember.readonly))
                         {
                             const message = targetMember
-                                ? `Binding error in ${descriptor.rawExpression}: Property ${targetProperty} of ${target.constructor.name} is readonly`
-                                : `Binding error in ${descriptor.rawExpression}: Property ${targetProperty} does not exists on type ${target.constructor.name}`;
+                                ? `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" of ${target.constructor.name} is readonly`
+                                : `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" does not exists on type ${target.constructor.name}`;
 
                             throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
@@ -216,9 +216,9 @@ export default class TemplateProcessor
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = () => attribute.value = `${(tryEvaluateExpressionByDirective(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+                    const notify = () => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
+                    let subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
                     subscriptions.push(subscription);
 
@@ -313,9 +313,9 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByDirective(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = tryObserveByDirective(scope, descriptor, { notify }, true);
+            const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
             subscriptions.push(subscription);
 

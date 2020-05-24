@@ -111,7 +111,7 @@ export function getKeyMember(target: Indexer, path: string|Array<string>): { key
         else
         {
             const typeName = target instanceof Function ? target.name : target.constructor.name;
-            throw new Error(`Member ${key} does not exist in type ${typeName}`);
+            throw new Error(`Property "${key}" does not exists on type ${typeName}`);
         }
     }
 

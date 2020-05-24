@@ -5,6 +5,8 @@ import DataBind                            from "./data-bind";
 import TemplateEvaluationError             from "./errors/template-evaluation-error";
 import TemplateObservationError            from "./errors/template-observation-error";
 import TemplateParseError                  from "./errors/template-parse-error";
+import IKeyValueObservable                 from "./interfaces/key-value-observable";
+import IKeyValueTraceable                  from "./interfaces/key-value-traceable";
 import IObservable                         from "./interfaces/observable";
 import ITraceable                          from "./interfaces/traceable";
 import { Observables, Scope, StackTrace }  from "./types";
@@ -91,9 +93,14 @@ export function tryEvaluateExpression(scope: Scope, expression: IExpression, raw
     }
 }
 
-export function tryEvaluateExpressionByDirective(scope: Scope, directive: { expression: IExpression } & ITraceable): unknown
+export function tryEvaluateExpressionByTraceable(scope: Scope, traceable: { expression: IExpression } & ITraceable): unknown
 {
-    return tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
+    return tryEvaluateExpression(scope, traceable.expression, traceable.rawExpression, traceable.stackTrace);
+}
+
+export function tryEvaluateKeyExpressionByTraceable(scope: Scope, traceable: { keyExpression: IExpression } & IKeyValueTraceable): unknown
+{
+    return tryEvaluateExpression(scope, traceable.keyExpression, traceable.rawKeyExpression, traceable.stackTrace);
 }
 
 export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
@@ -110,9 +117,9 @@ export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unkno
     }
 }
 
-export function tryEvaluatePatternByDirective(scope: Scope, value: unknown, directive: { pattern: IPattern } & ITraceable): Indexer
+export function tryEvaluatePatternByTraceable(scope: Scope, value: unknown, traceable: { pattern: IPattern } & ITraceable): Indexer
 {
-    return tryEvaluatePattern(scope, directive.pattern, value, directive.rawExpression, directive.stackTrace);
+    return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }
 
 export function tryObserve(scope: Scope, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
@@ -129,9 +136,14 @@ export function tryObserve(scope: Scope, observables: Observables, listener: ILi
     }
 }
 
-export function tryObserveByDirective(scope: Scope, directive: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveByObservable(scope: Scope, observable: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
 {
-    return tryObserve(scope, directive.observables, listener, directive.rawExpression, directive.stackTrace, lazy);
+    return tryObserve(scope, observable.observables, listener, observable.rawExpression, observable.stackTrace, lazy);
+}
+
+export function tryObserveKeyByObservable(scope: Scope, observable: IKeyValueObservable & IKeyValueTraceable, listener: IListener, lazy?: boolean): ISubscription
+{
+    return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
 }
 
 export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>

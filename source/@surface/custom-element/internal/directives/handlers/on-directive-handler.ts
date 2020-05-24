@@ -1,12 +1,17 @@
-import { Action1, IDisposable }                                from "@surface/core";
-import { TypeGuard }                                           from "@surface/expression";
-import { ISubscription }                                       from "@surface/reactive";
-import { throwTemplateEvaluationError, tryEvaluateExpression } from "../../common";
-import DataBind                                                from "../../data-bind";
-import ICustomDirective                                        from "../../interfaces/directives/custom-directive";
-import { Scope }                                               from "../../types";
+import { Action1, IDisposable } from "@surface/core";
+import { TypeGuard }            from "@surface/expression";
+import { ISubscription }        from "@surface/reactive";
+import
+{
+    throwTemplateEvaluationError,
+    tryEvaluateExpression,
+    tryEvaluateKeyExpressionByTraceable,
+    tryObserveKeyByObservable
+} from "../../common";
+import ICustomDirective from "../../interfaces/directives/custom-directive";
+import { Scope }        from "../../types";
 
-export default class EventDirectiveHandler implements IDisposable
+export default class OnDirectiveHandler implements IDisposable
 {
     private readonly action:       Action1<Event>;
     private readonly element:      Element;
@@ -19,9 +24,9 @@ export default class EventDirectiveHandler implements IDisposable
         this.element = element;
         this.action  = this.evaluate(scope, directive);
 
-        const notify = () => this.keyHandler(`${tryEvaluateExpression(scope, directive.keyExpression, directive.rawExpression, directive.stackTrace)}`);
+        const notify = () => this.keyHandler(`${tryEvaluateKeyExpressionByTraceable(scope, directive)}`);
 
-        this.subscription = DataBind.observe(scope, directive.keyObservables, { notify }, false);
+        this.subscription = tryObserveKeyByObservable(scope, directive, { notify }, false);
 
         notify();
     }
@@ -43,7 +48,6 @@ export default class EventDirectiveHandler implements IDisposable
             this.key = key;
         }
     }
-
 
     private evaluate(scope: Scope, directive: ICustomDirective): Action1<Event>
     {

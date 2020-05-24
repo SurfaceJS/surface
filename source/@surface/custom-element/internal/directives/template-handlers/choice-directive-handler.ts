@@ -1,6 +1,6 @@
 import { assert, IDisposable }                          from "@surface/core";
 import { ISubscription }                                from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByDirective } from "../../common";
+import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                           from "../../interfaces/directives/choice-branch-directive";
 import ParallelWorker                                   from "../../parallel-worker";
 import { Scope }                                        from "../../types";
@@ -45,7 +45,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             const branche  = branches[index];
             const template = templates[index];
 
-            this.subscriptions.push(tryObserveByDirective(scope, branche, listener, true));
+            this.subscriptions.push(tryObserveByObservable(scope, branche, listener, true));
 
             this.choices.push({ branche, template });
 

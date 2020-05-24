@@ -132,7 +132,7 @@ export default class Reactor implements IDisposable
         }
         else if (!member)
         {
-            throw new Error(`Key ${key} does not exists on type ${target.constructor.name}`);
+            throw new Error(`Property "${key}" does not exists on type ${target.constructor.name}`);
         }
 
         return metadata.reactor;
