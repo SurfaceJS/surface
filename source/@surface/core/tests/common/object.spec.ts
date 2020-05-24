@@ -1,6 +1,6 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import { Indexer }                             from "../..";
+import { Indexer }                             from "../../internal/types";
 import
 {
     deepMerge,

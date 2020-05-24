@@ -381,7 +381,7 @@ export default class TemplateParser
         }
     }
 
-    private parseTemplateDirectives(element: Element): void
+    private parseTemplateDirectives(element: Element, nonElementsCount: number): void
     {
         const template = this.decomposeDirectives(element);
 
@@ -402,9 +402,9 @@ export default class TemplateParser
                 descriptor,
                 expression,
                 stackTrace,
-                observables: ObserverVisitor.observe(expression),
-                path:        this.getPath(),
-                rawExpression:         directive.raw,
+                observables:   ObserverVisitor.observe(expression),
+                path:          this.getPath(),
+                rawExpression: directive.raw,
             };
 
             branches.push(conditionalBranchDescriptor);
@@ -421,7 +421,8 @@ export default class TemplateParser
                 .take(template.parentNode!.childNodes.length - lastIndex)
                 .toArray();
 
-            let index = 0;
+            let nodeIndex    = 0;
+            let elementIndex = lastIndex - nonElementsCount;
 
             while (nextElementSibling && contains(nextElementSibling.getAttributeNames(), [DirectiveType.ElseIf, DirectiveType.Else]))
             {
@@ -431,15 +432,13 @@ export default class TemplateParser
 
                 const value = simblingDirective.type == DirectiveType.Else ? "true" : simblingDirective.value;
 
-                index = parentChildNodes.indexOf(nextElementSibling);
+                nodeIndex = parentChildNodes.indexOf(nextElementSibling);
 
-                const currentIndex = index + lastIndex;
-
-                this.indexStack.push(currentIndex);
+                this.indexStack.push(nodeIndex + lastIndex);
 
                 if (!this.hasDecomposed(nextElementSibling))
                 {
-                    this.pushToStack(nextElementSibling, currentIndex);
+                    this.pushToStack(nextElementSibling, ++elementIndex);
                 }
 
                 const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
@@ -449,10 +448,10 @@ export default class TemplateParser
                 {
                     descriptor,
                     expression,
-                    observables: ObserverVisitor.observe(expression),
-                    path:        this.getPath(),
-                    rawExpression:         simblingDirective.raw,
-                    stackTrace:  [...this.stackTrace],
+                    observables:   ObserverVisitor.observe(expression),
+                    path:          this.getPath(),
+                    rawExpression: simblingDirective.raw,
+                    stackTrace:    [...this.stackTrace],
                 };
 
                 branches.push(conditionalBranchDescriptor);
@@ -465,7 +464,7 @@ export default class TemplateParser
                 this.stackTrace.pop();
             }
 
-            this.offsetIndex = index;
+            this.offsetIndex = nodeIndex;
 
             this.indexStack.push(lastIndex);
             this.stackTrace.push(lastStack);
@@ -628,6 +627,8 @@ export default class TemplateParser
 
     private traverseNode(node: Node): void
     {
+        let nonElementsCount = 0;
+
         for (let index = 0; index < node.childNodes.length; index++)
         {
             const childNode = node.childNodes[index];
@@ -638,7 +639,7 @@ export default class TemplateParser
 
                 if (!this.hasDecomposed(childNode))
                 {
-                    this.pushToStack(childNode, index);
+                    this.pushToStack(childNode, index - nonElementsCount);
                 }
 
                 if (typeGuard<Element>(childNode, childNode.nodeType == Node.ELEMENT_NODE))
@@ -657,7 +658,7 @@ export default class TemplateParser
                     {
                         this.offsetIndex = 0;
 
-                        this.parseTemplateDirectives(childNode);
+                        this.parseTemplateDirectives(childNode, nonElementsCount);
 
                         index += this.offsetIndex;
 
@@ -674,12 +675,18 @@ export default class TemplateParser
                 else
                 {
                     this.parseTextNode(childNode as Text);
+
+                    nonElementsCount++;
                 }
 
                 this.traverseNode(childNode);
 
                 this.indexStack.pop();
                 this.stackTrace.pop();
+            }
+            else
+            {
+                nonElementsCount++;
             }
         }
     }
@@ -696,7 +703,7 @@ export default class TemplateParser
             assert(error instanceof Error);
 
             const message = `Parsing error in ${rawExpression}: ${error.message}`
-                + (error instanceof SyntaxError ? `in at position ${error.index}` : "");
+                + (error instanceof SyntaxError ? ` at position ${error.index}` : "");
 
             throwTemplateParseError(message, this.stackTrace);
         }

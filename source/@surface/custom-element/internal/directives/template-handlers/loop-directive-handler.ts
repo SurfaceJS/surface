@@ -1,11 +1,11 @@
-import { merge, Action2, IDisposable, Nullable }                            from "@surface/core";
-import { TypeGuard }                                                        from "@surface/expression";
-import { ISubscription }                                                    from "@surface/reactive";
+import { Action2, IDisposable, Nullable }                                    from "@surface/core";
+import { TypeGuard }                                                         from "@surface/expression";
+import { ISubscription }                                                     from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
-import ILoopDirective                                                       from "../../interfaces/directives/loop-directive";
-import ParallelWorker                                                       from "../../parallel-worker";
-import { Scope }                                                            from "../../types";
-import TemplateDirectiveHandler                                             from "./";
+import ILoopDirective                                                        from "../../interfaces/directives/loop-directive";
+import ParallelWorker                                                        from "../../parallel-worker";
+import { Scope }                                                             from "../../types";
+import TemplateDirectiveHandler                                              from "./";
 
 type Cache = { start: Comment, end: Comment, value: unknown, disposable: IDisposable };
 
@@ -52,8 +52,8 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         if (index >= this.cache.length || !Object.is(this.cache[index].value, value))
         {
             const mergedScope = TypeGuard.isIdentifier(this.directive.left)
-                ? merge(this.scope, Object.defineProperty({ }, this.directive.left.name, { value, enumerable: true, writable: false }))
-                : merge(tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace), this.scope);
+                ? { ...this.scope, [this.directive.left.name]: value }
+                : { ...this.scope, ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
 
             const start = document.createComment("");
             const end   = document.createComment("");

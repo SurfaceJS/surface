@@ -9,6 +9,7 @@ import
     Nullable
 } from "@surface/core";
 import Reactive, { ISubscription } from "@surface/reactive";
+import { createHostScope }         from "./common";
 import ICustomElement              from "./interfaces/custom-element";
 import Metadata                    from "./metadata/metadata";
 import PrototypeMetadata           from "./metadata/prototype-metadata";
@@ -210,7 +211,7 @@ export function element(name: string, template?: string, style?: string, options
 
         const action = (instance: InstanceType<T> & ICustomElement) =>
         {
-            TemplateProcessor.process({ scope: Object.defineProperty({ }, "host", { value: instance, enumerable: true, writable: false }), host: instance, root: instance.shadowRoot, descriptor });
+            TemplateProcessor.process({ scope: createHostScope(instance), host: instance, root: instance.shadowRoot, descriptor });
 
             instance.bindedCallback?.();
 

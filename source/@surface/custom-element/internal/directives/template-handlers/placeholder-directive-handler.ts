@@ -1,7 +1,7 @@
-import { assert, merge, Indexer, IDisposable } from "@surface/core";
-import { TypeGuard }                           from "@surface/expression";
-import { ISubscription }                       from "@surface/reactive";
-import TemplateDirectiveHandler                from ".";
+import { assert, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                    from "@surface/expression";
+import { ISubscription }                from "@surface/reactive";
+import TemplateDirectiveHandler         from ".";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -92,12 +92,12 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
                 let destructured = false;
 
                 const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
-                    ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), injectDirective), scopeAlias: "" }
+                    ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), injectDirective), scopeAlias: "__scope__" }
                     : { elementScope: tryEvaluateExpressionByTraceable(this.scope, this.directive) as Indexer, scopeAlias: injectDirective.pattern.name };
 
                 const mergedScope = destructured
-                    ? merge(elementScope, localScope)
-                    : merge(Object.defineProperty({ }, scopeAlias, { value: elementScope, enumerable: true, writable: false }), localScope);
+                    ? { ...elementScope, ...localScope }
+                    : { [scopeAlias]: elementScope, ...localScope };
 
                 const [content, disposable] = this.processTemplate(mergedScope, context, host, template, injectDirective.descriptor);
 

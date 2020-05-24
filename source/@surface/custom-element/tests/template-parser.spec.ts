@@ -52,44 +52,24 @@ export default class TemplateParserSpec
 
         template.innerHTML =
         [
-            "<span value='Hello {host.name}' #on:click='host.handler' ::value-a='host.value' :value-b='host.x + host.y'>",
-            "Some {'interpolation'} here",
-            "</span>",
-            "<span #inject>",
-            "Empty",
-            "</span>",
-            "<span #inject:title='{ title }'>",
-            "<h1>{title}</h1>",
-            "</span>",
-            "<span #inject='{ title }' #inject-key='host.dynamicInjectKey'>",
-            "<h1>{title}</h1>",
-            "</span>",
+            "<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
+            "<span #inject>Empty</span>",
+            "<span #inject:title=\"{ title }\"><h1>{title}</h1></span>",
+            "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
             "<hr>",
-            "<span #if='host.status == 1'>",
-            "Active",
-            "</span>",
-            "<span #else-if='host.status == 2'>",
-            "Waiting",
-            "</span>",
-            "<span #else>",
-            "Suspended",
-            "</span>",
-            "<span #placeholder>",
-            "Default Empty",
-            "</span>",
-            "<span #placeholder:value='({ name: host.name })'>",
-            "Default {name}",
-            "</span>",
-            "<span #placeholder='({ name: host.name })' #placeholder-key='host.dynamicPlaceholderKey'>",
-            "Default {name}",
-            "</span>",
+            "<span #if=\"host.status == 1\">Active</span>",
+            "<span #else-if=\"host.status == 2\">Waiting</span>",
+            "<span #else>Suspended</span>",
+            "<span #placeholder>Default Empty</span>",
+            "<span #placeholder:value=\"({ name: host.name })\">Default {name}</span>",
+            "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">Default {name}</span>",
             "<table>",
-            "<tr #on='host.handler' #on-key='host.dynamicOnKey'>",
+            "<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">",
             "<th>Id</th>",
             "<th>Name</th>",
             "<th>Status</th>",
             "</tr>",
-            "<tr onclick='fn({ clicked })' #for='const item of host.items'>",
+            "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">",
             "<td>{item.id}</td>",
             "<td>{item.name}</td>",
             "<td>{item.status}</td>",
@@ -834,7 +814,7 @@ export default class TemplateParserSpec
     }
 
     @shouldFail @test
-    public InvalidTwoWayDataBind(): void
+    public invalidTwoWayDataBind(): void
     {
         const template = document.createElement("template");
 
@@ -850,7 +830,7 @@ export default class TemplateParserSpec
     }
 
     @shouldFail @test
-    public InvalidTwoWayDataBindWithDinamicProperty(): void
+    public invalidTwoWayDataBindWithDinamicProperty(): void
     {
         const template = document.createElement("template");
 
@@ -866,7 +846,7 @@ export default class TemplateParserSpec
     }
 
     @shouldFail @test
-    public InvalidTwoWayDataBindWithOptionalProperty(): void
+    public invalidTwoWayDataBindWithOptionalProperty(): void
     {
         const template = document.createElement("template");
 
@@ -882,7 +862,7 @@ export default class TemplateParserSpec
     }
 
     @shouldFail @test
-    public InvalidForDirective(): void
+    public errorParsingForDirective(): void
     {
         const template = document.createElement("template");
 
@@ -891,7 +871,37 @@ export default class TemplateParserSpec
         const message = "Parsing error in #for=\"x item of items\": Unexpected token item at position 2";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #placeholder:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
-        // TemplateParser.parse("x-component", template);
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public errorParsingIfDirective(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span #if='class'></span>";
+
+        const message = "Parsing error in #if=\"class\": Unexpected token class at position 0";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"class\">";
+
+        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public errorParsingElseIfDirective(): void
+    {
+        const template = document.createElement("template");
+
+        template.innerHTML = "<span #if='true'></span><span #else-if='class'></span>";
+
+        const message = "Parsing error in #else-if=\"class\": Unexpected token class at position 0";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"class\">";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -904,10 +914,10 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #for='const item of items'></span><span #else-if></span>";
+        template.innerHTML = "<span #if='true'></span><span #for='const item of items'></span><span #else-if></span>";
 
         const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
-        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if>";
+        const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else-if>";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
@@ -920,10 +930,10 @@ export default class TemplateParserSpec
     {
         const template = document.createElement("template");
 
-        template.innerHTML = "<span #for='const item of items'></span><span #else></span>";
+        template.innerHTML = "<span #if='true'></span><span #for='const item of items'></span><span #else></span>";
 
         const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
-        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else>";
+        const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else>";
 
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));

@@ -23,19 +23,27 @@ function buildStackTrace(stackTrace: StackTrace): string
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
 }
 
-export function createScope(scope: Indexer): Indexer
+export function createHostScope(host: HTMLElement): Scope
 {
-    const properties =
-    {
-        $class: { value: classMap, writable: false, enumerable: true },
-        $style: { value: styleMap, writable: false, enumerable: true },
-    };
+    return { host, $class: classMap, $style: styleMap };
+}
 
-    Object.defineProperties(scope, properties);
-
+export function createScope(scope: Scope): Scope
+{
     const handler: ProxyHandler<Indexer> =
     {
         get: (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
+        set: (target, key, value) =>
+        {
+            if (typeof key == "symbol")
+            {
+                (target)[key as unknown as string] = value;
+
+                return true;
+            }
+
+            throw new ReferenceError(`Assignment to constant variable "${String(key)}"`);
+        },
         has: (target, key) => key in target || key in windowWrapper,
         getOwnPropertyDescriptor: (target, key) =>
             Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)

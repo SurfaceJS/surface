@@ -58,9 +58,9 @@ export default class Hashcode
 
                 for (const key of enumerateKeys(source))
                 {
-                    const value = (source as Indexer)[key];
+                    const value = (source as Indexer)[String(key)];
 
-                    signature = signature ? `${signature},${key}:${this.getSignature(value)}` : `${key}:${this.getSignature(value)}`;
+                    signature = signature ? `${signature},${String(key)}:${this.getSignature(value)}` : `${String(key)}:${this.getSignature(value)}`;
                 }
 
                 this.references.splice(this.references.indexOf(source));

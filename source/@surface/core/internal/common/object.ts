@@ -1,6 +1,6 @@
-import Hashcode                                                     from "../hashcode";
+import Hashcode                                                   from "../hashcode";
 import { Combine, Constructor, Func1, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                        from "./generic";
+import { assert, typeGuard }                                      from "./generic";
 
 function internalDeepMerge(sources: Array<Indexer>, combineArrays: boolean): Indexer
 {
@@ -23,16 +23,16 @@ function internalDeepMerge(sources: Array<Indexer>, combineArrays: boolean): Ind
                 {
                     descriptor.value = internalDeepMerge([targetValue, currentValue], combineArrays);
 
-                    Object.defineProperty(target, key, { ...descriptor });
+                    Reflect.defineProperty(target, key, { ...descriptor });
                 }
                 else
                 {
-                    Object.defineProperty(target, key, descriptor);
+                    Reflect.defineProperty(target, key, descriptor);
                 }
             }
             else
             {
-                Object.defineProperty(target, key, descriptor);
+                Reflect.defineProperty(target, key, descriptor);
             }
         }
     }
@@ -62,9 +62,9 @@ export function clone(source: Indexer): Indexer
     }
     else
     {
-        const prototype: Indexer = Object.create(Object.getPrototypeOf(source));
+        const prototype: Indexer = Object.create(Reflect.getPrototypeOf(source));
 
-        for (const key of Object.getOwnPropertyNames(source))
+        for (const key of Reflect.ownKeys(source) as Array<string|number>)
         {
             const value = source[key];
 
@@ -159,7 +159,10 @@ export function merge<T extends Array<object>>(...sources: T): MergeList<T>
 
     for (const source of sources)
     {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+        for (const key of Reflect.ownKeys(source))
+        {
+            Reflect.defineProperty(target, key, Reflect.getOwnPropertyDescriptor(source, key)!);
+        }
     }
 
     return target as MergeList<T>;
@@ -225,7 +228,7 @@ export function overrideConstructor<T extends Constructor>(constructor: T, actio
         }
     }[constructor.name];
 
-    Object.setPrototypeOf(proxy, Object.getPrototypeOf(constructor));
+    Reflect.setPrototypeOf(proxy, Reflect.getPrototypeOf(constructor));
     Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(constructor));
 
     proxy.prototype.constructor = proxy;
@@ -233,7 +236,9 @@ export function overrideConstructor<T extends Constructor>(constructor: T, actio
     return proxy as unknown as T;
 }
 
-export function overrideProperty<T>(target: T, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
+const PRIVATES = Symbol("core:privates")
+
+export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
 {
     let propertyDescriptor: PropertyDescriptor;
 
@@ -274,36 +279,36 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
     }
     else
     {
-        const privateKey = typeof property == "string" ? `_${property.toString()}` : `${property.description}`;
+        const privates = target[PRIVATES] = target[PRIVATES] ?? { }
 
-        target[privateKey as keyof T] = target[property as keyof T];
+        privates[property as string] = target[property as keyof T];
 
         propertyDescriptor =
         {
             configurable: true,
             get(this: T & Indexer)
             {
-                return this[privateKey];
+                return privates[property as string];
             },
             set: beforeSetter
                 ? function(this: T & Indexer, value: unknown)
                 {
-                    const oldValue = this[privateKey];
+                    const oldValue = privates[property as string];
 
                     if (!Object.is(oldValue, value))
                     {
                         action(this, oldValue, value);
 
-                        (this as Indexer)[privateKey] = value;
+                        privates[property as string] = value;
                     }
                 }
                 : function(this: T & Indexer, value: unknown)
                 {
-                    const oldValue = this[privateKey];
+                    const oldValue = privates[property as string];
 
                     if (!Object.is(oldValue, value))
                     {
-                        (this as Indexer)[privateKey] = value;
+                        privates[property as string] = value;
 
                         action(this, oldValue, value);
                     }
@@ -311,7 +316,7 @@ export function overrideProperty<T>(target: T, property: string|symbol, action: 
         };
     }
 
-    Object.defineProperty(target, property, propertyDescriptor);
+    Reflect.defineProperty(target, property, propertyDescriptor);
 
     return propertyDescriptor;
 }
@@ -403,14 +408,14 @@ export function structuralEqual(left: unknown, right: unknown): boolean
     return left === right || Hashcode.encode(left) == Hashcode.encode(right);
 }
 
-export function *enumerateKeys(target: object): IterableIterator<string>
+export function *enumerateKeys(target: object): IterableIterator<string|number|symbol>
 {
     let prototype = target;
     do
     {
-        for (const key of Object.getOwnPropertyNames(prototype))
+        for (const key of Reflect.ownKeys(prototype))
         {
             yield key;
         }
-    } while ((prototype = Object.getPrototypeOf(prototype)) && prototype.constructor != Object);
+    } while ((prototype = Reflect.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }
