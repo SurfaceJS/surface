@@ -1,5 +1,3 @@
-import Enumerable from "../..";
-
 export default interface ILookup<TKey, TElement>
 {
     count:               number;

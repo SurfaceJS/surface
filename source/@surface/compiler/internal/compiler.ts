@@ -364,7 +364,7 @@ export default class Compiler
             },
             resolve:
             {
-                alias:      { tslib: path.resolve(__dirname, "./node_modules", "tslib") },
+                alias:      { tslib: path.resolve(__dirname, "../node_modules", "tslib") },
                 extensions: [".ts", ".js"],
                 modules:    [".", "node_modules", configuration.context],
                 plugins:    resolvePlugins,
@@ -375,8 +375,8 @@ export default class Compiler
                 [
                     "node_modules",
                     path.resolve(__dirname, "./loaders"),
-                    path.resolve(__dirname, "./node_modules"),
-                    path.resolve(__dirname, "./node_modules", "@surface")
+                    path.resolve(__dirname, "../node_modules"),
+                    path.resolve(__dirname, "../node_modules", "@surface")
                 ]
             },
         };

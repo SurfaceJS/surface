@@ -70,7 +70,7 @@
             }
         ],
         "curly":                     true,
-        "cyclomatic-complexity":     true,
+        "cyclomatic-complexity":     [true, 30],
         "deprecation":               true,
         "encoding":                  true,
         "indent":                    true,

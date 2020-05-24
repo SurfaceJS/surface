@@ -1,8 +1,11 @@
 import ArgumentOutOfRangeError from "./internal/errors/argument-out-of-range-error";
 import Hashcode                from "./internal/hashcode";
-import IDisposable             from "./internal/interfaces/disposable";
 
-export { ArgumentOutOfRangeError, Hashcode, IDisposable };
+import type IDisposable from "./internal/interfaces/disposable";
+
+export { ArgumentOutOfRangeError, Hashcode };
+
+export type { IDisposable };
 
 export type
 {

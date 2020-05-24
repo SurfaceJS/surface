@@ -1,9 +1,8 @@
-import { Nullable }  from "@surface/core";
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element";
-import View          from "@surface/view";
-import Enumerable    from "../enumerable";
-import template      from "./index.html";
+import { Nullable }               from "@surface/core";
+import CustomElement, { element } from "@surface/custom-element";
+import Enumerable                 from "@surface/enumerable";
+import View                       from "@surface/view";
+import template                   from "./index.html";
 
 @element("surface-view-host", template)
 export default class ViewHost extends CustomElement
