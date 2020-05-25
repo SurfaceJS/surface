@@ -10,15 +10,14 @@ import
     tryObserveByObservable,
     tryObserveKeyByObservable
 } from "../../common";
-import IInjectDirective      from "../../interfaces/directives/inject-directive";
 import IPlaceholderDirective from "../../interfaces/directives/placeholder-directive";
 import TemplateMetadata      from "../../metadata/template-metadata";
 import ParallelWorker        from "../../parallel-worker";
-import { Scope }             from "../../types";
+import { Injection, Scope }  from "../../types";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive: IPlaceholderDirective;
+    private readonly directive:       IPlaceholderDirective;
     private readonly end:             Comment;
     private readonly keySubscription: ISubscription;
     private readonly metadata:        TemplateMetadata;
@@ -30,6 +29,8 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     private key:               string             = "";
     private subscription:      ISubscription|null = null;
     private timer:             number             = 0;
+
+    private injection?: Injection;
 
     public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
     {
@@ -57,9 +58,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         const injection = this.metadata.injections.get(this.key);
 
-        injection
-            ? this.inject(injection.scope, injection.context, injection.host, injection.template, injection.directive)
-            : this.inject(this.scope, this.context, this.host, this.template);
+        this.inject(injection);
     }
 
     private applyLazyInjection(): void
@@ -67,7 +66,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.timer = window.setTimeout(() => this.applyInjection());
     }
 
-    private inject(localScope: Scope, context: Node, host: Node, template: HTMLTemplateElement, injectDirective?: IInjectDirective): void
+    private inject(injection?: Injection): void
     {
         window.clearTimeout(this.timer);
 
@@ -77,35 +76,9 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.subscription?.unsubscribe();
         this.subscription = null;
 
-        const task = injectDirective
-            ? () =>
-            {
-                if (this.disposed)
-                {
-                    return;
-                }
-
-                this.currentDisposable?.dispose();
-
-                this.removeInRange(this.start, this.end);
-
-                let destructured = false;
-
-                const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(injectDirective.pattern))
-                    ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), injectDirective), scopeAlias: "__scope__" }
-                    : { elementScope: tryEvaluateExpressionByTraceable(this.scope, this.directive) as Indexer, scopeAlias: injectDirective.pattern.name };
-
-                const mergedScope = destructured
-                    ? { ...elementScope, ...localScope }
-                    : { [scopeAlias]: elementScope, ...localScope };
-
-                const [content, disposable] = this.processTemplate(mergedScope, context, host, template, injectDirective.descriptor);
-
-                this.end.parentNode!.insertBefore(content, this.end);
-
-                this.currentDisposable = disposable;
-            }
-            : this.task.bind(this);
+        const task = (this.injection = injection)
+            ? this.task.bind(this)
+            : this.defaultTask.bind(this);
 
         const notify = async () => await ParallelWorker.run(task);
 
@@ -138,6 +111,34 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     }
 
     private task(): void
+    {
+        if (this.disposed)
+        {
+            return;
+        }
+
+        this.currentDisposable?.dispose();
+
+        this.removeInRange(this.start, this.end);
+
+        let destructured = false;
+
+        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injection!.directive.pattern))
+            ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), this.injection!.directive), scopeAlias: "__scope__" }
+            : { elementScope: tryEvaluateExpressionByTraceable(this.scope, this.directive) as Indexer, scopeAlias: this.injection!.directive.pattern.name };
+
+        const mergedScope = destructured
+            ? { ...elementScope, ...this.injection!.scope }
+            : { [scopeAlias]: elementScope, ...this.injection!.scope };
+
+        const [content, disposable] = this.processTemplate(mergedScope, this.injection!.context, this.injection!.host, this.injection!.template, this.injection!.directive.descriptor);
+
+        this.end.parentNode!.insertBefore(content, this.end);
+
+        this.currentDisposable = disposable;
+    }
+
+    private defaultTask(): void
     {
         if (this.disposed)
         {

@@ -54,7 +54,7 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         if (action)
         {
-            action(this.scope, this.context, this.host, this.template, this.directive);
+            action({ scope: this.scope, context: this.context, host: this.host, template: this.template, directive: this.directive });
         }
     }
 
