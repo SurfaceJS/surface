@@ -1,4 +1,4 @@
-import Container      from "../../container";
+import Container      from "../../internal/container";
 import { Bar }        from "./bar";
 import { Baz }        from "./baz";
 import { Foo }        from "./foo";

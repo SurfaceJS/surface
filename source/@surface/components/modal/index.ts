@@ -97,19 +97,19 @@ export default class Modal extends Component
 
         if (template)
         {
-            super.appendChild(document.importNode(template.content, true));
+            this.appendChild(document.importNode(template.content, true));
         }
 
         this.horizontalAlign = Component.HorizontalAlign.Center;
         this.verticalAlign   = Component.VerticalAlign.Center;
 
         this.visible = false;
-        new ResizeObserver(() => super.visible && this.refresh()).observe(this);
+        new ResizeObserver(() => this.visible && this.refresh()).observe(this);
     }
 
     private refresh(): void
     {
-        super.style.position = this.startPosition == "none" ?
+        this.style.position = this.startPosition == "none" ?
             "relative"
             : this.startPosition == "center-screen" ?
                 "fixed"
@@ -117,42 +117,42 @@ export default class Modal extends Component
 
         if (this.startPosition == "center-screen" || this.startPosition == "center-parent")
         {
-            const bounding = super.getBoundingClientRect();
+            const bounding = this.getBoundingClientRect();
 
-            switch (super.horizontalAlign)
+            switch (this.horizontalAlign)
             {
                 case Component.HorizontalAlign.Left:
-                    super.left = 0;
+                    this.left = 0;
                     break;
                 case Component.HorizontalAlign.Center:
                 default:
-                    super.style.left = `calc(50% - ${bounding.width / 2}px)`;
+                    this.style.left = `calc(50% - ${bounding.width / 2}px)`;
                     break;
                 case Component.HorizontalAlign.Right:
-                    super.style.left = `calc(100% - ${bounding.width}px)`;
+                    this.style.left = `calc(100% - ${bounding.width}px)`;
                     break;
             }
 
-            switch (super.verticalAlign)
+            switch (this.verticalAlign)
             {
                 case Component.VerticalAlign.Top:
-                    super.top = 0;
+                    this.top = 0;
                     break;
                 case Component.VerticalAlign.Center:
                 default:
-                    super.style.top = `calc(50% - ${bounding.height / 2}px)`;
+                    this.style.top = `calc(50% - ${bounding.height / 2}px)`;
                     break;
                 case Component.VerticalAlign.Bottom:
-                    super.style.top = `calc(100% - ${bounding.height}px)`;
+                    this.style.top = `calc(100% - ${bounding.height}px)`;
                     break;
             }
         }
         else if (this.startPosition != "none")
         {
-            super.style.left = "0";
-            super.style.top  = "0";
+            this.style.left = "0";
+            this.style.top  = "0";
 
-            const bounding = super.getBoundingClientRect();
+            const bounding = this.getBoundingClientRect();
 
             const offset =
             {
@@ -170,11 +170,11 @@ export default class Modal extends Component
                 }
             };
 
-            const left = this.left + offset.horizontal[super.horizontalAlign];
-            const top  = this.top  + offset.vertical[super.verticalAlign];
+            const left = this.left + offset.horizontal[this.horizontalAlign];
+            const top  = this.top  + offset.vertical[this.verticalAlign];
 
-            super.style.left = `${(this.stick.left && left < 0 ? 0 : this.stick.right  && left >= window.innerWidth  - bounding.width  ? window.innerWidth  - bounding.width  : left) + window.scrollX}px`;
-            super.style.top  = `${(this.stick.top  && top  < 0 ? 0 : this.stick.bottom && top  >= window.innerHeight - bounding.height ? window.innerHeight - bounding.height : top)  + window.scrollY}px`;
+            this.style.left = `${(this.stick.left && left < 0 ? 0 : this.stick.right  && left >= window.innerWidth  - bounding.width  ? window.innerWidth  - bounding.width  : left) + window.scrollX}px`;
+            this.style.top  = `${(this.stick.top  && top  < 0 ? 0 : this.stick.bottom && top  >= window.innerHeight - bounding.height ? window.innerHeight - bounding.height : top)  + window.scrollY}px`;
         }
     }
 
@@ -188,7 +188,7 @@ export default class Modal extends Component
 
     public hide()
     {
-        super.visible = false;
+        this.visible = false;
 
         if (this.parentNode == document.body)
         {
@@ -203,7 +203,7 @@ export default class Modal extends Component
             document.body.appendChild(this);
         }
 
-        super.visible = true;
+        this.visible = true;
 
         this.refresh();
     }

@@ -1,4 +1,6 @@
+import { Observables } from "../types";
+
 export default interface IObservable
 {
-    observables:  Array<Array<string>>;
+    observables: Observables;
 }

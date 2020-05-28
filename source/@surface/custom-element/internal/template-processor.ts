@@ -1,34 +1,31 @@
-import { Action, Indexer } from "@surface/core";
-import { assert }          from "@surface/core/common/generic";
-import IDisposable         from "@surface/core/interfaces/disposable";
-import IArrayExpression    from "@surface/expression/interfaces/array-expression";
-import IExpression         from "@surface/expression/interfaces/expression";
-import TypeGuard           from "@surface/expression/type-guard";
-import ISubscription       from "@surface/reactive/interfaces/subscription";
-import Type                from "@surface/reflection";
-import FieldInfo           from "@surface/reflection/field-info";
+import { assert, Action, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                            from "@surface/expression";
+import { ISubscription }                        from "@surface/reactive";
+import Type, { FieldInfo }                      from "@surface/reflection";
 import
 {
     classMap,
     createScope,
     styleMap,
-    throwTemplateEvaluationError
+    tryEvaluateExpression,
+    tryEvaluateExpressionByTraceable,
+    tryObserveByObservable,
 }
 from "./common";
-import DataBind                 from "./data-bind";
-import directiveRegistry        from "./directive-registry";
-import ChoiceDirectiveHandler   from "./directives/template-handlers/choice-directive-handler";
-import InjectorDirectiveHandler from "./directives/template-handlers/injector-directive-handler";
-import LoopDirectiveHandler     from "./directives/template-handlers/loop-directive-handler";
-import TemplateProcessError     from "./errors/template-process-error";
-import IAttributeDescriptor     from "./interfaces/attribute-descriptor";
-import IDirective               from "./interfaces/directive";
-import IDirectivesDescriptor    from "./interfaces/directives-descriptor";
-import ITemplateDescriptor      from "./interfaces/template-descriptor";
-import ITextNodeDescriptor      from "./interfaces/text-node-descriptor";
-import ITraceable               from "./interfaces/traceable";
-import TemplateMetadata         from "./metadata/template-metadata";
-import { Scope }                from "./types";
+import DataBind                    from "./data-bind";
+import directiveRegistry           from "./directive-registry";
+import ChoiceDirectiveHandler      from "./directives/template-handlers/choice-directive-handler";
+import InjectDirectiveHandler      from "./directives/template-handlers/inject-directive-handler";
+import LoopDirectiveHandler        from "./directives/template-handlers/loop-directive-handler";
+import PlaceholderDirectiveHandler from "./directives/template-handlers/placeholder-directive-handler";
+import TemplateProcessError        from "./errors/template-process-error";
+import IDirectivesDescriptor       from "./interfaces/descriptors/directives-descriptor";
+import ITemplateDescriptor         from "./interfaces/descriptors/template-descriptor";
+import ITextNodeDescriptor         from "./interfaces/descriptors/text-node-descriptor";
+import IAttributeDirective         from "./interfaces/directives/attribute-directive";
+import ICustomDirective            from "./interfaces/directives/custom-directive";
+import ITraceable                  from "./interfaces/traceable";
+import { Scope }                   from "./types";
 
 interface ITemplateProcessorData
 {
@@ -143,7 +140,7 @@ export default class TemplateProcessor
         };
     }
 
-    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDescriptor>): Array<ISubscription>
+    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDirective>): Array<ISubscription>
     {
         const constructor = window.customElements.get(element.localName);
 
@@ -164,7 +161,7 @@ export default class TemplateProcessor
 
                     if (elementMember instanceof FieldInfo && elementMember.readonly)
                     {
-                        throw new TemplateProcessError(`Property ${descriptor.key} of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
+                        throw new TemplateProcessError(`Binding error in ${descriptor.rawExpression}: Property "${descriptor.key}" of <${element.nodeName.toLowerCase()}> is readonly`, this.buildStack(descriptor));
                     }
 
                     if (descriptor.type == "oneway")
@@ -178,15 +175,15 @@ export default class TemplateProcessor
                             element.setAttributeNode(attribute);
 
                             notify = descriptor.name == "class"
-                                ? () => attribute.value = classMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace) as Record<string, boolean>);
+                                ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
+                                : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as unknown as Indexer)[descriptor.key] = this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace);
+                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
                         }
 
-                        let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+                        let subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
                         notify();
 
@@ -196,20 +193,20 @@ export default class TemplateProcessor
                     {
                         assert(TypeGuard.isMemberExpression(descriptor.expression));
 
-                        const target         = this.tryEvaluate(descriptor.expression.object, scope, descriptor.stackTrace) as object;
+                        const target         = tryEvaluateExpression(scope, descriptor.expression.object, descriptor.rawExpression, descriptor.stackTrace) as object;
                         const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
                             ? descriptor.expression.property.name
                             : descriptor.expression.property.evaluate(scope) as string;
 
                         const targetMember = Type.from(target).getMember(targetProperty);
 
-                        if (targetMember instanceof FieldInfo && targetMember.readonly)
+                        if (!targetMember || (targetMember instanceof FieldInfo && targetMember.readonly))
                         {
-                            const rawExpression = descriptor.expression.toString();
+                            const message = targetMember
+                                ? `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" of ${target.constructor.name} is readonly`
+                                : `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" does not exists on type ${target.constructor.name}`;
 
-                            element.setAttribute(`::${descriptor.name}`, rawExpression);
-
-                            throw new TemplateProcessError(`Property ${targetProperty} of ${target.constructor.name} is readonly in ::"${descriptor.name}='${rawExpression}'"`, this.buildStack(descriptor));
+                            throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
 
                         subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
@@ -219,9 +216,9 @@ export default class TemplateProcessor
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = () => attribute.value = `${(descriptor.expression.evaluate(scope) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+                    const notify = () => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    let subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+                    let subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
                     subscriptions.push(subscription);
 
@@ -243,7 +240,7 @@ export default class TemplateProcessor
         return subscriptions;
     }
 
-    private processElementDirectives(scope: Scope, element: Element, directives: Array<IDirective>): Array<IDisposable>
+    private processElementDirectives(scope: Scope, element: Element, directives: Array<ICustomDirective>): Array<IDisposable>
     {
         const disposables: Array<IDisposable> = [];
 
@@ -261,7 +258,7 @@ export default class TemplateProcessor
     {
         const disposables: Array<IDisposable> = [];
 
-        for (const directive of data.directives.inject)
+        for (const directive of data.directives.injections)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -269,29 +266,10 @@ export default class TemplateProcessor
 
             const currentContext = data.context ?? template.parentNode;
 
-            const metadata = TemplateMetadata.from(currentContext);
-
-            template.remove();
-
-            const key = `${directive.key.evaluate(data.scope)}`;
-
-            const action = metadata.injectors.get(key);
-
-            if (action)
-            {
-                action(data.scope, currentContext, this.host, template, directive);
-            }
-            else
-            {
-                template.remove();
-
-                metadata.injections.set(key, { scope: data.scope, template, directive, context: currentContext, host: this.host });
-            }
-
-            disposables.push({ dispose: () => (metadata.injections.delete(key), metadata.defaults.get(key)!()) });
+            disposables.push(new InjectDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
-        for (const directive of data.directives.logical)
+        for (const directive of data.directives.logicals)
         {
             const templates = directive.branches.map(x => this.lookup[x.path]) as Array<HTMLTemplateElement>;
 
@@ -302,7 +280,7 @@ export default class TemplateProcessor
             disposables.push(new ChoiceDirectiveHandler(data.scope, currentContext, this.host, templates, directive.branches));
         }
 
-        for (const directive of data.directives.loop)
+        for (const directive of data.directives.loops)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -313,7 +291,7 @@ export default class TemplateProcessor
             disposables.push(new LoopDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
-        for (const directive of data.directives.injector)
+        for (const directive of data.directives.placeholders)
         {
             const template = this.lookup[directive.path] as HTMLTemplateElement;
 
@@ -321,7 +299,7 @@ export default class TemplateProcessor
 
             const currentContext = data.context ?? template.parentNode;
 
-            disposables.push(new InjectorDirectiveHandler(data.scope, currentContext, this.host, template, directive));
+            disposables.push(new PlaceholderDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
 
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
@@ -335,9 +313,9 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = () => node.nodeValue = `${(this.tryEvaluate(descriptor.expression, scope, descriptor.stackTrace, true) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
+            const notify = () => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as Array<unknown>).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = DataBind.observe(scope, descriptor.observables, { notify }, true);
+            const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
 
             subscriptions.push(subscription);
 
@@ -345,30 +323,5 @@ export default class TemplateProcessor
         }
 
         return subscriptions;
-    }
-
-    private tryEvaluate(expression: IExpression, scope: Scope, stackTrace: Array<Array<string>>, isTextNode?: boolean): unknown
-    {
-        try
-        {
-            return expression.evaluate(scope);
-        }
-        catch (error)
-        {
-            assert(error instanceof Error);
-
-            let rawExpression: string;
-
-            if (isTextNode)
-            {
-                rawExpression = (expression as IArrayExpression).elements.map(x => (x as IExpression).toString()).join("");
-            }
-            else
-            {
-                rawExpression = expression.toString();
-            }
-
-            throwTemplateEvaluationError(`Error evaluating "${rawExpression}" - ${error.message}`, stackTrace);
-        }
     }
 }

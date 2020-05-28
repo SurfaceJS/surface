@@ -1,12 +1,8 @@
-import { Indexer }           from "@surface/core";
-import { overrideProperty }  from "@surface/core/common/object";
-import IDisposable           from "@surface/core/interfaces/disposable";
-import Type                  from "@surface/reflection";
-import FieldInfo             from "@surface/reflection/field-info";
-import MethodInfo            from "@surface/reflection/method-info";
-import IObserver             from "../interfaces/observer";
-import IPropertySubscription from "../interfaces/property-subscription";
-import Metadata              from "./metadata";
+import { Indexer, overrideProperty, IDisposable } from "@surface/core";
+import Type, { FieldInfo, MethodInfo }            from "@surface/reflection";
+import IObserver                                  from "./interfaces/observer";
+import IPropertySubscription                      from "./interfaces/property-subscription";
+import Metadata                                   from "./metadata";
 
 const IS_REACTIVE = Symbol("reactive:is-reactive");
 type ReactiveArray = Array<unknown> & Indexer & { [IS_REACTIVE]?: boolean };
@@ -111,12 +107,12 @@ export default class Reactor implements IDisposable
         const key      = keyOrIndex.toString();
         const metadata = Metadata.from(target);
 
-        if (metadata.keys.includes(key))
+        if (metadata.keys.has(key))
         {
             return metadata.reactor;
         }
 
-        metadata.keys.push(key);
+        metadata.keys.add(key);
 
         const member = Type.from(target).getMember(key);
 
@@ -136,7 +132,7 @@ export default class Reactor implements IDisposable
         }
         else if (!member)
         {
-            throw new Error(`Key ${key} does not exists on type ${target.constructor.name}`);
+            throw new Error(`Property "${key}" does not exists on type ${target.constructor.name}`);
         }
 
         return metadata.reactor;
@@ -276,11 +272,9 @@ export default class Reactor implements IDisposable
     {
         Reactor.stack.push(this);
 
-        const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
-
         if (args.length == 1)
         {
-            this.notifyValue(value as Indexer);
+            this.notifyValue(args[0] as Indexer);
         }
         else
         {
@@ -292,7 +286,7 @@ export default class Reactor implements IDisposable
             }
             else
             {
-                this.notifyTargetKeyValue(target, key, value as Indexer);
+                this.notifyTargetKeyValue(target, key, args[2] as Indexer);
             }
         }
 

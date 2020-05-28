@@ -1,5 +1,7 @@
-export default interface IKeyValueObservable
+import { Observables } from "../types";
+import IObservable     from "./observable";
+
+export default interface IKeyValueObservable extends IObservable
 {
-    keyObservables:    Array<Array<string>>;
-    valueObservables:  Array<Array<string>>;
+    keyObservables: Observables;
 }

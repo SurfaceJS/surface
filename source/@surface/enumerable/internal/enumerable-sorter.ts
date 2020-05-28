@@ -1,5 +1,5 @@
 import { Func1, Nullable } from "@surface/core";
-import IComparer           from "../interfaces/comparer";
+import IComparer           from "./interfaces/comparer";
 
 export default class EnumerableSorter<TKey, TElement>
 {

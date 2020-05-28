@@ -1,10 +1,10 @@
 import "./fixtures/dom";
 
-import { uuidv4 }                  from "@surface/core/common/string";
+import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import CustomElement, { templateable }               from "..";
-import { attribute, element }      from "../decorators";
+import CustomElement, { templateable }               from "../internal/custom-element";
+import { attribute, element }      from "../internal/decorators";
 
 @suite
 export default class DecoratorsSpec

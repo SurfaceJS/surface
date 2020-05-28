@@ -1,8 +1,7 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import ILiteral              from "../../interfaces/literal";
-import IRegExpLiteral        from "../../interfaces/reg-exp-literal";
-import NodeType              from "../../node-type";
+import { Indexer, Nullable, hasValue } from "@surface/core";
+import ILiteral                        from "../interfaces/literal";
+import IRegExpLiteral                  from "../interfaces/reg-exp-literal";
+import NodeType                        from "../node-type";
 
 export default class RegExpLiteral implements ILiteral
 {

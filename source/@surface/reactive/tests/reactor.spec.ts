@@ -1,12 +1,11 @@
-import { Indexer }                             from "@surface/core";
-import { hasValue }                            from "@surface/core/common/generic";
+import { Indexer, hasValue }                   from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import { notify, observable }                  from "../decorators";
+import { notify, observable }                  from "../internal/decorators";
 import Metadata                                from "../internal/metadata";
 import Reactor                                 from "../internal/reactor";
-import Observer                                from "../observer";
-import PropertySubscription                    from "../property-subscription";
+import Observer                                from "../internal/observer";
+import PropertySubscription                    from "../internal/property-subscription";
 
 @suite
 export default class ReactorSpec
@@ -86,9 +85,9 @@ export default class ReactorSpec
 
         assert.doesNotThrow(() => Reactor.makeReactive(rawEmmiter, "value"));
 
-        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         ["getValue", "value"]);
-        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, ["_value", "nonReactiveValue", "value"]);
-        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              ["nonReactiveValue", "value"]);
+        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         new Set(["getValue", "value"]));
+        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, new Set(["_value", "nonReactiveValue", "value"]));
+        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              new Set(["nonReactiveValue", "value"]));
 
         rawEmmiter.value = rawEmmiter.value;
 
@@ -478,6 +477,6 @@ export default class ReactorSpec
     @test @shouldFail
     public makeReactiveInvalidKey(): void
     {
-        assert.throw(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo"), "Key foo does not exists on type Object");
+        assert.throw(() => Reactor.makeReactive({ } as { foo?: unknown }, "foo"), "Property \"foo\" does not exists on type Object");
     }
 }

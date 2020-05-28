@@ -6,6 +6,7 @@
     "dependencies": {
         "@surface/core": "0.0.3",
         "@surface/custom-element": "0.0.6",
+        "@surface/enumerable": "0.0.0",
         "@surface/reflection": "0.0.0",
         "@surface/view": "0.0.0",
         "tslib": "2.0.0"

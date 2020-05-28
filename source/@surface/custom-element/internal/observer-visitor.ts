@@ -1,24 +1,26 @@
-import ExpressionVisitor         from "@surface/expression/expression-visitor";
-import IArrayPattern             from "@surface/expression/interfaces/array-pattern";
-import IArrowFunctionExpression  from "@surface/expression/interfaces/arrow-function-expression";
-import IAssignmentExpression     from "@surface/expression/interfaces/assignment-expression";
-import IAssignmentPattern        from "@surface/expression/interfaces/assignment-pattern";
-import IAssignmentProperty       from "@surface/expression/interfaces/assignment-property";
-import ICallExpression           from "@surface/expression/interfaces/call-expression";
-import ICoalesceExpression       from "@surface/expression/interfaces/coalesce-expression";
-import IConditionalExpression    from "@surface/expression/interfaces/conditional-expression";
-import IIdentifier               from "@surface/expression/interfaces/identifier";
-import IMemberExpression         from "@surface/expression/interfaces/member-expression";
-import INewExpression            from "@surface/expression/interfaces/new-expression";
-import INode                     from "@surface/expression/interfaces/node";
-import IParenthesizedExpression  from "@surface/expression/interfaces/parenthesized-expression";
-import IProperty                 from "@surface/expression/interfaces/property";
-import IRestElement              from "@surface/expression/interfaces/rest-element";
-import ITaggedTemplateExpression from "@surface/expression/interfaces/tagged-template-expression";
-import IThisExpression           from "@surface/expression/interfaces/this-expression";
-import IUpdateExpression         from "@surface/expression/interfaces/update-expression";
-import NodeType                  from "@surface/expression/node-type";
-import TypeGuard                 from "@surface/expression/type-guard";
+import
+{
+    ExpressionVisitor,
+    IArrayPattern,
+    IArrowFunctionExpression,
+    IAssignmentExpression,
+    IAssignmentPattern,
+    IAssignmentProperty,
+    ICallExpression,
+    ICoalesceExpression,
+    IConditionalExpression,
+    IIdentifier,
+    IMemberExpression,
+    INewExpression,
+    INode,
+    IParenthesizedExpression,
+    IProperty,
+    IRestElement,
+    ITaggedTemplateExpression,IThisExpression,
+    IUpdateExpression,
+    NodeType,
+    TypeGuard
+} from "@surface/expression";
 
 
 export default class ObserverVisitor extends ExpressionVisitor
@@ -67,7 +69,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (element && !TypeGuard.isIdentifier(element))
             {
-                super.visit(element);
+                this.visit(element);
             }
         }
 
@@ -80,7 +82,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (!TypeGuard.isIdentifier(paramenter))
             {
-                super.visit(paramenter);
+                this.visit(paramenter);
             }
         }
 
@@ -89,14 +91,14 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitAssignmentExpression(expression: IAssignmentExpression): INode
     {
-        super.visit(expression.right);
+        this.visit(expression.right);
 
         return expression;
     }
 
     protected visitAssignmentPattern(expression: IAssignmentPattern): INode
     {
-        super.visit(expression.right);
+        this.visit(expression.right);
 
         return expression;
     }
@@ -115,25 +117,25 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        expression.arguments.forEach(super.visit.bind(this));
+        expression.arguments.forEach(this.visit.bind(this));
 
         return expression;
     }
 
     protected visitCoalesceExpression(expression: ICoalesceExpression): INode
     {
-        super.visit(expression.left);
+        this.visit(expression.left);
 
         return expression;
     }
 
     protected visitConditionalExpression(expression: IConditionalExpression): INode
     {
-        super.visit(expression.test);
+        this.visit(expression.test);
 
         return expression;
     }
@@ -156,7 +158,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             this.reset();
 
-            super.visit(expression.property);
+            this.visit(expression.property);
         }
         else if (expression.optional)
         {
@@ -169,7 +171,7 @@ export default class ObserverVisitor extends ExpressionVisitor
             this.stack.unshift(key);
         }
 
-        super.visit(expression.object);
+        this.visit(expression.object);
 
         return expression;
     }
@@ -178,11 +180,11 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        expression.arguments.forEach(super.visit.bind(this));
+        expression.arguments.forEach(this.visit.bind(this));
 
         return expression;
     }
@@ -191,7 +193,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.reset();
 
-        super.visit(expression.argument);
+        this.visit(expression.argument);
 
         return expression;
     }
@@ -200,10 +202,10 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (expression.computed)
         {
-            super.visit(expression.key);
+            this.visit(expression.key);
         }
 
-        super.visit(expression.value);
+        this.visit(expression.value);
 
         return expression;
     }
@@ -212,7 +214,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (!TypeGuard.isIdentifier(expression.argument))
         {
-            super.visit(expression.argument);
+            this.visit(expression.argument);
         }
 
         return expression;
@@ -222,11 +224,11 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        super.visit(expression.quasi);
+        this.visit(expression.quasi);
 
         return expression;
     }
@@ -244,7 +246,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.argument);
+        this.visit(expression.argument);
 
         return expression;
     }

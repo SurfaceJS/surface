@@ -1,4 +1,4 @@
-import { dashedToCamel } from "@surface/core/common/string";
+import { dashedToCamel } from "@surface/core";
 import CustomElement     from "@surface/custom-element";
 import { element }       from "../decorators";
 import template          from "./index.html";
@@ -9,12 +9,12 @@ export class Container extends CustomElement
 {
     public get position(): Container.Position
     {
-        return Container.Position[dashedToCamel(super.getAttribute("position") || "") as keyof typeof Container.Position] || Container.Position.Center;
+        return Container.Position[dashedToCamel(this.getAttribute("position") || "") as keyof typeof Container.Position] || Container.Position.Center;
     }
 
     public set position(value: Container.Position)
     {
-        super.setAttribute("position", value.toString());
+        this.setAttribute("position", value.toString());
     }
 }
 

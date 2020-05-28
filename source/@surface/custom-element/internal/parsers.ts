@@ -1,15 +1,17 @@
-import { assert }               from "@surface/core/common/generic";
-import Expression               from "@surface/expression";
-import IArrayExpression         from "@surface/expression/interfaces/array-expression";
-import IArrowFunctionExpression from "@surface/expression/interfaces/arrow-function-expression";
-import IExpression              from "@surface/expression/interfaces/expression";
-import IIdentifier              from "@surface/expression/interfaces/identifier";
-import INode                    from "@surface/expression/interfaces/node";
-import IPattern                 from "@surface/expression/interfaces/pattern";
-import SyntaxError              from "@surface/expression/syntax-error";
-import TypeGuard                from "@surface/expression/type-guard";
-import InterpolatedExpression   from "./interpolated-expression";
-import { forExpression }        from "./patterns";
+import { assert } from "@surface/core";
+import Expression,
+{
+    IArrayExpression,
+    IArrowFunctionExpression,
+    IExpression,
+    IIdentifier,
+    INode,
+    IPattern,
+    SyntaxError,
+    TypeGuard
+} from "@surface/expression";
+import InterpolatedExpression from "./interpolated-expression";
+import { forExpression }      from "./patterns";
 
 const cache: Record<string, INode> = { };
 
@@ -22,9 +24,12 @@ function parseStatement<TParser extends (expression: string) => any>(parser: TPa
     }
     catch (error)
     {
-        assert(error instanceof SyntaxError);
+        if (error instanceof SyntaxError)
+        {
+            throw getOffsetSyntaxError(statement, expression, error);
+        }
 
-        throw getOffsetSyntaxError(statement, expression, error);
+        throw error;
     }
 }
 
@@ -85,7 +90,7 @@ export function parseForLoopStatement(expression: string): { operator: "of"|"in"
 {
     if (!forExpression.test(expression))
     {
-        throw new Error(`Invalid for-loop statement: ${expression}`);
+        throw new Error("Invalid for-loop statement");
     }
 
     const [, rawLeft, operator, rawRigth] = Array.from(forExpression.exec(expression)!) as [string, string, "in"|"of", string];

@@ -88,7 +88,7 @@ export default class Pager extends Component
 
         this._endRange = startRange + 4 > pageCount ? pageCount : startRange + 4;
 
-        super.dispatchEvent(new Event("change"));
+        this.dispatchEvent(new Event("change"));
     }
 
     protected setPage(page: number): void

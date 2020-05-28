@@ -1,12 +1,10 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import { format }            from "@surface/core/common/string";
-import ICallExpression       from "../../interfaces/call-expression";
-import IExpression           from "../../interfaces/expression";
-import ISpreadElement        from "../../interfaces/spread-element";
-import NodeType              from "../../node-type";
-import TypeGuard             from "../../type-guard";
-import Messages              from "../messages";
+import { Indexer, Nullable, hasValue, format } from "@surface/core";
+import ICallExpression                         from "../interfaces/call-expression";
+import IExpression                             from "../interfaces/expression";
+import ISpreadElement                          from "../interfaces/spread-element";
+import Messages                                from "../messages";
+import NodeType                                from "../node-type";
+import TypeGuard                               from "../type-guard";
 
 export default class CallExpression implements IExpression
 {

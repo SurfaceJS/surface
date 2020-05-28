@@ -1,9 +1,8 @@
-import { Indexer }         from "@surface/core";
-import { hasValue }        from "@surface/core/common/generic";
-import IExpression         from "../../interfaces/expression";
-import ILogicalExpression  from "../../interfaces/logical-expression";
-import NodeType            from "../../node-type";
-import { LogicalOperator } from "../../types";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import ILogicalExpression    from "../interfaces/logical-expression";
+import NodeType              from "../node-type";
+import { LogicalOperator }   from "../types";
 
 type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
 

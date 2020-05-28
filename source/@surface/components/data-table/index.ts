@@ -1,24 +1,23 @@
-import { Indexer, Nullable as __Nullable__ } from "@surface/core";
-import { clone, objectFactory }              from "@surface/core/common/object";
-import Enumerable                            from "@surface/enumerable";
-import Component                             from "..";
-import { attribute, element }                from "../decorators";
-import localize, { Localization }            from "../locales";
-import DataCell                              from "./data-cell";
-import DataFooterGroup                       from "./data-footer-group";
-import DataHeader                            from "./data-header";
-import DataHeaderGroup                       from "./data-header-group";
-import DataRow                               from "./data-row";
-import DataRowGroup                          from "./data-row-group";
-import template                              from "./index.html";
-import style                                 from "./index.scss";
-import IDataProvider, { Criteria }           from "./interfaces/data-provider";
-import ColumnDefinition                      from "./internal/column-definition";
-import DataProvider                          from "./internal/data-provider";
-import arrayTemplate                         from "./templates/array.html";
-import booleanTemplate                       from "./templates/boolean.html";
-import numberTemplate                        from "./templates/number.html";
-import stringTemplate                        from "./templates/string.html";
+import { clone, objectFactory, Indexer, Nullable as __Nullable__ } from "@surface/core";
+import Enumerable                                                  from "@surface/enumerable";
+import Component                                                   from "..";
+import { attribute, element }                                      from "../decorators";
+import localize, { Localization }                                  from "../locales";
+import DataCell                                                    from "./data-cell";
+import DataFooterGroup                                             from "./data-footer-group";
+import DataHeader                                                  from "./data-header";
+import DataHeaderGroup                                             from "./data-header-group";
+import DataRow                                                     from "./data-row";
+import DataRowGroup                                                from "./data-row-group";
+import template                                                    from "./index.html";
+import style                                                       from "./index.scss";
+import IDataProvider, { Criteria }                                 from "./interfaces/data-provider";
+import ColumnDefinition                                            from "./internal/column-definition";
+import DataProvider                                                from "./internal/data-provider";
+import arrayTemplate                                               from "./templates/array.html";
+import booleanTemplate                                             from "./templates/boolean.html";
+import numberTemplate                                              from "./templates/number.html";
+import stringTemplate                                              from "./templates/string.html";
 
 type Nullable<T> = __Nullable__<T>;
 
@@ -73,17 +72,17 @@ export default class DataTable extends Component
 
     public get dataFooterGroups(): Enumerable<DataFooterGroup>
     {
-        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-footer-group")));
+        return Enumerable.from(Array.from(this.querySelectorAll("surface-data-footer-group")));
     }
 
     public get dataHeaderGroups(): Enumerable<DataHeaderGroup>
     {
-        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-header-group")));
+        return Enumerable.from(Array.from(this.querySelectorAll("surface-data-header-group")));
     }
 
     public get dataRowGroups(): Enumerable<DataRowGroup>
     {
-        return Enumerable.from(Array.from(super.querySelectorAll("surface-data-row-group")));
+        return Enumerable.from(Array.from(this.querySelectorAll("surface-data-row-group")));
     }
 
     public get datasource(): Array<object>
@@ -147,14 +146,14 @@ export default class DataTable extends Component
 
         if (!dataProvider)
         {
-            dataProvider = Enumerable.from(Array.from(super.querySelectorAll(("*"))))
+            dataProvider = Enumerable.from(Array.from(this.querySelectorAll(("*"))))
                 .firstOrDefault(x => x.tagName.toLowerCase().endsWith("data-provider")) as Nullable<IDataProvider>;
 
             if (dataProvider instanceof HTMLElement)
             {
                 const clone = dataProvider.cloneNode() as HTMLElement & IDataProvider;
 
-                super.replaceChild(clone, dataProvider);
+                this.replaceChild(clone, dataProvider);
 
                 this.dataProvider = clone as IDataProvider;
             }
@@ -168,14 +167,14 @@ export default class DataTable extends Component
             this.dataProvider = dataProvider;
         }
 
-        const dataTemplate = super.querySelector<HTMLTemplateElement>("template");
+        const dataTemplate = this.querySelector<HTMLTemplateElement>("template");
 
         if (dataTemplate)
         {
             this.columnDefinitions = Enumerable.from(Array.from(dataTemplate.content.querySelectorAll("column-definition")))
                 .select(x => new ColumnDefinition(x));
 
-            super.removeChild(dataTemplate);
+            this.removeChild(dataTemplate);
         }
 
         const primitives =
@@ -313,7 +312,7 @@ export default class DataTable extends Component
 
             cell.innerHTML = innerHTML;
 
-            // CustomElement.processDirectives(this, cell, { ...super.context, dataTable: this, row, cell });
+            // CustomElement.processDirectives(this, cell, { ...this.context, dataTable: this, row, cell });
 
             index++;
         }
@@ -335,8 +334,8 @@ export default class DataTable extends Component
         {
             const footerGroup = new DataFooterGroup();
 
-            const simbling = super.querySelector("surface-data-table > surface-data-footer-group:last-of-type")
-                || super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = this.querySelector("surface-data-table > surface-data-footer-group:last-of-type")
+                || this.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -344,7 +343,7 @@ export default class DataTable extends Component
             }
             else
             {
-                super.appendChild(footerGroup);
+                this.appendChild(footerGroup);
             }
 
             const row = new DataRow();
@@ -371,7 +370,7 @@ export default class DataTable extends Component
         {
             const headerGroup = new DataHeaderGroup();
 
-            const simbling = super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = this.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -379,7 +378,7 @@ export default class DataTable extends Component
             }
             else
             {
-                super.appendChild(headerGroup);
+                this.appendChild(headerGroup);
             }
 
             const row = new DataRow();
@@ -413,8 +412,8 @@ export default class DataTable extends Component
 
             this.rowGroup = rowGroup;
 
-            const simbling = super.querySelector("surface-data-table > surface-data-row-group:last-of-type")
-                || super.querySelector("surface-data-table > surface-data-header-group:last-of-type");
+            const simbling = this.querySelector("surface-data-table > surface-data-row-group:last-of-type")
+                || this.querySelector("surface-data-table > surface-data-header-group:last-of-type");
 
             if (simbling)
             {
@@ -422,7 +421,7 @@ export default class DataTable extends Component
             }
             else
             {
-                super.appendChild(rowGroup);
+                this.appendChild(rowGroup);
             }
         }
     }
@@ -450,7 +449,7 @@ export default class DataTable extends Component
 
             await this.setPage(this._page);
 
-            // super.notify("page");
+            // this.notify("page");
         }
 
         const data = this.createData();
@@ -533,7 +532,7 @@ export default class DataTable extends Component
 
             await this.setPage(this.pageCount);
 
-            // super.notify("page");
+            // this.notify("page");
         }
         else
         {

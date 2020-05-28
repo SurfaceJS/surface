@@ -1,12 +1,9 @@
-import { Indexer }  from "@surface/core";
-import { clone }    from "@surface/core/common/object";
-import Type         from "@surface/reflection";
-import MethodInfo   from "@surface/reflection/method-info";
-import PropertyInfo from "@surface/reflection/property-info";
-import Component    from "../..";
-import { element }  from "../../decorators";
-import template     from "./index.html";
-import style        from "./index.scss";
+import { clone, Indexer }                 from "@surface/core";
+import Type, { MethodInfo, PropertyInfo } from "@surface/reflection";
+import Component                          from "../..";
+import { element }                        from "../../decorators";
+import template                           from "./index.html";
+import style                              from "./index.scss";
 
 @element("surface-data-row", template, style)
 export default class DataRow<T extends object = object> extends Component
@@ -53,7 +50,7 @@ export default class DataRow<T extends object = object> extends Component
 
         if (this.new)
         {
-            super.setAttribute("new", "true");
+            this.setAttribute("new", "true");
         }
     }
 
@@ -83,13 +80,13 @@ export default class DataRow<T extends object = object> extends Component
     public enterEdit(): void
     {
         this._editMode = true;
-        super.dispatchEvent(new CustomEvent("enter-edit", { detail: this }));
+        this.dispatchEvent(new CustomEvent("enter-edit", { detail: this }));
     }
 
     public leaveEdit(): void
     {
         this._editMode = false;
-        super.dispatchEvent(new CustomEvent("leave-edit", { detail: this }));
+        this.dispatchEvent(new CustomEvent("leave-edit", { detail: this }));
     }
 
     public save(): void
@@ -98,7 +95,7 @@ export default class DataRow<T extends object = object> extends Component
 
         if (this.new)
         {
-            super.removeAttribute("new");
+            this.removeAttribute("new");
             this._new = false;
         }
     }

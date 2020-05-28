@@ -9,31 +9,31 @@ export default class ContexMenu extends CustomElement
     {
         super();
 
-        super.addEventListener("mouseleave", () => super.removeAttribute("visible"));
+        this.addEventListener("mouseleave", () => this.removeAttribute("visible"));
 
         this.parentElement!.addEventListener("contextmenu", this.handler.bind(this));
     }
 
     private handler(event: MouseEvent): void
     {
-        super.setAttribute("visible", "");
+        this.setAttribute("visible", "");
 
-        const bounding = super.getBoundingClientRect();
+        const bounding = this.getBoundingClientRect();
 
         if (event.pageX + (bounding.width / 2) > window.innerWidth)
         {
-            super.style.left = `${(window.innerWidth - bounding.width)}px`;
+            this.style.left = `${(window.innerWidth - bounding.width)}px`;
         }
         else if (event.pageX - (bounding.width / 2) < 0)
         {
-            super.style.left = "0";
+            this.style.left = "0";
         }
         else
         {
-            super.style.left = `${event.pageX - (bounding.width / 2)}px`;
+            this.style.left = `${event.pageX - (bounding.width / 2)}px`;
         }
 
-        super.style.top  = `${event.pageY}px`;
+        this.style.top  = `${event.pageY}px`;
 
         event.preventDefault();
     }

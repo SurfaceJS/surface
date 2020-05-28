@@ -1,5 +1,5 @@
-import IPattern  from "../interfaces/pattern";
-import TypeGuard from "../type-guard";
+import IPattern  from "./interfaces/pattern";
+import TypeGuard from "./type-guard";
 import { Token } from "./scanner";
 
 export function hasDuplicated(parameters: Array<IPattern>): boolean;

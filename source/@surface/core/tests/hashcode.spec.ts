@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import * as chai                   from "chai";
-import Hashcode                    from "../hashcode";
+import Hashcode                    from "../internal/hashcode";
 
 @suite
 export default class HashcodeSpec
@@ -91,6 +91,6 @@ export default class HashcodeSpec
     @test @shouldPass
     public getHashFromDerivedObject(): void
     {
-        chai.expect(Hashcode.encode(new Date())).to.equal(1050263709);
+        chai.expect(Hashcode.encode(new Date())).to.equal(736539013);
     }
 }

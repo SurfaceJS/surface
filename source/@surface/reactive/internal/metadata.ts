@@ -1,13 +1,13 @@
-import IDisposable  from "@surface/core/interfaces/disposable";
-import IReactor     from "../interfaces/reactor";
-import Reactor      from "./reactor";
+import { IDisposable } from "@surface/core";
+import IReactor        from "./interfaces/reactor";
+import Reactor         from "./reactor";
 
 const METADATA = Symbol("reactive:metadata");
 
 export default class Metadata
 {
     public disposables:  Array<IDisposable> = [];
-    public keys:         Array<string>      = [];
+    public keys:         Set<string>        = new Set();
     public reactor:      IReactor           = new Reactor();
     public wrappedArray: boolean            = false;
 

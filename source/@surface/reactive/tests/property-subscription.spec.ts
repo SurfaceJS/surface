@@ -1,10 +1,10 @@
 import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
+import Observer                    from "../internal/observer";
+import PropertyListener            from "../internal/property-listener";
+import PropertySubscription        from "../internal/property-subscription";
 import Reactor                     from "../internal/reactor";
-import Observer                    from "../observer";
-import PropertyListener            from "../property-listener";
-import PropertySubscription        from "../property-subscription";
 
 @suite
 export default class PropertySubscriptionSpec
@@ -49,6 +49,6 @@ export default class PropertySubscriptionSpec
 
         subscription.update({ value: 2 });
 
-        chai.expect((listener as unknown as Indexer)["target"]).to.not.deep.equal(target.host);
+        chai.expect((listener as object as Indexer)["target"]).to.not.deep.equal(target.host);
     }
 }

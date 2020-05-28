@@ -1,5 +1,4 @@
-import Dictionary            from "@surface/collection/dictionary";
-import List                  from "@surface/collection/list";
+import { Dictionary, List }  from "@surface/collection";
 import { Action1, Nullable } from "@surface/core";
 import IRouteData            from "./interfaces/route-data";
 import Route                 from "./internal/route";
@@ -14,7 +13,7 @@ export default class Router
     public constructor(routes?: List<Route>)
     {
         this.routeAction = new Dictionary();
-        this.routes      = routes || new List();
+        this.routes      = routes ?? new List();
     }
 
     public mapRoute(name: string, pattern: string, isDefault?: boolean): Router
@@ -34,7 +33,7 @@ export default class Router
 
         const routeData = routes.select(x => x.match(path)).firstOrDefault(x => !!x);
 
-        const action = this.routeAction.get(path) || this.routeAction.get("*");
+        const action = this.routeAction.get(path) ?? this.routeAction.get("*");
 
         if (action)
         {

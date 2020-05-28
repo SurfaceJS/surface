@@ -1,5 +1,4 @@
-import SyntaxError                                                          from "@surface/expression/syntax-error";
-import TypeGuard                                                            from "@surface/expression/type-guard";
+import { SyntaxError, TypeGuard }                                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                              from "@surface/test-suite";
 import { assert }                                                           from "chai";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/parsers";
@@ -119,83 +118,7 @@ export default class ParsersSpec
     }
 
     @test @shouldFail
-    public InvalidDestructured(): void
-    {
-        const expression = "[1]";
-
-        assert.deepEqual(parseWithError(parseDestructuredPattern, expression), toRaw(new SyntaxError("Invalid destructuring assignment target", 1, 0, 1)));
-
-        const expressionWithLineBreake = "  \n   [1]";
-
-        assert.deepEqual(parseWithError(parseDestructuredPattern, expressionWithLineBreake), toRaw(new SyntaxError("Invalid destructuring assignment target", 2, 6, 4)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatement(): void
-    {
-        const expression = "x foo y bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new Error("Invalid for-loop statement: x foo y bar")));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementSyntaxError(): void
-    {
-        const expression = "x foo in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected token foo", 1, 2, 3)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementLeftHand(): void
-    {
-        const expression = "var foo.1 in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 7, 8)));
-
-        const expressionWithLineBreake = "\n  var \n foo.1 in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 3, 12, 5)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementRightHand(): void
-    {
-        const expression = "let foo in foo.1";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 14, 15)));
-
-        const expressionWithLineBreake = "\n  let \n foo \n in \n foo.1";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 5, 23, 5)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementRightHand1(): void
-    {
-        const expression = "let foo++ in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 1, 4, 5)));
-
-        const expressionWithLineBreake = "\n  let \n foo++ \n in \n bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 3, 9, 2)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementArrayDestructured(): void
-    {
-        const expression = "var [foo.x] in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Illegal property in declaration context", 1, 4, 5)));
-
-        const expressionWithLineBreake = "\n  var \n [foo.x] in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Illegal property in declaration context", 3, 9, 2)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementDuplicatedVariableInArrayDestructured(): void
+    public cannotRedeclareForLoopStatementArrayDestructured(): void
     {
         const expression = "let [a, a] in bar";
 
@@ -207,19 +130,7 @@ export default class ParsersSpec
     }
 
     @test @shouldFail
-    public InvalidForLoopStatementObjectDestructured(): void
-    {
-        const expression = "var { foo.x } in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected token .", 1, 9, 10)));
-
-        const expressionWithLineBreake = "\n  var \n { \nfoo.x } in bar";
-
-        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected token .", 4, 15, 4)));
-    }
-
-    @test @shouldFail
-    public InvalidForLoopStatementDuplicatedVariableInObjectDestructured(): void
+    public cannotRedeclareForLoopStatementObjectDestructured(): void
     {
         const expression = "let { a, a } in bar";
 
@@ -228,5 +139,93 @@ export default class ParsersSpec
         const expressionWithLineBreake = "\n  let \n { a, a } in bar";
 
         assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Cannot redeclare block-scoped variable", 3, 9, 2)));
+    }
+
+    @test @shouldFail
+    public illegalPropertyForLoopStatementArrayDestructured(): void
+    {
+        const expression = "var [foo.x] in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Illegal property in declaration context", 1, 4, 5)));
+
+        const expressionWithLineBreake = "\n  var \n [foo.x] in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Illegal property in declaration context", 3, 9, 2)));
+    }
+
+    @test @shouldFail
+    public invalidDestructured(): void
+    {
+        const expression = "[1]";
+
+        assert.deepEqual(parseWithError(parseDestructuredPattern, expression), toRaw(new SyntaxError("Invalid destructuring assignment target", 1, 0, 1)));
+
+        const expressionWithLineBreake = "  \n   [1]";
+
+        assert.deepEqual(parseWithError(parseDestructuredPattern, expressionWithLineBreake), toRaw(new SyntaxError("Invalid destructuring assignment target", 2, 6, 4)));
+    }
+
+    @test @shouldFail
+    public invalidForLoopStatement(): void
+    {
+        const expression = "x foo y bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new Error("Invalid for-loop statement")));
+    }
+
+    @test @shouldFail
+    public invalidLeftForLoopStatement(): void
+    {
+        const expression = "let foo++ in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 1, 4, 5)));
+
+        const expressionWithLineBreake = "\n  let \n foo++ \n in \n bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Invalid left-hand side in for-loop", 3, 9, 2)));
+    }
+
+    @test @shouldFail
+    public unexpectedTokenForLoopStatement(): void
+    {
+        const expression = "x foo in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected token foo", 1, 2, 3)));
+    }
+
+    @test @shouldFail
+    public unexpectedTokenForLoopStatementLeftHand(): void
+    {
+        const expression = "var foo.1 in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 7, 8)));
+
+        const expressionWithLineBreake = "\n  var \n foo.1 in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 3, 12, 5)));
+    }
+
+    @test @shouldFail
+    public unexpectedTokenForLoopStatementRightHand(): void
+    {
+        const expression = "let foo in foo.1";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected number", 1, 14, 15)));
+
+        const expressionWithLineBreake = "\n  let \n foo \n in \n foo.1";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected number", 5, 23, 5)));
+    }
+
+    @test @shouldFail
+    public unexpectedTokenForLoopStatementObjectDestructured(): void
+    {
+        const expression = "var { foo.x } in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expression), toRaw(new SyntaxError("Unexpected token .", 1, 9, 10)));
+
+        const expressionWithLineBreake = "\n  var \n { \nfoo.x } in bar";
+
+        assert.deepEqual(parseWithError(parseForLoopStatement, expressionWithLineBreake), toRaw(new SyntaxError("Unexpected token .", 4, 15, 4)));
     }
 }

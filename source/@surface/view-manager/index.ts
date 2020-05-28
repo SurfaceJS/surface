@@ -1,4 +1,4 @@
-import Dictionary                                from "@surface/collection/dictionary";
+import { Dictionary }                            from "@surface/collection";
 import { Constructor, Func1, Indexer, Nullable } from "@surface/core";
 import Enumerable                                from "@surface/enumerable";
 import Type                                      from "@surface/reflection";

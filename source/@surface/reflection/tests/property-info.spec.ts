@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import PropertyInfo                from "../property-info";
-import Type                        from "../type";
+import PropertyInfo                from "../internal/property-info";
+import Type                        from "../internal/type";
 import Mock                        from "./fixtures/mock";
 
 // tslint:disable:no-non-null-assertion

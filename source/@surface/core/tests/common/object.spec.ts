@@ -1,56 +1,113 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                               from "chai";
-import { Indexer }                             from "../..";
+import { assert }                              from "chai";
+import { Indexer }                             from "../../internal/types";
 import
 {
+    deepMerge,
+    deepMergeCombine,
     merge,
     objectFactory,
     pathfy,
     proxyFrom,
     structuralEqual
-} from "../../common/object";
+} from "../../internal/common/object";
 
 @suite
 export default class CommonObjectSpec
 {
     @test @shouldPass
-    public mergeObjects(): void
+    public merge(): void
     {
-        const target = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { }};
-        const source = { c: { b: true, c: { a: 2, c: 3 }}, e: 1, f: [1], g: { }, i: undefined, h: undefined };
+        const source1 = { a: 1, b: 2, e: true as boolean|undefined  };
+        const source2 = { c: null, d: undefined, e: undefined };
 
-        const actual = merge([target, source]);
+        const expected = { a: 1, b: 2, c: null, d: undefined, e: undefined };
 
-        const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3}}, e: 1, f: [1], g: { }, h: { }};
+        const actual = merge(source1, source2);
 
-        chai.expect(actual).to.deep.equal(expect);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
-    public mergeCombineArrays(): void
+    public mergeAndCompareDescriptors(): void
+    {
+        const source1: Indexer = { };
+        const source2: Indexer = { };
+
+        Object.defineProperties
+        (
+            source1,
+            {
+                a: { value: 1, writable: false, enumerable: false },
+                b: { get: () => 1 }
+            }
+        );
+
+        Object.defineProperties
+        (
+            source2,
+            {
+                c: { value: {  }, writable: true, enumerable: true },
+                d:
+                {
+                    get value()
+                    {
+                        return source2._value as string;
+                    },
+                    set value(value: string)
+                    {
+                        source2._value = value;
+                    }
+                }
+            }
+        );
+
+        const actual = Object.getOwnPropertyDescriptors(merge(source1, source2)) as { [x: string]: PropertyDescriptor };
+
+        assert.deepEqual(actual.a, Object.getOwnPropertyDescriptors(source1).a);
+        assert.deepEqual(actual.b, Object.getOwnPropertyDescriptors(source1).b);
+        assert.deepEqual(actual.c, Object.getOwnPropertyDescriptors(source2).c);
+        assert.deepEqual(actual.d, Object.getOwnPropertyDescriptors(source2).d);
+    }
+
+    @test @shouldPass
+    public deepMergeObjects(): void
+    {
+        const target = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { } as object|undefined};
+        const source = { c: { b: true, c: { a: 2, c: 3 }}, e: 1, f: [1], g: { }, i: undefined, h: undefined };
+
+        const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3 }}, e: 1, f: [1], g: { }, i: undefined, h: undefined };
+
+        const actual = deepMerge(target, source);
+
+        assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public deepMergeCombine(): void
     {
         const first  = { values: [1, 2, 3] };
         const second = { values: [4, 5, 6] };
 
-        const actual = merge([first, second], true);
+        const actual = deepMergeCombine(first, second);
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
-    public mergeCombineMutiplesObjects(): void
+    public deepMergeCombineMutiplesObjects(): void
     {
         const first  = { a: 1, b: "2", c: { d: 3 }};
         const second = { c: { e: true } };
         const third  = { f: [1], g: { } };
 
-        const actual = merge([first, second, third]);
+        const actual = deepMergeCombine(first, second, third);
 
         const expect = { a: 1, b: "2", c: { d: 3, e: true }, f: [1], g: { }};
 
-        chai.assert.deepEqual(actual, expect);
+        assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
@@ -72,7 +129,7 @@ export default class CommonObjectSpec
             }
         };
 
-        chai.expect(actual).to.deep.equal(expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -84,7 +141,7 @@ export default class CommonObjectSpec
 
         const actual = pathfy(source);
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -96,7 +153,7 @@ export default class CommonObjectSpec
 
         const actual = pathfy(source, { keySeparator: "-", valueSeparator: " = " });
 
-        chai.assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -108,14 +165,14 @@ export default class CommonObjectSpec
 
         const proxy = proxyFrom(instanceA, instanceB, instanceC);
 
-        chai.expect(proxy.a, "proxy.a").to.equal(1);
-        chai.expect(proxy.b, "proxy.b").to.equal("two");
-        chai.expect(proxy.c, "proxy.c").to.equal(false);
-        chai.expect(proxy.d, "proxy.d").to.equal(null);
-        chai.expect(proxy.e, "proxy.e").to.deep.equal([0]);
-        chai.expect(proxy.f, "proxy.f").to.deep.equal({ value: 1 });
-        chai.expect(proxy.g, "proxy.g").to.deep.equal("G");
-        chai.expect((proxy as Indexer)["h"], "proxy.h").to.deep.equal(undefined);
+        assert.equal(proxy.a, 1,     "proxy.a");
+        assert.equal(proxy.b, "two", "proxy.b");
+        assert.equal(proxy.c, false, "proxy.c");
+        assert.equal(proxy.d, null,  "proxy.d");
+        assert.deepEqual(proxy.e,                 [0],          "proxy.e");
+        assert.deepEqual(proxy.f,                 { value: 1 }, "proxy.f");
+        assert.deepEqual(proxy.g,                 "G",          "proxy.g");
+        assert.deepEqual((proxy as Indexer)["h"], undefined,    "proxy.h");
 
         proxy.a = 2;
         proxy.b = "three";
@@ -128,38 +185,38 @@ export default class CommonObjectSpec
 
         const merge = { foo: 1, bar: 2, ...proxy };
 
-        chai.expect(merge.a,   "merge.a").to.equal(2);
-        chai.expect(merge.b,   "merge.b").to.equal("three");
-        chai.expect(merge.c,   "merge.c").to.equal(true);
-        chai.expect(merge.d,   "merge.d").to.equal(null);
-        chai.expect(merge.e,   "merge.e").to.deep.equal([1, 2]);
-        chai.expect(merge.f,   "merge.f").to.deep.equal({ value: 3 });
-        chai.expect(merge.g,   "merge.g").to.deep.equal("g");
-        chai.expect(merge.foo, "merge.foo").to.deep.equal(1);
-        chai.expect(merge.bar, "merge.bar").to.deep.equal(2);
-        chai.expect((merge as Indexer)["h"], "merge.h").to.deep.equal(10);
+        assert.equal(merge.a, 2,       "merge.a");
+        assert.equal(merge.b, "three", "merge.b");
+        assert.equal(merge.c, true,    "merge.c");
+        assert.equal(merge.d, null,    "merge.d");
+        assert.deepEqual(merge.e,   [1, 2],           "merge.e");
+        assert.deepEqual(merge.f,   { value: 3 },     "merge.f");
+        assert.deepEqual(merge.g,   "g",              "merge.g");
+        assert.deepEqual(merge.foo, 1,                "merge.foo");
+        assert.deepEqual(merge.bar, 2,                "merge.bar");
+        assert.deepEqual((merge as Indexer)["h"], 10, "merge.h");
 
         const descriptors = Object.getOwnPropertyDescriptors(proxy);
 
-        chai.expect(descriptors.a).not.to.equal(undefined);
-        chai.expect(descriptors.b).not.to.equal(undefined);
-        chai.expect(descriptors.c).not.to.equal(undefined);
-        chai.expect(descriptors.d).not.to.equal(undefined);
-        chai.expect(descriptors.e).not.to.equal(undefined);
-        chai.expect(descriptors.f).not.to.equal(undefined);
-        chai.expect(descriptors.g).not.to.equal(undefined);
+        assert.notEqual(descriptors.a, undefined);
+        assert.notEqual(descriptors.b, undefined);
+        assert.notEqual(descriptors.c, undefined);
+        assert.notEqual(descriptors.d, undefined);
+        assert.notEqual(descriptors.e, undefined);
+        assert.notEqual(descriptors.f, undefined);
+        assert.notEqual(descriptors.g, undefined);
     }
 
     @test @shouldPass
     public structuralEqual(): void
     {
-        chai.expect(structuralEqual(1, 1), "scenario 1").to.equal(true);
-        chai.expect(structuralEqual([1, 2, 3], [1, 2, 3]), "scenario 2").to.equal(true);
-        chai.expect(structuralEqual({ a: 1 }, { a: 1 }), "scenario 3").to.equal(true);
-        chai.expect(structuralEqual({ b: 1 }, { a: 1 }), "scenario 4").to.equal(false);
-        chai.expect(structuralEqual({ a: 1, b: 2 }, { b: 2, a: 1 }), "scenario 5").to.equal(true);
-        chai.expect(structuralEqual({ a: 1, b: [1, 2] }, { a: 1, b: [1, 2] }), "scenario 6").to.equal(true);
-        chai.expect(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: false } }), "scenario 7").to.equal(true);
-        chai.expect(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: true } }), "scenario 8").to.equal(false);
+        assert.equal(structuralEqual(1, 1),                                                 true,  "scenario 1");
+        assert.equal(structuralEqual([1, 2, 3], [1, 2, 3]),                                 true,  "scenario 2");
+        assert.equal(structuralEqual({ a: 1 }, { a: 1 }),                                   true,  "scenario 3");
+        assert.equal(structuralEqual({ b: 1 }, { a: 1 }),                                   false, "scenario 4");
+        assert.equal(structuralEqual({ a: 1, b: 2 }, { b: 2, a: 1 }),                       true,  "scenario 5");
+        assert.equal(structuralEqual({ a: 1, b: [1, 2] }, { a: 1, b: [1, 2] }),             true,  "scenario 6");
+        assert.equal(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: false } }), true,  "scenario 7");
+        assert.equal(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: true } }),  false, "scenario 8");
     }
 }

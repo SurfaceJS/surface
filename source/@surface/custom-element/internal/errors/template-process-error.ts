@@ -1,9 +1,4 @@
-export default class TemplateProcessError extends Error
-{
-    public constructor(message: string, stack: string)
-    {
-        super(message);
+import CustomStackError from "./custom-stack-error";
 
-        this.stack = message + "\n" + stack;
-    }
-}
+export default class TemplateProcessError extends CustomStackError
+{ }
