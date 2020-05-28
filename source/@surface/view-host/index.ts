@@ -23,7 +23,7 @@ export default class ViewHost extends CustomElement
     {
         if (!this._view)
         {
-            this._view = Enumerable.from(Array.from(super.querySelectorAll<View>("*"))).firstOrDefault(x => /^view-/.test(x.tagName));
+            this._view = Enumerable.from(this.querySelectorAll<View>("*")).firstOrDefault(x => /^view-/.test(x.tagName));
         }
 
         return this._view;

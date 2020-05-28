@@ -272,11 +272,9 @@ export default class Reactor implements IDisposable
     {
         Reactor.stack.push(this);
 
-        const value = args.length == 1 ? args[0] : args.length == 2 ? args[0][args[1]] : args[2];
-
         if (args.length == 1)
         {
-            this.notifyValue(value as Indexer);
+            this.notifyValue(args[0] as Indexer);
         }
         else
         {
@@ -288,7 +286,7 @@ export default class Reactor implements IDisposable
             }
             else
             {
-                this.notifyTargetKeyValue(target, key, value as Indexer);
+                this.notifyTargetKeyValue(target, key, args[2] as Indexer);
             }
         }
 

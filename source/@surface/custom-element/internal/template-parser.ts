@@ -79,12 +79,14 @@ export default class TemplateParser
         return new TemplateParser(name, stackTrace).parse(template);
     }
 
-    public static parse(name: string, template: HTMLTemplateElement): [HTMLTemplateElement, ITemplateDescriptor]
+    public static parse(name: string, template: string): [HTMLTemplateElement, ITemplateDescriptor]
     {
-        const clone      = template.cloneNode(true) as HTMLTemplateElement;
-        const descriptor = new TemplateParser(name).parse(clone);
+        const templateElement = document.createElement("template");
+        templateElement.innerHTML = template;
 
-        return [clone, descriptor];
+        const descriptor = new TemplateParser(name).parse(templateElement);
+
+        return [templateElement, descriptor];
     }
 
     public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
