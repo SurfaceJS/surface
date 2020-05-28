@@ -7,7 +7,7 @@ const METADATA = Symbol("reactive:metadata");
 export default class Metadata
 {
     public disposables:  Array<IDisposable> = [];
-    public keys:         Array<string>      = [];
+    public keys:         Set<string>        = new Set();
     public reactor:      IReactor           = new Reactor();
     public wrappedArray: boolean            = false;
 

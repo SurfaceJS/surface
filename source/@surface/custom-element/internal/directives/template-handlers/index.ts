@@ -1,7 +1,5 @@
 import { AsyncAction, IDisposable } from "@surface/core";
-import { enumerateRange }           from "../../common";
 import ITemplateDescriptor          from "../../interfaces/descriptors/template-descriptor";
-import Metadata                     from "../../metadata/metadata";
 import TemplateProcessor            from "../../template-processor";
 import { Scope }                    from "../../types";
 
@@ -30,16 +28,6 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
         const disposable = TemplateProcessor.process({ scope, context, host, root, descriptor });
 
         return [root, disposable];
-    }
-
-    protected removeInRange(start: ChildNode, end: ChildNode): void
-    {
-        for (const element of enumerateRange(start, end))
-        {
-            Metadata.of(element)?.disposables.forEach(x => x.dispose());
-
-            element.remove();
-        }
     }
 
     public abstract dispose(): void;

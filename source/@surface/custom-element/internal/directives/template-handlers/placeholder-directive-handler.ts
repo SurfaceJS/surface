@@ -14,15 +14,15 @@ import IPlaceholderDirective from "../../interfaces/directives/placeholder-direc
 import TemplateMetadata      from "../../metadata/template-metadata";
 import ParallelWorker        from "../../parallel-worker";
 import { Injection, Scope }  from "../../types";
+import TemplateBlock         from "../template-block";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly directive:       IPlaceholderDirective;
-    private readonly end:             Comment;
     private readonly keySubscription: ISubscription;
     private readonly metadata:        TemplateMetadata;
-    private readonly start:           Comment;
     private readonly template:        HTMLTemplateElement;
+    private readonly templateBlock:   TemplateBlock = new TemplateBlock();
 
     private currentDisposable: IDisposable|null   = null;
     private disposed:          boolean            = false;
@@ -39,15 +39,12 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.template  = template;
         this.directive = directive;
         this.metadata  = TemplateMetadata.from(this.host);
-        this.start     = document.createComment("");
-        this.end       = document.createComment("");
 
         assert(template.parentNode);
 
         const parent = template.parentNode;
 
-        parent.replaceChild(this.end, template);
-        parent.insertBefore(this.start, this.end);
+        this.templateBlock.insertAt(parent, template);
 
         this.keySubscription = tryObserveKeyByObservable(this.scope, directive, { notify: this.onKeyChange.bind(this) }, true);
 
@@ -119,7 +116,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.currentDisposable?.dispose();
 
-        this.removeInRange(this.start, this.end);
+        this.templateBlock.clear();
 
         let destructured = false;
 
@@ -133,7 +130,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         const [content, disposable] = this.processTemplate(mergedScope, this.injection!.context, this.injection!.host, this.injection!.template, this.injection!.directive.descriptor);
 
-        this.end.parentNode!.insertBefore(content, this.end);
+        this.templateBlock.setContent(content);
 
         this.currentDisposable = disposable;
     }
@@ -147,11 +144,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.currentDisposable?.dispose();
 
-        this.removeInRange(this.start, this.end);
+        this.templateBlock.clear();
 
         const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, this.template, this.directive.descriptor);
 
-        this.end.parentNode!.insertBefore(content, this.end);
+        this.templateBlock.setContent(content);
 
         this.currentDisposable = disposable;
     }
@@ -168,10 +165,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             this.metadata.defaults.delete(this.key);
             this.metadata.placeholders.delete(this.key);
 
-            this.removeInRange(this.start, this.end);
-
-            this.start.remove();
-            this.end.remove();
+            this.templateBlock.dispose();
 
             this.disposed = true;
         }

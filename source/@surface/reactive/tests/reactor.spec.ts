@@ -85,9 +85,9 @@ export default class ReactorSpec
 
         assert.doesNotThrow(() => Reactor.makeReactive(rawEmmiter, "value"));
 
-        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         ["getValue", "value"]);
-        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, ["_value", "nonReactiveValue", "value"]);
-        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              ["nonReactiveValue", "value"]);
+        assert.deepEqual(Metadata.of(instanceEmmiter)!.keys,         new Set(["getValue", "value"]));
+        assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, new Set(["_value", "nonReactiveValue", "value"]));
+        assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              new Set(["nonReactiveValue", "value"]));
 
         rawEmmiter.value = rawEmmiter.value;
 

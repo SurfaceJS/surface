@@ -107,12 +107,12 @@ export default class Reactor implements IDisposable
         const key      = keyOrIndex.toString();
         const metadata = Metadata.from(target);
 
-        if (metadata.keys.includes(key))
+        if (metadata.keys.has(key))
         {
             return metadata.reactor;
         }
 
-        metadata.keys.push(key);
+        metadata.keys.add(key);
 
         const member = Type.from(target).getMember(key);
 

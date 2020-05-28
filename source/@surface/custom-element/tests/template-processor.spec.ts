@@ -76,8 +76,6 @@ const getHost = <T = { }>() =>
 const timeout = async () => await new Promise(x => setTimeout(x, 0));
 const render  = async () => await ParallelWorker.done();
 
-// declare var chai: never;
-
 function process(host: Element, root: Node, scope?: Indexer): void
 {
     const template = document.createElement("template");
@@ -532,7 +530,7 @@ export default class TemplateProcessorSpec
     public async templateWithInjectAndPlaceholderDirectiveWithScope(): Promise<void>
     {
         const root = getHost();
-        const host = getHost<{ item?: { value: string } }>();
+        const host = getHost<{ item?: { value: string }}>();
 
         host.item = { value: "People" };
 
@@ -571,7 +569,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #placeholder:items="({ item })"><span>Default</span></template>`;
+        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #placeholder:items="({ item })"></template>`;
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -583,7 +581,8 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span"), null);
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",  "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close", "childNodes[1]");
 
         host.items =
         [
@@ -594,9 +593,15 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2",   "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",   "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",    "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",   "childNodes[8]");
 
         host.items =
         [
@@ -607,8 +612,14 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "#close",   "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#open",    "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "Three: 3", "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "#close",   "childNodes[7]");
     }
 
     @test @shouldPass
@@ -680,32 +691,42 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 1", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
 
         host.elements = [1, 2, 3];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 1");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent,  "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent,  "Element: 0", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent,  "#close",     "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent,  "#open",      "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent,  "Element: 1", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent,  "#close",     "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent,  "#open",      "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent,  "Element: 2", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent,  "#close",     "childNodes[8]");
 
         host.elements = [2];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 0");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
     }
 
     @test @shouldPass
@@ -721,32 +742,42 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
 
         host.elements = [1, 2, 3];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
 
         host.elements = [2];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2, 3];
 
@@ -756,10 +787,15 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 3");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 1");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 3", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 1", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
     }
 
     @test @shouldPass
@@ -775,32 +811,42 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements = [[1, 2], [2, 4]];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements = [[1, 2], [2, 4], [3, 6]];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [[2, 4]];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -816,8 +862,9 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
 
         host.elements =
         [
@@ -827,9 +874,12 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2, Name: two");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                 "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                "childNodes[5]");
 
         host.elements =
         [
@@ -840,17 +890,23 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 1, Name: one");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element: 2, Name: two");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element: 3, Name: three");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                   "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one",   "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                  "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                   "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two",   "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                  "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                   "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3, Name: three", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                  "childNodes[8]");
 
         host.elements = [[2, { item: { name: "two" } }]];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element: 2, Name: two");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2, Name: two", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
     }
 
     @test @shouldPass
@@ -866,8 +922,9 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements =
         [
@@ -877,9 +934,12 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements =
         [
@@ -890,17 +950,23 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [{ values: [2, 4] }];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -916,8 +982,9 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements =
         [
@@ -927,9 +994,12 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 2);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements =
         [
@@ -940,17 +1010,23 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 3);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 1, Element[1]: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "Element[0]: 2, Element[1]: 4");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "Element[0]: 3, Element[1]: 6");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [{ values: [2, [[4]]] }];
 
         await render();
 
-        assert.equal(host.shadowRoot.childElementCount, 1);
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "Element[0]: 2, Element[1]: 4");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -980,21 +1056,31 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
 
         host.condition = true;
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
 
         host.condition = false;
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1028,13 +1114,16 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span"), null);
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
 
         host.condition = true;
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1064,15 +1153,23 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span")?.textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
 
         host.condition = true;
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1106,7 +1203,8 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span"), null);
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
 
         host.items =
         [
@@ -1117,9 +1215,15 @@ export default class TemplateProcessorSpec
 
         await render();
 
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "One: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Two: 2");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
     }
 
     @test @shouldFail
@@ -1661,4 +1765,43 @@ export default class TemplateProcessorSpec
 
         assert.deepEqual(actual, expected);
     }
+
+    // @test @shouldPass
+    // public async xteste(): Promise<void>
+    // {
+    //     const root = getHost();
+    //     const host = getHost<{ items?: Array<number> }>();
+
+    //     host.shadowRoot.innerHTML = `<template #placeholder #for='const i of host.items'><span>Placeholder: {i}</span></template>`;
+
+    //     root.shadowRoot.appendChild(host);
+    //     document.body.appendChild(root);
+
+    //     host.items = [];
+
+    //     process(host, host.shadowRoot);
+    //     process(root, root.shadowRoot);
+
+    //     await render();
+
+    //     assert.equal(host.shadowRoot.querySelector("span"), null);
+
+    //     host.items = [1, 2, 3];
+
+    //     // await timeout();
+    //     await render();
+
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 1");
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 2");
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 3");
+
+    //     host.items = [4, 5, 6];
+
+    //     // await timeout();
+    //     await render();
+
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 4");
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 5");
+    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 6");
+    // }
 }

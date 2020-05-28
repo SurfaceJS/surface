@@ -1,10 +1,11 @@
-import { assert, IDisposable }                          from "@surface/core";
-import { ISubscription }                                from "@surface/reactive";
+import { assert, IDisposable }                           from "@surface/core";
+import { ISubscription }                                 from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
-import IChoiceBranchDirective                           from "../../interfaces/directives/choice-branch-directive";
-import ParallelWorker                                   from "../../parallel-worker";
-import { Scope }                                        from "../../types";
-import TemplateDirectiveHandler                         from "./";
+import IChoiceBranchDirective                            from "../../interfaces/directives/choice-branch-directive";
+import ParallelWorker                                    from "../../parallel-worker";
+import { Scope }                                         from "../../types";
+import TemplateBlock                                     from "../template-block";
+import TemplateDirectiveHandler                          from "./";
 
 type Choice =
 {
@@ -14,27 +15,23 @@ type Choice =
 
 export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly choices:       Array<Choice> = [];
-    private readonly end:           Comment;
-    private readonly start:         Comment;
+    private readonly choices:       Array<Choice>        = [];
     private readonly subscriptions: Array<ISubscription> = [];
+    private readonly templateBlock: TemplateBlock        = new TemplateBlock();
 
     private currentDisposable: IDisposable|null = null;
     private disposed:          boolean          = false;
+
 
     public constructor(scope: Scope, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceBranchDirective>)
     {
         super(scope, context, host);
 
-        this.start = document.createComment("");
-        this.end   = document.createComment("");
-
         assert(templates[0].parentNode);
 
         const parent = templates[0].parentNode;
 
-        parent.replaceChild(this.end, templates[0]);
-        parent.insertBefore(this.start, this.end);
+        this.templateBlock.insertAt(parent, templates[0]);
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
@@ -65,7 +62,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
 
-        this.removeInRange(this.start, this.end);
+        this.templateBlock.clear();
 
         for (const choice of this.choices)
         {
@@ -75,7 +72,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
                 this.currentDisposable = disposable;
 
-                this.end.parentNode!.insertBefore(content, this.end);
+                this.templateBlock.setContent(content);
 
                 return;
             }
@@ -90,10 +87,8 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
             this.subscriptions.forEach(x => x.unsubscribe());
 
-            this.removeInRange(this.start, this.end);
-
-            this.start.remove();
-            this.end.remove();
+            this.templateBlock.clear();
+            this.templateBlock.dispose();
 
             this.disposed = true;
         }

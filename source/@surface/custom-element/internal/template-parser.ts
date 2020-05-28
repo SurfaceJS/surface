@@ -264,6 +264,8 @@ export default class TemplateParser
 
     private parse(template: HTMLTemplateElement): ITemplateDescriptor
     {
+        this.trimContent(template.content);
+
         this.traverseNode(template.content);
 
         return this.templateDescriptor;
@@ -687,6 +689,25 @@ export default class TemplateParser
             else
             {
                 nonElementsCount++;
+            }
+        }
+    }
+
+    private trimContent(content: DocumentFragment): void
+    {
+        if (content.firstChild != content.firstElementChild)
+        {
+            while (content.firstChild?.nodeType == Node.TEXT_NODE && content.firstChild.textContent?.trim() == "")
+            {
+                content.firstChild.remove();
+            }
+        }
+
+        if (content.lastChild != content.lastElementChild)
+        {
+            while (content.lastChild?.nodeType == Node.TEXT_NODE && content.lastChild.textContent?.trim() == "")
+            {
+                content.lastChild.remove();
             }
         }
     }

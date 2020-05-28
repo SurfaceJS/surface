@@ -5,20 +5,20 @@ import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } fro
 import ILoopDirective                                                        from "../../interfaces/directives/loop-directive";
 import ParallelWorker                                                        from "../../parallel-worker";
 import { Scope }                                                             from "../../types";
+import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from "./";
 
-type Cache = { start: Comment, end: Comment, value: unknown, disposable: IDisposable };
+type Cache = { templateBlock: TemplateBlock, value: unknown, disposable: IDisposable };
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly cache:        Array<Cache> = [];
-    private readonly end:          Comment;
-    private readonly iterator:     (elements: Iterable<unknown>, action: Action2<unknown, number>) => number;
-    private readonly start:        Comment;
-    private readonly directive:    ILoopDirective;
-    private readonly subscription: ISubscription;
-    private readonly template:     HTMLTemplateElement;
-    private readonly tree:         DocumentFragment;
+    private readonly cache:         Array<Cache> = [];
+    private readonly directive:     ILoopDirective;
+    private readonly iterator:      (elements: Iterable<unknown>, action: Action2<unknown, number>) => number;
+    private readonly subscription:  ISubscription;
+    private readonly template:      HTMLTemplateElement;
+    private readonly templateBlock: TemplateBlock = new TemplateBlock();
+    private readonly tree:          DocumentFragment;
 
     private disposed: boolean = false;
 
@@ -28,23 +28,19 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.template  = template;
         this.directive = directive;
-
-        this.tree  = document.createDocumentFragment();
-        this.start = document.createComment("");
-        this.end   = document.createComment("");
+        this.tree      = document.createDocumentFragment();
 
         this.iterator = directive.operator == "in" ? this.forInIterator : this.forOfIterator;
 
         const parent = this.template.parentNode!;
 
-        parent.replaceChild(this.end, template);
-        parent.insertBefore(this.start, this.end);
+        this.templateBlock.insertAt(parent, template);
 
         const notify = async () => await ParallelWorker.run(this.task.bind(this));
 
         this.subscription = tryObserveByObservable(scope, directive, { notify }, true);
 
-        super.fireAsync(notify);
+        this.fireAsync(notify);
     }
 
     private action(value: unknown, index: number): void
@@ -55,52 +51,47 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
                 ? { ...this.scope, [this.directive.left.name]: value }
                 : { ...this.scope, ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
 
-            const start = document.createComment("");
-            const end   = document.createComment("");
+            const templateBlock = new TemplateBlock();
 
-            const [content, disposable] = super.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
+            const [content, disposable] = this.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
 
             if (index < this.cache.length)
             {
                 const entry = this.cache[index];
 
                 entry.disposable.dispose();
+                entry.templateBlock.dispose();
 
-                this.removeInRange(entry.start, entry.end);
-
-                entry.start.remove();
-                entry.end.remove();
-
-                this.cache[index] = { start, end, disposable, value };
+                this.cache[index] = { templateBlock, disposable, value };
             }
             else
             {
-                this.cache.push({ start, end, disposable, value });
+                this.cache.push({ templateBlock, disposable, value });
             }
 
-            this.tree.appendChild(start);
+            templateBlock.connect(this.tree);
 
-            this.tree.appendChild(content);
-
-            this.tree.appendChild(end);
+            templateBlock.setContent(content);
         }
         else
         {
-            const { start, end } = this.cache[index];
+            const templateBlock = this.cache[index].templateBlock;
 
             let simbling: Nullable<ChildNode> = null;
 
-            const clone = start.cloneNode() as Comment;
+            const clone = templateBlock.open.cloneNode() as Comment;
 
             this.tree.appendChild(clone);
 
-            while ((simbling = start.nextSibling) && simbling != end)
+            while ((simbling = templateBlock.open.nextSibling) && simbling != templateBlock.close)
             {
                 this.tree.appendChild(simbling);
             }
 
-            this.tree.replaceChild(start, clone);
-            this.tree.appendChild(end);
+            templateBlock.makeSingleUser();
+
+            this.tree.replaceChild(templateBlock.open, clone);
+            this.tree.appendChild(templateBlock.close);
         }
     }
 
@@ -108,14 +99,10 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     {
         for (const entry of this.cache.splice(index))
         {
-            const { start, end, disposable } = entry;
+            const { templateBlock, disposable } = entry;
 
             disposable.dispose();
-
-            super.removeInRange(start, end);
-
-            start.remove();
-            end.remove();
+            templateBlock.dispose();
         }
     }
 
@@ -156,7 +143,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.clearCache(index);
 
-        this.end.parentNode!.insertBefore(this.tree, this.end);
+        this.templateBlock.setContent(this.tree);
     }
 
     public dispose(): void
@@ -165,22 +152,14 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             for (const entry of this.cache.splice(0))
             {
-                const { start, end, disposable } = entry;
+                const { templateBlock, disposable } = entry;
 
                 disposable.dispose();
-
-                super.removeInRange(start, end);
-
-                start.remove();
-                end.remove();
+                templateBlock.dispose();
             }
 
             this.subscription.unsubscribe();
-
-            super.removeInRange(this.start, this.end);
-
-            this.start.remove();
-            this.end.remove();
+            this.templateBlock.dispose();
 
             this.disposed = true;
         }
