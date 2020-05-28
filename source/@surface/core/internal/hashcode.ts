@@ -4,8 +4,8 @@ import { enumerateKeys }        from "./common/object";
 
 export default class Hashcode
 {
-    private readonly cache:      WeakMap<object, string> = new WeakMap();
-    private readonly references: Array<object> = [];
+    private readonly cache:      Map<object, string> = new Map();
+    private readonly references: Set<object>         = new Set();
 
     public static encode(source: unknown): number
     {
@@ -49,12 +49,12 @@ export default class Hashcode
             }
             else
             {
-                if (this.references.includes(source))
+                if (this.references.has(source))
                 {
                     return `[circular][${source.constructor.name}]`;
                 }
 
-                this.references.push(source);
+                this.references.add(source);
 
                 for (const key of enumerateKeys(source))
                 {
@@ -63,7 +63,7 @@ export default class Hashcode
                     signature = signature ? `${signature},${String(key)}:${this.getSignature(value)}` : `${String(key)}:${this.getSignature(value)}`;
                 }
 
-                this.references.splice(this.references.indexOf(source));
+                this.references.delete(source);
 
                 signature = `{${signature}}[${source.constructor.name}]`;
             }

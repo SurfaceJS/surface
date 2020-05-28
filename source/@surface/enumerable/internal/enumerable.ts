@@ -1,9 +1,9 @@
 import { Action2, Func1, Func2, Func3, Nullable } from "@surface/core";
-import IComparer                                  from "./comparer";
-import IGroup                                     from "./group";
-import ILookup                                    from "./interfaces/lookup";
 import Comparer                                   from "./comparer";
 import EnumerableSorter                           from "./enumerable-sorter";
+import IGroup                                     from "./group";
+import IComparer                                  from "./interfaces/comparer";
+import ILookup                                    from "./interfaces/lookup";
 import Lookup                                     from "./lookup";
 import Set                                        from "./set";
 
