@@ -73,7 +73,7 @@ export default class ForEach extends Component
 
             if (this._template)
             {
-                super.removeChild(this._template);
+                this.removeChild(this._template);
             }
         }
 
@@ -84,7 +84,7 @@ export default class ForEach extends Component
     {
         super();
 
-        super.onAfterBind = this.changed.bind(this);
+        this.onAfterBind = this.changed.bind(this);
     }
 
     private changed(): void
@@ -93,7 +93,7 @@ export default class ForEach extends Component
         {
             // CustomElement.clearDirectives(this.childNodes);
 
-            super.innerHTML = "";
+            this.innerHTML = "";
 
             let sequence = Enumerable.from(this.of);
 
@@ -124,14 +124,14 @@ export default class ForEach extends Component
 
                     content.normalize();
 
-                    // CustomElement.processDirectives(this, content, { ...super.context, index, item } as Indexer); //TODO - Review binding order
+                    // CustomElement.processDirectives(this, content, { ...this.context, index, item } as Indexer); //TODO - Review binding order
 
-                    super.appendChild(content);
+                    this.appendChild(content);
 
                     // index++;
                 }
 
-                super.dispatchEvent(new Event("change"));
+                this.dispatchEvent(new Event("change"));
             }
         }
     }

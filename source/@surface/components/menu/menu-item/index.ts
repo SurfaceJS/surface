@@ -13,27 +13,27 @@ export default class MenuItem extends CustomElement
     private parentContainer: Nullable<HTMLElement>;
     public get icon(): string
     {
-        return super.getAttribute("icon") || "" as string;
+        return this.getAttribute("icon") || "" as string;
     }
 
     public set icon(value: string)
     {
-        super.setAttribute("icon", value.toString());
+        this.setAttribute("icon", value.toString());
     }
 
     public get items(): Enumerable<MenuItem>
     {
-        return Enumerable.from(Array.from(super.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
+        return Enumerable.from(Array.from(this.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
     }
 
     public get label(): string
     {
-        return super.getAttribute("label") || "";
+        return this.getAttribute("label") || "";
     }
 
     public set label(value: string)
     {
-        super.setAttribute("label", value);
+        this.setAttribute("label", value);
     }
 
     private onClick(): void
@@ -62,7 +62,7 @@ export default class MenuItem extends CustomElement
 
     private onMouseOver(): void
     {
-        const container         = super.references.container as HTMLElement;
+        const container         = this.references.container as HTMLElement;
         const bounding          = this.getBoundingClientRect();
         const containerBounding = container.getBoundingClientRect();
 
@@ -90,38 +90,38 @@ export default class MenuItem extends CustomElement
 
         if (hasItems)
         {
-            super.references.root!.setAttribute("has-items", "");
+            this.references.root!.setAttribute("has-items", "");
         }
 
         if (this.parentElement instanceof MenuItem)
         {
-            super.addEventListener("mouseover", this.onMouseOver.bind(this));
+            this.addEventListener("mouseover", this.onMouseOver.bind(this));
 
             if (!hasItems)
             {
                 this.parentContainer = this.parentElement.references.container!;
 
-                super.addEventListener("click", this.onClick.bind(this));
-                super.addEventListener("mouseleave", this.onMouseLeave.bind(this));
+                this.addEventListener("click", this.onClick.bind(this));
+                this.addEventListener("mouseleave", this.onMouseLeave.bind(this));
             }
         }
         else
         {
-            super.addEventListener("mouseover", this.onMouseOver.bind(this));
+            this.addEventListener("mouseover", this.onMouseOver.bind(this));
 
             if (this.parentElement instanceof ContexMenu)
             {
-                super.addEventListener("click", this.onClick.bind(this));
-                super.addEventListener("mouseleave", this.onMouseLeave.bind(this));
+                this.addEventListener("click", this.onClick.bind(this));
+                this.addEventListener("mouseleave", this.onMouseLeave.bind(this));
             }
         }
     }
 
     public disconnectedCallback(): void
     {
-        super.removeEventListener("click", this.onClick);
-        super.removeEventListener("mouseleave", this.onMouseLeave);
-        super.removeEventListener("mouseover", this.onMouseOver);
-        super.references.root!.removeAttribute("has-items");
+        this.removeEventListener("click", this.onClick);
+        this.removeEventListener("mouseleave", this.onMouseLeave);
+        this.removeEventListener("mouseover", this.onMouseOver);
+        this.references.root!.removeAttribute("has-items");
     }
 }

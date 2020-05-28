@@ -28,8 +28,8 @@ export default class Switch extends Component
     public constructor()
     {
         super();
-        const templates = super.querySelectorAll<HTMLTemplateElement>("template");
-        templates.forEach(x => { this.templates.set(x.getAttribute("when") || "default", x); super.removeChild(x); });
+        const templates = this.querySelectorAll<HTMLTemplateElement>("template");
+        templates.forEach(x => { this.templates.set(x.getAttribute("when") || "default", x); this.removeChild(x); });
     }
 
     private changed(): void
@@ -38,7 +38,7 @@ export default class Switch extends Component
 
         // CustomElement.clearDirectives(this.childNodes);
 
-        super.innerHTML = "";
+        this.innerHTML = "";
 
         if (template)
         {
@@ -46,12 +46,12 @@ export default class Switch extends Component
 
             content.normalize();
 
-            // CustomElement.processDirectives(this, content, super.context);
+            // CustomElement.processDirectives(this, content, this.context);
 
-            super.appendChild(content);
+            this.appendChild(content);
         }
 
-        super.dispatchEvent(new Event("change"));
+        this.dispatchEvent(new Event("change"));
     }
 
     public appendChild<T extends Node>(element: T): T

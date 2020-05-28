@@ -11,17 +11,17 @@ export class Menu extends CustomElement
 {
     public get items(): Enumerable<MenuItem>
     {
-        return Enumerable.from(Array.from(super.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
+        return Enumerable.from(Array.from(this.querySelectorAll<MenuItem>("surface-menu-item"))).where(x => x.parentElement == this);
     }
 
     public get type(): Menu.Type
     {
-        return Menu.Type[dashedToTitle(super.getAttribute("type") || "") as keyof typeof Menu.Type] || Menu.Type.Static;
+        return Menu.Type[dashedToTitle(this.getAttribute("type") || "") as keyof typeof Menu.Type] || Menu.Type.Static;
     }
 
     public set type(value: Menu.Type)
     {
-        super.setAttribute("type", Menu.Type[value].toLowerCase());
+        this.setAttribute("type", Menu.Type[value].toLowerCase());
     }
 }
 

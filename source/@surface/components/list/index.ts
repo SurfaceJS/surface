@@ -33,9 +33,9 @@ export default class List extends Component
     public constructor(template?: HTMLTemplateElement)
     {
         super();
-        this.template = template || super.querySelector("template") || document.createElement("template");
+        this.template = template || this.querySelector("template") || document.createElement("template");
 
-        this.items.push(...Enumerable.from([...Array.from(super.querySelectorAll<ListItem>("surface-list-item"))]));
+        this.items.push(...Enumerable.from([...Array.from(this.querySelectorAll<ListItem>("surface-list-item"))]));
     }
 
     public add(node?: Node): void
@@ -44,13 +44,13 @@ export default class List extends Component
 
         item.addEventListener("remove", () => this.remove(item));
 
-        // Component.processDirectives(this, item, { ...super.context, list: this, item });
+        // Component.processDirectives(this, item, { ...this.context, list: this, item });
 
         this.items.push(item);
 
-        super.appendChild(item);
+        this.appendChild(item);
 
-        super.dispatchEvent(new CustomEvent("add", { detail: item }));
+        this.dispatchEvent(new CustomEvent("add", { detail: item }));
     }
 
     public clear(): void
@@ -67,7 +67,7 @@ export default class List extends Component
     {
         if (this.items.length > 0)
         {
-            super.dispatchEvent(new CustomEvent("remove", { detail: item }));
+            this.dispatchEvent(new CustomEvent("remove", { detail: item }));
 
             if (item)
             {
@@ -80,7 +80,7 @@ export default class List extends Component
                 // Component.clearDirectives(item);
             }
 
-            super.removeChild(item);
+            this.removeChild(item);
         }
     }
 }

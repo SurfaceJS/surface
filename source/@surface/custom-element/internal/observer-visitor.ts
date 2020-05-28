@@ -69,7 +69,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (element && !TypeGuard.isIdentifier(element))
             {
-                super.visit(element);
+                this.visit(element);
             }
         }
 
@@ -82,7 +82,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             if (!TypeGuard.isIdentifier(paramenter))
             {
-                super.visit(paramenter);
+                this.visit(paramenter);
             }
         }
 
@@ -91,14 +91,14 @@ export default class ObserverVisitor extends ExpressionVisitor
 
     protected visitAssignmentExpression(expression: IAssignmentExpression): INode
     {
-        super.visit(expression.right);
+        this.visit(expression.right);
 
         return expression;
     }
 
     protected visitAssignmentPattern(expression: IAssignmentPattern): INode
     {
-        super.visit(expression.right);
+        this.visit(expression.right);
 
         return expression;
     }
@@ -117,25 +117,25 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        expression.arguments.forEach(super.visit.bind(this));
+        expression.arguments.forEach(this.visit.bind(this));
 
         return expression;
     }
 
     protected visitCoalesceExpression(expression: ICoalesceExpression): INode
     {
-        super.visit(expression.left);
+        this.visit(expression.left);
 
         return expression;
     }
 
     protected visitConditionalExpression(expression: IConditionalExpression): INode
     {
-        super.visit(expression.test);
+        this.visit(expression.test);
 
         return expression;
     }
@@ -158,7 +158,7 @@ export default class ObserverVisitor extends ExpressionVisitor
         {
             this.reset();
 
-            super.visit(expression.property);
+            this.visit(expression.property);
         }
         else if (expression.optional)
         {
@@ -171,7 +171,7 @@ export default class ObserverVisitor extends ExpressionVisitor
             this.stack.unshift(key);
         }
 
-        super.visit(expression.object);
+        this.visit(expression.object);
 
         return expression;
     }
@@ -180,11 +180,11 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        expression.arguments.forEach(super.visit.bind(this));
+        expression.arguments.forEach(this.visit.bind(this));
 
         return expression;
     }
@@ -193,7 +193,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.reset();
 
-        super.visit(expression.argument);
+        this.visit(expression.argument);
 
         return expression;
     }
@@ -202,10 +202,10 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (expression.computed)
         {
-            super.visit(expression.key);
+            this.visit(expression.key);
         }
 
-        super.visit(expression.value);
+        this.visit(expression.value);
 
         return expression;
     }
@@ -214,7 +214,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         if (!TypeGuard.isIdentifier(expression.argument))
         {
-            super.visit(expression.argument);
+            this.visit(expression.argument);
         }
 
         return expression;
@@ -224,11 +224,11 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.callee);
+        this.visit(expression.callee);
 
         this.reset();
 
-        super.visit(expression.quasi);
+        this.visit(expression.quasi);
 
         return expression;
     }
@@ -246,7 +246,7 @@ export default class ObserverVisitor extends ExpressionVisitor
     {
         this.rollback();
 
-        super.visit(expression.argument);
+        this.visit(expression.argument);
 
         return expression;
     }

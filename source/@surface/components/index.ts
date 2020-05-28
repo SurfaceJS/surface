@@ -22,7 +22,7 @@ abstract class Component extends CustomElement
 
     public get height(): number
     {
-        return super.getBoundingClientRect().height;
+        return this.getBoundingClientRect().height;
     }
 
     @attribute
@@ -38,52 +38,52 @@ abstract class Component extends CustomElement
 
     public get left(): number
     {
-        switch (super.style.position)
+        switch (this.style.position)
         {
             case "absolute":
-                return super.offsetLeft;
+                return this.offsetLeft;
             case "fixed":
-                return super.getBoundingClientRect().left;
+                return this.getBoundingClientRect().left;
             default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().left - super.parentElement.getBoundingClientRect().left
-                    : super.getBoundingClientRect().left;
+                return this.parentElement ?
+                    this.getBoundingClientRect().left - this.parentElement.getBoundingClientRect().left
+                    : this.getBoundingClientRect().left;
         }
     }
 
     public set left(value: number)
     {
-        if (!super.style.position)
+        if (!this.style.position)
         {
-            super.style.position = "relative";
+            this.style.position = "relative";
         }
 
-        super.style.left = `${value}px`;
+        this.style.left = `${value}px`;
     }
 
     public get top(): number
     {
-        switch (super.style.position)
+        switch (this.style.position)
         {
             case "absolute":
-                return super.offsetTop;
+                return this.offsetTop;
             case "fixed":
-                return super.getBoundingClientRect().top;
+                return this.getBoundingClientRect().top;
             default:
-                return super.parentElement ?
-                    super.getBoundingClientRect().top - super.parentElement.getBoundingClientRect().top
-                    : super.getBoundingClientRect().top;
+                return this.parentElement ?
+                    this.getBoundingClientRect().top - this.parentElement.getBoundingClientRect().top
+                    : this.getBoundingClientRect().top;
         }
     }
 
     public set top(value: number)
     {
-        if (!super.style.position)
+        if (!this.style.position)
         {
-            super.style.position = "relative";
+            this.style.position = "relative";
         }
 
-        super.style.top = `${value}px`;
+        this.style.top = `${value}px`;
     }
 
     @attribute
@@ -99,25 +99,25 @@ abstract class Component extends CustomElement
 
     public get visible(): boolean
     {
-        return super.style.display != "none";
+        return this.style.display != "none";
     }
 
     public set visible(value: boolean)
     {
-        if (!value && super.style.display != "none")
+        if (!value && this.style.display != "none")
         {
-            this.storedDisplay = super.style.display;
-            super.style.display = "none";
+            this.storedDisplay = this.style.display;
+            this.style.display = "none";
         }
-        else if (value && super.style.display == "none")
+        else if (value && this.style.display == "none")
         {
-            super.style.display = this.storedDisplay ?? "";
+            this.style.display = this.storedDisplay ?? "";
         }
     }
 
     public get width(): number
     {
-        return super.getBoundingClientRect().width;
+        return this.getBoundingClientRect().width;
     }
 }
 

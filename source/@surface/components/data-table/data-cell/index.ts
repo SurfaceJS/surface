@@ -30,12 +30,12 @@ export default class DataCell extends CustomElement
 
     public get text(): string
     {
-        return super.getAttribute("value") || "" as string;
+        return this.getAttribute("value") || "" as string;
     }
 
     public set text(value: string)
     {
-        super.setAttribute("value", value || "");
+        this.setAttribute("value", value || "");
     }
 
     private _value: unknown;

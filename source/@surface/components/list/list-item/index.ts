@@ -12,12 +12,12 @@ export default class ListItem extends Component
 
         if (node)
         {
-            super.appendChild(node);
+            this.appendChild(node);
         }
     }
 
     protected fireRemove(): void
     {
-        super.dispatchEvent(new CustomEvent("remove", { detail: this }));
+        this.dispatchEvent(new CustomEvent("remove", { detail: this }));
     }
 }

@@ -22,7 +22,7 @@ const attributeConverter: AttributeConverter<DataFilter, "type"> =
 @element("surface-data-filter", template, style)
 export default class DataFilter extends Component
 {
-    private readonly list = super.references.list as List;
+    private readonly list = this.references.list as List;
 
     private _fixed: boolean = false;
     private _field: string  = "";
@@ -86,20 +86,20 @@ export default class DataFilter extends Component
             this.list.clear();
         }
 
-        const dataFilterItem = super.references.filterItem as DataFilterItem;
+        const dataFilterItem = this.references.filterItem as DataFilterItem;
         dataFilterItem.clear();
-        super.dispatchEvent(new Event("clear"));
+        this.dispatchEvent(new Event("clear"));
     }
 
     protected apply(): void
     {
-        super.dispatchEvent(new Event("apply"));
+        this.dispatchEvent(new Event("apply"));
         console.log(this.getFilters());
     }
 
     public getFilters(): Filters
     {
-        const filters = Enumerable.from([super.references.filterItem as DataFilterItem])
+        const filters = Enumerable.from([this.references.filterItem as DataFilterItem])
             .concat(Array.from(this.list.querySelectorAll("surface-data-filter-item")))
             .select(x => x.getFilter())
             .where(x => x.condition != "none")

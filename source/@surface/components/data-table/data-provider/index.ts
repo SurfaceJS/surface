@@ -4,42 +4,42 @@ export default class DataProvider<T extends object> extends HTMLElement implemen
 {
     public get createUrl(): string
     {
-        return super.getAttribute("create-url") || "" as string;
+        return this.getAttribute("create-url") || "" as string;
     }
 
     public set createUrl(value: string)
     {
-        super.setAttribute("create-url", value.toString());
+        this.setAttribute("create-url", value.toString());
     }
 
     public get deleteUrl(): string
     {
-        return super.getAttribute("delete-url") || "" as string;
+        return this.getAttribute("delete-url") || "" as string;
     }
 
     public set deleteUrl(value: string)
     {
-        super.setAttribute("delete-url", value.toString());
+        this.setAttribute("delete-url", value.toString());
     }
 
     public get readUrl(): string
     {
-        return super.getAttribute("read-url") || "" as string;
+        return this.getAttribute("read-url") || "" as string;
     }
 
     public set readUrl(value: string)
     {
-        super.setAttribute("read-url", value.toString());
+        this.setAttribute("read-url", value.toString());
     }
 
     public get updateUrl(): string
     {
-        return super.getAttribute("update-url") || "" as string;
+        return this.getAttribute("update-url") || "" as string;
     }
 
     public set updateUrl(value: string)
     {
-        super.setAttribute("update-url", value.toString());
+        this.setAttribute("update-url", value.toString());
     }
 
     public async create(data: T): Promise<void>
