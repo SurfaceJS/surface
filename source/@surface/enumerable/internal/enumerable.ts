@@ -5,7 +5,7 @@ import IGroup                                     from "./group";
 import IComparer                                  from "./interfaces/comparer";
 import ILookup                                    from "./interfaces/lookup";
 import Lookup                                     from "./lookup";
-import Set                                        from "./set";
+import HashSet                                    from "./hash-set";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
@@ -32,7 +32,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         if (start > end)
         {
-            throw new TypeError("start cannot be greater than end");
+            throw new TypeError("Start cannot be greater than end");
         }
 
         return new RangeIterator(start, end);
@@ -52,7 +52,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     {
         const value = this[Symbol.iterator]().next().value;
 
-        return value != undefined && value != null ? value : null;
+        return value ?? null;
     }
 
     public abstract [Symbol.iterator](): Iterator<TSource>;
@@ -770,7 +770,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
         let current: Nullable<TSource> = null;
 
-        const set = new Set(new Comparer());
+        const set = new HashSet(new Comparer());
 
         for (const element of this)
         {
@@ -1007,7 +1007,7 @@ class DistinctIterator<TSource> extends Enumerable<TSource>
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        const set = new Set(this.comparer);
+        const set = new HashSet(this.comparer);
 
         for (const element of this.source)
         {
@@ -1070,7 +1070,7 @@ class ExceptIterator<TSource> extends Enumerable<TSource>
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        const set = Set.from(this.second, this.comparer);
+        const set = HashSet.from(this.second, this.comparer);
 
         for (const element of this.source)
         {
@@ -1202,7 +1202,7 @@ class FullJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
     public *[Symbol.iterator](): Iterator<TResult>
     {
         const lookup = new Lookup(this.inner, this.innerKeySelector, x => x, this.comparer);
-        const set    = new Set(new Comparer<TInner>());
+        const set    = new HashSet(new Comparer<TInner>());
 
         for (const element of this.outter)
         {
@@ -1481,7 +1481,7 @@ class UnionIterator<TSource> extends Enumerable<TSource>
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        const set = new Set(this.comparer);
+        const set = new HashSet(this.comparer);
 
         for (const element of this.source)
         {

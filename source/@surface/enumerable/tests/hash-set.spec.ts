@@ -1,15 +1,15 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
 import Comparer                    from "../internal/comparer";
-import Set                         from "../internal/set";
+import HashSet                     from "../internal/hash-set";
 
 @suite
-export default class SetSpec
+export default class HashSetSpec
 {
     @test @shouldPass
     public createFromIterable(): void
     {
-        const set = Set.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
+        const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 
         expect(set.contains(2)).to.equal(true);
     }
@@ -17,7 +17,7 @@ export default class SetSpec
     @test @shouldPass
     public add(): void
     {
-        const set = Set.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
+        const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 
         set.add(1);
         set.add(1);
@@ -29,7 +29,7 @@ export default class SetSpec
     @test @shouldPass
     public remove(): void
     {
-        const set = Set.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
+        const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 
         set.remove(1);
 
@@ -41,7 +41,7 @@ export default class SetSpec
     {
         const elements = [1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-        const set = Set.from(elements, new Comparer());
+        const set = HashSet.from(elements, new Comparer());
 
         elements.forEach(set.remove.bind(set));
 
@@ -51,7 +51,7 @@ export default class SetSpec
     @test @shouldPass
     public removeInvalideItem(): void
     {
-        const set = Set.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
+        const set = HashSet.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10], new Comparer());
 
         set.remove(1);
 
@@ -61,7 +61,7 @@ export default class SetSpec
     @test @shouldPass
     public reuseFreeList(): void
     {
-        const set = new Set<number>(new Comparer());
+        const set = new HashSet<number>(new Comparer());
 
         set.add(1);
         set.remove(1);
@@ -75,7 +75,7 @@ export default class SetSpec
     {
         const data = [1, 1, 1, 2, 2, 3, 3, 4, 5, 6, 7, 8, 8, 9, 10];
 
-        expect(Array.from(Set.from(data, new Comparer()))).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        expect(Array.from(HashSet.from(data, new Comparer()))).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     }
 
     @test @shouldPass
@@ -83,6 +83,6 @@ export default class SetSpec
     {
         const data = [] as Array<number>;
 
-        expect(Array.from(Set.from(data, new Comparer()))).to.deep.equal([]);
+        expect(Array.from(HashSet.from(data, new Comparer()))).to.deep.equal([]);
     }
 }

@@ -9,7 +9,7 @@ type Slot<TElement> =
 };
 
 const INITIAL_SIZE = 7;
-export default class Set<TElement> implements Iterable<TElement>
+export default class HashSet<TElement> implements Iterable<TElement>
 {
     private readonly comparer: IComparer<Nullable<TElement>>;
 
@@ -23,9 +23,9 @@ export default class Set<TElement> implements Iterable<TElement>
         this.comparer = comparer;
     }
 
-    public static from<T>(source: Iterable<T>, comparer: IComparer<T>): Set<T>
+    public static from<T>(source: Iterable<T>, comparer: IComparer<T>): HashSet<T>
     {
-        const set = new Set(comparer);
+        const set = new HashSet(comparer);
 
         for (const element of source)
         {
