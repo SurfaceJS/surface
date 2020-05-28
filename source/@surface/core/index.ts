@@ -43,7 +43,7 @@ export type
     Required,
     TypesOf,
     UnionToIntersection,
-    ValuesOf
+    ValuesOf,
 } from "./internal/types";
 
 export * from "./internal/common/array";

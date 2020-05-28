@@ -351,11 +351,10 @@ export default class Compiler
             },
             output:
             {
-                //devtoolModuleFilenameTemplate: "webpack://source/[resource-path]?[loaders]",
-                filename:                      configuration.filename,
-                path:                          configuration.output,
-                pathinfo:                      !isProduction,
-                publicPath:                    "/",
+                filename:   configuration.filename,
+                path:       configuration.output,
+                pathinfo:   !isProduction,
+                publicPath: "/",
             },
             plugins: plugins,
             performance:
