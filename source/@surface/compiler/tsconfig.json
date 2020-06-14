@@ -1,8 +1,17 @@
 {
+    "compilerOptions": {
+        "types": [
+            "node"
+        ]
+    },
     "extends": "../../../tsconfig.json",
-    "compilerOptions":
-    {
-        "typeRoots": ["./@types", "./node_modules/@types"],
-        "types":     ["node", "webpack"]
-    }
+    "files": [
+        "./cli.ts",
+        "./index.ts"
+    ],
+    "include": [
+        "./@types",
+        "./internal",
+        "./tests"
+    ]
 }

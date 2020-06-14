@@ -8,6 +8,11 @@ export function assert(condition: unknown, message?: string): asserts condition
     }
 }
 
+export function hasFlag<T extends number>(value: T, flag: T): boolean
+{
+    return (value & flag) == flag;
+}
+
 export function hasValue(value: unknown): value is Object;
 export function hasValue<T>(value: Nullable<T>): value is NonNullable<T>
 {

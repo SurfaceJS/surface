@@ -3,13 +3,12 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
-        "declaration":                      false, /* false for dev */
+        "declaration":                      false, // false In Dev
         "emitDecoratorMetadata":            true,
         "esModuleInterop":                  true,
         "experimentalDecorators":           true,
-        "forceConsistentCasingInFileNames": false, /* Conflicting with symlink */
+        "forceConsistentCasingInFileNames": false,
         "importHelpers":                    true,
-        "incremental":                      true,
         "lib":                              ["esnext"],
         "module":                           "commonjs",
         "moduleResolution":                 "node",
@@ -24,12 +23,5 @@
         "sourceMap":                        true,
         "strict":                           true,
         "target":                           "es2019",
-        "types":                            [],
-        "typeRoots":
-        [
-            "@types",
-            "node_modules/@types"
-        ]
-    },
-    "exclude": ["source/@surface/*/node_modules"]
+    }
 }

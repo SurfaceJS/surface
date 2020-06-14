@@ -1,6 +1,6 @@
-import { Indexer }              from "./types";
 import { hasValue, isIterable } from "./common/generic";
 import { enumerateKeys }        from "./common/object";
+import { Indexer }              from "./types";
 
 export default class Hashcode
 {

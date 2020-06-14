@@ -1,7 +1,16 @@
 {
+    "compilerOptions": {
+        "lib": [
+            "dom",
+            "esnext"
+        ]
+    },
     "extends": "../../../tsconfig.json",
-    "compilerOptions":
-    {
-        "lib": ["dom", "esnext"]
-    }
+    "files": [
+        "./index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
 }

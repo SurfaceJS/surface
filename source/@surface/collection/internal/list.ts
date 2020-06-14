@@ -30,7 +30,7 @@ export default class List<T> extends Enumerable<T>
             has: (_, key) => Number.isInteger(parseInt(key.toString())) ? key in this[SOURCE] : key in this,
             get: (_, key) =>
             {
-                const index = parseInt(key.toString());
+                const index = Number(key.toString());
 
                 if (Number.isInteger(index))
                 {

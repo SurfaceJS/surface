@@ -10,6 +10,7 @@
     "description": "Enumerable module the provides many methods to iterate through of collections.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
+        "@types/chai": "4.2.11",
         "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
@@ -25,9 +26,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "types": "index.d.ts",
-    "version": "0.0.5"
+    "version": "1.0.0-alpha.0"
 }

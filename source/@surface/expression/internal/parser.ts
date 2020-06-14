@@ -1,4 +1,4 @@
-import { format, Nullable, tuple } from "@surface/core";
+import { format, tuple, Nullable } from "@surface/core";
 import { hasDuplicated }           from "./common";
 import AssignmentProperty          from "./elements/assignment-property";
 import Property                    from "./elements/property";

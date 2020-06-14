@@ -2,10 +2,10 @@ import { Action2, Func1, Func2, Func3, Nullable } from "@surface/core";
 import Comparer                                   from "./comparer";
 import EnumerableSorter                           from "./enumerable-sorter";
 import IGroup                                     from "./group";
+import HashSet                                    from "./hash-set";
 import IComparer                                  from "./interfaces/comparer";
 import ILookup                                    from "./interfaces/lookup";
 import Lookup                                     from "./lookup";
-import HashSet                                    from "./hash-set";
 
 export abstract class Enumerable<TSource> implements Iterable<TSource>
 {
@@ -1074,7 +1074,7 @@ class ExceptIterator<TSource> extends Enumerable<TSource>
 
         for (const element of this.source)
         {
-            if (set.add(element))
+            if (!set.contains(element))
             {
                 yield element;
             }

@@ -1,7 +1,6 @@
-import { Constructor }                       from "@surface/core";
-import CustomElement                         from "@surface/custom-element";
-import { attribute, element as __element__ } from "@surface/custom-element";
-import defaultStyle                          from "./index.scss";
+import { Constructor }                                      from "@surface/core";
+import CustomElement, { attribute, element as __element__ } from "@surface/custom-element";
+import defaultStyle                                         from "./index.scss";
 
 export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<CustomElement>>(target: T) => T
 {
