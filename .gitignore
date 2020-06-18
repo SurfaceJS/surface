@@ -65,11 +65,9 @@ typings/
 .cache
 package-lock.json
 tsconfig.tsbuildinfo
-!source/@surface/code-splitter/tests/fixtures/**/*.js
 !environment.d.ts
 !types.d.ts
-!@types/**/*.d.ts
-!tasks/interfaces/*d.ts
 !source/@surface/*/@types/**/*.d.ts
 !source/@surface/**/interfaces/**/*.d.ts
-!source/@surface/core/**/*.d.ts
+!tasks/@types/**/*.d.ts
+!tasks/interfaces/**/*d.ts

@@ -3,7 +3,7 @@ import IComparer                     from "./interfaces/comparer";
 import ILookup                       from "./interfaces/lookup";
 import Group                         from "./group";
 
-export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<TKey, TElement>>, ILookup<TKey, TElement>
+export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TElement>
 {
     private comparer:  IComparer<TKey>;
     private groups:    Array<Group<TKey, TElement>>;

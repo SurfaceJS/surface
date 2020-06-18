@@ -2,6 +2,8 @@ import Hashcode                                                   from "../hashc
 import { Combine, Constructor, Func1, Indexer, MergeList, Mixer } from "../types";
 import { assert, typeGuard }                                      from "./generic";
 
+const PRIVATES = Symbol("core:privates");
+
 function internalDeepMerge(sources: Array<Indexer>, combineArrays: boolean): Indexer
 {
     const target: Indexer = { };
@@ -236,8 +238,6 @@ export function overrideConstructor<T extends Constructor>(constructor: T, actio
     return proxy as unknown as T;
 }
 
-const PRIVATES = Symbol("core:privates")
-
 export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
 {
     let propertyDescriptor: PropertyDescriptor;
@@ -279,7 +279,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
     }
     else
     {
-        const privates = target[PRIVATES] = target[PRIVATES] ?? { }
+        const privates = target[PRIVATES] = target[PRIVATES] ?? { };
 
         privates[property as string] = target[property as keyof T];
 

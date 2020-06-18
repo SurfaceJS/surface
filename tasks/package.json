@@ -1,0 +1,45 @@
+{
+    "author": "HitalloExiled",
+    "description": "Global modules and shared types",
+    "devDependencies": {
+        "@types/chai": "4.2.11",
+        "@types/commander": "2.12.2",
+        "@types/glob": "7.1.2",
+        "@types/minipass": "2.2.0",
+        "@types/mocha": "7.0.2",
+        "@types/node": "14.0.11",
+        "chai": "4.2.0",
+        "chalk": "4.0.0",
+        "commander": "5.1.0",
+        "glob": "7.1.6",
+        "mocha": "7.2.0",
+        "npm-registry-client": "8.6.0",
+        "nyc": "15.1.0",
+        "tar": "6.0.2",
+        "tslib": "2.0.0"
+    },
+    "keywords": [
+        "types",
+        "tests",
+        "shared"
+    ],
+    "license": "MIT",
+    "name": "modules-tasks",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "cover": "nyc mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
+        "task:build": "node ./cli build",
+        "task:clean": "node ./cli clean",
+        "task:install": "node ./cli install",
+        "task:link": "node ./cli link",
+        "task:publish": "node ./cli publish",
+        "task:relink": "node ./cli relink",
+        "task:setup": "npm i && tsc && node ./cli setup",
+        "task:unlink": "node ./cli unlink",
+        "test": "mocha --ui tdd source/@surface/*/tests/*.spec.js"
+    },
+    "version": "1.0.0"
+}

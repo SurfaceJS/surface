@@ -10,7 +10,7 @@ export default class CommonSpec
     @after
     public cleanup(): void
     {
-        common.deletePath(path.resolve(__dirname, "fixtures"));
+        common.removePath(path.resolve(__dirname, "fixtures"));
     }
 
     @test @shouldPass
@@ -18,7 +18,7 @@ export default class CommonSpec
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
 
-        common.makePath(pathToMake);
+        common.createPath(pathToMake);
 
         chai.expect(fs.existsSync(pathToMake)).to.equal(true);
     }
@@ -28,7 +28,7 @@ export default class CommonSpec
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
 
-        await common.makePathAsync(pathToMake);
+        await common.createPathAsync(pathToMake);
 
         chai.expect(fs.existsSync(pathToMake)).to.equal(true);
     }
@@ -38,7 +38,7 @@ export default class CommonSpec
     {
         const pathToDelete = path.resolve(__dirname, "./fixtures/deep");
 
-        common.deletePath(pathToDelete);
+        common.removePath(pathToDelete);
 
         chai.expect(fs.existsSync(pathToDelete)).to.equal(false);
     }
@@ -49,12 +49,12 @@ export default class CommonSpec
         const pathToDelete = path.resolve(__dirname, "./fixtures/files");
         const pathToMake   = path.resolve(__dirname, "./fixtures/files/to/delete");
 
-        common.makePath(pathToMake);
+        common.createPath(pathToMake);
 
         fs.writeFileSync(path.join(pathToMake, "file-1.txt"), "delete me");
         fs.writeFileSync(path.join(pathToMake, "file-2.txt"), "delete me");
 
-        chai.expect(common.deletePath(pathToDelete)).to.equal(true);
+        chai.expect(common.removePath(pathToDelete)).to.equal(true);
         chai.expect(fs.existsSync(pathToDelete)).to.equal(false);
     }
 
@@ -68,14 +68,14 @@ export default class CommonSpec
 
         fs.symlinkSync(realPath, linkPath);
 
-        chai.expect(common.deletePath(linkPath)).to.equal(true);
+        chai.expect(common.removePath(linkPath)).to.equal(true);
         chai.expect(fs.existsSync(linkPath)).to.equal(false);
     }
 
     @test @shouldPass
     public deleteNonExistingPath(): void
     {
-        chai.expect(common.deletePath(path.resolve(__dirname, "./non/existing/path"))).to.equal(false);
+        chai.expect(common.removePath(path.resolve(__dirname, "./non/existing/path"))).to.equal(false);
     }
 
     @test @shouldPass
@@ -95,7 +95,7 @@ export default class CommonSpec
             path.join(__dirname, "./fixtures/path/to/resolve-2"),
             path.join(__dirname, "./fixtures/path/to/resolve-3"),
         ]
-        .forEach(common.makePath);
+        .forEach(common.createPath);
 
         fs.writeFileSync(expected, "resolved");
 
@@ -119,7 +119,7 @@ export default class CommonSpec
             path.join(__dirname, "./fixtures/path/to/resolve-2"),
             path.join(__dirname, "./fixtures/path/to/resolve-3"),
         ]
-        .forEach(common.makePath);
+        .forEach(common.createPath);
 
         fs.writeFileSync(expected, "resolved");
 
@@ -132,7 +132,7 @@ export default class CommonSpec
         const pathToLookup = path.resolve(__dirname, "./fixtures/path/to/lookup");
         const expected     = path.resolve(pathToLookup, "../../", "file.txt");
 
-        common.makePath(pathToLookup);
+        common.createPath(pathToLookup);
 
         fs.writeFileSync(expected, "look for me");
 
@@ -151,7 +151,7 @@ export default class CommonSpec
         const pathToMake = path.resolve(__dirname, "./fixtures/file");
 
         fs.writeFileSync(path.join(pathToMake), "delete me");
-        chai.expect(() => common.makePath(path.join(pathToMake))).to.throw(Error, `${pathToMake} exist and isn't an directory`);
+        chai.expect(() => common.createPath(path.join(pathToMake))).to.throw(Error, `${pathToMake} exist and isn't an directory`);
     }
 
     @test @shouldFail
@@ -163,7 +163,7 @@ export default class CommonSpec
 
         try
         {
-            await common.makePathAsync(path.join(pathToMake));
+            await common.createPathAsync(path.join(pathToMake));
 
         }
         catch (error)
@@ -182,7 +182,7 @@ export default class CommonSpec
 
         fs.symlinkSync(realPath, linkPath);
 
-        chai.expect(() => common.makePath(linkPath)).to.throw(Error, `${realPath} exist and isn't an directory`);
+        chai.expect(() => common.createPath(linkPath)).to.throw(Error, `${realPath} exist and isn't an directory`);
     }
 
     @test @shouldFail

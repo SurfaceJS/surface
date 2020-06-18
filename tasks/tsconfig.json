@@ -1,10 +1,26 @@
 {
+    "compilerOptions": {
+        "baseUrl": ".",
+        "module": "commonjs",
+        "paths": {
+            "@surface/core": [
+                "../source/@surface/core"
+            ],
+            "@surface/enumerable": [
+                "../source/@surface/enumerable"
+            ]
+        },
+        "types": [
+            "node"
+        ]
+    },
     "extends": "../tsconfig.json",
-    "compilerOptions":
-    {
-        "importHelpers": false,
-        "module":        "commonjs",
-        "noEmitHelpers": false,
-        "types":         ["node"],
-    }
+    "files": [
+        "./cli.ts"
+    ],
+    "include": [
+        "./@types",
+        "./internal",
+        "./tests"
+    ]
 }

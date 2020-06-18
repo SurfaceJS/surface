@@ -1,103 +1,129 @@
-import fs          from "fs";
-import path        from "path";
-import * as common from "../common";
-import packages    from "../common/packages";
-import patterns    from "../common/patterns";
-import IPackage    from "../interfaces/package";
+import chalk                                    from "chalk";
+import fs                                       from "fs";
+import glob                                     from "glob";
+import { Credential, IPackage, IPublishParams } from "npm-registry-client";
+import path                                     from "path";
+import { Stream }                               from "stream";
+import { create, ICreateOptions }               from "tar";
+import { promisify }                            from "util";
+import { filterPackages, paths, timestamp }     from "./common";
+import NpmRepository, { Status }                from "./npm-repository";
+import Version                                  from "./version";
+
+const globAsync     = promisify(glob);
+const readdirAsync  = promisify(fs.readdir);
+const readFileAsync = promisify(fs.readFile);
+
+type Access = IPublishParams["access"];
+
+const DEFAULT_IGNORES = [".npmignore", "package-lock.json", "**/*.orig", "**/package.json.backup"];
 
 export default class Publisher
 {
-    private versions:  { [key: string]: string } = { };
-    private toPublish: Array<IPackage>           = [];
+    private readonly access:     Access;
+    private readonly auth:       Credential;
+    private readonly debug:      boolean;
+    private readonly lookup:     Map<string, IPackage>;
+    private readonly published:  Set<IPackage> = new Set();
+    private readonly repository: NpmRepository = new NpmRepository();
 
-    public static async publish(): Promise<void>
+    public constructor(lookup: Map<string, IPackage>, repository: NpmRepository, auth: Credential, access: Access = "public", debug: boolean = false )
     {
-        await new Publisher().publish();
+        this.lookup     = lookup;
+        this.repository = repository;
+        this.auth       = auth;
+        this.access     = access;
+        this.debug      = debug;
     }
 
-    private checkVersion($package: IPackage)
+    private async collectFiles(folderpath: string): Promise<Array<string>>
     {
-        if(!this.versions[$package.name])
-        {
-            this.versions[$package.name] = $package.version;
-            this.toPublish.push($package);
-        }
+        const npmignorePath = path.join(folderpath, ".npmignore");
 
-        if (this.isUpdated($package))
+        if (fs.existsSync(npmignorePath))
         {
-            this.toPublish.push($package);
-            this.versions[$package.name] = $package.version;
+            const options: glob.IOptions = { cwd: folderpath, root: folderpath, nodir: true };
+
+            const promises = DEFAULT_IGNORES.concat((await readFileAsync(npmignorePath)).toString().split("\n"))
+                .map(async x => await globAsync(x.trim(), options));
+
+            const patterns = (await Promise.all(promises))
+                .filter(x => x.length > 0)
+                .flat()
+                .filter(x => !x.startsWith("node_modules"));
+
+            const exclude = new Set(patterns);
+
+            return (await globAsync("**/**", options))
+                .filter(x => !x.startsWith("node_modules") && !exclude.has(x));
+        }
+        else
+        {
+            return (await readdirAsync(folderpath))
+                .map(x => path.join(folderpath, x));
         }
     }
 
-    private checkDependencies($package: IPackage)
+    private async createBody(packageName: string): Promise<Stream>
     {
-        for (const dependee of packages.filter(x => x.dependencies && !!x.dependencies[$package.name]))
+        const folderpath = path.join(paths.source.root, packageName);
+        const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
+
+        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}/\n${files.map(x => "        |--/" + x).join("\n")}`);
+
+        const options: ICreateOptions = { cwd: folderpath.replace("@", "./@"), gzip: true, prefix: "package" };
+
+        return await create(options, files);
+    }
+
+    public async publish(modules: Array<string> = []): Promise<void>
+    {
+        const packages = filterPackages(this.lookup.values(), modules);
+
+        for (const $package of packages)
         {
-            if (this.toPublish.findIndex(x => x.name == dependee.name && x.dependencies[$package.name] == $package.version) == -1)
+            if (await this.repository.getStatus($package) == Status.InRegistry)
             {
-                dependee.dependencies[$package.name] = $package.version;
-
-                if (this.toPublish.findIndex(x => x.name == dependee.name) == -1)
+                console.log(`${timestamp()} ${chalk.bold.blue($package.name)} is updated`);
+            }
+            else if (!this.published.has($package))
+            {
+                if ($package.dependencies)
                 {
-                    this.updateVersion(dependee);
+                    const dependencies = Object.keys($package.dependencies)
+                        .filter(x => x.startsWith("@surface/"));
 
-                    this.versions[dependee.name] = dependee.version;
-
-                    this.toPublish.push(dependee);
+                    if (dependencies.length > 0)
+                    {
+                        await this.publish(dependencies);
+                    }
                 }
 
-                this.checkDependencies(dependee);
+                const body = await this.createBody($package.name);
+
+                console.log(`${timestamp()} Publishing ${$package.name}`);
+
+                if (!this.debug)
+                {
+                    await this.repository.publish(encodeURIComponent($package.name), { body, access: this.access, auth: this.auth, metadata: $package });
+                }
+
+                const version = Version.parse($package.version);
+
+                if (version.prerelease)
+                {
+                    const tag = version.prerelease.type == "dev" ? "next" : version.prerelease.type;
+
+                    console.log(`${timestamp()} Adding tag ${tag}`);
+
+                    if (!this.debug)
+                    {
+                        await this.repository.addTag(encodeURIComponent($package.name),{ auth: this.auth, package: $package.name, version: $package.version, distTag: tag });
+                    }
+                }
+
+                this.published.add($package);
             }
         }
-    }
-
-    private isUpdated($package: IPackage)
-    {
-        const [targetMajor, targetMinor, targetRevision] = $package.version.split(".").map(x => Number.parseInt(x));
-        const [storedMajor, storedMinor, storedRevision] = this.versions[$package.name].split(".").map(x => Number.parseInt(x));
-
-        return (targetMajor > storedMajor)
-            || (targetMajor == storedMajor && targetMinor  > storedMinor)
-            || (targetMajor == storedMajor && targetMinor == storedMinor && targetRevision > storedRevision);
-    }
-
-    private async publish()
-    {
-        const token = fs.readFileSync(path.normalize(`${process.env.USERPROFILE}/.npmrc`)).toString().replace("\n", "");
-
-        const versionsFile = path.resolve(__dirname, "./versions.json");
-
-        if (fs.existsSync(versionsFile))
-        {
-            this.versions = require(versionsFile);
-        }
-
-        packages.forEach(this.checkVersion.bind(this));
-        this.toPublish.forEach(this.checkDependencies.bind(this));
-
-        for (const $package of this.toPublish)
-        {
-            fs.writeFileSync(path.resolve($package.path, "package.json"), JSON.stringify($package, null, 4));
-
-            common.cleanup($package.path, patterns.clean.include, patterns.clean.exclude);
-            await common.execute(`Compiling ${$package.path}`, `tsc -p ${$package.path} --noEmit false --declaration true`);
-
-            await common.execute(`Publishing ${$package.name}:`, `npm set ${token} & cd ${$package.path} && npm publish --access public`);
-        }
-
-        if (this.toPublish.length > 0)
-        {
-            fs.writeFileSync(versionsFile, JSON.stringify(this.versions, null, 4));
-        }
-    }
-
-    private updateVersion($package: IPackage)
-    {
-        let [major, minor, revision] = $package.version.split(".").map(x => Number.parseInt(x));
-
-        revision++;
-
-        $package.version = [major, minor, revision].join(".");
     }
 }

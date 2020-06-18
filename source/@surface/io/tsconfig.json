@@ -1,7 +1,15 @@
 {
+    "compilerOptions": {
+        "types": [
+            "node"
+        ]
+    },
     "extends": "../../../tsconfig.json",
-    "compilerOptions":
-    {
-        "types": ["node"]
-    }
+    "files": [
+        "./index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
 }

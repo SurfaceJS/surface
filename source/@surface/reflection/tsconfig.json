@@ -1,3 +1,15 @@
 {
-    "extends": "../../../tsconfig.json"
+    "compilerOptions": {
+        "typeRoots": [
+            "./node_modules/@types"
+        ]
+    },
+    "extends": "../../../tsconfig.json",
+    "files": [
+        "./index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
 }

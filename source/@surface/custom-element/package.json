@@ -15,6 +15,7 @@
     "description": "Base class used to define custom elements.",
     "devDependencies": {
         "@surface/test-suite": "0.0.0",
+        "@types/chai": "4.2.11",
         "@types/jsdom": "16.2.3",
         "chai": "4.2.0",
         "jsdom": "16.2.2"
@@ -32,9 +33,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "types": "index.d.ts",
-    "version": "0.0.6"
+    "version": "1.0.0-alpha.0"
 }
