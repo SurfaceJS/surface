@@ -1,60 +1,71 @@
-import { shouldPass, suite, test} from "@surface/test-suite";
-import { expect }                 from "chai";
-import Router                     from "..";
+import { suite, test } from "@surface/test-suite";
+import { assert }      from "chai";
+import IRouteData      from "../internal/interfaces/route-data";
+import Router          from "../internal/router";
 
 @suite
 export default class RouterSpec
 {
-    @test @shouldPass
+    @test
     public match(): void
     {
-        const constructAndMatch = () =>
-        {
-            new Router()
-                .mapRoute("default", "/home", true)
-                .match("/home");
-        };
-
-        expect(constructAndMatch).to.not.throw();
-    }
-
-    @test @shouldPass
-    public matchWithCallback(): void
-    {
-        let matched = false;
+        let match = false;
 
         new Router()
-            .mapRoute("default", "/home", true)
-            .when("/home", () => matched = true)
-            .match("/home");
+            .map( "/path", () => match = true)
+            .match("/path");
 
-        expect(matched).to.equal(true);
+        assert.isTrue(match);
     }
 
-    @test @shouldPass
-    public matchDefaultRoute(): void
+    @test
+    public dontMatch(): void
     {
-        let matched = false;
+        const actual = new Router()
+            .map( "/path")
+            .match("/path1");
 
-        new Router()
-            .mapRoute("default", "/home", true)
-            .mapRoute("non-default", "/login", false)
-            .when("/", () => matched = true)
-            .match("/");
-
-        expect(matched).to.equal(true);
+        assert.equal(actual, null);
     }
 
-    @test @shouldPass
-    public matchWildcard(): void
+    @test
+    public matchWithRouteData(): void
     {
-        let matched = false;
+        const expected: IRouteData =
+            {
+                hash:   "example",
+                params: { value: "path" },
+                path:   "/path/path",
+                query:  { value: "1" },
+            };
 
-        new Router()
-            .mapRoute("default", "/home", true)
-            .when("*", () => matched = true)
-            .match("/");
+        const actual = new Router()
+            .map("/path/{value}")
+            .match("/path/path?value=1#example");
 
-        expect(matched).to.equal(true);
+        assert.deepEqual(actual, expected);
+    }
+
+    @test
+    public matchWithDefaultTranformers(): void
+    {
+        const expected: IRouteData =
+            {
+                hash: "",
+                params:
+                {
+                    boolean: true,
+                    date:    new Date("2020-01-01"),
+                    number:  1,
+                },
+                path:   "/path/true/2020-01-01/1",
+                query:  { },
+            };
+
+        const actual = new Router()
+            .map("/path/{boolean:Boolean}/{date:Date}/{number:Number}")
+            .match("/path/true/2020-01-01/1");
+
+        assert.deepEqual(actual, expected);
     }
 }

@@ -1,108 +1,130 @@
-import { Indexer, Nullable } from "@surface/core";
-import Enumerable            from "@surface/enumerable";
-import IRouteData            from "../interfaces/route-data";
+import { parseQuery, parseUrl, Func1, Indexer } from "@surface/core";
+import IRouteData                               from "../internal/interfaces/route-data";
+import INode                                    from "./interfaces/node";
+import SegmentNode                              from "./nodes/segment-node";
+import Parser                                   from "./parser";
+import TypeGuard                                from "./type-guard";
 
 export default class Route
 {
-    private _expression: RegExp;
-    public get expression(): RegExp
+    private readonly tranformers: Map<string, Func1<string, unknown>>;
+    private readonly nodes:       Array<INode>;
+    private readonly pattern:     RegExp;
+
+    public constructor(pattern: string, tranformers: Map<string, Func1<string, unknown>>)
     {
-        return this._expression;
+        this.tranformers = tranformers;
+
+        const segments = Parser.parse(this.normalize(pattern));
+
+        this.nodes   = segments.flatMap(x => x.nodes);
+        this.pattern = new RegExp(`^${Array.from(this.segmentMap(segments)).join("")}$`);
     }
 
-    private _isDefault: boolean;
-    public get isDefault(): boolean
+    private *segmentMap(segments: Array<SegmentNode>): Iterable<string>
     {
-        return this._isDefault;
-    }
-
-    private _name: string;
-    public get name(): string
-    {
-        return this._name;
-    }
-
-    private _pattern: string;
-    public get pattern(): string
-    {
-        return this._pattern;
-    }
-
-    public constructor(name: string, pattern: string);
-    public constructor(name: string, pattern: string, isDefault: boolean);
-    public constructor(name: string, pattern: string, isDefault?: boolean)
-    {
-        this._expression = this.toExpression(pattern);
-        this._isDefault  = !!isDefault;
-        this._name       = name;
-        this._pattern    = pattern;
-    }
-
-    private toExpression(pattern: string): RegExp
-    {
-        let expression = Enumerable.from(pattern.replace(/^\/|\/$/g, "").split("/"))
-            .select(x => x.replace(/{\s*([^}\s\?=]+)\s*}/g, "([^\\\/]+)").replace(/{\s*([^}=?\s]+)\s*=\s*([^}=?\s]+)\s*}|{\s*([^} ?]+\?)?\s*}|(\s*\*\s*)/, "([^\\\/]*)"))
-            .toArray()
-            .join("\\\/");
-
-        expression = expression
-            .replace(/(\\\/(?!\?))(\(\[\^\\\/\]\*\))/g, "$1?$2")
-            .replace(/(\(\[\^\\\/\]\*\))(\\\/(?!\?))/g, "$1$2?");
-
-        return new RegExp(`^\/?${expression}\/?$`, "i");
-    }
-
-    public match(route: string): Nullable<IRouteData>
-    {
-        let [path, queryString] = route.split("?");
-
-        let params: Indexer<string>           = { };
-        let search: Nullable<Indexer<string>> = null;
-
-        let root = "/";
-
-        if (queryString)
+        for (const segment of segments)
         {
-            search = { };
+            const nodes = Array.from(this.nodeMap(segment.nodes)).join("");
 
-            Enumerable.from(decodeURI(queryString).split("&"))
-                .select(x => x.split("="))
-                .forEach(x => search && (search[x[0]] = x[1]));
+            yield segment.optional ? `(?:/${nodes})?` : `/${nodes}`;
+        }
+    }
+
+    private *nodeMap(nodes: Array<INode>): Iterable<string>
+    {
+        for (const node of nodes)
+        {
+            if (TypeGuard.isAssignment(node) || TypeGuard.isWildcard(node))
+            {
+                yield "([^\\/]*)";
+            }
+            if (TypeGuard.isRest(node))
+            {
+                yield "(.*)";
+            }
+            else if (TypeGuard.isTransformer(node))
+            {
+                yield node.optional ? "([^\\/]*)" : "([^\\/]+)";
+            }
+            else if (TypeGuard.isIdentifier(node))
+            {
+                yield node.optional ? "([^\\/]*)" : "([^\\/]+)";
+            }
+            else if (TypeGuard.isLiteral(node))
+            {
+                yield `(${node.value})`;
+            }
+        }
+    }
+
+    private collectParams(match: RegExpExecArray): Indexer
+    {
+        let data: Indexer = { };
+
+        for (let index = 0; index < this.nodes.length; index++)
+        {
+            const node  = this.nodes[index];
+            const group = match[index + 1];
+
+            if (!TypeGuard.isLiteral(node))
+            {
+                if (TypeGuard.isAssignment(node))
+                {
+                    data[node.left] = group || node.right;
+                }
+                else if (TypeGuard.isTransformer(node))
+                {
+                    const [key, value] = TypeGuard.isAssignment(node.transformer)
+                        ? [node.transformer.left, group ?? node.transformer.right]
+                        : [node.transformer.name, group];
+
+                    if (value)
+                    {
+                        const tranformer = this.tranformers.get(key);
+
+                        if (!tranformer)
+                        {
+                            throw new Error(`Unregistred tranformer ${key}`);
+                        }
+
+                        data[node.name] = tranformer(value);
+                    }
+
+                }
+                else if (TypeGuard.isIdentifier(node) && group)
+                {
+                    data[node.name] = group;
+                }
+                else if (TypeGuard.isRest(node))
+                {
+                    data[node.name] = group;
+                }
+            }
         }
 
-        if (this._expression.test(path))
+        return data;
+    }
+
+    private normalize(path: string): string
+    {
+        return (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "");
+    }
+
+    public match(uri: string): IRouteData | null
+    {
+        const { path, hash, query } = parseUrl(uri);
+
+        const match = this.pattern.exec(this.normalize(path));
+
+        if (match)
         {
-            const keys = this._expression.exec(this._pattern)!;
-
-            this._expression.lastIndex = 0;
-
-            const values = this._expression.exec(path)!;
-
-            Enumerable.from(keys)
-                .zip(values, (key, value) => ({ key, value }))
-                .skip(1)
-                .forEach
-                (
-                    x =>
-                    {
-                        const match = /{\s*([^=?]+)\??(?:=([^}]*))?\s*}/.exec(x.key);
-
-                        if (match)
-                        {
-                            const groups = { key: 1, value: 2 };
-                            params[match[groups.key]] = x.value || match[groups.value];
-                        }
-                    }
-                );
-
-            const match = /^(\/?(?:[\w-_]+\/?)+)(?:$|\/[^\w-_]*)/.exec(this._pattern);
-
-            if (match)
-            {
-                root = match[1];
-            }
-
-            return { match: this.pattern, root, route, params, search };
+            return {
+                hash,
+                path,
+                params: this.collectParams(match),
+                query:  parseQuery(query)
+            };
         }
 
         return null;

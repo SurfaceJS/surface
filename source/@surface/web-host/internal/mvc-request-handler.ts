@@ -78,7 +78,7 @@ export default class MvcRequestHandler extends RequestHandler
 
             if (routeData)
             {
-                const { controller, action, id } = routeData.params;
+                const { controller, action, id } = routeData.params as Indexer<string>;
                 if (controller)
                 {
                     const controllersPath = this.path.join(httpContext.host.root, "controllers");
@@ -104,7 +104,7 @@ export default class MvcRequestHandler extends RequestHandler
                         {
                             const postData = await this.parseBody(httpContext);
 
-                            const inbound = { ...routeData.search, ...postData } as Indexer;
+                            const inbound = { ...routeData.query, ...postData } as Indexer;
 
                             if (id)
                             {

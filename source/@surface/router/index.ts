@@ -1,51 +1,7 @@
-import { Dictionary, List }  from "@surface/collection";
-import { Action1, Nullable } from "@surface/core";
-import IRouteData            from "./interfaces/route-data";
-import Route                 from "./internal/route";
+import Router from "./internal/router";
 
-export default class Router
-{
-    private readonly routeAction: Dictionary<string, Action1<Nullable<IRouteData>>>;
-    private readonly routes:      List<Route>;
+import type IRouteData from "./internal/interfaces/route-data";
 
-    public constructor();
-    public constructor(routes:  List<Route>);
-    public constructor(routes?: List<Route>)
-    {
-        this.routeAction = new Dictionary();
-        this.routes      = routes ?? new List();
-    }
+export { IRouteData };
 
-    public mapRoute(name: string, pattern: string, isDefault?: boolean): Router
-    {
-        this.routes.add(new Route(name, pattern, !!isDefault));
-        return this;
-    }
-
-    public match(path: string): Nullable<IRouteData>
-    {
-        let routes = this.routes.cast();
-
-        if (path == "/")
-        {
-            routes = routes.where(x => x.isDefault);
-        }
-
-        const routeData = routes.select(x => x.match(path)).firstOrDefault(x => !!x);
-
-        const action = this.routeAction.get(path) ?? this.routeAction.get("*");
-
-        if (action)
-        {
-            action(routeData);
-        }
-
-        return routeData;
-    }
-
-    public when(route: string, action: Action1<Nullable<IRouteData>>): Router
-    {
-        this.routeAction.set(route, action);
-        return this;
-    }
-}
+export default Router;
