@@ -62,14 +62,14 @@ export default class UnaryExpression implements IExpression
         return new UnaryExpression(this.argument.clone(), this.operator);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Object
+    public evaluate(scope: object, useCache?: boolean): Object
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.argument, scope, !!useCache);
+        return this.cache = this.operation(this.argument, scope as Indexer, !!useCache);
     }
 
     public toString(): string

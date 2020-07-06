@@ -9,7 +9,7 @@ import TypeGuard      from "./type-guard";
 
 export default class Evaluate
 {
-    private static arrayPattern(scope: Indexer, arrayPattern: IArrayPattern, value: Array<unknown>, useCache: boolean): Indexer
+    private static arrayPattern(scope: object, arrayPattern: IArrayPattern, value: Array<unknown>, useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -28,7 +28,7 @@ export default class Evaluate
         return currentScope;
     }
 
-    private static objectPattern(scope: Indexer, objectPattern: IObjectPattern, value: Indexer, useCache: boolean): Indexer
+    private static objectPattern(scope: object, objectPattern: IObjectPattern, value: Indexer, useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -74,7 +74,7 @@ export default class Evaluate
         return currentScope;
     }
 
-    private static restElement(scope: Indexer, restElement: IRestElement, elements: Array<unknown>|Indexer, useCache: boolean): Indexer
+    private static restElement(scope: object, restElement: IRestElement, elements: Array<unknown>|Indexer, useCache: boolean): Indexer
     {
         if (TypeGuard.isIdentifier(restElement.argument))
         {
@@ -84,7 +84,7 @@ export default class Evaluate
         return Evaluate.pattern(scope, restElement.argument, elements, [], useCache);
     }
 
-    public static pattern(scope: Indexer, pattern: IPattern, value: unknown, rest?: Array<unknown>, useCache?: boolean): Indexer
+    public static pattern(scope: object, pattern: IPattern, value: unknown, rest?: Array<unknown>, useCache?: boolean): Indexer
     {
         rest     = rest     ?? [];
         useCache = useCache ?? false;

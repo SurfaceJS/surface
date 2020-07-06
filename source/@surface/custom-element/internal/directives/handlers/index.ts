@@ -1,5 +1,5 @@
-import { IDisposable }                       from "@surface/core";
-import { ISubscription }                     from "@surface/reactive";
+import { IDisposable }   from "@surface/core";
+import { ISubscription } from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -7,21 +7,20 @@ import
     tryObserveByObservable,
     tryObserveKeyByObservable
 } from "../../common";
-import ICustomDirective                      from "../../interfaces/directives/custom-directive";
-import { Scope }                             from "../../types";
+import ICustomDirective from "../../interfaces/directives/custom-directive";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
     protected readonly directive:       ICustomDirective;
-    protected readonly element:         Element;
-    protected readonly scope:           Scope;
+    protected readonly element:         HTMLElement;
+    protected readonly scope:           object;
     protected readonly subscription:    ISubscription;
     protected readonly keySubscription: ISubscription;
 
     protected key!: string;
     protected value: unknown;
 
-    public constructor(scope: Scope, element: Element, directive: ICustomDirective)
+    public constructor(scope: object, element: HTMLElement, directive: ICustomDirective)
     {
         this.scope      = scope;
         this.element    = element;
@@ -45,7 +44,7 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.key = newKey;
 
-        this.onKeyChange?.(oldKey, newKey);
+        this.onKeyChange?.(newKey, oldKey);
     }
 
     private valueNotify(): void
@@ -55,15 +54,15 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.value = newValue;
 
-        this.onValueChange?.(oldValue, newValue);
+        this.onValueChange?.(newValue, oldValue);
     }
 
     protected onAfterBind?(): void;
     protected onAfterUnbind?(): void;
     protected onBeforeBind?(): void;
     protected onBeforeUnbind?(): void;
-    protected onKeyChange?(oldKey: string, newKey: string): void;
-    protected onValueChange?(oldValue: unknown, newValue: unknown): void;
+    protected onKeyChange?(newKey: string, oldKey: string): void;
+    protected onValueChange?(newValue: unknown, oldValue: unknown): void;
 
     public dispose(): void
     {

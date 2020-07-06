@@ -3,11 +3,10 @@ import ITemplateDescriptor from "./interfaces/descriptors/template-descriptor";
 import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
 import TemplateProcessor   from "./template-processor";
-import { Scope }           from "./types";
 
 const cache = new Map<string, [HTMLTemplateElement, ITemplateDescriptor]>();
 
-export function processTemplate(template: string, scope: Scope): [DocumentFragment, IDisposable]
+export function processTemplate(template: string, scope: object): [DocumentFragment, IDisposable]
 {
     if (!cache.has(template))
     {

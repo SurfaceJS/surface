@@ -1,10 +1,10 @@
-import { Indexer, hasValue, format } from "@surface/core";
-import IExpression                   from "../interfaces/expression";
-import INewExpression                from "../interfaces/new-expression";
-import ISpreadElement                from "../interfaces/spread-element";
-import Messages                      from "../messages";
-import NodeType                      from "../node-type";
-import TypeGuard                     from "../type-guard";
+import { hasValue, format } from "@surface/core";
+import IExpression          from "../interfaces/expression";
+import INewExpression       from "../interfaces/new-expression";
+import ISpreadElement       from "../interfaces/spread-element";
+import Messages             from "../messages";
+import NodeType             from "../node-type";
+import TypeGuard            from "../type-guard";
 
 export default class NewExpression implements IExpression
 {
@@ -50,7 +50,7 @@ export default class NewExpression implements IExpression
         return new NewExpression(this.callee.clone(), this.arguments.map(x => x.clone()));
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

@@ -30,7 +30,6 @@
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
-        "cover": "nyc mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
         "task:build": "node ./cli build",
         "task:clean": "node ./cli clean",
         "task:install": "node ./cli install",

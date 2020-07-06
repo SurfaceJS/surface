@@ -1,7 +1,7 @@
-import { Indexer, hasValue } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import ISequenceExpression   from "../interfaces/sequence-expression";
-import NodeType              from "../node-type";
+import { hasValue }        from "@surface/core";
+import IExpression         from "../interfaces/expression";
+import ISequenceExpression from "../interfaces/sequence-expression";
+import NodeType            from "../node-type";
 
 export default class SequenceExpression implements IExpression
 {
@@ -34,7 +34,7 @@ export default class SequenceExpression implements IExpression
         return new SequenceExpression(this.expressions.map(x => x.clone()));
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

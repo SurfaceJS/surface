@@ -11,7 +11,7 @@ export default class DependencyInjectionSpec
     public resolveConstructor(): void
     {
         const instance1 = container.resolveConstructor(InjectableMock);
-        const instance2 = container.resolve<InjectableMock>("injectable-mock");
+        const instance2 = container.get<InjectableMock>("injectable-mock");
 
         chai.expect(instance1).to.not.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -39,7 +39,7 @@ export default class DependencyInjectionSpec
     public resolveInstance(): void
     {
         const instance1 = container.resolveInstance(new InjectableMock(new Baz()));
-        const instance2 = container.resolve<InjectableMock>("injectable-mock");
+        const instance2 = container.get<InjectableMock>("injectable-mock");
 
         chai.expect(instance1).to.not.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -50,8 +50,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveFromStringKey(): void
     {
-        const instance1 = container.resolve<InjectableMock>("injectable-mock");
-        const instance2 = container.resolve<InjectableMock>("injectable-mock");
+        const instance1 = container.get<InjectableMock>("injectable-mock");
+        const instance2 = container.get<InjectableMock>("injectable-mock");
 
         chai.expect(instance1).to.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -62,8 +62,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveFromSymbolKey(): void
     {
-        const instance1 = container.resolve<InjectableMock>(SYMBOL_KEY);
-        const instance2 = container.resolve<InjectableMock>(SYMBOL_KEY);
+        const instance1 = container.get<InjectableMock>(SYMBOL_KEY);
+        const instance2 = container.get<InjectableMock>(SYMBOL_KEY);
 
         chai.expect(instance1).to.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -74,8 +74,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveFromConstructorKey(): void
     {
-        const instance1 = container.resolve(InjectableMock);
-        const instance2 = container.resolve(InjectableMock);
+        const instance1 = container.get(InjectableMock);
+        const instance2 = container.get(InjectableMock);
 
         chai.expect(instance1).to.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -86,8 +86,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveFactory(): void
     {
-        const instance1 = container.resolve<InjectableMock>("factory");
-        const instance2 = container.resolve(InjectableMock);
+        const instance1 = container.get<InjectableMock>("factory");
+        const instance2 = container.get(InjectableMock);
 
         chai.expect(instance1).to.not.equal(instance2);
         chai.expect(instance1.foo).to.not.equal(instance2.foo);
@@ -98,8 +98,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveWithNewInstance(): void
     {
-        const instance1 = container.resolve(InjectableMock, true);
-        const instance2 = container.resolve(InjectableMock, true);
+        const instance1 = container.get(InjectableMock, true);
+        const instance2 = container.get(InjectableMock, true);
 
         chai.expect(instance1).to.not.equal(instance2);
         chai.expect(instance1.foo).to.equal(instance2.foo);
@@ -110,8 +110,8 @@ export default class DependencyInjectionSpec
     @test
     public resolveWithNewInstanceCascade(): void
     {
-        const instance1 = container.resolve(InjectableMock, true, true);
-        const instance2 = container.resolve(InjectableMock, true, true);
+        const instance1 = container.get(InjectableMock, true, true);
+        const instance2 = container.get(InjectableMock, true, true);
 
         chai.expect(instance1).to.not.equal(instance2);
         chai.expect(instance1.foo).to.not.equal(instance2.foo);
@@ -122,8 +122,8 @@ export default class DependencyInjectionSpec
     @test @shouldFail
     public resolveInvalidKey(): void
     {
-        chai.expect(() => container.resolve(class Foo { }), "constructor").to.throw("Cannot resolve entry for the key Foo");
-        chai.expect(() => container.resolve(Symbol("s")),   "symbol").to.throw("Cannot resolve entry for the key Symbol(s)");
-        chai.expect(() => container.resolve("$"),           "string").to.throw("Cannot resolve entry for the key $");
+        chai.expect(() => container.get(class Foo { }), "constructor").to.throw("Cannot resolve entry for the key Foo");
+        chai.expect(() => container.get(Symbol("s")),   "symbol").to.throw("Cannot resolve entry for the key Symbol(s)");
+        chai.expect(() => container.get("$"),           "string").to.throw("Cannot resolve entry for the key $");
     }
 }

@@ -1,3 +1,4 @@
+// tslint:disable-next-line: no-import-side-effect
 import "./fixtures/dom";
 
 import { Action, Indexer }                     from "@surface/core";

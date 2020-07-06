@@ -37,7 +37,7 @@ export default class ObjectExpression implements IExpression
         return new ObjectExpression(this.properties.map(x => x.clone()));
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Indexer
+    public evaluate(scope: object, useCache?: boolean): Indexer
     {
         if (useCache && hasValue(this.cache))
         {

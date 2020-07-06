@@ -117,6 +117,7 @@
         "no-duplicate-super":              true,
         "no-duplicate-variable":           true,
         "no-empty":                        true,
+        "no-import-side-effect":           [true, { "ignore-module": "(\\.html|\\.css)$" }],
         "no-internal-module":              true,
         "no-mergeable-namespace":          true,
         "no-misused-new":                  true,

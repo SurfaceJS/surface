@@ -27,7 +27,7 @@ export function isIterable(source: { [Symbol.iterator]?: Function }): source is 
 }
 
 // tslint:disable-next-line:no-any
-export function tuple<Targs extends Array<any>>(...args: Targs): Targs
+export function tuple<TArgs extends Array<any>>(...args: TArgs): TArgs
 {
     return args;
 }

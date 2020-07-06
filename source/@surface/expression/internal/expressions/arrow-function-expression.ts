@@ -44,7 +44,7 @@ export default class ArrowFunctionExpression implements IExpression
         this._body       = body;
     }
 
-    private resolveParameters(scope: Indexer, $arguments: Array<unknown>, useCache: boolean): Indexer
+    private resolveParameters(scope: object, $arguments: Array<unknown>, useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -64,7 +64,7 @@ export default class ArrowFunctionExpression implements IExpression
         return new ArrowFunctionExpression(this.parameters.map(x => x.clone()), this.body.clone());
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Function
+    public evaluate(scope: object, useCache?: boolean): Function
     {
         if (useCache && hasValue(this.cache))
         {

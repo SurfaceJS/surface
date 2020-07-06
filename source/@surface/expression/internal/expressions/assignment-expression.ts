@@ -85,7 +85,7 @@ export default class AssignmentExpression implements IExpression
         return new AssignmentExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
@@ -95,7 +95,7 @@ export default class AssignmentExpression implements IExpression
 
         if (TypeGuard.isIdentifier(this.left))
         {
-            return this.cache = this.operation(scope, this.left.name, this.right.evaluate(scope, useCache));
+            return this.cache = this.operation(scope as Indexer, this.left.name, this.right.evaluate(scope, useCache));
         }
         else
         {

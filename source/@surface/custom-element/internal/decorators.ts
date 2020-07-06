@@ -14,13 +14,11 @@ import ICustomElement              from "./interfaces/custom-element";
 import Metadata                    from "./metadata/metadata";
 import PrototypeMetadata           from "./metadata/prototype-metadata";
 import StaticMetadata              from "./metadata/static-metadata";
-import * as symbols                from "./symbols";
+import { TEMPLATEABLE }            from "./symbols";
 import TemplateParser              from "./template-parser";
 import TemplateProcessor           from "./template-processor";
 
 const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
-
-type Target = ICustomElement & { [symbols.METADATA]?: Metadata, constructor: Function & { [symbols.STATIC_METADATA]?: StaticMetadata } };
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
@@ -63,11 +61,11 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
     return sheet;
 }
 
-export function attribute(converter: Func1<string, unknown>): (target: Target, propertyKey: string) => void;
+export function attribute(converter: Func1<string, unknown>): (target: ICustomElement, propertyKey: string) => void;
 export function attribute(target: ICustomElement, propertyKey: string): void;
-export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: Target, propertyKey: string) => void)|void
+export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void)|void
 {
-    const decorator = (target: Target, propertyKey: string) =>
+    const decorator = (target: ICustomElement, propertyKey: string) =>
     {
         const constructor = target.constructor;
 
@@ -80,9 +78,9 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         if (!constructor.hasOwnProperty("observedAttributes"))
         {
-            const getter = function(this: Constructor & { [symbols.STATIC_METADATA]: StaticMetadata })
+            const getter = function(this: Constructor)
             {
-                return this[symbols.STATIC_METADATA].observedAttributes;
+                return StaticMetadata.of(this)!.observedAttributes;
             };
 
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
@@ -171,7 +169,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
 export function computed<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void
 {
-    return <U extends T>(target: U & { [symbols.METADATA]?: Metadata }, propertyKey: string) =>
+    return <U extends T>(target: U, propertyKey: string) =>
     {
         const action = (instance: HTMLElement) =>
         {
@@ -189,44 +187,57 @@ export function computed<T extends object>(...properties: Array<keyof T>): <U ex
     };
 }
 
-export function element(name: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
+
+export function define(name: string, options?: ElementDefinitionOptions): <TTarget extends Constructor<HTMLElement>>(target: TTarget) => void
 {
-    return <T extends Constructor<ICustomElement>>(target: T) =>
+    return <TTarget extends Constructor<HTMLElement>>(target: TTarget) =>
+        window.customElements.define(name, target, options);
+}
+
+export function element(tagname: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<ICustomElement> & { [TEMPLATEABLE]?: boolean }>(target: T) => T
+{
+    return <T extends Constructor<ICustomElement> & { [TEMPLATEABLE]?: boolean }>(target: T) =>
     {
-        const staticMetadata = StaticMetadata.from(target);
-
-        const templateElement = document.createElement("template");
-
-        // templateElement.innerHTML = template ?? "<slot></slot>";
-        templateElement.innerHTML = `<style>${[...staticMetadata.styles.map(x => x.toString()), style].join("\n")}</style>${template ?? "<slot></slot>"}`;
-
-        const descriptor = TemplateParser.parseReference(name, templateElement);
-
-        if (style)
+        if (target[TEMPLATEABLE])
         {
-            staticMetadata.styles.push(stringToCSSStyleSheet(style));
+            const staticMetadata = StaticMetadata.from(target);
+
+            const templateElement = document.createElement("template");
+
+            templateElement.innerHTML = template ?? "<slot></slot>";
+
+            const descriptor = TemplateParser.parseReference(tagname, templateElement);
+
+            if (style)
+            {
+                staticMetadata.styles.push(stringToCSSStyleSheet(style));
+            }
+
+            staticMetadata.template = templateElement;
+
+            const action = (instance: InstanceType<T>) =>
+            {
+                TemplateProcessor.process({ scope: createHostScope(instance), host: instance, root: instance.shadowRoot, descriptor });
+
+                const metadata = Metadata.of(instance)!;
+
+                staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
+
+                return instance;
+            };
+
+            const proxy = overrideConstructor(target, action);
+
+            window.customElements.define(tagname, proxy, options);
+
+            return proxy;
         }
-
-        staticMetadata.template = templateElement;
-
-        const action = (instance: InstanceType<T> & ICustomElement) =>
+        else
         {
-            TemplateProcessor.process({ scope: createHostScope(instance), host: instance, root: instance.shadowRoot, descriptor });
+            window.customElements.define(tagname, target, options);
 
-            instance.bindedCallback?.();
-
-            const metadata = Metadata.from(instance);
-
-            staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
-
-            return instance;
-        };
-
-        const proxy = overrideConstructor(target, action);
-
-        window.customElements.define(name, proxy, options);
-
-        return proxy;
+            return target;
+        }
     };
 }
 

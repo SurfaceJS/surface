@@ -3,8 +3,7 @@
         "lib": [
             "dom",
             "esnext"
-        ],
-        "types": []
+        ]
     },
     "extends": "../../../tsconfig.json",
     "files": [

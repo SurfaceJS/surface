@@ -1,11 +1,13 @@
 import ArgumentOutOfRangeError from "./internal/errors/argument-out-of-range-error";
 import Hashcode                from "./internal/hashcode";
+import EventListener           from "./internal/event-listener";
 
-import type IDisposable from "./internal/interfaces/disposable";
+import type IDisposable    from "./internal/interfaces/disposable";
+import type IEventListener from "./internal/interfaces/event-listener";
 
-export { ArgumentOutOfRangeError, Hashcode };
+export { ArgumentOutOfRangeError, EventListener, Hashcode };
 
-export type { IDisposable };
+export type { IDisposable, IEventListener };
 
 export type
 {
@@ -50,3 +52,4 @@ export * from "./internal/common/array";
 export * from "./internal/common/generic";
 export * from "./internal/common/object";
 export * from "./internal/common/string";
+export * from "./internal/common/web";

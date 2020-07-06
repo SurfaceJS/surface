@@ -1,8 +1,8 @@
-import { Indexer, Nullable, hasValue } from "@surface/core";
-import IExpression                     from "../interfaces/expression";
-import ITemplateElement                from "../interfaces/template-element";
-import ITemplateLiteral                from "../interfaces/template-literal";
-import NodeType                        from "../node-type";
+import { Nullable, hasValue } from "@surface/core";
+import IExpression            from "../interfaces/expression";
+import ITemplateElement       from "../interfaces/template-element";
+import ITemplateLiteral       from "../interfaces/template-literal";
+import NodeType               from "../node-type";
 
 export default class TemplateLiteral implements IExpression
 {
@@ -48,7 +48,7 @@ export default class TemplateLiteral implements IExpression
         return new TemplateLiteral(this.quasis.map(x => x.clone()), this.expressions.map(x => x.clone()));
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): string
+    public evaluate(scope: object, useCache?: boolean): string
     {
         if (useCache && hasValue(this.cache))
         {

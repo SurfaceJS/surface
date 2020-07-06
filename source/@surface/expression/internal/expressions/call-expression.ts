@@ -1,10 +1,10 @@
-import { Indexer, Nullable, hasValue, format } from "@surface/core";
-import ICallExpression                         from "../interfaces/call-expression";
-import IExpression                             from "../interfaces/expression";
-import ISpreadElement                          from "../interfaces/spread-element";
-import Messages                                from "../messages";
-import NodeType                                from "../node-type";
-import TypeGuard                               from "../type-guard";
+import { Nullable, hasValue, format } from "@surface/core";
+import ICallExpression                from "../interfaces/call-expression";
+import IExpression                    from "../interfaces/expression";
+import ISpreadElement                 from "../interfaces/spread-element";
+import Messages                       from "../messages";
+import NodeType                       from "../node-type";
+import TypeGuard                      from "../type-guard";
 
 export default class CallExpression implements IExpression
 {
@@ -63,7 +63,7 @@ export default class CallExpression implements IExpression
         return new CallExpression(this.callee.clone(), this.arguments.map(x => x.clone()), this.optional);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

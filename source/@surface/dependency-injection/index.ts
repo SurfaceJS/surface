@@ -1,7 +1,6 @@
 import { Constructor } from "@surface/core";
 import Container       from "./internal/container";
-import IInjections     from "./internal/interfaces/injections";
-import { INJECTIONS }  from "./internal/symbols";
+import StaticMetadata  from "./internal/metadata";
 
 // tslint:disable-next-line:no-any
 export function inject(key: string|symbol|Constructor): any
@@ -10,19 +9,19 @@ export function inject(key: string|symbol|Constructor): any
     {
         const [target, propertyKey] = args;
 
-        const constructor = (typeof target == "function" ? target : target.constructor) as Function & { [INJECTIONS]?: IInjections };
+        const constructor = typeof target == "function" ? target : target.constructor;
 
-        const injections = constructor[INJECTIONS] = constructor[INJECTIONS] || { parameters: [], properties: [] };
+        const metadata = StaticMetadata.from(constructor);
 
         const parameterIndexOrdescriptor = args[2];
 
         if (typeof parameterIndexOrdescriptor == "number")
         {
-            injections.parameters.push(key);
+            metadata.parameters.push(key);
         }
         else
         {
-            injections.properties.push([propertyKey, key]);
+            metadata.properties.push([propertyKey, key]);
         }
     };
 }
