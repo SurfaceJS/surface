@@ -9,13 +9,19 @@ export default class RouterSpec
     @test
     public match(): void
     {
-        let match = false;
+        const expected: IRouteData =
+            {
+                hash:   "",
+                params: {  },
+                path:   "/path",
+                query:  { },
+            };
 
-        new Router()
-            .map( "/path", () => match = true)
+        const actual = new Router()
+            .map( "/path")
             .match("/path");
 
-        assert.isTrue(match);
+        assert.deepEqual(actual, expected);
     }
 
     @test

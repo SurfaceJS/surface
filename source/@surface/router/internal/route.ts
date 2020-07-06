@@ -1,21 +1,21 @@
-import { parseQuery, parseUrl, Func1, Indexer } from "@surface/core";
-import IRouteData                               from "../internal/interfaces/route-data";
-import INode                                    from "./interfaces/node";
-import SegmentNode                              from "./nodes/segment-node";
-import Parser                                   from "./parser";
-import TypeGuard                                from "./type-guard";
+import { normalizeUrlPath, parseQuery, parseUrl, Func, Indexer } from "@surface/core";
+import IRouteData                                                from "../internal/interfaces/route-data";
+import INode                                                     from "./interfaces/node";
+import SegmentNode                                               from "./nodes/segment-node";
+import Parser                                                    from "./parser";
+import TypeGuard                                                 from "./type-guard";
 
 export default class Route
 {
-    private readonly tranformers: Map<string, Func1<string, unknown>>;
+    private readonly tranformers: Map<string, Func<[string], unknown>>;
     private readonly nodes:       Array<INode>;
     private readonly pattern:     RegExp;
 
-    public constructor(pattern: string, tranformers: Map<string, Func1<string, unknown>>)
+    public constructor(pattern: string, tranformers: Map<string, Func<[string], unknown>>)
     {
         this.tranformers = tranformers;
 
-        const segments = Parser.parse(this.normalize(pattern));
+        const segments = Parser.parse(normalizeUrlPath(pattern));
 
         this.nodes   = segments.flatMap(x => x.nodes);
         this.pattern = new RegExp(`^${Array.from(this.segmentMap(segments)).join("")}$`);
@@ -106,16 +106,11 @@ export default class Route
         return data;
     }
 
-    private normalize(path: string): string
-    {
-        return (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "");
-    }
-
     public match(uri: string): IRouteData | null
     {
         const { path, hash, query } = parseUrl(uri);
 
-        const match = this.pattern.exec(this.normalize(path));
+        const match = this.pattern.exec(normalizeUrlPath(path));
 
         if (match)
         {
@@ -123,7 +118,7 @@ export default class Route
                 hash,
                 path,
                 params: this.collectParams(match),
-                query:  parseQuery(query)
+                query:  parseQuery(query),
             };
         }
 

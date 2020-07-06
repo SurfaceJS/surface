@@ -4,36 +4,34 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/core": "0.0.3",
-        "@surface/custom-element": "0.0.6",
-        "@surface/enumerable": "0.0.0",
-        "@surface/reflection": "0.0.0",
-        "@surface/router": "0.0.0",
-        "@surface/view": "0.0.0",
-        "@surface/view-host": "0.0.0",
+        "@surface/core": "1.0.0-alpha.0",
+        "@surface/custom-element": "1.0.0-alpha.0",
+        "@surface/dependency-injection": "1.0.0-alpha.0",
+        "@surface/router": "1.0.0-alpha.0",
         "tslib": "2.0.0"
     },
-    "description": "Web component view manager.",
+    "description": "Web component view router.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
+        "@surface/test-suite": "1.0.0-alpha.0",
         "@types/chai": "4.2.11",
-        "chai": "4.2.0"
+        "@types/jsdom": "16.2.3",
+        "chai": "4.2.0",
+        "jsdom": "16.2.2"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "manager",
         "surface",
-        "typescript",
         "view",
+        "router",
+        "typescript",
         "webcomponents"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/view-manager",
+    "name": "@surface/view-router",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "0.0.0-alpha.0"
+    "version": "1.0.0-alpha.0"
 }
