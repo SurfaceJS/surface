@@ -85,9 +85,9 @@ export default class ViewRouter implements IDisposable
     {
         const constructor = await this.resolveComponent(routeConfig.component);
 
-        this.container.register(ViewRouter.ROUTE_DATA_KEY, () => routeData);
-
-        const element = this.container.resolveConstructor(constructor);
+        const element =
+            Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_DATA_KEY, routeData))
+                .inject(constructor);
 
         const routerScope = routeConfig.slot ?? "";
 
