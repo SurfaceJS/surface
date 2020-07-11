@@ -1,4 +1,4 @@
-import { JSDOM, DOMWindow } from "jsdom";
+import { DOMWindow, JSDOM } from "jsdom";
 
 const jsdom = new JSDOM();
 
@@ -17,7 +17,7 @@ window.open = url =>
     windows.push(jsdom.window);
 
     return jsdom.window as object as Window;
-}
+};
 
 Object.assign
 (

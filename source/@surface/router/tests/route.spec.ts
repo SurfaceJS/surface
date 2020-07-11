@@ -1,6 +1,7 @@
 import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { assert }                                   from "chai";
-import Route                                        from "../internal/route";
+import { assert }   from "chai";
+import ITransformer from "../internal/interfaces/transformer";
+import Route        from "../internal/route";
 import
 {
     routeInvalidExpectations,
@@ -9,6 +10,9 @@ import
     RouteValidExpectation
 } from "./route-expectations";
 
+const transformer: ITransformer = { parse: x => x.split("."), stringfy: (x: Array<string>) => x.join(".") };
+const transformers = new Map([["transformer", transformer]]);
+
 @suite
 export default class RouteSpec
 {
@@ -16,7 +20,7 @@ export default class RouteSpec
     @batchTest(routeValidExpectations, x => `Pattern: "${x.pattern}" should result: "${JSON.stringify(x.expected)}"`)
     public validMatch(expectation: RouteValidExpectation): void
     {
-        const actual = new Route(expectation.pattern, new Map([["transformer", x => x.split(".")]])).match(expectation.url);
+        const actual = new Route(expectation.pattern, transformers).match(expectation.value);
 
         assert.deepEqual(actual, expectation.expected);
     }
@@ -25,7 +29,7 @@ export default class RouteSpec
     @batchTest(routeInvalidExpectations, x => `Pattern: "${x.pattern}" should throws: "${x.error.message}"`)
     public invalidMatch(expectation: RouteInvalidExpectation): void
     {
-        const action = () => new Route(expectation.pattern, new Map()).match(expectation.url);
+        const action = () => new Route(expectation.pattern, transformers).match(expectation.url);
 
         assert.throws(action, Error, expectation.error.message);
     }

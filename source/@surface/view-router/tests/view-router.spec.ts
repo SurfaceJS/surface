@@ -3,7 +3,7 @@ import "./fixtures/dom";
 
 import CustomElement, { define, element } from "@surface/custom-element";
 import { inject }                         from "@surface/dependency-injection";
-import { IRouteData }                     from "@surface/router";
+import { RouteData }                      from "@surface/router";
 import { before, suite, test }            from "@surface/test-suite";
 import { assert }                         from "chai";
 import IRouteConfig                       from "../internal/interfaces/route-config";
@@ -22,7 +22,7 @@ class HomeDetailView extends HTMLElement
 class DataView extends HTMLElement
 {
     @inject(ViewRouter.ROUTE_DATA_KEY)
-    public routeData!: IRouteData;
+    public routeData!: RouteData;
 }
 
 @define("about-view")
@@ -92,7 +92,7 @@ export default class ViewRouterSpec
 
         await router.push("/path1");
 
-        assert.equal(window.location.href, "http://localhost.com/path1", "window.location.href equal 'http://localhost.com/path1'");
+        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
         assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 
@@ -131,7 +131,25 @@ export default class ViewRouterSpec
 
         await router.push({ name: "not-found" });
 
-        assert.equal(window.location.href, "http://localhost.com/not-found", "window.location.href equal 'http://localhost.com/not-found'");
+        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
+    }
+
+    @test
+    public async pushToNamedRouteWithParams(): Promise<void>
+    {
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterSlot>("router-slot")!;
+
+        assert.instanceOf(slot, RouterSlot);
+
+        await router.push({ name: "data", params: { action: "index", id: 1 } });
+
+        assert.equal(window.location.href, "http://localhost.com/data/index/1", "window.location.href equal 'http://localhost.com/data/index/1'");
+        assert.instanceOf(slot.firstElementChild, DataView, "route to DataView");
+
+        await router.push({ name: "data" });
+
+        assert.equal(window.location.href, "http://localhost.com/data/index/1", "window.location.href equal 'http://localhost.com/data/index/1'");
         assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 

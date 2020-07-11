@@ -1,6 +1,6 @@
-import { Nullable }   from "@surface/core";
-import { IRouteData } from "@surface/router";
-import HttpContext    from "./http-context";
+import { Nullable }  from "@surface/core";
+import { RouteData } from "@surface/router";
+import HttpContext   from "./http-context";
 
 export default abstract class ActionResult
 {
@@ -10,15 +10,15 @@ export default abstract class ActionResult
         return this._httpContext;
     }
 
-    private readonly _routeData: Nullable<IRouteData>;
-    public get routeData(): Nullable<IRouteData>
+    private readonly _routeData: Nullable<RouteData>;
+    public get routeData(): Nullable<RouteData>
     {
         return this._routeData;
     }
 
     public constructor(httpContext: HttpContext);
-    public constructor(httpContext: HttpContext, routeData: IRouteData);
-    public constructor(httpContext: HttpContext, routeData?: IRouteData)
+    public constructor(httpContext: HttpContext, routeData: RouteData);
+    public constructor(httpContext: HttpContext, routeData?: RouteData)
     {
         this._httpContext = httpContext;
         this._routeData   = routeData;

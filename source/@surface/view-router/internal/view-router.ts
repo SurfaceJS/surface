@@ -1,16 +1,17 @@
-import { normalizeUrlPath, stringfyQuery, typeGuard, Constructor, Indexer, IDisposable } from "@surface/core";
-import CustomElement                                                                     from "@surface/custom-element";
-import Container                                                                         from "@surface/dependency-injection";
-import IRouteData                                                                        from "@surface/router/internal/interfaces/route-data";
-import Router                                                                            from "@surface/router/internal/router";
-import IRouteConfig                                                                      from "./interfaces/route-config";
-import RouterSlot                                                                        from "./router-slot";
-import ToDirectiveHandler                                                                from "./to-directive-handler";
-import { Component, Module }                                                             from "./types";
+import { typeGuard, Constructor, Indexer, IDisposable } from "@surface/core";
+import CustomElement                                    from "@surface/custom-element";
+import Container                                        from "@surface/dependency-injection";
+import { RouteData }                                    from "@surface/router";
+import Router                                           from "@surface/router/internal/router";
+import IRouteConfig                                     from "./interfaces/route-config";
+import RouterSlot                                       from "./router-slot";
+import ToDirectiveHandler                               from "./to-directive-handler";
+import { Component, Module }                            from "./types";
 
 type NamedRoute =
 {
     name:    string,
+    hash?:    string,
     params?: Indexer,
     query?:  Indexer<string>,
 };
@@ -21,9 +22,8 @@ export default class ViewRouter implements IDisposable
     public static readonly ROUTE_DATA_KEY: symbol = Symbol("view-router:route-data-key");
     private readonly routerSlots: Map<string, RouterSlot> = new Map();
 
-    private readonly history:     Array<[IRouteConfig, IRouteData]>  = [];
-    private readonly namedRoutes: Map<string, IRouteConfig>          = new Map();
-    private readonly router:      Router<[IRouteConfig, IRouteData]> = new Router();
+    private readonly history:     Array<[IRouteConfig, RouteData]>  = [];
+    private readonly router:      Router<[IRouteConfig, RouteData]> = new Router();
 
     private container: Container;
     private disposed:  boolean       = false;
@@ -41,10 +41,12 @@ export default class ViewRouter implements IDisposable
             {
                 ViewRouter.subscribeScope(routeItem.slot ?? "", this);
 
-                this.namedRoutes.set(routeItem.name, routeItem);
+                this.router.map(routeItem.name, routeItem.path, routeData => [routeItem, routeData]);
             }
-
-            this.router.map(routeItem.path, routeData => [routeItem, routeData]);
+            else
+            {
+                this.router.map(routeItem.path, routeData => [routeItem, routeData]);
+            }
         }
 
         this.push(window.location.pathname + window.location.search + window.location.hash);
@@ -79,7 +81,7 @@ export default class ViewRouter implements IDisposable
         ViewRouter.scopeSubscriptions.get(scope)?.routerSlots.delete(scope);
     }
 
-    private async create(routeConfig: IRouteConfig, routeData: IRouteData, useHistory: boolean = false)
+    private async create(routeConfig: IRouteConfig, routeData: RouteData, useHistory: boolean = false)
     {
         const constructor = await this.resolveComponent(routeConfig.component);
 
@@ -174,40 +176,35 @@ export default class ViewRouter implements IDisposable
         {
             const match = this.router.match(route);
 
-            if (match)
+            if (match.matched)
             {
-                await this.create(...match);
+                await this.create(...match.value);
 
+                window.history.pushState(null, "", route);
             }
             else
             {
                 this.routerSlots.forEach(x => x.clear());
             }
-
-            window.history.pushState(null, "", route);
         }
         else
         {
-            const routeItem = this.namedRoutes.get(route.name);
+            const match = this.router.match(route.name, route.params ?? { });
 
-            if (routeItem)
+            if (match.matched)
             {
-                const routeData: IRouteData =
-                {
-                    hash:   "",
-                    params: route.params ?? { },
-                    path:   route.name,
-                    query:  route.query ?? { },
-                };
+                const [routeConfig, _routeData] = match.value;
 
-                await this.create(routeItem, routeData);
+                const routeData = new RouteData(_routeData.path, _routeData.params, route.query, route.hash);
+
+                await this.create(routeConfig, routeData);
+
+                window.history.pushState(null, "", routeData.toString());
             }
             else
             {
                 this.routerSlots.forEach(x => x.clear());
             }
-
-            window.history.pushState(null, "", normalizeUrlPath(route.name) + (route.query ? stringfyQuery(route.query) : ""));
         }
     }
 }

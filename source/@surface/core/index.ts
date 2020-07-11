@@ -52,4 +52,3 @@ export * from "./internal/common/array";
 export * from "./internal/common/generic";
 export * from "./internal/common/object";
 export * from "./internal/common/string";
-export * from "./internal/common/web";

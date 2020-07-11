@@ -1,10 +1,11 @@
-import { IRouteData } from "..";
+import { Indexer }    from "@surface/core";
+import { RouteMatch } from "../internal/types";
 
 export type RouteValidExpectation =
     {
-        expected: IRouteData | null,
+        expected: RouteMatch,
         pattern:  string,
-        url:      string,
+        value:    string | Indexer,
     };
 
 export type RouteInvalidExpectation =
@@ -17,284 +18,629 @@ export type RouteInvalidExpectation =
 export const routeValidExpectations: Array<RouteValidExpectation> =
     [
         {
+            expected: { matched: false, reason: "Pattern don't match" },
+            pattern:  "/path",
+            value:    ""
+        },
+        {
             expected:
             {
-                hash:   "",
-                path:    "",
-                params: { },
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/",
+                    query:  { },
+                }
             },
             pattern: "",
-            url:     ""
-        },
-        {
-            expected: null,
-            pattern:  "/path",
-            url:      ""
+            value:   ""
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "/path",
-            url:     "/path"
+            value:   "/path"
         },
         {
             expected:
             {
-                hash:   "example",
-                params: { },
-                path:   "/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "example",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "/path",
-            url:     "/path#example"
+            value:   "/path#example"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "/path",
-                query:  { value1: "1", value2: "2" },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { value1: "1", value2: "2" },
+                }
             },
             pattern: "/path",
-            url:     "/path?value1=1&value2=2"
+            value:   "/path?value1=1&value2=2"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "/path-path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path-path",
+                    query:  { },
+                }
             },
             pattern: "/path*",
-            url:     "/path-path"
+            value:   "/path-path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "/pathpathpath/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/pathpathpath/path",
+                    query:  { },
+                }
             },
             pattern: "/path*path/path",
-            url:     "/pathpathpath/path"
+            value:   "/pathpathpath/path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: "path" },
-                path:   "/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path" },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "/{value}",
-            url:     "/path"
+            value:   "/path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: "path" },
-                path:   "/path-path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path" },
+                    path:   "/path-path",
+                    query:  { },
+                }
             },
             pattern: "/{value}-path",
-            url:     "/path-path"
+            value:   "/path-path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: "path" },
-                path:   "/pathpathpath/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path" },
+                    path:   "/pathpathpath/path",
+                    query:  { },
+                }
             },
             pattern: "/path{value}path/path",
-            url:     "/pathpathpath/path"
+            value:   "/pathpathpath/path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "path", value2: "path", value3: "path" },
-                path:   "/pathpathpathpathpathpathpathpath/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "path", value2: "path", value3: "path" },
+                    path:   "/pathpathpathpathpathpathpathpath/path",
+                    query:  { },
+                }
             },
             pattern: "/path{value1}pathpath{value2}pathpath{value3}/path",
-            url:     "/pathpathpathpathpathpathpathpath/path"
+            value:   "/pathpathpathpathpathpathpathpath/path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/home/index",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/home/index",
+                    query:  { },
+                }
             },
             pattern: "path/{value1}/{value2}",
-            url:     "path/home/index"
+            value:   "path/home/index"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home" },
-                path:   "path/home",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home" },
+                    path:   "/path/home",
+                    query:  { },
+                }
             },
             pattern: "path/{value1}/{value2?}",
-            url:     "path/home"
+            value:   "path/home"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "path/{value1?}/{value2?}",
-            url:     "path"
+            value:   "path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/home",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/home",
+                    query:  { },
+                }
             },
             pattern: "path/{value1}/{value2=index}",
-            url:     "path/home"
+            value:   "path/home"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "path/{value1=home}/{value2=index}",
-            url:     "path"
+            value:   "path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/index",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/index",
+                    query:  { },
+                }
             },
             pattern: "path/{value1=home}/{value2}",
-            url:     "path/index"
+            value:   "path/index"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/path",
+                    query:  { },
+                }
             },
             pattern: "path/path{value1=home}/{value2=index}",
-            url:     "path/path"
+            value:   "path/path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/pathpath",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/pathpath",
+                    query:  { },
+                }
             },
             pattern: "path/path{value1=home}path/{value2=index}",
-            url:     "path/pathpath"
+            value:   "path/pathpath"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value1: "home", value2: "index" },
-                path:   "path/pathpath",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "home", value2: "index" },
+                    path:   "/path/pathpath",
+                    query:  { },
+                }
             },
             pattern: "path/path{value1=home}path/{value2=index}",
-            url:     "path/pathpath"
+            value:   "path/pathpath"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: ["path", "path"] },
-                path:   "path/path.path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: ["path", "path"] },
+                    path:   "/path/path.path",
+                    query:  { },
+                }
             },
             pattern: "path/{value:transformer}",
-            url:     "path/path.path"
+            value:   "path/path.path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: ["path", "path", "path"] },
-                path:   "path/path.path.path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: ["path", "path", "path"] },
+                    path:   "/path/path.path.path",
+                    query:  { },
+                }
             },
             pattern: "path/{value:transformer=path.path}",
-            url:     "path/path.path.path"
+            value:   "path/path.path.path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: ["path", "path"] },
-                path:   "path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: ["path", "path"] },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "path/{value:transformer=path.path}",
-            url:     "path"
+            value:   "path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { },
-                path:   "path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern: "path/{value:transformer?}",
-            url:     "path"
+            value:   "path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: "path/path/path/path" },
-                path:   "path/path/path/path/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "" },
+                    path:   "/path",
+                    query:  { },
+                }
             },
             pattern:  "path/{*value}",
-            url:      "path/path/path/path/path"
+            value:    "path"
         },
         {
             expected:
             {
-                hash:   "",
-                params: { value: "path/path/path" },
-                path:   "path/path/path/path/path",
-                query:  { },
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path/path/path/path" },
+                    path:   "/path/path/path/path/path",
+                    query:  { },
+                }
+            },
+            pattern:  "path/{*value}",
+            value:    "path/path/path/path/path"
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path/path/path" },
+                    path:   "/path/path/path/path/path",
+                    query:  { },
+                }
             },
             pattern:  "path/{*value}/path",
-            url:      "path/path/path/path/path"
+            value:    "path/path/path/path/path"
+        },
+        {
+            expected: { matched: false, reason: "Missing required parameters: value1, value2" },
+            pattern:  "/path/{value1}/{value2:tranformer}",
+            value:    { }
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "path" },
+                    path:   "/path/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value}",
+            value:    { value: "path" },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "path", value2: "path", value3: "path" },
+                    path:   "/path/path-path/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1}-{value2}/{value3}",
+            value:    { value1: "path", value2: "path", value3: "path" },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value?}",
+            value:    { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path/-",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1?}-{value2?}/{value?}",
+            value:    { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "value1" },
+                    path:   "/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1=value1}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "value1", value2: "value2", value3: "value3" },
+                    path:   "/path/-",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1=value1}-{value2=value2}/{value3=value3}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: ["path", "path"] },
+                    path:   "/path/path.path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value:transformer}",
+            value:   { value: ["path", "path"] },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
+                    path:   "/path/path.path-path.path/path.path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1:transformer}-{value2:transformer}/{value3:transformer}",
+            value:   { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value:transformer?}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { },
+                    path:   "/path/-",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1:transformer?}-{value2:transformer?}/{value3:transformer?}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: ["path", "path"] },
+                    path:   "/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value:transformer=path.path}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
+                    path:   "/path/-",
+                    query:  { },
+                }
+            },
+            pattern: "path/{value1:transformer=path.path}-{value2:transformer=path.path}/{value3:transformer=path.path}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value: "" },
+                    path:   "/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{*value}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "path", value2: "path", value3: "path" },
+                    path:   "/path/path-path/path",
+                    query:  { },
+                }
+            },
+            pattern: "path/{*value1}-{*value2}/{*value3}",
+            value:   { value1: "path", value2: "path", value3: "path" },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:   "",
+                    params: { value1: "", value2: "", value3: "" },
+                    path:   "/path/-",
+                    query:  { },
+                }
+            },
+            pattern: "path/{*value1}-{*value2}/{*value3}",
+            value:   { },
         },
     ];
 
@@ -303,6 +649,11 @@ export const routeInvalidExpectations: Array<RouteInvalidExpectation> =
         {
             error:   new Error("Unregistred tranformer Foo"),
             pattern: "/path/{value:Foo}",
+            url:     "/path/path",
+        },
+        {
+            error:   new Error("Found duplicated key value"),
+            pattern: "/path/{value}/{value}",
             url:     "/path/path",
         }
     ];

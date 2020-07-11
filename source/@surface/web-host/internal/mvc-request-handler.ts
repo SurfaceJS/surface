@@ -74,11 +74,14 @@ export default class MvcRequestHandler extends RequestHandler
     {
         if (httpContext.request.url)
         {
-            const routeData = this.router.match(httpContext.request.url);
+            const match = this.router.match(httpContext.request.url);
 
-            if (routeData)
+            if (match.matched)
             {
+                const routeData = match.value;
+
                 const { controller, action, id } = routeData.params as Indexer<string>;
+
                 if (controller)
                 {
                     const controllersPath = this.path.join(httpContext.host.root, "controllers");

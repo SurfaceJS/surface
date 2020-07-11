@@ -38,6 +38,27 @@ export default class Parser
         }
     }
 
+    private assertKeysIdentity(segments: Array<SegmentNode>): void
+    {
+        const keys = new Set();
+
+        for (const node of segments.flatMap(x => x.nodes))
+        {
+            const key = TypeGuard.isAssignment(node)
+                ? node.left
+                : TypeGuard.isIdentifier(node) || TypeGuard.isRest(node) || TypeGuard.isTransformer(node)
+                    ? node.name
+                    : undefined;
+
+            if (key && keys.has(key))
+            {
+                throw new Error(`Found duplicated key ${key}`);
+            }
+
+            keys.add(key);
+        }
+    }
+
     private hasOptional(nodes: Array<INode>): boolean
     {
         const singleNode = nodes.length == 1 ? nodes[0] : null;
@@ -80,6 +101,8 @@ export default class Parser
         {
             segments.push(this.parseSegment());
         }
+
+        this.assertKeysIdentity(segments);
 
         return segments;
     }

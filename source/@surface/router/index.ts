@@ -1,7 +1,10 @@
-import Router from "./internal/router";
+import RouteData from "./internal/route-data";
+import Router    from "./internal/router";
 
-import type IRouteData from "./internal/interfaces/route-data";
+import type { RouterMatch } from "./internal/types";
 
-export { IRouteData };
+export type { RouterMatch };
+
+export { RouteData };
 
 export default Router;
