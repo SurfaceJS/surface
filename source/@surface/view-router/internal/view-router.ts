@@ -1,108 +1,139 @@
-import { typeGuard, Constructor, Indexer, IDisposable } from "@surface/core";
-import CustomElement                                    from "@surface/custom-element";
-import Container                                        from "@surface/dependency-injection";
-import { RouteData }                                    from "@surface/router";
-import Router                                           from "@surface/router/internal/router";
-import IRouteConfig                                     from "./interfaces/route-config";
-import RouterSlot                                       from "./router-slot";
-import ToDirectiveHandler                               from "./to-directive-handler";
-import { Component, Module }                            from "./types";
+import { Stack }                                            from "@surface/collection";
+import { assertGet, typeGuard, Constructor, Indexer, Lazy } from "@surface/core";
+import CustomElement                                        from "@surface/custom-element";
+import Container                                            from "@surface/dependency-injection";
+import { RouteData }                                        from "@surface/router";
+import Router                                               from "@surface/router/internal/router";
+import Metadata                                             from "./metadata";
+import NavigationDirectiveHandler                           from "./navigation-directive-handler";
+import RouteConfigurator                                    from "./route-configurator";
+import RouterSlot                                           from "./router-slot";
+import Component                                            from "./types/component";
+import Module                                               from "./types/module";
+import RouteConfiguration                                   from "./types/route-configuration";
+import RouteDefinition                                      from "./types/route-definition";
 
 type NamedRoute =
 {
-    name:    string,
-    hash?:    string,
-    params?: Indexer,
-    query?:  Indexer<string>,
+    name:        string,
+    hash?:       string,
+    parameters?: Indexer,
+    query?:      Indexer<string>,
 };
 
-export default class ViewRouter implements IDisposable
+export default class ViewRouter
 {
-    private static readonly scopeSubscriptions: Map<string, ViewRouter> = new Map();
     public static readonly ROUTE_DATA_KEY: symbol = Symbol("view-router:route-data-key");
-    private readonly routerSlots: Map<string, RouterSlot> = new Map();
 
-    private readonly history:     Array<[IRouteConfig, RouteData]>  = [];
-    private readonly router:      Router<[IRouteConfig, RouteData]> = new Router();
+    private readonly cache:     Array<Record<string, HTMLElement>>   = [];
+    private readonly container: Container;
+    private readonly history:   Array<[RouteDefinition, RouteData]> = [];
+    private readonly root:      Lazy<HTMLElement>;
+    private readonly router:    Router<[RouteDefinition, RouteData]> = new Router();
+    private readonly slotStack: Stack<RouterSlot>                     = new Stack();
+    private readonly slotTag:   string;
 
-    private container: Container;
-    private disposed:  boolean       = false;
-    private index:     number        = 0;
-    private routes:    Array<IRouteConfig>;
+    private index:    number  = 0;
+    private current?: { definition: RouteDefinition, routeData: RouteData };
 
-    public constructor(routes: Array<IRouteConfig>, container: Container = new Container())
+    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, container: Container = new Container(), slotTag: string = "router-slot")
     {
-        this.routes    = routes;
+        this.root = typeof root == "string"
+            ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
+            : typeof root == "object"
+                ? new Lazy(() => root)
+                : new Lazy(root);
+
         this.container = container;
+        this.slotTag   = slotTag;
 
-        for (const routeItem of routes)
+        for (const definition of RouteConfigurator.configure(routes))
         {
-            if (routeItem.name)
+            if (definition.name)
             {
-                ViewRouter.subscribeScope(routeItem.slot ?? "", this);
-
-                this.router.map(routeItem.name, routeItem.path, routeData => [routeItem, routeData]);
+                this.router.map(definition.name, definition.path, routeData => [definition, routeData]);
             }
             else
             {
-                this.router.map(routeItem.path, routeData => [routeItem, routeData]);
+                this.router.map(definition.path, routeData => [definition, routeData]);
             }
         }
-
-        this.push(window.location.pathname + window.location.search + window.location.hash);
-    }
-
-    public static register(viewRouter: RouterSlot)
-    {
-        const scope = viewRouter.getAttribute("name") ?? "";
-
-        ViewRouter.scopeSubscriptions.get(scope)?.routerSlots.set(scope, viewRouter);
     }
 
     public static registerDirective(router: ViewRouter): void
     {
-        CustomElement.registerDirective("to", (...args) => new ToDirectiveHandler(router, ...args));
+        CustomElement.registerDirective("to", (...args) => new NavigationDirectiveHandler(router, ...args));
     }
 
-    public static subscribeScope(scope: string, router: ViewRouter): void
+    private async create(definition: RouteDefinition, routeData: RouteData, useHistory: boolean = false)
     {
-        ViewRouter.scopeSubscriptions.set(scope, router);
-    }
+        if (definition == this.current?.definition)
+        {
+            Object.assign(this.current.routeData, routeData);
+        }
 
-    public static unsubscribeScope(scope: string): void
-    {
-        ViewRouter.scopeSubscriptions.delete(scope);
-    }
+        let parent = this.root.value;
 
-    public static unregister(viewRouter: RouterSlot)
-    {
-        const scope = viewRouter.getAttribute("name") ?? "";
+        for (let index = 0; index < definition.stack.length; index++)
+        {
+            const entry    = definition.stack[index];
+            const metadata = Metadata.from(parent);
 
-        ViewRouter.scopeSubscriptions.get(scope)?.routerSlots.delete(scope);
-    }
+            if (!parent.shadowRoot)
+            {
+                throw new Error("Route component requires an open shadowRoot");
+            }
 
-    private async create(routeConfig: IRouteConfig, routeData: RouteData, useHistory: boolean = false)
-    {
-        const constructor = await this.resolveComponent(routeConfig.component);
+            const keys = entry.keys();
 
-        const element =
-            Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_DATA_KEY, routeData))
-                .inject(constructor);
+            metadata.disposeSlots(new Set(keys));
 
-        const routerScope = routeConfig.slot ?? "";
+            if (entry == this.current?.definition?.stack[index])
+            {
+                parent = this.cache[index]["default"] ?? this.cache[index][keys.next().value];
+            }
+            else
+            {
+                let nextParent: HTMLElement | undefined;
 
-        const slot = this.routerSlots.get(routerScope);
+                for (const [key, component] of entry)
+                {
+                    const constructor = await this.resolveComponent(component);
 
-        slot?.set(element);
+                    const element = Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_DATA_KEY, routeData))
+                        .inject(constructor);
+
+                    (this.cache[index] = this.cache[index] ?? [])[key] = element;
+
+                    const slot = metadata.getSlot(this.slotTag, key);
+
+                    if (slot)
+                    {
+                        window.customElements.upgrade(slot);
+
+                        slot.set(element);
+
+                        this.slotStack.push(slot);
+                    }
+
+                    if (!nextParent || key == "default")
+                    {
+                        nextParent = element;
+                    }
+                }
+
+                parent = nextParent!;
+            }
+        }
 
         if (!useHistory)
         {
-            this.history.push([routeConfig, routeData]);
+            this.history.push([definition, routeData]);
 
             this.index = this.history.length - 1;
         }
 
-        this.resolve?.();
+        this.current = { definition, routeData };
     }
 
     private resolveModule(module: Constructor<HTMLElement> | Module<Constructor<HTMLElement>>): Constructor<HTMLElement>
@@ -131,24 +162,9 @@ export default class ViewRouter implements IDisposable
         return this.resolveModule(component);
     }
 
-    private resolve?(): void;
-
     public async back(): Promise<void>
     {
         await this.go(-1);
-    }
-
-    public dispose(): void
-    {
-        if (!this.disposed)
-        {
-            for (const routeItem of this.routes)
-            {
-                ViewRouter.unsubscribeScope(routeItem.slot ?? "");
-            }
-
-            this.disposed = true;
-        }
     }
 
     public async forward(): Promise<void>
@@ -158,16 +174,16 @@ export default class ViewRouter implements IDisposable
 
     public async go(value: number): Promise<void>
     {
-        this.index += value;
+        const index = Math.min(Math.max(this.index + value, 0), this.history.length - 1);
 
-        if (this.index < 0 || this.index > this.history.length - 0)
+        if (index != this.index)
         {
-            throw new Error("Out of range");
+            const [routeItem, routeData] = this.history[index];
+
+            await this.create(routeItem, routeData, true);
+
+            this.index = index;
         }
-
-        const [routeItem, routeData] = this.history[this.index];
-
-        await this.create(routeItem, routeData, true);
     }
 
     public async push(route: string | NamedRoute): Promise<void>
@@ -184,18 +200,20 @@ export default class ViewRouter implements IDisposable
             }
             else
             {
-                this.routerSlots.forEach(x => x.clear());
+                this.slotStack.forEach(x => x.clear());
+
+                this.current = undefined;
             }
         }
         else
         {
-            const match = this.router.match(route.name, route.params ?? { });
+            const match = this.router.match(route.name, route.parameters ?? { });
 
             if (match.matched)
             {
                 const [routeConfig, _routeData] = match.value;
 
-                const routeData = new RouteData(_routeData.path, _routeData.params, route.query, route.hash);
+                const routeData = new RouteData(_routeData.path, _routeData.parameters, route.query, route.hash);
 
                 await this.create(routeConfig, routeData);
 
@@ -203,7 +221,9 @@ export default class ViewRouter implements IDisposable
             }
             else
             {
-                this.routerSlots.forEach(x => x.clear());
+                this.slotStack.forEach(x => x.clear());
+
+                this.current = undefined;
             }
         }
     }

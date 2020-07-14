@@ -1,8 +1,10 @@
 import TokenType from "../enums/token-type";
 
-export default interface IToken
+type Token =
 {
     index: number;
     type:  TokenType;
     value: string;
 }
+
+export default Token

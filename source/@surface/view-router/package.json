@@ -4,6 +4,7 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
+        "@surface/collection": "1.0.0-alpha.0",
         "@surface/core": "1.0.0-alpha.0",
         "@surface/custom-element": "1.0.0-alpha.0",
         "@surface/dependency-injection": "1.0.0-alpha.0",

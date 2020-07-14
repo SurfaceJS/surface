@@ -254,6 +254,11 @@ export default class TemplateProcessor
         {
             const handlerConstructor = directiveRegistry.get(directive.name)!;
 
+            if (!handlerConstructor)
+            {
+                throw new TemplateProcessError(`Unregistered directive #${directive.name}.`, this.buildStack(directive));
+            }
+
             if (typeGuard<DirectiveHandlerFactory>(handlerConstructor, !handlerConstructor.prototype))
             {
                 disposables.push(handlerConstructor(scope, element, directive));

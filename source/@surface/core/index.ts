@@ -1,11 +1,12 @@
 import ArgumentOutOfRangeError from "./internal/errors/argument-out-of-range-error";
-import Hashcode                from "./internal/hashcode";
 import EventListener           from "./internal/event-listener";
+import Hashcode                from "./internal/hashcode";
+import Lazy                    from "./internal/lazy";
 
 import type IDisposable    from "./internal/interfaces/disposable";
 import type IEventListener from "./internal/interfaces/event-listener";
 
-export { ArgumentOutOfRangeError, EventListener, Hashcode };
+export { ArgumentOutOfRangeError, EventListener, Hashcode, Lazy };
 
 export type { IDisposable, IEventListener };
 

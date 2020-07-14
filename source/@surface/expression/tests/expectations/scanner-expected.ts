@@ -1,5 +1,5 @@
 import Messages  from "../../internal/messages";
-import { Token } from "../../internal/scanner";
+import Token     from "../../internal/types/token";
 import TokenType from "../../internal/token-type";
 
 export type ExpectedInvalidToken = { token: string, message: string };

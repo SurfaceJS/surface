@@ -1,10 +1,10 @@
 import TokenType from "../internal/enums/token-type";
-import IToken    from "../internal/interfaces/token";
+import Token     from "../internal/types/token";
 
 export type ScannerValidExpectation =
 {
     source: string,
-    token:  IToken
+    token:  Token
 };
 
 export type ScannerInvalidExpectation =

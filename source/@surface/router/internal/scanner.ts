@@ -1,5 +1,5 @@
 import TokenType from "./enums/token-type";
-import IToken    from "./interfaces/token";
+import Token     from "./types/token";
 
 export default class Scanner
 {
@@ -48,7 +48,7 @@ export default class Scanner
         return value == " ";
     }
 
-    private scanPunctuator(): IToken
+    private scanPunctuator(): Token
     {
         const index = this.index;
         const value = this.current;
@@ -62,7 +62,7 @@ export default class Scanner
         };
     }
 
-    private scanSpace(): IToken
+    private scanSpace(): Token
     {
         return {
             index: this.index,
@@ -71,7 +71,7 @@ export default class Scanner
         };
     }
 
-    private scanLiteral(): IToken
+    private scanLiteral(): Token
     {
         const index = this.index;
 
@@ -87,7 +87,7 @@ export default class Scanner
         };
     }
 
-    public nextToken(): IToken
+    public nextToken(): Token
     {
         if (!this.eof)
         {

@@ -1,23 +1,8 @@
-import Character    from "./character";
-import Messages     from "./messages";
-import SyntaxError  from "./syntax-error";
-import TokenType    from "./token-type";
-
-export type Token =
-{
-    end:        number;
-    lineNumber: number;
-    lineStart:  number;
-    raw:        string;
-    start:      number;
-    type:       TokenType;
-    value:      unknown;
-    flags?:     string;
-    head?:      boolean;
-    octal?:     boolean;
-    pattern?:   string;
-    tail?:      boolean;
-};
+import Character   from "./character";
+import Messages    from "./messages";
+import SyntaxError from "./syntax-error";
+import TokenType   from "./token-type";
+import Token       from "./types/token";
 
 export default class Scanner
 {

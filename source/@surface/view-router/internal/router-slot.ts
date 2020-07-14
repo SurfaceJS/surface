@@ -1,5 +1,4 @@
 import { define } from "@surface/custom-element";
-import ViewRouter from "./view-router";
 
 @define("router-slot")
 export default class RouterSlot extends HTMLElement
@@ -28,15 +27,5 @@ export default class RouterSlot extends HTMLElement
 
             this.slotedElement = null;
         }
-    }
-
-    public connectedCallback(): void
-    {
-        ViewRouter.register(this);
-    }
-
-    public disconnectedCallback(): void
-    {
-        ViewRouter.unregister(this);
     }
 }

@@ -1,7 +1,7 @@
 import { DirectiveHandler, ICustomDirective } from "@surface/custom-element";
-import ViewRouter                             from "..";
+import ViewRouter                             from "./view-router";
 
-export default class ToDirectiveHandler extends DirectiveHandler
+export default class NavigationDirectiveHandler extends DirectiveHandler
 {
     private disposed: boolean = false;
 
@@ -21,10 +21,12 @@ export default class ToDirectiveHandler extends DirectiveHandler
     {
         if (event.ctrlKey)
         {
-            window.open(`${window.location.protocol}//${window.location.host}/${this.value}`);
+            window.open(this.value as string);
         }
-
-        this.router.push(this.value as string);
+        else
+        {
+            this.router.push(this.value as string);
+        }
     }
 
     public dispose(): void

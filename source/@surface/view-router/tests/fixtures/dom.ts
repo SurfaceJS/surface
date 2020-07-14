@@ -12,7 +12,7 @@ window.open = url =>
 {
     const jsdom = new JSDOM();
 
-    jsdom.reconfigure({ url });
+    jsdom.reconfigure({ url: `http://localhost.com${url}` });
 
     windows.push(jsdom.window);
 

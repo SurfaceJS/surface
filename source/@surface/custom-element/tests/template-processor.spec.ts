@@ -1764,6 +1764,22 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
+    @shouldFail @test
+    public unresgisteredDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<div><div></div><section><span #foo='bar'></span></section></div>";
+
+        const message = "Unregistered directive #foo.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
     // @test @shouldPass
     // public async xteste(): Promise<void>
     // {

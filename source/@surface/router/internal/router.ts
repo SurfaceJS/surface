@@ -2,7 +2,7 @@ import { typeGuard, Func, Indexer } from "@surface/core";
 import ITransformer                 from "./interfaces/transformer";
 import Route                        from "./route";
 import RouteData                    from "./route-data";
-import { RouterMatch }              from "./types";
+import RouterMatch                  from "./types/router-match";
 
 type Entry<T> =
     {
@@ -51,7 +51,7 @@ export default class Router<T = RouteData>
     }
 
     public match(uri: string): RouterMatch<T>;
-    public match(name: string, params: Indexer): RouterMatch<T>;
+    public match(name: string, parameters: Indexer): RouterMatch<T>;
     public match(...args: [string] | [string, Indexer]) : RouterMatch<T>
     {
         if (args.length == 1)
@@ -72,13 +72,13 @@ export default class Router<T = RouteData>
         }
         else
         {
-            const [name, params] = args;
+            const [name, parameters] = args;
 
             const entry = this.namedEntries.get(name);
 
             if (entry)
             {
-                const match = entry.route.match(params);
+                const match = entry.route.match(parameters);
 
                 if (match.matched)
                 {

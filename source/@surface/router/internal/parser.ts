@@ -1,6 +1,5 @@
 import TokenType       from "./enums/token-type";
 import INode           from "./interfaces/node";
-import IToken          from "./interfaces/token";
 import AssignmentNode  from "./nodes/assignment-node";
 import IdentifierNode  from "./nodes/identifier-node";
 import LiteralNode     from "./nodes/literal-node";
@@ -10,11 +9,12 @@ import TransformerNode from "./nodes/transformer-node";
 import WildcardNode    from "./nodes/wildcard-node";
 import Scanner         from "./scanner";
 import TypeGuard       from "./type-guard";
+import Token           from "./types/token";
 
 export default class Parser
 {
     private readonly scanner: Scanner;
-    private lookahead: IToken;
+    private lookahead: Token;
 
     public constructor(source: string)
     {
@@ -72,7 +72,7 @@ export default class Parser
         );
     }
 
-    private nextToken(): IToken
+    private nextToken(): Token
     {
         const token = this.lookahead;
 
@@ -210,7 +210,7 @@ export default class Parser
         return new SegmentNode(nodes, this.hasOptional(nodes));
     }
 
-    private throwUnexpectedToken(token: IToken): never
+    private throwUnexpectedToken(token: Token): never
     {
         throw new Error(`Unexpected token ${token.value} at ${token.index}`);
     }

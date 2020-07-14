@@ -5,7 +5,7 @@ import SegmentNode           from "./nodes/segment-node";
 import Parser                from "./parser";
 import RouteData             from "./route-data";
 import TypeGuard             from "./type-guard";
-import { RouteMatch }        from "./types";
+import RouteMatch            from "./types/route-match";
 
 export default class Route
 {

@@ -1,8 +1,8 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import { Indexer }                             from "../../internal/types";
 import
 {
+    deepEqual,
     deepMerge,
     deepMergeCombine,
     merge,
@@ -11,10 +11,62 @@ import
     proxyFrom,
     structuralEqual
 } from "../../internal/common/object";
+import { Indexer } from "../../internal/types";
 
 @suite
 export default class CommonObjectSpec
 {
+    @test @shouldPass
+    public deepEqual(): void
+    {
+        assert.isTrue(deepEqual(1, 1), "deepEqual(1, 1) isTrue");
+        assert.isFalse(deepEqual(null, undefined), "deepEqual(null, undefined) isFalse");
+
+        const objectLeft  = { value: 1 };
+        const objectRight = { value: 1 };
+
+        assert.isTrue(deepEqual(objectLeft, objectLeft), "deepEqual(objectLeft, objectLeft) isTrue");
+        assert.isTrue(deepEqual(objectLeft, objectRight), "deepEqual(objectLeft, objectRight) isTrue");
+
+        class Mock { public value = 1; }
+
+        const mockLeft  = new Mock();
+        const mockRight = new Mock();
+
+        assert.isFalse(deepEqual(mockLeft, { value: 1 }), "deepEqual(mockLeft, mockRight) isFalse");
+        assert.isTrue(deepEqual(mockLeft, mockRight), "deepEqual(mockLeft, mockRight) isTrue");
+
+        const nestedObjectLeft  = { value: { value: 1 } };
+        const nestedObjectRight = { value: { value: 1 } };
+
+        assert.isTrue(deepEqual(nestedObjectLeft, nestedObjectRight), "deepEqual(nestedObjectLeft, nestedObjectRight) isTrue");
+
+        const arrayLeft  = [1];
+        const arrayRight = [1];
+
+        assert.isTrue(deepEqual(arrayLeft, arrayRight), "deepEqual(arrayLeft, arrayRight) isTrue");
+
+        const nestedArrayLeft  = [[1]];
+        const nestedArrayRight = [[1]];
+
+        assert.isTrue(deepEqual(nestedArrayLeft, nestedArrayRight), "deepEqual(nestedArrayLeft, nestedArrayRight) isTrue");
+
+        const objectWithArrayLeft  = { value: [1] };
+        const objectWithArrayRight = { value: [1] };
+
+        assert.isTrue(deepEqual(objectWithArrayLeft, objectWithArrayRight), "deepEqual(objectWithArrayLeft, objectWithArrayRight) isTrue");
+
+        const arrayWithObjectLeft  = [{ value: [1] }];
+        const arrayWithObjectRight = [{ value: [1] }];
+
+        assert.isTrue(deepEqual(arrayWithObjectLeft, arrayWithObjectRight), "deepEqual(arrayWithObjectLeft, arrayWithObjectRight) isTrue");
+
+        const complexLeft  = [1, true, "string", undefined, null, { a: "a", b: { value: [{ value: "1"} ] } }];
+        const complexRight = [1, true, "string", undefined, null, { a: "a", b: { value: [{ value: "1"} ] } }];
+
+        assert.isTrue(deepEqual(complexLeft, complexRight), "deepEqual(complexLeft, complexRight) isTrue");
+    }
+
     @test @shouldPass
     public merge(): void
     {

@@ -9,7 +9,8 @@ import RequestHandler                     from "./request-handler";
 
 export default class MvcRequestHandler extends RequestHandler
 {
-    private readonly _router: Router;
+    private _router: Router;
+
     protected get router(): Router
     {
         return this._router;
@@ -80,7 +81,7 @@ export default class MvcRequestHandler extends RequestHandler
             {
                 const routeData = match.value;
 
-                const { controller, action, id } = routeData.params as Indexer<string>;
+                const { controller, action, id } = routeData.parameters as Indexer<string>;
 
                 if (controller)
                 {

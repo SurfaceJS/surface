@@ -69,5 +69,6 @@ tsconfig.tsbuildinfo
 !types.d.ts
 !source/@surface/*/@types/**/*.d.ts
 !source/@surface/**/interfaces/**/*.d.ts
+!source/@surface/**/types/**/*.d.ts
 !tasks/@types/**/*.d.ts
 !tasks/interfaces/**/*d.ts

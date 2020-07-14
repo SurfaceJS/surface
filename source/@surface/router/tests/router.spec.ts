@@ -1,7 +1,7 @@
 import { suite, test } from "@surface/test-suite";
 import { assert }      from "chai";
 import Router          from "../internal/router";
-import { RouterMatch } from "../internal/types";
+import RouterMatch     from "../internal/types/router-match";
 
 @suite
 export default class RouterSpec
@@ -30,10 +30,10 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:   "",
-                    params: {  },
-                    path:   "/path",
-                    query:  { },
+                    hash:       "",
+                    parameters: {  },
+                    path:       "/path",
+                    query:      { },
                 }
             };
 
@@ -68,10 +68,10 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:   "",
-                    params: {  },
-                    path:   "/path",
-                    query:  { },
+                    hash:       "",
+                    parameters: {  },
+                    path:       "/path",
+                    query:      { },
                 }
             };
 
@@ -106,10 +106,10 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:   "",
-                    params: { value: "path" },
-                    path:   "/path/path",
-                    query:  { },
+                    hash:       "",
+                    parameters: { value: "path" },
+                    path:       "/path/path",
+                    query:      { },
                 }
             };
 
@@ -129,7 +129,7 @@ export default class RouterSpec
                 value:
                 {
                     hash:   "",
-                    params:
+                    parameters:
                     {
                         boolean: true,
                         date:    new Date("2020-01-01"),
@@ -165,10 +165,10 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:   "example",
-                    params: { value: "path" },
-                    path:   "/path/path",
-                    query:  { value: "1" },
+                    hash:       "example",
+                    parameters: { value: "path" },
+                    path:       "/path/path",
+                    query:      { value: "1" },
                 }
             };
 
@@ -188,7 +188,7 @@ export default class RouterSpec
                 value:
                 {
                     hash: "",
-                    params:
+                    parameters:
                     {
                         boolean: true,
                         date:    new Date("2020-01-01"),

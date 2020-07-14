@@ -2,7 +2,7 @@ import { Indexer } from "@surface/core";
 
 export default class RouteData
 {
-    public constructor(public readonly path: string, public readonly params: Indexer = { }, public readonly query: Indexer<string> = { }, public readonly hash: string = "")
+    public constructor(public readonly path: string, public readonly parameters: Indexer = { }, public readonly query: Indexer<string> = { }, public readonly hash: string = "")
     { }
 
     public toString(): string
