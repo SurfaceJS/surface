@@ -3,10 +3,10 @@ import Component   from "./component";
 
 type RouteConfiguration =
     {
-        path: string;
-        args?: Indexer;
-        name?: string;
+        path:      string;
         children?: Array<RouteConfiguration>;
+        meta?:     Indexer;
+        name?:     string;
     } & ({ component: Component | (() => Component); } | { components: Record<string, Component | (() => Component)>; });
 
 export default RouteConfiguration;

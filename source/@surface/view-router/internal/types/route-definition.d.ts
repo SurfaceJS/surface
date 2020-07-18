@@ -3,7 +3,7 @@ import Component   from "./component";
 
 type RouteDefinition =
     {
-        args:  Indexer,
+        meta:  Indexer,
         path:  string,
         stack: Array<Map<string, Component | (() => Component)>>
         name?: string,

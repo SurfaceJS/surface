@@ -7,7 +7,7 @@ import Router                                               from "@surface/route
 import Metadata                                             from "./metadata";
 import NavigationDirectiveHandler                           from "./navigation-directive-handler";
 import RouteConfigurator                                    from "./route-configurator";
-import RouterSlot                                           from "./router-slot";
+import RouterOutlet                                           from "./router-outlet";
 import Component                                            from "./types/component";
 import Module                                               from "./types/module";
 import RouteConfiguration                                   from "./types/route-configuration";
@@ -32,8 +32,8 @@ export default class ViewRouter
     private readonly history:        Array<[RouteDefinition, RouteData]> = [];
     private readonly root:           Lazy<HTMLElement>;
     private readonly router:         Router<[RouteDefinition, RouteData]> = new Router();
-    private readonly slotStack:      Stack<RouterSlot>                    = new Stack();
-    private readonly slotTag:        string;
+    private readonly outletStack:    Stack<RouterOutlet>                    = new Stack();
+    private readonly outletTag:        string;
 
     private index:    number  = 0;
     private current?: { definition: RouteDefinition, routeData: RouteData };
@@ -48,7 +48,7 @@ export default class ViewRouter
 
         this.container      = container;
         this.baseUrl        = options.baseUrl ? (options.baseUrl.startsWith("/") ? "" : "/") + options.baseUrl.replace(/\/$/, "") : "";
-        this.slotTag        = options.slotTag ?? "router-slot";
+        this.outletTag        = options.slotTag ?? "router-outlet";
         this.baseUrlPattern = new RegExp(`^${this.baseUrl.replace(/\//g, "\\/")}`);
 
         for (const definition of RouteConfigurator.configure(routes))
@@ -90,7 +90,7 @@ export default class ViewRouter
 
             const keys = entry.keys();
 
-            metadata.disposeSlots(new Set(keys));
+            metadata.disposeOutlet(new Set(keys));
 
             if (entry == this.current?.definition?.stack[index])
             {
@@ -109,15 +109,15 @@ export default class ViewRouter
 
                     (this.cache[index] = this.cache[index] ?? [])[key] = element;
 
-                    const slot = metadata.getSlot(this.slotTag, key);
+                    const outlet = metadata.getOutlet(this.outletTag, key);
 
-                    if (slot)
+                    if (outlet)
                     {
-                        window.customElements.upgrade(slot);
+                        window.customElements.upgrade(outlet);
 
-                        slot.set(element);
+                        outlet.set(element);
 
-                        this.slotStack.push(slot);
+                        this.outletStack.push(outlet);
                     }
 
                     if (!nextParent || key == "default")
@@ -204,7 +204,7 @@ export default class ViewRouter
             }
             else
             {
-                this.slotStack.forEach(x => x.clear());
+                this.outletStack.forEach(x => x.clear());
 
                 this.current = undefined;
             }
@@ -225,7 +225,7 @@ export default class ViewRouter
             }
             else
             {
-                this.slotStack.forEach(x => x.clear());
+                this.outletStack.forEach(x => x.clear());
 
                 this.current = undefined;
             }

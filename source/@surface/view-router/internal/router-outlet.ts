@@ -1,7 +1,7 @@
 import { define } from "@surface/custom-element";
 
-@define("router-slot")
-export default class RouterSlot extends HTMLElement
+@define("router-outlet")
+export default class RouterOutlet extends HTMLElement
 {
     private slotedElement: HTMLElement | null = null;
 

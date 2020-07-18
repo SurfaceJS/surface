@@ -31,7 +31,7 @@ export default class ViewRouterSpec
         const routes: Array<RouteConfiguration> =
             [
                 {
-                    args:       { userRead: true },
+                    meta:       { userRead: true },
                     path:       "user/{id}",
                     name:       "user",
                     component:  User,
@@ -39,14 +39,14 @@ export default class ViewRouterSpec
                     children:
                     [
                         {
-                            args:      { userProfileRead: true },
+                            meta:      { userProfileRead: true },
                             path:      "profile",
                             name:      "user-profile",
                             component: UserProfile,
                             children:
                             [
                                 {
-                                    args:      { userProfileDetailsRead: true },
+                                    meta:      { userProfileDetailsRead: true },
                                     name:      "user-profile-details",
                                     path:      "details",
                                     component: UserProfileDetails
@@ -65,25 +65,25 @@ export default class ViewRouterSpec
         const expected: Array<IRouteDefinition> =
             [
                 {
-                    args:  { userProfileDetailsRead: true },
+                    meta:  { userProfileDetailsRead: true },
                     name:  "user-profile-details",
                     path:  "user/{id}/profile/details",
                     stack: [new Map([["default", User]]), new Map([["default", UserProfile]]), new Map([["default", UserProfileDetails]])],
                 },
                 {
-                    args:  { userProfileRead: true },
+                    meta:  { userProfileRead: true },
                     name:  "user-profile",
                     path:  "user/{id}/profile",
                     stack: [new Map([["default", User]]), new Map([["default", UserProfile]])]
                 },
                 {
-                    args:  {  },
+                    meta:  {  },
                     name:  "user-index",
                     path:  "user/{id}",
                     stack: [new Map([["default", User]]), new Map([["default", UserIndex]])],
                 },
                 {
-                    args:  { userRead: true },
+                    meta:  { userRead: true },
                     name:  "user",
                     path:  "user",
                     stack: [new Map([["default", User]])],

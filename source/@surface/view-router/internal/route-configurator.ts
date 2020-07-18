@@ -29,7 +29,7 @@ export default class RouteConfigurator
                 {
                     path,
                     name:  config.name,
-                    args:  config.args ?? { },
+                    meta:  config.meta ?? { },
                     stack: [...(parent?.stack ?? []), RouteConfigurator.resolveComponents(config)]
                 };
 

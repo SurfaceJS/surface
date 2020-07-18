@@ -1,11 +1,11 @@
-import { RouterSlot } from "..";
+import RouterSlot from "./router-outlet";
 
 const METADATA = Symbol("view-router:metadata");
 
 export default class Metadata
 {
     private readonly target: HTMLElement;
-    public readonly slots: Map<string, RouterSlot> = new Map();
+    public readonly outlets: Map<string, RouterSlot> = new Map();
 
     public constructor(target: HTMLElement)
     {
@@ -22,25 +22,25 @@ export default class Metadata
         return target[METADATA];
     }
 
-    public disposeSlots(exclude: Set<string>): void
+    public disposeOutlet(exclude: Set<string>): void
     {
-        this.slots.forEach(x => exclude.has(x.getAttribute("name") ?? "default") || x.clear());
+        this.outlets.forEach(x => exclude.has(x.getAttribute("name") ?? "default") || x.clear());
     }
 
-    public getSlot(tag: string, key: string): RouterSlot | null
+    public getOutlet(tag: string, key: string): RouterSlot | null
     {
-        let slot = this.slots.get(key) ?? null;
+        let outlet = this.outlets.get(key) ?? null;
 
-        if (!slot)
+        if (!outlet)
         {
-            slot = this.target.shadowRoot!.querySelector<RouterSlot>(key == "default" ? `${tag}:not([name])` : `${tag}[name=${key}]`);
+            outlet = this.target.shadowRoot!.querySelector<RouterSlot>(key == "default" ? `${tag}:not([name])` : `${tag}[name=${key}]`);
 
-            if (slot)
+            if (outlet)
             {
-                this.slots.set(key, slot);
+                this.outlets.set(key, outlet);
             }
         }
 
-        return slot;
+        return outlet;
     }
 }
