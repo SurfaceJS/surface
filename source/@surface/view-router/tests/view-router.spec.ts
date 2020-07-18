@@ -37,48 +37,6 @@ class DataView extends HTMLElement
 class AboutView extends HTMLElement
 { }
 
-const configurations: Array<RouteConfiguration> =
-    [
-        {
-            name:      "home",
-            path:      "/home",
-            component: () => Promise.resolve({ default: HomeView }),
-            children:
-            [
-                {
-                    name: "home-detail",
-                    path: "detail",
-                    components:
-                    {
-                        "other-slot": () => HomeOtherDetailView,
-                        "default":    HomeDetailView,
-                    },
-                },
-                {
-                    name:      "home-index",
-                    path:      "index",
-                    component: { default: HomeIndexView },
-                },
-            ]
-        },
-        {
-            name:      "data",
-            path:      "/data/{action}/{id:Number}",
-            component: () => Promise.resolve(DataView),
-        },
-        {
-            path:      "/about",
-            component: AboutView,
-            children:
-            [
-                {
-                    path:      "invalid",
-                    component: HTMLElement
-                }
-            ]
-        },
-    ];
-
 const template =
     `
         <a #to="'/home'"></a>
@@ -97,9 +55,68 @@ export default class ViewRouterSpec
 
     public constructor()
     {
-        ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations));
+        const configurations: Array<RouteConfiguration> =
+            [
+                {
+                    name:      "home",
+                    path:      "/home",
+                    component: () => Promise.resolve({ default: HomeView }),
+                    children:
+                    [
+                        {
+                            name: "home-detail",
+                            path: "detail",
+                            components:
+                            {
+                                "other-slot": () => HomeOtherDetailView,
+                                "default":    HomeDetailView,
+                            },
+                        },
+                        {
+                            name:      "home-index",
+                            path:      "index",
+                            component: { default: HomeIndexView },
+                        },
+                    ]
+                },
+                {
+                    name:      "data",
+                    path:      "/data/{action}/{id:Number}",
+                    component: () => Promise.resolve(DataView),
+                },
+                {
+                    path:      "/about",
+                    component: AboutView,
+                    children:
+                    [
+                        {
+                            path:      "invalid",
+                            component: HTMLElement
+                        }
+                    ]
+                },
+            ];
+
+        ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, undefined, { baseUrl: "/base/path" }));
 
         document.body.appendChild(new AppRoot());
+    }
+
+    @test @shouldPass
+    public create(): void
+    {
+        const root = document.body.firstElementChild as AppRoot;
+
+        // @ts-ignore
+        const root1 = new ViewRouter("app-root", []).root.value;
+        // @ts-ignore
+        const root2 = new ViewRouter(root, []).root.value;
+        // @ts-ignore
+        const root3 = new ViewRouter(() => document.querySelector("app-root"), []).root.value;
+
+        assert.equal(root1, root, "root1 equal root");
+        assert.equal(root2, root, "root2 equal root");
+        assert.equal(root3, root, "root3 equal root");
     }
 
     @test @shouldPass
@@ -111,12 +128,12 @@ export default class ViewRouterSpec
 
         await this.router.push("/home");
 
-        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.instanceOf(slot.firstElementChild, HomeView, "routerView.firstElementChild instanceOf HomeView");
 
         await this.router.push("/path1");
 
-        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 
@@ -132,20 +149,20 @@ export default class ViewRouterSpec
         const homeSlot      = slot.firstElementChild!.shadowRoot!.querySelector<RouterSlot>("router-slot")!;
         const homeOtherSlot = slot.firstElementChild!.shadowRoot!.querySelector<RouterSlot>("router-slot[name=other-slot]")!;
 
-        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.instanceOf(slot.firstElementChild, HomeView, "routerSlot.firstElementChild instanceOf HomeView");
         assert.equal(homeSlot.firstElementChild, null, "homeSlot.firstElementChild equal null");
         assert.equal(homeOtherSlot.firstElementChild, null, "homeOtherSlot.firstElementChild equal null");
 
         await this.router.push("/home/detail");
 
-        assert.equal(window.location.href, "http://localhost.com/home/detail", "window.location.href equal 'http://localhost.com/home/detail'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home/detail", "window.location.href equal 'http://localhost.com/base/path/home/detail'");
         assert.instanceOf(homeSlot.firstElementChild, HomeDetailView, "homeSlot.firstElementChild instanceOf HomeDetailView");
         assert.instanceOf(homeOtherSlot.firstElementChild, HomeOtherDetailView, "homeOtherSlot.firstElementChild instanceOf HomeOtherDetailView");
 
         await this.router.push("/home/index");
 
-        assert.equal(window.location.href, "http://localhost.com/home/index", "window.location.href equal 'http://localhost.com/home/index'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home/index", "window.location.href equal 'http://localhost.com/base/path/home/index'");
         assert.instanceOf(homeSlot.firstElementChild, HomeIndexView, "homeSlot.firstElementChild instanceOf HomeIndexView");
         assert.equal(homeOtherSlot.firstElementChild, null, "homeOtherSlot.firstElementChild equal null");
     }
@@ -159,12 +176,12 @@ export default class ViewRouterSpec
 
         await this.router.push({ name: "home" });
 
-        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.instanceOf(slot.firstElementChild, HomeView, "route to HomeView");
 
         await this.router.push({ name: "not-found" });
 
-        assert.equal(window.location.href, "http://localhost.com/home", "window.location.href equal 'http://localhost.com/home'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 
@@ -177,12 +194,12 @@ export default class ViewRouterSpec
 
         await this.router.push({ name: "data", parameters: { action: "index", id: 1 } });
 
-        assert.equal(window.location.href, "http://localhost.com/data/index/1", "window.location.href equal 'http://localhost.com/data/index/1'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/data/index/1", "window.location.href equal 'http://localhost.com/base/path/data/index/1'");
         assert.instanceOf(slot.firstElementChild, DataView, "route to DataView");
 
         await this.router.push({ name: "data" });
 
-        assert.equal(window.location.href, "http://localhost.com/data/index/1", "window.location.href equal 'http://localhost.com/data/index/1'");
+        assert.equal(window.location.href, "http://localhost.com/base/path/data/index/1", "window.location.href equal 'http://localhost.com/base/path/data/index/1'");
         assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 

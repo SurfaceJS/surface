@@ -1,6 +1,6 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Container, { inject, injectable }                   from "..";
+import Container, { inject, injectable }       from "..";
 import Bar                                     from "./mocks/bar";
 import Baz                                     from "./mocks/baz";
 import Foo                                     from "./mocks/foo";

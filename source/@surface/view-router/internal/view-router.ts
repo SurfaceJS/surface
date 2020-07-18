@@ -25,18 +25,20 @@ export default class ViewRouter
 {
     public static readonly ROUTE_DATA_KEY: symbol = Symbol("view-router:route-data-key");
 
-    private readonly cache:     Array<Record<string, HTMLElement>>   = [];
-    private readonly container: Container;
-    private readonly history:   Array<[RouteDefinition, RouteData]> = [];
-    private readonly root:      Lazy<HTMLElement>;
-    private readonly router:    Router<[RouteDefinition, RouteData]> = new Router();
-    private readonly slotStack: Stack<RouterSlot>                     = new Stack();
-    private readonly slotTag:   string;
+    private readonly baseUrl:        string;
+    private readonly baseUrlPattern: RegExp;
+    private readonly cache:          Array<Record<string, HTMLElement>>   = [];
+    private readonly container:      Container;
+    private readonly history:        Array<[RouteDefinition, RouteData]> = [];
+    private readonly root:           Lazy<HTMLElement>;
+    private readonly router:         Router<[RouteDefinition, RouteData]> = new Router();
+    private readonly slotStack:      Stack<RouterSlot>                    = new Stack();
+    private readonly slotTag:        string;
 
     private index:    number  = 0;
     private current?: { definition: RouteDefinition, routeData: RouteData };
 
-    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, container: Container = new Container(), slotTag: string = "router-slot")
+    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, container: Container = new Container(), options: { baseUrl?: string, slotTag?: string } = { })
     {
         this.root = typeof root == "string"
             ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
@@ -44,8 +46,10 @@ export default class ViewRouter
                 ? new Lazy(() => root)
                 : new Lazy(root);
 
-        this.container = container;
-        this.slotTag   = slotTag;
+        this.container      = container;
+        this.baseUrl        = options.baseUrl ? (options.baseUrl.startsWith("/") ? "" : "/") + options.baseUrl.replace(/\/$/, "") : "";
+        this.slotTag        = options.slotTag ?? "router-slot";
+        this.baseUrlPattern = new RegExp(`^${this.baseUrl.replace(/\//g, "\\/")}`);
 
         for (const definition of RouteConfigurator.configure(routes))
         {
@@ -196,7 +200,7 @@ export default class ViewRouter
             {
                 await this.create(...match.value);
 
-                window.history.pushState(null, "", route);
+                window.history.pushState(null, "", this.baseUrl + route);
             }
             else
             {
@@ -217,7 +221,7 @@ export default class ViewRouter
 
                 await this.create(routeConfig, routeData);
 
-                window.history.pushState(null, "", routeData.toString());
+                window.history.pushState(null, "", this.baseUrl + routeData.toString());
             }
             else
             {
@@ -226,5 +230,12 @@ export default class ViewRouter
                 this.current = undefined;
             }
         }
+    }
+
+    public async pushCurrentLocation(): Promise<void>
+    {
+        const path = this.baseUrl ? window.location.pathname.replace(this.baseUrlPattern, "") : window.location.pathname;
+
+        await this.push(path + window.location.search + window.location.hash);
     }
 }
