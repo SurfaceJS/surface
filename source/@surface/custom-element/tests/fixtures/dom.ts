@@ -1,6 +1,23 @@
 import { JSDOM } from "jsdom";
 
-const window = new JSDOM().window;
+const jsdom = new JSDOM();
+
+jsdom.reconfigure({ url: "http://localhost.com" });
+
+const window = jsdom.window;
+
+const windows = [window];
+
+window.open = url =>
+{
+    const jsdom = new JSDOM();
+
+    jsdom.reconfigure({ url: `http://localhost.com${url}` });
+
+    windows.push(jsdom.window);
+
+    return jsdom.window as object as Window;
+};
 
 Object.assign
 (
@@ -10,10 +27,12 @@ Object.assign
         document:              window.document,
         DOMTokenList:          window.DOMTokenList,
         Event:                 window.Event,
+        HTMLAnchorElement:     window.HTMLAnchorElement,
         HTMLDivElement:        window.HTMLDivElement,
         HTMLElement:           window.HTMLElement,
         HTMLInputElement:      window.HTMLInputElement,
         location:              window.location,
+        MouseEvent:            window.MouseEvent,
         NamedNodeMap:          window.NamedNodeMap,
         navigator:             window.navigator,
         Node:                  window.Node,
@@ -21,5 +40,6 @@ Object.assign
         requestAnimationFrame: window.requestAnimationFrame,
         window:                window,
         Window:                window.constructor,
+        windows,
     }
 );

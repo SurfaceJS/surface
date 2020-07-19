@@ -144,7 +144,7 @@ export default class DependencyInjectionSpec
         class Mock extends InjectableMock
         { }
 
-        const instance1 = new Mock(container.resolve("bar"));
+        const instance1 = new Mock(container.resolve("baz"));
         const instance2 = container.resolve(InjectableMock);
 
         assert.notEqual(instance1, instance2, "instance1 equal instance2");

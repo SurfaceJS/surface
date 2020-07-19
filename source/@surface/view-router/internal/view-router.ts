@@ -1,44 +1,41 @@
-import { Stack }                                            from "@surface/collection";
-import { assertGet, typeGuard, Constructor, Indexer, Lazy } from "@surface/core";
-import CustomElement                                        from "@surface/custom-element";
-import Container                                            from "@surface/dependency-injection";
-import { RouteData }                                        from "@surface/router";
-import Router                                               from "@surface/router/internal/router";
-import Metadata                                             from "./metadata";
-import NavigationDirectiveHandler                           from "./navigation-directive-handler";
-import RouteConfigurator                                    from "./route-configurator";
-import RouterOutlet                                           from "./router-outlet";
-import Component                                            from "./types/component";
-import Module                                               from "./types/module";
-import RouteConfiguration                                   from "./types/route-configuration";
-import RouteDefinition                                      from "./types/route-definition";
-
-type NamedRoute =
-{
-    name:        string,
-    hash?:       string,
-    parameters?: Indexer,
-    query?:      Indexer<string>,
-};
+import { Stack }                                   from "@surface/collection";
+import { assertGet, typeGuard, Constructor, Lazy } from "@surface/core";
+import CustomElement                               from "@surface/custom-element";
+import Container                                   from "@surface/dependency-injection";
+import { RouteData }                               from "@surface/router";
+import Router                                      from "@surface/router/internal/router";
+import IMiddleware                                 from "./interfaces/middleware";
+import IRouteableElement                           from "./interfaces/routeable-element";
+import Metadata                                    from "./metadata";
+import NavigationDirectiveHandler                  from "./navigation-directive-handler";
+import RouteConfigurator                           from "./route-configurator";
+import RouterOutlet                                from "./router-outlet";
+import Component                                   from "./types/component";
+import Module                                      from "./types/module";
+import Location                                  from "./types/named-route";
+import Route                                       from "./types/route";
+import RouteConfiguration                          from "./types/route-configuration";
+import RouteDefinition                             from "./types/route-definition";
 
 export default class ViewRouter
 {
-    public static readonly ROUTE_DATA_KEY: symbol = Symbol("view-router:route-data-key");
+    public static readonly ROUTE_KEY: symbol = Symbol("view-router:route-data-key");
 
-    private readonly baseUrl:        string;
-    private readonly baseUrlPattern: RegExp;
-    private readonly cache:          Array<Record<string, HTMLElement>>   = [];
-    private readonly container:      Container;
-    private readonly history:        Array<[RouteDefinition, RouteData]> = [];
-    private readonly root:           Lazy<HTMLElement>;
-    private readonly router:         Router<[RouteDefinition, RouteData]> = new Router();
-    private readonly outletStack:    Stack<RouterOutlet>                    = new Stack();
-    private readonly outletTag:        string;
+    private readonly baseUrl:           string;
+    private readonly baseUrlPattern:    RegExp;
+    private readonly cache:             Array<Record<string, IRouteableElement>> = [];
+    private readonly connectedElements: Stack<IRouteableElement> = new Stack();
+    private readonly container:         Container;
+    private readonly history:           Array<[RouteDefinition, RouteData]> = [];
+    private readonly middlewares:       Array<IMiddleware>;
+    private readonly outletTag:         string;
+    private readonly root:              Lazy<HTMLElement>;
+    private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
     private index:    number  = 0;
-    private current?: { definition: RouteDefinition, routeData: RouteData };
+    private current?: { definition: RouteDefinition, routeData: RouteData, route: Route };
 
-    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, container: Container = new Container(), options: { baseUrl?: string, slotTag?: string } = { })
+    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, middlewares: Array<IMiddleware> = [], container: Container = new Container(), options: { baseUrl?: string, slotTag?: string } = { })
     {
         this.root = typeof root == "string"
             ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
@@ -46,9 +43,10 @@ export default class ViewRouter
                 ? new Lazy(() => root)
                 : new Lazy(root);
 
+        this.middlewares    = middlewares;
         this.container      = container;
         this.baseUrl        = options.baseUrl ? (options.baseUrl.startsWith("/") ? "" : "/") + options.baseUrl.replace(/\/$/, "") : "";
-        this.outletTag        = options.slotTag ?? "router-outlet";
+        this.outletTag      = options.slotTag ?? "router-outlet";
         this.baseUrlPattern = new RegExp(`^${this.baseUrl.replace(/\//g, "\\/")}`);
 
         for (const definition of RouteConfigurator.configure(routes))
@@ -69,75 +67,159 @@ export default class ViewRouter
         CustomElement.registerDirective("to", (...args) => new NavigationDirectiveHandler(router, ...args));
     }
 
-    private async create(definition: RouteDefinition, routeData: RouteData, useHistory: boolean = false)
+    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route): void
     {
-        if (definition == this.current?.definition)
+        const outlets = Metadata.from(parent).outlets;
+
+        let outlet = outlets.get(key) ?? null;
+
+        if (!outlet)
         {
-            Object.assign(this.current.routeData, routeData);
+            outlet = parent.shadowRoot!.querySelector<RouterOutlet>(key == "default" ? `${this.outletTag}:not([name])` : `${this.outletTag}[name=${key}]`);
+
+            // istanbul ignore else
+            if (outlet)
+            {
+                outlets.set(key, outlet);
+            }
         }
 
-        let parent = this.root.value;
-
-        for (let index = 0; index < definition.stack.length; index++)
+        // istanbul ignore else
+        if (outlet)
         {
-            const entry    = definition.stack[index];
-            const metadata = Metadata.from(parent);
+            element.onEnter?.(to, from);
 
-            if (!parent.shadowRoot)
+            const oldElement = outlet.firstElementChild as IRouteableElement | null;
+
+            if (oldElement)
             {
-                throw new Error("Route component requires an open shadowRoot");
-            }
+                oldElement.onLeave?.(to, from);
 
-            const keys = entry.keys();
-
-            metadata.disposeOutlet(new Set(keys));
-
-            if (entry == this.current?.definition?.stack[index])
-            {
-                parent = this.cache[index]["default"] ?? this.cache[index][keys.next().value];
+                outlet.replaceChild(element, oldElement);
             }
             else
             {
-                let nextParent: HTMLElement | undefined;
+                outlet.appendChild(element);
+            }
 
-                for (const [key, component] of entry)
+            this.connectedElements.push(element);
+        }
+    }
+
+    private async create(definition: RouteDefinition, routeData: RouteData, useHistory: boolean = false): Promise<void>
+    {
+        const to   = this.createRoute(definition, routeData);
+        const from = this.current ? this.createRoute(this.current.definition, this.current.routeData) : undefined;
+
+        if (!this.invokeMiddleware(to, from))
+        {
+            let hasUpdate = definition == this.current?.definition;
+
+            let parent = this.root.value as IRouteableElement;
+
+            for (let index = 0; index < definition.stack.length; index++)
+            {
+                const entry = definition.stack[index];
+
+                if (!parent.shadowRoot)
                 {
-                    const constructor = await this.resolveComponent(component);
-
-                    const element = Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_DATA_KEY, routeData))
-                        .inject(constructor);
-
-                    (this.cache[index] = this.cache[index] ?? [])[key] = element;
-
-                    const outlet = metadata.getOutlet(this.outletTag, key);
-
-                    if (outlet)
-                    {
-                        window.customElements.upgrade(outlet);
-
-                        outlet.set(element);
-
-                        this.outletStack.push(outlet);
-                    }
-
-                    if (!nextParent || key == "default")
-                    {
-                        nextParent = element;
-                    }
+                    throw new Error("Routeable component requires an open shadowRoot");
                 }
 
-                parent = nextParent!;
+                const keys = new Set(entry.keys());
+
+                this.disconnectFromOutlets(parent, keys, to, from);
+
+                if (entry == this.current?.definition?.stack[index])
+                {
+                    parent = this.cache[index]["default"] ?? this.cache[index][keys.values().next().value];
+
+                    if (hasUpdate)
+                    {
+                        parent.onUpdate?.(to, from);
+                    }
+                    else
+                    {
+                        parent.onEnter?.(to, from);
+                    }
+                }
+                else
+                {
+                    let nextParent: HTMLElement | undefined;
+
+                    this.cache[index] = { };
+
+                    for (const [key, component] of entry)
+                    {
+                        const constructor = await this.resolveComponent(component);
+
+                        const element = Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_KEY, to))
+                            .inject(constructor) as IRouteableElement;
+
+                        this.cache[index][key] = element;
+
+                        this.connectToOutlet(parent, element, key, to, from);
+
+                        if (!nextParent || key == "default")
+                        {
+                            nextParent = element;
+                        }
+                    }
+
+                    parent = nextParent!;
+                }
+            }
+
+            if (this.current && this.current.route != to)
+            {
+                Object.assign(this.current.route, to);
+            }
+
+            if (!useHistory)
+            {
+                this.history.push([definition, routeData]);
+
+                this.index = this.history.length - 1;
+            }
+
+            this.current = { definition, routeData, route: to };
+        }
+    }
+
+    private createRoute(definition: RouteDefinition, routeData: RouteData): Route
+    {
+        return {
+            fullPath: routeData.toString(),
+            meta:     definition.meta,
+            name:     definition.name,
+            ...routeData
+        };
+    }
+    private disconnectElements()
+    {
+        this.connectedElements.forEach(x => x.remove());
+
+        this.current = undefined;
+    }
+
+    private disconnectFromOutlets(parent: HTMLElement, exclude: Set<string>, to: Route, from?: Route): void
+    {
+        const outlets = Metadata.from(parent).outlets;
+
+        for (const outlet of outlets.values())
+        {
+            if (!exclude.has(outlet.getAttribute("name") ?? "default"))
+            {
+                const instance = outlet.firstElementChild;
+
+                if (typeGuard<IRouteableElement>(instance, !!instance))
+                {
+                    instance.onLeave?.(to, from);
+
+                    instance.remove();
+                }
             }
         }
-
-        if (!useHistory)
-        {
-            this.history.push([definition, routeData]);
-
-            this.index = this.history.length - 1;
-        }
-
-        this.current = { definition, routeData };
     }
 
     private resolveModule(module: Constructor<HTMLElement> | Module<Constructor<HTMLElement>>): Constructor<HTMLElement>
@@ -166,6 +248,26 @@ export default class ViewRouter
         return this.resolveModule(component);
     }
 
+    private invokeMiddleware(to: Route, from?: Route): boolean
+    {
+        let handled = false;
+
+        const next = (location: string | Location) =>
+            (this.push(location), handled = true);
+
+        for (const middleware of this.middlewares)
+        {
+            middleware.onEnter?.(to, from, next);
+
+            if (handled)
+            {
+                break;
+            }
+        }
+
+        return handled;
+    }
+
     public async back(): Promise<void>
     {
         await this.go(-1);
@@ -190,7 +292,7 @@ export default class ViewRouter
         }
     }
 
-    public async push(route: string | NamedRoute): Promise<void>
+    public async push(route: string | Location): Promise<void>
     {
         if (typeof route == "string")
         {
@@ -204,9 +306,7 @@ export default class ViewRouter
             }
             else
             {
-                this.outletStack.forEach(x => x.clear());
-
-                this.current = undefined;
+                this.disconnectElements();
             }
         }
         else
@@ -225,9 +325,7 @@ export default class ViewRouter
             }
             else
             {
-                this.outletStack.forEach(x => x.clear());
-
-                this.current = undefined;
+                this.disconnectElements();
             }
         }
     }

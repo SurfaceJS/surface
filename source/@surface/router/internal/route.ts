@@ -12,14 +12,14 @@ export default class Route
     private readonly nodes:       Array<INode>;
     private readonly pattern:     RegExp;
     private readonly segments:    Array<SegmentNode>;
-    private readonly tranformers: Map<string, ITransformer>;
+    private readonly transformers: Map<string, ITransformer>;
 
-    public constructor(pattern: string, tranformers: Map<string, ITransformer>)
+    public constructor(pattern: string, transformers: Map<string, ITransformer>)
     {
-        this.tranformers = tranformers;
-        this.segments    = Parser.parse(this.normalize(pattern));
-        this.nodes       = this.segments.flatMap(x => x.nodes);
-        this.pattern     = new RegExp(`^${Array.from(this.segmentMap(this.segments)).join("")}$`);
+        this.transformers = transformers;
+        this.segments     = Parser.parse(this.normalize(pattern));
+        this.nodes        = this.segments.flatMap(x => x.nodes);
+        this.pattern      = new RegExp(`^${Array.from(this.segmentMap(this.segments)).join("")}$`);
     }
 
     private *segmentMap(segments: Array<SegmentNode>): Iterable<string>
@@ -80,15 +80,15 @@ export default class Route
                         ? [node.transformer.left, group ?? node.transformer.right]
                         : [node.transformer.name, group];
 
+                    const tranformer = this.transformers.get(key);
+
+                    if (!tranformer)
+                    {
+                        throw new Error(`Unregistred transformer ${key}`);
+                    }
+
                     if (value)
                     {
-                        const tranformer = this.tranformers.get(key);
-
-                        if (!tranformer)
-                        {
-                            throw new Error(`Unregistred tranformer ${key}`);
-                        }
-
                         data[node.name] = tranformer.parse(value);
                     }
 
@@ -122,6 +122,7 @@ export default class Route
 
             for (const node of segment.nodes)
             {
+                // istanbul ignore else
                 if (TypeGuard.isLiteral(node))
                 {
                     paths.push(node.value);
@@ -145,6 +146,13 @@ export default class Route
                         ? [node.transformer.left, params[node.name] ?? (defaultValue = node.transformer.right)]
                         : [node.transformer.name, params[node.name]];
 
+                    const transformer = this.transformers.get(key);
+
+                    if (!transformer)
+                    {
+                        throw new Error(`Unregistred transformer ${key}`);
+                    }
+
                     if (!hasValue(value))
                     {
                         if (!node.optional)
@@ -154,22 +162,15 @@ export default class Route
                     }
                     else
                     {
-                        const tranformer = this.tranformers.get(key);
-
-                        if (!tranformer)
-                        {
-                            throw new Error(`Unregistred tranformer ${key}`);
-                        }
-
                         if (value == defaultValue)
                         {
-                            data[node.name] = tranformer.parse(value as string);
+                            data[node.name] = transformer.parse(value as string);
                         }
                         else
                         {
                             data[node.name] = value;
 
-                            paths.push(tranformer.stringfy(value));
+                            paths.push(transformer.stringfy(value));
                         }
                     }
 
@@ -270,7 +271,7 @@ export default class Route
     {
         if (source.includes("?"))
         {
-            const [path, rest  = ""] = source.split("?");
+            const [path,  rest = ""] = source.split("?");
             const [query, hash = ""] = rest.split("#");
 
             return { hash, path, query };

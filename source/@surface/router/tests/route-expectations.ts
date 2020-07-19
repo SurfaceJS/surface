@@ -12,7 +12,7 @@ export type RouteInvalidExpectation =
     {
         error:   Error,
         pattern: string,
-        url:     string,
+        value:   string | Indexer,
     };
 
 export const routeValidExpectations: Array<RouteValidExpectation> =
@@ -35,7 +35,7 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
                 }
             },
             pattern: "",
-            value:   ""
+            value:   "?"
         },
         {
             expected:
@@ -414,7 +414,7 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         },
         {
             expected: { matched: false, reason: "Missing required parameters: value1, value2" },
-            pattern:  "/path/{value1}/{value2:tranformer    }",
+            pattern:  "/path/{value1}/{value2:transformer}",
             value:        { }
         },
         {
@@ -491,6 +491,21 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
             },
             pattern: "path/{value1=value1}",
             value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:       "",
+                    parameters: { value1: "value2" },
+                    path:       "/path/value2",
+                    query:      { },
+                }
+            },
+            pattern: "path/{value1=value1}",
+            value:   { value1: "value2" },
         },
         {
             expected:
@@ -589,6 +604,21 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
                 routeData:
                 {
                     hash:       "",
+                    parameters: { value: ["path"] },
+                    path:       "/path",
+                    query:      { },
+                }
+            },
+            pattern: "path/{value:transformer=path}",
+            value:   { },
+        },
+        {
+            expected:
+            {
+                matched: true,
+                routeData:
+                {
+                    hash:       "",
                     parameters: { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
                     path:       "/path/-",
                     query:      { },
@@ -647,13 +677,18 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
 export const routeInvalidExpectations: Array<RouteInvalidExpectation> =
     [
         {
-            error:   new Error("Unregistred tranformer Foo"),
+            error:   new Error("Unregistred transformer Foo"),
             pattern: "/path/{value:Foo}",
-            url:     "/path/path",
+            value:   "/path/path",
+        },
+        {
+            error:   new Error("Unregistred transformer Foo"),
+            pattern: "/path/{value:Foo}",
+            value:   { },
         },
         {
             error:   new Error("Found duplicated key value"),
             pattern: "/path/{value}/{value}",
-            url:     "/path/path",
+            value:   "/path/path",
         }
     ];

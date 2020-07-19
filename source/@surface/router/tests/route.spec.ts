@@ -29,7 +29,7 @@ export default class RouteSpec
     @batchTest(routeInvalidExpectations, x => `Pattern: "${x.pattern}" should throws: "${x.error.message}"`)
     public invalidMatch(expectation: RouteInvalidExpectation): void
     {
-        const action = () => new Route(expectation.pattern, transformers).match(expectation.url);
+        const action = () => new Route(expectation.pattern, transformers).match(expectation.value);
 
         assert.throws(action, Error, expectation.error.message);
     }

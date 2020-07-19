@@ -3,16 +3,33 @@ import "./fixtures/dom";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
 import { inject }                              from "@surface/dependency-injection";
-import { RouteData }                           from "@surface/router";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import RouterOutlet                              from "../internal/router-outlet";
+import IMiddleware                             from "../internal/interfaces/middleware";
+import IRouteableElement                       from "../internal/interfaces/routeable-element";
+import RouterOutlet                            from "../internal/router-outlet";
+import Route                                   from "../internal/types/route";
 import RouteConfiguration                      from "../internal/types/route-configuration";
 import ViewRouter                              from "../internal/view-router";
 
-@element("home-view", "<router-slot></router-slot><router-slot name='other-slot'></router-slot>")
+@element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
 class HomeView extends CustomElement
-{ }
+{
+    public onEnter(): void
+    {
+        // Coverage
+    }
+
+    public onLeave(): void
+    {
+        // Coverage
+    }
+
+    public onUpdate(): void
+    {
+        // Coverage
+    }
+}
 
 @define("home-detail-view")
 class HomeDetailView extends HTMLElement
@@ -22,15 +39,19 @@ class HomeDetailView extends HTMLElement
 class HomeOtherDetailView extends HTMLElement
 { }
 
-@define("home-index-view")
-class HomeIndexView extends HTMLElement
+@element("home-index-view", "<router-outlet name='non-default'></router-outlet>")
+class HomeIndexView extends CustomElement implements IRouteableElement
+{ }
+
+@define("home-index-detail-view")
+class HomeIndexDetailView extends HTMLElement implements IRouteableElement
 { }
 
 @define("data-view")
 class DataView extends HTMLElement
 {
-    @inject(ViewRouter.ROUTE_DATA_KEY)
-    public routeData!: RouteData;
+    @inject(ViewRouter.ROUTE_KEY)
+    public route!: Route;
 }
 
 @define("about-view")
@@ -41,7 +62,7 @@ const template =
     `
         <a #to="'/home'"></a>
         <a #to="'/about'"></a>
-        <router-slot></router-slot>
+        <router-outlet></router-outlet>
     `;
 
 @element("app-root", template)
@@ -68,16 +89,23 @@ export default class ViewRouterSpec
                             path: "detail",
                             components:
                             {
-                                "other-slot": () => HomeOtherDetailView,
-                                "default":    HomeDetailView,
+                                "default":     HomeDetailView,
+                                "non-default": () => HomeOtherDetailView,
                             },
                         },
                         {
-                            name:      "home-index",
-                            path:      "index",
-                            component: { default: HomeIndexView },
+                            name:       "home-index",
+                            path:       "index",
+                            components: { "non-default": { default: HomeIndexView } },
+                            children:
+                            [
+                                {
+                                    components: { "non-default": HomeIndexDetailView },
+                                    path:      "detail"
+                                }
+                            ],
                         },
-                    ]
+                    ],
                 },
                 {
                     name:      "data",
@@ -93,11 +121,27 @@ export default class ViewRouterSpec
                             path:      "invalid",
                             component: HTMLElement
                         }
-                    ]
+                    ],
+                },
+                {
+                    meta:      { requireAuth: true },
+                    path:      "/forbidden",
+                    component: AboutView,
                 },
             ];
 
-        ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, undefined, { baseUrl: "/base/path" }));
+        const middleware: IMiddleware =
+            {
+                onEnter: (to, _, next) =>
+                {
+                    if (to.meta.requireAuth)
+                    {
+                        return next("/home");
+                    }
+                }
+            };
+
+        ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, [middleware], undefined, { baseUrl: "/base/path" }));
 
         document.body.appendChild(new AppRoot());
     }
@@ -122,7 +166,9 @@ export default class ViewRouterSpec
     @test @shouldPass
     public async push(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        await this.router.pushCurrentLocation();
+
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
@@ -140,14 +186,14 @@ export default class ViewRouterSpec
     @test @shouldPass
     public async pushChildrenRoute(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
         await this.router.push("/home");
 
-        const homeSlot      = slot.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
-        const homeOtherSlot = slot.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot[name=other-slot]")!;
+        const homeSlot      = slot.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
+        const homeOtherSlot = slot.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet[name=non-default]")!;
 
         assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         assert.instanceOf(slot.firstElementChild, HomeView, "routerSlot.firstElementChild instanceOf HomeView");
@@ -163,14 +209,21 @@ export default class ViewRouterSpec
         await this.router.push("/home/index");
 
         assert.equal(window.location.href, "http://localhost.com/base/path/home/index", "window.location.href equal 'http://localhost.com/base/path/home/index'");
-        assert.instanceOf(homeSlot.firstElementChild, HomeIndexView, "homeSlot.firstElementChild instanceOf HomeIndexView");
-        assert.equal(homeOtherSlot.firstElementChild, null, "homeOtherSlot.firstElementChild equal null");
+        assert.equal(homeSlot.firstElementChild, null, "homeSlot.firstElementChild equal null");
+        assert.instanceOf(homeOtherSlot.firstElementChild, HomeIndexView, "homeOtherSlot.firstElementChild instanceOf HomeIndexView");
+
+        const nonDefaultSlot = homeOtherSlot.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet[name=non-default]")!;
+
+        await this.router.push("/home/index/detail");
+
+        assert.equal(window.location.href, "http://localhost.com/base/path/home/index/detail", "window.location.href equal 'http://localhost.com/base/path/home/index/detail'");
+        assert.instanceOf(nonDefaultSlot.firstElementChild, HomeIndexDetailView, "homeSlot.firstElementChild instanceOf HomeIndexDetailView");
     }
 
     @test @shouldPass
     public async pushToNamedRoute(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
@@ -188,14 +241,14 @@ export default class ViewRouterSpec
     @test @shouldPass
     public async pushToNamedRouteWithParams(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
         await this.router.push({ name: "data", parameters: { action: "index", id: 1 } });
 
         assert.equal(window.location.href, "http://localhost.com/base/path/data/index/1", "window.location.href equal 'http://localhost.com/base/path/data/index/1'");
-        assert.instanceOf(slot.firstElementChild, DataView, "route to DataView");
+        assert.instanceOf(slot.firstElementChild, DataView, "slot.firstElementChild to DataView");
 
         await this.router.push({ name: "data" });
 
@@ -204,30 +257,57 @@ export default class ViewRouterSpec
     }
 
     @test @shouldPass
-    public async pushWithInjection(): Promise<void>
+    public async pushHandledByMiddleware(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
-        await this.router.push("/data/post/1");
+        await this.router.push("/forbidden");
 
-        const dataView  = slot.firstElementChild as DataView;
-        const routeData = dataView.routeData;
+        await new Promise(x => window.setTimeout(x));
 
-        assert.deepEqual(routeData, { path: "/data/post/1", parameters: { action: "post", id: 1 }, hash: "", query: { } });
+        assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
+        assert.instanceOf(slot.firstElementChild, HomeView, "slot.firstElementChild to HomeView");
+    }
 
-        await this.router.push("/data/post/2");
+    @test @shouldPass
+    public async pushWithInjection(): Promise<void>
+    {
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
+
+        assert.instanceOf(slot, RouterOutlet);
+
+        await this.router.push("/data/post/1?query=1#hash");
+
+        const dataView = slot.firstElementChild as DataView;
+
+        const expected: Route =
+            {
+                fullPath:   "/data/post/1?query=1#hash",
+                hash:       "hash",
+                meta:       { },
+                name:       "data",
+                parameters: { action: "post", id: 1 },
+                path:       "/data/post/1",
+                query:      { query: "1" }
+            };
+
+        const actual = dataView.route;
+
+        assert.deepEqual(actual, expected);
+
+        await this.router.push("/data/post/2?query=1#hash");
 
         assert.equal(dataView, slot.firstElementChild, "dataView equal slot.firstElementChild");
-        assert.equal(dataView.routeData, routeData, "dataView.routeData equal routeData");
-        assert.equal(routeData.parameters.id, 2, "routeData.parameters.id equal 2");
+        assert.equal(dataView.route, actual, "dataView.routeData equal routeData");
+        assert.equal(actual.parameters.id, 2, "routeData.parameters.id equal 2");
     }
 
     @test @shouldPass
     public async backAndForward(): Promise<void>
     {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.instanceOf(slot, RouterOutlet);
 
@@ -263,7 +343,7 @@ export default class ViewRouterSpec
     public async routeClick(): Promise<void>
     {
         const anchor = document.body.firstElementChild!.shadowRoot!.querySelectorAll("a");
-        const slot   = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot   = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         anchor[0].click();
 
@@ -282,7 +362,7 @@ export default class ViewRouterSpec
     public async routeClickNewWindow(): Promise<void>
     {
         const anchor = document.body.firstElementChild!.shadowRoot!.querySelectorAll("a");
-        const slot   = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-slot")!;
+        const slot   = document.body.firstElementChild!.shadowRoot!.querySelector<RouterOutlet>("router-outlet")!;
 
         assert.equal(windows.length, 1);
 
@@ -310,7 +390,7 @@ export default class ViewRouterSpec
         }
         catch (error)
         {
-            assert.equal((error as Error).message, "Route component requires an open shadowRoot");
+            assert.equal((error as Error).message, "Routeable component requires an open shadowRoot");
         }
     }
 }

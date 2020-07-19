@@ -7,7 +7,7 @@
     },
     "extends": "../../../tsconfig.json",
     "files": [
-        "./index.ts", "./internal/types/Component.d.ts", "internal/types/route-configuration.d.ts"
+        "./index.ts"
     ],
     "include": [
         "./internal",
