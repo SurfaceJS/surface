@@ -12,7 +12,7 @@ import RouteConfigurator                           from "./route-configurator";
 import RouterOutlet                                from "./router-outlet";
 import Component                                   from "./types/component";
 import Module                                      from "./types/module";
-import Location                                  from "./types/named-route";
+import Location                                    from "./types/named-route";
 import Route                                       from "./types/route";
 import RouteConfiguration                          from "./types/route-configuration";
 import RouteDefinition                             from "./types/route-definition";

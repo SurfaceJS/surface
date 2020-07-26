@@ -77,69 +77,69 @@ export default class ViewRouterSpec
     public constructor()
     {
         const configurations: Array<RouteConfiguration> =
-            [
-                {
-                    name:      "home",
-                    path:      "/home",
-                    component: () => Promise.resolve({ default: HomeView }),
-                    children:
-                    [
+        [
+            {
+                name:      "home",
+                path:      "/home",
+                component: () => Promise.resolve({ default: HomeView }),
+                children:
+                [
+                    {
+                        name: "home-detail",
+                        path: "detail",
+                        components:
                         {
-                            name: "home-detail",
-                            path: "detail",
-                            components:
+                            "default":     HomeDetailView,
+                            "non-default": () => HomeOtherDetailView,
+                        },
+                    },
+                    {
+                        name:       "home-index",
+                        path:       "index",
+                        components: { "non-default": { default: HomeIndexView } },
+                        children:
+                        [
                             {
-                                "default":     HomeDetailView,
-                                "non-default": () => HomeOtherDetailView,
-                            },
-                        },
-                        {
-                            name:       "home-index",
-                            path:       "index",
-                            components: { "non-default": { default: HomeIndexView } },
-                            children:
-                            [
-                                {
-                                    components: { "non-default": HomeIndexDetailView },
-                                    path:      "detail"
-                                }
-                            ],
-                        },
-                    ],
-                },
-                {
-                    name:      "data",
-                    path:      "/data/{action}/{id:Number}",
-                    component: () => Promise.resolve(DataView),
-                },
-                {
-                    path:      "/about",
-                    component: AboutView,
-                    children:
-                    [
-                        {
-                            path:      "invalid",
-                            component: HTMLElement
-                        }
-                    ],
-                },
-                {
-                    meta:      { requireAuth: true },
-                    path:      "/forbidden",
-                    component: AboutView,
-                },
-            ];
+                                components: { "non-default": HomeIndexDetailView },
+                                path:       "detail"
+                            }
+                        ],
+                    },
+                ],
+            },
+            {
+                name:      "data",
+                path:      "/data/{action}/{id:Number}",
+                component: () => Promise.resolve(DataView),
+            },
+            {
+                path:      "/about",
+                component: AboutView,
+                children:
+                [
+                    {
+                        path:      "invalid",
+                        component: HTMLElement
+                    }
+                ],
+            },
+            {
+                meta:      { requireAuth: true },
+                path:      "/forbidden",
+                component: AboutView,
+            },
+        ];
 
         const middleware: IMiddleware =
+        {
+            onEnter: (to, _, next) =>
             {
-                onEnter: (to, _, next) =>
+                if (to.meta.requireAuth)
                 {
-                    if (to.meta.requireAuth)
-                    {
-                        return next("/home");
-                    }
+                    return next("/home");
                 }
-            };
+            }
+        };
 
         ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, [middleware], undefined, { baseUrl: "/base/path" }));
 

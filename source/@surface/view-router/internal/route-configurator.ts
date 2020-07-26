@@ -19,19 +19,26 @@ export default class RouteConfigurator
         {
             let hasDefaultChildren = false;
 
-            const path = !parent
+            const path = !parent || config.path.startsWith("/")
                 ? config.path
                 : config.path
                     ? parent.path + "/" + config.path
                     : parent.path;
 
+            const components = RouteConfigurator.resolveComponents(config);
+
+            if (components.size == 0)
+            {
+                throw new Error(`Route "${config.path}" requires at least one component`);
+            }
+
             const definition: IRouteDefinition =
-                {
-                    path,
-                    name:  config.name,
-                    meta:  config.meta ?? { },
-                    stack: [...(parent?.stack ?? []), RouteConfigurator.resolveComponents(config)]
-                };
+            {
+                path,
+                name:  config.name,
+                meta:  config.meta ?? { },
+                stack: [...(parent?.stack ?? []), components]
+            };
 
             if ((config.children?.length ?? 0) > 0)
             {
