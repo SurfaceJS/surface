@@ -4,7 +4,7 @@
         "./index.ts"
     ],
     "include": [
-        "./internal",
-        "./tests"
+        "./internal/**/*.ts",
+        "./tests/**/*.ts"
     ]
 }

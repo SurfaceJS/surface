@@ -17,6 +17,11 @@ export default class StaticMetadata
             : target[STATIC_METADATA] ?? new StaticMetadata();
     }
 
+    public static of(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata | undefined
+    {
+        return target[STATIC_METADATA];
+    }
+
     public clone(): StaticMetadata
     {
         const clone = new StaticMetadata();

@@ -1,12 +1,12 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import IIdentifier           from "../interfaces/identifier";
-import IMemberExpression     from "../interfaces/member-expression";
-import IUpdateExpression     from "../interfaces/update-expression";
-import NodeType              from "../node-type";
-import TypeGuard             from "../type-guard";
-import { UpdateOperator }    from "../types";
+import { Nullable }       from "@surface/core";
+import { hasValue }       from "@surface/core";
+import IExpression        from "../interfaces/expression";
+import IIdentifier        from "../interfaces/identifier";
+import IMemberExpression  from "../interfaces/member-expression";
+import IUpdateExpression  from "../interfaces/update-expression";
+import NodeType           from "../node-type";
+import TypeGuard          from "../type-guard";
+import { UpdateOperator } from "../types";
 
 type Operation = (object: Record<string|number, number>, property: string|number) => number;
 type Operators = "++*"|"--*"|"*++"|"*--";
@@ -79,7 +79,7 @@ export default class UpdateExpression implements IExpression
         return new UpdateExpression(this.argument.clone(), this.operator, this.prefix);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): number
+    public evaluate(scope: object, useCache?: boolean): number
     {
         if (useCache && hasValue(this.cache))
         {

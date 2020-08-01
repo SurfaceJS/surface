@@ -13,7 +13,7 @@ import
 import IPlaceholderDirective from "../../interfaces/directives/placeholder-directive";
 import TemplateMetadata      from "../../metadata/template-metadata";
 import ParallelWorker        from "../../parallel-worker";
-import { Injection, Scope }  from "../../types";
+import { Injection }         from "../../types";
 import TemplateBlock         from "../template-block";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
@@ -32,7 +32,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private injection?: Injection;
 
-    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
+    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
     {
         super(scope, context, host);
 

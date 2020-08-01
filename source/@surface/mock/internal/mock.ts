@@ -66,9 +66,7 @@ export default class Mock<T extends object>
 
         if (!setup)
         {
-            setup = new CallSetup();
-
-            this.setups.set(key, setup);
+            this.setups.set(key, setup = new CallSetup());
         }
 
         return setup as object as ICallSetup<F>;
@@ -80,9 +78,7 @@ export default class Mock<T extends object>
 
         if (!setup)
         {
-            setup = new ReturnSetup();
-
-            this.setups.set(key, setup);
+            this.setups.set(key, setup = new ReturnSetup());
         }
 
         return setup as object as IGetSetup<T[K]>;

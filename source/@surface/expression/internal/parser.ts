@@ -34,7 +34,7 @@ import ArrayPattern                from "./patterns/array-pattern";
 import AssignmentPattern           from "./patterns/assignment-pattern";
 import ObjectPattern               from "./patterns/object-pattern";
 import RestElement                 from "./patterns/rest-element";
-import Scanner, { Token }          from "./scanner";
+import Scanner                     from "./scanner";
 import SyntaxError                 from "./syntax-error";
 import TokenType                   from "./token-type";
 import TypeGuard                   from "./type-guard";
@@ -48,6 +48,7 @@ import
     UnaryOperator,
     UpdateOperator,
 } from "./types";
+import Token                       from "./types/token";
 
 export default class Parser
 {

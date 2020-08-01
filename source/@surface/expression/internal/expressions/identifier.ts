@@ -39,7 +39,7 @@ export default class Identifier implements IExpression, IPattern
         return new Identifier(this.name);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
@@ -56,7 +56,7 @@ export default class Identifier implements IExpression, IPattern
             throw new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: this.name }));
         }
 
-        return this.cache = scope[this.name];
+        return this.cache = (scope as Indexer)[this.name];
     }
 
     public toString(): string

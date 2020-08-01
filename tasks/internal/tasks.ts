@@ -84,14 +84,9 @@ export default class Tasks
 
         const file = path.parse(filepath);
 
-        let alias = file.name.replace(".spec", "");
+        let target = file.name.replace(".spec", "");
 
-        if (alias == path.parse(path.resolve(file.dir, "../")).base)
-        {
-            alias = "index";
-        }
-
-        await execute(`cover ${chalk.bold.blue(file.name)} tests`,`${path.join(bin, "nyc")} --include **/${alias}.js --include **/${alias}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
+        await execute(`cover ${chalk.bold.blue(file.name)} tests`,`${path.join(bin, "nyc")} --include **/${target}.js --include **/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
     }
 
     public static async install({ modules = [] as Array<string> } = { }): Promise<void>

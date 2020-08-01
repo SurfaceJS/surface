@@ -83,6 +83,28 @@ export function clone(source: Indexer): Indexer
     }
 }
 
+export function deepEqual<T>(left: T, right: T): boolean
+{
+    if (Object.is(left, right))
+    {
+        return true;
+    }
+    else if (typeGuard<Indexer>(left, left instanceof Object) && typeGuard<Indexer>(right, right instanceof left.constructor))
+    {
+        for (const key of enumerateKeys(left))
+        {
+            if (!deepEqual(left[key as string], right[key as string]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 export function freeze<T extends object>(target: T): T;
 export function freeze(target: Indexer): Indexer
 {

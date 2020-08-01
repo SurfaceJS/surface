@@ -1,1 +1,0 @@
-## Web component view host.

@@ -44,9 +44,12 @@ export default class Reactive
     {
         const reactor = Reactor.makeReactive(target, key);
 
-        const observer = reactor.observers.get(key) ?? new Observer();
+        let observer = reactor.observers.get(key);
 
-        reactor.observers.set(key, observer);
+        if (!observer)
+        {
+            reactor.observers.set(key, observer = new Observer());
+        }
 
         return { reactor, observer };
     }

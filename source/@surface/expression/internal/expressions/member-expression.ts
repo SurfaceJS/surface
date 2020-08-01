@@ -74,7 +74,7 @@ export default class MemberExpression implements IExpression
         return new MemberExpression(this.object.clone(), this.property.clone(), this.computed, this.optional);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

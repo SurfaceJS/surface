@@ -1,23 +1,8 @@
-import Character    from "./character";
-import Messages     from "./messages";
-import SyntaxError  from "./syntax-error";
-import TokenType    from "./token-type";
-
-export type Token =
-{
-    end:        number;
-    lineNumber: number;
-    lineStart:  number;
-    raw:        string;
-    start:      number;
-    type:       TokenType;
-    value:      unknown;
-    flags?:     string;
-    head?:      boolean;
-    octal?:     boolean;
-    pattern?:   string;
-    tail?:      boolean;
-};
+import Character   from "./character";
+import Messages    from "./messages";
+import SyntaxError from "./syntax-error";
+import TokenType   from "./token-type";
+import Token       from "./types/token";
 
 export default class Scanner
 {
@@ -1302,7 +1287,7 @@ export default class Scanner
 
         // Template literals start with ` (U+0060) for template head
         // or } (U+007D) for template middle or template tail.
-        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "$" + "{")) // VS Code bug - Wrong color syntax when string contains the token ${
+        if (charCode == 0x60 || (charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "${"))
         {
             return this.scanTemplate();
         }

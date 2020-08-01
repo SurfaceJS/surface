@@ -1,4 +1,4 @@
-import { Indexer, overrideProperty, IDisposable } from "@surface/core";
+import { overrideProperty, Indexer, IDisposable } from "@surface/core";
 import Type, { FieldInfo, MethodInfo }            from "@surface/reflection";
 import IObserver                                  from "./interfaces/observer";
 import IPropertySubscription                      from "./interfaces/property-subscription";
@@ -295,13 +295,16 @@ export default class Reactor implements IDisposable
 
     public setPropertySubscription(key: string, subscription: IPropertySubscription): void
     {
-        const subscriptions = this.propertySubscriptions.get(key) ?? new Set();
+        let subscriptions = this.propertySubscriptions.get(key);
 
-        this.propertySubscriptions.set(key, subscriptions);
+        if (!subscriptions)
+        {
+            this.propertySubscriptions.set(key, subscriptions = new Set());
+        }
 
         subscriptions.add(subscription);
 
-        subscription.onUnsubscribe(() => subscriptions.delete(subscription));
+        subscription.onUnsubscribe(() => subscriptions!.delete(subscription));
     }
 
     public update(key: string, value: unknown)

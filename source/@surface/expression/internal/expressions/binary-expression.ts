@@ -92,14 +92,14 @@ export default class BinaryExpression implements IExpression
         return new BinaryExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.left, this.right, scope, !!useCache);
+        return this.cache = this.operation(this.left, this.right, scope as Indexer, !!useCache);
     }
 
     public toString(): string

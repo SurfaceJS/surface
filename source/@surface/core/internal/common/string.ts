@@ -57,8 +57,6 @@ export function captureAll(source: string, start: RegExp, end: RegExp): Array<[s
     return result;
 }
 
-export function dashedToCamel<T extends string>(value: T): T;
-export function dashedToCamel(value: string): string;
 export function dashedToCamel(value: string): string
 {
     return value.replace(/-([a-z])/g, (_, group) => group.toUpperCase());
@@ -91,4 +89,4 @@ export function uuidv4()
             return value.toString(16);
         }
     );
-  }
+}

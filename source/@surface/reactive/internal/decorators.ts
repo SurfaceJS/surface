@@ -1,6 +1,6 @@
-import { Constructor, overrideConstructor } from "@surface/core";
-import Reactive                             from "./reactive";
+import { overrideConstructor, Constructor } from "@surface/core";
 import ISubscription                        from "./interfaces/subscription";
+import Reactive                             from "./reactive";
 import StaticMetadata                       from "./static-metadata";
 
 export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void

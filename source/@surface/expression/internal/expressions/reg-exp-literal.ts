@@ -1,4 +1,4 @@
-import { Indexer, Nullable, hasValue } from "@surface/core";
+import { Nullable, hasValue } from "@surface/core";
 import ILiteral                        from "../interfaces/literal";
 import IRegExpLiteral                  from "../interfaces/reg-exp-literal";
 import NodeType                        from "../node-type";
@@ -56,7 +56,7 @@ export default class RegExpLiteral implements ILiteral
         return new RegExpLiteral(this.pattern, this.flags);
     }
 
-    public evaluate(_?: Indexer, useCache?: boolean): RegExp
+    public evaluate(_?: object, useCache?: boolean): RegExp
     {
         if (useCache && hasValue(this.cache))
         {

@@ -1,4 +1,4 @@
-import { Indexer, hasValue }  from "@surface/core";
+import { hasValue }           from "@surface/core";
 import IConditionalExpression from "../interfaces/conditional-expression";
 import IExpression            from "../interfaces/expression";
 import NodeType               from "../node-type";
@@ -60,7 +60,7 @@ export default class ConditionalExpression implements IExpression
         return new ConditionalExpression(this.test.clone(), this.alternate.clone(), this.consequent.clone());
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

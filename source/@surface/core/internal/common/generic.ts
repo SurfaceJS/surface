@@ -8,6 +8,16 @@ export function assert(condition: unknown, message?: string): asserts condition
     }
 }
 
+export function assertGet<T>(value: Nullable<T>, message?: string): T
+{
+    if (!hasValue(value))
+    {
+        throw new Error(message);
+    }
+
+    return value;
+}
+
 export function hasFlag<T extends number>(value: T, flag: T): boolean
 {
     return (value & flag) == flag;
@@ -27,7 +37,7 @@ export function isIterable(source: { [Symbol.iterator]?: Function }): source is 
 }
 
 // tslint:disable-next-line:no-any
-export function tuple<Targs extends Array<any>>(...args: Targs): Targs
+export function tuple<TArgs extends Array<any>>(...args: TArgs): TArgs
 {
     return args;
 }

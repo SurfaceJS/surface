@@ -17,14 +17,14 @@ export default class ThisExpression implements IExpression
         return new ThisExpression();
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = scope["this"];
+        return this.cache = (scope as Indexer)["this"];
     }
 
     public toString(): string

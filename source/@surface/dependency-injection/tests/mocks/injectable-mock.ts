@@ -1,7 +1,7 @@
-import { inject } from "../../";
-import { Bar }    from "./bar";
-import { Baz }    from "./baz";
-import { Foo }    from "./foo";
+import { inject } from "../..";
+import Bar        from "./bar";
+import Baz        from "./baz";
+import Foo        from "./foo";
 
 export default class InjectableMock
 {

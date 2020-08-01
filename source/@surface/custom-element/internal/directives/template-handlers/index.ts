@@ -1,15 +1,14 @@
 import { AsyncAction, IDisposable } from "@surface/core";
 import ITemplateDescriptor          from "../../interfaces/descriptors/template-descriptor";
 import TemplateProcessor            from "../../template-processor";
-import { Scope }                    from "../../types";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {
     protected readonly context: Node;
     protected readonly host:    Node;
-    protected readonly scope:   Scope;
+    protected readonly scope:   object;
 
-    protected constructor(scope: Scope, context: Node, host: Node)
+    protected constructor(scope: object, context: Node, host: Node)
     {
         this.scope   = scope;
         this.context = context;
@@ -21,7 +20,7 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
         await action();
     }
 
-    protected processTemplate(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor): [Element, IDisposable]
+    protected processTemplate(scope: object, context: Node, host: Node, template: HTMLTemplateElement, descriptor: ITemplateDescriptor): [Element, IDisposable]
     {
         const root = template.content.cloneNode(true) as Element;
 

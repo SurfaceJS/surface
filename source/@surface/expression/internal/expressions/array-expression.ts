@@ -1,9 +1,9 @@
-import { Indexer, Nullable, hasValue } from "@surface/core";
-import IArrayExpression                from "../interfaces/array-expression";
-import IExpression                     from "../interfaces/expression";
-import ISpreadElement                  from "../interfaces/spread-element";
-import NodeType                        from "../node-type";
-import TypeGuard                       from "../type-guard";
+import { Nullable, hasValue } from "@surface/core";
+import IArrayExpression       from "../interfaces/array-expression";
+import IExpression            from "../interfaces/expression";
+import ISpreadElement         from "../interfaces/spread-element";
+import NodeType               from "../node-type";
+import TypeGuard              from "../type-guard";
 
 export default class ArrayExpression implements IExpression
 {
@@ -36,7 +36,7 @@ export default class ArrayExpression implements IExpression
         return new ArrayExpression(this.elements.map(x => x?.clone() ?? null));
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Array<unknown>
+    public evaluate(scope: object, useCache?: boolean): Array<unknown>
     {
         if (useCache && hasValue(this.cache))
         {

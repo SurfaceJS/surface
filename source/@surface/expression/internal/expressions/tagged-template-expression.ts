@@ -1,10 +1,10 @@
-import { Indexer, Nullable, hasValue, format } from "@surface/core";
-import IExpression                             from "../interfaces/expression";
-import ITaggedTemplateExpression               from "../interfaces/tagged-template-expression";
-import Messages                                from "../messages";
-import NodeType                                from "../node-type";
-import TypeGuard                               from "../type-guard";
-import TemplateLiteral                         from "./template-literal";
+import { Nullable, hasValue, format } from "@surface/core";
+import IExpression                    from "../interfaces/expression";
+import ITaggedTemplateExpression      from "../interfaces/tagged-template-expression";
+import Messages                       from "../messages";
+import NodeType                       from "../node-type";
+import TypeGuard                      from "../type-guard";
+import TemplateLiteral                from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression
 {
@@ -50,7 +50,7 @@ export default class TaggedTemplateExpression implements IExpression
         return new TaggedTemplateExpression(this.callee.clone(), this.quasi.clone());
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

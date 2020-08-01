@@ -2,7 +2,6 @@ import { assert, contains, dashedToCamel, typeGuard, Indexer }                  
 import Enumerable                                                                               from "@surface/enumerable";
 import Expression, { IExpression, IIdentifier, IPattern, SyntaxError, TypeGuard }               from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                               from "./common";
-import directiveRegistry                                                                        from "./directive-registry";
 import IElementDescriptor                                                                       from "./interfaces/descriptors/element-descriptor";
 import ITemplateDescriptor                                                                      from "./interfaces/descriptors/template-descriptor";
 import ITextNodeDescriptor                                                                      from "./interfaces/descriptors/text-node-descriptor";
@@ -294,11 +293,6 @@ export default class TemplateParser
                     const DEFAULT_KEY       = "'default'";
                     const [rawName, rawKey] = attribute.name.split(":");
                     const name              = rawName.replace("#", "");
-
-                    if (!directiveRegistry.has(name))
-                    {
-                        throwTemplateParseError(`Unregistered directive #${name}.`, this.stackTrace);
-                    }
 
                     const dinamicKey       = (element.attributes as NamedNodeMap & Indexer<Attr>)[rawName + "-key"]?.value ?? DEFAULT_KEY;
                     const rawKeyExpression = dinamicKey != DEFAULT_KEY ? `${rawName + "-key"}=\"${dinamicKey}\"` : "";

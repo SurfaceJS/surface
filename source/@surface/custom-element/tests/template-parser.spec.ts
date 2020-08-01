@@ -904,18 +904,4 @@ export default class TemplateParserSpec
 
         assert.deepEqual(actual, expected);
     }
-
-    @shouldFail @test
-    public unresgisteredDirective(): void
-    {
-        const template = "<div><div></div><section><span #foo='bar'></span></section></div>";
-
-        const message = "Unregistered directive #foo.";
-        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
-
-        const actual   = tryAction(() => TemplateParser.parse("x-component", template));
-        const expected = toRaw(new TemplateParseError(message, stack));
-
-        assert.deepEqual(actual, expected);
-    }
 }

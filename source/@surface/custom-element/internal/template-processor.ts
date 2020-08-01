@@ -1,7 +1,7 @@
-import { assert, Action, Indexer, IDisposable } from "@surface/core";
-import { TypeGuard }                            from "@surface/expression";
-import { ISubscription }                        from "@surface/reactive";
-import Type, { FieldInfo }                      from "@surface/reflection";
+import { assert, typeGuard, Action, Indexer, IDisposable } from "@surface/core";
+import { TypeGuard }                                       from "@surface/expression";
+import { ISubscription }                                   from "@surface/reactive";
+import Type, { FieldInfo }                                 from "@surface/reflection";
 import
 {
     classMap,
@@ -25,21 +25,21 @@ import ITextNodeDescriptor         from "./interfaces/descriptors/text-node-desc
 import IAttributeDirective         from "./interfaces/directives/attribute-directive";
 import ICustomDirective            from "./interfaces/directives/custom-directive";
 import ITraceable                  from "./interfaces/traceable";
-import { Scope }                   from "./types";
+import { DirectiveHandlerFactory } from "./types";
 
 interface ITemplateProcessorData
 {
     descriptor: ITemplateDescriptor;
     host:       Node|Element;
     root:       Node;
-    scope:      Scope;
+    scope:      object;
     context?:   Node;
 }
 
 interface ITemplateDirectivesData
 {
     directives: IDirectivesDescriptor;
-    scope:      Scope;
+    scope:      object;
     context?:   Node;
 }
 
@@ -49,8 +49,7 @@ export default class TemplateProcessor
 
     private readonly descriptor: ITemplateDescriptor;
     private readonly host:       Node;
-    private readonly lookup:     Record<string, Element>;
-
+    private readonly lookup:     Record<string, Node>;
 
     private constructor(data: ITemplateProcessorData)
     {
@@ -73,19 +72,19 @@ export default class TemplateProcessor
         return new TemplateProcessor(data).process(data.scope, data.context);
     }
 
-    private buildLookup(node: Node, source: Array<Array<number>>): Record<string, Element>
+    private buildLookup(node: Node, source: Array<Array<number>>): Record<string, Node>
     {
-        const lookup: Record<string, Element> = { };
+        const lookup: Record<string, Node> = { };
 
         for (const entry of source)
         {
             if (entry.length > 0)
             {
-                lookup[entry.join("-")] = this.findElement(node, entry) as Element;
+                lookup[entry.join("-")] = this.findElement(node, entry);
             }
             else
             {
-                lookup[""] = node as Element;
+                lookup[""] = node;
             }
         }
 
@@ -111,14 +110,14 @@ export default class TemplateProcessor
         return child;
     }
 
-    private process(scope: Scope, context?: Node): IDisposable
+    private process(scope: object, context?: Node): IDisposable
     {
         const subscriptions: Array<ISubscription> = [];
         const disposables:   Array<IDisposable>   = [];
 
         for (const descriptor of this.descriptor.elements)
         {
-            const element = this.lookup[descriptor.path];
+            const element = this.lookup[descriptor.path] as HTMLElement;
 
             const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
@@ -140,14 +139,21 @@ export default class TemplateProcessor
         };
     }
 
-    private processAttributes(scope: Scope, element: Element, attributeDescriptors: Array<IAttributeDirective>): Array<ISubscription>
+    private processAttributes(scope: object, element: Element, attributeDescriptors: Array<IAttributeDirective>): Array<ISubscription>
     {
         const constructor = window.customElements.get(element.localName);
 
-        /* istanbul ignore next */
-        const processor = constructor && !(element instanceof constructor)
-            ? TemplateProcessor.postProcessing.get(element) ?? TemplateProcessor.postProcessing.set(element, []).get(element)!
-            : null;
+        let processor: Action[] | undefined;
+
+        if (constructor && !(element instanceof constructor))
+        {
+            processor = TemplateProcessor.postProcessing.get(element);
+
+            if (processor)
+            {
+                TemplateProcessor.postProcessing.set(element, processor = []);
+            }
+        }
 
         const subscriptions: Array<ISubscription> = [];
 
@@ -240,7 +246,7 @@ export default class TemplateProcessor
         return subscriptions;
     }
 
-    private processElementDirectives(scope: Scope, element: Element, directives: Array<ICustomDirective>): Array<IDisposable>
+    private processElementDirectives(scope: object, element: HTMLElement, directives: Array<ICustomDirective>): Array<IDisposable>
     {
         const disposables: Array<IDisposable> = [];
 
@@ -248,7 +254,19 @@ export default class TemplateProcessor
         {
             const handlerConstructor = directiveRegistry.get(directive.name)!;
 
-            disposables.push(new handlerConstructor(scope, element, directive));
+            if (!handlerConstructor)
+            {
+                throw new TemplateProcessError(`Unregistered directive #${directive.name}.`, this.buildStack(directive));
+            }
+
+            if (typeGuard<DirectiveHandlerFactory>(handlerConstructor, !handlerConstructor.prototype))
+            {
+                disposables.push(handlerConstructor(scope, element, directive));
+            }
+            else
+            {
+                disposables.push(new handlerConstructor(scope, element, directive));
+            }
         }
 
         return disposables;
@@ -305,7 +323,7 @@ export default class TemplateProcessor
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
     }
 
-    private processTextNode(scope: Scope, descriptors: Array<ITextNodeDescriptor>): Array<ISubscription>
+    private processTextNode(scope: object, descriptors: Array<ITextNodeDescriptor>): Array<ISubscription>
     {
         const subscriptions: Array<ISubscription> = [];
 

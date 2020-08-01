@@ -4,7 +4,6 @@ import { ISubscription }                                                     fro
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/directives/loop-directive";
 import ParallelWorker                                                        from "../../parallel-worker";
-import { Scope }                                                             from "../../types";
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from "./";
 
@@ -22,7 +21,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     private disposed: boolean = false;
 
-    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
+    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
     {
         super(scope, context, host);
 

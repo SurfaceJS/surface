@@ -9,7 +9,7 @@ import IKeyValueObservable                 from "./interfaces/key-value-observab
 import IKeyValueTraceable                  from "./interfaces/key-value-traceable";
 import IObservable                         from "./interfaces/observable";
 import ITraceable                          from "./interfaces/traceable";
-import { Observables, Scope, StackTrace }  from "./types";
+import { Observables, StackTrace }         from "./types";
 
 const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
 
@@ -23,12 +23,12 @@ function buildStackTrace(stackTrace: StackTrace): string
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
 }
 
-export function createHostScope(host: HTMLElement): Scope
+export function createHostScope(host: HTMLElement): object
 {
     return { host, $class: classMap, $style: styleMap };
 }
 
-export function createScope(scope: Scope): Scope
+export function createScope(scope: object): object
 {
     const handler: ProxyHandler<Indexer> =
     {
@@ -87,7 +87,7 @@ export function throwTemplateParseError(message: string, stackTrace: StackTrace)
     throw new TemplateParseError(message, buildStackTrace(stackTrace));
 }
 
-export function tryEvaluateExpression(scope: Scope, expression: IExpression, rawExpression: string, stackTrace: StackTrace): unknown
+export function tryEvaluateExpression(scope: object, expression: IExpression, rawExpression: string, stackTrace: StackTrace): unknown
 {
     try
     {
@@ -101,17 +101,17 @@ export function tryEvaluateExpression(scope: Scope, expression: IExpression, raw
     }
 }
 
-export function tryEvaluateExpressionByTraceable(scope: Scope, traceable: { expression: IExpression } & ITraceable): unknown
+export function tryEvaluateExpressionByTraceable(scope: object, traceable: { expression: IExpression } & ITraceable): unknown
 {
     return tryEvaluateExpression(scope, traceable.expression, traceable.rawExpression, traceable.stackTrace);
 }
 
-export function tryEvaluateKeyExpressionByTraceable(scope: Scope, traceable: { keyExpression: IExpression } & IKeyValueTraceable): unknown
+export function tryEvaluateKeyExpressionByTraceable(scope: object, traceable: { keyExpression: IExpression } & IKeyValueTraceable): unknown
 {
     return tryEvaluateExpression(scope, traceable.keyExpression, traceable.rawKeyExpression, traceable.stackTrace);
 }
 
-export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
+export function tryEvaluatePattern(scope: object, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
 {
     try
     {
@@ -125,12 +125,12 @@ export function tryEvaluatePattern(scope: Scope, pattern: IPattern, value: unkno
     }
 }
 
-export function tryEvaluatePatternByTraceable(scope: Scope, value: unknown, traceable: { pattern: IPattern } & ITraceable): Indexer
+export function tryEvaluatePatternByTraceable(scope: object, value: unknown, traceable: { pattern: IPattern } & ITraceable): Indexer
 {
     return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }
 
-export function tryObserve(scope: Scope, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
+export function tryObserve(scope: object, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
 {
     try
     {
@@ -144,12 +144,12 @@ export function tryObserve(scope: Scope, observables: Observables, listener: ILi
     }
 }
 
-export function tryObserveByObservable(scope: Scope, observable: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
 {
     return tryObserve(scope, observable.observables, listener, observable.rawExpression, observable.stackTrace, lazy);
 }
 
-export function tryObserveKeyByObservable(scope: Scope, observable: IKeyValueObservable & IKeyValueTraceable, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: IListener, lazy?: boolean): ISubscription
 {
     return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
 }

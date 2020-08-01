@@ -8,7 +8,6 @@ import
 } from "../../common";
 import IInjectDirective from "../../interfaces/directives/inject-directive";
 import TemplateMetadata from "../../metadata/template-metadata";
-import { Scope }        from "../../types";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -21,7 +20,7 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
     private disposed: boolean = false;
     private key:      string  = "";
 
-    public constructor(scope: Scope, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective)
+    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective)
     {
         super(scope, context, host);
 

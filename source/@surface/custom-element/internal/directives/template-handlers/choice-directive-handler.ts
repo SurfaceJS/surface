@@ -3,7 +3,6 @@ import { ISubscription }                                 from "@surface/reactive
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/directives/choice-branch-directive";
 import ParallelWorker                                    from "../../parallel-worker";
-import { Scope }                                         from "../../types";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from "./";
 
@@ -23,7 +22,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private disposed:          boolean          = false;
 
 
-    public constructor(scope: Scope, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceBranchDirective>)
+    public constructor(scope: object, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceBranchDirective>)
     {
         super(scope, context, host);
 

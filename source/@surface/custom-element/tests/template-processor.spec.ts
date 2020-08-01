@@ -1,3 +1,4 @@
+// tslint:disable-next-line: no-import-side-effect
 import "./fixtures/dom";
 
 import { Action, Indexer }                     from "@surface/core";
@@ -1756,6 +1757,22 @@ export default class TemplateProcessorSpec
 
         const message = "Observation error in #custom-key=\"host.key\": Property \"key\" does not exists on type XComponent";
         const stack   = "<x-component>\n   #shadow-root\n      <span #custom #custom-key=\"host.key\">";
+
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
+
+        assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public unresgisteredDirective(): void
+    {
+        const host = getHost();
+
+        host.shadowRoot.innerHTML = "<div><div></div><section><span #foo='bar'></span></section></div>";
+
+        const message = "Unregistered directive #foo.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
