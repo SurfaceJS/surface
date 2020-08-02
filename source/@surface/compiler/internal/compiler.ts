@@ -1,4 +1,7 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable max-lines-per-function */
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-var-requires */
 import fs                            from "fs";
 import os                            from "os";
 import path                          from "path";
@@ -6,13 +9,13 @@ import { Indexer, deepMergeCombine } from "@surface/core";
 import { resolveFile }               from "@surface/io";
 import chalk                         from "chalk";
 import ForkTsCheckerWebpackPlugin    from "fork-ts-checker-webpack-plugin";
+import HtmlWebpackPlugin             from "html-webpack-plugin";
 import rimraf                        from "rimraf";
 import TerserWebpackPlugin           from "terser-webpack-plugin";
 import webpack                       from "webpack";
 import { EnviromentType, TasksType } from "./enums";
-import Configuration                 from "./interfaces/configuration";
+import IConfiguration                from "./interfaces/configuration";
 import { Entry }                     from "./interfaces/types";
-import HtmlTemplatePlugin            from "./plugins/html-template-plugin";
 import SimblingPriorityPlugin        from "./plugins/simbling-priority-plugin";
 
 const loaders =
@@ -89,7 +92,7 @@ export default class Compiler
      * @param enviroment Enviroment variable.
      * @param watch      Enable watch mode.
      */
-    private static build(config: Readonly<webpack.Configuration>, enviroment: EnviromentType, watch: boolean, statsLevel?: webpack.Stats.Preset): void
+    private static build(config: webpack.Configuration, enviroment: EnviromentType, watch: boolean, statsLevel?: webpack.Stats.Preset): void
     {
         const webpackCompiler = webpack(config);
 
@@ -146,14 +149,12 @@ export default class Compiler
      * @param path        Path to Surface config.
      * @param enviroment  Enviroment variable.
      */
-    // eslint-disable-next-line max-lines-per-function
     private static getConfig(filepath: string, enviroment: EnviromentType): webpack.Configuration
     {
         // eslint-disable-next-line no-param-reassign
         filepath = resolveFile(process.cwd(), [filepath, path.join(filepath, `surface.config.${enviroment}.json`), path.join(filepath, "surface.config.json")]);
 
-        // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-dynamic-require
-        const configuration = require(filepath) as Configuration;
+        const configuration = require(filepath) as IConfiguration;
 
         const root = path.dirname(filepath);
 
@@ -173,8 +174,8 @@ export default class Compiler
         }
 
         configuration.context = path.resolve(root, configuration.context);
+        configuration.output  = path.resolve(configuration.context, configuration.output);
         configuration.entry   = this.resolveEntries(configuration.context, configuration.entry);
-        configuration.output  = path.resolve(root, configuration.output);
 
         let userWebpack: webpack.Configuration = { };
 
@@ -182,8 +183,7 @@ export default class Compiler
         {
             if (typeof configuration.webpackConfig == "string" && fs.existsSync(configuration.webpackConfig))
             {
-                // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-dynamic-require
-                userWebpack = require(path.resolve(root, configuration.webpackConfig)) as webpack.Configuration;
+                userWebpack = require(path.resolve(configuration.context, configuration.webpackConfig)) as webpack.Configuration;
             }
             else
             {
@@ -191,8 +191,8 @@ export default class Compiler
             }
         }
 
-        configuration.tsconfig = configuration.tsconfig && (path.resolve(root, configuration.tsconfig) ?? "tsconfig.json");
-        configuration.tslint   = configuration.tslint   && path.resolve(root, configuration.tslint);
+        configuration.tsconfig = configuration.tsconfig && (path.resolve(configuration.context, configuration.tsconfig) ?? "tsconfig.json");
+        configuration.tslint   = configuration.tslint   && path.resolve(configuration.context, configuration.tslint);
 
         const resolvePlugins: webpack.ResolvePlugin[] = [];
         const plugins:        webpack.Plugin[]        = [];
@@ -208,12 +208,12 @@ export default class Compiler
             {
                 if (option.include)
                 {
-                    option.include = option.include.map(x => path.resolve(root, x));
+                    option.include = option.include.map(x => path.resolve(configuration.context, x));
                 }
 
                 if (option.exclude)
                 {
-                    option.exclude = option.exclude.map(x => path.resolve(root, x));
+                    option.exclude = option.exclude.map(x => path.resolve(configuration.context, x));
                 }
 
                 resolvePlugins.push(new SimblingPriorityPlugin(option));
@@ -222,12 +222,7 @@ export default class Compiler
 
         plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
         plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: configuration.tsconfig, tslint: configuration.tslint, watch: configuration.context }));
-
-        if (configuration.htmlTemplate)
-        {
-            configuration.htmlTemplate.template = path.resolve(root, configuration.htmlTemplate.template);
-            plugins.push(new HtmlTemplatePlugin(configuration.htmlTemplate));
-        }
+        plugins.push(new HtmlWebpackPlugin(configuration.htmlTemplate));
 
         const isProduction = enviroment == EnviromentType.Production;
 
@@ -420,9 +415,10 @@ export default class Compiler
             entries = tmp;
         }
 
-        for (const [key, value] of Object.entries(entries) as [string, string | string[]][])
+        for (const key in entries)
         {
             // Open issue for broken narrowing
+            const value   = (entries as Record<string, string | string[]>)[key];
             const sources = Array.isArray(value) ? value : [value];
 
             for (const source of sources.map(x => x.replace(/\/\*$/, "")))
@@ -489,13 +485,9 @@ export default class Compiler
         }
     }
 
-    public static async execute(task?: TasksType, config?: string, enviroment?: EnviromentType, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
+    // eslint-disable-next-line default-param-last
+    public static async execute(task: TasksType = TasksType.Build, config: string = "./", enviroment: EnviromentType = EnviromentType.Development, watch: boolean = false, statsLevel?: webpack.Stats.Preset): Promise<void>
     {
-        task       = task       ?? TasksType.Build;
-        config     = config     ?? "./";
-        enviroment = enviroment ?? EnviromentType.Development;
-        watch      = watch      ?? false;
-
         const wepackconfig = this.getConfig(config, enviroment);
 
         switch (task)
