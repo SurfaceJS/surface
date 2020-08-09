@@ -156,7 +156,6 @@ export default class Reactor implements IDisposable
             }
         }
 
-
         for (const [key, dependency] of this.dependencies)
         {
             dependency.notify(value?.[key]);

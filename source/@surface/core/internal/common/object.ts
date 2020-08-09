@@ -191,7 +191,6 @@ export function merge<T extends object[]>(...sources: T): MergeList<T>
     return target as MergeList<T>;
 }
 
-
 export function mixer<TConstructor extends Constructor, TMixins extends ((superClass: TConstructor) => Constructor)[], TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
 {
     assert(mixins.length > 0, "Mixer requires at least one mixin");

@@ -104,7 +104,6 @@ export default class Setup<TResult>
         this.results.set(this.getKey(this.results, args), value);
     }
 
-
     public setReturnsFactory(args: Args, factory: Factory<Args, TResult>): void
     {
         this.factories.set(this.getKey(this.factories, args), factory);

@@ -92,7 +92,6 @@ export default class AssignmentExpression implements IExpression
             return this.cache;
         }
 
-
         if (TypeGuard.isIdentifier(this.left))
         {
             return this.cache = this.operation(scope as Indexer, this.left.name, this.right.evaluate(scope, useCache));

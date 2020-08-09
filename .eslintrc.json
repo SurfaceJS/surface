@@ -373,7 +373,7 @@
         "no-loss-of-precision": "warn",
         "no-mixed-spaces-and-tabs": "warn",
         "no-multi-str": "warn",
-        "no-multiple-empty-lines": "warn",
+        "no-multiple-empty-lines": ["warn", { "max": 1 }],
         "no-new": "warn",
         "no-new-func": "warn",
         "no-new-object": "warn",

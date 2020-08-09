@@ -505,7 +505,6 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-
         host.shadowRoot.appendChild(childHost);
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -1337,7 +1336,6 @@ export default class TemplateProcessorSpec
 
         assert.deepEqual(actual, expected);
     }
-
 
     @test @shouldFail
     public async evaluationErrorLoopDirective(): Promise<void>

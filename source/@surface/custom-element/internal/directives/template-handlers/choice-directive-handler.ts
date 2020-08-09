@@ -21,7 +21,6 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private currentDisposable: IDisposable | null = null;
     private disposed: boolean                     = false;
 
-
     public constructor(scope: object, context: Node, host: Node, templates: HTMLTemplateElement[], branches: IChoiceBranchDirective[])
     {
         super(scope, context, host);

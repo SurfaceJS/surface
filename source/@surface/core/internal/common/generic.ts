@@ -40,7 +40,6 @@ export function tuple<TArgs extends any[]>(...args: TArgs): TArgs
     return args;
 }
 
-
 export function typeGuard<T>(_target: unknown, condition: boolean): _target is T
 {
     return condition;

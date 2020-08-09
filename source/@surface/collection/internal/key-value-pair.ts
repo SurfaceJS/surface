@@ -8,7 +8,6 @@ export default class KeyValuePair<TKey, TValue>
         return this._key;
     }
 
-
     public get value(): TValue
     {
         return this._value;

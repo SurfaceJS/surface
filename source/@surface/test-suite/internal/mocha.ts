@@ -96,7 +96,6 @@ declare interface IGlobalMocha
     teardown(description: string, callback: (this: IBeforeAndAfterContext, done: MochaDone) => PromiseLike<unknown> | void): void;
 }
 
-
 declare const global: IGlobalMocha;
 
 // Todo: Implement proper way to wrap mocha
