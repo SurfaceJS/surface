@@ -4,15 +4,15 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/core": "0.0.3",
-        "@surface/enumerable": "0.0.5",
-        "tslib": "2.0.0"
+        "@surface/collection": "0.1.0-dev.202006181244",
+        "@surface/core": "0.1.0-dev.202006181244",
+        "@surface/enumerable": "1.0.0-dev.202006181244",
+        "tslib": "2.0.1"
     },
     "description": "Client/Server Side Router.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "@types/chai": "4.2.11",
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.12",
         "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",

@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable max-lines-per-function */
-import fs                           from "fs";
-import os                           from "os";
-import path                         from "path";
-import { assert, deepMergeCombine } from "@surface/core";
-import ForkTsCheckerWebpackPlugin   from "fork-ts-checker-webpack-plugin";
-import HtmlWebpackPlugin            from "html-webpack-plugin";
-import TerserWebpackPlugin          from "terser-webpack-plugin";
-import webpack                      from "webpack";
-import EnviromentType               from "./enums/enviroment-type";
-import IConfiguration               from "./interfaces/configuration";
-import ForceTsResolvePlugin         from "./plugins/force-ts-resolve-plugin";
+import os                         from "os";
+import path                       from "path";
+import { deepMergeCombine }       from "@surface/core";
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import HtmlWebpackPlugin          from "html-webpack-plugin";
+import TerserWebpackPlugin        from "terser-webpack-plugin";
+import webpack                    from "webpack";
+import EnviromentType             from "./enums/enviroment-type";
+import IConfiguration             from "./interfaces/configuration";
+import ForceTsResolvePlugin       from "./plugins/force-ts-resolve-plugin";
 
 const loaders =
 {
@@ -81,12 +80,6 @@ const loaders =
 // eslint-disable-next-line import/prefer-default-export
 export function buildConfiguration(enviroment: EnviromentType, configuration: IConfiguration): webpack.Configuration
 {
-    const userWebpack = !configuration.webpackConfig
-        ? { }
-        : typeof configuration.webpackConfig == "string" && assert(fs.existsSync(configuration.webpackConfig), `File ${configuration.webpackConfig} does not exists`)
-            ? require(configuration.webpackConfig) as webpack.Configuration
-            : configuration.webpackConfig as webpack.Configuration;
-
     const resolvePlugins: webpack.ResolvePlugin[] = [];
     const plugins:        webpack.Plugin[]        = [];
 
@@ -100,7 +93,7 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
     }
 
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-    plugins.push(new ForkTsCheckerWebpackPlugin({ checkSyntacticErrors: true, tsconfig: configuration.tsconfig, tslint: configuration.tslint, watch: configuration.context }));
+    plugins.push(new ForkTsCheckerWebpackPlugin({ eslint: { configFile: configuration.eslintrc, files: `${configuration.context}/**/*.{js},{ts}` }, typescript: { build: true, configFile: configuration.tsconfig } }));
     plugins.push(new HtmlWebpackPlugin(typeof configuration.htmlTemplate == "string" ? { template: configuration.htmlTemplate } : configuration.htmlTemplate));
 
     const isProduction = enviroment == EnviromentType.Production;
@@ -244,9 +237,12 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
         plugins,
         resolve:
         {
-            alias:      { tslib: path.resolve(__dirname, "../node_modules", "tslib") },
+            alias:
+            {
+                "tslib": path.resolve(__dirname, "../node_modules", "tslib"),
+            },
             extensions: [".ts", ".js"],
-            modules:    [".", "node_modules", configuration.context ?? process.cwd()],
+            modules:    [".", "node_modules"],
             plugins:    resolvePlugins,
         },
         resolveLoader:
@@ -256,10 +252,9 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
                 "node_modules",
                 path.resolve(__dirname, "./loaders"),
                 path.resolve(__dirname, "../node_modules"),
-                path.resolve(__dirname, "../node_modules", "@surface"),
             ],
         },
     };
 
-    return deepMergeCombine(webpackConfiguration, userWebpack);
+    return deepMergeCombine(webpackConfiguration, configuration.webpackConfig ?? { });
 }

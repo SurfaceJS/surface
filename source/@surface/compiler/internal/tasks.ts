@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-import fs                 from "fs";
-import path               from "path";
-import { lookupFile }     from "@surface/io";
-import { Stats }          from "webpack";
-import Compiler           from "./compiler";
-import EnviromentType     from "./enums/enviroment-type";
-import IConfiguration     from "./interfaces/configuration";
+import path                            from "path";
+import { lookupFile, removePathAsync } from "@surface/io";
+import { Stats }                       from "webpack";
+import Compiler                        from "./compiler";
+import EnviromentType                  from "./enums/enviroment-type";
+import IConfiguration                  from "./interfaces/configuration";
 
 type CliBuildOptions =
 {
@@ -20,19 +19,18 @@ type CliBuildOptions =
     project?:       string,
     publicPath?:    string,
     tsconfig?:      string,
-    tslint?:        string,
+    eslintrc?:      string,
     watch?:         boolean,
     webpackConfig?: string,
 };
 
-const DEFAULTS: IConfiguration =
+const DEFAULTS: Required<Pick<IConfiguration, "context" | "entry" | "filename" | "output" | "publicPath">> =
 {
     context:    ".",
     entry:      "./source/index.ts",
     filename:   "[name].js",
     output:     "./build",
     publicPath: "/",
-    tsconfig:   "./tsconfig.json",
 };
 
 export default class Tasks
@@ -60,13 +58,24 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
-            tslint:        options.tslint,
-            webpackConfig: options.webpackConfig,
+            tslint:        options.eslintrc,
+            webpackConfig: options.webpackConfig && require(options.webpackConfig),
         });
 
         const project = options.project ?? ".";
 
-        const projectPath = lookupFile(process.cwd(), [project, path.join(project, `surface.config.${options.mode}.json`), path.join(project, "surface.config.json")]);
+        const mode = options.mode ?? EnviromentType.Development;
+
+        const lookups =
+        [
+            project,
+            path.join(project, `surface.config.${mode}.js`),
+            path.join(project, `surface.config.${mode}.json`),
+            path.join(project, "surface.config.js"),
+            path.join(project, "surface.config.json"),
+        ];
+
+        const projectPath = lookupFile(lookups);
 
         if (projectPath)
         {
@@ -94,16 +103,29 @@ export default class Tasks
 
     private static resolvePaths(configuration: IConfiguration, root: string): void
     {
-        if (!configuration.tslint && fs.existsSync(path.resolve(root, "./tslint.json")))
+        if (!configuration.eslintrc)
         {
-            configuration.tslint = "./tslint.json";
+            const lookups =
+            [
+                ".eslintrc.js",
+                ".eslintrc.json",
+                ".eslintrc.yml",
+                ".eslintrc.yaml",
+            ];
+
+            const eslintrcPath = lookupFile(lookups);
+
+            if (eslintrcPath)
+            {
+                configuration.eslintrc = eslintrcPath;
+            }
         }
 
         Tasks.resolvePath(configuration, "context",      root);
         Tasks.resolvePath(configuration, "htmlTemplate", root);
         Tasks.resolvePath(configuration, "output",       root);
         Tasks.resolvePath(configuration, "tsconfig",     root);
-        Tasks.resolvePath(configuration, "tslint",       root);
+        Tasks.resolvePath(configuration, "eslintrc",     root);
 
         if (Array.isArray(configuration.forceTs))
         {
@@ -113,13 +135,24 @@ export default class Tasks
 
     public static build(options: CliBuildOptions): void
     {
-        new Compiler(Tasks.resolveConfiguration(options), options.mode, options.watch)
+        const configuration = Tasks.resolveConfiguration(options);
+
+        console.log(configuration);
+
+        new Compiler(configuration, options.mode, options.watch)
             .build();
     }
 
-    public static async clean(options: { output?: string, project?: string }): Promise<void>
+    public static async clean(options: CliBuildOptions): Promise<void>
     {
-        await new Compiler(Tasks.resolveConfiguration(options))
-            .clean();
+        const configuration = Tasks.resolveConfiguration(options);
+
+        const promises =
+        [
+            removePathAsync(configuration.output ?? DEFAULTS.output),
+            removePathAsync(path.resolve(__dirname, ".cache")),
+        ];
+
+        await Promise.all(promises);
     }
 }

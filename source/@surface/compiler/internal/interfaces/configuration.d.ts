@@ -3,15 +3,15 @@ import HtmlWebpackPluginOptions                        from "../types/html-webpa
 
 export default interface IConfiguration
 {
-    context?:          string;
-    entry?:            string | string[] | Entry | EntryFunc;
-    filename?:         string;
+    context?:       string;
+    entry?:         string | string[] | Entry | EntryFunc;
+    eslintrc?:      string;
+    filename?:      string;
     forceTs?:          boolean | string[];
-    htmlTemplate?:     string | HtmlWebpackPluginOptions;
-    output?:           string;
-    publicPath?:       string;
-    logLevel?:         Stats.ToStringOptions;
-    tsconfig?:         string;
-    tslint?:           string;
-    webpackConfig?:    string | Configuration;
+    htmlTemplate?:  string | HtmlWebpackPluginOptions;
+    logLevel?:      Stats.ToStringOptions;
+    output?:        string;
+    publicPath?:    string;
+    tsconfig?:      string;
+    webpackConfig?: Configuration;
 }

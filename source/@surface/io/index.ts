@@ -110,14 +110,14 @@ export function lookup(startPath: string, target: string): string | null
 
 /**
  * Resolve file location
- * @param context  Cotext used to resolve.
- * @param filepath Relative or absolute path to folder or file.
+ * @param lookup  Filenames to resolve.
+ * @param context Context used to resolve.
  */
-export function lookupFile(context: string, filepaths: string[]): string | null
+export function lookupFile(lookup: string[], context: string = process.cwd()): string | null
 {
-    for (const filepath of filepaths)
+    for (const filepath of lookup)
     {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath))
+        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && fs.lstatSync(filepath).isFile())
         {
             return filepath;
         }
@@ -135,14 +135,14 @@ export function lookupFile(context: string, filepaths: string[]): string | null
 
 /**
  * Asynchronously resolve file location
- * @param context  Cotext used to resolve.
- * @param filepath Relative or absolute path to folder or file.
+ * @param lookup  Relative or absolute path to folder or file.
+ * @param context Cotext used to resolve.
  */
-export async function lookupFileAsync(context: string, filepaths: string[]): Promise<string>
+export async function lookupFileAsync(lookup: string[], context: string = process.cwd()): Promise<string>
 {
-    for (const filepath of filepaths)
+    for (const filepath of lookup)
     {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath))
+        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && (await lstatAsync(filepath)).isFile())
         {
             return filepath;
         }

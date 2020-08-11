@@ -1,5 +1,3 @@
-import path                   from "path";
-import { removePathAsync }    from "@surface/io";
 import chalk                  from "chalk";
 import webpack                from "webpack";
 import { buildConfiguration } from "./common";
@@ -8,7 +6,6 @@ import IConfiguration         from "./interfaces/configuration";
 
 export default class Compiler
 {
-    private readonly $removePathAsync:     typeof removePathAsync;
     private readonly $webpack:             typeof webpack;
     private readonly enviroment:           EnviromentType;
     private readonly watch:                boolean;
@@ -17,12 +14,11 @@ export default class Compiler
 
     private readonly logLevel?: webpack.Stats.ToStringOptions;
 
-    public constructor(configuration: IConfiguration = { }, enviroment: EnviromentType = EnviromentType.Development, watch: boolean = false, $removePathAsync = removePathAsync, $webpack = webpack)
+    public constructor(configuration: IConfiguration = { }, enviroment: EnviromentType = EnviromentType.Development, watch: boolean = false, $webpack = webpack)
     {
         this.logLevel             = configuration.logLevel;
         this.enviroment           = enviroment;
         this.watch                = watch;
-        this.$removePathAsync     = $removePathAsync;
         this.$webpack             = $webpack;
         this.webpackConfiguration = buildConfiguration(enviroment, configuration);
         this.webpackCompiler      = this.$webpack(this.webpackConfiguration);
@@ -51,26 +47,6 @@ export default class Compiler
         else
         {
             this.webpackCompiler.run(callback);
-        }
-    }
-
-    public async clean(): Promise<void>
-    {
-        if (this.webpackConfiguration.output?.path)
-        {
-            const outputPath = this.webpackConfiguration.output.path;
-
-            const promises =
-            [
-                this.$removePathAsync(outputPath),
-                this.$removePathAsync(path.resolve(__dirname, ".cache")),
-            ];
-
-            await Promise.all(promises);
-        }
-        else
-        {
-            throw new Error("Invalid output path.");
         }
     }
 }

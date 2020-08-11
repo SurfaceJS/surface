@@ -34,8 +34,8 @@ program
     .command("publish <registry>")
     .requiredOption("-t|--token <token>", "NPM token", toString)
     .option("-c|--config <config>",   "Configuration", toString, "development")
-    .option("-i|--include <include>", "Modules to include in the publish", toArray, [])
-    .option("-e|--exclude <exclude>", "Modules to exclude in the publish", toArray, [])
+    .option("-i|--include [include]", "Modules to include in the publish", toArray, [])
+    .option("-e|--exclude [exclude]", "Modules to exclude in the publish", toArray, [])
     .action(Tasks.publish);
 
 program
@@ -51,8 +51,8 @@ program
     .command("sync <lookup-path>")
     .option("-r|--registry <registry>", "Registry", toStrategyFlags)
     .option("-s|--strategy <strategy>", "Strategy to sync dependencies", toStrategyFlags)
-    .option("-i|--include <include>",   "Modules to include in the publish", toArray, [])
-    .option("-e|--exclude <exclude>",   "Modules to exclude in the publish", toArray, [])
+    .option("-i|--include [include]",   "Modules to include in the publish", toArray, [])
+    .option("-e|--exclude [exclude]",   "Modules to exclude in the publish", toArray, [])
     .option("-t|--template <template>", "Template version to sync", toString)
     .action(Tasks.sync);
 

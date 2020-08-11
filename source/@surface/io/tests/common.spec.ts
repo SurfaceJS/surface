@@ -98,7 +98,7 @@ export default class CommonSpec
 
         fs.writeFileSync(expected, "resolved");
 
-        chai.expect(lookupFile(__dirname, paths)).to.equal(expected);
+        chai.expect(lookupFile(paths, __dirname)).to.equal(expected);
     }
 
     @test @shouldPass
@@ -121,13 +121,13 @@ export default class CommonSpec
 
         fs.writeFileSync(expected, "resolved");
 
-        chai.expect(lookupFile(__dirname, paths)).to.equal(expected);
+        chai.expect(lookupFile(paths, __dirname)).to.equal(expected);
     }
 
     @test @shouldFail
     public lookupFileWithInvalidPath(): void
     {
-        chai.expect(lookupFile(__dirname, ["./invalid/path"])).to.equal(null);
+        chai.expect(lookupFile(["./invalid/path"], __dirname)).to.equal(null);
     }
 
     @test @shouldPass
