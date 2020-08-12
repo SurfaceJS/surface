@@ -2,23 +2,24 @@ import fs                from "fs";
 import path              from "path";
 import { ResolvePlugin } from "webpack";
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace SimblingPriorityPlugin
 {
     export interface IOptions
     {
-        exclude: Array<string>;
+        exclude: string[];
         from:    string;
-        include: Array<string>;
+        include: string[];
         to:      string;
     }
 }
 
 class SimblingPriorityPlugin implements ResolvePlugin
 {
-    private exclude: Array<string>;
-    private from:    string;
-    private include: Array<string>;
-    private to:      string;
+    private readonly exclude: string[];
+    private readonly from:    string;
+    private readonly include: string[];
+    private readonly to:      string;
 
     public constructor(options?: Partial<SimblingPriorityPlugin.IOptions>)
     {
@@ -37,8 +38,8 @@ class SimblingPriorityPlugin implements ResolvePlugin
             throw new Error("Parameter \"options.to\" can't be null.");
         }
 
-        options.exclude = options.exclude || [];
-        options.include = options.include || [];
+        options.exclude = options.exclude ?? [];
+        options.include = options.include ?? [];
 
         options.exclude.forEach
         (
@@ -48,7 +49,7 @@ class SimblingPriorityPlugin implements ResolvePlugin
                 {
                     throw new Error(`Parameter \"options.exclude[${index}]\" must be an valid absolute path.`);
                 }
-            }
+            },
         );
 
         options.include.forEach
@@ -59,7 +60,7 @@ class SimblingPriorityPlugin implements ResolvePlugin
                 {
                     throw new Error(`Parameter \"options.include[${index}]\" must be an valid absolute path.`);
                 }
-            }
+            },
         );
 
         this.exclude = options.exclude;
@@ -68,34 +69,34 @@ class SimblingPriorityPlugin implements ResolvePlugin
         this.to      = options.to;
     }
 
-    // tslint:disable-next-line:no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public apply(resolver: any): void
     {
-        // tslint:disable-next-line:no-this-assignment
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         resolver.hooks.resolved.tap
         (
             SimblingPriorityPlugin.name,
-            // tslint:disable-next-line:no-any
-            function(request: any)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (request: any): void =>
             {
-                let target    = request.path;
-                let extension = path.parse(target).ext;
+                const target    = request.path;
+                const extension = path.parse(target).ext;
 
-                let canExecute = (self.include.length == 0 || self.include.some(x => target.toLowerCase().startsWith(x.toLowerCase())))
+                const canExecute = (self.include.length == 0 || self.include.some(x => target.toLowerCase().startsWith(x.toLowerCase())))
                     && !self.exclude.some(x => target.toLowerCase().startsWith(x.toLowerCase()));
 
                 if (canExecute)
                 {
-                    let simbling = target.replace(new RegExp(`\\${self.from}$`), self.to);
+                    const simbling = target.replace(new RegExp(`\\${self.from}$`), self.to);
 
                     if ((!extension || extension == self.from) && fs.existsSync(simbling))
                     {
                         request.path = simbling;
                     }
                 }
-            }
+            },
         );
     }
 }

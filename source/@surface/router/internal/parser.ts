@@ -23,7 +23,7 @@ export default class Parser
         this.lookahead = this.scanner.nextToken();
     }
 
-    public static parse(source: string): Array<SegmentNode>
+    public static parse(source: string): SegmentNode[]
     {
         return new Parser(source).parse();
     }
@@ -38,7 +38,7 @@ export default class Parser
         }
     }
 
-    private assertKeysIdentity(segments: Array<SegmentNode>): void
+    private assertKeysIdentity(segments: SegmentNode[]): void
     {
         const keys = new Set();
 
@@ -59,16 +59,16 @@ export default class Parser
         }
     }
 
-    private hasOptional(nodes: Array<INode>): boolean
+    private hasOptional(nodes: INode[]): boolean
     {
         const singleNode = nodes.length == 1 ? nodes[0] : null;
 
-        return !!singleNode &&
-        (
+        return !!singleNode
+        && (
             TypeGuard.isAssignment(singleNode)
             || TypeGuard.isRest(singleNode)
-            || (TypeGuard.isIdentifier(singleNode) && singleNode.optional)
-            || (TypeGuard.isTransformer(singleNode) && singleNode.optional)
+            || TypeGuard.isIdentifier(singleNode) && singleNode.optional
+            || TypeGuard.isTransformer(singleNode) && singleNode.optional
         );
     }
 
@@ -86,7 +86,7 @@ export default class Parser
         return this.lookahead.type === TokenType.Punctuator && this.lookahead.value === value;
     }
 
-    private parse(): Array<SegmentNode>
+    private parse(): SegmentNode[]
     {
         const type = this.lookahead.type;
 
@@ -95,7 +95,7 @@ export default class Parser
             throw new Error("Unexpected end of path");
         }
 
-        const segments: Array<SegmentNode> = [];
+        const segments: SegmentNode[] = [];
 
         while (this.lookahead.type != TokenType.Eof)
         {
@@ -133,22 +133,19 @@ export default class Parser
 
                 return new IdentifierNode(token.value, true);
             }
-            else
-            {
-                return new IdentifierNode(token.value);
-            }
+
+            return new IdentifierNode(token.value);
+
         }
-        else
-        {
-            this.throwUnexpectedToken(token);
-        }
+
+        this.throwUnexpectedToken(token);
     }
 
     private parseSegment(): SegmentNode
     {
         this.expect("/");
 
-        const nodes: Array<INode> = [];
+        const nodes: INode[] = [];
 
         while (!this.match("/") && this.lookahead.type != TokenType.Eof)
         {

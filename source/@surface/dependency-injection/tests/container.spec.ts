@@ -31,7 +31,7 @@ export default class DependencyInjectionSpec
     @test @shouldPass
     public injectUnregisteredInstance(): void
     {
-        const instance = new Container().inject(new (class Mock { })());
+        const instance = new Container().inject(new class Mock { }());
 
         assert.notEqual(instance, null, "instance notEqual null");
     }

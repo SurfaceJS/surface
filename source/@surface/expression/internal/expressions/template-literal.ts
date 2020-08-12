@@ -1,33 +1,34 @@
-import { Nullable, hasValue } from "@surface/core";
-import IExpression            from "../interfaces/expression";
-import ITemplateElement       from "../interfaces/template-element";
-import ITemplateLiteral       from "../interfaces/template-literal";
-import NodeType               from "../node-type";
+import { hasValue }     from "@surface/core";
+import IExpression      from "../interfaces/expression";
+import ITemplateElement from "../interfaces/template-element";
+import ITemplateLiteral from "../interfaces/template-literal";
+import NodeType         from "../node-type";
 
 export default class TemplateLiteral implements IExpression
 {
-    private cache: Nullable<string>;
+    private _expressions: IExpression[];
+    private _quasis:      ITemplateElement[];
 
-    private _expressions: Array<IExpression>;
-    public get expressions(): Array<IExpression>
+    private cache: string | null = null;
+
+    public get expressions(): IExpression[]
     {
         return this._expressions;
     }
 
     /* istanbul ignore next */
-    public set expressions(value: Array<IExpression>)
+    public set expressions(value: IExpression[])
     {
         this._expressions = value;
     }
 
-    private _quasis: Array<ITemplateElement>;
-    public get quasis(): Array<ITemplateElement>
+    public get quasis(): ITemplateElement[]
     {
         return this._quasis;
     }
 
     /* istanbul ignore next */
-    public set quasis(value: Array<ITemplateElement>)
+    public set quasis(value: ITemplateElement[])
     {
         this._quasis = value;
     }
@@ -37,7 +38,7 @@ export default class TemplateLiteral implements IExpression
         return NodeType.TemplateLiteral;
     }
 
-    public constructor(quasis: Array<ITemplateElement>, expressions: Array<IExpression>)
+    public constructor(quasis: ITemplateElement[], expressions: IExpression[])
     {
         this._expressions = expressions;
         this._quasis      = quasis;
@@ -59,7 +60,7 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = this.quasis[i].cooked + `${this.expressions[i].evaluate(scope, useCache)}`;
+            result = `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope, useCache)}`;
         }
 
         return this.cache = result + this.quasis[this.quasis.length - 1].cooked;
@@ -71,7 +72,7 @@ export default class TemplateLiteral implements IExpression
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = this.quasis[i].raw + `\$\{${this.expressions[i]}\}`;
+            result = `${this.quasis[i].raw}\$\{${this.expressions[i]}\}`;
         }
 
         return `\`${result + this.quasis[this.quasis.length - 1].raw}\``;

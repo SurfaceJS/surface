@@ -1,10 +1,10 @@
-import { Nullable, hasValue, format } from "@surface/core";
-import IExpression                    from "../interfaces/expression";
-import ITaggedTemplateExpression      from "../interfaces/tagged-template-expression";
-import Messages                       from "../messages";
-import NodeType                       from "../node-type";
-import TypeGuard                      from "../type-guard";
-import TemplateLiteral                from "./template-literal";
+import { format, hasValue }      from "@surface/core";
+import IExpression               from "../interfaces/expression";
+import ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
+import Messages                  from "../messages";
+import NodeType                  from "../node-type";
+import TypeGuard                 from "../type-guard";
+import TemplateLiteral           from "./template-literal";
 
 export default class TaggedTemplateExpression implements IExpression
 {
@@ -57,7 +57,7 @@ export default class TaggedTemplateExpression implements IExpression
             return this.cache;
         }
 
-        const fn = this.callee.evaluate(scope, useCache) as Nullable<Function>;
+        const fn = this.callee.evaluate(scope, useCache) as Function | undefined;
 
         if (!fn)
         {

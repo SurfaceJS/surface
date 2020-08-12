@@ -1,3 +1,3 @@
-type EntryType = string|Array<string>|Record<string, string|Array<string>>;
+type EntryType = string | string[] | Record<string, string | string[]>;
 
-export type Entry = EntryType|(() => EntryType|Promise<EntryType>);
+export type Entry = EntryType | (() => EntryType | Promise<EntryType>);

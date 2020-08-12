@@ -1,6 +1,6 @@
-import { Action }     from "./types";
-import ISubscription  from "./interfaces/subscription";
 import IEventListener from "./interfaces/event-listener";
+import ISubscription  from "./interfaces/subscription";
+import { Action }     from "./types";
 
 export default class EventListener<TValue = unknown> implements IEventListener<TValue>
 {
@@ -13,7 +13,7 @@ export default class EventListener<TValue = unknown> implements IEventListener<T
         return { unsubscribe: () => this.unsubscribe(listerner) };
     }
 
-    public unsubscribe(listerner: Action<[TValue]>)
+    public unsubscribe(listerner: Action<[TValue]>): void
     {
         if (!this.listeners.delete(listerner))
         {

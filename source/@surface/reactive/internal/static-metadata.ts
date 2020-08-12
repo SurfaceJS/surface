@@ -4,7 +4,7 @@ const STATIC_METADATA = Symbol("reactive:static-metadata");
 
 export default class StaticMetadata
 {
-    public actions: Array<(instance: object) => IDisposable> = [];
+    public actions: ((instance: object) => IDisposable)[] = [];
 
     public static from (target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata
     {

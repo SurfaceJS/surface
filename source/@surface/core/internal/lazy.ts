@@ -1,7 +1,7 @@
 export default class Lazy<T>
 {
     private cache:   T | undefined;
-    private factory: () => T;
+    private readonly factory: () => T;
 
     public get value(): T
     {

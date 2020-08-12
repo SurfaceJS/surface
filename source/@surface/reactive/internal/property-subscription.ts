@@ -5,7 +5,7 @@ import IPropertySubscription from "./interfaces/property-subscription";
 
 export default class PropertySubscription<TValue = unknown, TTarget extends Indexer = Indexer> implements IPropertySubscription<TTarget>
 {
-    private actions: Array<Action> = [];
+    private readonly actions: Action[] = [];
 
     public constructor (private readonly listener: IPropertyListener<TValue, TTarget>, private readonly observer: IObserver<TValue>)
     { }

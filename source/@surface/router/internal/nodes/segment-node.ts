@@ -5,7 +5,7 @@ export default class SegmentNode implements INode
 {
     public readonly type = NodeType.Segment;
 
-    public constructor(public readonly nodes: Array<INode>, public readonly optional: boolean)
+    public constructor(public readonly nodes: INode[], public readonly optional: boolean)
     { }
 
     public toString(): string

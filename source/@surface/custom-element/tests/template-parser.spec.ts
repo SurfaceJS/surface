@@ -1,3 +1,7 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-len */
+/* eslint-disable max-lines-per-function */
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { Action }                                                        from "@surface/core";
@@ -11,7 +15,7 @@ import TemplateParser                                                    from ".
 
 TemplateParser.testEnviroment = true;
 
-type RawError = { message: string }|Pick<TemplateParseError, "message"|"stack">;
+type RawError = { message: string } | Pick<TemplateParseError, "message" | "stack">;
 
 function tryAction(action: Action): RawError
 {
@@ -36,10 +40,8 @@ function toRaw(error: Error): RawError
             stack:   error.stack,
         };
     }
-    else
-    {
-        return { message: error.message };
-    }
+
+    return { message: error.message };
 }
 
 @suite
@@ -82,219 +84,8 @@ export default class TemplateParserSpec
 
         const expected: ITemplateDescriptor =
         {
-            elements:
-            [
-                {
-                    attributes:
-                    [
-                        {
-                            expression:  parseInterpolation("Hello {host.name}"),
-                            key:         "value",
-                            name:        "value",
-                            observables: [["host", "name"]],
-                            rawExpression:         "value=\"Hello {host.name}\"",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ],
-                            type: "interpolation",
-                        },
-                        {
-                            name:        "value-a",
-                            key:         "valueA",
-                            expression:  parseExpression("host.value"),
-                            observables: [],
-                            rawExpression:         "::value-a=\"host.value\"",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ],
-                            type: "twoway",
-                        },
-                        {
-                            name:        "value-b",
-                            key:         "valueB",
-                            expression:  parseExpression("host.x + host.y"),
-                            observables: [["host", "x"], ["host", "y"]],
-                            rawExpression:         ":value-b=\"host.x + host.y\"",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ],
-                            type: "oneway",
-                        },
-                    ],
-                    directives:
-                    [
-                        {
-                            keyExpression:              parseExpression("'click'"),
-                            keyObservables:   [],
-                            name:             "on",
-                            rawKeyExpression:           "",
-                            rawExpression:         "#on:click=\"host.handler\"",
-                            expression:            parseExpression("host.handler"),
-                            observables: [["host", "handler"]],
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"]
-                            ]
-                        }
-                    ],
-                    textNodes:
-                    [
-                        {
-                            path:        "0-0",
-                            expression:  parseInterpolation("Some {'interpolation'} here"),
-                            observables: [],
-                            rawExpression:         "Some {'interpolation'} here",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
-                                ["Some {'interpolation'} here"],
-                            ]
-                        }
-                    ],
-                    path: "0",
-                },
-                {
-                    attributes: [],
-                    directives:
-                    [
-                        {
-                            keyExpression:  parseExpression("host.dynamicOnKey"),
-                            keyObservables: [["host", "dynamicOnKey"]],
-                            name:           "on",
-                            rawKeyExpression:         "#on-key=\"host.dynamicOnKey\"",
-                            rawExpression:            "#on=\"host.handler\"",
-                            expression:     parseExpression("host.handler"),
-                            observables:    [["host", "handler"]],
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["...11 other(s) node(s)", "<table>"],
-                                ["<tbody>"],
-                                ["<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">"]
-                            ]
-                        }
-                    ],
-                    path:       "11-0-0",
-                    textNodes:  [],
-                },
-                {
-                    attributes: [],
-                    directives: [],
-                    path:       "13",
-                    textNodes:
-                    [
-                        {
-                            path:        "13-0",
-                            expression:  parseInterpolation("{host.footer}"),
-                            observables: [["host", "footer"]],
-                            rawExpression:         "{host.footer}",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["...13 other(s) node(s)", "<span>"],
-                                ["{host.footer}"]
-                            ]
-                        }
-                    ],
-                }
-            ],
             directives:
             {
-                logicals:
-                [
-                    {
-                        branches:
-                        [
-                            {
-                                descriptor:
-                                {
-                                    directives:
-                                    {
-                                        injections:   [],
-                                        logicals:     [],
-                                        loops:        [],
-                                        placeholders: [],
-                                    },
-                                    elements: [],
-                                    lookup:   [],
-                                },
-                                expression:    parseExpression("host.status == 1"),
-                                observables:   [["host", "status"]],
-                                path:          "5",
-                                rawExpression: "#if=\"host.status == 1\"",
-                                stackTrace:
-                                [
-                                    ["<x-component>"],
-                                    ["#shadow-root"],
-                                    ["...5 other(s) node(s)", "<span #if=\"host.status == 1\">"]
-                                ]
-                            },
-                            {
-                                descriptor:
-                                {
-                                    directives:
-                                    {
-                                        injections:   [],
-                                        logicals:     [],
-                                        loops:        [],
-                                        placeholders: [],
-                                    },
-                                    elements: [],
-                                    lookup:   [],
-                                },
-                                expression:  parseExpression("host.status == 2"),
-                                observables: [["host", "status"]],
-                                path:        "6",
-                                rawExpression:         "#else-if=\"host.status == 2\"",
-                                stackTrace:
-                                [
-                                    ["<x-component>"],
-                                    ["#shadow-root"],
-                                    ["...6 other(s) node(s)", "<span #else-if=\"host.status == 2\">"]
-                                ]
-                            },
-                            {
-                                descriptor:
-                                {
-                                    directives:
-                                    {
-                                        injections:   [],
-                                        logicals:     [],
-                                        loops:        [],
-                                        placeholders: [],
-                                    },
-                                    elements: [],
-                                    lookup:   [],
-                                },
-                                expression:  parseExpression("true"),
-                                observables: [],
-                                path:        "7",
-                                rawExpression:         "#else",
-                                stackTrace:
-                                [
-                                    ["<x-component>"],
-                                    ["#shadow-root"],
-                                    ["...7 other(s) node(s)", "<span #else>"]
-                                ]
-                            }
-                        ]
-                    }
-                ],
                 injections:
                 [
                     {
@@ -321,8 +112,8 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...1 other(s) node(s)", "<span #inject>"]
-                        ]
+                            ["...1 other(s) node(s)", "<span #inject>"],
+                        ],
                     },
                     {
                         descriptor:
@@ -343,21 +134,21 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            expression:  parseInterpolation("{title}"),
-                                            observables: [],
-                                            path:        "0-0-0",
-                                            rawExpression:         "{title}",
+                                            expression:    parseInterpolation("{title}"),
+                                            observables:   [],
+                                            path:          "0-0-0",
+                                            rawExpression: "{title}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
                                                 ["...2 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
                                                 ["<h1>"],
-                                                ["{title}"]
-                                            ]
-                                        }
-                                    ]
-                                }
+                                                ["{title}"],
+                                            ],
+                                        },
+                                    ],
+                                },
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
@@ -372,8 +163,8 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...2 other(s) node(s)", "<span #inject:title=\"{ title }\">"]
-                        ]
+                            ["...2 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
+                        ],
                     },
                     {
                         descriptor:
@@ -394,21 +185,21 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            expression:  parseInterpolation("{title}"),
-                                            observables: [],
-                                            path:        "0-0-0",
-                                            rawExpression:         "{title}",
+                                            expression:    parseInterpolation("{title}"),
+                                            observables:   [],
+                                            path:          "0-0-0",
+                                            rawExpression: "{title}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
                                                 ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
                                                 ["<h1>"],
-                                                ["{title}"]
-                                            ]
-                                        }
-                                    ]
-                                }
+                                                ["{title}"],
+                                            ],
+                                        },
+                                    ],
+                                },
                             ],
                             lookup: [[0, 0], [0, 0, 0]],
                         },
@@ -423,8 +214,193 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"]
-                        ]
+                            ["...3 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
+                        ],
+                    },
+                ],
+                logicals:
+                [
+                    {
+                        branches:
+                        [
+                            {
+                                descriptor:
+                                {
+                                    directives:
+                                    {
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
+                                    },
+                                    elements: [],
+                                    lookup:   [],
+                                },
+                                expression:    parseExpression("host.status == 1"),
+                                observables:   [["host", "status"]],
+                                path:          "5",
+                                rawExpression: "#if=\"host.status == 1\"",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...5 other(s) node(s)", "<span #if=\"host.status == 1\">"],
+                                ],
+                            },
+                            {
+                                descriptor:
+                                {
+                                    directives:
+                                    {
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
+                                    },
+                                    elements: [],
+                                    lookup:   [],
+                                },
+                                expression:    parseExpression("host.status == 2"),
+                                observables:   [["host", "status"]],
+                                path:          "6",
+                                rawExpression: "#else-if=\"host.status == 2\"",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...6 other(s) node(s)", "<span #else-if=\"host.status == 2\">"],
+                                ],
+                            },
+                            {
+                                descriptor:
+                                {
+                                    directives:
+                                    {
+                                        injections:   [],
+                                        logicals:     [],
+                                        loops:        [],
+                                        placeholders: [],
+                                    },
+                                    elements: [],
+                                    lookup:   [],
+                                },
+                                expression:    parseExpression("true"),
+                                observables:   [],
+                                path:          "7",
+                                rawExpression: "#else",
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["...7 other(s) node(s)", "<span #else>"],
+                                ],
+                            },
+                        ],
+                    },
+                ],
+                loops:
+                [
+                    {
+                        descriptor:
+                        {
+                            directives:
+                            {
+                                injections:   [],
+                                logicals:     [],
+                                loops:        [],
+                                placeholders: [],
+                            },
+                            elements:
+                            [
+                                {
+                                    attributes: [],
+                                    directives: [],
+                                    path:       "0-0",
+                                    textNodes:
+                                    [
+                                        {
+                                            expression:    parseInterpolation("{item.id}"),
+                                            observables:   [["item", "id"]],
+                                            path:          "0-0-0",
+                                            rawExpression: "{item.id}",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...11 other(s) node(s)", "<table>"],
+                                                ["<tbody>"],
+                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                ["<td>"],
+                                                ["{item.id}"],
+                                            ],
+                                        },
+                                    ],
+                                },
+                                {
+                                    attributes: [],
+                                    directives: [],
+                                    path:       "0-1",
+                                    textNodes:
+                                    [
+                                        {
+                                            expression:    parseInterpolation("{item.name}"),
+                                            observables:   [["item", "name"]],
+                                            path:          "0-1-0",
+                                            rawExpression: "{item.name}",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...11 other(s) node(s)", "<table>"],
+                                                ["<tbody>"],
+                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                ["...1 other(s) node(s)", "<td>"],
+                                                ["{item.name}"],
+                                            ],
+                                        },
+                                    ],
+                                },
+                                {
+                                    attributes: [],
+                                    directives: [],
+                                    path:       "0-2",
+                                    textNodes:
+                                    [
+                                        {
+                                            expression:    parseInterpolation("{item.status}"),
+                                            observables:   [["item", "status"]],
+                                            path:          "0-2-0",
+                                            rawExpression: "{item.status}",
+                                            stackTrace:
+                                            [
+                                                ["<x-component>"],
+                                                ["#shadow-root"],
+                                                ["...11 other(s) node(s)", "<table>"],
+                                                ["<tbody>"],
+                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                ["...2 other(s) node(s)", "<td>"],
+                                                ["{item.status}"],
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                            lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
+                        },
+                        left:          parseExpression("item") as IIdentifier,
+                        observables:   [["host", "items"]],
+                        operator:      "of",
+                        path:          "11-0-1",
+                        rawExpression: "#for=\"const item of host.items\"",
+                        right:         parseExpression("host.items"),
+                        stackTrace:
+                        [
+                            ["<x-component>"],
+                            ["#shadow-root"],
+                            ["...11 other(s) node(s)", "<table>"],
+                            ["<tbody>"],
+                            ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                        ],
                     },
                 ],
                 placeholders:
@@ -453,8 +429,8 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...8 other(s) node(s)", "<span #placeholder>"]
-                        ]
+                            ["...8 other(s) node(s)", "<span #placeholder>"],
+                        ],
                     },
                     {
                         descriptor:
@@ -475,20 +451,20 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            expression:  parseInterpolation("Default {name}"),
-                                            observables: [],
-                                            path:        "0-0",
-                                            rawExpression:         "Default {name}",
+                                            expression:    parseInterpolation("Default {name}"),
+                                            observables:   [],
+                                            path:          "0-0",
+                                            rawExpression: "Default {name}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
                                                 ["...9 other(s) node(s)", "<span #placeholder:value=\"({ name: host.name })\">"],
                                                 ["Default {name}"],
-                                            ]
-                                        }
-                                    ]
-                                }
+                                            ],
+                                        },
+                                    ],
+                                },
                             ],
                             lookup: [[0], [0, 0]],
                         },
@@ -503,8 +479,8 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...9 other(s) node(s)", "<span #placeholder:value=\"({ name: host.name })\">"]
-                        ]
+                            ["...9 other(s) node(s)", "<span #placeholder:value=\"({ name: host.name })\">"],
+                        ],
                     },
                     {
                         descriptor:
@@ -525,20 +501,20 @@ export default class TemplateParserSpec
                                     textNodes:
                                     [
                                         {
-                                            expression:  parseInterpolation("Default {name}"),
-                                            observables: [],
-                                            path:        "0-0",
-                                            rawExpression:         "Default {name}",
+                                            expression:    parseInterpolation("Default {name}"),
+                                            observables:   [],
+                                            path:          "0-0",
+                                            rawExpression: "Default {name}",
                                             stackTrace:
                                             [
                                                 ["<x-component>"],
                                                 ["#shadow-root"],
                                                 ["...10 other(s) node(s)", "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">"],
                                                 ["Default {name}"],
-                                            ]
-                                        }
-                                    ]
-                                }
+                                            ],
+                                        },
+                                    ],
+                                },
                             ],
                             lookup: [[0], [0, 0]],
                         },
@@ -553,116 +529,142 @@ export default class TemplateParserSpec
                         [
                             ["<x-component>"],
                             ["#shadow-root"],
-                            ["...10 other(s) node(s)", "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">"]
-                        ]
+                            ["...10 other(s) node(s)", "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">"],
+                        ],
                     },
                 ],
-                loops:
-                [
-                    {
-                        left: parseExpression("item") as IIdentifier,
-                        descriptor:
-                        {
-                            directives:
-                            {
-                                injections:   [],
-                                logicals:     [],
-                                loops:        [],
-                                placeholders: [],
-                            },
-                            elements:
-                            [
-                                {
-                                    attributes: [],
-                                    directives: [],
-                                    textNodes:
-                                    [
-                                        {
-                                            expression:  parseInterpolation("{item.id}"),
-                                            observables: [["item", "id"]],
-                                            path:        "0-0-0",
-                                            rawExpression:         "{item.id}",
-                                            stackTrace:
-                                            [
-                                                ["<x-component>"],
-                                                ["#shadow-root"],
-                                                ["...11 other(s) node(s)", "<table>"],
-                                                ["<tbody>"],
-                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
-                                                ["<td>"],
-                                                ["{item.id}"],
-                                            ]
-                                        },
-                                    ],
-                                    path: "0-0"
-                                },
-                                {
-                                    attributes: [],
-                                    directives: [],
-                                    textNodes:
-                                    [
-                                        {
-                                            expression:  parseInterpolation("{item.name}"),
-                                            observables: [["item", "name"]],
-                                            path:        "0-1-0",
-                                            rawExpression:         "{item.name}",
-                                            stackTrace:
-                                            [
-                                                ["<x-component>"],
-                                                ["#shadow-root"],
-                                                ["...11 other(s) node(s)", "<table>"],
-                                                ["<tbody>"],
-                                                ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
-                                                ["...1 other(s) node(s)", "<td>"],
-                                                ["{item.name}"],
-                                            ]
-                                        },
-                                    ],
-                                    path: "0-1"
-                                },
-                                {
-                                    attributes: [],
-                                    directives: [],
-                                    textNodes:
-                                    [
-                                        {
-                                            expression:  parseInterpolation("{item.status}"),
-                                            observables: [["item", "status"]],
-                                            path:        "0-2-0",
-                                            rawExpression:         "{item.status}",
-                                            stackTrace:
-                                            [
-                                              ["<x-component>"],
-                                              ["#shadow-root"],
-                                              ["...11 other(s) node(s)", "<table>"],
-                                              ["<tbody>"],
-                                              ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
-                                              ["...2 other(s) node(s)", "<td>"],
-                                              ["{item.status}"]
-                                            ]
-                                        },
-                                    ],
-                                    path: "0-2"
-                                }
-                            ],
-                            lookup: [[0, 0], [0, 0, 0], [0, 1], [0, 1, 0], [0, 2], [0, 2, 0]],
-                        },
-                        observables: [["host", "items"]],
-                        operator:    "of",
-                        path:        "11-0-1",
-                        rawExpression:         "#for=\"const item of host.items\"",
-                        right:       parseExpression("host.items"),
-                        stackTrace:
-                        [
-                            ["<x-component>"],
-                            ["#shadow-root"],
-                            ["...11 other(s) node(s)", "<table>"],
-                            ["<tbody>"],
-                            ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"]
-                        ]
-                    }
-                ],
             },
+            elements:
+            [
+                {
+                    attributes:
+                    [
+                        {
+                            expression:    parseInterpolation("Hello {host.name}"),
+                            key:           "value",
+                            name:          "value",
+                            observables:   [["host", "name"]],
+                            rawExpression: "value=\"Hello {host.name}\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type: "interpolation",
+                        },
+                        {
+                            expression:    parseExpression("host.value"),
+                            key:           "valueA",
+                            name:          "value-a",
+                            observables:   [],
+                            rawExpression: "::value-a=\"host.value\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type: "twoway",
+                        },
+                        {
+                            expression:    parseExpression("host.x + host.y"),
+                            key:           "valueB",
+                            name:          "value-b",
+                            observables:   [["host", "x"], ["host", "y"]],
+                            rawExpression: ":value-b=\"host.x + host.y\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type: "oneway",
+                        },
+                    ],
+                    directives:
+                    [
+                        {
+                            expression:       parseExpression("host.handler"),
+                            keyExpression:    parseExpression("'click'"),
+                            keyObservables:   [],
+                            name:             "on",
+                            observables:      [["host", "handler"]],
+                            rawExpression:    "#on:click=\"host.handler\"",
+                            rawKeyExpression: "",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                        },
+                    ],
+                    path:      "0",
+                    textNodes:
+                    [
+                        {
+                            expression:    parseInterpolation("Some {'interpolation'} here"),
+                            observables:   [],
+                            path:          "0-0",
+                            rawExpression: "Some {'interpolation'} here",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["Some {'interpolation'} here"],
+                            ],
+                        },
+                    ],
+                },
+                {
+                    attributes: [],
+                    directives:
+                    [
+                        {
+                            expression:       parseExpression("host.handler"),
+                            keyExpression:    parseExpression("host.dynamicOnKey"),
+                            keyObservables:   [["host", "dynamicOnKey"]],
+                            name:             "on",
+                            observables:      [["host", "handler"]],
+                            rawExpression:    "#on=\"host.handler\"",
+                            rawKeyExpression: "#on-key=\"host.dynamicOnKey\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...11 other(s) node(s)", "<table>"],
+                                ["<tbody>"],
+                                ["<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">"],
+                            ],
+                        },
+                    ],
+                    path:      "11-0-0",
+                    textNodes: [],
+                },
+                {
+                    attributes: [],
+                    directives: [],
+                    path:       "13",
+                    textNodes:
+                    [
+                        {
+                            expression:    parseInterpolation("{host.footer}"),
+                            observables:   [["host", "footer"]],
+                            path:          "13-0",
+                            rawExpression: "{host.footer}",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...13 other(s) node(s)", "<span>"],
+                                ["{host.footer}"],
+                            ],
+                        },
+                    ],
+                },
+            ],
             lookup: [[0], [0, 0], [1], [2], [3], [5], [6], [7], [8], [9], [10], [11, 0, 0], [11, 0, 1], [13], [13, 0]],
         };
 

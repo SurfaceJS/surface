@@ -1,17 +1,17 @@
-import { Nullable }  from "@surface/core";
 import { RouteData } from "@surface/router";
 import HttpContext   from "./http-context";
 
 export default abstract class ActionResult
 {
     private readonly _httpContext: HttpContext;
+    private readonly _routeData: RouteData | null;
+
     public get httpContext(): HttpContext
     {
         return this._httpContext;
     }
 
-    private readonly _routeData: Nullable<RouteData>;
-    public get routeData(): Nullable<RouteData>
+    public get routeData(): RouteData | null
     {
         return this._routeData;
     }
@@ -21,7 +21,7 @@ export default abstract class ActionResult
     public constructor(httpContext: HttpContext, routeData?: RouteData)
     {
         this._httpContext = httpContext;
-        this._routeData   = routeData;
+        this._routeData   = routeData ?? null;
     }
 
     public abstract executeResult(): void;

@@ -2,7 +2,7 @@ import { batchTest, suite }                                  from "@surface/test
 import { assert }                                            from "chai";
 import TokenType                                             from "../internal/enums/token-type";
 import Scanner                                               from "../internal/scanner";
-import { scannerValidExpectations, ScannerValidExpectation } from "./scanner-expectations";
+import { ScannerValidExpectation, scannerValidExpectations } from "./scanner-expectations";
 
 @suite
 export default class RouteSpec

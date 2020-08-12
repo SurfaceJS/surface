@@ -3,7 +3,7 @@ import webpack     from "webpack";
 
 const expression = /^\s*(?:(?:\\\\)?#import\s+(\\?["'])([^"']+)\1)/;
 
-export default function (this: webpack.loader.LoaderContext, source: string): string
+export default function htmlRequireLoader(this: webpack.loader.LoaderContext, source: string): string
 {
     this.cacheable();
 
@@ -15,7 +15,7 @@ export default function (this: webpack.loader.LoaderContext, source: string): st
     }
 
     const esmodule = start.startsWith("export default");
-    const imports  = [] as Array<string>;
+    const imports  = [] as string[];
 
     let content = middle;
 
@@ -45,7 +45,7 @@ export default function (this: webpack.loader.LoaderContext, source: string): st
         expression.lastIndex = 0;
     }
 
-    const parsed = [...imports, (start + content.trim() + end)].join("\n");
+    const parsed = [...imports, start + content.trim() + end].join("\n");
 
     return parsed;
 }

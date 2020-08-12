@@ -4,7 +4,7 @@ import Messages                                                                 
 import Scanner                                                                  from "../internal/scanner";
 import SyntaxError                                                              from "../internal/syntax-error";
 import TokenType                                                                from "../internal/token-type";
-import { invalidTokens, validTokens, ExpectedInvalidToken, ExpectedValidToken } from "./expectations/scanner-expected";
+import { ExpectedInvalidToken, ExpectedValidToken, invalidTokens, validTokens } from "./expectations/scanner-expected";
 
 @suite
 export default class ScannerSpec
@@ -14,7 +14,7 @@ export default class ScannerSpec
     public regexWithFlags(): void
     {
         expect(new Scanner("/foo[123]bar()\\//").scanRegex())
-            .include({ raw: "/foo[123]bar()\\//", pattern: "foo[123]bar()\\/", type: TokenType.RegularExpression })
+            .include({ pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//", type: TokenType.RegularExpression })
             .and.not.have.key("flag");
     }
 
@@ -23,20 +23,21 @@ export default class ScannerSpec
     public regexWithoutFlags(): void
     {
         expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
-            .include({ raw: "/foo[123]bar()\\//ig", pattern: "foo[123]bar()\\/", flags: "ig", type: TokenType.RegularExpression });
+            .include({ flags: "ig", pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//ig", type: TokenType.RegularExpression });
     }
 
     @shouldPass
     @test
     public templateStringWithInterpolation(): void
     {
+        // eslint-disable-next-line no-template-curly-in-string
         const scanner = new Scanner("`start ${identifier} middle ${1} end`");
 
-        expect(scanner.nextToken()).include({ value: "start ",     type: TokenType.Template });
-        expect(scanner.nextToken()).include({ raw:   "identifier", type: TokenType.Identifier });
-        expect(scanner.nextToken()).include({ value: " middle ",   type: TokenType.Template });
-        expect(scanner.nextToken()).include({ value: 1,            type: TokenType.NumericLiteral });
-        expect(scanner.nextToken()).include({ value: " end",       type: TokenType.Template });
+        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: "start " });
+        expect(scanner.nextToken()).include({ raw: "identifier", type: TokenType.Identifier });
+        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: " middle " });
+        expect(scanner.nextToken()).include({ type: TokenType.NumericLiteral, value: 1 });
+        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: " end" });
     }
 
     @shouldPass

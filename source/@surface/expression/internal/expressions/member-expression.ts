@@ -1,8 +1,8 @@
-import { hasValue, Indexer, Nullable } from "@surface/core";
-import IExpression                     from "../interfaces/expression";
-import IMemberExpression               from "../interfaces/member-expression";
-import NodeType                        from "../node-type";
-import TypeGuard                       from "../type-guard";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import IMemberExpression     from "../interfaces/member-expression";
+import NodeType              from "../node-type";
+import TypeGuard             from "../type-guard";
 
 export default class MemberExpression implements IExpression
 {
@@ -81,13 +81,13 @@ export default class MemberExpression implements IExpression
             return this.cache;
         }
 
-        const object = this.object.evaluate(scope, useCache) as Nullable<Indexer>;
+        const object = this.object.evaluate(scope, useCache) as Indexer | null;
 
         const key = TypeGuard.isIdentifier(this.property) && !this.computed ?  this.property.name : `${this.property.evaluate(scope, useCache)}`;
 
         if (this.optional)
         {
-            return this.cache = (hasValue(object) ? object[key] : undefined);
+            return this.cache = hasValue(object) ? object[key] : undefined;
         }
 
         return this.cache = object![key];

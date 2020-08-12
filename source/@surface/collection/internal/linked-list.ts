@@ -53,7 +53,7 @@ export default class LinkedList<T> extends Enumerable<Link<T>>
     {
         if (this._head && this._tail)
         {
-            const link: Link<T> = { value, previous: this._tail, next: null };
+            const link: Link<T> = { next: null, previous: this._tail, value };
 
             this._tail.next = link;
 
@@ -61,7 +61,7 @@ export default class LinkedList<T> extends Enumerable<Link<T>>
         }
         else
         {
-            const link: Link<T> = { value, previous: null, next: null };
+            const link: Link<T> = { next: null, previous: null, value };
 
             this._head = link;
             this._tail = link;
@@ -106,7 +106,7 @@ export default class LinkedList<T> extends Enumerable<Link<T>>
         }
     }
 
-    public count(predicate?: Func1<Link<T>, boolean>)
+    public count(predicate?: Func1<Link<T>, boolean>): number
     {
         if (predicate)
         {

@@ -1,13 +1,13 @@
-import { Indexer, Nullable, hasValue, proxyFrom } from "@surface/core";
-import Evaluate                                   from "../evaluate";
-import IArrowFunctionExpression                   from "../interfaces/arrow-function-expression";
-import IExpression                                from "../interfaces/expression";
-import IPattern                                   from "../interfaces/pattern";
-import NodeType                                   from "../node-type";
+import { Indexer, hasValue, proxyFrom } from "@surface/core";
+import Evaluate                         from "../evaluate";
+import IArrowFunctionExpression         from "../interfaces/arrow-function-expression";
+import IExpression                      from "../interfaces/expression";
+import IPattern                         from "../interfaces/pattern";
+import NodeType                         from "../node-type";
 
 export default class ArrowFunctionExpression implements IExpression
 {
-    private cache: Nullable<Function>;
+    private cache: Function | null = null;
 
     private _body: IExpression;
     public get body(): IExpression
@@ -21,14 +21,14 @@ export default class ArrowFunctionExpression implements IExpression
         this._body = value;
     }
 
-    private _parameters: Array<IPattern>;
-    public get parameters(): Array<IPattern>
+    private _parameters: IPattern[];
+    public get parameters(): IPattern[]
     {
         return this._parameters;
     }
 
     /* istanbul ignore next */
-    public set parameters(value: Array<IPattern>)
+    public set parameters(value: IPattern[])
     {
         this._parameters = value;
     }
@@ -38,13 +38,13 @@ export default class ArrowFunctionExpression implements IExpression
         return NodeType.ArrowFunctionExpression;
     }
 
-    public constructor(parameters: Array<IPattern>, body: IExpression)
+    public constructor(parameters: IPattern[], body: IExpression)
     {
         this._parameters = parameters;
         this._body       = body;
     }
 
-    private resolveParameters(scope: object, $arguments: Array<unknown>, useCache: boolean): Indexer
+    private resolveParameters(scope: object, $arguments: unknown[], useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -71,7 +71,7 @@ export default class ArrowFunctionExpression implements IExpression
             return this.cache;
         }
 
-        const fn = (...args: Array<unknown>) => this.body.evaluate(proxyFrom(this.resolveParameters(scope, args, !!useCache), scope), useCache);
+        const fn = (...args: unknown[]): unknown => this.body.evaluate(proxyFrom(this.resolveParameters(scope, args, !!useCache), scope), useCache);
 
         fn.toString = () => this.toString();
 

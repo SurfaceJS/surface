@@ -7,17 +7,17 @@ import { PATTERN }         from "../symbols";
 
 export default class ObjectPattern implements IPattern
 {
-    private _properties: Array<IAssignmentProperty|IRestElement>;
+    private _properties: (IAssignmentProperty | IRestElement)[];
 
     public [PATTERN]: void;
 
-    public get properties(): Array<IAssignmentProperty|IRestElement>
+    public get properties(): (IAssignmentProperty | IRestElement)[]
     {
         return this._properties;
     }
 
     /* istanbul ignore next */
-    public set properties(value: Array<IAssignmentProperty|IRestElement>)
+    public set properties(value: (IAssignmentProperty | IRestElement)[])
     {
         this._properties = value;
     }
@@ -27,7 +27,7 @@ export default class ObjectPattern implements IPattern
         return NodeType.ObjectPattern;
     }
 
-    public constructor(properties: Array<IAssignmentProperty|IRestElement>)
+    public constructor(properties: (IAssignmentProperty | IRestElement)[])
     {
         this._properties = properties;
     }

@@ -1,8 +1,8 @@
 import CustomElement    from "./internal/custom-element";
-import DirectiveHandler from "./internal/directives/handlers"
+import DirectiveHandler from "./internal/directives/handlers";
 
 import type ICustomElement   from "./internal/interfaces/custom-element";
-import type ICustomDirective from "./internal/interfaces/directives/custom-directive"
+import type ICustomDirective from "./internal/interfaces/directives/custom-directive";
 
 export type { ICustomElement, ICustomDirective };
 

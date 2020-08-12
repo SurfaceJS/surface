@@ -1,16 +1,17 @@
 import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { assert }   from "chai";
-import ITransformer from "../internal/interfaces/transformer";
-import Route        from "../internal/route";
+import { assert }                                   from "chai";
+import ITransformer                                 from "../internal/interfaces/transformer";
+import Route                                        from "../internal/route";
+import RouteMatch                                   from "../internal/types/route-match";
 import
 {
+    RouteInvalidExpectation,
+    RouteValidExpectation,
     routeInvalidExpectations,
     routeValidExpectations,
-    RouteInvalidExpectation,
-    RouteValidExpectation
 } from "./route-expectations";
 
-const transformer: ITransformer = { parse: x => x.split("."), stringfy: (x: Array<string>) => x.join(".") };
+const transformer: ITransformer = { parse: x => x.split("."), stringfy: (x: string[]) => x.join(".") };
 const transformers = new Map([["transformer", transformer]]);
 
 @suite
@@ -29,7 +30,7 @@ export default class RouteSpec
     @batchTest(routeInvalidExpectations, x => `Pattern: "${x.pattern}" should throws: "${x.error.message}"`)
     public invalidMatch(expectation: RouteInvalidExpectation): void
     {
-        const action = () => new Route(expectation.pattern, transformers).match(expectation.value);
+        const action = (): RouteMatch => new Route(expectation.pattern, transformers).match(expectation.value);
 
         assert.throws(action, Error, expectation.error.message);
     }

@@ -1,5 +1,8 @@
-export const mymeType =
+const mymeType =
 {
+    ".3g2":    "video/3gpp2|audio/3gpp2",
+    ".3gp":    "video/3gpp|audio/3gpp",
+    ".7z":     "application/x-7z-compressed",
     ".aac":    "audio/aac",
     ".abw":    "application/x-abiword",
     ".arc":    "application/octet-stream",
@@ -57,7 +60,6 @@ export const mymeType =
     ".xml":    "application/xml",
     ".xul":    "application/vnd.mozilla.xul+xml",
     ".zip":    "application/zip",
-    ".3gp":    "video/3gpp|audio/3gpp",
-    ".3g2":    "video/3gpp2|audio/3gpp2",
-    ".7z":     "application/x-7z-compressed"
 };
+
+export default mymeType;

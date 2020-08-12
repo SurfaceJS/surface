@@ -1,11 +1,11 @@
-import { Nullable, hasValue } from "@surface/core";
-import ILiteral                        from "../interfaces/literal";
-import IRegExpLiteral                  from "../interfaces/reg-exp-literal";
-import NodeType                        from "../node-type";
+import { hasValue }   from "@surface/core";
+import ILiteral       from "../interfaces/literal";
+import IRegExpLiteral from "../interfaces/reg-exp-literal";
+import NodeType       from "../node-type";
 
 export default class RegExpLiteral implements ILiteral
 {
-    private cache: Nullable<RegExp>;
+    private cache: RegExp | null = null;
 
     private _flags: string;
     public get flags(): string
@@ -36,6 +36,7 @@ export default class RegExpLiteral implements ILiteral
         return NodeType.RegExpLiteral;
     }
 
+    // eslint-disable-next-line @typescript-eslint/class-literal-property-style
     public get value(): null
     {
         return null;

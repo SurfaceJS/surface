@@ -1,11 +1,11 @@
-import { overrideConstructor, Constructor } from "@surface/core";
+import { Constructor, overrideConstructor } from "@surface/core";
 import Container                            from "./container";
 import StaticMetadata                       from "./metadata";
 
-// tslint:disable-next-line:no-any
-export function inject(key: string|symbol|Constructor): any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function inject(key: string | symbol | Constructor): any
 {
-    return (...args: [object, string|symbol, number]|[object, string|symbol, PropertyDescriptor]) =>
+    return (...args: [object, string | symbol, number] | [object, string | symbol, PropertyDescriptor]) =>
     {
         const [target, propertyKey] = args;
 

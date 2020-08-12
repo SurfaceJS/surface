@@ -2,8 +2,6 @@ import { Action, Action1 }   from "@surface/core";
 import { TEMPLATE_METADATA } from "../symbols";
 import { Injection }         from "../types";
 
-
-
 type Target = object & { [TEMPLATE_METADATA]?: TemplateMetadata };
 
 export default class TemplateMetadata

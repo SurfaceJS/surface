@@ -1,7 +1,6 @@
-import { List }               from "@surface/collection";
-import { Nullable }           from "@surface/core";
-import Router                 from "@surface/router";
 import http                   from "http";
+import { List }               from "@surface/collection";
+import Router                 from "@surface/router";
 import Configuration          from "./configuration";
 import FallbackRequestHandler from "./fallback-request-handler";
 import HttpContext            from "./http-context";
@@ -14,27 +13,30 @@ import StatusCode             from "./status-code";
 export default class WebHost
 {
     private static _instance: WebHost;
+
+    private readonly _port:    number;
+    private readonly _root:    string;
+    private readonly _wwwroot: string;
+
+    private readonly handlers: List<RequestHandler>;
+
+    private startup: IStartup | null = null;
+
     public static get instance(): WebHost
     {
         return this._instance;
     }
 
-    private readonly handlers: List<RequestHandler>;
-    private startup: Nullable<IStartup>;
-
-    private readonly _port: number;
     public get port(): number
     {
         return this._port;
     }
 
-    private readonly _root: string;
     public get root(): string
     {
         return this._root;
     }
 
-    private readonly _wwwroot: string;
     public get wwwroot(): string
     {
         return this._wwwroot;
@@ -60,7 +62,7 @@ export default class WebHost
 
         try
         {
-            if (this.startup && this.startup.onBeginRequest)
+            if (this.startup?.onBeginRequest)
             {
                 this.startup.onBeginRequest(httpContext);
             }
@@ -77,33 +79,24 @@ export default class WebHost
 
             if (!handled)
             {
-                response.writeHead(StatusCode.notFound, { "Content-Type": "text/plain" });
+                response.writeHead(StatusCode.NotFound, { "Content-Type": "text/plain" });
                 response.end("Resource not found.");
             }
 
-            if (this.startup && this.startup.onEndRequest)
-            {
-                this.startup.onEndRequest(httpContext);
-            }
+            this.startup?.onEndRequest?.(httpContext);
         }
         catch (error)
         {
-            response.writeHead(StatusCode.internalServerError, { "Content-Type": "text/plain" });
+            response.writeHead(StatusCode.InternalServerError, { "Content-Type": "text/plain" });
             response.end(error.message);
 
-            if (this.startup && this.startup.onError)
-            {
-                this.startup.onError(error, httpContext);
-            }
+            this.startup?.onError?.(error, httpContext);
         }
     }
 
     public run(): void
     {
-        if (this.startup && this.startup.onStart)
-        {
-            this.startup.onStart();
-        }
+        this.startup?.onStart?.();
 
         http.createServer(this.listener.bind(this)).listen(this.port);
     }

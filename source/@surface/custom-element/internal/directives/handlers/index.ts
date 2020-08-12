@@ -5,7 +5,7 @@ import
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
-    tryObserveKeyByObservable
+    tryObserveKeyByObservable,
 } from "../../common";
 import ICustomDirective from "../../interfaces/directives/custom-directive";
 

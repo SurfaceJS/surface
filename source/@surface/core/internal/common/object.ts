@@ -4,7 +4,7 @@ import { assert, typeGuard }                                      from "./generi
 
 const PRIVATES = Symbol("core:privates");
 
-function internalDeepMerge(sources: Array<Indexer>, combineArrays: boolean): Indexer
+function internalDeepMerge(sources: Indexer[], combineArrays: boolean): Indexer
 {
     const target: Indexer = { };
 
@@ -47,7 +47,8 @@ export function clone(source: Indexer): Indexer
 {
     if (Array.isArray(source))
     {
-        const values: Array<unknown> = [];
+        const values: unknown[] = [];
+
         for (const value of source)
         {
             if (value instanceof Object)
@@ -62,25 +63,24 @@ export function clone(source: Indexer): Indexer
 
         return values as Indexer;
     }
-    else
+
+    const prototype: Indexer = Object.create(Reflect.getPrototypeOf(source));
+
+    for (const key of Reflect.ownKeys(source) as (string | number)[])
     {
-        const prototype: Indexer = Object.create(Reflect.getPrototypeOf(source));
+        const value = source[key];
 
-        for (const key of Reflect.ownKeys(source) as Array<string|number>)
+        if (value instanceof Object)
         {
-            const value = source[key];
-
-            if (value instanceof Object)
-            {
-                prototype[key] = clone(value);
-            }
-            else
-            {
-                prototype[key] = value;
-            }
+            prototype[key] = clone(value);
         }
-        return prototype;
+        else
+        {
+            prototype[key] = value;
+        }
     }
+
+    return prototype;
 }
 
 export function deepEqual<T>(left: T, right: T): boolean
@@ -119,8 +119,8 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
-export function getKeyMember<T extends object>(target: T, path: string|Array<string>): { key: string, member: T };
-export function getKeyMember(target: Indexer, path: string|Array<string>): { key: string, member: Indexer }
+export function getKeyMember<T extends object>(target: T, path: string | string[]): { key: string, member: T };
+export function getKeyMember(target: Indexer, path: string | string[]): { key: string, member: Indexer }
 {
     const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
 
@@ -132,25 +132,24 @@ export function getKeyMember(target: Indexer, path: string|Array<string>): { key
 
             return getKeyMember(member as Indexer, keys);
         }
-        else
-        {
-            const typeName = target instanceof Function ? target.name : target.constructor.name;
-            throw new Error(`Property "${key}" does not exists on type ${typeName}`);
-        }
+
+        const typeName = target instanceof Function ? target.name : target.constructor.name;
+
+        throw new Error(`Property "${key}" does not exists on type ${typeName}`);
     }
 
     return { key, member: target };
 }
 
-export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string|Array<string>): { key: string, value: TValue };
-export function getKeyValue(target: Indexer, path: string|Array<string>): { key: string, value: unknown }
+export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string | string[]): { key: string, value: TValue };
+export function getKeyValue(target: Indexer, path: string | string[]): { key: string, value: unknown }
 {
     const { key, member } = getKeyMember(target, path);
 
     return { key, value: member[key] };
 }
 
-export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string|Array<string>): T|undefined
+export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string | string[]): T | undefined
 {
     return getKeyValue<TTarget, T>(target, path).value;
 }
@@ -159,25 +158,25 @@ export function getValue<TTarget extends object, T = unknown>(target: TTarget, p
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */
-export function deepMerge<TSources extends Array<object>>(...sources: TSources): Combine<TSources>
+export function deepMerge<TSources extends object[]>(...sources: TSources): Combine<TSources>
 {
-    return internalDeepMerge(sources as Array<Indexer>, false) as Combine<TSources>;
+    return internalDeepMerge(sources as Indexer[], false) as Combine<TSources>;
 }
 
 /**
  * Deeply merges two or more objects and arrays.
  * @param sources Objects to merge.
  */
-export function deepMergeCombine<TSources extends Array<object>>(...sources: TSources): Combine<TSources>
+export function deepMergeCombine<TSources extends object[]>(...sources: TSources): Combine<TSources>
 {
-    return internalDeepMerge(sources as Array<Indexer>, true) as Combine<TSources>;
+    return internalDeepMerge(sources as Indexer[], true) as Combine<TSources>;
 }
 
 /**
  * Merges two or more objects.
  * @param sources objects to merge
  * */
-export function merge<T extends Array<object>>(...sources: T): MergeList<T>
+export function merge<T extends object[]>(...sources: T): MergeList<T>
 {
     const target: Indexer = { };
 
@@ -193,7 +192,7 @@ export function merge<T extends Array<object>>(...sources: T): MergeList<T>
 }
 
 
-export function mixer<TConstructor extends Constructor, TMixins extends Array<(superClass: TConstructor) => Constructor>, TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
+export function mixer<TConstructor extends Constructor, TMixins extends ((superClass: TConstructor) => Constructor)[], TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
 {
     assert(mixins.length > 0, "Mixer requires at least one mixin");
 
@@ -205,10 +204,8 @@ export function mixer<TConstructor extends Constructor, TMixins extends Array<(s
     {
         return mixer($class as TConstructor, mixins);
     }
-    else
-    {
-        return $class as TMixer;
-    }
+
+    return $class as TMixer;
 }
 
 /**
@@ -216,9 +213,8 @@ export function mixer<TConstructor extends Constructor, TMixins extends Array<(s
  * @param keys   Object keys
  * @param target If provided, all keys will inserted on target object
  */
-export function objectFactory(keys: Array<[string, unknown]>, target?: Indexer): object
+export function objectFactory(keys: [string, unknown][], target: Indexer = { }): object
 {
-    target = target ?? { };
     for (const entries of keys)
     {
         const [key, value] = entries;
@@ -244,12 +240,13 @@ export function overrideConstructor<T extends Constructor>(constructor: T, actio
 {
     const proxy =
     {
-        [constructor.name]: function(...args: Array<unknown>)
+        // eslint-disable-next-line object-shorthand
+        [constructor.name]: function(...args: unknown[])
         {
             const instance = Reflect.construct(constructor, args, new.target) as InstanceType<T>;
 
             return action(instance);
-        }
+        },
     }[constructor.name];
 
     Reflect.setPrototypeOf(proxy, Reflect.getPrototypeOf(constructor));
@@ -260,7 +257,8 @@ export function overrideConstructor<T extends Constructor>(constructor: T, actio
     return proxy as unknown as T;
 }
 
-export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string|symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor|null, beforeSetter?: boolean): PropertyDescriptor
+// eslint-disable-next-line max-len
+export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string | symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor | null, beforeSetter?: boolean): PropertyDescriptor
 {
     let propertyDescriptor: PropertyDescriptor;
 
@@ -272,8 +270,8 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
         {
             configurable: currentDescriptor.configurable,
             enumerable:   currentDescriptor.enumerable,
-            get: currentDescriptor.get,
-            set: beforeSetter
+            get:          currentDescriptor.get,
+            set:          beforeSetter
                 ? function(this: T, value: unknown)
                 {
                     const oldValue = currentDescriptor.get?.call(this);
@@ -296,7 +294,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                         action(this, oldValue, value);
                     }
-                }
+                },
         };
     }
     else
@@ -334,7 +332,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                         action(this, oldValue, value);
                     }
-                }
+                },
         };
     }
 
@@ -343,11 +341,11 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
     return propertyDescriptor;
 }
 
-export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): Array<string>
+export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): string[]
 {
     const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ": " } = options ?? { };
 
-    const result: Array<string> = [];
+    const result: string[] = [];
 
     for (const [key, value] of Object.entries(source))
     {
@@ -364,9 +362,8 @@ export function pathfy(source: object, options?: { keySeparator?: string, keyTra
     return result;
 }
 
-// tslint:disable-next-line:no-any
-export function proxyFrom<TInstances extends Array<object>>(...instances: TInstances): Combine<TInstances>;
-export function proxyFrom(...instances: Array<Indexer>): Indexer
+export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Combine<TInstances>;
+export function proxyFrom(...instances: Indexer[]): Indexer
 {
     const handler: ProxyHandler<Indexer> =
     {
@@ -398,9 +395,9 @@ export function proxyFrom(...instances: Array<Indexer>): Indexer
 
             return undefined;
         },
-        has: (_, key) => instances.some(x => key in x),
-        ownKeys: (_) => Array.from(new Set(instances.map(x => Object.getOwnPropertyNames(x)).flatMap(x => x))),
-        set(_, key, value)
+        has:     (_, key) => instances.some(x => key in x),
+        ownKeys: () => Array.from(new Set(instances.map(x => Object.getOwnPropertyNames(x)).flatMap(x => x))),
+        set      (_, key, value)
         {
             const instance = instances.find(x => key in x);
 
@@ -430,7 +427,7 @@ export function structuralEqual(left: unknown, right: unknown): boolean
     return left === right || Hashcode.encode(left) == Hashcode.encode(right);
 }
 
-export function *enumerateKeys(target: object): IterableIterator<string|number|symbol>
+export function *enumerateKeys(target: object): IterableIterator<string | number | symbol>
 {
     let prototype = target;
     do

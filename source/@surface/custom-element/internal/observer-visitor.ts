@@ -16,21 +16,22 @@ import
     IParenthesizedExpression,
     IProperty,
     IRestElement,
-    ITaggedTemplateExpression,IThisExpression,
+    ITaggedTemplateExpression,
+    IThisExpression,
     IUpdateExpression,
     NodeType,
-    TypeGuard
+    TypeGuard,
 } from "@surface/expression";
 
 
 export default class ObserverVisitor extends ExpressionVisitor
 {
-    private readonly paths: Array<Array<string>> = [];
+    private readonly paths: string[][] = [];
 
-    private brokenPath: boolean       = false;
-    private stack:      Array<string> = [];
+    private brokenPath: boolean = false;
+    private stack: string[]     = [];
 
-    public static observe(expression: INode): Array<Array<string>>
+    public static observe(expression: INode): string[][]
     {
         const visitor = new ObserverVisitor();
 

@@ -49,6 +49,6 @@ export default class PropertySubscriptionSpec
 
         subscription.update({ value: 2 });
 
-        chai.expect((listener as object as Indexer)["target"]).to.not.deep.equal(target.host);
+        chai.expect((listener as object as Indexer).target).to.not.deep.equal(target.host);
     }
 }

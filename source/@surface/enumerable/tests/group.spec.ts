@@ -9,8 +9,8 @@ export default class GroupSpec
     public create(): void
     {
         const group = new Group<string, number>(1, "key");
-        expect(group.hash , "group.hash").to.equal(1);
-        expect(group.key  , "group.key").to.equal("key");
+        expect(group.hash,  "group.hash").to.equal(1);
+        expect(group.key,   "group.key").to.equal("key");
         expect(group.count, "group.count").to.equal(0);
     }
 

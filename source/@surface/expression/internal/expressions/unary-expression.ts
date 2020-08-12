@@ -1,23 +1,23 @@
-import { Func1, Indexer, Nullable, hasValue } from "@surface/core";
-import IExpression                            from "../interfaces/expression";
-import IUnaryExpression                       from "../interfaces/unary-expression";
-import NodeType                               from "../node-type";
-import { UnaryOperator }                      from "../types";
+import { Func1, Indexer, hasValue } from "@surface/core";
+import IExpression                  from "../interfaces/expression";
+import IUnaryExpression             from "../interfaces/unary-expression";
+import NodeType                     from "../node-type";
+import { UnaryOperator }            from "../types";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 
 const unaryFunctions: Record<UnaryOperator, Operation> =
 {
+    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
     "+":      (expression, scope, useCache) => +(expression.evaluate(scope, useCache) as Object),
     "-":      (expression, scope, useCache) => -(expression.evaluate(scope, useCache) as Object),
-    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
-    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
     "typeof": (expression, scope, useCache) => typeof expression.evaluate(scope, useCache),
+    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
 };
 
 export default class UnaryExpression implements IExpression
 {
-    private cache: Nullable<Object>;
+    private cache: Object | null = null;
 
     private _argument: IExpression;
     public get argument(): IExpression
@@ -74,6 +74,6 @@ export default class UnaryExpression implements IExpression
 
     public toString(): string
     {
-        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.argument}`;
+        return `${this.operator}${this.operator == "typeof" ? " " : ""}${this.argument}`;
     }
 }

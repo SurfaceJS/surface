@@ -3,7 +3,7 @@ import IExpression       from "../../internal/interfaces/expression";
 
 export default class FixtureVisitor extends ExpressionVisitor
 {
-    private readonly visited: Array<string> = [];
+    private readonly visited: string[] = [];
 
     public visit(expression: IExpression): IExpression
     {

@@ -4,7 +4,7 @@ import Token     from "./types/token";
 export default class Scanner
 {
     private readonly source: string;
-    private index:   number = 0;
+    private index: number = 0;
 
     private get current(): string
     {
@@ -57,8 +57,8 @@ export default class Scanner
 
         return {
             index,
-            value,
             type:  TokenType.Punctuator,
+            value,
         };
     }
 
@@ -66,8 +66,8 @@ export default class Scanner
     {
         return {
             index: this.index,
-            value: this.current,
             type:  TokenType.Space,
+            value: this.current,
         };
     }
 
@@ -82,8 +82,8 @@ export default class Scanner
 
         return {
             index,
-            value: this.source.substring(index, this.index),
             type:  TokenType.Literal,
+            value: this.source.substring(index, this.index),
         };
     }
 

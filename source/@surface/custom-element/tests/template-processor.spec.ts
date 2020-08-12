@@ -1,4 +1,5 @@
-// tslint:disable-next-line: no-import-side-effect
+/* eslint-disable max-lines */
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { Action, Indexer }                     from "@surface/core";
@@ -12,7 +13,7 @@ import TemplateParser                          from "../internal/template-parser
 import TemplateProcessor                       from "../internal/template-processor";
 import CustomDirectiveHandler                  from "./fixtures/custom-directive";
 
-type RawError = { message: string }|Pick<CustomStackError, "message"|"stack">;
+type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
 class XComponent extends HTMLElement { }
 
@@ -59,13 +60,11 @@ function toRaw(error: Error): RawError
             stack:   error.stack,
         };
     }
-    else
-    {
-        return { message: error.message };
-    }
+
+    return { message: error.message };
 }
 
-const getHost = <T = { }>() =>
+const getHost = <T = { }>(): XComponent & { shadowRoot: ShadowRoot } & T =>
 {
     const host = document.createElement("x-component") as XComponent;
 
@@ -90,7 +89,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
         root.appendChild(child);
     }
 
-    TemplateProcessor.process({ scope: scope ?? { host }, host, root, descriptor });
+    TemplateProcessor.process({ descriptor, host, root, scope: scope ?? { host } });
 }
 
 @suite
@@ -366,7 +365,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public async templateWithoutDirective(): Promise<void>
+    public templateWithoutDirective(): void
     {
         const root = getHost();
         const host = getHost();
@@ -436,8 +435,6 @@ export default class TemplateProcessorSpec
         host.innerHTML            = "<template #inject #inject-key='host.injectKey'>Inject Key: {host.injectKey}</template>";
 
         root.shadowRoot.appendChild(host);
-
-        // document.body.append(root);
 
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
@@ -556,7 +553,7 @@ export default class TemplateProcessorSpec
     public async templateWithInjectAndConditionalDirectives(): Promise<void>
     {
         const root = getHost();
-        const host = getHost<{ items?: Array<[string, number, boolean]> }>();
+        const host = getHost<{ items?: [string, number, boolean][] }>();
 
         host.innerHTML =
         `
@@ -567,7 +564,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        host.shadowRoot.innerHTML = `<template #for="const item of host.items" #placeholder:items="({ item })"></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const item of host.items\" #placeholder:items=\"({ item })\"></template>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -586,7 +583,7 @@ export default class TemplateProcessorSpec
         [
             ["One",   1, true],
             ["Two",   2, true],
-            ["Three", 3, true]
+            ["Three", 3, true],
         ];
 
         await renderDone();
@@ -605,7 +602,7 @@ export default class TemplateProcessorSpec
         [
             ["One",   1, true],
             ["Two",   2, false],
-            ["Three", 3, true]
+            ["Three", 3, true],
         ];
 
         await renderDone();
@@ -627,7 +624,7 @@ export default class TemplateProcessorSpec
 
         host.order = 1;
 
-        host.shadowRoot.innerHTML = `<template #if="host.order == 1"><span>First</span></template><template>Ignore me</template>>`;
+        host.shadowRoot.innerHTML = "<template #if=\"host.order == 1\"><span>First</span></template><template>Ignore me</template>>";
 
         process(host, host.shadowRoot);
 
@@ -655,7 +652,7 @@ export default class TemplateProcessorSpec
 
         host.order = 1;
 
-        host.shadowRoot.innerHTML = `<template #if="host.order == 1">First</template><template #else-if="host.order == 2">Second</template><template #else>Last</template>`;
+        host.shadowRoot.innerHTML = "<template #if=\"host.order == 1\">First</template><template #else-if=\"host.order == 2\">Second</template><template #else>Last</template>";
 
         process(host, host.shadowRoot);
 
@@ -679,11 +676,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithForInLoopDirective(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<number> }>();
+        const host = getHost<{ elements?: number[] }>();
 
         host.elements = [1];
 
-        host.shadowRoot.innerHTML = `<template #for="const index in host.elements"><span>Element: {index}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const index in host.elements\"><span>Element: {index}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -730,11 +727,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithForOfLoopDirective(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<number> }>();
+        const host = getHost<{ elements?: number[] }>();
 
         host.elements = [1];
 
-        host.shadowRoot.innerHTML = `<template #for="const index of host.elements"><span>Element: {index}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const index of host.elements\"><span>Element: {index}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -799,11 +796,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithLoopDirectiveWithArrayDestructuring(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<[number, number]> }>();
+        const host = getHost<{ elements?: [number, number][] }>();
 
         host.elements = [[1, 2]];
 
-        host.shadowRoot.innerHTML = `<template #for="const [index0, index1] of host.elements"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const [index0, index1] of host.elements\"><span>Element[0]: {index0}, Element[1]: {index1}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -850,11 +847,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithLoopDirectiveWithArrayDestructuringDeepNested(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<[number, { item: { name: string } }]> }>();
+        const host = getHost<{ elements?: [number, { item: { name: string } }][] }>();
 
         host.elements = [[1, { item: { name: "one" } }]];
 
-        host.shadowRoot.innerHTML = `<template #for="const [index, { item: { name } }] of host.elements"><span>Element: {index}, Name: {name}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const [index, { item: { name } }] of host.elements\"><span>Element: {index}, Name: {name}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -867,7 +864,7 @@ export default class TemplateProcessorSpec
         host.elements =
         [
             [1, { item: { name: "one" } }],
-            [2, { item: { name: "two" } }]
+            [2, { item: { name: "two" } }],
         ];
 
         await renderDone();
@@ -883,7 +880,7 @@ export default class TemplateProcessorSpec
         [
             [1, { item: { name: "one" } }],
             [2, { item: { name: "two" } }],
-            [3, { item: { name: "three" } }]
+            [3, { item: { name: "three" } }],
         ];
 
         await renderDone();
@@ -910,11 +907,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithLoopDirectiveWithObjectDestructuring(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<{ values: [number, number]}> }>();
+        const host = getHost<{ elements?: { values: [number, number]}[] }>();
 
         host.elements = [{ values: [1, 2] }];
 
-        host.shadowRoot.innerHTML = `<template #for="const { values: [value1, value2] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const { values: [value1, value2] } of host.elements\"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -970,11 +967,11 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithLoopDirectiveWithObjectDestructuringDeepNested(): Promise<void>
     {
-        const host = getHost<{ elements?: Array<{ values: [number, [[number]]]}> }>();
+        const host = getHost<{ elements?: { values: [number, [[number]]]}[] }>();
 
         host.elements = [{ values: [1, [[2]]] }];
 
-        host.shadowRoot.innerHTML = `<template #for="const { values: [value1, [[value2]]] } of host.elements"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>`;
+        host.shadowRoot.innerHTML = "<template #for=\"const { values: [value1, [[value2]]] } of host.elements\"><span>Element[0]: {value1}, Element[1]: {value2}</span></template>";
 
         process(host, host.shadowRoot);
 
@@ -987,7 +984,7 @@ export default class TemplateProcessorSpec
         host.elements =
         [
             { values: [1, [[2]]] },
-            { values: [2, [[4]]] }
+            { values: [2, [[4]]] },
         ];
 
         await renderDone();
@@ -1030,7 +1027,7 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithConditionalAndLoopDirectives(): Promise<void>
     {
-        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
+        const host = getHost<{ condition?: boolean, items?: [string, number][] }>();
 
         host.condition = false;
         host.items     =
@@ -1127,7 +1124,7 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public async templateWithLoopAndConditionalDirectives(): Promise<void>
     {
-        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
+        const host = getHost<{ condition?: boolean, items?: [string, number][] }>();
 
         host.condition = false;
         host.items     =
@@ -1174,7 +1171,7 @@ export default class TemplateProcessorSpec
     public async templateWithLoopAndPlaceholderDirectives(): Promise<void>
     {
         const root = getHost();
-        const host = getHost<{ condition?: boolean, items?: Array<[string, number]> }>();
+        const host = getHost<{ condition?: boolean, items?: [string, number][] }>();
 
         host.innerHTML    =
         `
@@ -1208,7 +1205,7 @@ export default class TemplateProcessorSpec
         [
             ["One",   1],
             ["Two",   2],
-            ["Three", 3]
+            ["Three", 3],
         ];
 
         await renderDone();
@@ -1256,40 +1253,42 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    // Can't capture error
-    // @test @shouldPass
-    // public evaluationErrorEventBodyExpression(): void
-    // {
-    //     const host = getHost();
+    /*
+    Can't capture error
+    @test @shouldPass
+    public evaluationErrorEventBodyExpression(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span #on:click=\"host.value = { value }\"></span>";
+        host.shadowRoot.innerHTML = "<span #on:click=\"host.value = { value }\"></span>";
 
-    //     const message = "value is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
+        const message = "value is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
 
-    //     const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
+        assert.deepEqual(actual, expected);
 
-    // }
+    }
 
-    // Can't capture error
-    // @test @shouldPass
-    // public evaluationErrorEventArrowFunction(): void
-    // {
-    //     const host = getHost();
+    Can't capture error
+    @test @shouldPass
+    public evaluationErrorEventArrowFunction(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span #on:click=\"() => host.fn()\"></span>";
+        host.shadowRoot.innerHTML = "<span #on:click=\"() => host.fn()\"></span>";
 
-    //     const message = "host.fn is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
+        const message = "host.fn is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
+    */
 
     @test @shouldPass
     public evaluationErrorCustomDirective(): void
@@ -1593,7 +1592,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
-    public async observationErrorPlaceholderDirective(): Promise<void>
+    public observationErrorPlaceholderDirective(): void
     {
         const root = getHost();
         const host = getHost();
@@ -1615,7 +1614,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
-    public async observationErrorPlaceholderKeyDirective(): Promise<void>
+    public observationErrorPlaceholderKeyDirective(): void
     {
         const root = getHost();
         const host = getHost();
@@ -1780,42 +1779,44 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    // @test @shouldPass
-    // public async xteste(): Promise<void>
-    // {
-    //     const root = getHost();
-    //     const host = getHost<{ items?: Array<number> }>();
+    /*
+    @test @shouldPass
+    public async xteste(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost<{ items?: Array<number> }>();
 
-    //     host.shadowRoot.innerHTML = `<template #placeholder #for='const i of host.items'><span>Placeholder: {i}</span></template>`;
+        host.shadowRoot.innerHTML = `<template #placeholder #for='const i of host.items'><span>Placeholder: {i}</span></template>`;
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     host.items = [];
+        host.items = [];
 
-    //     process(host, host.shadowRoot);
-    //     process(root, root.shadowRoot);
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
 
-    //     await render();
+        await render();
 
-    //     assert.equal(host.shadowRoot.querySelector("span"), null);
+        assert.equal(host.shadowRoot.querySelector("span"), null);
 
-    //     host.items = [1, 2, 3];
+        host.items = [1, 2, 3];
 
-    //     // await timeout();
-    //     await render();
+        // await timeout();
+        await render();
 
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 1");
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 2");
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 3");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 1");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 2");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 3");
 
-    //     host.items = [4, 5, 6];
+        host.items = [4, 5, 6];
 
-    //     // await timeout();
-    //     await render();
+        // await timeout();
+        await render();
 
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 4");
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 5");
-    //     assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 6");
-    // }
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 4");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 5");
+        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 6");
+    }
+    */
 }

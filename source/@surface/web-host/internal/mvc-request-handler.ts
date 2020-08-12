@@ -1,15 +1,16 @@
-import { Constructor, Indexer, Nullable } from "@surface/core";
-import Enumerable                         from "@surface/enumerable";
-import Type                               from "@surface/reflection";
-import Router                             from "@surface/router";
-import ActionResult                       from "./action-result";
-import Controller                         from "./controller";
-import HttpContext                        from "./http-context";
-import RequestHandler                     from "./request-handler";
+/* eslint-disable @typescript-eslint/no-var-requires */
+import { Constructor, Indexer } from "@surface/core";
+import Enumerable               from "@surface/enumerable";
+import Type                     from "@surface/reflection";
+import Router                   from "@surface/router";
+import ActionResult             from "./action-result";
+import Controller               from "./controller";
+import HttpContext              from "./http-context";
+import RequestHandler           from "./request-handler";
 
 export default class MvcRequestHandler extends RequestHandler
 {
-    private _router: Router;
+    private readonly _router: Router;
 
     protected get router(): Router
     {
@@ -24,11 +25,12 @@ export default class MvcRequestHandler extends RequestHandler
 
     private getController(controller: string, filepath: string): Constructor<Controller>
     {
-        const esmodule = require(filepath) as Indexer<Nullable<Constructor<Controller>>>;
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const esmodule = require(filepath) as Indexer<Constructor<Controller> | null>;
 
-        let constructor: Nullable<Constructor<Controller>>;
+        let constructor: Constructor<Controller> | null | undefined;
 
-        if (!(constructor = esmodule["default"]))
+        if (!(constructor = esmodule.default))
         {
             if (Type.from(esmodule).extends(Controller))
             {
@@ -65,7 +67,7 @@ export default class MvcRequestHandler extends RequestHandler
                 {
                     httpContext.request.connection.destroy();
                 }
-            }
+            },
         );
 
         return await new Promise(resolve => httpContext.request.on("end", () => resolve(JSON.parse(body))));
@@ -88,12 +90,11 @@ export default class MvcRequestHandler extends RequestHandler
                     const controllersPath = this.path.join(httpContext.host.root, "controllers");
 
                     const filepath = Enumerable.from
-                        ([
-                            this.path.join(controllersPath, `${controller}.js`),
-                            this.path.join(controllersPath, `${controller}controller.js`),
-                            this.path.join(controllersPath, `${controller}-controller.js`),
-                        ])
-                        .firstOrDefault(x => this.fs.existsSync(x));
+                    ([
+                        this.path.join(controllersPath, `${controller}.js`),
+                        this.path.join(controllersPath, `${controller}controller.js`),
+                        this.path.join(controllersPath, `${controller}-controller.js`),
+                    ]).firstOrDefault(x => this.fs.existsSync(x));
 
                     if (filepath)
                     {
@@ -112,7 +113,7 @@ export default class MvcRequestHandler extends RequestHandler
 
                             if (id)
                             {
-                                inbound["id"] = id;
+                                inbound.id = id;
                             }
 
                             const actionResult = actionMethod.invoke.call(targetController, inbound) as ActionResult;

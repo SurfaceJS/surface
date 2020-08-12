@@ -43,12 +43,19 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo
+        (
+            "instanceMethodWithParametersMetadata",
+            Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!,
+            Type.of(Mock),
+            false,
+            false,
+        );
 
         const metadata =
         {
-            "design:returntype": undefined,
             "design:paramtypes": [Number, String, Boolean],
+            "design:returntype": undefined,
             "design:type":       Function,
         };
 
@@ -80,7 +87,14 @@ export default class FieldInfoSpec
     @test @shouldPass
     public withParametersMetadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo
+        (
+            "instanceMethodWithParametersMetadata",
+            Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!,
+            Type.of(Mock),
+            false,
+            false,
+        );
 
         const parameters =
         [

@@ -31,7 +31,7 @@ export default class HtmlImportLoaderSpec
             "empty\n",
             "</tag>\n",
             "#import 'another-again'",
-            "\""
+            "\"",
         ].join("");
 
         const expected =
@@ -56,7 +56,7 @@ export default class HtmlImportLoaderSpec
             "empty\n",
             "</tag>\n",
             "#import 'another-again'",
-            "\""
+            "\"",
         ].join("");
 
         const context = { cacheable: () => undefined } as webpack.loader.LoaderContext;

@@ -1,20 +1,14 @@
 import RegClient, { IPackage } from "npm-registry-client";
+import Status                  from "./enums/status";
 import Version                 from "./version";
 
 const silentLog =
 {
-    error:   (...args: Array<unknown>) => console.log(args.join(" ")),
+    error:   (...args: unknown[]) => console.log(args.join(" ")),
     http:    () => undefined,
     info:    () => undefined,
     verbose: () => undefined,
 };
-
-export enum Status
-{
-    New,
-    Updated,
-    InRegistry
-}
 
 export default class NpmRepository
 {
@@ -25,22 +19,21 @@ export default class NpmRepository
     public readonly get     = this.promisify(this.client.get);
     public readonly publish = this.promisify(this.client.publish);
 
-    public constructor(registry: string = "https://registry.npmjs.org", silent: boolean = true)
+    public constructor(registry = "https://registry.npmjs.org", silent = true)
     {
         this.registry = registry;
         this.client   = new RegClient(silent ? { log: silentLog } : { });
     }
 
-    // tslint:disable-next-line: no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private promisify<T extends (...args: any) => any, A extends Parameters<T>>(fn: T): (uri: A[0], params: A[1]) => Promise<Parameters<A[2]>[1]>
     {
-        return (uri: A[0], params: A[1]) =>
-        {
-            return new Promise((resolve, reject) => fn.call(this.client, `${this.registry}/${uri}`, params, (error: Error|null, data: unknown) => error ? reject(error) : resolve(data as Parameters<A[2]>[1])));
-        };
+        return async (uri: A[0], params: A[1]) =>
+            // eslint-disable-next-line max-len
+            new Promise((resolve, reject) => fn.call(this.client, `${this.registry}/${uri}`, params, (error: Error | null, data: unknown) => error ? reject(error) : resolve(data as Parameters<A[2]>[1])));
     }
 
-    public async getLatestVersion(packageName: string): Promise<string|null>
+    public async getLatestVersion(packageName: string): Promise<string | null>
     {
         try
         {

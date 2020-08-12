@@ -11,6 +11,7 @@ export default class NavigationDirectiveHandler extends DirectiveHandler
 
         if (this.element instanceof HTMLAnchorElement)
         {
+            // eslint-disable-next-line no-script-url
             this.element.href = "javascript:void(0)";
         }
 
@@ -25,7 +26,7 @@ export default class NavigationDirectiveHandler extends DirectiveHandler
         }
         else
         {
-            this.router.push(this.value as string);
+            void this.router.push(this.value as string);
         }
     }
 

@@ -33,7 +33,7 @@ export default class ParameterInfoSpec
     public noMetadata(): void
     {
         const methodInfo    = new MethodInfo("instanceMethodWithParameters", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParameters")!, Type.of(Mock), false, false);
-        const parameterInfo = new ParameterInfo("a", 0, methodInfo, undefined);
+        const parameterInfo = new ParameterInfo("a", 0, methodInfo, null);
         expect(parameterInfo.metadata).to.deep.equal({ });
     }
 

@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/indent */
+
 export enum EnviromentType
 {
-    development = "development",
-    production  = "production",
+    Development = "development",
+    Production  = "production",
 }
 
 export enum TasksType
 {
-    build   = "build",
-    clean   = "clean",
-    rebuild = "rebuild"
+    Build   = "build",
+    Clean   = "clean",
+    Rebuild = "rebuild"
 }

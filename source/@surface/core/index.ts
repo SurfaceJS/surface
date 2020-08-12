@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/indent */
+
 import ArgumentOutOfRangeError from "./internal/errors/argument-out-of-range-error";
 import EventListener           from "./internal/event-listener";
 import Hashcode                from "./internal/hashcode";
+import type IDisposable        from "./internal/interfaces/disposable";
+import type IEventListener     from "./internal/interfaces/event-listener";
 import Lazy                    from "./internal/lazy";
-
-import type IDisposable    from "./internal/interfaces/disposable";
-import type IEventListener from "./internal/interfaces/event-listener";
 
 export { ArgumentOutOfRangeError, EventListener, Hashcode, Lazy };
 
@@ -40,7 +41,6 @@ export type
     MethodsOf,
     Mixer,
     Mixin,
-    Nullable,
     OnlyOfType,
     Overwrite,
     Required,

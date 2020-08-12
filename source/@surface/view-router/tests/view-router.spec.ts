@@ -1,4 +1,5 @@
-// tslint:disable-next-line: no-import-side-effect
+
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
@@ -76,57 +77,57 @@ export default class ViewRouterSpec
 
     public constructor()
     {
-        const configurations: Array<RouteConfiguration> =
+        const configurations: RouteConfiguration[] =
         [
             {
-                name:      "home",
-                path:      "/home",
-                component: () => Promise.resolve({ default: HomeView }),
                 children:
                 [
                     {
-                        name: "home-detail",
-                        path: "detail",
                         components:
                         {
                             "default":     HomeDetailView,
                             "non-default": () => HomeOtherDetailView,
                         },
+                        name:       "home-detail",
+                        path:       "detail",
                     },
                     {
-                        name:       "home-index",
-                        path:       "index",
-                        components: { "non-default": { default: HomeIndexView } },
                         children:
                         [
                             {
                                 components: { "non-default": HomeIndexDetailView },
-                                path:       "detail"
-                            }
+                                path:       "detail",
+                            },
                         ],
+                        components: { "non-default": { default: HomeIndexView } },
+                        name:       "home-index",
+                        path:       "index",
                     },
                 ],
+                component: async () => Promise.resolve({ default: HomeView }),
+                name:      "home",
+                path:      "/home",
             },
             {
+                component: async () => Promise.resolve(DataView),
                 name:      "data",
                 path:      "/data/{action}/{id:Number}",
-                component: () => Promise.resolve(DataView),
             },
             {
-                path:      "/about",
-                component: AboutView,
                 children:
                 [
                     {
+                        component: HTMLElement,
                         path:      "invalid",
-                        component: HTMLElement
-                    }
+                    },
                 ],
+                component: AboutView,
+                path:      "/about",
             },
             {
+                component: AboutView,
                 meta:      { requireAuth: true },
                 path:      "/forbidden",
-                component: AboutView,
             },
         ];
 
@@ -136,9 +137,9 @@ export default class ViewRouterSpec
             {
                 if (to.meta.requireAuth)
                 {
-                    return next("/home");
+                    next("/home");
                 }
-            }
+            },
         };
 
         ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, [middleware], undefined, { baseUrl: "/base/path" }));
@@ -151,11 +152,11 @@ export default class ViewRouterSpec
     {
         const root = document.body.firstElementChild as AppRoot;
 
-        // @ts-ignore
+        // @ts-expect-error
         const root1 = new ViewRouter("app-root", []).root.value;
-        // @ts-ignore
+        // @ts-expect-error
         const root2 = new ViewRouter(root, []).root.value;
-        // @ts-ignore
+        // @ts-expect-error
         const root3 = new ViewRouter(() => document.querySelector("app-root"), []).root.value;
 
         assert.equal(root1, root, "root1 equal root");
@@ -290,7 +291,7 @@ export default class ViewRouterSpec
                 name:       "data",
                 parameters: { action: "post", id: 1 },
                 path:       "/data/post/1",
-                query:      { query: "1" }
+                query:      { query: "1" },
             };
 
         const actual = dataView.route;
@@ -311,7 +312,7 @@ export default class ViewRouterSpec
 
         assert.instanceOf(slot, RouterOutlet);
 
-        // @ts-ignore
+        // @ts-expect-error
         this.router.history = [];
 
         await this.router.push("/home");

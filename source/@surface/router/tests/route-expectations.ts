@@ -15,419 +15,419 @@ export type RouteInvalidExpectation =
         value:   string | Indexer,
     };
 
-export const routeValidExpectations: Array<RouteValidExpectation> =
+export const routeValidExpectations: RouteValidExpectation[] =
     [
         {
             expected: { matched: false, reason: "Pattern don't match" },
             pattern:  "/path",
-            value:    ""
+            value:    "",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/",
                     query:      { },
-                }
+                },
             },
             pattern: "",
-            value:   "?"
+            value:   "?",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path",
-            value:   "/path"
+            value:   "/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "example",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path",
-            value:   "/path#example"
+            value:   "/path#example",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { value1: "1", value2: "2" },
-                }
+                },
             },
             pattern: "/path",
-            value:   "/path?value1=1&value2=2"
+            value:   "/path?value1=1&value2=2",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path-path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path*",
-            value:   "/path-path"
+            value:   "/path-path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/pathpathpath/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path*path/path",
-            value:   "/pathpathpath/path"
+            value:   "/pathpathpath/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path" },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/{value}",
-            value:   "/path"
+            value:   "/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path" },
                     path:       "/path-path",
                     query:      { },
-                }
+                },
             },
             pattern: "/{value}-path",
-            value:   "/path-path"
+            value:   "/path-path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path" },
                     path:       "/pathpathpath/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path{value}path/path",
-            value:   "/pathpathpath/path"
+            value:   "/pathpathpath/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "path", value2: "path", value3: "path" },
                     path:       "/pathpathpathpathpathpathpathpath/path",
                     query:      { },
-                }
+                },
             },
             pattern: "/path{value1}pathpath{value2}pathpath{value3}/path",
-            value:   "/pathpathpathpathpathpathpathpath/path"
+            value:   "/pathpathpathpathpathpathpathpath/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/home/index",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1}/{value2}",
-            value:   "path/home/index"
+            value:   "path/home/index",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home" },
                     path:       "/path/home",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1}/{value2?}",
-            value:   "path/home"
+            value:   "path/home",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1?}/{value2?}",
-            value:   "path"
+            value:   "path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/home",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1}/{value2=index}",
-            value:   "path/home"
+            value:   "path/home",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1=home}/{value2=index}",
-            value:   "path"
+            value:   "path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/index",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1=home}/{value2}",
-            value:   "path/index"
+            value:   "path/index",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/path{value1=home}/{value2=index}",
-            value:   "path/path"
+            value:   "path/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/pathpath",
                     query:      { },
-                }
+                },
             },
             pattern: "path/path{value1=home}path/{value2=index}",
-            value:   "path/pathpath"
+            value:   "path/pathpath",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "home", value2: "index" },
                     path:       "/path/pathpath",
                     query:      { },
-                }
+                },
             },
             pattern: "path/path{value1=home}path/{value2=index}",
-            value:   "path/pathpath"
+            value:   "path/pathpath",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path", "path"] },
                     path:       "/path/path.path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer}",
-            value:   "path/path.path"
+            value:   "path/path.path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path", "path", "path"] },
                     path:       "/path/path.path.path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer=path.path}",
-            value:   "path/path.path.path"
+            value:   "path/path.path.path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path", "path"] },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer=path.path}",
-            value:   "path"
+            value:   "path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer?}",
-            value:   "path"
+            value:   "path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "" },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern:  "path/{*value}",
-            value:    "path"
+            value:    "path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path/path/path/path" },
                     path:       "/path/path/path/path/path",
                     query:      { },
-                }
+                },
             },
             pattern:  "path/{*value}",
-            value:    "path/path/path/path/path"
+            value:    "path/path/path/path/path",
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path/path/path" },
                     path:       "/path/path/path/path/path",
                     query:      { },
-                }
+                },
             },
             pattern:  "path/{*value}/path",
-            value:    "path/path/path/path/path"
+            value:    "path/path/path/path/path",
         },
         {
             expected: { matched: false, reason: "Missing required parameters: value1, value2" },
             pattern:  "/path/{value1}/{value2:transformer}",
-            value:        { }
+            value:        { },
         },
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "path" },
                     path:       "/path/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value}",
             value:    { value: "path" },
@@ -435,14 +435,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "path", value2: "path", value3: "path" },
                     path:       "/path/path-path/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1}-{value2}/{value3}",
             value:    { value1: "path", value2: "path", value3: "path" },
@@ -450,14 +450,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value?}",
             value:    { },
@@ -465,14 +465,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path/-",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1?}-{value2?}/{value?}",
             value:    { },
@@ -480,14 +480,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "value1" },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1=value1}",
             value:   { },
@@ -495,14 +495,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "value2" },
                     path:       "/path/value2",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1=value1}",
             value:   { value1: "value2" },
@@ -510,14 +510,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "value1", value2: "value2", value3: "value3" },
                     path:       "/path/-",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1=value1}-{value2=value2}/{value3=value3}",
             value:   { },
@@ -525,14 +525,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path", "path"] },
                     path:       "/path/path.path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer}",
             value:   { value: ["path", "path"] },
@@ -540,14 +540,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
                     path:       "/path/path.path-path.path/path.path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1:transformer}-{value2:transformer}/{value3:transformer}",
             value:   { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
@@ -555,14 +555,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer?}",
             value:   { },
@@ -570,14 +570,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { },
                     path:       "/path/-",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1:transformer?}-{value2:transformer?}/{value3:transformer?}",
             value:   { },
@@ -585,14 +585,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path", "path"] },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer=path.path}",
             value:   { },
@@ -600,14 +600,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: ["path"] },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value:transformer=path}",
             value:   { },
@@ -615,14 +615,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: ["path", "path"], value2: ["path", "path"], value3: ["path", "path"] },
                     path:       "/path/-",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{value1:transformer=path.path}-{value2:transformer=path.path}/{value3:transformer=path.path}",
             value:   { },
@@ -630,14 +630,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value: "" },
                     path:       "/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{*value}",
             value:   { },
@@ -645,14 +645,14 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "path", value2: "path", value3: "path" },
                     path:       "/path/path-path/path",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{*value1}-{*value2}/{*value3}",
             value:   { value1: "path", value2: "path", value3: "path" },
@@ -660,21 +660,21 @@ export const routeValidExpectations: Array<RouteValidExpectation> =
         {
             expected:
             {
-                matched: true,
+                matched:   true,
                 routeData:
                 {
                     hash:       "",
                     parameters: { value1: "", value2: "", value3: "" },
                     path:       "/path/-",
                     query:      { },
-                }
+                },
             },
             pattern: "path/{*value1}-{*value2}/{*value3}",
             value:   { },
         },
     ];
 
-export const routeInvalidExpectations: Array<RouteInvalidExpectation> =
+export const routeInvalidExpectations: RouteInvalidExpectation[] =
     [
         {
             error:   new Error("Unregistred transformer Foo"),
@@ -690,5 +690,5 @@ export const routeInvalidExpectations: Array<RouteInvalidExpectation> =
             error:   new Error("Found duplicated key value"),
             pattern: "/path/{value}/{value}",
             value:   "/path/path",
-        }
+        },
     ];

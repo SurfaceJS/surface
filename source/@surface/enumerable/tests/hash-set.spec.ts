@@ -81,7 +81,7 @@ export default class HashSetSpec
     @test @shouldPass
     public iterateEmpty(): void
     {
-        const data = [] as Array<number>;
+        const data = [] as number[];
 
         expect(Array.from(HashSet.from(data, new Comparer()))).to.deep.equal([]);
     }

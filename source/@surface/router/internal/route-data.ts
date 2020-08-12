@@ -10,9 +10,9 @@ export default class RouteData
         const entries = Object.entries(this.query);
 
         const query = entries.length > 0
-            ? "?" + entries.map(([key, value]) => `${key}=${encodeURIComponent(`${value}`)}`).join("&")
+            ? `?${entries.map(([key, value]) => `${key}=${encodeURIComponent(`${value}`)}`).join("&")}`
             : "";
 
-        return this.path + query + (this.hash ? "#" + this.hash : "");
+        return this.path + query + (this.hash ? `#${this.hash}` : "");
     }
 }

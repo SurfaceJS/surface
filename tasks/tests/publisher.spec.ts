@@ -8,7 +8,7 @@ export default class PublisherSpec
     @test
     public async publish(): Promise<void>
     {
-        const auth = { username: "foo", password: "bar", email: "foo@bar", alwaysAuth: true };
+        const auth = { alwaysAuth: true, email: "foo@bar", password: "bar", username: "foo" };
 
         await new Publisher(new Map(), new NpmRepository(), auth, "public", true).publish();
     }

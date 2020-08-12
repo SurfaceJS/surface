@@ -1,24 +1,26 @@
-import { Action2, Func1, Func2, Func3, Nullable } from "@surface/core";
-import Comparer                                   from "./comparer";
-import EnumerableSorter                           from "./enumerable-sorter";
-import IGroup                                     from "./group";
-import HashSet                                    from "./hash-set";
-import IComparer                                  from "./interfaces/comparer";
-import ILookup                                    from "./interfaces/lookup";
-import Lookup                                     from "./lookup";
+/* eslint-disable max-lines */
+/* eslint-disable max-len */
+import { Action2, Func1, Func2, Func3 } from "@surface/core";
+import Comparer                         from "./comparer";
+import EnumerableSorter                 from "./enumerable-sorter";
+import IGroup                           from "./group";
+import HashSet                          from "./hash-set";
+import IComparer                        from "./interfaces/comparer";
+import ILookup                          from "./interfaces/lookup";
+import Lookup                           from "./lookup";
 
-export abstract class Enumerable<TSource> implements Iterable<TSource>
+abstract class Enumerable<TSource> implements Iterable<TSource>
 {
     public static empty<TSource>(): Enumerable<TSource>
     {
-        return new EnumerableIterator([] as Array<TSource>);
+        return new EnumerableIterator([] as TSource[]);
     }
 
     /**
      * Create a enumerable object from a iterable source
      * @param source Source used to create the iterable object
      */
-    public static from<TSource>(source: Iterable<TSource>|ArrayLike<TSource>): Enumerable<TSource>
+    public static from<TSource>(source: Iterable<TSource> | ArrayLike<TSource>): Enumerable<TSource>
     {
         return new EnumerableIterator(source);
     }
@@ -48,7 +50,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return new RepeatIterator(value, count);
     }
 
-    protected next(): Nullable<TSource>
+    protected next(): TSource | null
     {
         const value = this[Symbol.iterator]().next().value;
 
@@ -62,6 +64,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param acumulator An accumulator function to be invoked on each element.
      */
     public aggregate(acumulator: Func2<TSource, TSource, TSource>): TSource;
+
     /**
      * Applies an accumulator function over a sequence.
      * @param acumulator An accumulator function to be invoked on each element.
@@ -106,6 +109,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
 
     /** Determines whether a sequence contains any elements. */
     public any(): boolean;
+
     /**
      * Determines whether any element of a sequence satisfies a condition.
      * @param predicate A function to test each element for a condition.
@@ -118,9 +122,9 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
             return this.where(predicate).any();
         }
 
-        for (const element of this)
+        for (const _ of this)
         {
-            return element == element;
+            return true;
         }
 
         return false;
@@ -130,12 +134,13 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Computes the average of a sequence of numeric values.
      */
     public average(): TSource extends number ? number : void;
+
     /**
      * Computes the average of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public average(selector: Func1<TSource, number>): number;
-    public average(selector?: Func1<TSource, number>): number|void
+    public average(selector?: Func1<TSource, number>): number | void
     {
         if (selector)
         {
@@ -184,6 +189,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param value The value to locate in the sequence.
      */
     public contains(value: TSource): boolean;
+
     /**
      * Determines whether a sequence contains a specified element by using a specified IComparer<T>.
      * @param value    The value to locate in the sequence.
@@ -207,6 +213,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Returns the number of elements in a sequence.
      */
     public count(): number;
+
     /**
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
@@ -214,7 +221,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public count(predicate: Func1<TSource, boolean>): number;
     public count(predicate?: Func1<TSource, boolean>): number
     {
-        return predicate? this.where(predicate).count() : Array.from(this).length;
+        return predicate ? this.where(predicate).count() : Array.from(this).length;
     }
 
     /**
@@ -230,6 +237,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * Returns distinct elements from a sequence by using the default equality comparer to compare values.
      */
     public distinct(): Enumerable<TSource>;
+
     /**
      * Returns distinct elements from a sequence by using the default equality comparer to compare values.
      * @param comparer An IComparer<T> to compare values.
@@ -237,7 +245,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public distinct(comparer: IComparer<TSource>): Enumerable<TSource>;
     public distinct(comparer?: IComparer<TSource>): Enumerable<TSource>
     {
-        return new DistinctIterator(this, comparer || new Comparer());
+        return new DistinctIterator(this, comparer ?? new Comparer());
     }
 
     /**
@@ -246,7 +254,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public elementAt(index: number): TSource
     {
-        let element = this.elementAtOrDefault(index);
+        const element = this.elementAtOrDefault(index);
 
         if (!element)
         {
@@ -257,13 +265,13 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * Returns the element at a specified index in a sequence or or undefined|null value if the index is out of range.
+     * Returns the element at a specified index in a sequence or or undefined | null value if the index is out of range.
      * @param index The zero-based index of the element to retrieve.
      */
-    public elementAtOrDefault(index: number): Nullable<TSource>
+    public elementAtOrDefault(index: number): TSource | null
     {
         let currentIndex = 0;
-        let current: Nullable<TSource> = null;
+        let current: TSource | null = null;
 
         for (const element of this)
         {
@@ -284,6 +292,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param second An Enumerable<T> whose elements that also occur in the first sequence will cause those elements to be removed from the returned sequence.
      */
     public except(second: Iterable<TSource>): Enumerable<TSource>;
+
     /**
      * Produces the set difference of two sequences by using the default equality comparer to compare values.
      * @param second   An Enumerable<T> whose elements that also occur in the first sequence will cause those elements to be removed from the returned sequence.
@@ -292,11 +301,12 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public except(second: Iterable<TSource>, comparer: IComparer<TSource>): Enumerable<TSource>;
     public except(second: Iterable<TSource>, comparer?: IComparer<TSource>): Enumerable<TSource>
     {
-        return new ExceptIterator(this, second, comparer || new Comparer());
+        return new ExceptIterator(this, second, comparer ?? new Comparer());
     }
 
     /** Returns the first element of a sequence. */
     public first(): TSource;
+
     /**
      * Returns the first element of the sequence that satisfies a condition.
      * @param predicate A function to test each element for a condition.
@@ -318,14 +328,15 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return element;
     }
 
-    /** Returns the first element of a sequence, or undefined|null if the sequence contains no elements. */
-    public firstOrDefault(): Nullable<TSource>;
+    /** Returns the first element of a sequence, or undefined | null if the sequence contains no elements. */
+    public firstOrDefault(): TSource | null;
+
     /**
      * Returns the first element of the sequence that satisfies a condition or a default value if no such element is found.
      * @param predicate A function to test each element for a condition.
      */
-    public firstOrDefault(predicate: Func1<TSource, boolean>): Nullable<TSource>;
-    public firstOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
+    public firstOrDefault(predicate: Func1<TSource, boolean>): TSource | null;
+    public firstOrDefault(predicate?: Func1<TSource, boolean>): TSource | null
     {
         if (predicate)
         {
@@ -356,7 +367,8 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      */
-    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, Nullable<TInner>, TResult>): Enumerable<TResult>;
+    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner | null, TResult>): Enumerable<TResult>;
+
     /**
      * Return all elements when there is a match in either outter or inner sequence. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
@@ -365,10 +377,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param resultSelector    A function to create a result element from two matching elements.
      * @param comparer          An IComparer<T> to hash and compare keys.
      */
-    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, Nullable<TInner>, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
-    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, Nullable<TInner>, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
+    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner | null, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
+    public fullJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner | null, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
     {
-        return new FullJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer());
+        return new FullJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer ?? new Comparer());
     }
 
     /**
@@ -376,33 +388,32 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector     A function to extract the key for each element.
      */
     public groupBy<TKey>(keySelector: Func1<TSource, TKey>): Enumerable<IGroup<TSource, TKey>>;
+
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group and its key and the elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
-     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
      */
     public groupBy<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>): Enumerable<IGroup<TElement, TKey>>;
+
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. The elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
-     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
      * @param resultSelector  A function to create a result value from each group.
      */
     public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>): Enumerable<TResult>;
+
     /**
      * Groups the elements of a sequence according to a specified key selector function and creates a result value from each group using a specified result selector. Key values are compared by using a specified comparer and the elements of each group are projected by using a specified element selector function.
      * @param keySelector     A function to extract the key for each element.
-     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
+     * @param elementSelector A function to map each source element to an element in an IGroup<TKey, TElement>.
      * @param resultSelector  A function to create a result value from each group.
      * @param comparer        An IComparer<T> to hash and compare keys.
      */
-    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, resultSelector: Func2<TKey, Iterable<TElement>, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
-    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector?: Func1<TSource, TElement>, resultSelector?: Func2<TKey, Iterable<TElement>, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
+    public groupBy<TKey, TElement, TResult>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement> = x => x as Object as TElement, resultSelector: Func2<TKey, Iterable<TElement>, TResult> = (key, elements) => ({ elements, key }) as Object as TResult, comparer: IComparer<TKey> = new Comparer()): Enumerable<TResult>
     {
-        elementSelector = elementSelector || (x => x as Object as TElement);
-        resultSelector  = resultSelector  || ((key, elements) => ({ key, elements }) as Object as TResult);
-
-        return new GroupByIterator(this, keySelector, elementSelector, resultSelector, comparer || new Comparer());
+        return new GroupByIterator(this, keySelector, elementSelector, resultSelector, comparer);
     }
 
     /**
@@ -413,6 +424,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param resultSelector    A function to create a result element from two matching elements.
      */
     public groupJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Iterable<TInner>, TResult>): Enumerable<TResult>;
+
     /**
      * Correlates the elements of two sequences based on matching keys and groups the results. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
@@ -424,7 +436,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public groupJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Iterable<TInner>, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
     public groupJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Iterable<TInner>, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
     {
-        return new GroupJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer());
+        return new GroupJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer ?? new Comparer());
     }
 
     /**
@@ -432,6 +444,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param second An Iterable<T> whose distinct elements that also appear in the first sequence will be returned.
      */
     public intersect(second: Iterable<TSource>): Enumerable<TSource>;
+
     /**
      * Produces the set intersection of two sequences by using the specified IComparer<T> to compare values.
      * @param second   An Iterable<T> whose distinct elements that also appear in the first sequence will be returned.
@@ -440,7 +453,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public intersect(second: Iterable<TSource>, comparer: IComparer<TSource>): Enumerable<TSource>;
     public intersect(second: Iterable<TSource>, comparer?: IComparer<TSource>): Enumerable<TSource>
     {
-        return new JoinIterator(this, second, x => x, x => x, (inner, outter) => inner, comparer || new Comparer());
+        return new JoinIterator(this, second, x => x, x => x, inner => inner, comparer ?? new Comparer());
     }
 
     /**
@@ -451,6 +464,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param resultSelector    A function to create a result element from two matching elements.
      */
     public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>): Enumerable<TResult>;
+
     /**
      * Correlates the elements of two sequences based on matching keys. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
@@ -462,11 +476,12 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
     public join<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
     {
-        return new JoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer());
+        return new JoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer ?? new Comparer());
     }
 
     /** Returns the last element of a sequence. */
     public last(): TSource;
+
     /**
      * Returns the last element of the sequence that satisfies a condition.
      * @param predicate A function to test each element for a condition.
@@ -474,7 +489,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public last(predicate: Func1<TSource, boolean>): TSource;
     public last(predicate?: Func1<TSource, boolean>): TSource
     {
-        let element: Nullable<TSource> = null;
+        let element: TSource | null = null;
 
         element = predicate ? this.lastOrDefault(predicate) : this.lastOrDefault();
 
@@ -490,21 +505,22 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
         return element;
     }
 
-    /** Returns the last element of a sequence, or undefined|null if the sequence contains no elements. */
-    public lastOrDefault(): Nullable<TSource>;
+    /** Returns the last element of a sequence, or undefined | null if the sequence contains no elements. */
+    public lastOrDefault(): TSource | null;
+
     /**
      * Returns the last element of the sequence that satisfies a condition or a default value if no such element is found.
      * @param predicate A function to test each element for a condition.
      */
-    public lastOrDefault(predicate: Func1<TSource, boolean>): Nullable<TSource>;
-    public lastOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
+    public lastOrDefault(predicate: Func1<TSource, boolean>): TSource | null;
+    public lastOrDefault(predicate?: Func1<TSource, boolean>): TSource | null
     {
         if (predicate)
         {
             return this.where(predicate).lastOrDefault();
         }
 
-        let current: Nullable<TSource> = null;
+        let current: TSource | null = null;
 
         for (const element of this)
         {
@@ -515,44 +531,46 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match.
+     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match.
      * @param inner             The sequence to join to the source sequence.
      * @param outterKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      */
-    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Nullable<TInner>, TResult>): Enumerable<TResult>;
+    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner | null, TResult>): Enumerable<TResult>;
+
     /**
-     * returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
+     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
      * @param outterKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      * @param comparer          An IComparer<T> to hash and compare keys.
      */
-    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Nullable<TInner>, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
-    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, Nullable<TInner>, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
+    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner | null, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
+    public leftJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource, TInner | null, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
     {
-        return new LeftJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer());
+        return new LeftJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer ?? new Comparer());
     }
 
     /**
      * Computes the max of a sequence of numeric values.
      */
     public max(): TSource extends number ? number : void;
+
     /**
      * Computes the max of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public max(selector: Func1<TSource, number>): number;
-    public max(selector?: Func1<TSource, number>): number|void
+    public max(selector?: Func1<TSource, number>): number | void
     {
         if (selector)
         {
             return this.select(selector).max();
         }
 
-        let max: Nullable<number> = null;
+        let max: number | null = null;
 
         for (const element of this)
         {
@@ -571,19 +589,20 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
             }
         }
 
-        return max || 0;
+        return max ?? 0;
     }
 
     /**
      * Computes the min of a sequence of numeric values.
      */
     public min(): TSource extends number ? number : void;
+
     /**
      * Computes the min of a sequence of numeric values.
      * @param selector A transform function to apply to each element.
      */
     public min(selector: Func1<TSource, number>): number;
-    public min(selector?: Func1<TSource, number>): number|void
+    public min(selector?: Func1<TSource, number>): number | void
     {
         if (selector)
         {
@@ -617,6 +636,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      */
     public orderBy<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+
     /**
      * Sorts the elements of a sequence in ascending order by using a specified comparer.
      * @param keySelector A function to extract a key from an element.
@@ -625,7 +645,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: IComparer<TKey>): OrderedEnumerable<TSource>;
     public orderBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: IComparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new OrderByIterator(this, keySelector, false, comparer || new Comparer());
+        return new OrderByIterator(this, keySelector, false, comparer ?? new Comparer());
     }
 
     /**
@@ -633,6 +653,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param keySelector A function to extract a key from an element.
      */
     public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+
     /**
      * Sorts the elements of a sequence in descending order by using a specified comparer.
      * @param keySelector A function to extract a key from an element.
@@ -641,7 +662,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: IComparer<TKey>): OrderedEnumerable<TSource>;
     public orderByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: IComparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new OrderByIterator(this, keySelector, true, comparer || new Comparer());
+        return new OrderByIterator(this, keySelector, true, comparer ?? new Comparer());
     }
 
     /**
@@ -660,25 +681,26 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /**
-     * returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match.
+     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match.
      * @param inner             The sequence to join to the source sequence.
      * @param outterKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      */
-    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, TInner, TResult>): Enumerable<TResult>;
+    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner, TResult>): Enumerable<TResult>;
+
     /**
-     * returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
+     * Returns all elements from the inner sequence, and the matched records from the outter sequence. The result is null from the outter element, when there is no match. A specified IComparer<T> is used to compare keys.
      * @param inner             The sequence to join to the source sequence.
      * @param outterKeySelector A function to extract the join key from each element of the source sequence.
      * @param innerKeySelector  A function to extract the join key from each element of the second sequence.
      * @param resultSelector    A function to create a result element from two matching elements.
      * @param comparer          An IComparer<T> to hash and compare keys.
      */
-    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, TInner, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
-    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<Nullable<TSource>, TInner, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
+    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner, TResult>, comparer: IComparer<TKey>): Enumerable<TResult>;
+    public rightJoin<TInner, TKey, TResult>(inner: Iterable<TInner>, outterKeySelector: Func1<TSource, TKey>, innerKeySelector: Func1<TInner, TKey>, resultSelector: Func2<TSource | null, TInner, TResult>, comparer?: IComparer<TKey>): Enumerable<TResult>
     {
-        return new RightJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer || new Comparer());
+        return new RightJoinIterator(this, inner, outterKeySelector, innerKeySelector, resultSelector, comparer ?? new Comparer());
     }
 
     /**
@@ -693,21 +715,10 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Projects each element of a sequence to an Enumerable<T> and flattens the resulting sequences into one sequence.
      * @param collectionSelector A transform function to apply to each element of the input sequence.
-     */
-    public selectMany<TResult>(collectionSelector: Func1<TSource, Iterable<TResult>>): Enumerable<TResult>;
-    /**
-     *
-     * @param collectionSelector A transform function to apply to each element of the input sequence.
      * @param resultSelector     A transform function to apply to each element of the intermediate sequence.
      */
-    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, resultSelector:  Func3<TSource, TCollection, number, TResult>): Enumerable<TResult>;
-    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, resultSelector?: Func3<TSource, TCollection, number, TResult>): Enumerable<TResult>
+    public selectMany<TCollection, TResult>(collectionSelector: Func1<TSource, Iterable<TCollection>>, resultSelector: Func3<TSource, TCollection, number, TResult> = (_, y) => y as Object as TResult): Enumerable<TResult>
     {
-        if (!resultSelector)
-        {
-            resultSelector = (x, y) => y as Object as TResult;
-        }
-
         return new SelectManyIterator(this, collectionSelector, resultSelector);
     }
 
@@ -716,21 +727,23 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param second An Enumerable<T> to compare to the first sequence.
      */
     public sequenceEqual(second: Enumerable<TSource>): boolean;
+
     /**
      * Determines whether two sequences are equal by comparing their elements by using a specified IComparer<T>.
      * @param second   An Enumerable<T> to compare to the first sequence.
      * @param comparer An IComparer<T> to hash and compare keys.
      */
-    public sequenceEqual(second: Enumerable<TSource>, comparer: IComparer<Nullable<TSource>>): boolean;
-    public sequenceEqual(second: Enumerable<TSource>, comparer?: IComparer<Nullable<TSource>>): boolean
+    public sequenceEqual(second: Enumerable<TSource>, comparer: IComparer<TSource | null>): boolean;
+    public sequenceEqual(second: Enumerable<TSource>, comparer?: IComparer<TSource | null>): boolean
     {
-        return this.fullJoin(second, x => x, x => x, (outter, inner) => ({ outter, inner })).all(x => (comparer || new Comparer()).equals(x.inner, x.outter));
+        return this.fullJoin(second, x => x, x => x, (outter, inner) => ({ inner, outter })).all(x => (comparer ?? new Comparer()).equals(x.inner, x.outter));
     }
 
     /**
      * Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
      */
     public single(): TSource;
+
     /**
      * Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
      * @param predicate function to test an element for a condition.
@@ -755,20 +768,21 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     /**
      * Returns the only element of a sequence, and throws an exception if there is not exactly one element in the sequence.
      */
-    public singleOrDefault(): Nullable<TSource>;
+    public singleOrDefault(): TSource | null;
+
     /**
      * Returns the only element of a sequence that satisfies a specified condition, and throws an exception if more than one such element exists.
      * @param predicate function to test an element for a condition.
      */
-    public singleOrDefault(predicate: Func1<TSource, boolean>): Nullable<TSource>;
-    public singleOrDefault(predicate?: Func1<TSource, boolean>): Nullable<TSource>
+    public singleOrDefault(predicate: Func1<TSource, boolean>): TSource | null;
+    public singleOrDefault(predicate?: Func1<TSource, boolean>): TSource | null
     {
         if (predicate)
         {
             return this.where(predicate).singleOrDefault();
         }
 
-        let current: Nullable<TSource> = null;
+        let current: TSource | null = null;
 
         const set = new HashSet(new Comparer());
 
@@ -823,34 +837,20 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 
     /** Creates an array from a Enumerable<T>. */
-    public toArray(): Array<TSource>
+    public toArray(): TSource[]
     {
         return Array.from(this);
     }
 
     /**
-     * Creates a ILookup<TKey, TElement> from an Enumerable<T> according to a specified key selector function.
-     * @param keySelector A function to extract a key from each element.
-     */
-    public toLookup<TKey, TElement>(keySelector: Func1<TSource, TKey>): ILookup<TKey, TSource>;
-    /**
-     * Creates a ILookup<TKey, TElement> from an Enumerable<T> according to a specified key selector function and an element selector function.
-     * @param keySelector     A function to extract a key from each element.
-     * @param elementSelector A transform function to produce a result element value from each element.
-     */
-    public toLookup<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>): ILookup<TKey, TElement>;
-    /**
-     * Creates a ILookup<TKey, TElement> from an Enumerable<T> according to a specified key selector function, a comparer and an element selector function.
+     * Creates a ILookup<TKey, TElement> from an Enumerable<T> according to a specified key selector function, a comparer and an element selector function.
      * @param keySelector     A function to extract a key from each element.
      * @param elementSelector A transform function to produce a result element value from each element.
      * @param comparer        An IComparer<T> to compare keys.
      */
-    public toLookup<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, comparer: IComparer<TKey>): ILookup<TKey, TElement>;
-    public toLookup<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector?: Func1<TSource, TElement>, comparer?: IComparer<TKey>): ILookup<TKey, TElement>
+    public toLookup<TKey, TElement>(keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement> = x => x as Object as TElement, comparer: IComparer<TKey> = new Comparer()): ILookup<TKey, TElement>
     {
-        elementSelector = elementSelector || (x => x as Object as TElement);
-
-        return new Lookup(this, keySelector, elementSelector, comparer || new Comparer());
+        return new Lookup(this, keySelector, elementSelector, comparer);
     }
 
     /**
@@ -858,6 +858,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param second   An Iterable<T> whose distinct elements form the second set for the union.
      */
     public union(second: Iterable<TSource>): Enumerable<TSource>;
+
     /**
      * Produces the set union of two sequences by using a specified IComparer<T>.
      * @param second   An Iterable<T> whose distinct elements form the second set for the union.
@@ -866,7 +867,7 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     public union(second: Iterable<TSource>, comparer: IComparer<TSource>): Enumerable<TSource>;
     public union(second: Iterable<TSource>, comparer?: IComparer<TSource>): Enumerable<TSource>
     {
-        return new UnionIterator(this, second, comparer || new Comparer());
+        return new UnionIterator(this, second, comparer ?? new Comparer());
     }
 
     /**
@@ -889,18 +890,18 @@ export abstract class Enumerable<TSource> implements Iterable<TSource>
     }
 }
 
-export default Enumerable;
-
 abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
 {
+    private _parent: OrderedEnumerable<TSource> | null = null;
+
     private enumerableSorter: EnumerableSorter<Object, TSource>;
-    private _parent: Nullable<OrderedEnumerable<TSource>>;
-    public get parent(): Nullable<OrderedEnumerable<TSource>>
+
+    public get parent(): OrderedEnumerable<TSource> | null
     {
         return this._parent;
     }
 
-    public set parent(value: Nullable<OrderedEnumerable<TSource>>)
+    public set parent(value: OrderedEnumerable<TSource> | null)
     {
         this._parent = value;
     }
@@ -926,6 +927,7 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      */
     public thenBy<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+
     /**
      * Performs a subsequent ordering of the elements in a sequence in ascending order.
      * @param keySelector A function to extract a key from an element.
@@ -934,7 +936,7 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
     public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer: IComparer<TKey>): OrderedEnumerable<TSource>;
     public thenBy<TKey>(keySelector: Func1<TSource, TKey>, comparer?: IComparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new ThenByIterator(this, keySelector, false, comparer || new Comparer());
+        return new ThenByIterator(this, keySelector, false, comparer ?? new Comparer());
     }
 
     /**
@@ -942,6 +944,7 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
      * @param keySelector A function to extract a key from an element.
      */
     public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>): OrderedEnumerable<TSource>;
+
     /**
      * Performs a subsequent ordering of the elements in a sequence in descending order.
      * @param keySelector A function to extract a key from an element.
@@ -950,13 +953,13 @@ abstract class OrderedEnumerable<TSource> extends Enumerable<TSource>
     public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer: IComparer<TKey>): OrderedEnumerable<TSource>;
     public thenByDescending<TKey>(keySelector: Func1<TSource, TKey>, comparer?: IComparer<TKey>): OrderedEnumerable<TSource>
     {
-        return new ThenByIterator(this, keySelector, true, comparer || new Comparer());
+        return new ThenByIterator(this, keySelector, true, comparer ?? new Comparer());
     }
 }
 
 class ConcatIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private sequence: Iterable<TSource>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly sequence: Iterable<TSource>)
     {
         super();
     }
@@ -977,7 +980,7 @@ class ConcatIterator<TSource> extends Enumerable<TSource>
 
 class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private defaultValue: TSource)
+    public constructor(private readonly source: Iterable<TSource>, private readonly defaultValue: TSource)
     {
         super();
     }
@@ -1000,7 +1003,7 @@ class DefaultIfEmptyIterator<TSource> extends Enumerable<TSource>
 
 class DistinctIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private comparer: IComparer<TSource>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly comparer: IComparer<TSource>)
     {
         super();
     }
@@ -1021,7 +1024,7 @@ class DistinctIterator<TSource> extends Enumerable<TSource>
 
 class EnumerableIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>|ArrayLike<TSource>)
+    public constructor(private readonly source: Iterable<TSource> | ArrayLike<TSource>)
     {
         super();
     }
@@ -1030,7 +1033,7 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
     {
         if ("length" in this.source)
         {
-            // tslint:disable-next-line:prefer-for-of
+            // eslint-disable-next-line @typescript-eslint/prefer-for-of
             for (let index = 0; index < this.source.length; index++)
             {
                 yield this.source[index];
@@ -1063,7 +1066,7 @@ class EnumerableIterator<TSource> extends Enumerable<TSource>
 
 class ExceptIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private second: Iterable<TSource>, private comparer: IComparer<TSource>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly second: Iterable<TSource>, private readonly comparer: IComparer<TSource>)
     {
         super();
     }
@@ -1084,7 +1087,15 @@ class ExceptIterator<TSource> extends Enumerable<TSource>
 
 class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<TOutter, TInner, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly outter:            Iterable<TOutter>,
+        private readonly inner:             Iterable<TInner>,
+        private readonly outterKeySelector: Func1<TOutter, TKey>,
+        private readonly innerKeySelector:  Func1<TInner, TKey>,
+        private readonly resultSelector:    Func2<TOutter, TInner, TResult>,
+        private readonly comparer:          IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1107,7 +1118,14 @@ class JoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 
 class GroupByIterator<TSource, TKey, TElement, TResult> extends Enumerable<TResult>
 {
-    public constructor(private source: Iterable<TSource>, private keySelector: Func1<TSource, TKey>, private elementSelector: Func1<TSource, TElement>, private resultSelector: Func2<TKey, Iterable<TElement>, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly source:          Iterable<TSource>,
+        private readonly keySelector:     Func1<TSource, TKey>,
+        private readonly elementSelector: Func1<TSource, TElement>,
+        private readonly resultSelector:  Func2<TKey, Iterable<TElement>, TResult>,
+        private readonly comparer:        IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1125,7 +1143,15 @@ class GroupByIterator<TSource, TKey, TElement, TResult> extends Enumerable<TResu
 
 class GroupJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<TOutter, Iterable<TInner>, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly outter:            Iterable<TOutter>,
+        private readonly inner:             Iterable<TInner>,
+        private readonly outterKeySelector: Func1<TOutter, TKey>,
+        private readonly innerKeySelector:  Func1<TInner, TKey>,
+        private readonly resultSelector:    Func2<TOutter, Iterable<TInner>, TResult>,
+        private readonly comparer:          IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1144,7 +1170,15 @@ class GroupJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
 
 class LeftJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<TOutter, Nullable<TInner>, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly outter:            Iterable<TOutter>,
+        private readonly inner:             Iterable<TInner>,
+        private readonly outterKeySelector: Func1<TOutter, TKey>,
+        private readonly innerKeySelector:  Func1<TInner, TKey>,
+        private readonly resultSelector:    Func2<TOutter, TInner | null, TResult>,
+        private readonly comparer:          IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1174,16 +1208,16 @@ class LeftJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
 
 class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: IComparer<TKey>)
+    public constructor(private readonly source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: IComparer<TKey>)
     {
         super(keySelector, descending, comparer);
     }
 
     public *[Symbol.iterator](): Iterator<TSource>
     {
-        let buffer = Array.from(this.source);
+        const buffer = Array.from(this.source);
 
-        let indexes = this.getSorter().sort(buffer);
+        const indexes = this.getSorter().sort(buffer);
 
         for (const index of indexes)
         {
@@ -1194,7 +1228,15 @@ class OrderByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 
 class FullJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<Nullable<TOutter>, Nullable<TInner>, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly outter:            Iterable<TOutter>,
+        private readonly inner:             Iterable<TInner>,
+        private readonly outterKeySelector: Func1<TOutter, TKey>,
+        private readonly innerKeySelector:  Func1<TInner, TKey>,
+        private readonly resultSelector:    Func2<TOutter | null, TInner | null, TResult>,
+        private readonly comparer:          IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1234,7 +1276,7 @@ class FullJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResul
 
 class PrependIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private value: TSource)
+    public constructor(private readonly source: Iterable<TSource>, private readonly value: TSource)
     {
         super();
     }
@@ -1252,7 +1294,7 @@ class PrependIterator<TSource> extends Enumerable<TSource>
 
 class RangeIterator extends Enumerable<number>
 {
-    public constructor(private start: number, private end: number)
+    public constructor(private readonly start: number, private readonly end: number)
     {
         super();
     }
@@ -1268,7 +1310,7 @@ class RangeIterator extends Enumerable<number>
 
 class RepeatIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private element: TSource, private repeatCount: number)
+    public constructor(private readonly element: TSource, private readonly repeatCount: number)
     {
         super();
     }
@@ -1284,7 +1326,15 @@ class RepeatIterator<TSource> extends Enumerable<TSource>
 
 class RightJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResult>
 {
-    public constructor(private outter: Iterable<TOutter>, private inner: Iterable<TInner>, private outterKeySelector: Func1<TOutter, TKey>, private innerKeySelector: Func1<TInner, TKey>, private resultSelector: Func2<Nullable<TOutter>, TInner, TResult>, private comparer: IComparer<TKey>)
+    public constructor
+    (
+        private readonly outter: Iterable<TOutter>,
+        private readonly inner: Iterable<TInner>,
+        private readonly outterKeySelector: Func1<TOutter, TKey>,
+        private readonly innerKeySelector: Func1<TInner, TKey>,
+        private readonly resultSelector: Func2<TOutter | null, TInner, TResult>,
+        private readonly comparer: IComparer<TKey>,
+    )
     {
         super();
     }
@@ -1314,7 +1364,7 @@ class RightJoinIterator<TOutter, TInner, TKey, TResult> extends Enumerable<TResu
 
 class SelectIterator<TSource, TResult> extends Enumerable<TResult>
 {
-    public constructor(private source: Iterable<TSource>, private selector: Func2<TSource, number, TResult>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly selector: Func2<TSource, number, TResult>)
     {
         super();
     }
@@ -1331,7 +1381,12 @@ class SelectIterator<TSource, TResult> extends Enumerable<TResult>
 
 class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResult>
 {
-    public constructor(private source: Iterable<TSource>, private collectionSelector: Func1<TSource, Iterable<TCollection>>, private resultSelector: Func3<TSource, TCollection, number, TResult>)
+    public constructor
+    (
+        private readonly source:             Iterable<TSource>,
+        private readonly collectionSelector: Func1<TSource, Iterable<TCollection>>,
+        private readonly resultSelector:     Func3<TSource, TCollection, number, TResult>,
+    )
     {
         super();
     }
@@ -1352,7 +1407,7 @@ class SelectManyIterator<TSource, TCollection, TResult> extends Enumerable<TResu
 
 class SkipIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private skipCount: number)
+    public constructor(private readonly source: Iterable<TSource>, private readonly skipCount: number)
     {
         super();
     }
@@ -1374,7 +1429,7 @@ class SkipIterator<TSource> extends Enumerable<TSource>
 
 class SkipWhileIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private predicate: Func2<TSource, number, boolean>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly predicate: Func2<TSource, number, boolean>)
     {
         super();
     }
@@ -1403,7 +1458,7 @@ class SkipWhileIterator<TSource> extends Enumerable<TSource>
 
 class TakeIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private takeCount: number)
+    public constructor(private readonly source: Iterable<TSource>, private readonly takeCount: number)
     {
         super();
     }
@@ -1429,7 +1484,7 @@ class TakeIterator<TSource> extends Enumerable<TSource>
 
 class TakeWhileIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private predicate: Func2<TSource, number, boolean>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly predicate: Func2<TSource, number, boolean>)
     {
         super();
     }
@@ -1456,7 +1511,7 @@ class TakeWhileIterator<TSource> extends Enumerable<TSource>
 
 class ThenByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 {
-    public constructor(private source: OrderedEnumerable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: IComparer<TKey>)
+    public constructor(private readonly source: OrderedEnumerable<TSource>, keySelector: Func1<TSource, TKey>, descending: boolean, comparer: IComparer<TKey>)
     {
         super(keySelector, descending, comparer);
 
@@ -1474,7 +1529,7 @@ class ThenByIterator<TKey, TSource> extends OrderedEnumerable<TSource>
 
 class UnionIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private second: Iterable<TSource>, private comparer: IComparer<TSource>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly second: Iterable<TSource>, private readonly comparer: IComparer<TSource>)
     {
         super();
     }
@@ -1501,7 +1556,7 @@ class UnionIterator<TSource> extends Enumerable<TSource>
 
 class WhereIterator<TSource> extends Enumerable<TSource>
 {
-    public constructor(private source: Iterable<TSource>, private predicate: Func1<TSource, boolean>)
+    public constructor(private readonly source: Iterable<TSource>, private readonly predicate: Func1<TSource, boolean>)
     {
         super();
     }
@@ -1520,7 +1575,12 @@ class WhereIterator<TSource> extends Enumerable<TSource>
 
 class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
 {
-    public constructor(private source: Iterable<TSource>, private second: Iterable<TSecond>, private resultSelector: Func3<TSource, TSecond, number, TResult>)
+    public constructor
+    (
+        private readonly source:         Iterable<TSource>,
+        private readonly second:         Iterable<TSecond>,
+        private readonly resultSelector: Func3<TSource, TSecond, number, TResult>,
+    )
     {
         super();
     }
@@ -1535,10 +1595,12 @@ class ZipIterator<TSource, TSecond, TResult> extends Enumerable<TResult>
 
         let index = 0;
 
-        while(!(nextSource = sourceIterator.next()).done && !(nextSecond = collectionIterator.next()).done)
+        while (!(nextSource = sourceIterator.next()).done && !(nextSecond = collectionIterator.next()).done)
         {
             yield this.resultSelector(nextSource.value, nextSecond.value, index);
             index++;
         }
     }
 }
+
+export default Enumerable;

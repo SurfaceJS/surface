@@ -1,5 +1,5 @@
+import { Factory, FunctionType } from "../types";
 import IGetSetup                 from "./get-setup";
-import { FunctionType, Factory } from "../types";
 
 export default interface IReturnsSetup<TMethod extends FunctionType = FunctionType, TResult = unknown> extends IGetSetup<TResult>
 {

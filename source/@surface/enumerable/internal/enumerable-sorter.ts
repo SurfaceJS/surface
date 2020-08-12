@@ -1,37 +1,38 @@
-import { Func1, Nullable } from "@surface/core";
-import IComparer           from "./interfaces/comparer";
+import { Func1 } from "@surface/core";
+import IComparer from "./interfaces/comparer";
 
 export default class EnumerableSorter<TKey, TElement>
 {
-    private comparer:    IComparer<TKey>;
-    private descending:  boolean;
-    private keys:        Array<TKey>;
-    private keySelector: Func1<TElement, TKey>;
+    private readonly comparer:    IComparer<TKey>;
+    private readonly descending:  boolean;
+    private readonly keySelector: Func1<TElement, TKey>;
 
-    private _next: Nullable<EnumerableSorter<TKey, TElement>>;
-    public get next(): Nullable<EnumerableSorter<TKey, TElement>>
+    private keys: TKey[];
+    private _next: EnumerableSorter<TKey, TElement> | null;
+
+    public get next(): EnumerableSorter<TKey, TElement> | null
     {
         return this._next;
     }
 
-    public set next(value: Nullable<EnumerableSorter<TKey, TElement>>)
+    public set next(value: EnumerableSorter<TKey, TElement> | null)
     {
         this._next = value;
     }
 
-    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: IComparer<TKey>, next?: Nullable<EnumerableSorter<TKey, TElement>>)
+    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: IComparer<TKey>, next?: EnumerableSorter<TKey, TElement> | null)
     {
         this.comparer    = comparer;
         this.descending  = descending;
         this.keySelector = keySelector;
-        this.next        = next;
+        this._next       = next ?? null;
 
         this.keys = [];
     }
 
     private compareKeys(left: number, right: number): number
     {
-        let order = this.comparer.compare(this.keys[left], this.keys[right]);
+        const order = this.comparer.compare(this.keys[left], this.keys[right]);
 
         if (order == 0)
         {
@@ -49,7 +50,7 @@ export default class EnumerableSorter<TKey, TElement>
         return order;
     }
 
-    private computeKeys(elements: Array<TElement>): void
+    private computeKeys(elements: TElement[]): void
     {
         this.keys = elements.map(x => this.keySelector(x));
 
@@ -59,9 +60,9 @@ export default class EnumerableSorter<TKey, TElement>
         }
     }
 
-    private merge(left: Array<number>, right: Array<number>): Array<number>
+    private merge(left: number[], right: number[]): number[]
     {
-        let buffer: Array<number> = [];
+        const buffer: number[] = [];
 
         let leftIndex  = 0;
         let rightIndex = 0;
@@ -95,12 +96,11 @@ export default class EnumerableSorter<TKey, TElement>
         return buffer;
     }
 
-    private mergeSort(source: Array<number>): Array<number>
+    private mergeSort(source: number[]): number[]
     {
         if (source.length > 1)
         {
-            const two = 2;
-            let middle = Math.floor(source.length / two);
+            const middle = Math.floor(source.length / 2);
 
             let left  = source.slice(0, middle);
             let right = source.slice(middle);
@@ -114,9 +114,10 @@ export default class EnumerableSorter<TKey, TElement>
         return source;
     }
 
-    public sort(elements: Array<TElement>): Array<number>
+    public sort(elements: TElement[]): number[]
     {
         this.computeKeys(elements);
-        return this.mergeSort(this.keys.map((value, index) => index));
+
+        return this.mergeSort(this.keys.map((_, index) => index));
     }
 }

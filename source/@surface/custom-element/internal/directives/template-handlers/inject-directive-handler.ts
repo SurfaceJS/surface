@@ -1,13 +1,13 @@
-import { ISubscription }        from "@surface/reactive";
-import TemplateDirectiveHandler from ".";
+import { ISubscription } from "@surface/reactive";
 import
 {
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
-    tryObserveKeyByObservable
+    tryObserveKeyByObservable,
 } from "../../common";
-import IInjectDirective from "../../interfaces/directives/inject-directive";
-import TemplateMetadata from "../../metadata/template-metadata";
+import IInjectDirective         from "../../interfaces/directives/inject-directive";
+import TemplateMetadata         from "../../metadata/template-metadata";
+import TemplateDirectiveHandler from ".";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -47,13 +47,13 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
 
-        this.metadata.injections.set(this.key, { scope: this.scope, template: this.template, directive: this.directive, context: this.context, host: this.host });
+        this.metadata.injections.set(this.key, { context: this.context, directive: this.directive, host: this.host, scope: this.scope, template: this.template });
 
         const action = this.metadata.placeholders.get(this.key);
 
         if (action)
         {
-            action({ scope: this.scope, context: this.context, host: this.host, template: this.template, directive: this.directive });
+            action({ context: this.context, directive: this.directive, host: this.host, scope: this.scope, template: this.template });
         }
     }
 

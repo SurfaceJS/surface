@@ -1,22 +1,15 @@
 import chalk                        from "chalk";
 import { IPackage }                 from "npm-registry-client";
 import { filterPackages }           from "./common";
-import NpmRepository, { Status }                from "./npm-repository";
+import Status                       from "./enums/status";
+import NpmRepository                from "./npm-repository";
+import StrategyType                 from "./strategy-type";
 import Version, { PrereleaseTypes } from "./version";
 
 const blue      = chalk.rgb(0, 115, 230);
 const darkGreen = chalk.rgb(0, 128, 0);
 const green     = chalk.rgb(0, 255, 0);
 const purple    = chalk.rgb(191, 0, 191);
-
-export enum StrategyType
-{
-    Default          = 0,
-    ForceUpdate      = 1,
-    ForceVersion     = 2,
-    IgnoreDependents = 4,
-    OnlyStable       = 8,
-}
 
 export interface IOptions
 {
@@ -48,12 +41,12 @@ export default class Depsync
     }
 
     // istanbul ignore next
-    public static async sync(lookup: Map<string, IPackage>, modules?: Array<string>, options?: IOptions): Promise<Array<IPackage>>
+    public static async sync(lookup: Map<string, IPackage>, modules?: string[], options?: IOptions): Promise<IPackage[]>
     {
-        return await new Depsync(new NpmRepository(), lookup, options).sync(modules);
+        return new Depsync(new NpmRepository(), lookup, options).sync(modules);
     }
 
-    private applyPlaceholder(placeholder: string|undefined, value: string|undefined): string|undefined
+    private applyPlaceholder(placeholder: string | undefined, value: string | undefined): string | undefined
     {
         return placeholder == "*" ? value : placeholder;
     }
@@ -62,13 +55,16 @@ export default class Depsync
     {
         type RawVersion = [string, string, string, string?, string?];
 
-        const [templateMajor, templateMinor, templateRevision, templatePreReleaseType, templatePreReleaseVersion] = template.split("-").map(x => x.split(".")).flat()  as RawVersion;
-        const [sourceMajor,   sourceMinor,   sourceRevision,   sourcePreReleaseType,   sourcePreReleaseVersion]   = source.split("-").map(x => x.split(".")).flat() as RawVersion;
+        const [templateMajor, templateMinor, templateRevision, templatePreReleaseType, templatePreReleaseVersion] = template.split("-").map(x => x.split("."))
+            .flat() as RawVersion;
+
+        const [sourceMajor, sourceMinor, sourceRevision, sourcePreReleaseType, sourcePreReleaseVersion] = source.split("-").map(x => x.split("."))
+            .flat() as RawVersion;
 
         const major             = Number(this.applyPlaceholder(templateMajor, sourceMajor));
         const minor             = Number(this.applyPlaceholder(templateMinor, sourceMinor));
         const revision          = Number(this.applyPlaceholder(templateRevision, sourceRevision));
-        const preReleaseType    = this.applyPlaceholder(templatePreReleaseType, sourcePreReleaseType) as PrereleaseTypes|undefined;
+        const preReleaseType    = this.applyPlaceholder(templatePreReleaseType, sourcePreReleaseType) as PrereleaseTypes | undefined;
         const preReleaseVersion = this.applyPlaceholder(templatePreReleaseVersion, sourcePreReleaseVersion);
 
         const version = new Version(major, minor, revision);
@@ -114,14 +110,14 @@ export default class Depsync
         return false;
     }
 
-    private hasStrategies(...strategies: Array<StrategyType>): boolean
+    private hasStrategies(...strategies: StrategyType[]): boolean
     {
         return strategies.every(x => (this.strategy & x) == x);
     }
 
     private async updateDependents($package: IPackage): Promise<void>
     {
-        if ((this.hasStrategies(StrategyType.OnlyStable) && Version.parse($package.version).prerelease))
+        if (this.hasStrategies(StrategyType.OnlyStable) && Version.parse($package.version).prerelease)
         {
             return;
         }
@@ -184,7 +180,7 @@ export default class Depsync
         }
     }
 
-    public async sync(modules: Array<string> = []): Promise<Array<IPackage>>
+    public async sync(modules: string[] = []): Promise<IPackage[]>
     {
         // istanbul ignore if
         if (this.template && !this.silent)
@@ -194,7 +190,7 @@ export default class Depsync
 
         const packages = filterPackages(this.lookup.values(), modules);
 
-        const updateList = await Promise.all(packages.map(async x => ({ updated: await this.hasUpdate(x), package: x })));
+        const updateList = await Promise.all(packages.map(async x => ({ package: x, updated: await this.hasUpdate(x) })));
 
         if (!this.hasStrategies(StrategyType.IgnoreDependents))
         {

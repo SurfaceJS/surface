@@ -1,4 +1,4 @@
-import { Indexer, hasValue, format } from "@surface/core";
+import { Indexer, format, hasValue } from "@surface/core";
 import IExpression                   from "../interfaces/expression";
 import IIdentifier                   from "../interfaces/identifier";
 import IPattern                      from "../interfaces/pattern";

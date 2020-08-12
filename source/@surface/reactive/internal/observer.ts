@@ -13,7 +13,7 @@ export default class Observer<TValue = unknown> implements IObserver<TValue>
         return { unsubscribe: () => this.unsubscribe(listerner) };
     }
 
-    public unsubscribe(listerner: IListener<TValue>)
+    public unsubscribe(listerner: IListener<TValue>): void
     {
         if (!this.listeners.delete(listerner))
         {

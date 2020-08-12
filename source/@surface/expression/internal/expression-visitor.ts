@@ -32,7 +32,6 @@ import TypeGuard                 from "./type-guard";
 
 export default abstract class ExpressionVisitor
 {
-    // tslint:disable-next-line:cyclomatic-complexity
     protected visit(node: INode): INode
     {
         /* istanbul ignore else */
@@ -152,10 +151,8 @@ export default abstract class ExpressionVisitor
         {
             return this.visitUnaryExpression(node);
         }
-        else
-        {
-            return node;
-        }
+
+        return node;
     }
 
     protected visitArrayExpression(node: IArrayExpression): INode

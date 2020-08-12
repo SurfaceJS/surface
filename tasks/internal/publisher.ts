@@ -1,13 +1,14 @@
-import chalk                                    from "chalk";
 import fs                                       from "fs";
-import glob                                     from "glob";
-import { Credential, IPackage, IPublishParams } from "npm-registry-client";
 import path                                     from "path";
 import { Stream }                               from "stream";
-import { create, ICreateOptions }               from "tar";
 import { promisify }                            from "util";
+import chalk                                    from "chalk";
+import glob                                     from "glob";
+import { Credential, IPackage, IPublishParams } from "npm-registry-client";
+import { ICreateOptions, create }               from "tar";
 import { filterPackages, paths, timestamp }     from "./common";
-import NpmRepository, { Status }                from "./npm-repository";
+import Status                                   from "./enums/status";
+import NpmRepository                            from "./npm-repository";
 import Version                                  from "./version";
 
 const globAsync     = promisify(glob);
@@ -27,7 +28,7 @@ export default class Publisher
     private readonly published:  Set<IPackage> = new Set();
     private readonly repository: NpmRepository = new NpmRepository();
 
-    public constructor(lookup: Map<string, IPackage>, repository: NpmRepository, auth: Credential, access: Access = "public", debug: boolean = false )
+    public constructor(lookup: Map<string, IPackage>, repository: NpmRepository, auth: Credential, access: Access = "public", debug: boolean = false)
     {
         this.lookup     = lookup;
         this.repository = repository;
@@ -36,16 +37,16 @@ export default class Publisher
         this.debug      = debug;
     }
 
-    private async collectFiles(folderpath: string): Promise<Array<string>>
+    private async collectFiles(folderpath: string): Promise<string[]>
     {
         const npmignorePath = path.join(folderpath, ".npmignore");
 
         if (fs.existsSync(npmignorePath))
         {
-            const options: glob.IOptions = { cwd: folderpath, root: folderpath, nodir: true };
+            const options: glob.IOptions = { cwd: folderpath, nodir: true, root: folderpath };
 
             const promises = DEFAULT_IGNORES.concat((await readFileAsync(npmignorePath)).toString().split("\n"))
-                .map(async x => await globAsync(x.trim(), options));
+                .map(async x => globAsync(x.trim(), options));
 
             const patterns = (await Promise.all(promises))
                 .filter(x => x.length > 0)
@@ -57,11 +58,10 @@ export default class Publisher
             return (await globAsync("**/**", options))
                 .filter(x => !x.startsWith("node_modules") && !exclude.has(x));
         }
-        else
-        {
-            return (await readdirAsync(folderpath))
-                .map(x => path.join(folderpath, x));
-        }
+
+        return (await readdirAsync(folderpath))
+            .map(x => path.join(folderpath, x));
+
     }
 
     private async createBody(packageName: string): Promise<Stream>
@@ -69,14 +69,14 @@ export default class Publisher
         const folderpath = path.join(paths.source.root, packageName);
         const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
 
-        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}/\n${files.map(x => "        |--/" + x).join("\n")}`);
+        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}/\n${files.map(x => `        |--/${x}`).join("\n")}`);
 
         const options: ICreateOptions = { cwd: folderpath.replace("@", "./@"), gzip: true, prefix: "package" };
 
         return await create(options, files);
     }
 
-    public async publish(modules: Array<string> = []): Promise<void>
+    public async publish(modules: string[] = []): Promise<void>
     {
         const packages = filterPackages(this.lookup.values(), modules);
 
@@ -105,7 +105,7 @@ export default class Publisher
 
                 if (!this.debug)
                 {
-                    await this.repository.publish(encodeURIComponent($package.name), { body, access: this.access, auth: this.auth, metadata: $package });
+                    await this.repository.publish(encodeURIComponent($package.name), { access: this.access, auth: this.auth, body, metadata: $package });
                 }
 
                 const version = Version.parse($package.version);
@@ -118,7 +118,7 @@ export default class Publisher
 
                     if (!this.debug)
                     {
-                        await this.repository.addTag(encodeURIComponent($package.name),{ auth: this.auth, package: $package.name, version: $package.version, distTag: tag });
+                        await this.repository.addTag(encodeURIComponent($package.name), { auth: this.auth, distTag: tag, package: $package.name, version: $package.version });
                     }
                 }
 

@@ -78,14 +78,12 @@ export default class Property implements INode
         {
             return this.value.toString();
         }
-        else
-        {
-            if (TypeGuard.isIdentifier(this.key) || (TypeGuard.isLiteral(this.key) && typeof this.key.value == "number"))
-            {
-                return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
-            }
 
+        if (TypeGuard.isIdentifier(this.key) || TypeGuard.isLiteral(this.key) && typeof this.key.value == "number")
+        {
             return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
         }
+
+        return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
     }
 }

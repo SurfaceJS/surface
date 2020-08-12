@@ -1,7 +1,7 @@
-import { overrideConstructor, Constructor } from "@surface/core";
-import ISubscription                        from "./interfaces/subscription";
-import Reactive                             from "./reactive";
-import StaticMetadata                       from "./static-metadata";
+import { Constructor, IDisposable, overrideConstructor } from "@surface/core";
+import ISubscription                                     from "./interfaces/subscription";
+import Reactive                                          from "./reactive";
+import StaticMetadata                                    from "./static-metadata";
 
 export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
 {
@@ -9,13 +9,11 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
     {
         const metadata = StaticMetadata.from(target.constructor);
 
-        const action = (instance: object) =>
+        const action = (instance: object): IDisposable =>
         {
-            let subscription: ISubscription;
+            const notify = (value: unknown): unknown => (instance as Record<string, Function>)[propertyKey](value);
 
-            const notify = (value: unknown) => (instance as Record<string, Function>)[propertyKey](value);
-
-            subscription = Reactive
+            const subscription = Reactive
                 .observe(instance, property as string).observer
                 .subscribe({ notify });
 
@@ -30,22 +28,22 @@ export function observable<T extends Constructor>(target: T): T
 {
     const metadata = StaticMetadata.from(target);
 
-    const action = (instance: InstanceType<T>) => (metadata.actions.forEach(x => x(instance)), instance);
+    const action = (instance: InstanceType<T>): InstanceType<T> => (metadata.actions.forEach(x => x(instance)), instance);
 
     return overrideConstructor(target, action);
 }
 
-export function notify<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void
+export function notify<T extends object>(...properties: (keyof T)[]): <U extends T>(target: U, propertyKey: string) => void
 {
     return <U extends T>(target: U, propertyKey: string) =>
     {
-        const action = (instance: object) =>
+        const action = (instance: object): IDisposable =>
         {
-            const subscriptions: Array<ISubscription> = [];
+            const subscriptions: ISubscription[] = [];
 
             for (const property of properties)
             {
-                subscriptions.push(Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string)}));
+                subscriptions.push(Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string) }));
             }
 
             return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };

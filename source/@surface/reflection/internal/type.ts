@@ -1,24 +1,27 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "reflect-metadata";
 
-import { Indexer, Nullable } from "@surface/core";
-import FieldInfo             from "./field-info";
-import MemberInfo            from "./member-info";
-import MethodInfo            from "./method-info";
-import PropertyInfo          from "./property-info";
+import { Indexer }  from "@surface/core";
+import FieldInfo    from "./field-info";
+import MemberInfo   from "./member-info";
+import MethodInfo   from "./method-info";
+import PropertyInfo from "./property-info";
 
-type Member = { key: string|symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean };
+type Member = { key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean };
 
 export default class Type
 {
+    private _baseType: Type | null    = null;
+    private _metadata: Indexer | null = null;
+
     private readonly instance:  object;
     private readonly prototype: object;
 
-    private _baseType: Nullable<Type> = null;
-    public get baseType(): Nullable<Type>
+    public get baseType(): Type | null
     {
         if (!this._baseType && this.prototype.constructor != Object)
         {
-            this._baseType = new Type(Reflect.getPrototypeOf(this.prototype).constructor.prototype) as Nullable<Type>;
+            this._baseType = new Type(Reflect.getPrototypeOf(this.prototype).constructor.prototype) as Type | null;
         }
 
         return this._baseType;
@@ -39,7 +42,6 @@ export default class Type
         return Object.isSealed(this.prototype);
     }
 
-    private _metadata: Nullable<Indexer>;
     public get metadata(): Indexer
     {
         if (!this._metadata)
@@ -66,7 +68,7 @@ export default class Type
         this.prototype = instance.constructor.prototype;
     }
 
-    public static from(instance: object)
+    public static from(instance: object): Type
     {
         return new Type(instance);
     }
@@ -85,12 +87,10 @@ export default class Type
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(prototype)))
             {
-                if (key.startsWith("_"))
+                if (!key.startsWith("_"))
                 {
-                    continue;
+                    yield { declaringType: type, descriptor, isOwn: this.isOwn(key, prototype), isStatic: false, key };
                 }
-
-                yield { key, descriptor, declaringType: type, isOwn: this.isOwn(key, prototype), isStatic: false };
             }
         } while ((prototype = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
     }
@@ -104,10 +104,10 @@ export default class Type
         {
             for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(constructor)))
             {
-                yield { key, descriptor, declaringType: type, isOwn: true, isStatic: true };
+                yield { declaringType: type, descriptor, isOwn: true, isStatic: true, key };
             }
 
-            const prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<Indexer>;
+            const prototype = Object.getPrototypeOf(constructor.prototype) as Indexer | null;
 
             if (prototype)
             {
@@ -132,20 +132,18 @@ export default class Type
         {
             return new PropertyInfo(member.key, member.descriptor, member.declaringType, member.isOwn, member.isStatic);
         }
-        else
-        {
-            return new FieldInfo(member.key, member.descriptor, member.declaringType, member.isOwn, member.isStatic);
-        }
+
+        return new FieldInfo(member.key, member.descriptor, member.declaringType, member.isOwn, member.isStatic);
     }
 
-    private isOwn(key: string|symbol, instance: object): boolean
+    private isOwn(key: string | symbol, instance: object): boolean
     {
         return instance != instance.constructor.prototype && instance.hasOwnProperty(key);
     }
 
     public equals(type: Type): boolean;
     public equals(constructor: Function): boolean;
-    public equals(typeOrConstructor: Function|Type): boolean
+    public equals(typeOrConstructor: Function | Type): boolean
     {
         if (typeOrConstructor instanceof Type)
         {
@@ -157,7 +155,7 @@ export default class Type
 
     public extends(target: Function): boolean;
     public extends(target: Type): boolean;
-    public extends(target: Function|Type): boolean
+    public extends(target: Function | Type): boolean
     {
         if (this.baseType)
         {
@@ -177,7 +175,7 @@ export default class Type
         return this.prototype.constructor;
     }
 
-    public getField(key: string): Nullable<FieldInfo>
+    public getField(key: string): FieldInfo | null
     {
         const memberInfo = this.getMember(key);
 
@@ -200,7 +198,7 @@ export default class Type
         }
     }
 
-    public getMember(key: string|symbol): Nullable<MemberInfo>
+    public getMember(key: string | symbol): MemberInfo | null
     {
         let prototype = this.instance;
         let type      = this as Type;
@@ -211,7 +209,7 @@ export default class Type
 
             if (descriptor)
             {
-                return this.getMemberType({ key, descriptor, declaringType: type, isOwn: this.isOwn(key, prototype), isStatic: false });
+                return this.getMemberType({ declaringType: type, descriptor, isOwn: this.isOwn(key, prototype), isStatic: false, key });
             }
         } while ((prototype = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
 
@@ -226,7 +224,7 @@ export default class Type
         }
     }
 
-    public getMethod(key: string|symbol): Nullable<MethodInfo>
+    public getMethod(key: string | symbol): MethodInfo | null
     {
         const memberInfo = this.getMember(key);
 
@@ -260,7 +258,7 @@ export default class Type
         }
     }
 
-    public getProperty(key: string|symbol): Nullable<PropertyInfo>
+    public getProperty(key: string | symbol): PropertyInfo | null
     {
         const memberInfo = this.getMember(key);
 
@@ -277,7 +275,7 @@ export default class Type
         return this.prototype;
     }
 
-    public getStaticField(key: string|symbol): Nullable<FieldInfo>
+    public getStaticField(key: string | symbol): FieldInfo | null
     {
         const memberInfo = this.getStaticMember(key);
 
@@ -300,7 +298,7 @@ export default class Type
         }
     }
 
-    public getStaticMember(key: string|symbol): Nullable<MemberInfo>
+    public getStaticMember(key: string | symbol): MemberInfo | null
     {
         let constructor = this.prototype.constructor;
         let type        = this as Type;
@@ -318,13 +316,11 @@ export default class Type
                 {
                     return new PropertyInfo(key, descriptor, type, true, true);
                 }
-                else
-                {
-                    return new FieldInfo(key, descriptor, type, true, true);
-                }
+
+                return new FieldInfo(key, descriptor, type, true, true);
             }
 
-            let prototype = Object.getPrototypeOf(constructor.prototype) as Nullable<Indexer>;
+            const prototype = Object.getPrototypeOf(constructor.prototype) as Indexer | null;
 
             if (prototype)
             {
@@ -335,7 +331,7 @@ export default class Type
             {
                 break;
             }
-
+        // eslint-disable-next-line no-constant-condition
         } while (true);
 
         return null;
@@ -349,7 +345,7 @@ export default class Type
         }
     }
 
-    public getStaticMethod(key: string|symbol): Nullable<MethodInfo>
+    public getStaticMethod(key: string | symbol): MethodInfo | null
     {
         const memberInfo = this.getStaticMember(key);
 
@@ -363,7 +359,7 @@ export default class Type
 
     public *getStaticMethods(): IterableIterator<MethodInfo>
     {
-        for(const member of this.enumerateStaticMembers())
+        for (const member of this.enumerateStaticMembers())
         {
             if (member.descriptor.value instanceof Function)
             {
@@ -376,14 +372,14 @@ export default class Type
     {
         for (const member of this.enumerateStaticMembers())
         {
-            if(!(member.descriptor.value instanceof Function) && (!!member.descriptor.set || !!member.descriptor.get))
+            if (!(member.descriptor.value instanceof Function) && (!!member.descriptor.set || !!member.descriptor.get))
             {
                 yield new PropertyInfo(member.key, member.descriptor, member.declaringType, member.isOwn, true);
             }
         }
     }
 
-    public getStaticProperty(key: string|symbol): Nullable<PropertyInfo>
+    public getStaticProperty(key: string | symbol): PropertyInfo | null
     {
         const memberInfo = this.getStaticMember(key);
 

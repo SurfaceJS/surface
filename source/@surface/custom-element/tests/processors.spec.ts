@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { shouldPass, suite, test }     from "@surface/test-suite";
@@ -22,7 +23,7 @@ export default class ProcessorsSpec
     @test @shouldPass
     public async processIfDirective(): Promise<void>
     {
-        const scope = { host: { message: "World", visible: true }};
+        const scope = { host: { message: "World", visible: true } };
 
         const [content] = processTemplate("<span #if='host.visible'>Hello {host.message} !!!</span>", scope);
 
@@ -51,7 +52,7 @@ export default class ProcessorsSpec
     @test @shouldPass
     public async processLoopDirective(): Promise<void>
     {
-        const scope = { items: [] as Array<number> };
+        const scope = { items: [] as number[] };
 
         const [content] = processTemplate("<span #for='item of items'>Item: {item}</span>", scope);
 

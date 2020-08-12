@@ -1,4 +1,4 @@
-import { hasValue, format } from "@surface/core";
+import { format, hasValue } from "@surface/core";
 import IExpression          from "../interfaces/expression";
 import INewExpression       from "../interfaces/new-expression";
 import ISpreadElement       from "../interfaces/spread-element";
@@ -10,14 +10,14 @@ export default class NewExpression implements IExpression
 {
     private cache: unknown;
 
-    private _arguments: Array<IExpression|ISpreadElement>;
-    public get arguments(): Array<IExpression|ISpreadElement>
+    private _arguments: (IExpression | ISpreadElement)[];
+    public get arguments(): (IExpression | ISpreadElement)[]
     {
         return this._arguments;
     }
 
     /* istanbul ignore next */
-    public set arguments(value: Array<IExpression|ISpreadElement>)
+    public set arguments(value: (IExpression | ISpreadElement)[])
     {
         this._arguments = value;
     }
@@ -39,7 +39,7 @@ export default class NewExpression implements IExpression
         return NodeType.NewExpression;
     }
 
-    public constructor(callee: IExpression, $arguments: Array<IExpression|ISpreadElement>)
+    public constructor(callee: IExpression, $arguments: (IExpression | ISpreadElement)[])
     {
         this._callee    = callee;
         this._arguments = $arguments;
@@ -68,13 +68,13 @@ export default class NewExpression implements IExpression
             throw new TypeError(format(Messages.identifierIsNotAConstructor, { identifier: this.callee.toString() }));
         }
 
-        const $arguments: Array<unknown> = [];
+        const $arguments: unknown[] = [];
 
         for (const argument of this.arguments)
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate(scope, useCache) as Array<unknown>);
+                $arguments.push(...argument.argument.evaluate(scope, useCache) as unknown[]);
             }
             else
             {

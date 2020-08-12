@@ -1,28 +1,28 @@
-import { assert, IDisposable }                           from "@surface/core";
+import { IDisposable, assert }                           from "@surface/core";
 import { ISubscription }                                 from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/directives/choice-branch-directive";
 import ParallelWorker                                    from "../../parallel-worker";
 import TemplateBlock                                     from "../template-block";
-import TemplateDirectiveHandler                          from "./";
+import TemplateDirectiveHandler                          from ".";
 
 type Choice =
 {
-    branche:  IChoiceBranchDirective;
-    template: HTMLTemplateElement;
+    branche:  IChoiceBranchDirective,
+    template: HTMLTemplateElement,
 };
 
 export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly choices:       Array<Choice>        = [];
-    private readonly subscriptions: Array<ISubscription> = [];
-    private readonly templateBlock: TemplateBlock        = new TemplateBlock();
+    private readonly choices:       Choice[]        = [];
+    private readonly subscriptions: ISubscription[] = [];
+    private readonly templateBlock: TemplateBlock   = new TemplateBlock();
 
-    private currentDisposable: IDisposable|null = null;
-    private disposed:          boolean          = false;
+    private currentDisposable: IDisposable | null = null;
+    private disposed: boolean                     = false;
 
 
-    public constructor(scope: object, context: Node, host: Node, templates: Array<HTMLTemplateElement>, branches: Array<IChoiceBranchDirective>)
+    public constructor(scope: object, context: Node, host: Node, templates: HTMLTemplateElement[], branches: IChoiceBranchDirective[])
     {
         super(scope, context, host);
 
@@ -32,7 +32,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const notify = async () => await ParallelWorker.run(this.task.bind(this));
+        const notify = async (): Promise<void> => ParallelWorker.run(this.task.bind(this));
 
         for (let index = 0; index < branches.length; index++)
         {
@@ -48,7 +48,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             template.remove();
         }
 
-        this.fireAsync(notify);
+        void this.fireAsync(notify);
     }
 
     private task(): void

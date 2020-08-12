@@ -1,19 +1,19 @@
-export function classMetadata(target: Function): void
+export function classMetadata(_target: Function): void
 {
-    return;
+    //
 }
 
-export function methodMetadata<T>(target: Object, propertyKey: string|symbol, descriptor: TypedPropertyDescriptor<T>): void
+export function methodMetadata<T>(_target: Object, _propertyKey: string | symbol, _descriptor: TypedPropertyDescriptor<T>): void
 {
-    return;
+    //
 }
 
-export function parameterMetadata(target: Object, propertyKey: string|symbol, parameterIndex: number): void
+export function parameterMetadata(_target: Object, _propertyKey: string | symbol, _parameterIndex: number): void
 {
-    return;
+    //
 }
 
-export function propertyMedatadata(target: Object, propertyKey: string|symbol): void
+export function propertyMedatadata(_target: Object, _propertyKey: string | symbol): void
 {
-    return;
+    //
 }

@@ -2,9 +2,9 @@ import IPattern  from "./interfaces/pattern";
 import TypeGuard from "./type-guard";
 import Token     from "./types/token";
 
-export function hasDuplicated(parameters: Array<IPattern>): boolean;
-export function hasDuplicated(parameters: Array<IPattern>, lookeaheads: Array<Token>): { result: true, token: Token }|{ result: false, token: null };
-export function hasDuplicated(parameters: Array<IPattern>, lookeaheads?: Array<Token>): boolean|{ result: boolean, token: Token|null }
+export function hasDuplicated(parameters: IPattern[]): boolean;
+export function hasDuplicated(parameters: IPattern[], lookeaheads: Token[]): { result: true, token: Token } | { result: false, token: null };
+export function hasDuplicated(parameters: IPattern[], lookeaheads?: Token[]): boolean | { result: boolean, token: Token | null }
 {
     const cache = new Set<string>();
 
@@ -16,10 +16,9 @@ export function hasDuplicated(parameters: Array<IPattern>, lookeaheads?: Array<T
             {
                 return true;
             }
-            else
-            {
-                cache.add(pattern.name);
-            }
+
+            cache.add(pattern.name);
+
         }
         else if (TypeGuard.isAssignmentPattern(pattern))
         {
@@ -46,12 +45,9 @@ export function hasDuplicated(parameters: Array<IPattern>, lookeaheads?: Array<T
                         return true;
                     }
                 }
-                else
+                else if (isDuplicated(property.argument))
                 {
-                    if (isDuplicated(property.argument))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -75,8 +71,6 @@ export function hasDuplicated(parameters: Array<IPattern>, lookeaheads?: Array<T
 
         return { result: false, token: null };
     }
-    else
-    {
-        return parameters.some(isDuplicated);
-    }
+
+    return parameters.some(isDuplicated);
 }

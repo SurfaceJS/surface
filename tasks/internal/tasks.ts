@@ -1,8 +1,8 @@
-import chalk          from "chalk";
 import fs             from "fs";
-import { Credential } from "npm-registry-client";
 import path           from "path";
 import { promisify }  from "util";
+import chalk          from "chalk";
+import { Credential } from "npm-registry-client";
 import
 {
     backupFile,
@@ -14,21 +14,22 @@ import
     paths,
     removePath,
     restoreBackup,
-    timestamp
+    timestamp,
 } from "./common";
-import Depsync, { StrategyType } from "./depsync";
-import NpmRepository             from "./npm-repository";
-import patterns                  from "./patterns";
-import Publisher                 from "./publisher";
+import Depsync       from "./depsync";
+import NpmRepository from "./npm-repository";
+import patterns      from "./patterns";
+import Publisher     from "./publisher";
+import StrategyType  from "./strategy-type";
 
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
 export default class Tasks
 {
-    public static async backup({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async backup({ modules = [] as string[] } = { }): Promise<void>
     {
-        const commands: Array<Promise<void>> = [];
+        const commands: Promise<void>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
@@ -44,9 +45,9 @@ export default class Tasks
         console.log(`${timestamp()} ${chalk.bold.green("Backuping modules done!")}`);
     }
 
-    public static async build({ modules = [] as Array<string>, declaration = false } = { }): Promise<void>
+    public static async build({ modules = [] as string[], declaration = false } = { }): Promise<void>
     {
-        const commands: Array<Promise<void>> = [];
+        const commands: Promise<void>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
@@ -60,9 +61,9 @@ export default class Tasks
         console.log(`${timestamp()} ${chalk.bold.green("Building modules done!")}`);
     }
 
-    public static async clean({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async clean({ modules = [] as string[] } = { }): Promise<void>
     {
-        const commands: Array<Promise<void>> = [];
+        const commands: Promise<void>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
@@ -84,28 +85,30 @@ export default class Tasks
 
         const file = path.parse(filepath);
 
-        let target = file.name.replace(".spec", "");
+        const target = file.name.replace(".spec", "");
 
-        await execute(`cover ${chalk.bold.blue(file.name)} tests`,`${path.join(bin, "nyc")} --include **/${target}.js --include **/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
+        // eslint-disable-next-line max-len
+        await execute(`cover ${chalk.bold.blue(file.name)} tests`, `${path.join(bin, "nyc")} --include **/${target}.js --include **/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
     }
 
-    public static async install({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async install({ modules = [] as string[] } = { }): Promise<void>
     {
         await Tasks.unlink({ modules });
 
-        const commands: Array<Promise<void>> = [];
+        const commands: Promise<void>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
-            const dependencies = { ...($package.dependencies ?? { }), ...($package.devDependencies ?? { }) };
+            const dependencies = { ...$package.dependencies ?? { }, ...$package.devDependencies ?? { } };
 
             const targets = Object.keys(dependencies)
                 .filter(x => !x.startsWith("@surface/"))
-                .map(key => `${key}@${dependencies[key].replace(/^(\^|\~)/, "")}`)
+                .map(key => `${key}@${dependencies[key].replace(/^(\^|~)/, "")}`)
                 .join(" ");
 
             if (targets)
             {
+                // eslint-disable-next-line max-len
                 commands.push(execute(`${timestamp()} Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${path.resolve(paths.source.root, $package.name)} && npm install ${targets} --save-exact`));
             }
         }
@@ -117,7 +120,7 @@ export default class Tasks
         console.log(`${timestamp()} ${chalk.bold.green("Installing done!")}`);
     }
 
-    public static async link({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async link({ modules = [] as string[] } = { }): Promise<void>
     {
         for (const $package of filterPackages(lookup.values(), modules))
         {
@@ -139,7 +142,7 @@ export default class Tasks
         console.log(chalk.bold.green(`${timestamp()} Linking done!`));
     }
 
-    public static async publish(registry: string, options: { config: "development"|"release", token: string, include: Array<string>, exclude: Array<string> }): Promise<void>
+    public static async publish(registry: string, options: { config: "development" | "release", token: string, include: string[], exclude: string[] }): Promise<void>
     {
         const exclude = (await readFileAsync(path.join(__dirname, "../.publishignore")))
             .toString()
@@ -153,10 +156,14 @@ export default class Tasks
         {
             await Tasks.backup();
 
-            await Tasks.sync({ strategy: StrategyType.ForceVersion, template: `*.*.*-dev.${new Date().toISOString().replace(/[-T:]/g, "").substring(0, 12)}` });
+            const timestamp = new Date().toISOString()
+                .replace(/[-T:]/g, "")
+                .substring(0, 12);
+
+            await Tasks.sync({ strategy: StrategyType.ForceVersion, template: `*.*.*-dev.${timestamp}` });
         }
 
-        const auth = { token: options.token, alwaysAuth: true } as Credential;
+        const auth = { alwaysAuth: true, token: options.token } as Credential;
 
         await new Publisher(lookup, new NpmRepository(registry), auth, "public", true).publish(filterPackages(lookup.values(), options.include, exclude).map(x => x.name));
 
@@ -166,15 +173,15 @@ export default class Tasks
         }
     }
 
-    public static async relink({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async relink({ modules = [] as string[] } = { }): Promise<void>
     {
         await Tasks.unlink({ modules });
         await Tasks.link({ modules });
     }
 
-    public static async restore({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async restore({ modules = [] as string[] } = { }): Promise<void>
     {
-        const commands: Array<Promise<void>> = [];
+        const commands: Promise<void>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
@@ -197,7 +204,7 @@ export default class Tasks
         await Tasks.build();
     }
 
-    public static async sync({ include = [], exclude = [], strategy, template }: { include?: Array<string>, exclude?: Array<string>, strategy?: StrategyType, template?: string } ): Promise<void>
+    public static async sync({ include = [], exclude = [], strategy, template }: { include?: string[], exclude?: string[], strategy?: StrategyType, template?: string }): Promise<void>
     {
         const packages = await Depsync.sync(lookup, filterPackages(lookup.values(), include, exclude).map(x => x.name), { strategy, template });
 
@@ -211,7 +218,7 @@ export default class Tasks
         }
     }
 
-    public static async unlink({ modules = [] as Array<string> } = { }): Promise<void>
+    public static async unlink({ modules = [] as string[] } = { }): Promise<void>
     {
         for (const $package of filterPackages(lookup.values(), modules))
         {

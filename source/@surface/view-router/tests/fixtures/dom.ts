@@ -1,9 +1,9 @@
-// tslint:disable-next-line: no-import-side-effect
+// eslint-disable-next-line import/no-unassigned-import
 import "../../../custom-element/tests/fixtures/dom";
 
 import { DOMWindow } from "jsdom";
 
 declare global
 {
-    const windows: Array<DOMWindow>;
+    const windows: DOMWindow[];
 }

@@ -22,18 +22,18 @@ export function capture(source: string, start: RegExp, end: RegExp): [string, st
     return [source.substring(0, startIndex), source.substring(startIndex, endIndex), source.substring(endIndex, source.length)];
 }
 
-export function captureAll(source: string, start: RegExp, end: RegExp): Array<[string, string, string]>
+export function captureAll(source: string, start: RegExp, end: RegExp): [string, string, string][]
 {
     let captures = tuple("", "", "");
     let content  = source;
 
-    const result: Array<[string, string, string]> = [];
+    const result: [string, string, string][] = [];
 
     while ((captures = capture(content, start, end))[2])
     {
         if (!captures[0] && !captures[1])
         {
-            const tail       = result[result.length -1];
+            const tail       = result[result.length - 1];
             const endCapture = tail[2];
 
             tail[2] = `${endCapture}${captures[2]}`;
@@ -77,7 +77,7 @@ export function toTitle(value: string): string
     return value.replace(/(^[a-z]|\s+[a-z])/g, (_, group) => group.toUpperCase());
 }
 
-export function uuidv4()
+export function uuidv4(): string
 {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace
     (
@@ -85,8 +85,8 @@ export function uuidv4()
         character =>
         {
             const random = Math.random() * 16 | 0;
-            const value  = character == "x" ? random : (random & 0x3 | 0x8);
+            const value  = character == "x" ? random : random & 0x3 | 0x8;
             return value.toString(16);
-        }
+        },
     );
 }

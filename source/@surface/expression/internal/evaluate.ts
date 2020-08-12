@@ -9,7 +9,7 @@ import TypeGuard      from "./type-guard";
 
 export default class Evaluate
 {
-    private static arrayPattern(scope: object, arrayPattern: IArrayPattern, value: Array<unknown>, useCache: boolean): Indexer
+    private static arrayPattern(scope: object, arrayPattern: IArrayPattern, value: unknown[], useCache: boolean): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -30,9 +30,8 @@ export default class Evaluate
 
     private static objectPattern(scope: object, objectPattern: IObjectPattern, value: Indexer, useCache: boolean): Indexer
     {
-        const currentScope: Indexer = { };
-
-        const aliases: Array<string> = [];
+        const aliases:      string[] = [];
+        const currentScope: Indexer  = { };
 
         for (const property of objectPattern.properties)
         {
@@ -46,25 +45,23 @@ export default class Evaluate
                 }
                 else if (TypeGuard.isArrayPattern(property.value))
                 {
-                    return Evaluate.arrayPattern(scope, property.value, value[key] as Array<unknown>, useCache);
+                    return Evaluate.arrayPattern(scope, property.value, value[key] as unknown[], useCache);
                 }
-                else
-                {
-                    const alias      = `${TypeGuard.isAssignmentPattern(property.value) ? (property.value.left as IIdentifier).name : (property.value as IIdentifier).name}`;
-                    const aliasOrKey = property.shorthand ? alias : key;
 
-                    currentScope[alias] = TypeGuard.isAssignmentPattern(property.value) ?
-                        property.value.right.evaluate(scope, useCache)
-                        : currentScope[alias] = value[aliasOrKey];
+                const alias      = `${TypeGuard.isAssignmentPattern(property.value) ? (property.value.left as IIdentifier).name : (property.value as IIdentifier).name}`;
+                const aliasOrKey = property.shorthand ? alias : key;
 
-                    aliases.push(alias);
-                }
+                currentScope[alias] = TypeGuard.isAssignmentPattern(property.value)
+                    ? property.value.right.evaluate(scope, useCache)
+                    : currentScope[alias] = value[aliasOrKey];
+
+                aliases.push(alias);
             }
             else
             {
                 for (const alias of aliases)
                 {
-                    delete value[alias];
+                    Reflect.deleteProperty(value, alias);
                 }
 
                 Object.assign(currentScope, Evaluate.restElement(scope, property, value, useCache));
@@ -74,7 +71,7 @@ export default class Evaluate
         return currentScope;
     }
 
-    private static restElement(scope: object, restElement: IRestElement, elements: Array<unknown>|Indexer, useCache: boolean): Indexer
+    private static restElement(scope: object, restElement: IRestElement, elements: unknown[] | Indexer, useCache: boolean): Indexer
     {
         if (TypeGuard.isIdentifier(restElement.argument))
         {
@@ -84,11 +81,8 @@ export default class Evaluate
         return Evaluate.pattern(scope, restElement.argument, elements, [], useCache);
     }
 
-    public static pattern(scope: object, pattern: IPattern, value: unknown, rest?: Array<unknown>, useCache?: boolean): Indexer
+    public static pattern(scope: object, pattern: IPattern, value: unknown, rest: unknown[] = [], useCache: boolean = false): Indexer
     {
-        rest     = rest     ?? [];
-        useCache = useCache ?? false;
-
         /* istanbul ignore else */
         if (TypeGuard.isIdentifier(pattern))
         {
@@ -100,14 +94,12 @@ export default class Evaluate
             {
                 return { [pattern.left.name]: value ?? pattern.right.evaluate(scope, useCache) };
             }
-            else
-            {
-                throw new Error(Messages.illegalPropertyInDeclarationContext);
-            }
+
+            throw new Error(Messages.illegalPropertyInDeclarationContext);
         }
         else if (TypeGuard.isArrayPattern(pattern))
         {
-            return Evaluate.arrayPattern(scope, pattern, value as Array<unknown>, useCache);
+            return Evaluate.arrayPattern(scope, pattern, value as unknown[], useCache);
         }
         else if (TypeGuard.isObjectPattern(pattern))
         {

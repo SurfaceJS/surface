@@ -1,36 +1,36 @@
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default class ActionQueue<T extends (...args: any) => any = () => void>
 {
-    private readonly actions: Array<T> = [];
+    private readonly actions: T[] = [];
 
     public add(action: T): void
     {
         this.actions.push(action);
     }
 
-    public execute(...args: Parameters<T>): Array<ReturnType<T>>
+    public execute(...args: Parameters<T>): ReturnType<T>[]
     {
-        const values = [] as Array<ReturnType<T>>;
+        const values = [] as ReturnType<T>[];
 
         while (this.actions.length > 0)
         {
-            values.push(this.actions.pop()!.apply(undefined, args));
+            values.push(this.actions.pop()!.bind(null)(args));
         }
 
         return values;
     }
 
-    public async executeAsync(...args: Parameters<T>): Promise<Array<ReturnType<T>>>
+    public async executeAsync(...args: Parameters<T>): Promise<ReturnType<T>[]>
     {
-        const values = [] as Array<ReturnType<T>>;
+        const values = [] as ReturnType<T>[];
 
         while (this.actions.length > 0)
         {
-            values.push(this.actions.pop()!.apply(undefined, args));
+            values.push(this.actions.pop()!.bind(null)(args));
         }
 
-        return await Promise.resolve(values);
+        return Promise.resolve(values);
     }
 
     public remove(action: T): void

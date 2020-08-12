@@ -1,8 +1,8 @@
 import Enumerable     from "@surface/enumerable";
 import HttpContext    from "./http-context";
+import mymeType       from "./myme-types";
 import RequestHandler from "./request-handler";
 import StatusCode     from "./status-code";
-import { mymeType }   from "./variables";
 
 export default class FallbackRequestHandler extends RequestHandler
 {
@@ -15,6 +15,7 @@ export default class FallbackRequestHandler extends RequestHandler
     public constructor(fallbackRoute: string)
     {
         super();
+
         this._fallbackRoute = fallbackRoute;
     }
 
@@ -22,15 +23,15 @@ export default class FallbackRequestHandler extends RequestHandler
     {
         let filepath = this.path.resolve(httpContext.host.root, httpContext.host.wwwroot, this.fallbackRoute.replace(/^\/|\/$/g, ""));
 
-        let targets =
+        const targets =
         [
             filepath,
-            filepath + ".html",
-            filepath + ".htm",
+            `${filepath}.html`,
+            `${filepath}.htm`,
             this.path.join(filepath, "index.html"),
             this.path.join(filepath, "index.htm"),
             this.path.join(filepath, "default.html"),
-            this.path.join(filepath, "default.htm")
+            this.path.join(filepath, "default.htm"),
         ];
 
         try
@@ -42,10 +43,10 @@ export default class FallbackRequestHandler extends RequestHandler
             throw new Error("The provided fallback path is invalid.");
         }
 
-        let extension = this.path.extname(filepath) as keyof typeof mymeType;
-        let data      = this.fs.readFileSync(filepath);
+        const extension = this.path.extname(filepath) as keyof typeof mymeType;
+        const data      = await new Promise(x => this.fs.readFile(filepath, x));
 
-        httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] });
+        httpContext.response.writeHead(StatusCode.Ok, { "Content-Type": mymeType[extension] });
         httpContext.response.write(data);
         httpContext.response.end();
 

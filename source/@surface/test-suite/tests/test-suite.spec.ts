@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import
 {
+    TestMethod,
     after,
     afterEach,
     batchTest,
@@ -11,9 +12,7 @@ import
     shouldPass,
     suite,
     test,
-    TestMethod,
-}
-from "..";
+} from "../internal/decorators";
 import
 {
     AFTER,
@@ -25,9 +24,8 @@ import
     DATA,
     DESCRIPTION,
     EXPECTATION,
-    TEST
-}
-from "../internal/symbols";
+    TEST,
+} from "../internal/symbols";
 
 @suite
 export default class TestSuitSpec
@@ -35,25 +33,25 @@ export default class TestSuitSpec
     @before
     public before(): void
     {
-        return; // coverage
+        // Coverage
     }
 
     @beforeEach
     public beforeEach(): void
     {
-        return; // coverage
+        // Coverage
     }
 
     @after
     public after(): void
     {
-        return; // coverage
+        // Coverage
     }
 
     @afterEach
     public afterEach(): void
     {
-        return; // coverage
+        // Coverage
     }
 
     @test @shouldPass
@@ -180,7 +178,7 @@ export default class TestSuitSpec
             @after
             public afterTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -197,7 +195,7 @@ export default class TestSuitSpec
             @after("after tests with custom description")
             public afterTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -214,7 +212,7 @@ export default class TestSuitSpec
             @afterEach
             public afterEachTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -231,7 +229,7 @@ export default class TestSuitSpec
             @before
             public beforeTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -248,7 +246,7 @@ export default class TestSuitSpec
             @before("before tests with custom description")
             public beforeTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -265,7 +263,7 @@ export default class TestSuitSpec
             @beforeEach("before each tests with custom description")
             public beforeEachTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -282,7 +280,7 @@ export default class TestSuitSpec
             @afterEach("after each tests with custom description")
             public afterEachTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -299,7 +297,7 @@ export default class TestSuitSpec
             @beforeEach
             public beforeEachTests(): void
             {
-                return;
+                // Coverage
             }
         }
 
@@ -310,6 +308,6 @@ export default class TestSuitSpec
     @test
     public uncategorizedTest(): void
     {
-        return; // coverage
+        // Coverage
     }
 }

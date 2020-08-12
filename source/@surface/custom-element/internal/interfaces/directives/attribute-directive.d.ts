@@ -7,5 +7,5 @@ export default interface IAttributeDirective extends IObservable, ITraceable
     expression: IExpression;
     key:        string;
     name:       string;
-    type:       "oneway"|"twoway"|"interpolation";
+    type:       "oneway" | "twoway" | "interpolation";
 }

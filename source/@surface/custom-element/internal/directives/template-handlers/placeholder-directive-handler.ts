@@ -1,20 +1,20 @@
-import { assert, Indexer, IDisposable } from "@surface/core";
+import { IDisposable, Indexer, assert } from "@surface/core";
 import { TypeGuard }                    from "@surface/expression";
 import { ISubscription }                from "@surface/reactive";
-import TemplateDirectiveHandler         from ".";
 import
 {
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryEvaluatePatternByTraceable,
     tryObserveByObservable,
-    tryObserveKeyByObservable
+    tryObserveKeyByObservable,
 } from "../../common";
-import IPlaceholderDirective from "../../interfaces/directives/placeholder-directive";
-import TemplateMetadata      from "../../metadata/template-metadata";
-import ParallelWorker        from "../../parallel-worker";
-import { Injection }         from "../../types";
-import TemplateBlock         from "../template-block";
+import IPlaceholderDirective    from "../../interfaces/directives/placeholder-directive";
+import TemplateMetadata         from "../../metadata/template-metadata";
+import ParallelWorker           from "../../parallel-worker";
+import { Injection }            from "../../types";
+import TemplateBlock            from "../template-block";
+import TemplateDirectiveHandler from ".";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -24,11 +24,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     private readonly template:        HTMLTemplateElement;
     private readonly templateBlock:   TemplateBlock = new TemplateBlock();
 
-    private currentDisposable: IDisposable|null   = null;
-    private disposed:          boolean            = false;
-    private key:               string             = "";
-    private subscription:      ISubscription|null = null;
-    private timer:             number             = 0;
+    private currentDisposable: IDisposable | null   = null;
+    private disposed:          boolean              = false;
+    private key:               string               = "";
+    private subscription:      ISubscription | null = null;
+    private timer:             number               = 0;
 
     private injection?: Injection;
 
@@ -77,11 +77,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const notify = async () => await ParallelWorker.run(task);
+        const notify = async (): Promise<void> => ParallelWorker.run(task);
 
         this.subscription = tryObserveByObservable(this.scope, this.directive, { notify }, true);
 
-        this.fireAsync(notify);
+        void this.fireAsync(notify);
     }
 
     private onKeyChange(): void

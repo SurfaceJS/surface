@@ -12,25 +12,25 @@ export default class ParallelWorker
 
     private readonly interval: number;
 
-    private _done:    Promise<void>         = Promise.resolve();
-    private expended: number                = 0;
-    private resolve:  Action|null           = null;
-    private reject:   Action1<unknown>|null = null;
-    private running:  boolean               = false;
+    private _done:    Promise<void>           = Promise.resolve();
+    private expended: number                  = 0;
+    private resolve:  Action | null           = null;
+    private reject:   Action1<unknown> | null = null;
+    private running:  boolean                 = false;
 
     public constructor(interval?: number)
     {
         this.interval = interval ?? 16.17;
     }
 
-    public static done(): Promise<void>
+    public static async done(): Promise<void>
     {
         return ParallelWorker.default.done();
     }
 
     public static async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
     {
-        return await ParallelWorker.default.run(action);
+        return ParallelWorker.default.run(action);
     }
 
     private execute(): void
@@ -50,7 +50,7 @@ export default class ParallelWorker
 
                 const end = window.performance.now();
 
-                this.expended += (end - start);
+                this.expended += end - start;
 
                 if (this.expended > this.interval)
                 {
@@ -80,7 +80,7 @@ export default class ParallelWorker
         }
     }
 
-    public done(): Promise<void>
+    public async done(): Promise<void>
     {
         return this._done;
     }
