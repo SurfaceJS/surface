@@ -8,7 +8,7 @@ program.version("1.0.0");
 
 program
     .command("build")
-    .option("-m|--modules <modules>", "Modules to build", toArray)
+    .option("-m|--modules [modules]", "Modules to build", toArray)
     .action(Tasks.build);
 
 program
@@ -17,17 +17,17 @@ program
 
 program
     .command("clean")
-    .option("-m|--modules <modules>", "Modules to clean", toArray)
+    .option("-m|--modules [modules]", "Modules to clean", toArray)
     .action(Tasks.clean);
 
 program
     .command("install")
-    .option("-m|--modules <modules>", "Modules to install", toArray, [])
+    .option("-m|--modules [modules]", "Modules to install", toArray, [])
     .action(Tasks.install);
 
 program
     .command("link")
-    .option("-m|--modules <modules>", "Modules to link", toArray, [])
+    .option("-m|--modules [modules]", "Modules to link", toArray, [])
     .action(Tasks.link);
 
 program
@@ -40,7 +40,7 @@ program
 
 program
     .command("relink")
-    .option("-m|--modules <modules>", "Modules to relink", toArray, [])
+    .option("-m|--modules [modules]", "Modules to relink", toArray, [])
     .action(Tasks.relink);
 
 program
@@ -58,7 +58,7 @@ program
 
 program
     .command("unlink")
-    .option("-m|--modules <modules>", "Modules to unlink", toArray, [])
+    .option("-m|--modules [modules]", "Modules to unlink", toArray, [])
     .action(Tasks.unlink);
 
 program.parse(process.argv);
