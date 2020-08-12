@@ -1,31 +1,22 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { uuidv4 }                  from "@surface/core";
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import CustomElement, { templateable }               from "../internal/custom-element";
-import { attribute, element }      from "../internal/decorators";
+import { uuidv4 }                      from "@surface/core";
+import { shouldPass, suite, test }     from "@surface/test-suite";
+import { assert }                      from "chai";
+import CustomElement, { templateable } from "../internal/custom-element";
+import { attribute, element }          from "../internal/decorators";
 
 @suite
 export default class DecoratorsSpec
 {
-    // @test @shouldPass
-    // public elementDecoratorHtmlElement(): void
-    // {
-    //     @element(`mock-${uuidv4()}`)
-    //     class Mock extends HTMLElement
-    //     { }
-
-    //     assert.doesNotThrow(() => new Mock());
-    // }
-
     @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
         @element(`mock-${uuidv4()}`)
         class Mock extends CustomElement
         {
-            public static observedAttributes?: Array<string>;
+            public static observedAttributes?: string[];
 
             private _value: Object = 1;
 
@@ -56,7 +47,7 @@ export default class DecoratorsSpec
         @element(`mock-${uuidv4()}`)
         class Mock extends CustomElement
         {
-            public static observedAttributes?: Array<string>;
+            public static observedAttributes?: string[];
 
             @attribute
             public get value1(): Object

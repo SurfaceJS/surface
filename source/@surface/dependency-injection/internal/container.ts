@@ -1,8 +1,8 @@
-import { typeGuard, Constructor } from "@surface/core";
+import { Constructor, typeGuard } from "@surface/core";
 import StaticMetadata             from "./metadata";
 
 type Factory     = (container: Pick<Container, "resolve" | "inject">) => object;
-type Key         = string|symbol|Constructor;
+type Key         = string | symbol | Constructor;
 type Instance<T> = T extends Function ? never : T;
 
 export default class Container
@@ -56,8 +56,8 @@ export default class Container
 
     public registerTransient(constructor: Constructor): Container;
     public registerTransient(key: Key, constructor: Constructor): Container;
-    public registerTransient(key: Key|Constructor, factory: Factory): Container;
-    public registerTransient(...args: [Constructor]|[Key, Constructor|Factory]): Container
+    public registerTransient(key: Key | Constructor, factory: Factory): Container;
+    public registerTransient(...args: [Constructor] | [Key, Constructor | Factory]): Container
     {
         const [key, value] = args.length == 1
             ? [args[0], args[0]]
@@ -68,7 +68,7 @@ export default class Container
         return this;
     }
 
-    public resolve<T extends object = object>(key: string|symbol): T;
+    public resolve<T extends object = object>(key: string | symbol): T;
     public resolve<T>(key: Constructor<T>): T;
     public resolve(key: Key): object;
     public resolve(key: Key): object
@@ -79,38 +79,36 @@ export default class Container
         {
             return this.resolved.get(key)!;
         }
-        else
+
+        const entry = this.registries.get(key);
+
+        if (entry)
         {
-            const entry = this.registries.get(key);
-
-            if (entry)
+            if (this.stack.has(key))
             {
-                if (this.stack.has(key))
-                {
-                    throw new Error(`Circularity dependency to the key: ${typeof key == "function" ? `[function ${key.name}]` : key.toString()}`);
-                }
-
-                this.stack.add(key);
-
-                const instance = this.inject(!entry.prototype ? (entry as Factory)(this) : entry);
-
-                this.stack.delete(key);
-
-                if (isSingleton)
-                {
-                    this.resolved.set(key, instance);
-                }
-
-                return instance;
+                throw new Error(`Circularity dependency to the key: ${typeof key == "function" ? `[function ${key.name}]` : key.toString()}`);
             }
 
-            throw new Error(`Cannot resolve entry for the key ${typeof key == "function" ? key.name : key.toString()}`);
+            this.stack.add(key);
+
+            const instance = this.inject(!entry.prototype ? (entry as Factory)(this) : entry);
+
+            this.stack.delete(key);
+
+            if (isSingleton)
+            {
+                this.resolved.set(key, instance);
+            }
+
+            return instance;
         }
+
+        throw new Error(`Cannot resolve entry for the key ${typeof key == "function" ? key.name : key.toString()}`);
     }
 
     public inject<T extends Constructor>(constructor: T): InstanceType<T>;
     public inject<T extends object>(instance: T): T;
-    public inject(target: Constructor|object): object
+    public inject(target: Constructor | object): object
     {
         const constructor = typeof target == "function" ? target : target.constructor;
 

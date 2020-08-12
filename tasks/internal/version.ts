@@ -1,10 +1,9 @@
+// eslint-disable-next-line sort-keys
+const prereleaseMap = { dev: 0, alpha: 1, beta:  2, rc: 3 };
+const pattern       = /^(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?$/;
 
 export type PrereleaseTypes = "alpha" | "beta" | "dev" | "rc";
 export type Prerelease      = { type: PrereleaseTypes, version: number };
-
-const prereleaseMap = { dev: 0, alpha: 1, beta:  2, rc: 3 };
-
-const pattern = /^(\d+)\.(\d+)\.(\d+)(?:\-(\w+)\.(\d+))?$/;
 
 export default class Version
 {
@@ -51,7 +50,7 @@ export default class Version
                 ? left.prerelease.type
                 : right.prerelease.type;
 
-            const prerelease = { type: type, version: left.prerelease.version - right.prerelease.version  };
+            const prerelease = { type, version: left.prerelease.version - right.prerelease.version };
 
             return new Version(left.major - right.major, left.minor - right.minor, left.revision - right.revision, prerelease);
         }
@@ -59,7 +58,7 @@ export default class Version
         return new Version(left.major - right.major, left.minor - right.minor, left.revision - right.revision);
     }
 
-    public static difference(left: Version, right: Version): { version: Version, type: "major"|"minor"|"revision"|"prerelease"|"none" }
+    public static difference(left: Version, right: Version): { version: Version, type: "major" | "minor" | "revision" | "prerelease" | "none" }
     {
         const difference = Version.subtract(left, right);
 
@@ -69,11 +68,11 @@ export default class Version
                 ? "minor"
                 : difference.revision > 0
                     ? "revision"
-                    : difference.prerelease?.version ?? 0 > 0
+                    : difference.prerelease?.version ?? 0
                         ? "prerelease"
                         : "none";
 
-        return { version: difference, type };
+        return { type, version: difference };
 
     }
 
@@ -98,12 +97,12 @@ export default class Version
 
                 if (left.revision == right.revision)
                 {
-                    if ((!left.prerelease && !!right.prerelease))
+                    if (!left.prerelease && !!right.prerelease)
                     {
                         return 1;
                     }
 
-                    if ((!!left.prerelease && !right.prerelease))
+                    if (!!left.prerelease && !right.prerelease)
                     {
                         return -1;
                     }

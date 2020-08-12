@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 import PropertyListener     from "./internal/property-listener";
 import PropertySubscription from "./internal/property-subscription";
 import Reactive             from "./internal/reactive";
@@ -11,7 +12,7 @@ export type
     IPropertyListener,
     IPropertySubscription,
     IReactor,
-    ISubscription
+    ISubscription,
 } from "./internal/interfaces";
 
 export * from "./internal/decorators";

@@ -3,10 +3,10 @@ import { assert }                                   from "chai";
 import Parser                                       from "../internal/parser";
 import
 {
+    ParserInvalidExpectation,
+    ParserValidExpectation,
     invalidExpectations,
     validExpectations,
-    ParserInvalidExpectation,
-    ParserValidExpectation
 } from "./parser-expectations";
 
 @suite

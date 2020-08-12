@@ -4,8 +4,8 @@ import ITextNodeDescriptor from "./text-node-descriptor";
 
 export default interface IElementDescriptor
 {
-    attributes: Array<IAttributeDirective>;
-    directives: Array<ICustomDirective>;
+    attributes: IAttributeDirective[];
+    directives: ICustomDirective[];
     path:       string;
-    textNodes:  Array<ITextNodeDescriptor>;
+    textNodes:  ITextNodeDescriptor[];
 }

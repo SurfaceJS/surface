@@ -10,7 +10,7 @@ export function processTemplate(template: string, scope: object): [DocumentFragm
 {
     if (!cache.has(template))
     {
-        let templateElement = document.createElement("template");
+        const templateElement = document.createElement("template");
 
         templateElement.innerHTML = template;
 
@@ -20,7 +20,7 @@ export function processTemplate(template: string, scope: object): [DocumentFragm
     const [parsed, descriptor] = cache.get(template)!;
     const content              = parsed.content;
 
-    const disposable = TemplateProcessor.process({ scope: scope, host: content, root: content, descriptor });
+    const disposable = TemplateProcessor.process({ descriptor, host: content, root: content, scope });
 
     return [content, disposable];
 }

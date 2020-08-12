@@ -1,15 +1,15 @@
-import { overrideProperty, Indexer, IDisposable } from "@surface/core";
+import { IDisposable, Indexer, overrideProperty } from "@surface/core";
 import Type, { FieldInfo, MethodInfo }            from "@surface/reflection";
 import IObserver                                  from "./interfaces/observer";
 import IPropertySubscription                      from "./interfaces/property-subscription";
 import Metadata                                   from "./metadata";
 
 const IS_REACTIVE = Symbol("reactive:is-reactive");
-type ReactiveArray = Array<unknown> & Indexer & { [IS_REACTIVE]?: boolean };
+type ReactiveArray = unknown[] & Indexer & { [IS_REACTIVE]?: boolean };
 
 export default class Reactor implements IDisposable
 {
-    private static readonly stack: Array<Reactor> = [];
+    private static readonly stack: Reactor[] = [];
 
     private readonly _dependencies:         Map<string, Reactor>                    = new Map();
     private readonly _observers:            Map<string, IObserver>                  = new Map();
@@ -47,7 +47,7 @@ export default class Reactor implements IDisposable
 
     private static wrapArray(reactor: Reactor, target: ReactiveArray): void;
     private static wrapArray(reactor: Reactor, target: Indexer, key: string): void;
-    private static wrapArray(...args: [Reactor, ReactiveArray]|[Reactor, Indexer, string]): void
+    private static wrapArray(...args: [Reactor, ReactiveArray] | [Reactor, Indexer, string]): void
     {
         const methods = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"];
 
@@ -59,16 +59,16 @@ export default class Reactor implements IDisposable
             {
                 const fn = target[method] as Function;
 
-                const wrappedFn = function(this: Array<unknown>, ...args: Array<unknown>)
+                function wrappedFn(this: unknown[], ...args: unknown[]): unknown
                 {
                     const elements = fn.apply(this, args);
 
                     reactor.notify(this);
 
                     return elements;
-                };
+                }
 
-                Object.defineProperty(target, method, { value: wrappedFn, configurable: true, enumerable: false });
+                Object.defineProperty(target, method, { configurable: true, enumerable: false, value: wrappedFn });
             }
 
             target[IS_REACTIVE] = true;
@@ -83,7 +83,7 @@ export default class Reactor implements IDisposable
             {
                 const fn = member[method] as Function;
 
-                const wrappedFn = function(this: Array<unknown>, ...args: Array<unknown>)
+                function wrappedFn(this: unknown[], ...args: unknown[]): unknown
                 {
                     const elements = fn.apply(this, args);
 
@@ -92,17 +92,17 @@ export default class Reactor implements IDisposable
                     reactor.notify(target, key);
 
                     return elements;
-                };
+                }
 
-                Object.defineProperty(member, method, { value: wrappedFn, configurable: true, enumerable: false });
+                Object.defineProperty(member, method, { configurable: true, enumerable: false, value: wrappedFn });
             }
 
             member[IS_REACTIVE] = true;
         }
     }
 
-    public static makeReactive(target: object, keyOrIndex: string|number): Reactor;
-    public static makeReactive(target: Indexer, keyOrIndex: string|number): Reactor
+    public static makeReactive(target: object, keyOrIndex: string | number): Reactor;
+    public static makeReactive(target: Indexer, keyOrIndex: string | number): Reactor
     {
         const key      = keyOrIndex.toString();
         const metadata = Metadata.from(target);
@@ -268,7 +268,7 @@ export default class Reactor implements IDisposable
     public notify(value: unknown): void;
     public notify(target: Indexer, key: string): void;
     public notify(target: Indexer, key: string, value: unknown): void;
-    public notify(...args: [unknown]|[Indexer, string]|[Indexer, string, unknown]): void
+    public notify(...args: [unknown] | [Indexer, string] | [Indexer, string, unknown]): void
     {
         Reactor.stack.push(this);
 
@@ -307,7 +307,7 @@ export default class Reactor implements IDisposable
         subscription.onUnsubscribe(() => subscriptions!.delete(subscription));
     }
 
-    public update(key: string, value: unknown)
+    public update(key: string, value: unknown): void
     {
         const dependency = this.dependencies.get(key);
 

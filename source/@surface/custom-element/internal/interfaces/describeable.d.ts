@@ -2,6 +2,6 @@ import ITemplateDescriptor from "./descriptors/template-descriptor";
 
 export default interface IDescribeable
 {
-    descriptor: ITemplateDescriptor,
+    descriptor: ITemplateDescriptor;
     path:       string;
 }

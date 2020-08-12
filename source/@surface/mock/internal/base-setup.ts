@@ -4,7 +4,7 @@ import { Factory, FunctionType } from "./types";
 
 export default class BaseSetup<TMethod extends FunctionType, TResult> implements IReturnsSetup<TMethod, TResult>
 {
-    public constructor(protected readonly setup: Setup<TResult> = new Setup(), private readonly args: Array<unknown> = [])
+    public constructor(protected readonly setup: Setup<TResult> = new Setup(), private readonly args: unknown[] = [])
     { }
 
     public callback(action: (...args: Parameters<TMethod>) => void): void
@@ -19,7 +19,7 @@ export default class BaseSetup<TMethod extends FunctionType, TResult> implements
 
     public returnsFactory(factory: Factory<Parameters<TMethod>, TResult>): void
     {
-        this.setup.setReturnsFactory(this.args, factory as Factory<Array<unknown>, TResult>);
+        this.setup.setReturnsFactory(this.args, factory as Factory<unknown[], TResult>);
     }
 
     public throws(error: string | Error): void

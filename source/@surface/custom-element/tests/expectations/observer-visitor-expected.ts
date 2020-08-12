@@ -2,113 +2,113 @@ import { Indexer } from "@surface/core";
 
 export type Scope = { this: Indexer } & Indexer;
 
-export type ObservableExpression = { expression: string, expected: Array<Array<string>> };
+export type ObservableExpression = { expression: string, expected: string[][] };
 
-export const observableExpressions: Array<ObservableExpression> =
+export const observableExpressions: ObservableExpression[] =
 [
     {
+        expected:   [["this", "x"], ["this", "y"]],
         expression: "[this.x, this.y]",
-        expected:   [["this", "x"], ["this", "y"]],
     },
     {
-        expression: "this.x = this.y",
         expected:   [["this", "y"]],
+        expression: "this.x = this.y",
     },
     {
+        expected:   [["this", "x"]],
         expression: "(x = this.x) => 1",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "(x = this.x) => this.y",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "([x = this.x, y]) => 1",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "({ x: y = this.x }) => this.x",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"], ["this", "y"]],
         expression: "this.x + this.y",
-        expected:   [["this", "x"], ["this", "y"]],
     },
     {
-        expression: "(this.x + (this.y * this.z)) / this.w",
         expected:   [["this", "x"], ["this", "y"], ["this", "z"], ["this", "w"]],
+        expression: "(this.x + (this.y * this.z)) / this.w",
     },
     {
-        expression: "this[this.key].fn(this.x)",
         expected:   [["this", "key"], ["this", "x"]],
+        expression: "this[this.key].fn(this.x)",
     },
     {
+        expected:   [["this", "key"], ["this", "x"]],
         expression: "this[this.key].fn(...this.x)",
-        expected:  [["this", "key"], ["this", "x"]],
     },
     {
-        expression: "(null || this.context).fn(this.x)",
         expected:   [["this", "context"], ["this", "x"]],
+        expression: "(null || this.context).fn(this.x)",
     },
     {
+        expected:   [["this", "x"]],
         expression: "this.x ?? this.y",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "this.x ? this.y : this.z",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "this['x']",
-        expected:   [["this", "x"]],
     },
     {
-        expression: "this['x.y']",
         expected:   [["this", "x.y"]],
+        expression: "this['x.y']",
     },
     {
-        expression: "this[this.key]",
         expected:   [["this", "key"]],
+        expression: "this[this.key]",
     },
     {
-        expression: "this[this.key1][this.key2].foo.bar[this.key3].value",
         expected:   [["this", "key3"], ["this", "key2"], ["this", "key1"]],
+        expression: "this[this.key1][this.key2].foo.bar[this.key3].value",
     },
     {
+        expected:   [["this", "x"]],
         expression: "new this.Foo(this.x)",
-        expected:   [["this", "x"]],
     },
     {
+        expected:   [["this", "x"]],
         expression: "({ x: this.x })",
-        expected:   [["this", "x"]],
     },
     {
-        expression: "({ [this.key]: this.value })",
         expected:   [["this", "key"], ["this", "value"]],
+        expression: "({ [this.key]: this.value })",
     },
     {
-        expression: "(this.x)",
         expected:   [["this", "x"]],
+        expression: "(this.x)",
     },
     {
-        expression: "(this.x, this.y, this.z)",
         expected:   [["this", "x"], ["this", "y"], ["this", "z"]],
+        expression: "(this.x, this.y, this.z)",
     },
     {
-        expression: "this.tag`Hello ${this.name}!!!`",
         expected:   [["this", "name"]],
+        expression: "this.tag`Hello ${this.name}!!!`",
     },
     {
-        expression: "!this.flag",
         expected:   [["this", "flag"]],
+        expression: "!this.flag",
     },
     {
-        expression: "(this.x || this.y).value++",
         expected:   [["this", "x"], ["this", "y"]],
+        expression: "(this.x || this.y).value++",
     },
 ];
 
-export const unobservableExpressions: Array<string> =
+export const unobservableExpressions: string[] =
 [
     "left = 1",
     "x => 1",
@@ -117,7 +117,8 @@ export const unobservableExpressions: Array<string> =
     "(...[x, y, ...z]) => 1",
     "([x, y, ...z]) => 1",
     "({ x, y, ...z }) => 1",
-    "({ x, y: a = 1, ...z }) => 1","this.fn()",
+    "({ x, y: a = 1, ...z }) => 1",
+    "this.fn()",
     "this.context.fn()",
     "(null || this).context.fn()",
     "null ?? this.y",

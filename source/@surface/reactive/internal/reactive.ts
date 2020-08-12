@@ -1,4 +1,4 @@
-import { getKeyMember, getValue, Indexer } from "@surface/core";
+import { Indexer, getKeyMember, getValue } from "@surface/core";
 import IListener                           from "./interfaces/listener";
 import IObserver                           from "./interfaces/observer";
 import IReactor                            from "./interfaces/reactor";
@@ -11,7 +11,7 @@ import Reactor                             from "./reactor";
 
 export default class Reactive
 {
-    private static observePath(target: Indexer, path: Array<string>): { root: IReactor, dependency: IReactor, observer: IObserver }
+    private static observePath(target: Indexer, path: string[]): { root: IReactor, dependency: IReactor, observer: IObserver }
     {
         const [key, ...keys] = path;
 
@@ -30,14 +30,12 @@ export default class Reactive
 
             reactor.dependencies.set(key, dependency);
 
-            return { root, dependency: reactor, observer };
+            return { dependency: reactor, observer, root };
         }
-        else
-        {
-            const { reactor, observer } = Reactive.observeProperty(target, key);
 
-            return { root: reactor, dependency: reactor, observer };
-        }
+        const { reactor, observer } = Reactive.observeProperty(target, key);
+
+        return { dependency: reactor, observer, root: reactor };
     }
 
     private static observeProperty(target: Indexer, key: string): { reactor: IReactor, observer: IObserver }
@@ -51,7 +49,7 @@ export default class Reactive
             reactor.observers.set(key, observer = new Observer());
         }
 
-        return { reactor, observer };
+        return { observer, reactor };
     }
 
     public static dispose<T extends object>(target: T): void
@@ -65,7 +63,7 @@ export default class Reactive
         }
     }
 
-    public static getReactor(target: object): IReactor|undefined
+    public static getReactor(target: object): IReactor | undefined
     {
         return Metadata.of(target)?.reactor;
     }
@@ -76,10 +74,11 @@ export default class Reactive
     }
 
     public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): { reactor: IReactor, observer: IObserver<TTarget[TKey]> };
-    public static observe(target: object, path: string|Array<string>): { reactor: IReactor, observer: IObserver };
+    public static observe(target: object, path: string | string[]): { reactor: IReactor, observer: IObserver };
+    // eslint-disable-next-line max-len
     public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>, lazy?: boolean): { reactor: IReactor, observer: IObserver<TTarget[TKey]>, subscription: ISubscription };
-    public static observe(target: object, path: string|Array<string>, listener: IListener, lazy?: boolean): { reactor: IReactor, observer: IObserver, subscription: ISubscription };
-    public static observe(...args: [Indexer, string|Array<string>, IListener?, boolean?]): { reactor: IReactor, observer: IObserver, subscription?: ISubscription }
+    public static observe(target: object, path: string | string[], listener: IListener, lazy?: boolean): { reactor: IReactor, observer: IObserver, subscription: ISubscription };
+    public static observe(...args: [Indexer, string | string[], IListener?, boolean?]): { reactor: IReactor, observer: IObserver, subscription?: ISubscription }
     {
         const [target, pathOrKeys, listener, lazy] = args;
 
@@ -98,36 +97,35 @@ export default class Reactive
                     observer.notify(getValue(target, keys));
                 }
 
-                return { reactor, observer, subscription };
+                return { observer, reactor, subscription };
             }
 
-            return { reactor, observer };
+            return { observer, reactor };
         }
-        else
+
+        const key = keys[0];
+
+        const { reactor, observer } = Reactive.observeProperty(target, key);
+
+        if (listener)
         {
-            const key = keys[0];
+            const subscription = observer.subscribe(listener);
 
-            const { reactor, observer } = Reactive.observeProperty(target, key);
-
-            if (listener)
+            if (!lazy)
             {
-                const subscription = observer.subscribe(listener);
-
-                if (!lazy)
-                {
-                    observer.notify(target[key]);
-                }
-
-                return { reactor, observer, subscription };
+                observer.notify(target[key]);
             }
 
-            return { reactor, observer };
+            return { observer, reactor, subscription };
         }
+
+        return { observer, reactor };
     }
 
+    // eslint-disable-next-line max-len
     public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: TLeft, leftKey: TLeftKey, right: TRight, rightKey: TRightKey): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string|Array<string>, right: Indexer, rightPath: string|Array<string>): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string|Array<string>, right: Indexer, rightPath: string|Array<string>): [ISubscription, ISubscription]
+    public static observeTwoWay(left: Indexer, leftPath: string | string[], right: Indexer, rightPath: string | string[]): [ISubscription, ISubscription];
+    public static observeTwoWay(left: Indexer, leftPath: string | string[], right: Indexer, rightPath: string | string[]): [ISubscription, ISubscription]
     {
         const leftKeys  = Array.isArray(leftPath)  ? leftPath  : leftPath.split(".");
         const rightKeys = Array.isArray(rightPath) ? rightPath : rightPath.split(".");

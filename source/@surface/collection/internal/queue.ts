@@ -6,10 +6,11 @@ type Node<T> = { value: T, next?: Node<T> };
 export default class Queue<T> extends Enumerable<T>
 {
     private _length: number = 0;
-    private node: Node<T>|null = null;
-    private lastNode: Node<T>|null = null;
 
-    public get current(): T|null
+    private node:     Node<T> | null = null;
+    private lastNode: Node<T> | null = null;
+
+    public get current(): T | null
     {
         return this.node?.value ?? null;
     }
@@ -35,7 +36,7 @@ export default class Queue<T> extends Enumerable<T>
         {
             yield this.node.value;
 
-            let node: Node<T>|undefined = this.node;
+            let node: Node<T> | undefined = this.node;
 
             while (node = node?.next)
             {
@@ -48,6 +49,7 @@ export default class Queue<T> extends Enumerable<T>
      * Returns the number of elements in a sequence.
      */
     public count(): number;
+
     /**
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
@@ -86,7 +88,7 @@ export default class Queue<T> extends Enumerable<T>
         this._length++;
     }
 
-    public dequeue(): T|null
+    public dequeue(): T | null
     {
         const value = this.node?.value;
 

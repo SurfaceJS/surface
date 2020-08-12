@@ -1,9 +1,8 @@
-import { Nullable }           from "@surface/core";
 import { PROTOTYPE_METADATA } from "../symbols";
 
 export default class PrototypeMetadata
 {
-    public attributeChangedCallback?: (name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>) => void;
+    public attributeChangedCallback?: (name: string, oldValue: string | undefined, newValue: string, namespace: string | undefined) => void;
 
     public static from(target: object & { [PROTOTYPE_METADATA]?: PrototypeMetadata }): PrototypeMetadata
     {

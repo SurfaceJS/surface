@@ -1,4 +1,4 @@
-export function contains<T>(source: Array<T>, elements: Array<T>): boolean
+export function contains<T>(source: T[], elements: T[]): boolean
 {
     for (const element of elements)
     {
@@ -11,7 +11,7 @@ export function contains<T>(source: Array<T>, elements: Array<T>): boolean
     return false;
 }
 
-export function *enumerate<T>(source: Array<T>): IterableIterator<T>
+export function *enumerate<T>(source: T[]): IterableIterator<T>
 {
     for (const element of source)
     {

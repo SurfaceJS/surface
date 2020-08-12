@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import Expression           from "@surface/expression";
@@ -6,13 +7,13 @@ import { assert }           from "chai";
 import ObserverVisitor      from "../internal/observer-visitor";
 import
 {
+    ObservableExpression,
     observableExpressions,
     unobservableExpressions,
-    ObservableExpression
 } from "./expectations/observer-visitor-expected";
 
 @suite
-export class ObserverVisitorSpec
+export default class ObserverVisitorSpec
 {
     @batchTest(observableExpressions, x => `observable expression ${x.expression}; expected paths: ${x.expected.map(x => `[${x}]`)}`)
     public observableExpressions(observableExpression: ObservableExpression): void

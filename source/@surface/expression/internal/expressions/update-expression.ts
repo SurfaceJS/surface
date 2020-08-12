@@ -1,4 +1,3 @@
-import { Nullable }       from "@surface/core";
 import { hasValue }       from "@surface/core";
 import IExpression        from "../interfaces/expression";
 import IIdentifier        from "../interfaces/identifier";
@@ -8,36 +7,38 @@ import NodeType           from "../node-type";
 import TypeGuard          from "../type-guard";
 import { UpdateOperator } from "../types";
 
-type Operation = (object: Record<string|number, number>, property: string|number) => number;
-type Operators = "++*"|"--*"|"*++"|"*--";
+type Operation = (object: Record<string | number, number>, property: string | number) => number;
+type Operators = "++*" | "--*" | "*++" | "*--";
 
 const updateFunctions: Record<Operators, Operation> =
 {
-    "++*": (object, property) => ++object[property],
-    "--*": (object, property) => --object[property],
     "*++": (object, property) => object[property]++,
     "*--": (object, property) => object[property]--,
+    "++*": (object, property) => ++object[property],
+    "--*": (object, property) => --object[property],
 };
 
 export default class UpdateExpression implements IExpression
 {
     private readonly operation: Operation;
 
-    private cache: Nullable<number>;
+    private _argument: IIdentifier | IMemberExpression;
+    private _operator: UpdateOperator;
+    private _prefix: boolean;
 
-    private _argument: IIdentifier|IMemberExpression;
-    public get argument(): IIdentifier|IMemberExpression
+    private cache: number | null = null;
+
+    public get argument(): IIdentifier | IMemberExpression
     {
         return this._argument;
     }
 
     /* istanbul ignore next */
-    public set argument(value: IIdentifier|IMemberExpression)
+    public set argument(value: IIdentifier | IMemberExpression)
     {
         this._argument = value;
     }
 
-    private _operator: UpdateOperator;
     public get operator(): UpdateOperator
     {
         return this._operator;
@@ -49,7 +50,6 @@ export default class UpdateExpression implements IExpression
         this._operator = value;
     }
 
-    private _prefix: boolean;
     public get prefix(): boolean
     {
         return this._prefix;
@@ -66,12 +66,12 @@ export default class UpdateExpression implements IExpression
         return NodeType.UpdateExpression;
     }
 
-    public constructor(argument: IIdentifier|IMemberExpression, operator: UpdateOperator, prefix: boolean)
+    public constructor(argument: IIdentifier | IMemberExpression, operator: UpdateOperator, prefix: boolean)
     {
         this._argument = argument;
         this._prefix   = prefix;
         this._operator = operator;
-        this.operation = (this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators]);
+        this.operation = this.prefix ? updateFunctions[`${this.operator}*` as Operators] : updateFunctions[`*${this.operator}` as Operators];
     }
 
     public clone(): IUpdateExpression
@@ -88,15 +88,13 @@ export default class UpdateExpression implements IExpression
 
         if (TypeGuard.isIdentifier(this.argument))
         {
-            return this.cache = this.operation(scope as Record<string|number, number>, this.argument.name);
+            return this.cache = this.operation(scope as Record<string | number, number>, this.argument.name);
         }
-        else
-        {
-            const object   = this.argument.object.evaluate(scope, useCache) as Record<string|number, number>;
-            const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope, useCache) as string|number;
 
-            return this.cache = this.operation(object, property);
-        }
+        const object   = this.argument.object.evaluate(scope, useCache) as Record<string | number, number>;
+        const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope, useCache) as string | number;
+
+        return this.cache = this.operation(object, property);
     }
 
     public toString(): string

@@ -1,4 +1,4 @@
-import { typeGuard, Func, Indexer } from "@surface/core";
+import { Func, Indexer, typeGuard } from "@surface/core";
 import ITransformer                 from "./interfaces/transformer";
 import Route                        from "./route";
 import RouteData                    from "./route-data";
@@ -10,16 +10,16 @@ type Entry<T> =
         selector: Func<[RouteData], T>,
     };
 
-const DEFAULT_TRANFORMERS: Array<[string, ITransformer]> =
+const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 [
-    ["Boolean", { parse: Boolean,                              stringfy: x => x.toString()}],
+    ["Boolean", { parse: Boolean,                              stringfy: x => x.toString() }],
     ["Date",    { parse: (source: string) => new Date(source), stringfy: (x: Date) => x.toISOString().replace(/T.+$/, "") }],
-    ["Number",  { parse: Number,                               stringfy: x => x.toString()}]
+    ["Number",  { parse: Number,                               stringfy: x => x.toString() }],
 ];
 
 export default class Router<T = RouteData>
 {
-    protected readonly entries:     Array<Entry<T>>           = [];
+    protected readonly entries:     Entry<T>[]                = [];
     protected readonly namedEntries: Map<string, Entry<T>>    = new Map();
     protected readonly tranformers: Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
 
@@ -52,7 +52,7 @@ export default class Router<T = RouteData>
 
     public match(uri: string): RouterMatch<T>;
     public match(name: string, parameters: Indexer): RouterMatch<T>;
-    public match(...args: [string] | [string, Indexer]) : RouterMatch<T>
+    public match(...args: [string] | [string, Indexer]): RouterMatch<T>
     {
         if (args.length == 1)
         {
@@ -70,25 +70,23 @@ export default class Router<T = RouteData>
 
             return { matched: false, reason: `No match found to the path: ${uri}` };
         }
-        else
+
+        const [name, parameters] = args;
+
+        const entry = this.namedEntries.get(name);
+
+        if (entry)
         {
-            const [name, parameters] = args;
+            const match = entry.route.match(parameters);
 
-            const entry = this.namedEntries.get(name);
-
-            if (entry)
+            if (match.matched)
             {
-                const match = entry.route.match(parameters);
-
-                if (match.matched)
-                {
-                    return { matched: true, value: entry.selector(match.routeData) };
-                }
-
-                return match;
+                return { matched: true, value: entry.selector(match.routeData) };
             }
 
-            return { matched: false, reason: `No named route found to: ${name}` };
+            return match;
         }
+
+        return { matched: false, reason: `No named route found to: ${name}` };
     }
 }

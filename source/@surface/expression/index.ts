@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 
 import Evaluate          from "./internal/evaluate";
 import Expression        from "./internal/expression";

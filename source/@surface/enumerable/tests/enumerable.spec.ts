@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
 import Enumerable                              from "..";
@@ -94,7 +95,7 @@ export default class EnumerableSpec
     @test @shouldPass
     public cast(): void
     {
-        expect(Array.from(Enumerable.from([1, 2, 3] as Array<Object>).cast<number>())).to.deep.equal([1, 2, 3]);
+        expect(Array.from(Enumerable.from([1, 2, 3] as Object[]).cast<number>())).to.deep.equal([1, 2, 3]);
     }
 
     @test @shouldPass
@@ -130,13 +131,13 @@ export default class EnumerableSpec
     @test @shouldPass
     public defaultIfEmpty(): void
     {
-        expect(Array.from(Enumerable.from([1, 2] as Array<number>).defaultIfEmpty(1))).to.deep.equal([1, 2]);
+        expect(Array.from(Enumerable.from([1, 2] as number[]).defaultIfEmpty(1))).to.deep.equal([1, 2]);
     }
 
     @test @shouldPass
     public defaultIfEmptyReturnDefault(): void
     {
-        expect(Array.from(Enumerable.from([] as Array<number>).defaultIfEmpty(1))).to.deep.equal([1]);
+        expect(Array.from(Enumerable.from([] as number[]).defaultIfEmpty(1))).to.deep.equal([1]);
     }
 
     @test @shouldPass
@@ -204,7 +205,7 @@ export default class EnumerableSpec
     {
         let i = 0;
 
-        Enumerable.from([1, 2, 3]).forEach(x => i++);
+        Enumerable.from([1, 2, 3]).forEach(() => i++);
 
         expect(i).to.equal(3);
     }
@@ -223,11 +224,11 @@ export default class EnumerableSpec
 
         const inner =
         [
-            { id: 1, fk: 2, value: 1 },
-            { id: 2, fk: 2, value: 2 },
-            { id: 3, fk: 3, value: 3 },
-            { id: 4, fk: 4, value: 4 },
-            { id: 5, fk: 6, value: 5 },
+            { fk: 2, id: 1, value: 1 },
+            { fk: 2, id: 2, value: 2 },
+            { fk: 3, id: 3, value: 3 },
+            { fk: 4, id: 4, value: 4 },
+            { fk: 6, id: 5, value: 5 },
         ];
 
         const actual = Enumerable.from(outter)
@@ -241,19 +242,19 @@ export default class EnumerableSpec
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 1, fk: 2, value: 1 },
+                outter: { fk: 2, id: 1, value: 1 },
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 2, fk: 2, value: 2 },
+                outter: { fk: 2, id: 2, value: 2 },
             },
             {
                 inner:  { id: 3, value: 3 },
-                outter: { id: 3, fk: 3, value: 3 },
+                outter: { fk: 3, id: 3, value: 3 },
             },
             {
                 inner:  { id: 4, value: 4 },
-                outter: { id: 4, fk: 4, value: 4 },
+                outter: { fk: 4, id: 4, value: 4 },
             },
             {
                 inner:  { id: 5, value: 5 },
@@ -261,7 +262,7 @@ export default class EnumerableSpec
             },
             {
                 inner:  null,
-                outter: { id: 5, fk: 6, value: 5 },
+                outter: { fk: 6, id: 5, value: 5 },
             },
         ];
 
@@ -282,9 +283,9 @@ export default class EnumerableSpec
 
         const expected =
         [
-            { key: "a", elements: [{ id: 1, key: "a", value: 1 }, { id: 2, key: "a", value: 2 }] },
-            { key: "b", elements: [{ id: 3, key: "b", value: 3 }, { id: 4, key: "b", value: 4 }] },
-            { key: "c", elements: [{ id: 5, key: "c", value: 5}] },
+            { elements: [{ id: 1, key: "a", value: 1 }, { id: 2, key: "a", value: 2 }], key: "a" },
+            { elements: [{ id: 3, key: "b", value: 3 }, { id: 4, key: "b", value: 4 }], key: "b" },
+            { elements: [{ id: 5, key: "c", value: 5 }], key: "c" },
         ];
 
         expect(Array.from(Enumerable.from(data).groupBy(x => x.key))).to.deep.equal(expected);
@@ -304,9 +305,9 @@ export default class EnumerableSpec
 
         const expected =
         [
-            { key: "a", elements: [1, 2] },
-            { key: "b", elements: [3, 4] },
-            { key: "c", elements: [5] },
+            { elements: [1, 2], key: "a" },
+            { elements: [3, 4], key: "b" },
+            { elements: [5],    key: "c" },
         ];
 
         expect(Array.from(Enumerable.from(data).groupBy(x => x.key, x => x.value))).to.deep.equal(expected);
@@ -326,11 +327,11 @@ export default class EnumerableSpec
 
         const inner =
         [
-            { id: 1, fk: 2, value: 1 },
-            { id: 2, fk: 2, value: 2 },
-            { id: 3, fk: 3, value: 3 },
-            { id: 4, fk: 4, value: 4 },
-            { id: 5, fk: 6, value: 5 },
+            { fk: 2, id: 1, value: 1 },
+            { fk: 2, id: 2, value: 2 },
+            { fk: 3, id: 3, value: 3 },
+            { fk: 4, id: 4, value: 4 },
+            { fk: 6, id: 5, value: 5 },
         ];
 
         const actual = Enumerable.from(outter).groupJoin(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
@@ -343,15 +344,15 @@ export default class EnumerableSpec
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: [{ id: 1, fk: 2, value: 1 }, { id: 2, fk: 2, value: 2 }],
+                outter: [{ fk: 2, id: 1, value: 1 }, { fk: 2, id: 2, value: 2 }],
             },
             {
                 inner:  { id: 3, value: 3 },
-                outter: [{ id: 3, fk: 3, value: 3 }]
+                outter: [{ fk: 3, id: 3, value: 3 }],
             },
             {
                 inner:  { id: 4, value: 4 },
-                outter: [{ id: 4, fk: 4, value: 4 }]
+                outter: [{ fk: 4, id: 4, value: 4 }],
             },
             {
                 inner:  { id: 5, value: 5 },
@@ -382,11 +383,11 @@ export default class EnumerableSpec
 
         const inner =
         [
-            { id: 1, fk: 2, value: 1 },
-            { id: 2, fk: 2, value: 2 },
-            { id: 3, fk: 3, value: 3 },
-            { id: 4, fk: 4, value: 4 },
-            { id: 5, fk: 6, value: 5 },
+            { fk: 2, id: 1, value: 1 },
+            { fk: 2, id: 2, value: 2 },
+            { fk: 3, id: 3, value: 3 },
+            { fk: 4, id: 4, value: 4 },
+            { fk: 6, id: 5, value: 5 },
         ];
 
         const actual = Enumerable.from(outter).join(inner, x => x.id, x => x.fk, (inner, outter) => ({ inner, outter }));
@@ -395,19 +396,19 @@ export default class EnumerableSpec
         [
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 1, fk: 2, value: 1 },
+                outter: { fk: 2, id: 1, value: 1 },
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 2, fk: 2, value: 2 },
+                outter: { fk: 2, id: 2, value: 2 },
             },
             {
                 inner:  { id: 3, value: 3 },
-                outter: { id: 3, fk: 3, value: 3 },
+                outter: { fk: 3, id: 3, value: 3 },
             },
             {
                 inner:  { id: 4, value: 4 },
-                outter: { id: 4, fk: 4, value: 4 },
+                outter: { fk: 4, id: 4, value: 4 },
             },
         ];
 
@@ -458,11 +459,11 @@ export default class EnumerableSpec
 
         const inner =
         [
-            { id: 1, fk: 2, value: 1 },
-            { id: 2, fk: 2, value: 2 },
-            { id: 3, fk: 3, value: 3 },
-            { id: 4, fk: 4, value: 4 },
-            { id: 5, fk: 6, value: 5 },
+            { fk: 2, id: 1, value: 1 },
+            { fk: 2, id: 2, value: 2 },
+            { fk: 3, id: 3, value: 3 },
+            { fk: 4, id: 4, value: 4 },
+            { fk: 6, id: 5, value: 5 },
         ];
 
         const actual = Enumerable.from(outter)
@@ -476,19 +477,19 @@ export default class EnumerableSpec
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 1, fk: 2, value: 1 },
+                outter: { fk: 2, id: 1, value: 1 },
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 2, fk: 2, value: 2 },
+                outter: { fk: 2, id: 2, value: 2 },
             },
             {
                 inner:  { id: 3, value: 3 },
-                outter: { id: 3, fk: 3, value: 3 },
+                outter: { fk: 3, id: 3, value: 3 },
             },
             {
                 inner:  { id: 4, value: 4 },
-                outter: { id: 4, fk: 4, value: 4 },
+                outter: { fk: 4, id: 4, value: 4 },
             },
             {
                 inner:  { id: 5, value: 5 },
@@ -585,11 +586,11 @@ export default class EnumerableSpec
 
         const inner =
         [
-            { id: 1, fk: 2, value: 1 },
-            { id: 2, fk: 2, value: 2 },
-            { id: 3, fk: 3, value: 3 },
-            { id: 4, fk: 4, value: 4 },
-            { id: 5, fk: 6, value: 5 },
+            { fk: 2, id: 1, value: 1 },
+            { fk: 2, id: 2, value: 2 },
+            { fk: 3, id: 3, value: 3 },
+            { fk: 4, id: 4, value: 4 },
+            { fk: 6, id: 5, value: 5 },
         ];
 
         const actual = Enumerable.from(outter)
@@ -599,23 +600,23 @@ export default class EnumerableSpec
         [
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 1, fk: 2, value: 1 },
+                outter: { fk: 2, id: 1, value: 1 },
             },
             {
                 inner:  { id: 2, value: 2 },
-                outter: { id: 2, fk: 2, value: 2 },
+                outter: { fk: 2, id: 2, value: 2 },
             },
             {
                 inner:  { id: 3, value: 3 },
-                outter: { id: 3, fk: 3, value: 3 },
+                outter: { fk: 3, id: 3, value: 3 },
             },
             {
                 inner:  { id: 4, value: 4 },
-                outter: { id: 4, fk: 4, value: 4 },
+                outter: { fk: 4, id: 4, value: 4 },
             },
             {
                 inner:  null,
-                outter: { id: 5, fk: 6, value: 5 },
+                outter: { fk: 6, id: 5, value: 5 },
             },
         ];
 
@@ -658,19 +659,19 @@ export default class EnumerableSpec
             { id: 3, values: [7, 8, 9] },
         ];
 
-        const actual = Enumerable.from(data).selectMany(x => x.values, (items, item) => ({ items, item }));
+        const actual = Enumerable.from(data).selectMany(x => x.values, (items, item) => ({ item, items }));
 
         const expected =
         [
-            { item: 1, items: { id: 1, values: [1, 2, 3] }},
-            { item: 2, items: { id: 1, values: [1, 2, 3] }},
-            { item: 3, items: { id: 1, values: [1, 2, 3] }},
-            { item: 4, items: { id: 2, values: [4, 5, 6] }},
-            { item: 5, items: { id: 2, values: [4, 5, 6] }},
-            { item: 6, items: { id: 2, values: [4, 5, 6] }},
-            { item: 7, items: { id: 3, values: [7, 8, 9] }},
-            { item: 8, items: { id: 3, values: [7, 8, 9] }},
-            { item: 9, items: { id: 3, values: [7, 8, 9] }},
+            { item: 1, items: { id: 1, values: [1, 2, 3] } },
+            { item: 2, items: { id: 1, values: [1, 2, 3] } },
+            { item: 3, items: { id: 1, values: [1, 2, 3] } },
+            { item: 4, items: { id: 2, values: [4, 5, 6] } },
+            { item: 5, items: { id: 2, values: [4, 5, 6] } },
+            { item: 6, items: { id: 2, values: [4, 5, 6] } },
+            { item: 7, items: { id: 3, values: [7, 8, 9] } },
+            { item: 8, items: { id: 3, values: [7, 8, 9] } },
+            { item: 9, items: { id: 3, values: [7, 8, 9] } },
         ];
 
         expect(Array.from(actual)).to.deep.equal(expected);

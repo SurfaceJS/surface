@@ -1,9 +1,9 @@
-import { Indexer, Nullable } from "@surface/core";
-import IPropertyListener     from "./interfaces/property-listener";
+import { Indexer }       from "@surface/core";
+import IPropertyListener from "./interfaces/property-listener";
 
 export default class PropertyListener<TTarget extends Indexer = Indexer, TKey extends keyof TTarget = string> implements IPropertyListener<TTarget[TKey]>
 {
-    public constructor(private target: Nullable<TTarget>, private readonly key: TKey)
+    public constructor(private target: TTarget | null, private readonly key: TKey)
     { }
 
     public notify(value: TTarget[TKey]): void
@@ -14,7 +14,7 @@ export default class PropertyListener<TTarget extends Indexer = Indexer, TKey ex
         }
     }
 
-    public update(target: TTarget)
+    public update(target: TTarget): void
     {
         if (this.target != target)
         {

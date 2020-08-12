@@ -1,4 +1,4 @@
-// tslint:disable-next-line: no-import-side-effect
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
@@ -31,47 +31,47 @@ export default class ViewRouterSpec
     @test @shouldPass
     public configure(): void
     {
-        const routes: Array<RouteConfiguration> =
+        const routes: RouteConfiguration[] =
         [
             {
-                meta:       { userRead: true },
-                path:       "user/{id}",
-                name:       "user",
-                component:  User,
-                components: { base: UserBase },
                 children:
                 [
                     {
-                        meta:      { userProfileRead: true },
-                        path:      "profile",
-                        name:      "user-profile",
-                        component: UserProfile,
                         children:
                         [
                             {
+                                component: UserProfileDetails,
                                 meta:      { userProfileDetailsRead: true },
                                 name:      "user-profile-details",
                                 path:      "details",
-                                component: UserProfileDetails
                             },
                             {
+                                component: UserNestedRoot,
                                 meta:      { userProfileDetailsRead: true },
                                 name:      "user-nested-root",
                                 path:      "/user/nested/root",
-                                component: UserNestedRoot
-                            }
-                        ]
+                            },
+                        ],
+                        component: UserProfile,
+                        meta:      { userProfileRead: true },
+                        name:      "user-profile",
+                        path:      "profile",
                     },
                     {
-                        path:      "",
+                        component: UserIndex,
                         name:      "user-index",
-                        component: UserIndex
+                        path:      "",
                     },
-                ]
-            }
+                ],
+                component:  User,
+                components: { base: UserBase },
+                meta:       { userRead: true },
+                name:       "user",
+                path:       "user/{id}",
+            },
         ];
 
-        const expected: Array<IRouteDefinition> =
+        const expected: IRouteDefinition[] =
         [
             {
                 meta:  { userProfileDetailsRead: true },
@@ -89,7 +89,7 @@ export default class ViewRouterSpec
                 meta:  { userProfileRead: true },
                 name:  "user-profile",
                 path:  "user/{id}/profile",
-                stack: [new Map([["default", User]]), new Map([["default", UserProfile]])]
+                stack: [new Map([["default", User]]), new Map([["default", UserProfile]])],
             },
             {
                 meta:  {  },
@@ -102,7 +102,7 @@ export default class ViewRouterSpec
                 name:  "user",
                 path:  "user",
                 stack: [new Map([["default", User]])],
-            }
+            },
         ];
 
         const actual = Array.from(RouteConfigurator.configure(routes));
@@ -113,6 +113,6 @@ export default class ViewRouterSpec
     @test @shouldFail
     public configureWithoutComponent(): void
     {
-        assert.throws(() => Array.from(RouteConfigurator.configure([{ path: "/path", components: { } }])), Error, "Route \"/path\" requires at least one component");
+        assert.throws(() => Array.from(RouteConfigurator.configure([{ components: { }, path: "/path" }])), Error, "Route \"/path\" requires at least one component");
     }
 }

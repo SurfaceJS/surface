@@ -5,6 +5,7 @@ import StaticMetadata               from "./metadata/static-metadata";
 import { TEMPLATEABLE }             from "./symbols";
 import { DirectiveHandlerRegistry } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/explicit-module-boundary-types
 export const templateable = <TConstructor extends Constructor<HTMLElement>>(base: TConstructor) =>
 {
     abstract class Templateable extends base implements ICustomElement
@@ -13,8 +14,8 @@ export const templateable = <TConstructor extends Constructor<HTMLElement>>(base
 
         public shadowRoot!: ShadowRoot;
 
-        // tslint:disable-next-line:no-any
-        public constructor(...args: Array<any>)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        public constructor(...args: any[])
         {
             super(...args);
 
@@ -24,7 +25,7 @@ export const templateable = <TConstructor extends Constructor<HTMLElement>>(base
 
             if (metadata?.styles)
             {
-                (this.shadowRoot as { adoptedStyleSheets?: Array<CSSStyleSheet> }).adoptedStyleSheets = metadata.styles;
+                (this.shadowRoot as { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets = metadata.styles;
             }
 
             if (metadata?.template)
@@ -38,7 +39,6 @@ export const templateable = <TConstructor extends Constructor<HTMLElement>>(base
     return Templateable;
 };
 
-// tslint:disable-next-line:variable-name
 export default class CustomElement extends templateable(HTMLElement)
 {
     public static registerDirective<T extends DirectiveHandlerRegistry>(name: string, handlerConstructor: T): void

@@ -1,16 +1,17 @@
-import { Indexer, Nullable } from "@surface/core";
-import fs                    from "fs";
-import path                  from "path";
-import webpack               from "webpack";
-import { Entry }             from "../interfaces/types";
+import fs          from "fs";
+import path        from "path";
+import { Indexer } from "@surface/core";
+import webpack     from "webpack";
+import { Entry }   from "../interfaces/types";
 
 type Chunk =
 {
-    id:    string;
-    name:  string;
-    files: Array<string>;
+    id:    string,
+    name:  string,
+    files: string[],
 };
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace HtmlTemplatePlugin
 {
     export interface IOptions
@@ -22,7 +23,7 @@ namespace HtmlTemplatePlugin
 
 class HtmlTemplatePlugin implements webpack.Plugin
 {
-    private readonly filename: Nullable<string>;
+    private readonly filename?: string;
     private readonly template: string;
 
     public constructor(options?: Partial<HtmlTemplatePlugin.IOptions>)
@@ -43,47 +44,49 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
     private getModuleName(filepath: string): string
     {
-        let slices = filepath.split("/").reverse();
-        if (slices.length > 1 && slices[0].match(/index.[tj]s/))
+        const slices = filepath.split("/").reverse();
+        if (slices.length > 1 && /index.[tj]s/.test(slices[0]))
         {
             return slices[1];
         }
-        else
-        {
-            return slices[0];
-        }
+
+        return slices[0];
     }
 
-    private templateParse(template: string, keys: Indexer<string>): string
+    private templateParse(source: string, keys: Indexer<string>): string
     {
-        for (const key in keys)
+        let template = source;
+
+        for (const [key, value] of Object.entries(keys))
         {
-            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), keys[key] || "");
+            template = template.replace(new RegExp(`{{ *${key} *}}`, "g"), value ?? "");
         }
 
         return template;
     }
 
-    private filenameParse(filename: string, keys: Indexer<string>): string
+    private filenameParse(source: string, keys: Indexer<string>): string
     {
-        for (const key in keys)
+        let filename = source;
+
+        for (const [key, value] of Object.entries(keys))
         {
-            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), keys[key] || "");
+            filename = filename.replace(new RegExp(`\\[ *${key} *\\]`, "g"), value ?? "");
         }
 
         return filename;
     }
 
-    public apply(compiler: webpack.Compiler)
+    public apply(compiler: webpack.Compiler): void
     {
-        // tslint:disable-next-line:no-this-assignment
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
-        const filename = self.filename || "[name]/index.html";
+        const filename = self.filename ?? "[name]/index.html";
 
         compiler.hooks.emit.tap
         (
             HtmlTemplatePlugin.name,
-            function (compilation: webpack.compilation.Compilation)
+            (compilation: webpack.compilation.Compilation) =>
             {
                 if (!compiler.options.entry)
                 {
@@ -99,7 +102,7 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                 if (typeof entries == "function")
                 {
-                    entries = entries.call(undefined) as Entry;
+                    entries = entries() as Entry;
 
                     if (entries instanceof Promise)
                     {
@@ -130,11 +133,11 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                     const keys =
                     {
-                        file:   ("/" + chunk.files.filter(x => path.extname(x) == ".js")[0] || "").replace("./", ""),
-                        hash:   compilation.hash || "",
+                        file:   (`/${chunk.files.filter(x => path.extname(x) == ".js")[0]}` || "").replace("./", ""),
+                        hash:   compilation.hash ?? "",
+                        id:     chunk.id,
                         module: self.getModuleName(Array.isArray(entry) ? entry[0] : entry),
                         name:   chunk.name,
-                        id:     chunk.id
                     };
 
                     const template = fs.readFileSync(path.resolve(compiler.options.context, self.template)).toString();
@@ -145,11 +148,11 @@ class HtmlTemplatePlugin implements webpack.Plugin
 
                     compilation.assets[asset] =
                     {
+                        size:   () => html.length,
                         source: () => html,
-                        size:   () => html.length
                     };
                 }
-            }
+            },
         );
     }
 }

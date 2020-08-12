@@ -1,2338 +1,2340 @@
+/* eslint-disable max-lines */
 import Messages  from "../../internal/messages";
-import Token     from "../../internal/types/token";
 import TokenType from "../../internal/token-type";
+import Token     from "../../internal/types/token";
 
 export type ExpectedInvalidToken = { token: string, message: string };
 export type ExpectedValidToken   = { source: string, token: Token };
 
-export const validTokens: Array<ExpectedValidToken> =
+export const validTokens: ExpectedValidToken[] =
 [
     {
         source: "",
         token:
         {
-            raw:        "",
-            value:      "",
-            type:       TokenType.EOF,
-            start:      0,
             end:        0,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "",
+            start:      0,
+            type:       TokenType.EOF,
+            value:      "",
         },
     },
     {
         source: "x",
         token:
         {
-            raw:        "x",
-            value:      "x",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        1,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "x",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "x",
         },
     },
     {
         source: " x",
         token:
         {
-            raw:        "x",
-            value:      "x",
-            type:       TokenType.Identifier,
-            start:      1,
             end:        2,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "x",
+            start:      1,
+            type:       TokenType.Identifier,
+            value:      "x",
         },
     },
     {
         source: "_identifier",
         token:
         {
-            raw:        "_identifier",
-            value:      "_identifier",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        11,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "_identifier",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "_identifier",
         },
     },
     {
         source: "identifier",
         token:
         {
-            raw:        "identifier",
-            value:      "identifier",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        10,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "identifier",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "identifier",
         },
     },
     {
         source: "undefined",
         token:
         {
-            raw:        "undefined",
-            value:      undefined,
-            type:       TokenType.Identifier,
-            start:      0,
             end:        9,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "undefined",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      undefined,
         },
     },
     {
         source: "\\u0069\\u{65}",
         token:
         {
-            raw:        "\\u0069\\u{65}",
-            value:      "ie",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        12,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\u0069\\u{65}",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "ie",
         },
     },
     {
         source: "\\u{65}\\u0069",
         token:
         {
-            raw:        "\\u{65}\\u0069",
-            value:      "ei",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        12,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\u{65}\\u0069",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "ei",
         },
     },
     {
         source: "identifier_\\u{FF}",
         token:
         {
-            raw:        "identifier_\\u{FF}",
-            value:      "identifier_ÿ",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        17,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "identifier_\\u{FF}",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "identifier_ÿ",
         },
     },
     {
         source: "識別子",
         token:
         {
-            raw:        "識別子",
-            value:      "識別子",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        3,
-            lineStart:  0,
             lineNumber: 1,
+            lineStart:  0,
+            raw:        "識別子",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "識別子",
         },
     },
     {
         source: "foo你",
         token:
         {
-            raw:        "foo你",
-            value:      "foo你",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "foo你",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "foo你",
         },
     },
     {
         source: "你foo",
         token:
         {
-            raw:        "你foo",
-            value:      "你foo",
-            type:       TokenType.Identifier,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "你foo",
+            start:      0,
+            type:       TokenType.Identifier,
+            value:      "你foo",
         },
     },
     {
         source: "\"double quotes\"",
         token:
         {
-            raw:        "\"double quotes\"",
-            value:      "double quotes",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        15,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "\"double quotes\"",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "double quotes",
         },
     },
     {
         source: "'\\n'",
         token:
         {
-            raw:        "'\\n'",
-            value:      "\n",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\n'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\n",
         },
     },
     {
         source: "'\\r'",
         token:
         {
-            raw:        "'\\r'",
-            value:      "\r",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\r'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\r",
         },
     },
     {
         source: "'\\b'",
         token:
         {
-            raw:        "'\\b'",
-            value:      "\b",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\b'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\b",
         },
     },
     {
         source: "'\\t'",
         token:
         {
-            raw:        "'\\t'",
-            value:      "\t",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\t'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\t",
         },
     },
     {
         source: "'\\f'",
         token:
         {
-            raw:        "'\\f'",
-            value:      "\f",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\f'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\f",
         },
     },
     {
         source: "'\\v'",
         token:
         {
-            raw:        "'\\v'",
-            value:      "\v",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\v'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "\v",
         },
     },
     {
         source: "'\\1...'",
         token:
         {
-            raw:        "'\\1...'",
-            value:      "...",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        7,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      true
+            lineStart:  0,
+            octal:      true,
+            raw:        "'\\1...'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "...",
         },
     },
     {
         source: "'\\11...'",
         token:
         {
-            raw:        "'\\11...'",
-            value:      "	...",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        8,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      true
+            lineStart:  0,
+            octal:      true,
+            raw:        "'\\11...'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            // eslint-disable-next-line no-tabs
+            value:      "	...",
         },
     },
     {
         source: "'\\123...'",
         token:
         {
-            raw:        "'\\123...'",
-            value:      "S...",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        9,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      true
+            lineStart:  0,
+            octal:      true,
+            raw:        "'\\123...'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "S...",
         },
     },
     {
         source: "'\\u{A9}'",
         token:
         {
-            raw:        "'\\u{A9}'",
-            value:      "©",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        8,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\u{A9}'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "©",
         },
     },
     {
         source: "'\\u00A9'",
         token:
         {
-            raw:        "'\\u00A9'",
-            value:      "©",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        8,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\u00A9'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "©",
         },
     },
     {
         source: "'\\xA9'",
         token:
         {
-            raw:        "'\\xA9'",
-            value:      "©",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        6,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\xA9'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "©",
         },
     },
     {
         source: "'\\z'",
         token:
         {
-            raw:        "'\\z'",
-            value:      "z",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        4,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'\\z'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "z",
         },
     },
     {
         source: "'single quotes'",
         token:
         {
-            raw:        "'single quotes'",
-            value:      "single quotes",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        15,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'single quotes'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "single quotes",
         },
     },
     {
         source: "\"quotes '`\"",
         token:
         {
-            raw:        "\"quotes '`\"",
-            value:      "quotes '`",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        11,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "\"quotes '`\"",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "quotes '`",
         },
     },
     {
         source: "'quotes \"`'",
         token:
         {
-            raw:        "'quotes \"`'",
-            value:      "quotes \"`",
-            type:       TokenType.StringLiteral,
-            start:      0,
             end:        11,
-            lineStart:  0,
             lineNumber: 1,
-            octal:      false
+            lineStart:  0,
+            octal:      false,
+            raw:        "'quotes \"`'",
+            start:      0,
+            type:       TokenType.StringLiteral,
+            value:      "quotes \"`",
         },
     },
     {
         source: "`\\n`",
         token:
         {
-            raw:        "\\n",
-            value:      "\n",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\n",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\n",
         },
     },
     {
         source: "`\\r`",
         token:
         {
-            raw:        "\\r",
-            value:      "\r",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\r",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\r",
         },
     },
     {
         source: "`\\b`",
         token:
         {
-            raw:        "\\b",
-            value:      "\b",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\b",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\b",
         },
     },
     {
         source: "`\\t`",
         token:
         {
-            raw:        "\\t",
-            value:      "\t",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\t",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\t",
         },
     },
     {
         source: "`\\f`",
         token:
         {
-            raw:        "\\f",
-            value:      "\f",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\f",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\f",
         },
     },
     {
         source: "`\\v`",
         token:
         {
-            raw:        "\\v",
-            value:      "\v",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\v",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\v",
         },
     },
     {
         source: "`\\u{A9}`",
         token:
         {
-            raw:        "\\u{A9}",
-            value:      "©",
-            type:       TokenType.Template,
-            start:      0,
             end:        8,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\u{A9}",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "©",
         },
     },
     {
         source: "`\\u00A9`",
         token:
         {
-            raw:        "\\u00A9",
-            value:      "©",
-            type:       TokenType.Template,
-            start:      0,
             end:        8,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\u00A9",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "©",
         },
     },
     {
         source: "`\\ujs`",
         token:
         {
-            raw:        "\\ujs",
-            value:      "\\ujs",
-            type:       TokenType.Template,
-            start:      0,
             end:        6,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\ujs",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\\ujs",
         },
     },
     {
         source: "`\\xA9`",
         token:
         {
-            raw:        "\\xA9",
-            value:      "©",
-            type:       TokenType.Template,
-            start:      0,
             end:        6,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\xA9",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "©",
         },
     },
     {
         source: "`\\z`",
         token:
         {
-            raw:        "\\z",
-            value:      "z",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\z",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "z",
         },
     },
     {
         source: "`\\\r`",
         token:
         {
-            raw:        "\\\r",
-            value:      "\\\n",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  3,
-            lineNumber: 2,
             head:       true,
-            tail:       true
+            lineNumber: 2,
+            lineStart:  3,
+            raw:        "\\\r",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\\\n",
         },
     },
     {
         source: "`\\\r\n`",
         token:
         {
-            raw:        "\\\r\n",
-            value:      "\\\n",
-            type:       TokenType.Template,
-            start:      0,
             end:        5,
-            lineStart:  4,
-            lineNumber: 2,
             head:       true,
-            tail:       true
+            lineNumber: 2,
+            lineStart:  4,
+            raw:        "\\\r\n",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\\\n",
         },
     },
     {
         source: "`\r\n`",
         token:
         {
-            raw:        "\r\n",
-            value:      "\n",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  3,
-            lineNumber: 2,
             head:       true,
-            tail:       true
+            lineNumber: 2,
+            lineStart:  3,
+            raw:        "\r\n",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\n",
         },
     },
     {
         source: "`\\0a`",
         token:
         {
-            raw:        "\\0a",
-            value:      "\0a",
-            type:       TokenType.Template,
-            start:      0,
             end:        5,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\0a",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "\0a",
         },
     },
     {
         source: "`foo\nbar`",
         token:
         {
-            raw:        "foo\nbar",
-            value:      "foo\nbar",
-            type:       TokenType.Template,
-            start:      0,
             end:        9,
-            lineStart:  5,
-            lineNumber: 2,
             head:       true,
-            tail:       true
+            lineNumber: 2,
+            lineStart:  5,
+            raw:        "foo\nbar",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "foo\nbar",
         },
     },
     {
         source: "`foo$bar`",
         token:
         {
-            raw:        "foo$bar",
-            value:      "foo$bar",
-            type:       TokenType.Template,
-            start:      0,
             end:        9,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "foo$bar",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "foo$bar",
         },
     },
     {
         source: "`\\z`",
         token:
         {
-            raw:        "\\z",
-            value:      "z",
-            type:       TokenType.Template,
-            start:      0,
             end:        4,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "\\z",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "z",
         },
     },
     {
         source: "`string`",
         token:
         {
-            raw:        "string",
-            value:      "string",
-            type:       TokenType.Template,
-            start:      0,
             end:        8,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "string",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "string",
         },
     },
     {
         source: "`quotes \"'`",
         token:
         {
-            raw:        "quotes \"'",
-            value:      "quotes \"'",
-            type:       TokenType.Template,
-            start:      0,
             end:        11,
-            lineStart:  0,
-            lineNumber: 1,
             head:       true,
-            tail:       true
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "quotes \"'",
+            start:      0,
+            tail:       true,
+            type:       TokenType.Template,
+            value:      "quotes \"'",
         },
     },
     {
         source: "1",
         token:
         {
-            raw:        "1",
-            value:      1,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "1",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      1,
         },
     },
     {
         source: "123",
         token:
         {
-            raw:        "123",
-            value:      123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      123,
         },
     },
     {
         source: "123.123",
         token:
         {
-            raw:        "123.123",
-            value:      123.123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        7,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123.123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      123.123,
         },
     },
     {
         source: "0.",
         token:
         {
-            raw:        "0.",
-            value:      0,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0.",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0,
         },
     },
     {
         source: ".123",
         token:
         {
-            raw:        ".123",
-            value:      0.123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ".123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0.123,
         },
     },
     {
         source: "123_123",
         token:
         {
-            raw:        "123_123",
-            value:      123123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        7,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123_123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      123123,
         },
     },
     {
         source: "123_123.123",
         token:
         {
-            raw:        "123_123.123",
-            value:      123123.123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        11,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123_123.123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      123123.123,
         },
     },
     {
         source: ".123_123",
         token:
         {
-            raw:        ".123_123",
-            value:      0.123123,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        8,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ".123_123",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0.123123,
         },
     },
     {
         source: "123e+1",
         token:
         {
-            raw:        "123e+1",
-            value:      1230,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123e+1",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      1230,
         },
     },
     {
         source: "123e-1",
         token:
         {
-            raw:        "123e-1",
-            value:      12.3,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "123e-1",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      12.3,
         },
     },
     {
         source: "0x0123456789abcdef",
         token:
         {
-            raw:        "0x0123456789abcdef",
-            value:      81985529216486900,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        18,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0x0123456789abcdef",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      81985529216486900,
         },
     },
     {
         source: "0X0123456789ABCDEF",
         token:
         {
-            raw:        "0X0123456789ABCDEF",
-            value:      81985529216486900,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        18,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0X0123456789ABCDEF",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      81985529216486900,
         },
     },
     {
         source: "0x0123456789_abcdef",
         token:
         {
-            raw:        "0x0123456789_abcdef",
-            value:      81985529216486900,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        19,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0x0123456789_abcdef",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      81985529216486900,
         },
     },
     {
         source: "0X0123456789_ABCDEF",
         token:
         {
-            raw:        "0X0123456789_ABCDEF",
-            value:      81985529216486900,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        19,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0X0123456789_ABCDEF",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      81985529216486900,
         },
     },
     {
         source: "0b0101",
         token:
         {
-            raw:        "0b0101",
-            value:      5,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0b0101",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      5,
         },
     },
     {
         source: "0b0101 ",
         token:
         {
-            raw:        "0b0101",
-            value:      5,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0b0101",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      5,
         },
     },
     {
         source: "0B0101",
         token:
         {
-            raw:        "0B0101",
-            value:      5,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0B0101",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      5,
         },
     },
     {
         source: "0b0101_0101",
         token:
         {
-            raw:        "0b0101_0101",
-            value:      85,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        11,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0b0101_0101",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      85,
         },
     },
     {
         source: "0B0101_0101",
         token:
         {
-            raw:        "0B0101_0101",
-            value:      85,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        11,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0B0101_0101",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      85,
         },
     },
     {
         source: "018",
         token:
         {
-            raw:        "018",
-            value:      18,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "018",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      18,
         },
     },
     {
         source: "019",
         token:
         {
-            raw:        "019",
-            value:      19,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "019",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      19,
         },
     },
     {
         source: "08",
         token:
         {
-            raw:        "08",
-            value:      8,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "08",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      8,
         },
     },
     {
         source: "01234567",
         token:
         {
-            raw:        "01234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        8,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "01234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "0_1234567",
         token:
         {
-            raw:        "0_1234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        9,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0_1234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "0o1234567",
         token:
         {
-            raw:        "0o1234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        9,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0o1234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "0O1234567",
         token:
         {
-            raw:        "0O1234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        9,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0O1234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "0o1_234567",
         token:
         {
-            raw:        "0o1_234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        10,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0o1_234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "0O1_234567",
         token:
         {
-            raw:        "0O1_234567",
-            value:      342391,
-            type:       TokenType.NumericLiteral,
-            start:      0,
             end:        10,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "0O1_234567",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      342391,
         },
     },
     {
         source: "true",
         token:
         {
-            raw:        "true",
-            value:      true,
-            type:       TokenType.BooleanLiteral,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "true",
+            start:      0,
+            type:       TokenType.BooleanLiteral,
+            value:      true,
         },
     },
     {
         source: "false",
         token:
         {
-            raw:        "false",
-            value:      false,
-            type:       TokenType.BooleanLiteral,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "false",
+            start:      0,
+            type:       TokenType.BooleanLiteral,
+            value:      false,
         },
     },
     {
         source: "null",
         token:
         {
-            raw:        "null",
-            value:      null,
-            type:       TokenType.NullLiteral,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "null",
+            start:      0,
+            type:       TokenType.NullLiteral,
+            value:      null,
         },
     },
     {
         source: "if",
         token:
         {
-            raw:        "if",
-            value:      "if",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "if",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "if",
         },
     },
     {
         source: "in",
         token:
         {
-            raw:        "in",
-            value:      "in",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "in",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "in",
         },
     },
     {
         source: "do",
         token:
         {
-            raw:        "do",
-            value:      "do",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "do",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "do",
         },
     },
     {
         source: "var",
         token:
         {
-            raw:        "var",
-            value:      "var",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "var",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "var",
         },
     },
     {
         source: "for",
         token:
         {
-            raw:        "for",
-            value:      "for",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "for",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "for",
         },
     },
     {
         source: "new",
         token:
         {
-            raw:        "new",
-            value:      "new",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "new",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "new",
         },
     },
     {
         source: "try",
         token:
         {
-            raw:        "try",
-            value:      "try",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "try",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "try",
         },
     },
     {
         source: "let",
         token:
         {
-            raw:        "let",
-            value:      "let",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "let",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "let",
         },
     },
     {
         source: "this",
         token:
         {
-            raw:        "this",
-            value:      "this",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "this",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "this",
         },
     },
     {
         source: "else",
         token:
         {
-            raw:        "else",
-            value:      "else",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "else",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "else",
         },
     },
     {
         source: "case",
         token:
         {
-            raw:        "case",
-            value:      "case",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "case",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "case",
         },
     },
     {
         source: "void",
         token:
         {
-            raw:        "void",
-            value:      "void",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "void",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "void",
         },
     },
     {
         source: "with",
         token:
         {
-            raw:        "with",
-            value:      "with",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "with",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "with",
         },
     },
     {
         source: "enum",
         token:
         {
-            raw:        "enum",
-            value:      "enum",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "enum",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "enum",
         },
     },
     {
         source: "while",
         token:
         {
-            raw:        "while",
-            value:      "while",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "while",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "while",
         },
     },
     {
         source: "break",
         token:
         {
-            raw:        "break",
-            value:      "break",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "break",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "break",
         },
     },
     {
         source: "catch",
         token:
         {
-            raw:        "catch",
-            value:      "catch",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "catch",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "catch",
         },
     },
     {
         source: "throw",
         token:
         {
-            raw:        "throw",
-            value:      "throw",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "throw",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "throw",
         },
     },
     {
         source: "const",
         token:
         {
-            raw:        "const",
-            value:      "const",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "const",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "const",
         },
     },
     {
         source: "yield",
         token:
         {
-            raw:        "yield",
-            value:      "yield",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "yield",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "yield",
         },
     },
     {
         source: "class",
         token:
         {
-            raw:        "class",
-            value:      "class",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "class",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "class",
         },
     },
     {
         source: "super",
         token:
         {
-            raw:        "super",
-            value:      "super",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        5,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "super",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "super",
         },
     },
     {
         source: "return",
         token:
         {
-            raw:        "return",
-            value:      "return",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "return",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "return",
         },
     },
     {
         source: "typeof",
         token:
         {
-            raw:        "typeof",
-            value:      "typeof",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "typeof",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "typeof",
         },
     },
     {
         source: "delete",
         token:
         {
-            raw:        "delete",
-            value:      "delete",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "delete",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "delete",
         },
     },
     {
         source: "switch",
         token:
         {
-            raw:        "switch",
-            value:      "switch",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "switch",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "switch",
         },
     },
     {
         source: "export",
         token:
         {
-            raw:        "export",
-            value:      "export",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "export",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "export",
         },
     },
     {
         source: "import",
         token:
         {
-            raw:        "import",
-            value:      "import",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        6,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "import",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "import",
         },
     },
     {
         source: "default",
         token:
         {
-            raw:        "default",
-            value:      "default",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        7,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "default",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "default",
         },
     },
     {
         source: "finally",
         token:
         {
-            raw:        "finally",
-            value:      "finally",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        7,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "finally",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "finally",
         },
     },
     {
         source: "extends",
         token:
         {
-            raw:        "extends",
-            value:      "extends",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        7,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "extends",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "extends",
         },
     },
     {
         source: "function",
         token:
         {
-            raw:        "function",
-            value:      "function",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        8,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "function",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "function",
         },
     },
     {
         source: "function",
         token:
         {
-            raw:        "function",
-            value:      "function",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        8,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "function",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "function",
         },
     },
     {
         source: "debugger",
         token:
         {
-            raw:        "debugger",
-            value:      "debugger",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        8,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "debugger",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "debugger",
         },
     },
     {
         source: "instanceof",
         token:
         {
-            raw:        "instanceof",
-            value:      "instanceof",
-            type:       TokenType.Keyword,
-            start:      0,
             end:        10,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "instanceof",
+            start:      0,
+            type:       TokenType.Keyword,
+            value:      "instanceof",
         },
     },
     {
         source: "(",
         token:
         {
-            raw:        "(",
-            value:      "(",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "(",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "(",
         },
     },
     {
         source: "{",
         token:
         {
-            raw:        "{",
-            value:      "{",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "{",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "{",
         },
     },
     {
         source: ".",
         token:
         {
-            raw:        ".",
-            value:      ".",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ".",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ".",
         },
     },
     {
         source: "...",
         token:
         {
-            raw:        "...",
-            value:      "...",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "...",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "...",
         },
     },
     {
         source: "}",
         token:
         {
-            raw:        "}",
-            value:      "}",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "}",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "}",
         },
     },
     {
         source: ")",
         token:
         {
-            raw:        ")",
-            value:      ")",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ")",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ")",
         },
     },
     {
         source: ";",
         token:
         {
-            raw:        ";",
-            value:      ";",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ";",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ";",
         },
     },
     {
         source: ",",
         token:
         {
-            raw:        ",",
-            value:      ",",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ",",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ",",
         },
     },
     {
         source: "[",
         token:
         {
-            raw:       "[",
-            value:     "[",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "[",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "[",
         },
     },
     {
         source: "]",
         token:
         {
-            raw:        "]",
-            value:      "]",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "]",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "]",
         },
     },
     {
         source: ":",
         token:
         {
-            raw:        ":",
-            value:      ":",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ":",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ":",
         },
     },
     {
         source: "?",
         token:
         {
-            raw:        "?",
-            value:      "?",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "?",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "?",
         },
     },
     {
         source: "?.",
         token:
         {
-            raw:        "?.",
-            value:      "?.",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "?.",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "?.",
         },
     },
     {
         source: "?.0",
         token:
         {
-            raw:        "?",
-            value:      "?",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "?",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "?",
         },
     },
     {
         source: "?.x",
         token:
         {
-            raw:        "?.",
-            value:      "?.",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "?.",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "?.",
         },
     },
     {
         source: "??",
         token:
         {
-            raw:        "??",
-            value:      "??",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "??",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "??",
         },
     },
     {
         source: "~",
         token:
         {
-            raw:        "~",
-            value:      "~",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "~",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "~",
         },
     },
     {
         source: ">>>=",
         token:
         {
-            raw:        ">>>=",
-            value:      ">>>=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        4,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">>>=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">>>=",
         },
     },
     {
         source: "===",
         token:
         {
-            raw:        "===",
-            value:      "===",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "===",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "===",
         },
     },
     {
         source: "!==",
         token:
         {
-            raw:        "!==",
-            value:      "!==",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "!==",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "!==",
         },
     },
     {
         source: ">>>",
         token:
         {
-            raw:        ">>>",
-            value:      ">>>",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">>>",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">>>",
         },
     },
     {
         source: "<<=",
         token:
         {
-            raw:        "<<=",
-            value:      "<<=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "<<=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "<<=",
         },
     },
     {
         source: ">>=",
         token:
         {
-            raw:        ">>=",
-            value:      ">>=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">>=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">>=",
         },
     },
     {
         source: "**=",
         token:
         {
-            raw:        "**=",
-            value:      "**=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        3,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "**=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "**=",
         },
     },
     {
         source: "&&",
         token:
         {
-            raw:        "&&",
-            value:      "&&",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "&&",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "&&",
         },
     },
     {
         source: "||",
         token:
         {
-            raw:        "||",
-            value:      "||",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "||",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "||",
         },
     },
     {
         source: "==",
         token:
         {
-            raw:        "==",
-            value:      "==",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "==",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "==",
         },
     },
     {
         source: "!=",
         token:
         {
-            raw:        "!=",
-            value:      "!=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "!=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "!=",
         },
     },
     {
         source: "+=",
         token:
         {
-            raw:        "+=",
-            value:      "+=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "+=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "+=",
         },
     },
     {
         source: "-=",
         token:
         {
-            raw:        "-=",
-            value:      "-=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "-=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "-=",
         },
     },
     {
         source: "*=",
         token:
         {
-            raw:        "*=",
-            value:      "*=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "*=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "*=",
         },
     },
     {
         source: "/=",
         token:
         {
-            raw:        "/=",
-            value:      "/=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "/=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "/=",
         },
     },
     {
         source: "++",
         token:
         {
-            raw:        "++",
-            value:      "++",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "++",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "++",
         },
     },
     {
         source: "--",
         token:
         {
-            raw:        "--",
-            value:      "--",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "--",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "--",
         },
     },
     {
         source: "<<",
         token:
         {
-            raw:        "<<",
-            value:      "<<",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "<<",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "<<",
         },
     },
     {
         source: ">>",
         token:
         {
-            raw:        ">>",
-            value:      ">>",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">>",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">>",
         },
     },
     {
         source: "&=",
         token:
         {
-            raw:        "&=",
-            value:      "&=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "&=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "&=",
         },
     },
     {
         source: "|=",
         token:
         {
-            raw:        "|=",
-            value:      "|=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "|=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "|=",
         },
     },
     {
         source: "^=",
         token:
         {
-            raw:        "^=",
-            value:      "^=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "^=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "^=",
         },
     },
     {
         source: "%=",
         token:
         {
-            raw:        "%=",
-            value:      "%=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "%=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "%=",
         },
     },
     {
         source: "<=",
         token:
         {
-            raw:        "<=",
-            value:      "<=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "<=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "<=",
         },
     },
     {
         source: ">=",
         token:
         {
-            raw:        ">=",
-            value:      ">=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">=",
         },
     },
     {
         source: "=>",
         token:
         {
-            raw:        "=>",
-            value:      "=>",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "=>",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "=>",
         },
     },
     {
         source: "**",
         token:
         {
-            raw:        "**",
-            value:      "**",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        2,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "**",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "**",
         },
     },
     {
         source: "<",
         token:
         {
-            raw:        "<",
-            value:      "<",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "<",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "<",
         },
     },
     {
         source: ">",
         token:
         {
-            raw:        ">",
-            value:      ">",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        ">",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      ">",
         },
     },
     {
         source: "=",
         token:
         {
-            raw:        "=",
-            value:      "=",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "=",
         },
     },
     {
         source: "!",
         token:
         {
-            raw:        "!",
-            value:      "!",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "!",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "!",
         },
     },
     {
         source: "+",
         token:
         {
-            raw:        "+",
-            value:      "+",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "+",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "+",
         },
     },
     {
         source: "-",
         token:
         {
-            raw:        "-",
-            value:      "-",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "-",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "-",
         },
     },
     {
         source: "*",
         token:
         {
-            raw:        "*",
-            value:      "*",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "*",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "*",
         },
     },
     {
         source: "%",
         token:
         {
-            raw:        "%",
-            value:      "%",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "%",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "%",
         },
     },
     {
         source: "&",
         token:
         {
-            raw:        "&",
-            value:      "&",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "&",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "&",
         },
     },
     {
         source: "|",
         token:
         {
-            raw:        "|",
-            value:      "|",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "|",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "|",
         },
     },
     {
         source: "^",
         token:
         {
-            raw:        "^",
-            value:      "^",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "^",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "^",
         },
     },
     {
         source: "/",
         token:
         {
-            raw:        "/",
-            value:      "/",
-            type:       TokenType.Punctuator,
-            start:      0,
             end:        1,
+            lineNumber: 1,
             lineStart:  0,
-            lineNumber: 1
+            raw:        "/",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "/",
         },
     },
 ];
 
-export const invalidTokens: Array<ExpectedInvalidToken> =
+export const invalidTokens: ExpectedInvalidToken[] =
 [
-    { token: "𐏿",                          message: Messages.invalidOrUnexpectedToken },
-    { token: "\\u{}",                       message: Messages.invalidUnicodeEscapeSequence },
-    { token: "0.123e*1",                    message: Messages.invalidOrUnexpectedToken },
-    { token: "¬",                           message: Messages.invalidOrUnexpectedToken },
-    { token: "1i",                          message: Messages.invalidOrUnexpectedToken },
-    { token: "\\xD800",                     message: Messages.invalidOrUnexpectedToken },
-    { token: "\\uD800",                     message: Messages.invalidOrUnexpectedToken },
-    { token: "\\u{AH}",                     message: Messages.invalidUnicodeEscapeSequence },
-    { token: "\\u{123}\\x",                 message: Messages.invalidOrUnexpectedToken },
-    { token: "\\u{123}\\uD800",             message: Messages.invalidOrUnexpectedToken },
-    { token: "x\\z",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "0x",                          message: Messages.invalidOrUnexpectedToken },
-    { token: "0xFFoo",                      message: Messages.invalidOrUnexpectedToken },
-    { token: "0xhij",                       message: Messages.invalidOrUnexpectedToken },
-    { token: "0b23",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "'\r'",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "'\\\r'",                      message: Messages.invalidOrUnexpectedToken },
-    { token: "'\\uA9'",                     message: Messages.invalidUnicodeEscapeSequence },
-    { token: "0b",                          message: Messages.invalidOrUnexpectedToken },
-    { token: "0B",                          message: Messages.invalidOrUnexpectedToken },
-    { token: "0B0a",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "0B09",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "0o8",                         message: Messages.invalidOrUnexpectedToken },
-    { token: "0O8",                         message: Messages.invalidOrUnexpectedToken },
-    { token: "0o1a",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "0O1a",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "`foo",                        message: Messages.invalidOrUnexpectedToken },
-    { token: "`\\1`",                       message: Messages.octalLiteralsAreNotAllowedInTemplateStrings },
-    { token: "`\\01`",                      message: Messages.octalLiteralsAreNotAllowedInTemplateStrings },
-    { token: "\\u{006E}\\u{0065}\\u{0077}", message: Messages.keywordMustNotContainEscapedCharacters },
-    { token: "'\\xh'",                      message: Messages.invalidHexadecimalEscapeSequence },
-    { token: "`\\xh`",                      message: Messages.invalidHexadecimalEscapeSequence },
-    { token: "1_.123",                      message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "1._123",                      message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "1.123_",                      message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0x_12",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0x12_",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0b_10",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0b10_",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0o_10",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0O_10",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0o10_",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "0O10_",                       message: Messages.numericSerapatorsAreNotAllowedHere },
-    { token: "010_",                        message: Messages.numericSerapatorsAreNotAllowedHere },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "𐏿" },
+    { message: Messages.invalidUnicodeEscapeSequence,                token: "\\u{}" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0.123e*1" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "¬" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "1i" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "\\xD800" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "\\uD800" },
+    { message: Messages.invalidUnicodeEscapeSequence,                token: "\\u{AH}" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "\\u{123}\\x" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "\\u{123}\\uD800" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "x\\z" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0x" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0xFFoo" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0xhij" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0b23" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "'\r'" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "'\\\r'" },
+    { message: Messages.invalidUnicodeEscapeSequence,                token: "'\\uA9'" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0b" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0B" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0B0a" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0B09" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0o8" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0O8" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0o1a" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "0O1a" },
+    { message: Messages.invalidOrUnexpectedToken,                    token: "`foo" },
+    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings, token: "`\\1`" },
+    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings, token: "`\\01`" },
+    { message: Messages.keywordMustNotContainEscapedCharacters,      token: "\\u{006E}\\u{0065}\\u{0077}" },
+    { message: Messages.invalidHexadecimalEscapeSequence,            token: "'\\xh'" },
+    { message: Messages.invalidHexadecimalEscapeSequence,            token: "`\\xh`" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1_.123" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1._123" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1.123_" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0x_12" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0x12_" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0b_10" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0b10_" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0o_10" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0O_10" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0o10_" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0O10_" },
+    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "010_" },
 ];

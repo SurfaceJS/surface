@@ -20,7 +20,7 @@ export default class Hashcode
 
         const signature = this.getSignature(source);
 
-        return signature.split("").reduce((previous, current) => (previous * bits * current.charCodeAt(0)) % max, initialValue);
+        return signature.split("").reduce((previous, current) => previous * bits * current.charCodeAt(0) % max, initialValue);
     }
 
     private getSignature(source: unknown): string

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
@@ -28,7 +29,8 @@ export default class DataBindSpec
 
         Object.defineProperty(target, "value", { value: target.value, writable: false });
 
-        DataBind.oneWay(target, ["value"], { notify: () => undefined }); // Todo: Review if should throw error or not
+        // Todo: Review if should throw error or not
+        DataBind.oneWay(target, ["value"], { notify: () => undefined });
 
         assert.isTrue(true);
     }
@@ -157,7 +159,7 @@ export default class DataBindSpec
 
         let observed = false;
 
-        DataBind.observe(target, [["value", "length"]], { notify: () => observed = true } );
+        DataBind.observe(target, [["value", "length"]], { notify: () => observed = true });
 
         assert.isTrue(observed);
     }

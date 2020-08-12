@@ -16,8 +16,8 @@ export default abstract class RequestHandler
     protected constructor(fs:  FS, path:  Path);
     protected constructor(fs?: FS, path?: Path)
     {
-        this.fs   = fs   || internal.fs;
-        this.path = path || internal.path;
+        this.fs   = fs   ?? internal.fs;
+        this.path = path ?? internal.path;
     }
 
     public abstract handle(httpContext: HttpContext): Promise<boolean>;

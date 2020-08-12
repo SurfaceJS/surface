@@ -8,11 +8,11 @@ import { Method }      from "./types";
 
 export default class Mock<T extends object>
 {
-    private readonly setups: Map<string|symbol|number, IExecutable> = new Map();
+    private readonly setups: Map<string | symbol | number, IExecutable> = new Map();
 
     public readonly proxy: T;
 
-    public constructor(target: T|(Constructor<T> & Function) = { } as T)
+    public constructor(target: T | (Constructor<T> & Function) = { } as T)
     {
         this.proxy = this.createProxy(typeof target == "object" ? target : target.prototype);
     }
@@ -46,21 +46,18 @@ export default class Mock<T extends object>
                     {
                         return { ...descriptor, value };
                     }
-                    else
-                    {
-                        return { value, writable: true, configurable: true, enumerable: true };
-                    }
+
+                    return { configurable: true, enumerable: true, value, writable: true };
                 }
 
                 return descriptor;
-            }
+            },
         };
 
         return new Proxy(target, handler);
     }
 
-    // tslint:disable-next-line: no-any
-    public setup<K extends keyof T, F extends Method<T, K>>(key: K|symbol|number): ICallSetup<F>
+    public setup<K extends keyof T, F extends Method<T, K>>(key: K | symbol | number): ICallSetup<F>
     {
         let setup = this.setups.get(key);
 

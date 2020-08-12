@@ -4,6 +4,6 @@ export default class CustomStackError extends Error
     {
         super(message);
 
-        this.stack = message + "\n" + stack;
+        this.stack = `${message}\n${stack}`;
     }
 }

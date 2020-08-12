@@ -1,14 +1,16 @@
-import { deepMergeCombine, Indexer } from "@surface/core";
+/* eslint-disable no-param-reassign */
+import fs                            from "fs";
+import os                            from "os";
+import path                          from "path";
+import { Indexer, deepMergeCombine } from "@surface/core";
 import { resolveFile }               from "@surface/io";
 import chalk                         from "chalk";
 import ForkTsCheckerWebpackPlugin    from "fork-ts-checker-webpack-plugin";
-import fs                            from "fs";
-import path                          from "path";
 import rimraf                        from "rimraf";
 import TerserWebpackPlugin           from "terser-webpack-plugin";
 import webpack                       from "webpack";
 import { EnviromentType, TasksType } from "./enums";
-import IConfiguration                from "./interfaces/configuration";
+import Configuration                 from "./interfaces/configuration";
 import { Entry }                     from "./interfaces/types";
 import HtmlTemplatePlugin            from "./plugins/html-template-plugin";
 import SimblingPriorityPlugin        from "./plugins/simbling-priority-plugin";
@@ -17,86 +19,87 @@ const loaders =
 {
     cache:
     {
-        loader: "cache-loader",
+        loader:  "cache-loader",
         options:
         {
-            cacheDirectory: path.resolve(__dirname, ".cache")
-        }
+            cacheDirectory: path.resolve(__dirname, ".cache"),
+        },
     },
-    css: { loader: "css-loader" },
+    css:     { loader: "css-loader" },
+    extract: { loader: "extract-loader" },
     file:
     {
-        loader: "file-loader",
-        options: { name: "[hash].[ext]", outputPath: "resources" }
+        loader:  "file-loader",
+        options: { name: "[hash].[ext]", outputPath: "resources" },
     },
     fileCss:
     {
-        loader: "file-loader",
-        options: { name: "[hash].css", outputPath: "resources", esModule: false }
+        loader:  "file-loader",
+        options: { esModule: false, name: "[hash].css", outputPath: "resources" },
     },
-    extract: { loader: "extract-loader" },
     html:
     {
-        loader: "html-loader",
+        loader:  "html-loader",
         options:
         {
             attributes: true,
             esModule:   true,
-            minimize:   true
-        }
+            minimize:   true,
+        },
     },
     resolveUrl:
     {
-        loader: "resolve-url-loader",
+        loader:  "resolve-url-loader",
         options:
         {
-            removeCR: true
-        }
+            removeCR: true,
+        },
     },
     sass:       { loader: "sass-loader" },
     style:      { loader: "style-loader" },
     thread:
     {
-        loader: "thread-loader",
+        loader:  "thread-loader",
         options:
         {
-          // there should be 1 cpu for the fork-ts-checker-webpack-plugin
-          workers: require("os").cpus().length - 1,
+            // There should be 1 cpu for the fork-ts-checker-webpack-plugin
+            workers: os.cpus().length - 1,
         },
     },
     toString: { loader: "to-string-loader" },
     ts:
     {
-        loader: "ts-loader",
+        loader:  "ts-loader",
         options:
         {
             configFile:              "tsconfig.json",
             happyPackMode:           true,
             onlyCompileBundledFiles: true,
-            transpileOnly:           true
-        }
+            transpileOnly:           true,
+        },
     },
 };
 
 export default class Compiler
 {
+
     /**
      * Build Surface project using provided configuration.
      * @param config     Webpack configuration.
      * @param enviroment Enviroment variable.
      * @param watch      Enable watch mode.
      */
-    private static async build(config: webpack.Configuration, enviroment: EnviromentType, watch: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
+    private static build(config: Readonly<webpack.Configuration>, enviroment: EnviromentType, watch: boolean, statsLevel?: webpack.Stats.Preset): void
     {
         const webpackCompiler = webpack(config);
 
-        const statOptions: webpack.Stats.ToStringOptions = statsLevel ??
-        {
+        const statOptions: webpack.Stats.ToStringOptions = statsLevel
+        ?? {
             assets:   true,
-            errors:   true,
             colors:   true,
+            errors:   true,
             version:  true,
-            warnings: true
+            warnings: true,
         };
 
         const callback: webpack.Compiler.Handler =
@@ -106,7 +109,7 @@ export default class Compiler
 
         if (watch)
         {
-            webpackCompiler.watch({ aggregateTimeout: 500, poll: true, ignored: /node_modules/ }, callback);
+            webpackCompiler.watch({ aggregateTimeout: 500, ignored: /node_modules/, poll: true }, callback);
         }
         else
         {
@@ -120,14 +123,14 @@ export default class Compiler
      */
     private static async clean(config: webpack.Configuration): Promise<void>
     {
-        if (config.output && config.output.path)
+        if (config.output?.path)
         {
             const outputPath = config.output.path;
 
             const promises =
             [
                 new Promise(resolve => rimraf(outputPath, resolve)),
-                new Promise(resolve => rimraf(path.resolve(__dirname, ".cache"), resolve))
+                new Promise(resolve => rimraf(path.resolve(__dirname, ".cache"), resolve)),
             ];
 
             await Promise.all(promises);
@@ -143,11 +146,14 @@ export default class Compiler
      * @param path        Path to Surface config.
      * @param enviroment  Enviroment variable.
      */
+    // eslint-disable-next-line max-lines-per-function
     private static getConfig(filepath: string, enviroment: EnviromentType): webpack.Configuration
     {
+        // eslint-disable-next-line no-param-reassign
         filepath = resolveFile(process.cwd(), [filepath, path.join(filepath, `surface.config.${enviroment}.json`), path.join(filepath, "surface.config.json")]);
 
-        const configuration = require(filepath) as IConfiguration;
+        // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-dynamic-require
+        const configuration = require(filepath) as Configuration;
 
         const root = path.dirname(filepath);
 
@@ -176,6 +182,7 @@ export default class Compiler
         {
             if (typeof configuration.webpackConfig == "string" && fs.existsSync(configuration.webpackConfig))
             {
+                // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-dynamic-require
                 userWebpack = require(path.resolve(root, configuration.webpackConfig)) as webpack.Configuration;
             }
             else
@@ -187,8 +194,8 @@ export default class Compiler
         configuration.tsconfig = configuration.tsconfig && (path.resolve(root, configuration.tsconfig) ?? "tsconfig.json");
         configuration.tslint   = configuration.tslint   && path.resolve(root, configuration.tslint);
 
-        const resolvePlugins: Array<webpack.ResolvePlugin> = [];
-        const plugins:        Array<webpack.Plugin>        = [];
+        const resolvePlugins: webpack.ResolvePlugin[] = [];
+        const plugins:        webpack.Plugin[]        = [];
 
         if (configuration.simblingResolve)
         {
@@ -222,7 +229,7 @@ export default class Compiler
             plugins.push(new HtmlTemplatePlugin(configuration.htmlTemplate));
         }
 
-        const isProduction = enviroment == EnviromentType.production;
+        const isProduction = enviroment == EnviromentType.Production;
 
         const tersePlugin = new TerserWebpackPlugin
         ({
@@ -233,7 +240,7 @@ export default class Compiler
             {
                 compress: true,
                 mangle:   true,
-            }
+            },
         });
 
         const webpackConfiguration: webpack.Configuration =
@@ -248,10 +255,9 @@ export default class Compiler
                 [
                     {
                         test: /\.(png|jpe?g|svg|ttf|woff2?|eot)$/,
-                        use:  loaders.file
+                        use:  loaders.file,
                     },
                     {
-                        test: /\.s?css$/,
                         oneOf:
                         [
                             {
@@ -261,8 +267,8 @@ export default class Compiler
                                     loaders.style,
                                     loaders.css,
                                     loaders.resolveUrl,
-                                    loaders.sass
-                                ]
+                                    loaders.sass,
+                                ],
                             },
                             {
                                 resourceQuery: /raw/,
@@ -272,7 +278,7 @@ export default class Compiler
                                     loaders.css,
                                     loaders.resolveUrl,
                                     loaders.sass,
-                                ]
+                                ],
                             },
                             {
                                 resourceQuery: /file/,
@@ -282,8 +288,8 @@ export default class Compiler
                                     loaders.extract,
                                     loaders.css,
                                     loaders.resolveUrl,
-                                    loaders.sass
-                                ]
+                                    loaders.sass,
+                                ],
                             },
                             {
                                 use:
@@ -292,13 +298,14 @@ export default class Compiler
                                     loaders.css,
                                     loaders.resolveUrl,
                                     loaders.sass,
-                                ]
+                                ],
                             },
-                        ]
+                        ],
+                        test:  /\.s?css$/,
                     },
                     {
                         test: /\.html$/,
-                        use:  loaders.html
+                        use:  loaders.html,
                     },
                     {
                         test: /\.ts$/,
@@ -306,10 +313,10 @@ export default class Compiler
                         [
                             loaders.cache,
                             loaders.thread,
-                            loaders.ts
+                            loaders.ts,
                         ],
                     },
-                ]
+                ],
             },
             optimization:
             {
@@ -331,23 +338,23 @@ export default class Compiler
                         {
                             minChunks:          2,
                             priority:           -20,
-                            reuseExistingChunk: true
+                            reuseExistingChunk: true,
                         },
                         vendors:
                         {
+                            priority: -10,
                             test:     /[\\/]node_modules[\\/]/,
-                            priority: -10
-                        }
+                        },
                     },
                     chunks:             "async",
                     maxAsyncRequests:   5,
                     maxInitialRequests: 3,
                     maxSize:            0,
-                    minSize:            30000,
                     minChunks:          1,
+                    minSize:            30000,
                     name:               true,
                 },
-                usedExports: isProduction
+                usedExports: isProduction,
             },
             output:
             {
@@ -356,11 +363,11 @@ export default class Compiler
                 pathinfo:   !isProduction,
                 publicPath: "/",
             },
-            plugins: plugins,
             performance:
             {
-                hints: isProduction ? "warning" : false
+                hints: isProduction ? "warning" : false,
             },
+            plugins,
             resolve:
             {
                 alias:      { tslib: path.resolve(__dirname, "../node_modules", "tslib") },
@@ -375,8 +382,8 @@ export default class Compiler
                     "node_modules",
                     path.resolve(__dirname, "./loaders"),
                     path.resolve(__dirname, "../node_modules"),
-                    path.resolve(__dirname, "../node_modules", "@surface")
-                ]
+                    path.resolve(__dirname, "../node_modules", "@surface"),
+                ],
             },
         };
 
@@ -394,7 +401,7 @@ export default class Compiler
 
         if (typeof entries == "function")
         {
-            entries = entries.call(undefined) as Entry;
+            entries = entries() as Entry;
         }
 
         if (typeof entries == "string")
@@ -413,10 +420,9 @@ export default class Compiler
             entries = tmp;
         }
 
-        for (const key in entries)
+        for (const [key, value] of Object.entries(entries) as [string, string | string[]][])
         {
             // Open issue for broken narrowing
-            const value   = (entries as Record<string, string|Array<string>>)[key];
             const sources = Array.isArray(value) ? value : [value];
 
             for (const source of sources.map(x => x.replace(/\/\*$/, "")))
@@ -432,7 +438,7 @@ export default class Compiler
                         {
                             if (fs.lstatSync(modulePath).isDirectory())
                             {
-                                const index = fs.readdirSync(modulePath).filter(x => x.match(/index\.[tj]s/))[0];
+                                const index = fs.readdirSync(modulePath).filter(x => /index\.[tj]s/.test(x))[0];
                                 if (index)
                                 {
                                     result[`${key}/${$module}`] = `${source}/${$module}/${index}`;
@@ -460,12 +466,12 @@ export default class Compiler
     }
 
     /**
-     * Set or push value in a string|Array<string> value of the object.
+     * Set or push value in a string | Array<string> value of the object.
      * @param source Target object.
      * @param key    Key of the object.
      * @param value  Value to be setted or pushed.
      */
-    private static setOrPush(source: Indexer<string|Array<string>>, key: string, value: string): void
+    private static setOrPush(source: Indexer<string | string[]>, key: string, value: string): void
     {
         const target = source[key];
 
@@ -485,25 +491,25 @@ export default class Compiler
 
     public static async execute(task?: TasksType, config?: string, enviroment?: EnviromentType, watch?: boolean, statsLevel?: webpack.Stats.Preset): Promise<void>
     {
-        task       = task       ?? TasksType.build;
+        task       = task       ?? TasksType.Build;
         config     = config     ?? "./";
-        enviroment = enviroment ?? EnviromentType.development;
+        enviroment = enviroment ?? EnviromentType.Development;
         watch      = watch      ?? false;
 
         const wepackconfig = this.getConfig(config, enviroment);
 
         switch (task)
         {
-            case TasksType.build:
+            case TasksType.Clean:
+                await this.clean(wepackconfig);
+                break;
+            case TasksType.Rebuild:
+                await this.clean(wepackconfig);
+                this.build(wepackconfig, enviroment, watch, statsLevel);
+                break;
+            case TasksType.Build:
             default:
-                await this.build(wepackconfig, enviroment, watch, statsLevel);
-                break;
-            case TasksType.clean:
-                await this.clean(wepackconfig);
-                break;
-            case TasksType.rebuild:
-                await this.clean(wepackconfig);
-                await this.build(wepackconfig, enviroment, watch, statsLevel);
+                this.build(wepackconfig, enviroment, watch, statsLevel);
                 break;
         }
     }

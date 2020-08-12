@@ -24,7 +24,7 @@ export default class ThisExpression implements IExpression
             return this.cache;
         }
 
-        return this.cache = (scope as Indexer)["this"];
+        return this.cache = (scope as Indexer).this;
     }
 
     public toString(): string

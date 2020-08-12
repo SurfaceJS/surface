@@ -1,9 +1,11 @@
 import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators";
 
 @classMetadata
-export default class BaseMock
+class BaseMock
 {
     private static _baseStaticProperty: number = 1;
+    private _baseInstanceProperty: number = 1;
+
     @propertyMedatadata
     public static get baseStaticProperty(): number
     {
@@ -15,7 +17,6 @@ export default class BaseMock
         this._baseStaticProperty = value;
     }
 
-    private _baseInstanceProperty: number = 1;
     @propertyMedatadata
     public get baseInstanceProperty(): number
     {
@@ -28,17 +29,19 @@ export default class BaseMock
     }
 
     @methodMetadata
-    public static baseStaticMethod(@parameterMetadata a: number, @parameterMetadata b: string, @parameterMetadata c: boolean): void
+    public static baseStaticMethod(@parameterMetadata _a: number, @parameterMetadata _b: string, @parameterMetadata _c: boolean): void
     {
-        return;
+        //
     }
 
     @methodMetadata
-    public baseInstanceMethod(@parameterMetadata a: number, @parameterMetadata b: string, @parameterMetadata c: boolean): void
+    public baseInstanceMethod(@parameterMetadata _a: number, @parameterMetadata _b: string, @parameterMetadata _c: boolean): void
     {
-        return;
+        //
     }
 }
 
 Object.defineProperty(BaseMock, "baseStaticField", { value: 1 });
 Object.defineProperty(BaseMock.prototype, "baseInstanceField", { value: 1 });
+
+export default BaseMock;

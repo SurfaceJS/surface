@@ -1,5 +1,5 @@
 import { Stack }                                   from "@surface/collection";
-import { assertGet, typeGuard, Constructor, Lazy } from "@surface/core";
+import { Constructor, Lazy, assertGet, typeGuard } from "@surface/core";
 import CustomElement                               from "@surface/custom-element";
 import Container                                   from "@surface/dependency-injection";
 import { RouteData }                               from "@surface/router";
@@ -23,19 +23,26 @@ export default class ViewRouter
 
     private readonly baseUrl:           string;
     private readonly baseUrlPattern:    RegExp;
-    private readonly cache:             Array<Record<string, IRouteableElement>> = [];
+    private readonly cache:             Record<string, IRouteableElement>[] = [];
     private readonly connectedElements: Stack<IRouteableElement> = new Stack();
     private readonly container:         Container;
-    private readonly history:           Array<[RouteDefinition, RouteData]> = [];
-    private readonly middlewares:       Array<IMiddleware>;
+    private readonly history:           [RouteDefinition, RouteData][] = [];
+    private readonly middlewares:       IMiddleware[];
     private readonly outletTag:         string;
     private readonly root:              Lazy<HTMLElement>;
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
-    private index:    number  = 0;
+    private index: number  = 0;
     private current?: { definition: RouteDefinition, routeData: RouteData, route: Route };
 
-    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: Array<RouteConfiguration>, middlewares: Array<IMiddleware> = [], container: Container = new Container(), options: { baseUrl?: string, slotTag?: string } = { })
+    public constructor
+    (
+        root:        HTMLElement | string | (() => HTMLElement),
+        routes:      RouteConfiguration[],
+        middlewares: IMiddleware[] = [],
+        container:   Container = new Container(),
+        options:     { baseUrl?: string, slotTag?: string } = { },
+    )
     {
         this.root = typeof root == "string"
             ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
@@ -113,7 +120,7 @@ export default class ViewRouter
 
         if (!this.invokeMiddleware(to, from))
         {
-            let hasUpdate = definition == this.current?.definition;
+            const hasUpdate = definition == this.current?.definition;
 
             let parent = this.root.value as IRouteableElement;
 
@@ -132,7 +139,7 @@ export default class ViewRouter
 
                 if (entry == this.current?.definition?.stack[index])
                 {
-                    parent = this.cache[index]["default"] ?? this.cache[index][keys.values().next().value];
+                    parent = this.cache[index].default ?? this.cache[index][keys.values().next().value];
 
                     if (hasUpdate)
                     {
@@ -182,7 +189,7 @@ export default class ViewRouter
                 this.index = this.history.length - 1;
             }
 
-            this.current = { definition, routeData, route: to };
+            this.current = { definition, route: to, routeData };
         }
     }
 
@@ -192,10 +199,11 @@ export default class ViewRouter
             fullPath: routeData.toString(),
             meta:     definition.meta,
             name:     definition.name,
-            ...routeData
+            ...routeData,
         };
     }
-    private disconnectElements()
+
+    private disconnectElements(): void
     {
         this.connectedElements.forEach(x => x.remove());
 
@@ -233,11 +241,7 @@ export default class ViewRouter
         {
             if (typeGuard<() => Component>(component, !component.prototype))
             {
-                return await this.resolveComponent(component());
-            }
-            else
-            {
-                return this.resolveModule(component);
+                return this.resolveComponent(component());
             }
         }
         else if (component instanceof Promise)
@@ -252,7 +256,7 @@ export default class ViewRouter
     {
         let handled = false;
 
-        const next = (location: string | Location) =>
+        const next = (location: string | Location): boolean =>
             (this.push(location), handled = true);
 
         for (const middleware of this.middlewares)

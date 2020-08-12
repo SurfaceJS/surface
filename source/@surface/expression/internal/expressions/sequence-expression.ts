@@ -7,14 +7,14 @@ export default class SequenceExpression implements IExpression
 {
     private cache: unknown;
 
-    private _expressions: Array<IExpression>;
-    public get expressions(): Array<IExpression>
+    private _expressions: IExpression[];
+    public get expressions(): IExpression[]
     {
         return this._expressions;
     }
 
     /* istanbul ignore next */
-    public set expressions(value: Array<IExpression>)
+    public set expressions(value: IExpression[])
     {
         this._expressions = value;
     }
@@ -24,7 +24,7 @@ export default class SequenceExpression implements IExpression
         return NodeType.SequenceExpression;
     }
 
-    public constructor(expressions: Array<IExpression>)
+    public constructor(expressions: IExpression[])
     {
         this._expressions = expressions;
     }

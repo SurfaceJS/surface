@@ -5,7 +5,7 @@ const SOURCE = Symbol("stack:source");
 
 export default class Stack<T> extends Enumerable<T>
 {
-    private readonly [SOURCE]: Array<T> = [];
+    private readonly [SOURCE]: T[] = [];
 
     public get length(): number
     {
@@ -34,6 +34,7 @@ export default class Stack<T> extends Enumerable<T>
      * Returns the number of elements in a sequence.
      */
     public count(): number;
+
     /**
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.

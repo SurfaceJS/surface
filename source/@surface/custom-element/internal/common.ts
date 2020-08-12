@@ -1,4 +1,4 @@
-import { assert, Indexer, Nullable }       from "@surface/core";
+import { Indexer, assert }                 from "@surface/core";
 import { Evaluate, IExpression, IPattern } from "@surface/expression";
 import { IListener, ISubscription }        from "@surface/reactive";
 import DataBind                            from "./data-bind";
@@ -11,7 +11,8 @@ import IObservable                         from "./interfaces/observable";
 import ITraceable                          from "./interfaces/traceable";
 import { Observables, StackTrace }         from "./types";
 
-const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
+// eslint-disable-next-line object-shorthand
+const wrapper = { "Window": /* istanbul ignore next */ function () { /* */ } }.Window as object as typeof Window;
 
 wrapper.prototype = window;
 wrapper.prototype.constructor = wrapper;
@@ -25,28 +26,28 @@ function buildStackTrace(stackTrace: StackTrace): string
 
 export function createHostScope(host: HTMLElement): object
 {
-    return { host, $class: classMap, $style: styleMap };
+    return { $class: classMap, $style: styleMap, host };
 }
 
 export function createScope(scope: object): object
 {
     const handler: ProxyHandler<Indexer> =
     {
-        get: (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
+        get:                      (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
+        getOwnPropertyDescriptor: (target, key) =>
+            Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key),
+        has: (target, key) => key in target || key in windowWrapper,
         set: (target, key, value) =>
         {
             if (typeof key == "symbol")
             {
-                (target)[key as unknown as string] = value;
+                target[key as unknown as string] = value;
 
                 return true;
             }
 
             throw new ReferenceError(`Assignment to constant variable "${String(key)}"`);
         },
-        has: (target, key) => key in target || key in windowWrapper,
-        getOwnPropertyDescriptor: (target, key) =>
-            Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
     };
 
     return new Proxy(scope, handler);
@@ -60,7 +61,7 @@ export function classMap(classes: Record<string, boolean>): string
         .join(" ");
 }
 
-export function scapeBrackets(value: string)
+export function scapeBrackets(value: string): string
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 }
@@ -68,7 +69,7 @@ export function scapeBrackets(value: string)
 export function styleMap(rules: Record<string, boolean>): string
 {
     return Object.entries(rules)
-        .map(([key, value]) => `${key}: ${value}` )
+        .map(([key, value]) => `${key}: ${value}`)
         .join("; ");
 }
 
@@ -154,9 +155,9 @@ export function tryObserveKeyByObservable(scope: object, observable: IKeyValueOb
     return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
 }
 
-export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
+export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
 {
-    let simbling: Nullable<ChildNode> = null;
+    let simbling: ChildNode | null = null;
 
     while ((simbling = start.nextSibling) && simbling != end)
     {

@@ -25,7 +25,7 @@ export default class TypeSpec
     @test @shouldPass
     public getTypeFromIndexer(): void
     {
-        const type = Type.from({ foo: 1, bar: "two" });
+        const type = Type.from({ bar: "two", foo: 1 });
 
         expect(Array.from(type.getFields()).length).to.equal(2);
         expect(type.getField("foo")!.descriptor.value).to.equal(1);
@@ -278,7 +278,7 @@ export default class TypeSpec
     public getClassMetadata(): void
     {
         const type     = Type.of(Mock);
-        const actual   = type.metadata /* caching */ && type.metadata;
+        const actual   = type.metadata /* Caching */ && type.metadata;
         const expected = { };
 
         expect(actual).to.deep.equal(expected);
@@ -370,7 +370,7 @@ export default class TypeSpec
         const expected =
         [
             new FieldInfo(key, Object.getOwnPropertyDescriptor(Mock.prototype, key)!, Type.of(Mock), false, false),
-            new FieldInfo(baseKey, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseKey)!, Type.of(BaseMock), false, false)
+            new FieldInfo(baseKey, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseKey)!, Type.of(BaseMock), false, false),
         ];
 
         expect(actual).to.deep.equal(expected);
@@ -452,9 +452,9 @@ export default class TypeSpec
         const expected =
         [
             new MethodInfo("constructor",                          Object.getOwnPropertyDescriptor(Mock.prototype, "constructor")!,                          Type.of(Mock),     false, false),
+            new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock),     false, false),
             new MethodInfo("instanceMethod",                       Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethod")!,                       Type.of(Mock),     false, false),
             new MethodInfo("instanceMethodWithParameters",         Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParameters")!,         Type.of(Mock),     false, false),
-            new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock),     false, false),
             new MethodInfo("constructor",                          Object.getOwnPropertyDescriptor(BaseMock.prototype, "constructor")!,                      Type.of(BaseMock), false, false),
             new MethodInfo("baseInstanceMethod",                   Object.getOwnPropertyDescriptor(BaseMock.prototype, "baseInstanceMethod")!,               Type.of(BaseMock), false, false),
         ];
@@ -479,26 +479,31 @@ export default class TypeSpec
     @test @shouldPass
     public getMembers(): void
     {
-        const instanceField            = "instanceField";
-        const baseInstanceField        = "baseInstanceField";
-        const instanceProperty         = "instanceProperty";
-        const instanceReadonlyProperty = "instanceReadonlyProperty";
-        const baseInstanceProperty     = "baseInstanceProperty";
+        const baseInstanceField                    = "baseInstanceField";
+        const baseInstanceMethod                   = "baseInstanceMethod";
+        const baseInstanceProperty                 = "baseInstanceProperty";
+        const constructor                          = "constructor";
+        const instanceField                        = "instanceField";
+        const instanceMethod                       = "instanceMethod";
+        const instanceMethodWithParameters         = "instanceMethodWithParameters";
+        const instanceMethodWithParametersMetadata = "instanceMethodWithParametersMetadata";
+        const instanceProperty                     = "instanceProperty";
+        const instanceReadonlyProperty             = "instanceReadonlyProperty";
 
         const actual = Array.from(Type.of(Mock).getMembers()).filter(x => !x.declaringType.equals(Object));
 
         const expected =
         [
-            new MethodInfo("constructor", Object.getOwnPropertyDescriptor(Mock.prototype, "constructor")!, Type.of(Mock), false, false),
+            new MethodInfo(constructor, Object.getOwnPropertyDescriptor(Mock.prototype, constructor)!, Type.of(Mock), false, false),
             new PropertyInfo(instanceProperty,         Object.getOwnPropertyDescriptor(Mock.prototype, instanceProperty)!,         Type.of(Mock), false, false),
             new PropertyInfo(instanceReadonlyProperty, Object.getOwnPropertyDescriptor(Mock.prototype, instanceReadonlyProperty)!, Type.of(Mock), false, false),
-            new MethodInfo("instanceMethod",                       Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethod")!,                       Type.of(Mock), false, false),
-            new MethodInfo("instanceMethodWithParameters",         Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParameters")!,         Type.of(Mock), false, false),
-            new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false),
+            new MethodInfo(instanceMethodWithParametersMetadata, Object.getOwnPropertyDescriptor(Mock.prototype, instanceMethodWithParametersMetadata)!, Type.of(Mock), false, false),
+            new MethodInfo(instanceMethod,                       Object.getOwnPropertyDescriptor(Mock.prototype, instanceMethod)!,                       Type.of(Mock), false, false),
+            new MethodInfo(instanceMethodWithParameters,         Object.getOwnPropertyDescriptor(Mock.prototype, instanceMethodWithParameters)!,         Type.of(Mock), false, false),
             new FieldInfo(instanceField, Object.getOwnPropertyDescriptor(Mock.prototype, instanceField)!, Type.of(Mock), false, false),
-            new MethodInfo("constructor", Object.getOwnPropertyDescriptor(BaseMock.prototype, "constructor")!, Type.of(BaseMock), false, false),
+            new MethodInfo(constructor, Object.getOwnPropertyDescriptor(BaseMock.prototype, constructor)!, Type.of(BaseMock), false, false),
             new PropertyInfo(baseInstanceProperty, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceProperty)!, Type.of(BaseMock), false, false),
-            new MethodInfo("baseInstanceMethod", Object.getOwnPropertyDescriptor(BaseMock.prototype, "baseInstanceMethod")!, Type.of(BaseMock), false, false),
+            new MethodInfo(baseInstanceMethod, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceMethod)!, Type.of(BaseMock), false, false),
             new FieldInfo(baseInstanceField, Object.getOwnPropertyDescriptor(BaseMock.prototype, baseInstanceField)!, Type.of(BaseMock), false, false),
         ];
 

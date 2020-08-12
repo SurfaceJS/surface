@@ -127,7 +127,7 @@ export default class TemplateBlock implements IDisposable
         }
     }
 
-    public insertAt(parent: Node & ParentNode, reference: Node)
+    public insertAt(parent: Node & ParentNode, reference: Node): void
     {
         parent.replaceChild(this._close, reference);
         parent.insertBefore(this._open, this._close);

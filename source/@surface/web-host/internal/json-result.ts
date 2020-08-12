@@ -1,7 +1,7 @@
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
+import mymeType     from "./myme-types";
 import StatusCode   from "./status-code";
-import { mymeType } from "./variables";
 
 export default class JsonResult extends ActionResult
 {
@@ -15,7 +15,7 @@ export default class JsonResult extends ActionResult
 
     public executeResult(): void
     {
-        this.httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[".json"] });
+        this.httpContext.response.writeHead(StatusCode.Ok, { "Content-Type": mymeType[".json"] });
         this.httpContext.response.write(JSON.stringify(this.data));
         this.httpContext.response.end();
     }

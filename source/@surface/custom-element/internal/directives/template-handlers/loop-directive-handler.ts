@@ -1,17 +1,17 @@
-import { Action2, IDisposable, Nullable }                                    from "@surface/core";
+import { Action2, IDisposable }                                              from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
 import { ISubscription }                                                     from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/directives/loop-directive";
 import ParallelWorker                                                        from "../../parallel-worker";
 import TemplateBlock                                                         from "../template-block";
-import TemplateDirectiveHandler                                              from "./";
+import TemplateDirectiveHandler                                              from ".";
 
 type Cache = { templateBlock: TemplateBlock, value: unknown, disposable: IDisposable };
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly cache:         Array<Cache> = [];
+    private readonly cache:         Cache[] = [];
     private readonly directive:     ILoopDirective;
     private readonly iterator:      (elements: Iterable<unknown>, action: Action2<unknown, number>) => number;
     private readonly subscription:  ISubscription;
@@ -35,11 +35,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, template);
 
-        const notify = async () => await ParallelWorker.run(this.task.bind(this));
+        const notify = async (): Promise<void> => ParallelWorker.run(this.task.bind(this));
 
         this.subscription = tryObserveByObservable(scope, directive, { notify }, true);
 
-        this.fireAsync(notify);
+        void this.fireAsync(notify);
     }
 
     private action(value: unknown, index: number): void
@@ -61,11 +61,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
                 entry.disposable.dispose();
                 entry.templateBlock.dispose();
 
-                this.cache[index] = { templateBlock, disposable, value };
+                this.cache[index] = { disposable, templateBlock, value };
             }
             else
             {
-                this.cache.push({ templateBlock, disposable, value });
+                this.cache.push({ disposable, templateBlock, value });
             }
 
             templateBlock.connect(this.tree);
@@ -76,7 +76,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const templateBlock = this.cache[index].templateBlock;
 
-            let simbling: Nullable<ChildNode> = null;
+            let simbling: ChildNode | null = null;
 
             const clone = templateBlock.open.cloneNode() as Comment;
 
@@ -94,7 +94,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         }
     }
 
-    private clearCache(index: number)
+    private clearCache(index: number): void
     {
         for (const entry of this.cache.splice(index))
         {

@@ -1,12 +1,12 @@
 import
 {
+    Constructor,
+    Func1,
+    IDisposable,
+    Indexer,
     camelToDashed,
     overrideConstructor,
     overrideProperty,
-    Constructor,
-    Func1,
-    Indexer,
-    Nullable
 } from "@surface/core";
 import Reactive, { ISubscription } from "@surface/reactive";
 import { createHostScope }         from "./common";
@@ -22,9 +22,11 @@ const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
-    return (target: HTMLElement, propertyKey: string|symbol) =>
+    return (target: HTMLElement, propertyKey: string | symbol) =>
     {
-        const privateKey = typeof propertyKey == "string" ? `_${propertyKey.toString()}` : Symbol(propertyKey.toString());
+        const privateKey = typeof propertyKey == "string"
+            ? `_${propertyKey.toString()}`
+            : Symbol(propertyKey.toString());
 
         Object.defineProperty
         (
@@ -44,9 +46,9 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
                         this[privateKey as string] = fn(this.shadowRoot);
                     }
 
-                    return this[privateKey as string];
-                }
-            }
+                    return this[privateKey as string] as unknown;
+                },
+            },
         );
     };
 }
@@ -63,9 +65,9 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
 
 export function attribute(converter: Func1<string, unknown>): (target: ICustomElement, propertyKey: string) => void;
 export function attribute(target: ICustomElement, propertyKey: string): void;
-export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void)|void
+export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
 {
-    const decorator = (target: ICustomElement, propertyKey: string) =>
+    const decorator = (target: ICustomElement, propertyKey: string): PropertyDescriptor =>
     {
         const constructor = target.constructor;
 
@@ -78,10 +80,10 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
 
         if (!constructor.hasOwnProperty("observedAttributes"))
         {
-            const getter = function(this: Constructor)
+            function getter(this: Constructor): string[]
             {
                 return StaticMetadata.of(this)!.observedAttributes;
-            };
+            }
 
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
         }
@@ -118,12 +120,12 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             }
         };
 
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         const attributeChangedCallback = target.attributeChangedCallback;
-
 
         if (!attributeChangedCallback || attributeChangedCallback != prototypeMetadata.attributeChangedCallback)
         {
-            target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: Nullable<string>, newValue: string, namespace: Nullable<string>)
+            target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: string | undefined, newValue: string, namespace: string | undefined)
             {
                 if (!Metadata.from(this).reflectingAttribute)
                 {
@@ -134,10 +136,11 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
                 }
             };
 
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             prototypeMetadata.attributeChangedCallback = target.attributeChangedCallback;
         }
 
-        const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown) =>
+        const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown): void =>
         {
             if (!Object.is(oldValue, undefined))
             {
@@ -158,26 +161,24 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
     {
         return decorator;
     }
-    else
-    {
-        const [target, propertyKey] = args;
 
-         // Reflect.metadata expects that the property decorator returns an descriptor
-        return decorator(target, propertyKey) as unknown as void;
-    }
+    const [target, propertyKey] = args;
+
+    // Reflect.metadata expects that the property decorator returns an descriptor
+    return decorator(target, propertyKey) as unknown as void;
 }
 
-export function computed<T extends object>(...properties: Array<keyof T>): <U extends T>(target: U, propertyKey: string) => void
+export function computed<T extends object>(...properties: (keyof T)[]): <U extends T>(target: U, propertyKey: string) => void
 {
     return <U extends T>(target: U, propertyKey: string) =>
     {
-        const action = (instance: HTMLElement) =>
+        const action = (instance: HTMLElement): IDisposable =>
         {
-            const subscriptions: Array<ISubscription> = [];
+            const subscriptions: ISubscription[] = [];
 
             for (const property of properties)
             {
-                subscriptions.push(Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey)}));
+                subscriptions.push(Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey) }));
             }
 
             return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
@@ -215,9 +216,9 @@ export function element(tagname: string, template?: string, style?: string, opti
 
             staticMetadata.template = templateElement;
 
-            const action = (instance: InstanceType<T>) =>
+            const action = (instance: InstanceType<T>): InstanceType<T> =>
             {
-                TemplateProcessor.process({ scope: createHostScope(instance), host: instance, root: instance.shadowRoot, descriptor });
+                TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
                 const metadata = Metadata.of(instance)!;
 
@@ -232,22 +233,20 @@ export function element(tagname: string, template?: string, style?: string, opti
 
             return proxy;
         }
-        else
-        {
-            window.customElements.define(tagname, target, options);
 
-            return target;
-        }
+        window.customElements.define(tagname, target, options);
+
+        return target;
     };
 }
 
-export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean|AddEventListenerOptions): (target: object, propertyKey: string|symbol) => void
+export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean | AddEventListenerOptions): (target: object, propertyKey: string | symbol) => void
 {
-    return (target: object, propertyKey: string|symbol) =>
+    return (target: object, propertyKey: string | symbol) =>
     {
-        const action = (element: HTMLElement) =>
+        const action = (element: HTMLElement): IDisposable =>
         {
-            const listener = (event: HTMLElementEventMap[K]) => (element as object as Indexer<Function>)[propertyKey as string]!.call(element, event);
+            const listener = (event: HTMLElementEventMap[K]): unknown => (element as object as Indexer<Function>)[propertyKey as string]!.call(element, event);
 
             element.addEventListener(type, listener, options);
 
@@ -265,9 +264,9 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
         if (typeof target[propertyKey as keyof U] == "function")
         {
 
-            const action = (instance: HTMLElement) =>
+            const action = (instance: HTMLElement): IDisposable =>
             {
-                const notify = (value: unknown) => (instance as object as Record<string, Function>)[propertyKey](value);
+                const notify = (value: unknown): unknown => (instance as object as Record<string, Function>)[propertyKey](value);
 
                 const subscription = Reactive.observe(instance, property as string).observer.subscribe({ notify });
 
@@ -279,17 +278,17 @@ export function observe<T extends object>(property: keyof T): <U extends T>(targ
     };
 }
 
-export function query(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+export function query(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return queryFactory(x => x.querySelector(selector), nocache);
 }
 
-export function queryAll(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string|symbol) => void
+export function queryAll(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return queryFactory(x => x.querySelectorAll(selector), nocache);
 }
 
-export function styles(...styles: Array<string>): <T extends Constructor<HTMLElement>>(target: T) => T
+export function styles(...styles: string[]): <T extends Constructor<HTMLElement>>(target: T) => T
 {
     return <T extends Constructor<HTMLElement>>(constructor: T) =>
     {

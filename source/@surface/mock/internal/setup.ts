@@ -1,9 +1,9 @@
-import { Hashcode, Nullable } from "../../core";
-import Enumerable             from "../../enumerable";
-import { Factory }            from "./types";
-import { isIt }               from './common';
+import { Hashcode } from "../../core";
+import Enumerable   from "../../enumerable";
+import { isIt }     from "./common";
+import { Factory }  from "./types";
 
-export type Args = Array<unknown>;
+export type Args = unknown[];
 
 export default class Setup<TResult>
 {
@@ -24,7 +24,12 @@ export default class Setup<TResult>
             const sourceElement = source[index];
             const argsElement   = args[index];
 
-            if (!(this.checkIt(sourceElement, argsElement) || Object.is(sourceElement, argsElement) || (typeof sourceElement == typeof argsElement && Hashcode.encode(sourceElement) == Hashcode.encode(argsElement)))) {
+            const isEqual = this.checkIt(sourceElement, argsElement)
+                || Object.is(sourceElement, argsElement)
+                || typeof sourceElement == typeof argsElement && Hashcode.encode(sourceElement) == Hashcode.encode(argsElement);
+
+            if (!isEqual)
+            {
                 return false;
             }
         }
@@ -54,6 +59,7 @@ export default class Setup<TResult>
 
         return null;
     }
+
     private getKey<T>(source: Map<Args, T>, args: Args): Args
     {
         const sequence = Enumerable.from(args);
@@ -61,12 +67,13 @@ export default class Setup<TResult>
         return Enumerable.from(source.keys()).firstOrDefault(x => sequence.sequenceEqual(Enumerable.from(x))) ?? args;
     }
 
-    public get(args: Args = []): Nullable<TResult>
+    public get(args: Args = []): TResult | null
     {
         const error = this.getFrom(this.throws, args);
 
         if (error)
         {
+            // eslint-disable-next-line @typescript-eslint/no-throw-literal
             throw error;
         }
 

@@ -1,4 +1,4 @@
-import { hasValue, Indexer }                   from "@surface/core";
+import { Indexer, hasValue }                   from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import { notify, observable }                  from "../internal/decorators";
@@ -55,14 +55,14 @@ export default class ReactorSpec
             }
         }
 
-        let instanceEmmiterGetValueListener = () => 0;
+        let instanceEmmiterGetValueListener = (): number => 0;
         let instanceEmmiterValueListener    = 0;
         let instanceReadonlyValueListener   = 0;
         let rawEmmiterValueListerner        = 0;
 
         const instanceEmmiter         = new Emitter();
         const instanceReadonlyEmmiter = new ReadonlyEmitter();
-        const rawEmmiter              = { value: 0, nonReactiveValue: 1 };
+        const rawEmmiter              = { nonReactiveValue: 1, value: 0 };
 
         Object.defineProperty(rawEmmiter, "nonReactiveValue", { value: 1, writable: false });
 
@@ -89,12 +89,14 @@ export default class ReactorSpec
         assert.deepEqual(Metadata.of(instanceReadonlyEmmiter)!.keys, new Set(["_value", "nonReactiveValue", "value"]));
         assert.deepEqual(Metadata.of(rawEmmiter)!.keys,              new Set(["nonReactiveValue", "value"]));
 
+        // eslint-disable-next-line no-self-assign
         rawEmmiter.value = rawEmmiter.value;
 
         rawEmmiter.value = 1;
 
         assert.equal(rawEmmiterValueListerner, rawEmmiter.value);
 
+        // eslint-disable-next-line no-self-assign
         instanceEmmiter.value = instanceEmmiter.value;
 
         instanceEmmiter.value = 1;
@@ -117,11 +119,11 @@ export default class ReactorSpec
         const emmiter  = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
         const listener = { values: [[{ value: 0 }], [{ value: 0 }], [{ value: 0 }]] };
 
-        const values0Observer       = new Observer<Array<{ value: number }>>();
+        const values0Observer       = new Observer<{ value: number }[]>();
         const values10Observer      = new Observer<{ value: number }>();
         const values10ValueObserver = new Observer<number>();
-        const values1Observer       = new Observer<Array<{ value: number }>>();
-        const values20Observer      = new Observer<Array<{ value: number }>>();
+        const values1Observer       = new Observer<{ value: number }[]>();
+        const values20Observer      = new Observer<{ value: number }[]>();
 
         values0Observer.subscribe({ notify: x => listener.values[0] = x });
         values10Observer.subscribe({ notify: x => hasValue(listener.values?.[1]) ? listener.values[1][0] = x : null });
@@ -273,7 +275,7 @@ export default class ReactorSpec
 
         reactor.observers.set("value", observer);
 
-        reactorA.notify({ a: { b: { value: 2 } }});
+        reactorA.notify({ a: { b: { value: 2 } } });
 
         assert.equal(receiver.value, 2);
     }
@@ -331,7 +333,7 @@ export default class ReactorSpec
         assert.equal(receiverA.value, 1, "#07");
         assert.equal(receiverB.value, 1, "#08");
 
-        emmiterAReactorA.notify({ a: { b: { value: 4 } }});
+        emmiterAReactorA.notify({ a: { b: { value: 4 } } });
 
         assert.equal(receiverA.value, 4, "#09");
         assert.equal(receiverB.value, 1, "#10");
@@ -402,7 +404,7 @@ export default class ReactorSpec
         reactorA.dependencies.set("a", reactorB);
         reactorB.dependencies.set("b", reactor);
 
-        const newValue = { b: { value: 1 }};
+        const newValue = { b: { value: 1 } };
 
         reactorA.update("a", newValue);
         reactorA.update("a", newValue);
@@ -433,7 +435,8 @@ export default class ReactorSpec
 
         reactor.dispose();
 
-        reactor.dispose(); // Coverage
+        // Coverage
+        reactor.dispose();
 
         notified = false;
 
@@ -461,7 +464,9 @@ export default class ReactorSpec
         const subscription = new PropertySubscription(listener, observer);
 
         reactor.setPropertySubscription("a", subscription);
-        reactor.setPropertySubscription("a", subscription); // Coverage
+
+        // Coverage
+        reactor.setPropertySubscription("a", subscription);
 
         reactor.notify({ a: { value: 2 } });
 

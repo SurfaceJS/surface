@@ -1,4 +1,4 @@
-import { getKeyMember, Indexer } from "@surface/core";
+import { Indexer, getKeyMember } from "@surface/core";
 import Reactive,
 {
     IListener,
@@ -6,7 +6,7 @@ import Reactive,
     IReactor,
     ISubscription,
     PropertyListener,
-    PropertySubscription
+    PropertySubscription,
 } from "@surface/reactive";
 import Metadata                  from "./metadata/metadata";
 
@@ -14,14 +14,14 @@ const PRIMITIVES = ["boolean", "number", "string"];
 
 export default class DataBind
 {
-    public static observe(target: object, observables: Array<Array<string>>, listener: IListener, lazy?: boolean): ISubscription
+    public static observe(target: object, observables: string[][], listener: IListener, lazy?: boolean): ISubscription
     {
         const subscriptions = observables.map(path => DataBind.oneWay(target, path, listener, lazy).subscription);
 
         return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
     }
 
-    public static oneWay(target: object, path: Array<string>, listener: IListener|IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
+    public static oneWay(target: object, path: string[], listener: IListener | IPropertyListener, lazy?: boolean): { reactor?: IReactor, subscription: ISubscription }
     {
         const { key, member } = getKeyMember(target, path);
 
@@ -38,18 +38,18 @@ export default class DataBind
         }
 
         const { reactor, observer, subscription: _subscription } = Reactive.observe(target, path, listener, lazy);
-        const subscriptions                                      = [] as Array<ISubscription>;
+        const subscriptions                                      = [] as ISubscription[];
 
-        if ((member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT")) && !Metadata.of(member)?.hasListener)
+        if (member instanceof HTMLElement && (member.contentEditable == "true" || member.nodeName == "INPUT") && !Metadata.of(member)?.hasListener)
         {
             const metadata = Metadata.from(member);
 
             type Key = keyof HTMLElement;
 
-            const action = function (this: HTMLElement)
+            function action(this: HTMLElement): void
             {
                 observer.notify(this[key as Key]);
-            };
+            }
 
             member.addEventListener("input", action);
 
@@ -60,7 +60,7 @@ export default class DataBind
                     member.removeEventListener("input", action);
 
                     metadata.hasListener = false;
-                }
+                },
             };
 
             subscriptions.push(subscription);

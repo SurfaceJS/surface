@@ -35,10 +35,10 @@ export default class LookupSpec
         [
             { key: 1, value: 1 },
             { key: 2, value: 2 },
-            { key: 2, value: 3 }
+            { key: 2, value: 3 },
         ];
         const lookup = new Lookup(data, x => x.key, x => x, new Comparer());
-        expect(lookup.get(2)).to.deep.equal([{ key: 2, value: 2 }, { key: 2, value: 3 } ]);
+        expect(lookup.get(2)).to.deep.equal([{ key: 2, value: 2 }, { key: 2, value: 3 }]);
     }
 
     @test @shouldPass
@@ -65,15 +65,18 @@ export default class LookupSpec
 
         const group1 = new Group<number, number>(683302763,  1);
         group1.add(1);
-        group1["_hashNext"] = undefined;
+        // @ts-expect-error
+        group1._hashNext = undefined;
 
         const group2 = new Group<number, number>(1179335883,  2);
         group2.add(2);
-        group2["_hashNext"] = undefined;
+        // @ts-expect-error
+        group2._hashNext = undefined;
 
         const group3 = new Group<number, number>(1675369003, 3);
         group3.add(3);
-        group3["_hashNext"] = undefined;
+        // @ts-expect-error
+        group3._hashNext = undefined;
 
         group1.next = group2;
         group2.next = group3;

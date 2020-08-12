@@ -6,7 +6,7 @@ import
     throwTemplateEvaluationError,
     tryEvaluateExpression,
     tryEvaluateKeyExpressionByTraceable,
-    tryObserveKeyByObservable
+    tryObserveKeyByObservable,
 } from "../../common";
 import ICustomDirective from "../../interfaces/directives/custom-directive";
 
@@ -23,7 +23,7 @@ export default class OnDirectiveHandler implements IDisposable
         this.element = element;
         this.action  = this.evaluate(scope, directive);
 
-        const notify = () => this.keyHandler(`${tryEvaluateKeyExpressionByTraceable(scope, directive)}`);
+        const notify = (): void => this.keyHandler(`${tryEvaluateKeyExpressionByTraceable(scope, directive)}`);
 
         this.subscription = tryObserveKeyByObservable(scope, directive, { notify }, false);
 
@@ -65,10 +65,8 @@ export default class OnDirectiveHandler implements IDisposable
 
             return action.bind(directive.expression.object.evaluate(scope, true)) as Action1<Event>;
         }
-        else
-        {
-            return () => tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
-        }
+
+        return () => tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
     }
 
     public dispose(): void

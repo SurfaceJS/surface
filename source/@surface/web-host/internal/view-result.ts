@@ -2,8 +2,8 @@ import fs           from "fs";
 import path         from "path";
 import ActionResult from "./action-result";
 import HttpContext  from "./http-context";
+import mymeType     from "./myme-types";
 import StatusCode   from "./status-code";
-import { mymeType } from "./variables";
 
 export default class ViewResult extends ActionResult
 {
@@ -21,19 +21,20 @@ export default class ViewResult extends ActionResult
         this.statusCode     = statusCode;
         this.viewName       = viewName;
 
-        console.log(this.model); // Todo: Used to prevent unused error. Remove later.
+        // Todo: Used to prevent unused error. Remove later.
+        console.log(this.model);
     }
 
     public executeResult(): void
     {
-        let viewpath = path.join(this.httpContext.host.root, "views", this.controllerName, `${this.viewName}.html`);
+        const viewpath = path.join(this.httpContext.host.root, "views", this.controllerName, `${this.viewName}.html`);
 
         if (!fs.existsSync(viewpath))
         {
             throw new Error(`View ${this.viewName} cannot be founded.`);
         }
 
-        let data = fs.readFileSync(viewpath);
+        const data = fs.readFileSync(viewpath);
 
         this.httpContext.response.writeHead(this.statusCode, { "Content-Type": mymeType[".html"] });
         this.httpContext.response.write(data);

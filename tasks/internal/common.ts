@@ -1,10 +1,11 @@
-import chalk            from "chalk";
-import child_process    from "child_process";
-import fs               from "fs";
-import { IPackage }     from "npm-registry-client";
-import path             from "path";
-import util             from "util";
-import { StrategyType } from "./depsync";
+/* eslint-disable @typescript-eslint/no-require-imports */
+import child_process from "child_process";
+import fs            from "fs";
+import path          from "path";
+import util          from "util";
+import chalk         from "chalk";
+import { IPackage }  from "npm-registry-client";
+import StrategyType  from "./strategy-type";
 
 const copyFileAsync = util.promisify(fs.copyFile);
 const execAsync     = util.promisify(child_process.exec);
@@ -13,17 +14,19 @@ const readdirAsync  = util.promisify(fs.readdir);
 const renameAsync   = util.promisify(fs.rename);
 const unlinkAsync   = util.promisify(fs.unlink);
 
-export const paths =
+function *filterLookupEnumerator(source: Iterable<IPackage>, include: Iterable<string>, exclude: Iterable<string>): Iterable<IPackage>
 {
-    root: path.resolve(__dirname, "../.."),
-    source:
-    {
-        root:    path.resolve(__dirname, "../../source"),
-        surface: path.resolve(__dirname, "../../source/@surface")
-    }
-};
+    const includeSet = new Set(include);
+    const excludeSet = new Set(exclude);
 
-export const lookup = buildLookup(paths.source.surface);
+    for (const element of source)
+    {
+        if ((includeSet.size == 0 || includeSet.has(element.name)) && !excludeSet.has(element.name))
+        {
+            yield element;
+        }
+    }
+}
 
 export function assert(condition: unknown, message?: string): asserts condition
 {
@@ -35,7 +38,6 @@ export function assert(condition: unknown, message?: string): asserts condition
 
 export async function backupFile(source: string): Promise<void>
 {
-    // await writeFileAsync(`${source}.backup`, (await readFileAsync(source)).toString());
     await copyFileAsync(source, `${source}.backup`);
 }
 
@@ -50,22 +52,20 @@ export function buildLookup(packagesRoot: string): Map<string, IPackage>
     return new Map(packages);
 }
 
-export async function cleanup(targetPath: string, pattern: RegExp, exclude: RegExp): Promise<void>
+export async function cleanup(targetPath: string, include: RegExp, exclude: RegExp): Promise<void>
 {
     for (const source of (await readdirAsync(targetPath)).map(x => path.join(targetPath, x)))
     {
-        if (exclude.test(source))
+        if (!exclude.test(source))
         {
-            continue;
-        }
-
-        if ((await lstatAsync(source)).isDirectory())
-        {
-            await cleanup(source, pattern, exclude);
-        }
-        else if (pattern.test(source))
-        {
-            await unlinkAsync(source);
+            if ((await lstatAsync(source)).isDirectory())
+            {
+                await cleanup(source, include, exclude);
+            }
+            else if (include.test(source))
+            {
+                await unlinkAsync(source);
+            }
         }
     }
 }
@@ -74,11 +74,13 @@ export function createPath(targetPath: string, mode: number = 0o777): void
 {
     if (fs.existsSync(targetPath))
     {
-        targetPath = fs.lstatSync(targetPath).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
+        const resolvedPath = fs.lstatSync(targetPath).isSymbolicLink()
+            ? fs.readlinkSync(targetPath)
+            : targetPath;
 
-        if (!fs.lstatSync(targetPath).isDirectory())
+        if (!fs.lstatSync(resolvedPath).isDirectory())
         {
-            throw new Error(`${targetPath} exist and isn't an directory`);
+            throw new Error(`${resolvedPath} exist and isn't an directory`);
         }
 
         return;
@@ -89,12 +91,11 @@ export function createPath(targetPath: string, mode: number = 0o777): void
     if (!fs.existsSync(parentDir))
     {
         createPath(parentDir, mode);
-        return fs.mkdirSync(targetPath, mode);
+
+        fs.mkdirSync(targetPath, mode);
     }
-    else
-    {
-        return fs.mkdirSync(targetPath, mode);
-    }
+
+    fs.mkdirSync(targetPath, mode);
 }
 
 export function dashedToTitle(value: string): string
@@ -102,7 +103,7 @@ export function dashedToTitle(value: string): string
     return value.replace(/(^[a-z]|-[a-z])/g, (_, group) => group.replace(/-/g, "").toUpperCase());
 }
 
-export function except<T>(include: Array<T>, exclude: Array<T>): Array<T>
+export function except<T>(include: T[], exclude: T[]): T[]
 {
     const set = new Set(exclude);
 
@@ -132,7 +133,7 @@ export async function execute(label: string, command: string): Promise<void>
     }
 }
 
-export function filterPackages(source: Iterable<IPackage>, include: Iterable<string>, exclude: Iterable<string> = []): Array<IPackage>
+export function filterPackages(source: Iterable<IPackage>, include: Iterable<string>, exclude: Iterable<string> = []): IPackage[]
 {
     return Array.from(filterLookupEnumerator(source, include, exclude));
 }
@@ -165,7 +166,6 @@ export function removePath(targetPath: string): boolean
 
 export async function restoreBackup(source: string): Promise<void>
 {
-    // await writeFileAsync(source, (await readFileAsync(`${source}.backup`)).toString());
     await renameAsync(`${source}.backup`, source);
 
     removePath(`${source}.backup`);
@@ -181,8 +181,20 @@ export function typeGuard<T>(target: unknown, condition: boolean): target is T
     return condition;
 }
 
-export const toArray         = (source: string) => source.split(",");
-export const toStrategyFlags = (source: string) =>
+export const paths =
+{
+    root:   path.resolve(__dirname, "../.."),
+    source:
+    {
+        root:    path.resolve(__dirname, "../../source"),
+        surface: path.resolve(__dirname, "../../source/@surface"),
+    },
+};
+
+export const lookup = buildLookup(paths.source.surface);
+
+export const toArray         = (source: string): string[] => source.split(",");
+export const toStrategyFlags = (source: string): StrategyType =>
 {
     const flags = source.split(",").map(dashedToTitle);
 
@@ -202,18 +214,4 @@ export const toStrategyFlags = (source: string) =>
 
     return flag;
 };
-export const toString = (source: string) => source;
-
-function *filterLookupEnumerator(source: Iterable<IPackage>, include: Iterable<string>, exclude: Iterable<string>): Iterable<IPackage>
-{
-    const includeSet = new Set(include);
-    const excludeSet = new Set(exclude);
-
-    for (const element of source)
-    {
-        if ((includeSet.size == 0 || includeSet.has(element.name)) && !excludeSet.has(element.name))
-        {
-            yield element;
-        }
-    }
-}
+export const toString = (source: string): string => source;

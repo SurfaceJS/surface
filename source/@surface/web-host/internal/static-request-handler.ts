@@ -1,7 +1,7 @@
 import HttpContext    from "./http-context";
+import mymeType       from "./myme-types";
 import RequestHandler from "./request-handler";
 import StatusCode     from "./status-code";
-import { mymeType }   from "./variables";
 
 export default class StaticRequestHandler extends RequestHandler
 {
@@ -20,7 +20,7 @@ export default class StaticRequestHandler extends RequestHandler
                 const extension = this.path.extname(filepath) as keyof typeof mymeType;
                 const data      = this.fs.readFileSync(filepath);
 
-                httpContext.response.writeHead(StatusCode.ok, { "Content-Type": mymeType[extension] || mymeType[".html"] });
+                httpContext.response.writeHead(StatusCode.Ok, { "Content-Type": mymeType[extension] || mymeType[".html"] });
                 httpContext.response.write(data);
                 httpContext.response.end();
 
@@ -28,6 +28,6 @@ export default class StaticRequestHandler extends RequestHandler
             }
         }
 
-        return false;
+        return Promise.resolve(false);
     }
 }

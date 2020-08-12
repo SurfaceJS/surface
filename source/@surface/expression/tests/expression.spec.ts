@@ -5,19 +5,18 @@ import Messages                                           from "../internal/mess
 import NodeType                                           from "../internal/node-type";
 import
 {
+    EvaluationErrorExpected,
+    ExpressionFactoryExpected,
     evaluationsExpected,
     expressionFactoriesExpected,
-    EvaluationErrorExpected,
-    ExpressionFactoryExpected
-}
-from "./expectations/expression-expected";
+} from "./expectations/expression-expected";
 
 @suite
 export default class ExpressionSpec
 {
     @shouldPass
     @batchTest(expressionFactoriesExpected, x => `method Expression.${x.method} should return ${NodeType[x.type]} Expression`)
-    public expressionFactory(expressionFactoryExpected: ExpressionFactoryExpected)
+    public expressionFactory(expressionFactoryExpected: ExpressionFactoryExpected): void
     {
         const expression = expressionFactoryExpected.factory();
 
@@ -36,7 +35,7 @@ export default class ExpressionSpec
     }
 
     @test @shouldPass
-    public parse()
+    public parse(): void
     {
         const expression = Expression.parse("this");
 
@@ -44,7 +43,7 @@ export default class ExpressionSpec
     }
 
     @test @shouldPass
-    public regExpLiteral()
+    public regExpLiteral(): void
     {
         const expression = Expression.regex("foo", "gi");
 
@@ -73,9 +72,9 @@ export default class ExpressionSpec
     }
 
     @test @shouldFail
-    public arrowFunctionWithDuplicatedParameters()
+    public arrowFunctionWithDuplicatedParameters(): void
     {
-        const parameters = [Expression.identifier("a"), Expression.identifier("a") ];
+        const parameters = [Expression.identifier("a"), Expression.identifier("a")];
         const body       = Expression.identifier("x");
 
         assert.throws(() => Expression.arrowFunction(parameters, body), Messages.duplicateParameterNameNotAllowedInThisContext);

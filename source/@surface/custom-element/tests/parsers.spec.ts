@@ -3,7 +3,7 @@ import { shouldFail, shouldPass, suite, test }                              from
 import { assert }                                                           from "chai";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/parsers";
 
-type RawError = { message: string }|Pick<SyntaxError, "message"|"lineNumber"|"index"|"column">;
+type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 
 function parseWithError(parser: (expression: string) => unknown, expression: string): RawError
 {
@@ -24,16 +24,14 @@ function toRaw(error: Error): RawError
     if (error instanceof SyntaxError)
     {
         return {
-            message:    error.message,
-            lineNumber: error.lineNumber,
+            column:     error.column,
             index:      error.index,
-            column:     error.column
+            lineNumber: error.lineNumber,
+            message:    error.message,
         };
     }
-    else
-    {
-        return { message: error.message };
-    }
+
+    return { message: error.message };
 }
 
 @suite

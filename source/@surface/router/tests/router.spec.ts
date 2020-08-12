@@ -12,7 +12,7 @@ export default class RouterSpec
         const expected: RouterMatch =
             {
                 matched: false,
-                reason:  "No match found to the path: /path1"
+                reason:  "No match found to the path: /path1",
             };
 
         const actual = new Router()
@@ -34,7 +34,7 @@ export default class RouterSpec
                     parameters: {  },
                     path:       "/path",
                     query:      { },
-                }
+                },
             };
 
         const actual = new Router()
@@ -72,7 +72,7 @@ export default class RouterSpec
                     parameters: {  },
                     path:       "/path",
                     query:      { },
-                }
+                },
             };
 
         const actual = new Router()
@@ -110,7 +110,7 @@ export default class RouterSpec
                     parameters: { value: "path" },
                     path:       "/path/path",
                     query:      { },
-                }
+                },
             };
 
         const actual = new Router()
@@ -128,16 +128,16 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:   "",
+                    hash:       "",
                     parameters:
                     {
                         boolean: true,
                         date:    new Date("2020-01-01"),
-                        number:  1
+                        number:  1,
                     },
                     path:   "/path/true/2020-01-01/1",
                     query:  { },
-                }
+                },
             };
 
         const actual = new Router()
@@ -151,7 +151,7 @@ export default class RouterSpec
     public dontMatch(): void
     {
         const actual = new Router()
-            .map( "/path")
+            .map("/path")
             .match("/path1");
 
         assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
@@ -169,7 +169,7 @@ export default class RouterSpec
                     parameters: { value: "path" },
                     path:       "/path/path",
                     query:      { value: "1" },
-                }
+                },
             };
 
         const actual = new Router()
@@ -187,7 +187,7 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash: "",
+                    hash:       "",
                     parameters:
                     {
                         boolean: true,
@@ -196,7 +196,7 @@ export default class RouterSpec
                     },
                     path:   "/path/true/2020-01-01/1",
                     query:  { },
-                }
+                },
             };
 
         const actual = new Router()

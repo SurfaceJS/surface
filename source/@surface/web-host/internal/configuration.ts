@@ -6,8 +6,8 @@ export default class Configuration
         return this._serverRoot;
     }
 
-    private readonly _port : number;
-    public get port() : number
+    private readonly _port: number;
+    public get port(): number
     {
         return this._port;
     }
@@ -21,7 +21,7 @@ export default class Configuration
     public constructor(serverRoot: string, config: Partial<Configuration>)
     {
         this._serverRoot = serverRoot;
-        this._port       = config.port    || 0;
-        this._wwwroot    = config.wwwroot || "wwwroot";
+        this._port       = config.port    ?? 0;
+        this._wwwroot    = config.wwwroot ?? "wwwroot";
     }
 }

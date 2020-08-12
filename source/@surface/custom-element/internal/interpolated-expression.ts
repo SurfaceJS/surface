@@ -8,7 +8,7 @@ export default class InterpolatedExpression
 {
     private readonly source: string;
 
-    private readonly expressions: Array<IExpression> = [];
+    private readonly expressions: IExpression[] = [];
 
     private expressionEnd:   number = 0;
     private expressionStart: number = 0;

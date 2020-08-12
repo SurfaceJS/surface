@@ -1,4 +1,4 @@
-import { hasValue, Indexer } from "@surface/core";
+import { Indexer, hasValue } from "@surface/core";
 import INode                 from "./interfaces/node";
 import ITransformer          from "./interfaces/transformer";
 import SegmentNode           from "./nodes/segment-node";
@@ -9,9 +9,9 @@ import RouteMatch            from "./types/route-match";
 
 export default class Route
 {
-    private readonly nodes:       Array<INode>;
+    private readonly nodes:       INode[];
     private readonly pattern:     RegExp;
-    private readonly segments:    Array<SegmentNode>;
+    private readonly segments:    SegmentNode[];
     private readonly transformers: Map<string, ITransformer>;
 
     public constructor(pattern: string, transformers: Map<string, ITransformer>)
@@ -22,7 +22,7 @@ export default class Route
         this.pattern      = new RegExp(`^${Array.from(this.segmentMap(this.segments)).join("")}$`);
     }
 
-    private *segmentMap(segments: Array<SegmentNode>): Iterable<string>
+    private *segmentMap(segments: SegmentNode[]): Iterable<string>
     {
         for (const segment of segments)
         {
@@ -32,7 +32,7 @@ export default class Route
         }
     }
 
-    private *nodeMap(nodes: Array<INode>): Iterable<string>
+    private *nodeMap(nodes: INode[]): Iterable<string>
     {
         for (const node of nodes)
         {
@@ -61,7 +61,7 @@ export default class Route
 
     private collectParams(match: RegExpExecArray): Indexer
     {
-        let data: Indexer = { };
+        const data: Indexer = { };
 
         for (let index = 0; index < this.nodes.length; index++)
         {
@@ -109,10 +109,10 @@ export default class Route
 
     private matchParams(params: Indexer): RouteMatch
     {
-        const paths:         Array<string> = [];
-        const missingParams: Array<string> = [];
+        const paths:         string[] = [];
+        const missingParams: string[] = [];
 
-        let data: Indexer = { };
+        const data: Indexer = { };
 
         for (const segment of this.segments)
         {
@@ -160,20 +160,16 @@ export default class Route
                             missingParams.push(node.name);
                         }
                     }
+                    else if (value == defaultValue)
+                    {
+                        data[node.name] = transformer.parse(value as string);
+                    }
                     else
                     {
-                        if (value == defaultValue)
-                        {
-                            data[node.name] = transformer.parse(value as string);
-                        }
-                        else
-                        {
-                            data[node.name] = value;
+                        data[node.name] = value;
 
-                            paths.push(transformer.stringfy(value));
-                        }
+                        paths.push(transformer.stringfy(value));
                     }
-
                 }
                 else if (TypeGuard.isIdentifier(node))
                 {
@@ -213,13 +209,11 @@ export default class Route
         {
             return {
                 matched:   true,
-                routeData: new RouteData(paths.join(""), data, { }, "")
+                routeData: new RouteData(paths.join(""), data, { }, ""),
             };
         }
-        else
-        {
-            return { matched: false, reason: `Missing required parameters: ${missingParams.join(", ")}` };
-        }
+
+        return { matched: false, reason: `Missing required parameters: ${missingParams.join(", ")}` };
     }
 
     private matchUrl(uri: string): RouteMatch
@@ -234,7 +228,7 @@ export default class Route
         {
             return {
                 matched:   true,
-                routeData: new RouteData(normalizedPath, this.collectParams(match), this.parseQuery(query), hash)
+                routeData: new RouteData(normalizedPath, this.collectParams(match), this.parseQuery(query), hash),
             };
         }
 
@@ -261,7 +255,7 @@ export default class Route
                     const [key, value] = pair.split("=");
 
                     return [key, decodeURIComponent(value)] as const;
-                }
+                },
             );
 
         return Object.fromEntries(entries);
@@ -276,12 +270,10 @@ export default class Route
 
             return { hash, path, query };
         }
-        else
-        {
-            const [path, hash = ""] = source.split("#");
 
-            return { hash, path, query: "" };
-        }
+        const [path, hash = ""] = source.split("#");
+
+        return { hash, path, query: "" };
     }
 
     public match(value: string | Indexer): RouteMatch
@@ -290,9 +282,7 @@ export default class Route
         {
             return this.matchUrl(value);
         }
-        else
-        {
-            return this.matchParams(value);
-        }
+
+        return this.matchParams(value);
     }
 }

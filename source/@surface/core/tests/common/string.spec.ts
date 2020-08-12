@@ -1,5 +1,5 @@
 import { shouldPass, suite, test }     from "@surface/test-suite";
-import * as chai                       from "chai";
+import { expect }                      from "chai";
 import { capture, captureAll, format } from "../../internal/common/string";
 
 @suite
@@ -20,9 +20,9 @@ export default class CommonStringtSpec
         const actual2 = capture(source2, /"/, /"/);
         const actual3 = capture(source3, /"/, /(")(?!.*\1)/);
 
-        chai.expect(actual1).to.deep.equal(expected1);
-        chai.expect(actual2).to.deep.equal(expected2);
-        chai.expect(actual3).to.deep.equal(expected3);
+        expect(actual1).to.deep.equal(expected1);
+        expect(actual2).to.deep.equal(expected2);
+        expect(actual3).to.deep.equal(expected3);
     }
 
     @test @shouldPass
@@ -42,19 +42,19 @@ export default class CommonStringtSpec
             "<tag three>",
             "Inner 3",
             "</tag>",
-            "End"
+            "End",
         ].join("");
 
         const expected =
         [
             ["Start<tag one>",      "Inner 1", "</tag>"],
             ["Outter 1<tag two>",   "Inner 2", "</tag>"],
-            ["Outter 2<tag three>", "Inner 3", "</tag>End"]
+            ["Outter 2<tag three>", "Inner 3", "</tag>End"],
         ];
 
         const actual = captureAll(source, /<.*?>/, /<\/.*?>/);
 
-        chai.expect(actual).to.deep.equal(expected);
+        expect(actual).to.deep.equal(expected);
     }
 
     @test @shouldPass
@@ -66,6 +66,6 @@ export default class CommonStringtSpec
         const actual   = format(pattern, source);
         const expected = "Hi Jon! Here your ticket, number: 33";
 
-        chai.expect(actual).to.equal(expected);
+        expect(actual).to.equal(expected);
     }
 }

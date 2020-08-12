@@ -1,22 +1,22 @@
-import { Hashcode, Nullable } from "@surface/core";
-import IComparer              from "./interfaces/comparer";
+import { Hashcode } from "@surface/core";
+import IComparer    from "./interfaces/comparer";
 
 type Slot<TElement> =
 {
-    hash:  number;
-    value: Nullable<TElement>;
-    next:  number;
+    hash:  number,
+    value: TElement | null,
+    next:  number,
 };
 
 const INITIAL_SIZE = 7;
 export default class HashSet<TElement> implements Iterable<TElement>
 {
-    private readonly comparer: IComparer<Nullable<TElement>>;
+    private readonly comparer: IComparer<TElement | null>;
 
-    private buckets:  Array<number>         = new Array(INITIAL_SIZE).fill(0);
-    private count:    number                = 0;
-    private freeList: number                = -1;
-    private slots:    Array<Slot<TElement>> = new Array(INITIAL_SIZE);
+    private buckets:  number[] = new Array(INITIAL_SIZE).fill(0);
+    private count:    number   = 0;
+    private freeList: number   = -1;
+    private slots: Slot<TElement>[] = new Array(INITIAL_SIZE);
 
     public constructor(comparer: IComparer<TElement>)
     {
@@ -101,7 +101,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
                 this.count++;
             }
 
-            this.slots[index] = { hash, value: element, next: this.buckets[hash % this.buckets.length] - 1 };
+            this.slots[index] = { hash, next: this.buckets[hash % this.buckets.length] - 1, value: element };
 
             this.buckets[hash % this.buckets.length] = index + 1;
 
@@ -134,7 +134,7 @@ export default class HashSet<TElement> implements Iterable<TElement>
                     this.slots[lastIndex].next = this.slots[index].next;
                 }
 
-                this.slots[index] = { hash: -1, value: null, next: this.freeList };
+                this.slots[index] = { hash: -1, next: this.freeList, value: null };
 
                 this.freeList = index;
 

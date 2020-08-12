@@ -22,7 +22,7 @@ export default class RouteConfigurator
             const path = !parent || config.path.startsWith("/")
                 ? config.path
                 : config.path
-                    ? parent.path + "/" + config.path
+                    ? `${parent.path}/${config.path}`
                     : parent.path;
 
             const components = RouteConfigurator.resolveComponents(config);
@@ -34,10 +34,10 @@ export default class RouteConfigurator
 
             const definition: IRouteDefinition =
             {
-                path,
-                name:  config.name,
                 meta:  config.meta ?? { },
-                stack: [...(parent?.stack ?? []), components]
+                name:  config.name,
+                path,
+                stack: [...parent?.stack ?? [], components],
             };
 
             if ((config.children?.length ?? 0) > 0)

@@ -6,29 +6,27 @@ import SyntaxError                                        from "../internal/synt
 import TypeGuard                                          from "../internal/type-guard";
 import
 {
+    InvalidParseExpectedSpec,
+    ParseExpectedSpec,
     invalidExpressions,
     validExpressions,
-    InvalidParseExpectedSpec,
-    ParseExpectedSpec
 } from "./expectations/parser-expected";
 
-type RawSyntaxError = Pick<SyntaxError, "message"|"lineNumber"|"index"|"column">|Pick<ReferenceError, "message">;
+type RawSyntaxError = Pick<SyntaxError, "message" | "lineNumber" | "index" | "column"> | Pick<ReferenceError, "message">;
 
-function toRaw(error: SyntaxError|ReferenceError): RawSyntaxError
+function toRaw(error: SyntaxError | ReferenceError): RawSyntaxError
 {
     if (error instanceof SyntaxError)
     {
         return {
-            message:    error.message,
-            lineNumber: error.lineNumber,
+            column:     error.column,
             index:      error.index,
-            column:     error.column
+            lineNumber: error.lineNumber,
+            message:    error.message,
         };
     }
-    else
-    {
-        return { message: error.message };
-    }
+
+    return { message: error.message };
 }
 
 @suite
@@ -37,36 +35,40 @@ export default class ParserSpec
     @test @shouldPass
     public benchmark(): void
     {
-        // const nativeContext = { x: { elements: [] }, index: 0 };
-        // const proxyContext  = { x: { elements: [] }, index: 0 };
 
-        // const raw = "x.elements.push({ id: index, row: index % 2 == 0 ? 'even' : 'odd' })";
+        // eslint-disable-next-line capitalized-comments
+        /*
+        const nativeContext = { x: { elements: [] }, index: 0 };
+        const proxyContext  = { x: { elements: [] }, index: 0 };
 
-        // const native = Function(`with(this) { ${raw} }`).bind(nativeContext);
-        // const proxy  = Parser.parse(raw, proxyContext);
+        const raw = "x.elements.push({ id: index, row: index % 2 == 0 ? 'even' : 'odd' })";
 
-        // const nativeStart = Date.now();
+        const native = Function(`with(this) { ${raw} }`).bind(nativeContext);
+        const proxy  = Parser.parse(raw, proxyContext);
 
-        // for (let index = 0; index < 1_000_000; index++)
-        // {
-        //     nativeContext.index = index;
-        //     native();
-        // }
+        const nativeStart = Date.now();
 
-        // const nativeTime = Date.now() - nativeStart;
+        for (let index = 0; index < 1_000_000; index++)
+        {
+            nativeContext.index = index;
+            native();
+        }
 
-        // const proxyStart = Date.now();
+        const nativeTime = Date.now() - nativeStart;
 
-        // for (let index = 0; index < 1_000_000; index++)
-        // {
-        //     proxyContext.index = index;
-        //     proxy.evaluate();
-        // }
+        const proxyStart = Date.now();
 
-        // const proxyTime  = Date.now() - proxyStart;
-        // const difference = ((proxyTime - nativeTime) / proxyTime) * 100;
+        for (let index = 0; index < 1_000_000; index++)
+        {
+            proxyContext.index = index;
+            proxy.evaluate();
+        }
 
-        // chai.expect(difference).to.lessThan(20);
+        const proxyTime  = Date.now() - proxyStart;
+        const difference = ((proxyTime - nativeTime) / proxyTime) * 100;
+
+        chai.expect(difference).to.lessThan(20);
+        */
     }
 
     @shouldPass

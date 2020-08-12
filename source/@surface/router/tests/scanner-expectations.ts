@@ -4,63 +4,63 @@ import Token     from "../internal/types/token";
 export type ScannerValidExpectation =
 {
     source: string,
-    token:  Token
+    token:  Token,
 };
 
 export type ScannerInvalidExpectation =
 {
-    error:  Error
+    error:  Error,
     source: string,
 };
 
-export const scannerValidExpectations: Array<ScannerValidExpectation> =
+export const scannerValidExpectations: ScannerValidExpectation[] =
 [
     {
         source: "",
-        token:  { index: 0, value: "", type: TokenType.Eof }
+        token:  { index: 0, type: TokenType.Eof, value: "" },
     },
     {
         source: " ",
-        token:  { index: 0, value: " ", type: TokenType.Space }
+        token:  { index: 0, type: TokenType.Space, value: " " },
     },
     {
         source: "path",
-        token:  { index: 0, value: "path", type: TokenType.Literal }
+        token:  { index: 0, type: TokenType.Literal, value: "path" },
     },
     {
-        token:  { index: 0, value: "/", type: TokenType.Punctuator },
         source: "/",
+        token:  { index: 0, type: TokenType.Punctuator, value: "/" },
     },
     {
-        token:  { index: 0, value: "{", type: TokenType.Punctuator },
         source: "{",
+        token:  { index: 0, type: TokenType.Punctuator, value: "{" },
     },
     {
-        token:  { index: 0, value: "}", type: TokenType.Punctuator },
         source: "}",
+        token:  { index: 0, type: TokenType.Punctuator, value: "}" },
     },
     {
-        token:  { index: 0, value: "=", type: TokenType.Punctuator },
         source: "=",
+        token:  { index: 0, type: TokenType.Punctuator, value: "=" },
     },
     {
-        token:  { index: 0, value: ":", type: TokenType.Punctuator },
         source: ":",
+        token:  { index: 0, type: TokenType.Punctuator, value: ":" },
     },
     {
-        token:  { index: 0, value: "*", type: TokenType.Punctuator },
         source: "*",
+        token:  { index: 0, type: TokenType.Punctuator, value: "*" },
     },
     {
-        token:  { index: 0, value: "?", type: TokenType.Punctuator },
         source: "?",
+        token:  { index: 0, type: TokenType.Punctuator, value: "?" },
     },
 ];
 
-export const scannerInvalidExpectations: Array<ScannerInvalidExpectation> =
+export const scannerInvalidExpectations: ScannerInvalidExpectation[] =
 [
     {
+        error:  new Error(),
         source: "",
-        error:  new Error()
     },
 ];

@@ -9,7 +9,7 @@ export default class ListSpec
     @test @shouldPass
     public createEmpty(): void
     {
-        expect(() => new Dictionary<string, Object>()).to.not.throw();
+        expect(() => new Dictionary<string, object>()).to.not.throw();
     }
 
     @test @shouldPass

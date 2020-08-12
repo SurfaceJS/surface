@@ -1,5 +1,3 @@
-import { Nullable } from "../types";
-
 export function assert(condition: unknown, message?: string): asserts condition
 {
     if (!condition)
@@ -8,7 +6,7 @@ export function assert(condition: unknown, message?: string): asserts condition
     }
 }
 
-export function assertGet<T>(value: Nullable<T>, message?: string): T
+export function assertGet<T>(value: T | null | undefined, message?: string): T
 {
     if (!hasValue(value))
     {
@@ -24,7 +22,7 @@ export function hasFlag<T extends number>(value: T, flag: T): boolean
 }
 
 export function hasValue(value: unknown): value is Object;
-export function hasValue<T>(value: Nullable<T>): value is NonNullable<T>
+export function hasValue<T>(value: T | null | undefined): value is NonNullable<T>
 {
     return value !== null && value !== undefined;
 }
@@ -36,14 +34,14 @@ export function isIterable(source: { [Symbol.iterator]?: Function }): source is 
     return typeof source[Symbol.iterator] == "function";
 }
 
-// tslint:disable-next-line:no-any
-export function tuple<TArgs extends Array<any>>(...args: TArgs): TArgs
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function tuple<TArgs extends any[]>(...args: TArgs): TArgs
 {
     return args;
 }
 
 
-export function typeGuard<T>(target: unknown, condition: boolean): target is T
+export function typeGuard<T>(_target: unknown, condition: boolean): _target is T
 {
     return condition;
 }

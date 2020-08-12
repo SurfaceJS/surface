@@ -8,14 +8,14 @@ import Expression,
     INode,
     IPattern,
     SyntaxError,
-    TypeGuard
+    TypeGuard,
 } from "@surface/expression";
 import InterpolatedExpression from "./interpolated-expression";
 import { forExpression }      from "./patterns";
 
 const cache: Record<string, INode> = { };
 
-// tslint:disable-next-line:no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseStatement<TParser extends (expression: string) => any>(parser: TParser, statement: string, expression: string): ReturnType<TParser>
 {
     try
@@ -86,14 +86,14 @@ export function parseDestructuredPattern(expression: string): IPattern
     }
 }
 
-export function parseForLoopStatement(expression: string): { operator: "of"|"in", left: IPattern|IIdentifier, right: IExpression }
+export function parseForLoopStatement(expression: string): { operator: "of" | "in", left: IPattern | IIdentifier, right: IExpression }
 {
     if (!forExpression.test(expression))
     {
         throw new Error("Invalid for-loop statement");
     }
 
-    const [, rawLeft, operator, rawRigth] = Array.from(forExpression.exec(expression)!) as [string, string, "in"|"of", string];
+    const [, rawLeft, operator, rawRigth] = Array.from(forExpression.exec(expression)!) as [string, string, "in" | "of", string];
 
     const destructured = rawLeft.startsWith("[") || rawLeft.startsWith("{");
 
@@ -105,5 +105,5 @@ export function parseForLoopStatement(expression: string): { operator: "of"|"in"
         throw getOffsetSyntaxError(expression, rawLeft, new SyntaxError("Invalid left-hand side in for-loop", 1, 0, 1));
     }
 
-    return { left, right, operator };
+    return { left, operator, right };
 }

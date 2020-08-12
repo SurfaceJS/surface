@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
 import { SyntaxError }                         from "@surface/expression";
@@ -5,9 +6,9 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import InterpolatedExpression                  from "../internal/interpolated-expression";
 
-type RawError = { message: string }|Pick<SyntaxError, "message"|"lineNumber"|"index"|"column">;
+type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 
-function parseWithError(expression: string): RawError|null
+function parseWithError(expression: string): RawError | null
 {
     try
     {
@@ -26,16 +27,14 @@ function toRaw(error: Error): RawError
     if (error instanceof SyntaxError)
     {
         return {
-            message:    error.message,
-            lineNumber: error.lineNumber,
+            column:     error.column,
             index:      error.index,
-            column:     error.column
+            lineNumber: error.lineNumber,
+            message:    error.message,
         };
     }
-    else
-    {
-        return { message: error.message };
-    }
+
+    return { message: error.message };
 }
 
 class Mock
