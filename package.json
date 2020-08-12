@@ -24,7 +24,7 @@
     "scripts": {
         "build": "node ./tasks/cli build",
         "clean": "node ./tasks/cli clean",
-        "install": "node ./tasks/cli install",
+        "install-workspace": "node ./tasks/cli install",
         "link": "node ./tasks/cli link",
         "lint": "eslint . --ext .ts",
         "publish": "node ./tasks/cli publish",

@@ -45,15 +45,6 @@
             }
         ],
         "@typescript-eslint/explicit-member-accessibility": "warn",
-        "@typescript-eslint/explicit-module-boundary-types": [
-            "warn",
-            {
-                "allowArgumentsExplicitlyTypedAsAny": true,
-                "allowDirectConstAssertionInArrowFunctions": true,
-                "allowHigherOrderFunctions": true,
-                "allowTypedFunctionExpressions": true
-            }
-        ],
         "@typescript-eslint/indent": "warn",
         "@typescript-eslint/keyword-spacing": "warn",
         "@typescript-eslint/lines-between-class-members": [
