@@ -1,4 +1,4 @@
-import RegClient, { IPackage } from "npm-registry-client";
+import RegClient, { IDisTags, IPackage } from "npm-registry-client";
 import Status                  from "./enums/status";
 import Version                 from "./version";
 
@@ -10,19 +10,27 @@ const silentLog =
     verbose: () => undefined,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Promisify<T extends (...args: any) => any> =
+    (uri: Parameters<T>[0], params: Parameters<T>[1]) => Promise<Parameters<Parameters<T>[2]>[1]>;
+
 export default class NpmRepository
 {
     private readonly client: RegClient;
     private readonly registry: string;
 
-    public readonly addTag  = this.promisify(this.client.distTags.add);
-    public readonly get     = this.promisify(this.client.get);
-    public readonly publish = this.promisify(this.client.publish);
+    public readonly addTag:  Promisify<IDisTags["add"]>;
+    public readonly get:     Promisify<RegClient["get"]>;
+    public readonly publish: Promisify<RegClient["publish"]>;
 
     public constructor(registry = "https://registry.npmjs.org", silent = true)
     {
         this.registry = registry;
         this.client   = new RegClient(silent ? { log: silentLog } : { });
+
+        this.addTag  = this.promisify(this.client.distTags.add);
+        this.get     = this.promisify(this.client.get);
+        this.publish = this.promisify(this.client.publish);
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

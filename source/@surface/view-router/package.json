@@ -4,20 +4,20 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "1.0.0-alpha.0",
-        "@surface/core": "1.0.0-alpha.0",
+        "@surface/collection": "0.1.0-alpha.0",
+        "@surface/core": "0.1.0-alpha.0",
         "@surface/custom-element": "1.0.0-alpha.0",
         "@surface/dependency-injection": "1.0.0-alpha.0",
-        "@surface/router": "1.0.0-alpha.0",
+        "@surface/router": "0.1.0-alpha.0",
         "tslib": "2.0.0"
     },
     "description": "Web component view router.",
     "devDependencies": {
-        "@surface/test-suite": "1.0.0-alpha.0",
-        "@types/chai": "4.2.11",
-        "@types/jsdom": "16.2.3",
-        "chai": "4.2.0",
-        "jsdom": "16.2.2"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "file:../../../node_modules/@types/chai",
+        "@types/jsdom": "file:../../../node_modules/@types/jsdom",
+        "chai": "file:../../../node_modules/chai",
+        "jsdom": "file:../../../node_modules/jsdom"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

@@ -4,14 +4,14 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.0.3",
+        "@surface/core": "0.1.0-alpha.0",
         "tslib": "2.0.0"
     },
     "description": "Provides an tree representation of javascript expressions.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "@types/chai": "4.2.11",
-        "chai": "4.2.0"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "file:../../../node_modules/@types/chai",
+        "chai": "file:../../../node_modules/chai"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

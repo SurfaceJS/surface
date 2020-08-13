@@ -4,13 +4,13 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.0.3",
+        "@surface/core": "0.1.0-alpha.0",
         "tslib": "2.0.0"
     },
     "description": "Oriented object test suite powered by mocha.",
     "devDependencies": {
-        "@types/chai": "4.2.11",
-        "chai": "4.2.0"
+        "@types/chai": "file:../../../node_modules/@types/chai",
+        "chai": "file:../../../node_modules/chai"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
