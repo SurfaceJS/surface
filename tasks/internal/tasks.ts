@@ -101,9 +101,9 @@ export default class Tasks
         {
             const dependencies = { ...$package.dependencies ?? { }, ...$package.devDependencies ?? { } };
 
-            const targets = Object.keys(dependencies)
-                .filter(x => !x.startsWith("@surface/"))
-                .map(key => `${key}@${dependencies[key].replace(/^(\^|~)/, "")}`)
+            const targets = Object.entries(dependencies)
+                .filter(([key, value]) => !key.startsWith("@surface/") && !value.startsWith("file:"))
+                .map(([key, value]) => `${key}@${value.replace(/^(\^|~)/, "")}`)
                 .join(" ");
 
             if (targets)

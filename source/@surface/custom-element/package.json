@@ -4,21 +4,21 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/core": "0.0.3",
-        "@surface/enumerable": "0.0.5",
-        "@surface/expression": "0.0.0",
-        "@surface/reactive": "0.0.0",
-        "@surface/reflection": "0.0.0",
+        "@surface/collection": "0.1.0-alpha.0",
+        "@surface/core": "0.1.0-alpha.0",
+        "@surface/enumerable": "1.0.0-alpha.0",
+        "@surface/expression": "1.0.0-alpha.0",
+        "@surface/reactive": "1.0.0-alpha.0",
+        "@surface/reflection": "1.0.0-alpha.0",
         "tslib": "2.0.0"
     },
     "description": "Base class used to define custom elements.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "@types/chai": "4.2.11",
-        "@types/jsdom": "16.2.3",
-        "chai": "4.2.0",
-        "jsdom": "16.2.2"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "file:../../../node_modules/@types/chai",
+        "@types/jsdom": "file:../../../node_modules/@types/jsdom",
+        "chai": "file:../../../node_modules/chai",
+        "jsdom": "file:../../../node_modules/jsdom"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

@@ -8,9 +8,9 @@
     },
     "description": "Types and core modules of @surface projects.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "@types/chai": "4.2.11",
-        "chai": "4.2.0"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "file:../../../node_modules/@types/chai",
+        "chai": "file:../../../node_modules/chai"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
