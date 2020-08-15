@@ -93,7 +93,7 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
     }
 
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-    plugins.push(new ForkTsCheckerWebpackPlugin({ eslint: { configFile: configuration.eslintrc, files: `${configuration.context}/**/*.{js},{ts}` }, typescript: { build: true, configFile: configuration.tsconfig } }));
+    plugins.push(new ForkTsCheckerWebpackPlugin({ eslint: { configFile: configuration.eslintrc, files: `${configuration.context}/**/*.{js,ts}` }, typescript: { build: true, configFile: configuration.tsconfig } }));
     plugins.push(new HtmlWebpackPlugin(typeof configuration.htmlTemplate == "string" ? { template: configuration.htmlTemplate } : configuration.htmlTemplate));
 
     const isProduction = enviroment == EnviromentType.Production;

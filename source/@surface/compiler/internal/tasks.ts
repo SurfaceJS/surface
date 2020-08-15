@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
 import path                            from "path";
 import { lookupFile, removePathAsync } from "@surface/io";
-import { Stats }                       from "webpack";
+import webpack, { Stats }                       from "webpack";
 import Compiler                        from "./compiler";
 import EnviromentType                  from "./enums/enviroment-type";
 import IConfiguration                  from "./interfaces/configuration";
@@ -24,13 +25,20 @@ type CliBuildOptions =
     webpackConfig?: string,
 };
 
-const DEFAULTS: Required<Pick<IConfiguration, "context" | "entry" | "filename" | "output" | "publicPath">> =
+type CliCleanOptions =
+{
+    output?:  string,
+    project?: string,
+};
+
+const DEFAULTS: Required<Pick<IConfiguration, "context" | "entry" | "filename" | "output" | "publicPath" | "tsconfig">> =
 {
     context:    ".",
     entry:      "./source/index.ts",
     filename:   "[name].js",
     output:     "./build",
     publicPath: "/",
+    tsconfig:   "./tsconfig.json",
 };
 
 export default class Tasks
@@ -59,7 +67,7 @@ export default class Tasks
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
             tslint:        options.eslintrc,
-            webpackConfig: options.webpackConfig && require(options.webpackConfig),
+            webpackConfig: (options.webpackConfig && Tasks.resolveModule(require(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
         const project = options.project ?? ".";
@@ -69,17 +77,17 @@ export default class Tasks
         const lookups =
         [
             project,
-            path.join(project, `surface.config.${mode}.js`),
-            path.join(project, `surface.config.${mode}.json`),
-            path.join(project, "surface.config.js"),
-            path.join(project, "surface.config.json"),
+            path.join(project, `surface.${mode}.js`),
+            path.join(project, `surface.${mode}.json`),
+            path.join(project, "surface.js"),
+            path.join(project, "surface.json"),
         ];
 
         const projectPath = lookupFile(lookups);
 
         if (projectPath)
         {
-            const projectConfiguration = { ...DEFAULTS, ...require(projectPath) } as IConfiguration;
+            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(require(projectPath)) } as IConfiguration;
 
             const root = path.parse(projectPath).dir;
 
@@ -91,11 +99,21 @@ export default class Tasks
         return configuration;
     }
 
+    private static resolveModule(module: object | { default: object }): object
+    {
+        if ("default" in module)
+        {
+            return module.default;
+        }
+
+        return module;
+    }
+
     private static resolvePath<T extends object, TKey extends keyof T>(configuration: T, key: TKey, context: string): void
     {
         const value = configuration[key];
 
-        if (typeof value == "string")
+        if (typeof value == "string" && !path.isAbsolute(value))
         {
             configuration[key] = path.resolve(context, value) as unknown as T[TKey];
         }
@@ -143,7 +161,7 @@ export default class Tasks
             .build();
     }
 
-    public static async clean(options: CliBuildOptions): Promise<void>
+    public static async clean(options: CliCleanOptions): Promise<void>
     {
         const configuration = Tasks.resolveConfiguration(options);
 

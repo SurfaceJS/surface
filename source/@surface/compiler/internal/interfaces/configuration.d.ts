@@ -7,7 +7,7 @@ export default interface IConfiguration
     entry?:         string | string[] | Entry | EntryFunc;
     eslintrc?:      string;
     filename?:      string;
-    forceTs?:          boolean | string[];
+    forceTs?:       boolean | string[];
     htmlTemplate?:  string | HtmlWebpackPluginOptions;
     logLevel?:      Stats.ToStringOptions;
     output?:        string;
