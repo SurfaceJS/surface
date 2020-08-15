@@ -34,16 +34,17 @@ program
     .option("-e|--entry           <entry>",         "Entry points", (x = "") => x.split(","))
     .option("-ft|--force-ts       <forceTs>",       "Force resolve to the ts file when next to the transpiled js file", toBooleanOrStringArray)
     .option("-f|--filename        <filename>",      "The filename of the entry chunk as relative path inside the output.path directory")
+    .option("-h|--hot             [hot]",           "Enable hot module reload", toBoolean)
     .option("-l|--log-level       <logLevel>",      "Output verbosity level", x => statsLevelPattern.test(x) && x.toLowerCase())
     .option("-m|--mode            <mode>",          "Enable production optimizations or development hints.", x => enviromentModePattern.test(x) && x.toLowerCase())
     .option("-o|--output          <output>",        "The output directory (absolute path)")
     .option("-pp|--public-path    <publicPath>",    "Include comments with information about the modules")
     .option("-p|--project         <project>",       "Path to project file (absolute path)")
-    .option("-tc|--tsconfig       <tsconfig>",      "Path to tsconfig file (relative to context)")
-    .option("-tl|--tslint         <tslint>",        "Path to tslint file (relative to context)")
-    .option("-t|--html-template   <htmlTemplate>",  "Path to html template file (relative to context)")
-    .option("-wc|--webpack-config <webpackConfig>", "Path to webpack-config file (relative to context)")
-    .option("-w|--watch           <watch>",         "Watch mode compilation", toBoolean)
+    .option("-tc|--tsconfig       <tsconfig>",      "Path to tsconfig file (absolute path)")
+    .option("-el|--eslintrc       <eslintrc>",      "Path to eslintrc file (absolute path)")
+    .option("-t|--html-template   <htmlTemplate>",  "Path to html template file (absolute path)")
+    .option("-wc|--webpack-config <webpackConfig>", "Path to webpack-config file (absolute path)")
+    .option("-w|--watch           [watch]",         "Enable Watch mode compilation", toBoolean)
     .action(Tasks.build);
 
 program
@@ -51,5 +52,25 @@ program
     .option("-o|--output  <output>",  "The output directory (absolute path)")
     .option("-p|--project <project>", "Path to project file (absolute path)")
     .action(Tasks.clean);
+
+program
+    .command("serve")
+    .option("-c|--context         <context>",       "The base directory for resolving the entry option (absolute path)")
+    .option("-el|--eslintrc       <eslintrc>",      "Path to eslintrc file (absolute path)")
+    .option("-e|--entry           <entry>",         "Entry points", (x = "") => x.split(","))
+    .option("-ft|--force-ts       <forceTs>",       "Force resolve to the ts file when next to the transpiled js file", toBooleanOrStringArray)
+    .option("-f|--filename        <filename>",      "The filename of the entry chunk as relative path inside the output.path directory")
+    .option("-hn|--host           <host>",          "Dev server hostname")
+    .option("-h|--hot             [hot]",           "Enable hot module reload", toBoolean)
+    .option("-l|--log-level       <logLevel>",      "Output verbosity level", x => statsLevelPattern.test(x) && x.toLowerCase())
+    .option("-m|--mode            <mode>",          "Enable production optimizations or development hints.", x => enviromentModePattern.test(x) && x.toLowerCase())
+    .option("-o|--output          <output>",        "The output directory (absolute path)")
+    .option("-pp|--public-path    <publicPath>",    "Include comments with information about the modules")
+    .option("-pt|--port           <port>",          "Dev server port")
+    .option("-p|--project         <project>",       "Path to project file (absolute path)")
+    .option("-tc|--tsconfig       <tsconfig>",      "Path to tsconfig file (absolute path)")
+    .option("-t|--html-template   <htmlTemplate>",  "Path to html template file (absolute path)")
+    .option("-wc|--webpack-config <webpackConfig>", "Path to webpack-config file (absolute path)")
+    .action(Tasks.serve);
 
 program.parse(process.argv);

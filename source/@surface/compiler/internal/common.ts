@@ -9,8 +9,11 @@ import HtmlWebpackPlugin          from "html-webpack-plugin";
 import TerserWebpackPlugin        from "terser-webpack-plugin";
 import webpack                    from "webpack";
 import EnviromentType             from "./enums/enviroment-type";
-import IConfiguration             from "./interfaces/configuration";
 import ForceTsResolvePlugin       from "./plugins/force-ts-resolve-plugin";
+import IConfiguration             from "./types/configuration";
+
+type DevServerOptions = { host: string, port: number };
+type WebpackEntry = string | string[] | webpack.Entry | webpack.EntryFunc;
 
 const loaders =
 {
@@ -59,7 +62,6 @@ const loaders =
         loader:  "thread-loader",
         options:
         {
-            // There should be 1 cpu for the fork-ts-checker-webpack-plugin
             workers: os.cpus().length - 1,
         },
     },
@@ -77,8 +79,22 @@ const loaders =
     },
 };
 
+function configureDevServerEntry(entry: WebpackEntry, publicPath: string, devServerOptions: DevServerOptions): WebpackEntry
+{
+    const webpackDevServerClient = `webpack-dev-server/client?http://${devServerOptions.host}:${devServerOptions.port}${publicPath}`;
+    const webpackHotDevServer    = "webpack/hot/dev-server";
+
+    return Array.isArray(entry)
+        ? [webpackDevServerClient, webpackHotDevServer, ...entry]
+        : typeof entry == "object"
+            ? { [webpackDevServerClient]: webpackDevServerClient, [webpackHotDevServer]: webpackHotDevServer, ...entry }
+            : typeof entry == "string"
+                ? [webpackDevServerClient, webpackHotDevServer, entry]
+                : entry;
+}
+
 // eslint-disable-next-line import/prefer-default-export
-export function buildConfiguration(enviroment: EnviromentType, configuration: IConfiguration): webpack.Configuration
+export function buildConfiguration(enviroment: EnviromentType, configuration: IConfiguration, devServerOptions?: DevServerOptions): webpack.Configuration
 {
     const resolvePlugins: webpack.ResolvePlugin[] = [];
     const plugins:        webpack.Plugin[]        = [];
@@ -90,6 +106,11 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
             : configuration.forceTs;
 
         resolvePlugins.push(new ForceTsResolvePlugin(paths));
+    }
+
+    if (configuration.hot && enviroment != EnviromentType.Production)
+    {
+        plugins.push(new webpack.HotModuleReplacementPlugin());
     }
 
     plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
@@ -110,11 +131,17 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
         },
     });
 
+    const publicPath = configuration.publicPath
+        ? (configuration.publicPath.startsWith("/") ? "" : "/") + configuration.publicPath.replace(/\/$/, "")
+        : "";
+
     const webpackConfiguration: webpack.Configuration =
     {
         context: configuration.context,
         devtool: isProduction ? false : "#source-map",
-        entry:   configuration.entry,
+        entry:   devServerOptions
+            ? configureDevServerEntry(configuration.entry!, publicPath, devServerOptions)
+            : configuration.entry,
         mode:    enviroment,
         module:
         {
@@ -228,7 +255,7 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
             filename:   configuration.filename,
             path:       configuration.output,
             pathinfo:   !isProduction,
-            publicPath: configuration.publicPath,
+            publicPath,
         },
         performance:
         {
@@ -239,7 +266,9 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
         {
             alias:
             {
-                "tslib": path.resolve(__dirname, "../node_modules", "tslib"),
+                "tslib":                  path.resolve(__dirname, "../node_modules", "tslib"),
+                "webpack-dev-server":     path.resolve(__dirname, "../node_modules", "webpack-dev-server"),
+                "webpack/hot/dev-server": path.resolve(__dirname, "../node_modules", "webpack/hot/dev-server"),
             },
             extensions: [".ts", ".js"],
             modules:    [".", "node_modules"],

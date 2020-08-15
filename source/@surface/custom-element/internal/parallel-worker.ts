@@ -18,9 +18,9 @@ export default class ParallelWorker
     private reject:   Action1<unknown> | null = null;
     private running:  boolean                 = false;
 
-    public constructor(interval?: number)
+    public constructor(interval: number = 16.17)
     {
-        this.interval = interval ?? 16.17;
+        this.interval = interval;
     }
 
     public static async done(): Promise<void>

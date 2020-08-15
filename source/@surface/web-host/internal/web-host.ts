@@ -62,10 +62,7 @@ export default class WebHost
 
         try
         {
-            if (this.startup?.onBeginRequest)
-            {
-                this.startup.onBeginRequest(httpContext);
-            }
+            this.startup?.onBeginRequest?.(httpContext);
 
             let handled = false;
 

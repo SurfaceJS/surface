@@ -1,32 +1,18 @@
 import chalk                  from "chalk";
 import webpack                from "webpack";
+import WebpackDevServer       from "webpack-dev-server";
 import { buildConfiguration } from "./common";
 import EnviromentType         from "./enums/enviroment-type";
-import IConfiguration         from "./interfaces/configuration";
+import IConfiguration         from "./types/configuration";
 
 export default class Compiler
 {
-    private readonly $webpack:             typeof webpack;
-    private readonly enviroment:           EnviromentType;
-    private readonly watch:                boolean;
-    private readonly webpackCompiler:      webpack.Compiler;
-    private readonly webpackConfiguration: webpack.Configuration;
+    public constructor(private readonly $webpack = webpack)
+    { }
 
-    private readonly logLevel?: webpack.Stats.ToStringOptions;
-
-    public constructor(configuration: IConfiguration = { }, enviroment: EnviromentType = EnviromentType.Development, watch: boolean = false, $webpack = webpack)
+    public build(watch: boolean = false, enviroment: EnviromentType = EnviromentType.Development, configuration: IConfiguration = { }): void
     {
-        this.logLevel             = configuration.logLevel;
-        this.enviroment           = enviroment;
-        this.watch                = watch;
-        this.$webpack             = $webpack;
-        this.webpackConfiguration = buildConfiguration(enviroment, configuration);
-        this.webpackCompiler      = this.$webpack(this.webpackConfiguration);
-    }
-
-    public build(): void
-    {
-        const statOptions: webpack.Stats.ToStringOptions = this.logLevel
+        const statOptions: webpack.Stats.ToStringOptions = configuration.logLevel
         ?? {
             assets:   true,
             colors:   true,
@@ -35,18 +21,67 @@ export default class Compiler
             warnings: true,
         };
 
+        const webpackConfiguration = buildConfiguration(enviroment, configuration);
+        const webpackCompiler      = this.$webpack(webpackConfiguration);
+
         const callback: webpack.Compiler.Handler =
             (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
 
-        console.log(`Starting ${chalk.bold.green(this.watch ? "Watch" : "Build")} using ${chalk.bold.green(this.enviroment)} configuration.`);
+        console.log(`Starting ${chalk.bold.green(watch ? "Watch" : "Build")} using ${chalk.bold.green(enviroment)} configuration.`);
 
-        if (this.watch)
+        if (watch)
         {
-            this.webpackCompiler.watch({ aggregateTimeout: 500, ignored: /node_modules/, poll: true }, callback);
+            webpackCompiler.watch({ }, callback);
         }
         else
         {
-            this.webpackCompiler.run(callback);
+            webpackCompiler.run(callback);
         }
+    }
+
+    public serve(host: string = "localhost", port: number = 8080, configuration: IConfiguration = { }): void
+    {
+        const statOptions: webpack.Stats.ToStringOptions = configuration.logLevel
+        ?? {
+            assets:   true,
+            colors:   true,
+            errors:   true,
+            version:  true,
+            warnings: true,
+        };
+
+        const webpackConfiguration = buildConfiguration(EnviromentType.Development, configuration, { host, port });
+        const webpackCompiler      = this.$webpack(webpackConfiguration);
+
+        const publicPath =  configuration.publicPath
+            ? (configuration.publicPath.startsWith("/") ? "" : "/") + configuration.publicPath.replace(/\/$/, "")
+            : "";
+
+        const options: WebpackDevServer.Configuration =
+        {
+            historyApiFallback: { index: `${publicPath}/index.html` },
+            hot:                configuration.hot,
+            inline:             true,
+            publicPath,
+            stats:              statOptions,
+            ...configuration.devServer,
+        };
+
+        const server = new WebpackDevServer(webpackCompiler, options);
+
+        server.listen
+        (
+            port,
+            host,
+            (err) =>
+            {
+                if (err)
+                {
+                    console.log(err);
+                }
+
+                console.log("WebpackDevServer listening at localhost:", port);
+            },
+        );
     }
 }

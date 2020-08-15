@@ -2,17 +2,19 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import path                            from "path";
 import { lookupFile, removePathAsync } from "@surface/io";
-import webpack, { Stats }                       from "webpack";
+import webpack, { Stats }              from "webpack";
 import Compiler                        from "./compiler";
 import EnviromentType                  from "./enums/enviroment-type";
-import IConfiguration                  from "./interfaces/configuration";
+import Configuration                   from "./types/configuration";
 
 type CliBuildOptions =
 {
     context?:       string,
     entry?:         string,
+    eslintrc?:      string,
     filename?:      string,
     forceTs?:       boolean | string[],
+    hot?:           boolean,
     htmlTemplate?:  string,
     logLevel?:      Stats.ToStringOptions,
     mode?:          EnviromentType,
@@ -20,7 +22,6 @@ type CliBuildOptions =
     project?:       string,
     publicPath?:    string,
     tsconfig?:      string,
-    eslintrc?:      string,
     watch?:         boolean,
     webpackConfig?: string,
 };
@@ -31,14 +32,33 @@ type CliCleanOptions =
     project?: string,
 };
 
-const DEFAULTS: Required<Pick<IConfiguration, "context" | "entry" | "filename" | "output" | "publicPath" | "tsconfig">> =
+type ServeBuildOptions =
 {
-    context:    ".",
-    entry:      "./source/index.ts",
-    filename:   "[name].js",
-    output:     "./build",
-    publicPath: "/",
-    tsconfig:   "./tsconfig.json",
+    context?:       string,
+    entry?:         string,
+    eslintrc?:      string,
+    filename?:      string,
+    forceTs?:       boolean | string[],
+    hot?:           boolean,
+    host?:          string,
+    port?:          number,
+    htmlTemplate?:  string,
+    logLevel?:      Stats.ToStringOptions,
+    mode?:          EnviromentType,
+    output?:        string,
+    project?:       string,
+    publicPath?:    string,
+    tsconfig?:      string,
+    webpackConfig?: string,
+};
+
+const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
+{
+    context:  ".",
+    entry:    "./source/index.ts",
+    filename: "[name].js",
+    output:   "./build",
+    tsconfig: "./tsconfig.json",
 };
 
 export default class Tasks
@@ -53,14 +73,15 @@ export default class Tasks
         return new Proxy(target, handler);
     }
 
-    private static resolveConfiguration(options: CliBuildOptions): IConfiguration
+    private static resolveConfiguration(options: CliBuildOptions): Configuration
     {
-        const configuration: IConfiguration = Tasks.createProxy
+        const configuration: Configuration = Tasks.createProxy
         ({
             context:       options.context,
             entry:         options.entry,
             filename:      options.filename,
             forceTs:       options.forceTs,
+            hot:           options.hot,
             htmlTemplate:  options.htmlTemplate,
             logLevel:      options.logLevel,
             output:        options.output,
@@ -87,7 +108,7 @@ export default class Tasks
 
         if (projectPath)
         {
-            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(require(projectPath)) } as IConfiguration;
+            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(require(projectPath)) } as Configuration;
 
             const root = path.parse(projectPath).dir;
 
@@ -119,7 +140,7 @@ export default class Tasks
         }
     }
 
-    private static resolvePaths(configuration: IConfiguration, root: string): void
+    private static resolvePaths(configuration: Configuration, root: string): void
     {
         if (!configuration.eslintrc)
         {
@@ -155,10 +176,7 @@ export default class Tasks
     {
         const configuration = Tasks.resolveConfiguration(options);
 
-        console.log(configuration);
-
-        new Compiler(configuration, options.mode, options.watch)
-            .build();
+        new Compiler().build(options.watch, options.mode, configuration);
     }
 
     public static async clean(options: CliCleanOptions): Promise<void>
@@ -172,5 +190,12 @@ export default class Tasks
         ];
 
         await Promise.all(promises);
+    }
+
+    public static serve(options: ServeBuildOptions): void
+    {
+        const configuration = Tasks.resolveConfiguration(options);
+
+        new Compiler().serve(options.host, options.port, configuration);
     }
 }
