@@ -1,6 +1,5 @@
-import It   from "./internal/it";
 import Mock from "./internal/mock";
 
-export { It };
+export { default as It } from "./internal/it";
 
 export default Mock;
