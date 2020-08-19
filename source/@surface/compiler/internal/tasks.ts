@@ -2,55 +2,13 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import path                            from "path";
 import { lookupFile, removePathAsync } from "@surface/io";
-import webpack, { Stats }              from "webpack";
+import webpack                         from "webpack";
 import Compiler                        from "./compiler";
-import EnviromentType                  from "./enums/enviroment-type";
+import AnalyzerOptions                 from "./types/analyzer-options";
+import BuildOptions                    from "./types/build-options";
 import Configuration                   from "./types/configuration";
-
-type CliBuildOptions =
-{
-    context?:       string,
-    entry?:         string,
-    eslintrc?:      string,
-    filename?:      string,
-    forceTs?:       boolean | string[],
-    hot?:           boolean,
-    htmlTemplate?:  string,
-    logLevel?:      Stats.ToStringOptions,
-    mode?:          EnviromentType,
-    output?:        string,
-    project?:       string,
-    publicPath?:    string,
-    tsconfig?:      string,
-    watch?:         boolean,
-    webpackConfig?: string,
-};
-
-type CliCleanOptions =
-{
-    output?:  string,
-    project?: string,
-};
-
-type ServeBuildOptions =
-{
-    context?:       string,
-    entry?:         string,
-    eslintrc?:      string,
-    filename?:      string,
-    forceTs?:       boolean | string[],
-    hot?:           boolean,
-    host?:          string,
-    port?:          number,
-    htmlTemplate?:  string,
-    logLevel?:      Stats.ToStringOptions,
-    mode?:          EnviromentType,
-    output?:        string,
-    project?:       string,
-    publicPath?:    string,
-    tsconfig?:      string,
-    webpackConfig?: string,
-};
+import DevServerOptions                from "./types/dev-serve-options";
+import Options                         from "./types/options";
 
 const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
 {
@@ -73,7 +31,7 @@ export default class Tasks
         return new Proxy(target, handler);
     }
 
-    private static resolveConfiguration(options: CliBuildOptions): Configuration
+    private static optionsToConfiguration(options: Options): Configuration
     {
         const configuration: Configuration = Tasks.createProxy
         ({
@@ -81,7 +39,6 @@ export default class Tasks
             entry:         options.entry,
             filename:      options.filename,
             forceTs:       options.forceTs,
-            hot:           options.hot,
             htmlTemplate:  options.htmlTemplate,
             logLevel:      options.logLevel,
             output:        options.output,
@@ -93,7 +50,7 @@ export default class Tasks
 
         const project = options.project ?? ".";
 
-        const mode = options.mode ?? EnviromentType.Development;
+        const mode = options.mode ?? "development";
 
         const lookups =
         [
@@ -172,30 +129,37 @@ export default class Tasks
         }
     }
 
-    public static build(options: CliBuildOptions): void
+    public static analyze(options: Options & AnalyzerOptions): void
     {
-        const configuration = Tasks.resolveConfiguration(options);
+        const configuration = Tasks.optionsToConfiguration(options);
 
-        new Compiler().build(options.watch, options.mode, configuration);
+        Compiler.analyze(options, configuration);
     }
 
-    public static async clean(options: CliCleanOptions): Promise<void>
+    public static build(options: Options & BuildOptions): void
     {
-        const configuration = Tasks.resolveConfiguration(options);
+        const configuration = Tasks.optionsToConfiguration(options);
+
+        Compiler.build(options, configuration);
+    }
+
+    public static async clean(options: Options): Promise<void>
+    {
+        const configuration = Tasks.optionsToConfiguration(options);
 
         const promises =
         [
-            removePathAsync(configuration.output ?? DEFAULTS.output),
+            removePathAsync(configuration.output!),
             removePathAsync(path.resolve(__dirname, ".cache")),
         ];
 
         await Promise.all(promises);
     }
 
-    public static serve(options: ServeBuildOptions): void
+    public static serve(options: Options & DevServerOptions): void
     {
-        const configuration = Tasks.resolveConfiguration(options);
+        const configuration = Tasks.optionsToConfiguration(options);
 
-        new Compiler().serve(options.host, options.port, configuration);
+        Compiler.serve(options, configuration);
     }
 }

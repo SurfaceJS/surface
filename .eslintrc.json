@@ -247,7 +247,6 @@
         "id-denylist": "warn",
         "id-match": "warn",
         "import/default": "warn",
-        "import/dynamic-import-chunkname": "warn",
         "import/export": "warn",
         "import/exports-last": "warn",
         "import/extensions": "warn",

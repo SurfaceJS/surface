@@ -1,18 +1,16 @@
-import type webpack             from "webpack";
-import WebpackDevServer         from "webpack-dev-server";
-import HtmlWebpackPluginOptions from "./html-webpack-plugin-options";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import type webpack      from "webpack";
+import WebpackDevServer  from "webpack-dev-server";
 
 type Configuration =
 {
     context?:       string,
     devServer?:     WebpackDevServer.Configuration,
-    entry?:         string | string[] | webpack.Entry | webpack.EntryFunc,
+    entry?:         webpack.Configuration["entry"],
     eslintrc?:      string,
     filename?:      string,
     forceTs?:       boolean | string[],
-    hot?:           boolean,
-    htmlTemplate?:  string | HtmlWebpackPluginOptions,
-    logLevel?:      webpack.Stats.ToStringOptions,
+    htmlTemplate?:  string | HtmlWebpackPlugin.Options,
     output?:        string,
     publicPath?:    string,
     tsconfig?:      string,

@@ -1,4 +1,4 @@
-import { Constructor } from "../../core";
+import { Constructor } from "@surface/core";
 import CallSetup       from "./call-setup";
 import ICallSetup      from "./interfaces/call-setup";
 import IExecutable     from "./interfaces/executable";
@@ -15,6 +15,14 @@ export default class Mock<T extends object>
     public constructor(target: T | (Constructor<T> & Function) = { } as T)
     {
         this.proxy = this.createProxy(typeof target == "object" ? target : target.prototype);
+    }
+
+    public static module<T>(module: T, proxies: Partial<Record<keyof T, T[keyof T]>>): void
+    {
+        for (const [key, value] of Object.entries(proxies) as [keyof T, T[keyof T]][])
+        {
+            module[key] = value;
+        }
     }
 
     private createProxy(target: T): T

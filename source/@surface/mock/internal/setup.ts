@@ -1,5 +1,5 @@
-import { Hashcode } from "../../core";
-import Enumerable   from "../../enumerable";
+import { Hashcode } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
 import { isIt }     from "./common";
 import { Factory }  from "./types";
 

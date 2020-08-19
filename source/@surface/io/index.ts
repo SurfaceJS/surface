@@ -84,6 +84,44 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
     return mkdirAsync(targetPath, mode);
 }
 
+export function isDirectory(filePath: string): boolean
+{
+    let stat;
+    try
+    {
+        stat = fs.statSync(filePath);
+    }
+    catch (e)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return false;
+        }
+
+        throw e;
+    }
+    return stat.isDirectory();
+}
+
+export function isFile(filePath: string): boolean
+{
+    let stat;
+    try
+    {
+        stat = fs.statSync(filePath);
+    }
+    catch (e)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return false;
+        }
+
+        throw e;
+    }
+    return stat.isFile() || stat.isFIFO();
+}
+
 /**
  * Look up for target file/directory.
  * @param startPath Path to start resolution.

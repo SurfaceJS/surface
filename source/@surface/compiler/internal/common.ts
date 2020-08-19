@@ -1,18 +1,22 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
 /* eslint-disable max-lines-per-function */
-import os                         from "os";
-import path                       from "path";
-import { deepMergeCombine }       from "@surface/core";
-import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
-import HtmlWebpackPlugin          from "html-webpack-plugin";
-import TerserWebpackPlugin        from "terser-webpack-plugin";
-import webpack                    from "webpack";
-import EnviromentType             from "./enums/enviroment-type";
-import ForceTsResolvePlugin       from "./plugins/force-ts-resolve-plugin";
-import IConfiguration             from "./types/configuration";
+import os                                    from "os";
+import path                                  from "path";
+import { deepMergeCombine }                  from "@surface/core";
+import ForkTsCheckerWebpackPlugin            from "fork-ts-checker-webpack-plugin";
+import { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions";
+import HtmlWebpackPlugin                     from "html-webpack-plugin";
+import TerserWebpackPlugin                   from "terser-webpack-plugin";
+import webpack                               from "webpack";
+import { BundleAnalyzerPlugin }              from "webpack-bundle-analyzer";
+import ForceTsResolvePlugin                  from "./plugins/force-ts-resolve-plugin";
+import AnalyzerOptions                       from "./types/analyzer-options";
+import BuildOptions                          from "./types/build-options";
+import Configuration                         from "./types/configuration";
+import DevServerOptions                      from "./types/dev-serve-options";
+import ExportOptions                         from "./types/export-options";
 
-type DevServerOptions = { host: string, port: number };
 type WebpackEntry = string | string[] | webpack.Entry | webpack.EntryFunc;
 
 const loaders =
@@ -79,9 +83,9 @@ const loaders =
     },
 };
 
-function configureDevServerEntry(entry: WebpackEntry, publicPath: string, devServerOptions: DevServerOptions): WebpackEntry
+function configureDevServerEntry(entry: WebpackEntry, publicPath: string, serveOptions: DevServerOptions): WebpackEntry
 {
-    const webpackDevServerClient = `webpack-dev-server/client?http://${devServerOptions.host}:${devServerOptions.port}${publicPath}`;
+    const webpackDevServerClient = `webpack-dev-server/client?http://${serveOptions.host}:${serveOptions.port}${publicPath}`;
     const webpackHotDevServer    = "webpack/hot/dev-server";
 
     return Array.isArray(entry)
@@ -93,8 +97,37 @@ function configureDevServerEntry(entry: WebpackEntry, publicPath: string, devSer
                 : entry;
 }
 
-// eslint-disable-next-line import/prefer-default-export
-export function buildConfiguration(enviroment: EnviromentType, configuration: IConfiguration, devServerOptions?: DevServerOptions): webpack.Configuration
+export const analyzerDefaultSizesPattern = /^parsed|stat|gzip$/i;
+export const analyzerLogLevelPattern     = /^info|warn|error|silent$/i;
+export const analyzerModePattern         = /^server|static|json|disabled$/i;
+export const booleanPattern              = /^true|false$/i;
+export const logLevelPattern             = /^errors-only|minimal|none|normal|verbose$/i;
+export const modePattern                 = /^development|none|production$/i;
+export const targetPattern               = /^node|web$/i;
+
+export function createAnalyzerConfiguration(options: AnalyzerOptions, configuration: Configuration): webpack.Configuration
+{
+    const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
+    {
+        analyzerHost:   options.host,
+        analyzerMode:   options.analyzerMode ?? "static",
+        analyzerPort:   options.port,
+        defaultSizes:   options.defaultSizes,
+        excludeAssets:  options.exclude,
+        logLevel:       options.logLevel,
+        openAnalyzer:   options.open,
+        reportFilename: options.reportFilename,
+    };
+
+    const extendedConfiguration: webpack.Configuration =
+    {
+        plugins: [new BundleAnalyzerPlugin(bundleAnalyzerPluginOptions)],
+    };
+
+    return createBuildConfiguration({ hot: false, mode: options.mode }, configuration, extendedConfiguration);
+}
+
+export function createBuildConfiguration(options: BuildOptions, configuration: Configuration, extendedConfiguration: webpack.Configuration = { }): webpack.Configuration
 {
     const resolvePlugins: webpack.ResolvePlugin[] = [];
     const plugins:        webpack.Plugin[]        = [];
@@ -108,16 +141,41 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
         resolvePlugins.push(new ForceTsResolvePlugin(paths));
     }
 
-    if (configuration.hot && enviroment != EnviromentType.Production)
+    if (options.hot && options.mode != "production")
     {
         plugins.push(new webpack.HotModuleReplacementPlugin());
     }
 
-    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
-    plugins.push(new ForkTsCheckerWebpackPlugin({ eslint: { configFile: configuration.eslintrc, files: `${configuration.context}/**/*.{js,ts}` }, typescript: { build: true, configFile: configuration.tsconfig } }));
-    plugins.push(new HtmlWebpackPlugin(typeof configuration.htmlTemplate == "string" ? { template: configuration.htmlTemplate } : configuration.htmlTemplate));
+    const forkTsCheckerWebpackPluginOptions: ForkTsCheckerWebpackPluginOptions =
+    {
+        eslint:
+        {
+            files:   `${configuration.context}/**/*.{js,ts}`,
+            options:
+            {
+                configFile: configuration.eslintrc,
+            },
+        },
+        typescript:
+        {
+            build:      true,
+            configFile: configuration.tsconfig,
+        },
+    };
 
-    const isProduction = enviroment == EnviromentType.Production;
+    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+        ? { template: configuration.htmlTemplate }
+        : configuration.htmlTemplate;
+
+    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
+    plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
+
+    if (!options.target || options.target == "web")
+    {
+        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+    }
+
+    const isProduction = options.mode == "production";
 
     const tersePlugin = new TerserWebpackPlugin
     ({
@@ -139,10 +197,8 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
     {
         context: configuration.context,
         devtool: isProduction ? false : "#source-map",
-        entry:   devServerOptions
-            ? configureDevServerEntry(configuration.entry!, publicPath, devServerOptions)
-            : configuration.entry,
-        mode:    enviroment,
+        entry:   configuration.entry,
+        mode:    options.mode,
         module:
         {
             rules:
@@ -285,5 +341,54 @@ export function buildConfiguration(enviroment: EnviromentType, configuration: IC
         },
     };
 
-    return deepMergeCombine(webpackConfiguration, configuration.webpackConfig ?? { });
+    return deepMergeCombine(webpackConfiguration, extendedConfiguration, configuration.webpackConfig ?? { });
+}
+
+export function createDevServerConfiguration(options: DevServerOptions, configuration: Configuration): webpack.Configuration
+{
+    const extendedConfiguration: webpack.Configuration =
+    {
+        entry:   configureDevServerEntry(configuration.entry!, configuration.publicPath!, options),
+        plugins: [new webpack.HotModuleReplacementPlugin()],
+    };
+
+    return createBuildConfiguration(options, configuration, extendedConfiguration);
+}
+
+export function createExportConfiguration(options: ExportOptions, configuration: Configuration): webpack.Configuration
+{
+    const extendedConfiguration: webpack.Configuration =
+    {
+        output:
+        {
+            libraryExport: options.libraryExport,
+        },
+    };
+
+    return createBuildConfiguration(options, configuration, extendedConfiguration);
+}
+
+export const parsePattern = (pattern: RegExp) => (value: string = "") => pattern.test(value) && value.toLowerCase();
+
+export function toArray(value: string = ""): string[]
+{
+    return value.split(",");
+}
+
+export function toBoolean(value: string = ""): boolean
+{
+    return !value
+        ? false
+        : booleanPattern.test(value)
+            ? value.toLowerCase() == "true"
+            : false;
+}
+
+export function toBooleanOrStringArray(value: string): boolean | string[]
+{
+    return !value
+        ? false
+        : booleanPattern.test(value)
+            ? value.toLowerCase() == "true"
+            : value.split(",");
 }

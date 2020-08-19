@@ -1,4 +1,4 @@
-import { Hashcode } from "../../core";
+import { Hashcode } from "@surface/core";
 
 export const IT = Symbol("mock:it");
 

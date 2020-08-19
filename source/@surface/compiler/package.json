@@ -1,6 +1,7 @@
 {
     "author": "HitalloExiled",
     "bin": {
+        "build": "./bin/build",
         "surface-compiler": "cli.js"
     },
     "bugs": {
@@ -9,10 +10,14 @@
     "dependencies": {
         "@surface/core": "0.1.0-alpha.0",
         "@surface/io": "0.1.0-alpha.0",
+        "@types/fork-ts-checker-webpack-plugin": "0.4.5",
+        "@types/html-webpack-plugin": "3.2.3",
         "@types/loader-utils": "2.0.1",
-        "@types/node": "14.0.27",
+        "@types/node": "14.6.0",
         "@types/tapable": "1.0.6",
+        "@types/terser-webpack-plugin": "4.1.0",
         "@types/webpack": "4.41.21",
+        "@types/webpack-bundle-analyzer": "3.8.0",
         "@types/webpack-dev-server": "3.11.0",
         "cache-loader": "4.1.0",
         "chalk": "4.1.0",
@@ -20,8 +25,8 @@
         "css-loader": "4.2.1",
         "extract-loader": "5.1.0",
         "file-loader": "6.0.0",
-        "fork-ts-checker-webpack-plugin": "5.0.14",
-        "html-loader": "1.1.0",
+        "fork-ts-checker-webpack-plugin": "5.1.0",
+        "html-loader": "1.2.0",
         "html-webpack-plugin": "4.3.0",
         "loader-utils": "2.0.0",
         "node-sass": "4.14.1",
@@ -35,6 +40,7 @@
         "tslib": "2.0.1",
         "typescript": "3.9.7",
         "webpack": "4.44.1",
+        "webpack-bundle-analyzer": "3.8.0",
         "webpack-dev-server": "3.11.0"
     },
     "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
