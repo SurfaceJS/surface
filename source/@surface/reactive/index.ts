@@ -1,19 +1,13 @@
-/* eslint-disable @typescript-eslint/indent */
-import PropertyListener     from "./internal/property-listener";
-import PropertySubscription from "./internal/property-subscription";
-import Reactive             from "./internal/reactive";
+import Reactive from "./internal/reactive";
 
-export { PropertyListener, PropertySubscription };
-
-export type
-{
-    IListener,
-    IObserver,
-    IPropertyListener,
-    IPropertySubscription,
-    IReactor,
-    ISubscription,
-} from "./internal/interfaces";
+export { default as PropertyListener }      from "./internal/property-listener";
+export { default as PropertySubscription }  from "./internal/property-subscription";
+export { default as IListener }             from "./internal/interfaces/listener";
+export { default as IObserver }             from "./internal/interfaces/observer";
+export { default as IPropertyListener }     from "./internal/interfaces/property-listener";
+export { default as IPropertySubscription } from "./internal/interfaces/property-subscription";
+export { default as IReactor }              from "./internal/interfaces/reactor";
+export { default as ISubscription }         from "./internal/interfaces/subscription";
 
 export * from "./internal/decorators";
 

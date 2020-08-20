@@ -1,9 +1,7 @@
 import Enumerable from "./internal/enumerable";
 
-import type IComparer from "./internal/interfaces/comparer";
-import type IGroup    from "./internal/interfaces/group";
-import type ILookup   from "./internal/interfaces/lookup";
-
-export type { IComparer, IGroup, ILookup };
+export type { default as IComparer } from "./internal/interfaces/comparer";
+export type { default as IGroup }    from "./internal/interfaces/group";
+export type { default as ILookup }   from "./internal/interfaces/lookup";
 
 export default Enumerable;

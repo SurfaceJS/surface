@@ -2,7 +2,7 @@ import fs                                                               from "fs
 import path                                                             from "path";
 import { after, shouldFail, shouldPass, suite, test }                   from "@surface/test-suite";
 import chai                                                             from "chai";
-import { createPath, createPathAsync, lookUp, removePath, resolveFile } from "..";
+import { createPath, createPathAsync, lookUp, removePath, resolveFile } from "../internal/common";
 
 @suite
 export default class CommonSpec
