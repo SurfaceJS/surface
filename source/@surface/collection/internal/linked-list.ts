@@ -1,5 +1,5 @@
-import { Func1 }  from "@surface/core";
-import Enumerable from "@surface/enumerable";
+import { Delegate } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
 
 type Link<T> = { value: T, previous: Link<T> | null, next: Link<T> | null };
 
@@ -106,7 +106,7 @@ export default class LinkedList<T> extends Enumerable<Link<T>>
         }
     }
 
-    public count(predicate?: Func1<Link<T>, boolean>): number
+    public count(predicate?: Delegate<[Link<T>], boolean>): number
     {
         if (predicate)
         {

@@ -1,22 +1,21 @@
-import { Queue }   from "@surface/collection";
-import { Action1 } from "@surface/core";
+import { Queue }  from "@surface/collection";
+import { Delegate } from "@surface/core";
 
-type Action   = () => unknown;
 type Callback = (value: unknown) => void;
 
 export default class ParallelWorker
 {
     public static readonly default = new ParallelWorker();
 
-    private readonly queue: Queue<[Action, Callback]> = new Queue();
+    private readonly queue: Queue<[Delegate, Callback]> = new Queue();
 
     private readonly interval: number;
 
-    private _done:    Promise<void>           = Promise.resolve();
-    private expended: number                  = 0;
-    private resolve:  Action | null           = null;
-    private reject:   Action1<unknown> | null = null;
-    private running:  boolean                 = false;
+    private _done:    Promise<void>              = Promise.resolve();
+    private expended: number                     = 0;
+    private resolve:  Delegate | null            = null;
+    private reject:   Delegate<[unknown]> | null = null;
+    private running:  boolean                    = false;
 
     public constructor(interval?: number)
     {
@@ -28,7 +27,7 @@ export default class ParallelWorker
         return ParallelWorker.default.done();
     }
 
-    public static async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
+    public static async run<TAction extends Delegate>(action: TAction): Promise<ReturnType<TAction>>
     {
         return ParallelWorker.default.run(action);
     }
@@ -85,7 +84,7 @@ export default class ParallelWorker
         return this._done;
     }
 
-    public async run<TAction extends Action>(action: TAction): Promise<ReturnType<TAction>>
+    public async run<TAction extends Delegate>(action: TAction): Promise<ReturnType<TAction>>
     {
         if (!this.running)
         {

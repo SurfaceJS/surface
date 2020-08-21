@@ -1,8 +1,8 @@
-import { Func1, Indexer, hasValue } from "@surface/core";
-import IExpression                  from "../interfaces/expression";
-import IUnaryExpression             from "../interfaces/unary-expression";
-import NodeType                     from "../node-type";
-import { UnaryOperator }            from "../types";
+import { Delegate, Indexer, hasValue } from "@surface/core";
+import IExpression                     from "../interfaces/expression";
+import IUnaryExpression                from "../interfaces/unary-expression";
+import NodeType                        from "../node-type";
+import { UnaryOperator }               from "../types";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 
@@ -54,7 +54,7 @@ export default class UnaryExpression implements IExpression
     {
         this._operator = operator;
         this._argument = argument;
-        this.operation = unaryFunctions[this.operator] as Func1<unknown, Object>;
+        this.operation = unaryFunctions[this.operator] as Delegate<[unknown], Object>;
     }
 
     public clone(): IUnaryExpression

@@ -1,5 +1,5 @@
-import { Func1 }  from "@surface/core";
-import Enumerable from "@surface/enumerable";
+import { Delegate } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
 
 type Node<T> = { value: T, next?: Node<T> };
 
@@ -54,7 +54,7 @@ export default class Queue<T> extends Enumerable<T>
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
      */
-    public count(predicate?: Func1<T, boolean>): number
+    public count(predicate?: Delegate<[T], boolean>): number
     {
         if (predicate)
         {

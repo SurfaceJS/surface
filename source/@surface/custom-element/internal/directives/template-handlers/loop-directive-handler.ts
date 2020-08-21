@@ -1,4 +1,4 @@
-import { Action2, IDisposable }                                              from "@surface/core";
+import { Delegate, IDisposable }                                             from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
 import { ISubscription }                                                     from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
@@ -13,7 +13,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly cache:         Cache[] = [];
     private readonly directive:     ILoopDirective;
-    private readonly iterator:      (elements: Iterable<unknown>, action: Action2<unknown, number>) => number;
+    private readonly iterator:      (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => number;
     private readonly subscription:  ISubscription;
     private readonly template:      HTMLTemplateElement;
     private readonly templateBlock: TemplateBlock = new TemplateBlock();

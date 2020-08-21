@@ -1,13 +1,13 @@
-import { Func, Indexer, typeGuard } from "@surface/core";
-import ITransformer                 from "./interfaces/transformer";
-import Route                        from "./route";
-import RouteData                    from "./route-data";
-import RouterMatch                  from "./types/router-match";
+import { Delegate, Indexer, typeGuard } from "@surface/core";
+import ITransformer                     from "./interfaces/transformer";
+import Route                            from "./route";
+import RouteData                        from "./route-data";
+import RouterMatch                      from "./types/router-match";
 
 type Entry<T> =
     {
         route:    Route,
-        selector: Func<[RouteData], T>,
+        selector: Delegate<[RouteData], T>,
     };
 
 const DEFAULT_TRANFORMERS: [string, ITransformer][] =
@@ -24,10 +24,10 @@ export default class Router<T = RouteData>
     protected readonly tranformers: Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
 
     public map(pattern: string): this;
-    public map(pattern: string, selector: Func<[RouteData], T>): this;
+    public map(pattern: string, selector: Delegate<[RouteData], T>): this;
     public map(name: string, pattern: string): this;
-    public map(name: string, pattern: string, selector: Func<[RouteData], T>): this;
-    public map(...args: [string] | [string, string] | [string, Func<[RouteData], T>] | [string, string, Func<[RouteData], T>]): this
+    public map(name: string, pattern: string, selector: Delegate<[RouteData], T>): this;
+    public map(...args: [string] | [string, string] | [string, Delegate<[RouteData], T>] | [string, string, Delegate<[RouteData], T>]): this
     {
         const [name, pattern, selector = (x: RouteData) => x as unknown as T] =
             args.length == 1

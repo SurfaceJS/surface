@@ -25,6 +25,8 @@ import StrategyType  from "./strategy-type";
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
+const tsc = path.resolve(__dirname, "../../node_modules/.bin/tsc");
+
 export default class Tasks
 {
     public static async backup({ modules = [] as string[] } = { }): Promise<void>
@@ -53,7 +55,7 @@ export default class Tasks
         {
             const source = path.normalize(path.resolve(paths.source.root, $package.name));
 
-            commands.push(execute(`${timestamp()} Building ${chalk.bold.blue($package.name)}`, `tsc -p ${source} --declaration ${declaration}`));
+            commands.push(execute(`${timestamp()} Building ${chalk.bold.blue($package.name)}`, `${tsc} -p ${source} --declaration ${declaration}`));
         }
 
         await Promise.all(commands);
