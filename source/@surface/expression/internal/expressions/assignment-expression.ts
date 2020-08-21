@@ -1,13 +1,13 @@
-import { Func3, Indexer, hasValue } from "@surface/core";
-import IAssignmentExpression        from "../interfaces/assignment-expression";
-import IExpression                  from "../interfaces/expression";
-import IIdentifier                  from "../interfaces/identifier";
-import IMemberExpression            from "../interfaces/member-expression";
-import NodeType                     from "../node-type";
-import TypeGuard                    from "../type-guard";
-import { AssignmentOperator }       from "../types";
+import { Delegate, Indexer, hasValue } from "@surface/core";
+import IAssignmentExpression           from "../interfaces/assignment-expression";
+import IExpression                     from "../interfaces/expression";
+import IIdentifier                     from "../interfaces/identifier";
+import IMemberExpression               from "../interfaces/member-expression";
+import NodeType                        from "../node-type";
+import TypeGuard                       from "../type-guard";
+import { AssignmentOperator }          from "../types";
 
-const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string | number, unknown, unknown>> =
+const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {
     "%=":   (target, key, value) => (target[key] as number) %=   value as number,
     "&=":   (target, key, value) => (target[key] as number) &=   value as number,
@@ -26,7 +26,7 @@ const assignmentOperations: Record<AssignmentOperator, Func3<Indexer, string | n
 
 export default class AssignmentExpression implements IExpression
 {
-    private readonly operation: Func3<Indexer, string | number, unknown, unknown>;
+    private readonly operation: Delegate<[Indexer, string | number, unknown], unknown>;
 
     private cache: unknown;
 

@@ -1,5 +1,5 @@
-import { ArgumentOutOfRangeError, Func1 } from "@surface/core";
-import Enumerable                         from "@surface/enumerable";
+import { ArgumentOutOfRangeError, Delegate } from "@surface/core";
+import Enumerable                            from "@surface/enumerable";
 
 const SOURCE = Symbol("list:source");
 
@@ -132,7 +132,7 @@ export default class List<T> extends Enumerable<T>
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
      */
-    public count(predicate?: Func1<T, boolean>): number
+    public count(predicate?: Delegate<[T], boolean>): number
     {
         if (predicate)
         {

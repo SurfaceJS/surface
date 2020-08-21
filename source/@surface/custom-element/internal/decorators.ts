@@ -1,7 +1,7 @@
 import
 {
     Constructor,
-    Func1,
+    Delegate,
     IDisposable,
     Indexer,
     camelToDashed,
@@ -63,9 +63,9 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
     return sheet;
 }
 
-export function attribute(converter: Func1<string, unknown>): (target: ICustomElement, propertyKey: string) => void;
+export function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
 export function attribute(target: ICustomElement, propertyKey: string): void;
-export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
+export function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
 {
     const decorator = (target: ICustomElement, propertyKey: string): PropertyDescriptor =>
     {
@@ -88,7 +88,7 @@ export function attribute(...args: [Func1<string, unknown>] | [ICustomElement, s
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
         }
 
-        let converter: Func1<string, unknown>;
+        let converter: Delegate<[string], unknown>;
 
         if (args.length == 1)
         {

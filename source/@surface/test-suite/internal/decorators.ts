@@ -1,8 +1,7 @@
 import
 {
-    Action,
     Constructor,
-    Func1,
+    Delegate,
     Indexer,
     camelToText,
 } from "@surface/core";
@@ -31,7 +30,7 @@ export type TestMethod<T = unknown> = Function &
     [BEFORE_EACH]?: boolean,
     [BATCH]?:       boolean,
     [CATEGORY]?:    string,
-    [DATA]?:        { source: T[], expectation: Func1<T, string> },
+    [DATA]?:        { source: T[], expectation: Delegate<[T], string> },
     [DESCRIPTION]?: string,
     [EXPECTATION]?: string,
     [TEST]?:        boolean,
@@ -79,7 +78,7 @@ export function afterEach(...args: [string] | [object, string | symbol]): Method
     decorator(target as TestObject, key, camelToText(key.toString()));
 }
 
-export function batchTest<T = unknown>(source: T[], expectation: Func1<T, string>): MethodDecorator
+export function batchTest<T = unknown>(source: T[], expectation: Delegate<[T], string>): MethodDecorator
 {
     return (target: object, key: string | symbol) =>
     {
@@ -165,22 +164,22 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
             const method = target.prototype[name] as TestMethod;
             if (method[AFTER])
             {
-                afterCallback = method as Action;
+                afterCallback = method as Delegate;
             }
 
             if (method[AFTER_EACH])
             {
-                afterEachCallback = method as Action;
+                afterEachCallback = method as Delegate;
             }
 
             if (method[BEFORE])
             {
-                beforeCallback = method as Action;
+                beforeCallback = method as Delegate;
             }
 
             if (method[BEFORE_EACH])
             {
-                beforeEachCallback = method as Action;
+                beforeEachCallback = method as Delegate;
             }
 
             if (method[TEST])
@@ -207,7 +206,7 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
             if (method[BATCH])
             {
-                const batch = method[DATA] as { source: object[], expectation: Func1<object, string> };
+                const batch = method[DATA] as { source: object[], expectation: Delegate<[object], string> };
                 for (const data of batch.source)
                 {
                     const categoryName = method[CATEGORY];

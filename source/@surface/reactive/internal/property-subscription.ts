@@ -1,16 +1,16 @@
-import { Action, Indexer }   from "@surface/core";
+import { Delegate, Indexer } from "@surface/core";
 import IObserver             from "./interfaces/observer";
 import IPropertyListener     from "./interfaces/property-listener";
 import IPropertySubscription from "./interfaces/property-subscription";
 
 export default class PropertySubscription<TValue = unknown, TTarget extends Indexer = Indexer> implements IPropertySubscription<TTarget>
 {
-    private readonly actions: Action[] = [];
+    private readonly actions: Delegate[] = [];
 
     public constructor (private readonly listener: IPropertyListener<TValue, TTarget>, private readonly observer: IObserver<TValue>)
     { }
 
-    public onUnsubscribe(action: Action): void
+    public onUnsubscribe(action: Delegate): void
     {
         this.actions.push(action);
     }

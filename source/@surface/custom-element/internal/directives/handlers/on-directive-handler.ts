@@ -1,6 +1,6 @@
-import { Action1, IDisposable } from "@surface/core";
-import { TypeGuard }            from "@surface/expression";
-import { ISubscription }        from "@surface/reactive";
+import { Delegate, IDisposable } from "@surface/core";
+import { TypeGuard }             from "@surface/expression";
+import { ISubscription }         from "@surface/reactive";
 import
 {
     throwTemplateEvaluationError,
@@ -12,7 +12,7 @@ import ICustomDirective from "../../interfaces/directives/custom-directive";
 
 export default class OnDirectiveHandler implements IDisposable
 {
-    private readonly action:       Action1<Event>;
+    private readonly action:       Delegate<[Event]>;
     private readonly element:      Element;
     private readonly subscription: ISubscription;
 
@@ -48,11 +48,11 @@ export default class OnDirectiveHandler implements IDisposable
         }
     }
 
-    private evaluate(scope: object, directive: ICustomDirective): Action1<Event>
+    private evaluate(scope: object, directive: ICustomDirective): Delegate<[Event]>
     {
         if (TypeGuard.isArrowFunctionExpression(directive.expression) || TypeGuard.isIdentifier(directive.expression))
         {
-            return directive.expression.evaluate(scope) as Action1<Event>;
+            return directive.expression.evaluate(scope) as Delegate<[Event]>;
         }
         else if (TypeGuard.isMemberExpression(directive.expression))
         {
@@ -63,7 +63,7 @@ export default class OnDirectiveHandler implements IDisposable
                 throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${directive.expression} is not defined`, directive.stackTrace);
             }
 
-            return action.bind(directive.expression.object.evaluate(scope, true)) as Action1<Event>;
+            return action.bind(directive.expression.object.evaluate(scope, true)) as Delegate<[Event]>;
         }
 
         return () => tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);

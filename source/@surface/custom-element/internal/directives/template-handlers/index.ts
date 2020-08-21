@@ -1,6 +1,6 @@
-import { AsyncAction, IDisposable } from "@surface/core";
-import ITemplateDescriptor          from "../../interfaces/descriptors/template-descriptor";
-import TemplateProcessor            from "../../template-processor";
+import { AsyncDelegate, IDisposable } from "@surface/core";
+import ITemplateDescriptor            from "../../interfaces/descriptors/template-descriptor";
+import TemplateProcessor              from "../../template-processor";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {
@@ -15,7 +15,7 @@ export default abstract class TemplateDirectiveHandler implements IDisposable
         this.host    = host;
     }
 
-    protected async fireAsync(action: AsyncAction): Promise<void>
+    protected async fireAsync(action: AsyncDelegate): Promise<void>
     {
         await action();
     }
