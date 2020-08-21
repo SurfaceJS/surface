@@ -88,6 +88,7 @@ export default class Version
             {
                 return 1;
             }
+
             if (left.minor == right.minor)
             {
                 if (left.revision > right.revision)
