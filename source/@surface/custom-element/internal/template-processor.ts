@@ -1,7 +1,7 @@
-import { Action, IDisposable, Indexer, assert, typeGuard } from "@surface/core";
-import { TypeGuard }                                       from "@surface/expression";
-import { ISubscription }                                   from "@surface/reactive";
-import Type, { FieldInfo }                                 from "@surface/reflection";
+import { Delegate, IDisposable, Indexer, assert, typeGuard } from "@surface/core";
+import { TypeGuard }                                         from "@surface/expression";
+import { ISubscription }                                     from "@surface/reactive";
+import Type, { FieldInfo }                                   from "@surface/reflection";
 import
 {
     classMap,
@@ -44,7 +44,7 @@ interface ITemplateDirectivesData
 
 export default class TemplateProcessor
 {
-    private static readonly postProcessing: Map<Node, Action[]> = new Map();
+    private static readonly postProcessing: Map<Node, Delegate[]> = new Map();
 
     private readonly descriptor: ITemplateDescriptor;
     private readonly host:       Node;
@@ -142,7 +142,7 @@ export default class TemplateProcessor
     {
         const constructor = window.customElements.get(element.localName);
 
-        let processor: Action[] | undefined;
+        let processor: Delegate[] | undefined;
 
         if (constructor && !(element instanceof constructor))
         {
@@ -173,7 +173,7 @@ export default class TemplateProcessor
 
                     if (descriptor.type == "oneway")
                     {
-                        let notify: Action;
+                        let notify: Delegate;
 
                         if (descriptor.name == "class" || descriptor.name == "style")
                         {

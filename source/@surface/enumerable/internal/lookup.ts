@@ -1,7 +1,7 @@
-import { Func1, Hashcode } from "@surface/core";
-import Group               from "./group";
-import IComparer           from "./interfaces/comparer";
-import ILookup             from "./interfaces/lookup";
+import { Delegate, Hashcode } from "@surface/core";
+import Group                  from "./group";
+import IComparer              from "./interfaces/comparer";
+import ILookup                from "./interfaces/lookup";
 
 export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TElement>
 {
@@ -17,7 +17,7 @@ export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TE
         return this._count;
     }
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, comparer: IComparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Delegate<[TSource], TKey>, elementSelector: Delegate<[TSource], TElement>, comparer: IComparer<TKey>)
     {
         const initialSize = 7;
 

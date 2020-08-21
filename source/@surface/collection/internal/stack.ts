@@ -1,5 +1,5 @@
-import { Func1 }  from "@surface/core";
-import Enumerable from "@surface/enumerable";
+import { Delegate } from "@surface/core";
+import Enumerable   from "@surface/enumerable";
 
 const SOURCE = Symbol("stack:source");
 
@@ -39,7 +39,7 @@ export default class Stack<T> extends Enumerable<T>
      * Returns a number that represents how many elements in the specified sequence satisfy a condition.
      * @param predicate A function to test each element for a condition.
      */
-    public count(predicate?: Func1<T, boolean>): number
+    public count(predicate?: Delegate<[T], boolean>): number
     {
         if (predicate)
         {

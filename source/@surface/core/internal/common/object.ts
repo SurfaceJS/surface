@@ -1,6 +1,6 @@
-import Hashcode                                                   from "../hashcode";
-import { Combine, Constructor, Func1, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                      from "./generic";
+import Hashcode                                                      from "../hashcode";
+import { Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                         from "./generic";
 
 const PRIVATES = Symbol("core:privates");
 
@@ -235,7 +235,7 @@ export function objectFactory(keys: [string, unknown][], target: Indexer = { }):
  * @param constructor target constructor
  * @param action action to be executed
  */
-export function overrideConstructor<T extends Constructor>(constructor: T, action: Func1<InstanceType<T>, InstanceType<T>>): T
+export function overrideConstructor<T extends Constructor>(constructor: T, action: Delegate<[InstanceType<T>], InstanceType<T>>): T
 {
     const proxy =
     {
@@ -340,7 +340,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
     return propertyDescriptor;
 }
 
-export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Func1<string, string>, valueSeparator?: string }): string[]
+export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Delegate<[string], string>, valueSeparator?: string }): string[]
 {
     const { keySeparator = ".", keyTranform = (x: string) => x, valueSeparator = ": " } = options ?? { };
 

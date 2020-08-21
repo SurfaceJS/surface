@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Action, Indexer }                     from "@surface/core";
+import { Delegate, Indexer }                   from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import directiveRegistry                       from "../internal/directive-registry";
@@ -21,7 +21,7 @@ window.customElements.define("x-component", XComponent);
 
 directiveRegistry.set("custom", CustomDirectiveHandler);
 
-function tryAction(action: Action): RawError
+function tryAction(action: Delegate): RawError
 {
     try
     {
@@ -35,7 +35,7 @@ function tryAction(action: Action): RawError
     return toRaw(new CustomStackError("", ""));
 }
 
-async function tryActionAsync(action: Action): Promise<RawError>
+async function tryActionAsync(action: Delegate): Promise<RawError>
 {
     try
     {

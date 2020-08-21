@@ -1,11 +1,11 @@
-import { Func1 } from "@surface/core";
-import IComparer from "./interfaces/comparer";
+import { Delegate } from "@surface/core";
+import IComparer    from "./interfaces/comparer";
 
 export default class EnumerableSorter<TKey, TElement>
 {
     private readonly comparer:    IComparer<TKey>;
     private readonly descending:  boolean;
-    private readonly keySelector: Func1<TElement, TKey>;
+    private readonly keySelector: Delegate<[TElement], TKey>;
 
     private keys: TKey[];
     private _next: EnumerableSorter<TKey, TElement> | null;
@@ -20,7 +20,7 @@ export default class EnumerableSorter<TKey, TElement>
         this._next = value;
     }
 
-    public constructor(keySelector: Func1<TElement, TKey>, descending: boolean, comparer: IComparer<TKey>, next?: EnumerableSorter<TKey, TElement> | null)
+    public constructor(keySelector: Delegate<[TElement], TKey>, descending: boolean, comparer: IComparer<TKey>, next?: EnumerableSorter<TKey, TElement> | null)
     {
         this.comparer    = comparer;
         this.descending  = descending;

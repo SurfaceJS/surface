@@ -4,7 +4,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Action }                                                        from "@surface/core";
+import { Delegate }                                                      from "@surface/core";
 import { IIdentifier }                                                   from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
@@ -17,7 +17,7 @@ TemplateParser.testEnviroment = true;
 
 type RawError = { message: string } | Pick<TemplateParseError, "message" | "stack">;
 
-function tryAction(action: Action): RawError
+function tryAction(action: Delegate): RawError
 {
     try
     {
