@@ -1,21 +1,17 @@
 /* eslint-disable @typescript-eslint/indent */
-
-export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
-export { default as EventListener }           from "./internal/event-listener";
-export { default as Hashcode }                from "./internal/hashcode";
-export type { default as IDisposable }        from "./internal/interfaces/disposable";
-export type { default as IEventListener }     from "./internal/interfaces/event-listener";
-export { default as Lazy }                    from "./internal/lazy";
+export type { default as IDisposable }       from "./internal/interfaces/disposable";
+export type { default as IEventListener }    from "./internal/interfaces/event-listener";
+export type { default as CancellationToken } from "./internal/types/cancelation-token";
 
 export type
 {
-    Delegate,
     AsyncDelegate,
     ClassDecoratorOf,
     Combine,
     Constructor,
     DeepPartial,
     DeepRequired,
+    Delegate,
     FieldsOf,
     IgnoreKeysOfType,
     IgnoreOfType,
@@ -39,3 +35,9 @@ export * from "./internal/common/array";
 export * from "./internal/common/generic";
 export * from "./internal/common/object";
 export * from "./internal/common/string";
+
+export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
+export { default as EventListener }           from "./internal/event-listener";
+export { default as Hashcode }                from "./internal/hashcode";
+export { default as Lazy }                    from "./internal/lazy";
+export { default as CancellationTokenSource } from "./internal/cancellation-token-source";
