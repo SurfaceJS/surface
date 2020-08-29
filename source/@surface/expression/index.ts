@@ -1,56 +1,42 @@
-/* eslint-disable @typescript-eslint/indent */
+import Expression from "./internal/expression";
 
-import Evaluate          from "./internal/evaluate";
-import Expression        from "./internal/expression";
-import ExpressionVisitor from "./internal/expression-visitor";
-import NodeType          from "./internal/node-type";
-import SyntaxError       from "./internal/syntax-error";
-import TypeGuard         from "./internal/type-guard";
-
-export
-{
-    Evaluate,
-    ExpressionVisitor,
-    NodeType,
-    SyntaxError,
-    TypeGuard,
-};
-
-export type
-{
-    IArrayExpression,
-    IArrayPattern,
-    IArrowFunctionExpression,
-    IAssignmentExpression,
-    IAssignmentPattern,
-    IAssignmentProperty,
-    IBinaryExpression,
-    ICallExpression,
-    ICoalesceExpression,
-    IConditionalExpression,
-    IElement,
-    IExpression,
-    IIdentifier,
-    ILiteral,
-    ILogicalExpression,
-    IMemberExpression,
-    INewExpression,
-    INode,
-    IObjectExpression,
-    IObjectPattern,
-    IParenthesizedExpression,
-    IPattern,
-    IProperty,
-    IRegExpLiteral,
-    IRestElement,
-    ISequenceExpression,
-    ISpreadElement,
-    ITaggedTemplateExpression,
-    ITemplateElement,
-    ITemplateLiteral,
-    IThisExpression,
-    IUnaryExpression,
-    IUpdateExpression,
-} from "./internal/interfaces";
+export { default as Evaluate }                  from "./internal/evaluate";
+export { default as ExpressionVisitor }         from "./internal/expression-visitor";
+export { default as NodeType }                  from "./internal/node-type";
+export { default as SyntaxError }               from "./internal/syntax-error";
+export { default as TypeGuard }                 from "./internal/type-guard";
+export { default as IArrayExpression }          from "./internal/interfaces/array-expression";
+export { default as IArrayPattern }             from "./internal/interfaces/array-pattern";
+export { default as IArrowFunctionExpression }  from "./internal/interfaces/arrow-function-expression";
+export { default as IAssignmentExpression }     from "./internal/interfaces/assignment-expression";
+export { default as IAssignmentPattern }        from "./internal/interfaces/assignment-pattern";
+export { default as IAssignmentProperty }       from "./internal/interfaces/assignment-property";
+export { default as IBinaryExpression }         from "./internal/interfaces/binary-expression";
+export { default as ICallExpression }           from "./internal/interfaces/call-expression";
+export { default as ICoalesceExpression }       from "./internal/interfaces/coalesce-expression";
+export { default as IConditionalExpression }    from "./internal/interfaces/conditional-expression";
+export { default as IElement }                  from "./internal/interfaces/element";
+export { default as IExpression }               from "./internal/interfaces/expression";
+export { default as IIdentifier }               from "./internal/interfaces/identifier";
+export { default as ILiteral }                  from "./internal/interfaces/literal";
+export { default as ILogicalExpression }        from "./internal/interfaces/logical-expression";
+export { default as IMemberExpression }         from "./internal/interfaces/member-expression";
+export { default as INewExpression }            from "./internal/interfaces/new-expression";
+export { default as INode }                     from "./internal/interfaces/node";
+export { default as IObjectExpression }         from "./internal/interfaces/object-expression";
+export { default as IObjectPattern }            from "./internal/interfaces/object-pattern";
+export { default as IParenthesizedExpression }  from "./internal/interfaces/parenthesized-expression";
+export { default as IPattern }                  from "./internal/interfaces/pattern";
+export { default as IProperty }                 from "./internal/interfaces/property";
+export { default as IRegExpLiteral }            from "./internal/interfaces/reg-exp-literal";
+export { default as IRestElement }              from "./internal/interfaces/rest-element";
+export { default as ISequenceExpression }       from "./internal/interfaces/sequence-expression";
+export { default as ISpreadElement }            from "./internal/interfaces/spread-element";
+export { default as ITaggedTemplateExpression } from "./internal/interfaces/tagged-template-expression";
+export { default as ITemplateElement }          from "./internal/interfaces/template-element";
+export { default as ITemplateLiteral }          from "./internal/interfaces/template-literal";
+export { default as IThisExpression }           from "./internal/interfaces/this-expression";
+export { default as IUnaryExpression }          from "./internal/interfaces/unary-expression";
+export { default as IUpdateExpression }         from "./internal/interfaces/update-expression";
 
 export default Expression;
