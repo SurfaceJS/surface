@@ -158,7 +158,6 @@
         "@typescript-eslint/no-misused-new": "warn",
         "@typescript-eslint/no-namespace": "warn",
         "@typescript-eslint/no-require-imports": "warn",
-        "@typescript-eslint/no-this-alias": "warn",
         "@typescript-eslint/no-throw-literal": "warn",
         "@typescript-eslint/no-unnecessary-boolean-literal-compare": "warn",
         "@typescript-eslint/no-unnecessary-qualifier": "warn",
@@ -211,7 +210,6 @@
         "arrow-spacing": "warn",
         "block-scoped-var": "warn",
         "block-spacing": "warn",
-        "capitalized-comments": "warn",
         "comma-dangle": [
             "warn",
             "always-multiline"
@@ -372,7 +370,12 @@
         "no-loss-of-precision": "warn",
         "no-mixed-spaces-and-tabs": "warn",
         "no-multi-str": "warn",
-        "no-multiple-empty-lines": ["warn", { "max": 1 }],
+        "no-multiple-empty-lines": [
+            "warn",
+            {
+                "max": 1
+            }
+        ],
         "no-new": "warn",
         "no-new-func": "warn",
         "no-new-object": "warn",

@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/indent */
-import chalk            from "chalk";
-import webpack          from "webpack";
-import WebpackDevServer from "webpack-dev-server";
+import { Delegate } from "@surface/core";
+import chalk        from "chalk";
+import { log }      from "./common";
 import
 {
     createAnalyzerConfiguration,
     createBuildConfiguration,
     createDevServerConfiguration,
-    createExportConfiguration,
-} from "./common";
-import AnalyzerOptions  from "./types/analyzer-options";
-import BuildOptions     from "./types/build-options";
-import Configuration    from "./types/configuration";
-import DevServerOptions from "./types/dev-serve-options";
-import ExportOptions    from "./types/export-options";
+} from "./configurations";
+import { WebpackDevServer, webpack } from "./external";
+import AnalyzerOptions               from "./types/analyzer-options";
+import BuildOptions                  from "./types/build-options";
+import CompilerSignal                from "./types/compiler-signal";
+import Configuration                 from "./types/configuration";
+import DevServerOptions              from "./types/dev-serve-options";
 
 const DEFAULT_STATS_OPTIONS: webpack.Stats.ToStringOptions =
 {
@@ -26,54 +26,48 @@ const DEFAULT_STATS_OPTIONS: webpack.Stats.ToStringOptions =
 
 export default class Compiler
 {
-    private static run(options: BuildOptions, webpackConfiguration: webpack.Configuration): void
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: webpack.Stats.ToStringOptions): webpack.Compiler.Handler
     {
-        const
-        {
-            logLevel: statOptions = DEFAULT_STATS_OPTIONS,
-            mode                  = "development",
-            watch                 = false,
-        } = options;
+        return (error, stats) => error ? reject(error) : (log(stats.toString(statOptions)), resolve());
+    }
 
+    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: webpack.Stats.ToStringOptions = DEFAULT_STATS_OPTIONS): Promise<void>
+    {
         const webpackCompiler = webpack(webpackConfiguration);
 
-        const handler: webpack.Compiler.Handler =
-            (error, stats) => error ? console.log(error.message) : console.log(stats.toString(statOptions));
-
-        console.log(`Starting ${chalk.bold.green(watch ? "Watch" : "Build")} using ${chalk.bold.green(mode)} configuration.`);
-
-        if (watch)
-        {
-            webpackCompiler.watch({ }, handler);
-        }
-        else
-        {
-            webpackCompiler.run(handler);
-        }
+        await new Promise<string>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
     }
 
-    public static analyze(options: AnalyzerOptions, configuration: Configuration): void
+    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: webpack.Stats.ToStringOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
     {
-        const webpackConfiguration = createAnalyzerConfiguration(options, configuration);
+        const webpackCompiler = webpack(webpackConfiguration);
 
-        Compiler.run({ mode: options.mode }, webpackConfiguration);
+        let watching: webpack.Compiler.Watching;
+
+        await new Promise<string>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
+
+        return { close: async () => new Promise(resolve => watching.close(resolve)) };
     }
 
-    public static build(options: BuildOptions, configuration: Configuration = { }): void
+    public static async analyze(configuration: Configuration, options: AnalyzerOptions): Promise<void>
     {
-        const webpackConfiguration = createBuildConfiguration(options, configuration);
+        const webpackConfiguration = createAnalyzerConfiguration(configuration, options);
 
-        Compiler.run(options, webpackConfiguration);
+        log(`Starting ${chalk.bold.green("analyzer...")}`);
+
+        await Compiler.runInternal(webpackConfiguration);
     }
 
-    public static export(options: ExportOptions, configuration: Configuration = { }): void
+    public static async run(configuration: Configuration, options: BuildOptions): Promise<void>
     {
-        const webpackConfiguration = createExportConfiguration(options, configuration);
+        const webpackConfiguration = createBuildConfiguration(configuration, options);
 
-        Compiler.run(options, webpackConfiguration);
+        log(`Running using ${chalk.bold.green(options.mode ?? "development")} configuration...`);
+
+        await Compiler.runInternal(webpackConfiguration, options.logLevel);
     }
 
-    public static serve(options: DevServerOptions, configuration: Configuration = { }): void
+    public static async serve(configuration: Configuration, options: DevServerOptions): Promise<CompilerSignal>
     {
         const
         {
@@ -82,7 +76,7 @@ export default class Compiler
             port                  = 8080,
         } = options;
 
-        const webpackConfiguration = createDevServerConfiguration(options, configuration);
+        const webpackConfiguration = createDevServerConfiguration(configuration, options);
         const webpackCompiler      = webpack(webpackConfiguration);
 
         const publicPath = configuration.publicPath
@@ -101,19 +95,22 @@ export default class Compiler
 
         const server = new WebpackDevServer(webpackCompiler, webpackDevServerConfiguration);
 
-        server.listen
-        (
-            port,
-            host,
-            (err) =>
-            {
-                if (err)
-                {
-                    console.log(err);
-                }
+        const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
+            (error?: Error) => error ? reject(error) : resolve();
 
-                console.log(`WebpackDevServer listening at ${host}:`, port);
-            },
-        );
+        await new Promise((resolve, reject) => server.listen(port, host, handlerAsync(resolve, reject)));
+
+        log(`WebpackDevServer listening at ${host}:`, port);
+
+        return { close: async () => Promise.resolve(server.close()) };
+    }
+
+    public static async watch(configuration: Configuration, options: BuildOptions): Promise<CompilerSignal>
+    {
+        const webpackConfiguration = createBuildConfiguration(configuration, options);
+
+        log(`Watching using ${chalk.bold.green(options.mode)} configuration.`);
+
+        return Compiler.watchInternal(webpackConfiguration, options.logLevel);
     }
 }

@@ -1,8 +1,8 @@
-import { Factory, FunctionType } from "../types";
-import IGetSetup                 from "./get-setup";
+import { Callable, Delegate } from "@surface/core";
+import IGetSetup              from "./get-setup";
 
-export default interface IReturnsSetup<TMethod extends FunctionType = FunctionType, TResult = unknown> extends IGetSetup<TResult>
+export default interface IReturnsSetup<TMethod extends Callable = Callable> extends IGetSetup<ReturnType<TMethod>>
 {
-    callback(action: (...args: Parameters<TMethod>) => void): void;
-    returnsFactory(factory: Factory<Parameters<TMethod>, TResult>): void;
+    callback(action: (...args: Parameters<TMethod>) => void): this;
+    returnsFactory(factory: Delegate<Parameters<TMethod>, ReturnType<Callable>>): void;
 }

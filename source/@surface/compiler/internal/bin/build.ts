@@ -6,18 +6,16 @@ import
     logLevelPattern,
     modePattern,
     parsePattern,
-    targetPattern,
     toBoolean,
-} from "../internal/common";
-import Tasks from "../internal/tasks";
-import main  from "./main";
+} from "../common";
+import Tasks         from "../tasks";
+import createProgram from ".";
 
-main
+const program = createProgram()
     .option("--hot               [n]", "Enable hot module reload.", toBoolean)
     .option("--log-level         <n>", "Output verbosity level. Can be 'errors-only', 'minimal', 'none', 'normal', 'verbose'.", parsePattern(logLevelPattern))
     .option("--mode              <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
     .option("--watch             [n]", "Enable Watch mode compilation", toBoolean)
-    .option("--target            <n>", "Build target. Can be 'node', 'web'.", parsePattern(targetPattern))
-    .action((command: Command) => Tasks.build(command.opts()));
+    .action((command: Command) => void Tasks.build(command.opts()));
 
-main.parse(process.argv);
+program.parse(process.argv);

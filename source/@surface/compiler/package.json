@@ -48,6 +48,7 @@
     },
     "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
     "devDependencies": {
+        "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "file:../../../node_modules/@types/chai",
         "chai": "file:../../../node_modules/chai"

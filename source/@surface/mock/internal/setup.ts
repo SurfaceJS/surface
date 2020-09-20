@@ -1,14 +1,18 @@
-import { Hashcode } from "@surface/core";
-import Enumerable   from "@surface/enumerable";
-import { isIt }     from "./common";
-import { Factory }  from "./types";
+import { Delegate, Hashcode }    from "@surface/core";
+import Enumerable, { IComparer } from "@surface/enumerable";
+import { isIt }                  from "./common";
+import Args                      from "./types/args";
 
-export type Args = unknown[];
+const comparer: IComparer<unknown> =
+{
+    compare: () => 0,
+    equals:  (left, right) => Object.is(left, right) || typeof left == typeof right && Hashcode.encode(left) == Hashcode.encode(right),
+};
 
 export default class Setup<TResult>
 {
     private readonly callbacks: Map<Args, Function> = new Map();
-    private readonly factories: Map<Args, Factory<Args, TResult>> = new Map();
+    private readonly factories: Map<Args, Delegate<Args, TResult>> = new Map();
     private readonly results:   Map<Args, TResult> = new Map();
     private readonly throws:    Map<Args, Error | string> = new Map();
 
@@ -24,9 +28,7 @@ export default class Setup<TResult>
             const sourceElement = source[index];
             const argsElement   = args[index];
 
-            const isEqual = this.checkIt(sourceElement, argsElement)
-                || Object.is(sourceElement, argsElement)
-                || typeof sourceElement == typeof argsElement && Hashcode.encode(sourceElement) == Hashcode.encode(argsElement);
+            const isEqual = this.checkIt(sourceElement, argsElement) || comparer.equals(sourceElement, argsElement);
 
             if (!isEqual)
             {
@@ -64,7 +66,8 @@ export default class Setup<TResult>
     {
         const sequence = Enumerable.from(args);
 
-        return Enumerable.from(source.keys()).firstOrDefault(x => sequence.sequenceEqual(Enumerable.from(x))) ?? args;
+        return Enumerable.from(source.keys())
+            .firstOrDefault(x => sequence.sequenceEqual(Enumerable.from(x), comparer)) ?? args;
     }
 
     public get(args: Args = []): TResult | null
@@ -81,14 +84,14 @@ export default class Setup<TResult>
 
         if (callback)
         {
-            callback(args);
+            callback(...args);
         }
 
         const factory = this.getFrom(this.factories, args);
 
         if (factory)
         {
-            return factory(args);
+            return factory(...args);
         }
 
         return this.getFrom(this.results, args);
@@ -104,7 +107,7 @@ export default class Setup<TResult>
         this.results.set(this.getKey(this.results, args), value);
     }
 
-    public setReturnsFactory(args: Args, factory: Factory<Args, TResult>): void
+    public setReturnsFactory(args: Args, factory: Delegate<Args, TResult>): void
     {
         this.factories.set(this.getKey(this.factories, args), factory);
     }

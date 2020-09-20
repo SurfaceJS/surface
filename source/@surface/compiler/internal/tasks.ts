@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
-import path                            from "path";
-import { lookupFile, removePathAsync } from "@surface/io";
-import webpack                         from "webpack";
-import Compiler                        from "./compiler";
-import AnalyzerOptions                 from "./types/analyzer-options";
-import BuildOptions                    from "./types/build-options";
-import Configuration                   from "./types/configuration";
-import DevServerOptions                from "./types/dev-serve-options";
-import Options                         from "./types/options";
+import path                                        from "path";
+import webpack                                     from "webpack";
+import { removeUndefined }                         from "./common";
+import Compiler                                    from "./compiler";
+import { loadModule, lookupFile, removePathAsync } from "./external";
+import AnalyzerOptions                             from "./types/analyzer-options";
+import BuildOptions                                from "./types/build-options";
+import Configuration                               from "./types/configuration";
+import DevServerOptions                            from "./types/dev-serve-options";
+import Options                                     from "./types/options";
 
 const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
 {
@@ -21,22 +22,13 @@ const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | 
 
 export default class Tasks
 {
-    private static createProxy<T extends object>(target: T): T
+    private static async optionsToConfiguration(options: Options & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
     {
-        const handler: ProxyHandler<T> =
-        {
-            ownKeys: target => Object.entries(target).filter(x => !Object.is(x[1], undefined)).map(x => x[0]),
-        };
-
-        return new Proxy(target, handler);
-    }
-
-    private static optionsToConfiguration(options: Options): Configuration
-    {
-        const configuration: Configuration = Tasks.createProxy
+        const configuration: Configuration = removeUndefined
         ({
             context:       options.context,
             entry:         options.entry,
+            eslintrc:      options.eslintrc,
             filename:      options.filename,
             forceTs:       options.forceTs,
             htmlTemplate:  options.htmlTemplate,
@@ -44,19 +36,16 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
-            tslint:        options.eslintrc,
-            webpackConfig: (options.webpackConfig && Tasks.resolveModule(require(options.webpackConfig))) as webpack.Configuration | undefined,
+            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
         const project = options.project ?? ".";
 
-        const mode = options.mode ?? "development";
-
         const lookups =
         [
             project,
-            path.join(project, `surface.${mode}.js`),
-            path.join(project, `surface.${mode}.json`),
+            path.join(project, `surface.${options.mode}.js`),
+            path.join(project, `surface.${options.mode}.json`),
             path.join(project, "surface.js"),
             path.join(project, "surface.json"),
         ];
@@ -65,7 +54,7 @@ export default class Tasks
 
         if (projectPath)
         {
-            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(require(projectPath)) } as Configuration;
+            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(await loadModule(projectPath)) } as Configuration;
 
             const root = path.parse(projectPath).dir;
 
@@ -129,23 +118,46 @@ export default class Tasks
         }
     }
 
-    public static analyze(options: Options & AnalyzerOptions): void
+    public static async analyze(options: Options & AnalyzerOptions): Promise<void>
     {
-        const configuration = Tasks.optionsToConfiguration(options);
+        const configuration = await Tasks.optionsToConfiguration(options);
 
-        Compiler.analyze(options, configuration);
+        const analyzerOptions: AnalyzerOptions = removeUndefined
+        ({
+            analyzerMode:   options.analyzerMode,
+            defaultSizes:   options.defaultSizes,
+            exclude:        options.exclude,
+            host:           options.host,
+            logLevel:       options.logLevel,
+            mode:           options.mode,
+            open:           options.open,
+            port:           options.port,
+            reportFilename: options.reportFilename,
+        });
+
+        await Compiler.analyze(configuration, analyzerOptions);
     }
 
-    public static build(options: Options & BuildOptions): void
+    public static async build(options: Options & BuildOptions): Promise<void>
     {
-        const configuration = Tasks.optionsToConfiguration(options);
+        const configuration = await Tasks.optionsToConfiguration(options);
 
-        Compiler.build(options, configuration);
+        const buildOptions: BuildOptions = removeUndefined
+        ({
+            hot:      options.hot,
+            logLevel: options.logLevel,
+            mode:     options.mode,
+            watch:    options.watch,
+        });
+
+        options.watch
+            ? await Compiler.watch(configuration, buildOptions)
+            : await Compiler.run(configuration, buildOptions);
     }
 
-    public static async clean(options: Options): Promise<void>
+    public static async clean(options: Pick<Options, "project">): Promise<void>
     {
-        const configuration = Tasks.optionsToConfiguration(options);
+        const configuration = await Tasks.optionsToConfiguration(options);
 
         const promises =
         [
@@ -156,10 +168,18 @@ export default class Tasks
         await Promise.all(promises);
     }
 
-    public static serve(options: Options & DevServerOptions): void
+    public static async serve(options: Options & DevServerOptions): Promise<void>
     {
-        const configuration = Tasks.optionsToConfiguration(options);
+        const configuration = await Tasks.optionsToConfiguration(options);
 
-        Compiler.serve(options, configuration);
+        const devServerOptions: DevServerOptions = removeUndefined
+        ({
+            host:     options.host,
+            hot:      options.hot,
+            logLevel: options.logLevel,
+            port:     options.port,
+        });
+
+        await Compiler.serve(configuration, devServerOptions);
     }
 }

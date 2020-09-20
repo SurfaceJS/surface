@@ -1,15 +1,17 @@
-import IReturnsSetup             from "./interfaces/returns-setup";
-import Setup                     from "./setup";
-import { Factory, FunctionType } from "./types";
+import { Callable, Delegate } from "@surface/core";
+import IReturnsSetup          from "./interfaces/returns-setup";
+import Setup                  from "./setup";
 
-export default class BaseSetup<TMethod extends FunctionType, TResult> implements IReturnsSetup<TMethod, TResult>
+export default class BaseSetup<TMethod extends Callable, TResult> implements IReturnsSetup<TMethod>
 {
     public constructor(protected readonly setup: Setup<TResult> = new Setup(), private readonly args: unknown[] = [])
     { }
 
-    public callback(action: (...args: Parameters<TMethod>) => void): void
+    public callback(action: (...args: Parameters<TMethod>) => void): this
     {
         this.setup.setCallbacks(this.args, action);
+
+        return this;
     }
 
     public returns(value: TResult): void
@@ -17,9 +19,9 @@ export default class BaseSetup<TMethod extends FunctionType, TResult> implements
         this.setup.setReturns(this.args, value);
     }
 
-    public returnsFactory(factory: Factory<Parameters<TMethod>, TResult>): void
+    public returnsFactory(factory: Delegate<Parameters<TMethod>, TResult>): void
     {
-        this.setup.setReturnsFactory(this.args, factory as Factory<unknown[], TResult>);
+        this.setup.setReturnsFactory(this.args, factory as Delegate<[], TResult>);
     }
 
     public throws(error: string | Error): void

@@ -10,7 +10,7 @@ type AnalyzerOptions =
     analyzerMode?:   BundleAnalyzerPlugin.Options["analyzerMode"],
     mode?:           webpack.Configuration["mode"],
     open?:           boolean,
-    port?:           number,
+    port?:           number | "auto",
     reportFilename?: string,
 };
 
