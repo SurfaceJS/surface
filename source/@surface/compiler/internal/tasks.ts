@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
-import path                                        from "path";
-import webpack                                     from "webpack";
-import { removeUndefined }                         from "./common";
-import Compiler                                    from "./compiler";
-import { loadModule, lookupFile, removePathAsync } from "./external";
-import AnalyzerOptions                             from "./types/analyzer-options";
-import BuildOptions                                from "./types/build-options";
-import Configuration                               from "./types/configuration";
-import DevServerOptions                            from "./types/dev-serve-options";
-import Options                                     from "./types/options";
+import path                                                from "path";
+import webpack                                             from "webpack";
+import { removeUndefined }                                 from "./common";
+import Compiler                                            from "./compiler";
+import { isFile, loadModule, lookupFile, removePathAsync } from "./external";
+import AnalyzerOptions                                     from "./types/analyzer-options";
+import BuildOptions                                        from "./types/build-options";
+import Configuration                                       from "./types/configuration";
+import DevServerOptions                                    from "./types/dev-serve-options";
+import Options                                             from "./types/options";
 
 const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
 {
@@ -32,7 +32,6 @@ export default class Tasks
             filename:      options.filename,
             forceTs:       options.forceTs,
             htmlTemplate:  options.htmlTemplate,
-            logLevel:      options.logLevel,
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
@@ -41,16 +40,15 @@ export default class Tasks
 
         const project = options.project ?? ".";
 
-        const lookups =
-        [
-            project,
-            path.join(project, `surface.${options.mode}.js`),
-            path.join(project, `surface.${options.mode}.json`),
-            path.join(project, "surface.js"),
-            path.join(project, "surface.json"),
-        ];
-
-        const projectPath = lookupFile(lookups);
+        const projectPath = isFile(project)
+            ? project
+            : lookupFile
+            ([
+                path.join(project, `surface.${options.mode ?? "development"}.js`),
+                path.join(project, `surface.${options.mode ?? "development"}.json`),
+                path.join(project, "surface.js"),
+                path.join(project, "surface.json"),
+            ]);
 
         if (projectPath)
         {
@@ -58,7 +56,10 @@ export default class Tasks
 
             const root = path.parse(projectPath).dir;
 
-            Tasks.resolvePaths(projectConfiguration, root);
+            if (projectPath.endsWith(".json"))
+            {
+                Tasks.resolvePaths(projectConfiguration, root);
+            }
 
             return { ...projectConfiguration, ...configuration };
         }
@@ -92,10 +93,10 @@ export default class Tasks
         {
             const lookups =
             [
-                ".eslintrc.js",
-                ".eslintrc.json",
-                ".eslintrc.yml",
-                ".eslintrc.yaml",
+                path.resolve(root, ".eslintrc.js"),
+                path.resolve(root, ".eslintrc.json"),
+                path.resolve(root, ".eslintrc.yml"),
+                path.resolve(root, ".eslintrc.yaml"),
             ];
 
             const eslintrcPath = lookupFile(lookups);
@@ -105,12 +106,15 @@ export default class Tasks
                 configuration.eslintrc = eslintrcPath;
             }
         }
+        else
+        {
+            Tasks.resolvePath(configuration, "eslintrc", root);
+        }
 
         Tasks.resolvePath(configuration, "context",      root);
         Tasks.resolvePath(configuration, "htmlTemplate", root);
         Tasks.resolvePath(configuration, "output",       root);
         Tasks.resolvePath(configuration, "tsconfig",     root);
-        Tasks.resolvePath(configuration, "eslintrc",     root);
 
         if (Array.isArray(configuration.forceTs))
         {

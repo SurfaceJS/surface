@@ -1,6 +1,6 @@
-import fs                from "fs";
 import path              from "path";
 import { ResolvePlugin } from "webpack";
+import { fs }            from "../external";
 
 export default class ForceTsResolvePlugin implements ResolvePlugin
 {
@@ -22,7 +22,7 @@ export default class ForceTsResolvePlugin implements ResolvePlugin
                 const target    = request.path;
                 const extension = path.parse(target).ext;
 
-                if (extension?.toLowerCase() == ".js" && (self.paths.length == 0 || self.paths.some(x => target.toLowerCase().startsWith(x.toLowerCase()))))
+                if (extension.toLowerCase() == ".js" && (self.paths.length == 0 || self.paths.some(x => target.toLowerCase().startsWith(x.toLowerCase()))))
                 {
                     const simbling = target.replace(/\.js$/i, ".ts");
 
