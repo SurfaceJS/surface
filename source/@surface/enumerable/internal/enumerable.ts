@@ -734,9 +734,9 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      * @param comparer An IComparer<T> to hash and compare keys.
      */
     public sequenceEqual(second: Enumerable<TSource>, comparer: IComparer<TSource | null>): boolean;
-    public sequenceEqual(second: Enumerable<TSource>, comparer?: IComparer<TSource | null>): boolean
+    public sequenceEqual(second: Enumerable<TSource>, comparer: IComparer<TSource | null> = new Comparer()): boolean
     {
-        return this.fullJoin(second, x => x, x => x, (outter, inner) => ({ inner, outter })).all(x => (comparer ?? new Comparer()).equals(x.inner, x.outter));
+        return this.fullJoin(second, x => x, x => x, (outter, inner) => ({ inner, outter }), comparer).all(x => comparer.equals(x.inner, x.outter));
     }
 
     /**
