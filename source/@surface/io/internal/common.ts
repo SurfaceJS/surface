@@ -11,23 +11,21 @@ const unlinkAsync   = promisify(fs.unlink);
 
 /**
  * Create a path.
- * @param path Path to create. If a URL is provided, it must use the `file:` protocol.
+ * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  */
 export function createPath(path: string): void;
 
 /**
  * Create a path.
- * @param path Path to create. If a URL is provided, it must use the `file:` protocol.
+ * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  * @param mode A file mode.
  */
-export function createPath(path: string, mode: number): void;
+export function createPath(path: string, mode:  number): void;
 export function createPath(targetPath: string, mode: number = 0o777): void
 {
     if (fs.existsSync(targetPath))
     {
-        const resolvedPath = fs.lstatSync(targetPath).isSymbolicLink()
-            ? fs.readlinkSync(targetPath)
-            : targetPath;
+        const resolvedPath = fs.lstatSync(targetPath).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
 
         if (!fs.lstatSync(resolvedPath).isDirectory())
         {
@@ -50,13 +48,13 @@ export function createPath(targetPath: string, mode: number = 0o777): void
 
 /**
  * Asynchronously create a path.
- * @param path Path to create. If a URL is provided, it must use the `file:` protocol.
+ * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  */
 export async function createPathAsync(path: string): Promise<void>;
 
 /**
  * Asynchronous create a path.
- * @param path Path to create. If a URL is provided, it must use the `file:` protocol.
+ * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  * @param mode A file mode.
  */
 export async function createPathAsync(path: string, mode: number): Promise<void>;
@@ -86,12 +84,50 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
     return mkdirAsync(targetPath, mode);
 }
 
+export function isDirectory(filePath: string): boolean
+{
+    let stat;
+    try
+    {
+        stat = fs.statSync(filePath);
+    }
+    catch (e)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return false;
+        }
+
+        throw e;
+    }
+    return stat.isDirectory();
+}
+
+export function isFile(filePath: string): boolean
+{
+    let stat;
+    try
+    {
+        stat = fs.statSync(filePath);
+    }
+    catch (e)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return false;
+        }
+
+        throw e;
+    }
+    return stat.isFile() || stat.isFIFO();
+}
+
 /**
  * Look up for target file/directory.
  * @param startPath Path to start resolution.
  * @param target    Target file/directory.
  */
-export function lookUp(startPath: string, target: string): string | null
+export function lookup(startPath: string, target: string): string | null
 {
     const slices = startPath.split(path.sep);
 
@@ -108,6 +144,56 @@ export function lookUp(startPath: string, target: string): string | null
     }
 
     return null;
+}
+
+/**
+ * Resolve file location
+ * @param lookup  Filenames to resolve.
+ * @param context Context used to resolve.
+ */
+export function lookupFile(lookup: string[], context: string = process.cwd()): string | null
+{
+    for (const filepath of lookup)
+    {
+        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && fs.lstatSync(filepath).isFile())
+        {
+            return filepath;
+        }
+
+        const resolved = path.resolve(context, filepath);
+
+        if (fs.existsSync(resolved) && fs.lstatSync(resolved).isFile())
+        {
+            return resolved;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Asynchronously resolve file location
+ * @param lookup  Relative or absolute path to folder or file.
+ * @param context Cotext used to resolve.
+ */
+export async function lookupFileAsync(lookup: string[], context: string = process.cwd()): Promise<string>
+{
+    for (const filepath of lookup)
+    {
+        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && (await lstatAsync(filepath)).isFile())
+        {
+            return filepath;
+        }
+
+        const resolved = path.resolve(context, filepath);
+
+        if (fs.existsSync(resolved) && (await lstatAsync(resolved)).isFile())
+        {
+            return resolved;
+        }
+    }
+
+    throw new Error("paths not found");
 }
 
 /**
@@ -168,56 +254,4 @@ export async function removePathAsync(targetPath: string): Promise<boolean>
     }
 
     return false;
-}
-
-/**
- * Resolve file location
- * @param context   Cotext used to resolve.
- * @param filepath  Relative or absolute path to folder or file.
- * @param filenames Possible filenames to resolve.
- */
-export function resolveFile(context: string, filepaths: string[]): string
-{
-    for (const filepath of filepaths)
-    {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath))
-        {
-            return filepath;
-        }
-
-        const resolved = path.resolve(context, filepath);
-
-        if (fs.existsSync(resolved) && fs.lstatSync(resolved).isFile())
-        {
-            return resolved;
-        }
-    }
-
-    throw new Error("paths not found");
-}
-
-/**
- * Asynchronously resolve file location
- * @param context   Cotext used to resolve.
- * @param filepath  Relative or absolute path to folder or file.
- * @param filenames Possible filenames to resolve.
- */
-export async function resolveFileAsync(context: string, filepaths: string[]): Promise<string>
-{
-    for (const filepath of filepaths)
-    {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath))
-        {
-            return filepath;
-        }
-
-        const resolved = path.resolve(context, filepath);
-
-        if (fs.existsSync(resolved) && (await lstatAsync(resolved)).isFile())
-        {
-            return resolved;
-        }
-    }
-
-    throw new Error("paths not found");
 }

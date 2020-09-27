@@ -8,10 +8,10 @@
         "@types/node": "file:../node_modules/@types/node",
         "chai": "file:../node_modules/@types/chai",
         "chalk": "file:../node_modules/chalk",
-        "commander": "5.1.0",
+        "commander": "file:../node_modules/commander",
         "glob": "7.1.6",
         "npm-registry-client": "8.6.0",
-        "tar": "6.0.2",
+        "tar": "6.0.5",
         "tslib": "2.0.1"
     },
     "keywords": [

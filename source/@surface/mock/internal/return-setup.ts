@@ -1,8 +1,8 @@
-import BaseSetup        from "./base-setup";
-import IExecutable      from "./interfaces/executable";
-import { FunctionType } from "./types";
+import { Callable } from "@surface/core";
+import BaseSetup    from "./base-setup";
+import IExecutable  from "./interfaces/executable";
 
-export default class ReturnSetup<TMethod extends FunctionType, TResult> extends BaseSetup<TMethod, TResult>
+export default class ReturnSetup<TMethod extends Callable, TResult> extends BaseSetup<TMethod, TResult>
     implements IExecutable<TResult | null>
 {
     public execute(): TResult | null

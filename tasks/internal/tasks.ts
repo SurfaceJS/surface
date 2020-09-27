@@ -83,7 +83,7 @@ export default class Tasks
 
     public static async cover(filepath: string): Promise<void>
     {
-        const bin = path.resolve(__dirname, "../node_modules/.bin");
+        const bin = path.resolve(__dirname, "../../node_modules/.bin");
 
         const file = path.parse(filepath);
 

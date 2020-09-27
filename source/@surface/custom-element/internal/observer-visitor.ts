@@ -23,7 +23,6 @@ import
     TypeGuard,
 } from "@surface/expression";
 
-
 export default class ObserverVisitor extends ExpressionVisitor
 {
     private readonly paths: string[][] = [];

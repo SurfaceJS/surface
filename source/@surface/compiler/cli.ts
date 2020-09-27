@@ -1,14 +1,18 @@
 #!/usr/bin/env node
-import commander from "commander";
-import Compiler  from ".";
 
-commander
-    .version("0.0.1")
-    .option("-c, --config      <n>", "Configuration file path")
-    .option("-e, --env         <n>", "Enviroment mode", /^development|production$/i)
-    .option("-s, --stats-level <n>", "Output verbosity level", /^errors-only|minimal|none|normal|verbose$/i, "build")
-    .option("-t, --task        <n>", "Task to be executed", /^build|clean|rebuild$/i, "build")
-    .option("-w, --watch",           "Watch mode compilation", /true|false/i)
-    .parse(process.argv);
+import path                                  from "path";
+import { Command, ExecutableCommandOptions } from "commander";
 
-void Compiler.execute(commander.task, commander.config, commander.env, commander.watch, commander.statsLevel);
+function createCommandOptions(target: string): ExecutableCommandOptions
+{
+    return { executableFile: path.resolve(__dirname, `./internal/bin/${target}.js`) };
+}
+
+const program = new Command();
+
+program.command("analyze [options]", "Analyze bundle size.", createCommandOptions("analyze")).alias("a");
+program.command("build   [options]", "Compile project.",     createCommandOptions("build")).alias("b");
+program.command("clean   [options]", "Remove build cache.",  createCommandOptions("clean")).alias("c");
+program.command("serve   [options]", "Starts dev server.",   createCommandOptions("serve")).alias("s");
+
+program.parse(process.argv);

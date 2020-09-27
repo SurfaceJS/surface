@@ -1,8 +1,8 @@
-import fs                                                               from "fs";
-import path                                                             from "path";
-import { after, shouldFail, shouldPass, suite, test }                   from "@surface/test-suite";
-import chai                                                             from "chai";
-import { createPath, createPathAsync, lookUp, removePath, resolveFile } from "../internal/common";
+import fs                                                              from "fs";
+import path                                                            from "path";
+import { after, shouldFail, shouldPass, suite, test }                  from "@surface/test-suite";
+import chai                                                            from "chai";
+import { createPath, createPathAsync, lookup, lookupFile, removePath } from "../internal/common";
 
 @suite
 export default class CommonSpec
@@ -14,7 +14,7 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public makePath(): void
+    public createPath(): void
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
 
@@ -24,7 +24,7 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public async makePathAsync(): Promise<void>
+    public async createPathAsync(): Promise<void>
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
 
@@ -34,7 +34,7 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public deletePath(): void
+    public removePath(): void
     {
         const pathToDelete = path.resolve(__dirname, "./fixtures/deep");
 
@@ -44,7 +44,7 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public deletePathWithFiles(): void
+    public removePathWithFiles(): void
     {
         const pathToDelete = path.resolve(__dirname, "./fixtures/files");
         const pathToMake   = path.resolve(__dirname, "./fixtures/files/to/delete");
@@ -59,7 +59,7 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public deletePathWithSymbolicLink(): void
+    public removePathWithSymbolicLink(): void
     {
         const realPath = path.resolve(__dirname, "./fixtures/real");
         const linkPath = path.resolve(__dirname, "./fixtures/link");
@@ -73,13 +73,13 @@ export default class CommonSpec
     }
 
     @test @shouldPass
-    public deleteNonExistingPath(): void
+    public removePathWithNoExistingPath(): void
     {
         chai.expect(removePath(path.resolve(__dirname, "./non/existing/path"))).to.equal(false);
     }
 
     @test @shouldPass
-    public resolveRelativeFile(): void
+    public lookupFileRelativePath(): void
     {
         const expected = path.resolve(__dirname, "./fixtures/path/to/resolve-3/file.txt");
 
@@ -98,11 +98,11 @@ export default class CommonSpec
 
         fs.writeFileSync(expected, "resolved");
 
-        chai.expect(resolveFile(__dirname, paths)).to.equal(expected);
+        chai.expect(lookupFile(paths, __dirname)).to.equal(expected);
     }
 
     @test @shouldPass
-    public resolveAbsoluteFile(): void
+    public lookupFileAbsolutePath(): void
     {
         const expected = path.resolve(__dirname, "./fixtures/path/to/resolve-3/file.txt");
 
@@ -121,7 +121,13 @@ export default class CommonSpec
 
         fs.writeFileSync(expected, "resolved");
 
-        chai.expect(resolveFile(__dirname, paths)).to.equal(expected);
+        chai.expect(lookupFile(paths, __dirname)).to.equal(expected);
+    }
+
+    @test @shouldFail
+    public lookupFileWithInvalidPath(): void
+    {
+        chai.expect(lookupFile(["./invalid/path"], __dirname)).to.equal(null);
     }
 
     @test @shouldPass
@@ -134,17 +140,17 @@ export default class CommonSpec
 
         fs.writeFileSync(expected, "look for me");
 
-        chai.expect(lookUp(pathToLookup, "file.txt")).to.equal(expected);
+        chai.expect(lookup(pathToLookup, "file.txt")).to.equal(expected);
     }
 
     @test @shouldPass
-    public lookupInvalidPath(): void
+    public lookupWithInvalidPath(): void
     {
-        chai.expect(lookUp(__dirname, `invalid-file-path${Date.now()}`)).to.equal(null);
+        chai.expect(lookup(__dirname, `invalid-file-path${Date.now()}`)).to.equal(null);
     }
 
     @test @shouldFail
-    public makeInvalidPath(): void
+    public createPathWithInvalidPath(): void
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/file");
 
@@ -153,7 +159,7 @@ export default class CommonSpec
     }
 
     @test @shouldFail
-    public async makeInvalidPathAsync(): Promise<void>
+    public async createPathAsyncWithInvalidPath(): Promise<void>
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/file");
 
@@ -170,8 +176,8 @@ export default class CommonSpec
         }
     }
 
-    @test @shouldPass
-    public makePathReadingSymbolicLink(): void
+    @test @shouldFail
+    public createPathWithSymbolicLink(): void
     {
         const realPath = path.resolve(__dirname, "./fixtures/real");
         const linkPath = path.resolve(__dirname, "./fixtures/link");
@@ -181,11 +187,5 @@ export default class CommonSpec
         fs.symlinkSync(realPath, linkPath);
 
         chai.expect(() => createPath(linkPath)).to.throw(Error, `${realPath} exist and isn't an directory`);
-    }
-
-    @test @shouldFail
-    public cantResolveFile(): void
-    {
-        chai.expect(() => resolveFile(__dirname, ["./invalid/paht"])).to.throw(Error, "paths not found");
     }
 }

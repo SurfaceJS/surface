@@ -10,7 +10,7 @@
         "@surface/expression": "1.0.0-alpha.0",
         "@surface/reactive": "1.0.0-alpha.0",
         "@surface/reflection": "1.0.0-alpha.0",
-        "tslib": "2.0.0"
+        "tslib": "2.0.1"
     },
     "description": "Base class used to define custom elements.",
     "devDependencies": {

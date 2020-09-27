@@ -5,7 +5,7 @@
     },
     "dependencies": {
         "@surface/core": "0.1.0-alpha.0",
-        "tslib": "2.0.0"
+        "tslib": "2.0.1"
     },
     "description": "Provides an tree representation of javascript expressions.",
     "devDependencies": {

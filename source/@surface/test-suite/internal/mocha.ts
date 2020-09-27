@@ -96,16 +96,15 @@ declare interface IGlobalMocha
     teardown(description: string, callback: (this: IBeforeAndAfterContext, done: MochaDone) => PromiseLike<unknown> | void): void;
 }
 
-
 declare const global: IGlobalMocha;
 
 // Todo: Implement proper way to wrap mocha
 const mocha =
 {
-    after:      global.after      || global.suiteTeardown,
-    afterEach:  global.afterEach  || global.teardown,
-    before:     global.before     || global.suiteSetup,
-    beforeEach: global.beforeEach || global.setup,
+    after:      global.after      ?? global.suiteTeardown,
+    afterEach:  global.afterEach  ?? global.teardown,
+    before:     global.before     ?? global.suiteSetup,
+    beforeEach: global.beforeEach ?? global.setup,
     suite,
     test,
 };

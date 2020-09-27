@@ -188,7 +188,6 @@ export function computed<T extends object>(...properties: (keyof T)[]): <U exten
     };
 }
 
-
 export function define(name: string, options?: ElementDefinitionOptions): <TTarget extends Constructor<HTMLElement>>(target: TTarget) => void
 {
     return <TTarget extends Constructor<HTMLElement>>(target: TTarget) =>

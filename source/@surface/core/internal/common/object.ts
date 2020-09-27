@@ -19,13 +19,13 @@ function internalDeepMerge(sources: Indexer[], combineArrays: boolean): Indexer
             {
                 if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
                 {
-                    targetValue.push(...currentValue);
+                    Reflect.defineProperty(target, key, { ...descriptor, value: [...targetValue, ...currentValue] });
                 }
                 else if (typeGuard<Indexer>(currentValue, currentValue instanceof Object))
                 {
-                    descriptor.value = internalDeepMerge([targetValue, currentValue], combineArrays);
+                    const value = internalDeepMerge([targetValue, currentValue], combineArrays);
 
-                    Reflect.defineProperty(target, key, { ...descriptor });
+                    Reflect.defineProperty(target, key, { ...descriptor, value });
                 }
                 else
                 {
@@ -190,7 +190,6 @@ export function merge<T extends object[]>(...sources: T): MergeList<T>
 
     return target as MergeList<T>;
 }
-
 
 export function mixer<TConstructor extends Constructor, TMixins extends ((superClass: TConstructor) => Constructor)[], TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
 {

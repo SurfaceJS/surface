@@ -17,19 +17,19 @@ export default class PublisherSpec
         const actual: IPackage[] =
         [
             { dependencies: { b: "0.0.0" }, name: "a", version: "2.0.0" },
-            { devDependencies: { c: "0.0.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { c: "0.0.0" }, name: "b", version: "1.5.0" },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
         const expected: IPackage[] =
         [
             { dependencies: { b: "1.5.0" }, name: "a", version: "2.0.0" },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
-        const getDataMock       = new Mock<IGetData>();
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const getDataMock       = Mock.instance<IGetData>();
+        const npmRepositoryMock = new Mock(new NpmRepository());
 
         getDataMock.setupGet("versions").returns({ "0.5.0": { } });
 
@@ -49,24 +49,24 @@ export default class PublisherSpec
         const actual: IPackage[] =
         [
             { dependencies: { b: "0.0.0", c: "0.0.0" }, name: "a", version: "2.0.0"  },
-            { devDependencies: { c: "0.0.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { c: "0.0.0" }, name: "b", version: "1.5.0" },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
         const expected: IPackage[] =
         [
             { dependencies: { b: "1.5.1", c: "1.0.0-alpha.0" }, name: "a", version: "2.0.1" },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.1" },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.1" },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
-        const aGetDataMock = new Mock<IGetData>();
+        const aGetDataMock = Mock.instance<IGetData>();
         aGetDataMock.setupGet("versions").returns({ [actual[0].version]: actual[0] });
 
-        const bGetDataMock = new Mock<IGetData>();
+        const bGetDataMock = Mock.instance<IGetData>();
         bGetDataMock.setupGet("versions").returns({ [actual[1].version]: actual[2] });
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
 
         npmRepositoryMock.setup("get").call("a", It.any())
             .returns(Promise.resolve(aGetDataMock.proxy));
@@ -74,7 +74,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call("b", It.any())
             .returns(Promise.resolve(bGetDataMock.proxy));
 
-        npmRepositoryMock.setup("get").call("c", It.includes({ timeout: 3 }, { timeout: 2 }, { }))
+        npmRepositoryMock.setup("get").call("c", It.any())
             .returns(Promise.reject({ code: "E404" }));
 
         const options: IOptions = { silent: true };
@@ -89,22 +89,22 @@ export default class PublisherSpec
     {
         const actual: IPackage[] =
         [
-            { dependencies:    { b: "1.5.0" },         name: "a", version: "2.0.0" },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "2.0.0" },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
         const expected: IPackage[] =
         [
-            { dependencies:    { b: "1.5.1" }, name: "a", version: "2.2.0" },
-            { devDependencies: { c: "1.2.0" }, name: "b", version: "1.5.1" },
+            { dependencies: { b: "1.5.1" }, name: "a", version: "2.2.0" },
+            { dependencies: { c: "1.2.0" }, name: "b", version: "1.5.1" },
             { name: "c", version: "1.2.0" },
         ];
 
-        const bGetDataMock = new Mock<IGetData>();
+        const bGetDataMock = Mock.instance<IGetData>();
         bGetDataMock.setupGet("versions").returns({ [actual[1].version]: actual[1] });
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
 
         npmRepositoryMock.setup("get").call("b", It.any())
             .returns(Promise.resolve(bGetDataMock.proxy));
@@ -124,29 +124,29 @@ export default class PublisherSpec
     {
         const actual: IPackage[] =
         [
-            { devDependencies: { b: "1.5.0" },         name: "a", version: "2.0.0" },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
-            { devDependencies: { d: "1.0.0" },         name: "c", version: "1.3.0-alpha.0" },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "2.0.0" },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { d: "1.0.0" },         name: "c", version: "1.3.0-alpha.0" },
             { name: "d", version: "1.0.0" },
         ];
 
         const expected: IPackage[] =
         [
-            { devDependencies: { b: "1.5.1" },         name: "a", version: "2.2.0" },
-            { devDependencies: { c: "1.3.0-alpha.1" }, name: "b", version: "1.5.1"  },
-            { devDependencies: { d: "1.2.0" },         name: "c", version: "1.3.0-alpha.1" },
+            { dependencies: { b: "1.5.1" },         name: "a", version: "2.2.0" },
+            { dependencies: { c: "1.3.0-alpha.1" }, name: "b", version: "1.5.1"  },
+            { dependencies: { d: "1.2.0" },         name: "c", version: "1.3.0-alpha.1" },
             { name: "d", version: "1.2.0" },
         ];
 
         const options: IOptions = { silent: true, strategy: StrategyType.Default, template: "*.2.*-*.*" };
 
-        const bGetDataMock = new Mock<IGetData>();
+        const bGetDataMock = Mock.instance<IGetData>();
         bGetDataMock.setupGet("versions").returns({ [actual[1].version]: actual[1] });
 
-        const cGetDataMock = new Mock<IGetData>();
+        const cGetDataMock = Mock.instance<IGetData>();
         cGetDataMock.setupGet("versions").returns({ [actual[2].version]: actual[2] });
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
 
         npmRepositoryMock.setup("get").call("b", It.any())
             .returns(Promise.resolve(bGetDataMock.proxy));
@@ -177,10 +177,10 @@ export default class PublisherSpec
             { name: "b", version: "2.0.0" },
         ];
 
-        const getDataMock = new Mock<IGetData>();
+        const getDataMock = Mock.instance<IGetData>();
         getDataMock.setupGet("versions").returns({ "2.0.0": { } });
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.resolve(getDataMock.proxy));
 
@@ -196,23 +196,23 @@ export default class PublisherSpec
     {
         const actual: IPackage[] =
         [
-            { dependencies:    { b: "1.5.0" },         name: "a", version: "2.0.0" },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
-            { dependencies:    { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0" },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "2.0.0" },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0" },
+            { dependencies: { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0" },
             { name: "e", version: "1.0.0" },
         ];
 
         const expected: IPackage[] =
         [
-            { dependencies:    { b: "1.5.0" },         name: "a", version: "2.2.0"          },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0"          },
-            { dependencies:    { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "2.2.0"          },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0"          },
+            { dependencies: { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
             { name: "e", version: "1.2.0" },
         ];
 
         const options: IOptions = { silent: true, strategy: StrategyType.IgnoreDependents, template: "*.2.*-*.*" };
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject({ code: "E404" }));
 
@@ -226,21 +226,21 @@ export default class PublisherSpec
     {
         const actual: IPackage[] =
         [
-            { dependencies:    { b: "3.0.0" },         name: "a", version: "3.0.0"  },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"  },
+            { dependencies: { b: "3.0.0" },         name: "a", version: "3.0.0"  },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"  },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
         const expected: IPackage[] =
         [
-            { dependencies:    { b: "3.0.0" },         name: "a", version: "3.0.0"  },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"  },
+            { dependencies: { b: "3.0.0" },         name: "a", version: "3.0.0"  },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"  },
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
         const options: IOptions = { silent: true, strategy: StrategyType.OnlyStable, template: "3.0.0-*.*" };
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject({ code: "E404" }));
 
@@ -254,23 +254,23 @@ export default class PublisherSpec
     {
         const actual: IPackage[] =
         [
-            { dependencies:    { b: "1.5.0" },         name: "a", version: "2.0.0"          },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0"          },
-            { dependencies:    { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "2.0.0"          },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "1.5.0"          },
+            { dependencies: { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
             { name: "e", version: "1.0.0" },
         ];
 
         const expected: IPackage[] =
         [
-            { dependencies:    { b: "1.5.0" },         name: "a", version: "3.0.0"          },
-            { devDependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"          },
-            { dependencies:    { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
+            { dependencies: { b: "1.5.0" },         name: "a", version: "3.0.0"          },
+            { dependencies: { c: "1.0.0-alpha.0" }, name: "b", version: "3.0.0"          },
+            { dependencies: { e: "1.0.0" },         name: "c", version: "1.3.0-alpha.0"  },
             { name: "e", version: "3.0.0" },
         ];
 
         const options: IOptions = { silent: true, strategy: StrategyType.IgnoreDependents | StrategyType.OnlyStable, template: "3.0.0-*.*" };
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject({ code: "E404" }));
 
@@ -289,7 +289,7 @@ export default class PublisherSpec
 
         const expected = { code: "E401" };
 
-        const npmRepositoryMock = new Mock(NpmRepository);
+        const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject(expected));
 

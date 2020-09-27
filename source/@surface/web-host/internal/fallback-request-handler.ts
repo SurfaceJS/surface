@@ -44,7 +44,7 @@ export default class FallbackRequestHandler extends RequestHandler
         }
 
         const extension = this.path.extname(filepath) as keyof typeof mymeType;
-        const data      = await new Promise(x => this.fs.readFile(filepath, x));
+        const data      = await new Promise((resolve, reject) => this.fs.readFile(filepath, (error, data) => error ? reject(error) : resolve(data)));
 
         httpContext.response.writeHead(StatusCode.Ok, { "Content-Type": mymeType[extension] });
         httpContext.response.write(data);

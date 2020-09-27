@@ -11,7 +11,6 @@ export default class InjectableMock
     @inject("foo")
     public foo!: Foo;
 
-
     @inject("bar")
     public get bar(): Bar
     {

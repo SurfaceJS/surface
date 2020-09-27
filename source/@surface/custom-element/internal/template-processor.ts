@@ -253,7 +253,7 @@ export default class TemplateProcessor
 
         for (const directive of directives)
         {
-            const handlerConstructor = directiveRegistry.get(directive.name)!;
+            const handlerConstructor = directiveRegistry.get(directive.name);
 
             if (!handlerConstructor)
             {
