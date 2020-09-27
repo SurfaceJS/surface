@@ -173,17 +173,9 @@ export default class Tasks
             : await Compiler.run(configuration, buildOptions);
     }
 
-    public static async clean(options: Pick<Options, "project">): Promise<void>
+    public static async clean(): Promise<void>
     {
-        const configuration = await Tasks.optionsToConfiguration(options);
-
-        const promises =
-        [
-            removePathAsync(configuration.output!),
-            removePathAsync(path.resolve(__dirname, ".cache")),
-        ];
-
-        await Promise.all(promises);
+        await removePathAsync(path.resolve(__dirname, ".cache"));
     }
 
     public static async serve(options: Options & DevServerOptions): Promise<void>

@@ -5,7 +5,6 @@ import Tasks       from "../tasks";
 
 const clean = new Command()
     .storeOptionsAsProperties(false)
-    .option("-p, --project <n>", "Path to project file (absolute path).")
-    .action((command: Command) => void Tasks.clean(command.opts()));
+    .action(() => void Tasks.clean());
 
 clean.parse(process.argv);

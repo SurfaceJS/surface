@@ -147,27 +147,21 @@ export default class BinSpec
     @test
     public async clean(): Promise<void>
     {
-        let actual: Required<Pick<Options, "project">>;
+        let actual: boolean;
 
         tasksMock
             .setup("clean")
-            .call(It.any())
-            .callback(x => actual = x as Required<Pick<Options, "project">>);
+            .call()
+            .callback(() => actual = true);
 
         process.argv =
         [
-            "",          "",
-            "--project", ".",
+            "", "",
         ];
 
         await import("../internal/bin/clean");
 
-        const expected: Required<Pick<Options, "project">> =
-        {
-            project: ".",
-        };
-
-        assert.deepEqual(actual!, expected);
+        assert.isTrue(actual!);
     }
 
     @test

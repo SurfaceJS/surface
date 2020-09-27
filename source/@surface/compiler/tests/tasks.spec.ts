@@ -257,22 +257,16 @@ export default class TasksSpec
     @test
     public async clean(): Promise<void>
     {
-        const expected = [CWD_PROJECT_BUILD, path.resolve(__dirname, "../internal", ".cache")];
+        const expected = path.resolve(__dirname, "../internal", ".cache");
 
-        const actual: string[] =
-        [];
-
-        removePathAsyncMock
-            .call(expected[0])
-            .callback(x => actual.push(x))
-            .returns(Promise.resolve(true));
+        let actual: string;
 
         removePathAsyncMock
-            .call(expected[1])
-            .callback(x => actual.push(x))
+            .call(expected)
+            .callback(x => actual = x)
             .returns(Promise.resolve(true));
 
-        await Tasks.clean({ project: path.join(CWD, "project") }),
+        await Tasks.clean(),
 
         assert.deepEqual(actual!, expected);
     }
