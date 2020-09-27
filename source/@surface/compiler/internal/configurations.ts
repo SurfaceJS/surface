@@ -142,16 +142,17 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         eslint:
         {
             files:   `${configuration.context}/**/*.{js,ts}`,
-            options:
-            {
+            options: removeUndefined
+            ({
                 configFile: configuration.eslintrc,
-            },
+            }),
         },
-        typescript:
-        {
+        typescript: removeUndefined
+        ({
             build:      true,
             configFile: configuration.tsconfig,
-        },
+            context:    configuration.context,
+        }),
     };
 
     const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
@@ -333,7 +334,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
 
 export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration
 {
-    return createConfiguration(configuration, { mode: options.mode });
+    return createConfiguration(configuration, removeUndefined({ mode: options.mode }));
 }
 
 export function createDevServerConfiguration(configuration: Configuration, options: DevServerOptions): webpack.Configuration

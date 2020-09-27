@@ -11,19 +11,29 @@ import Configuration                                       from "./types/configu
 import DevServerOptions                                    from "./types/dev-serve-options";
 import Options                                             from "./types/options";
 
-const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
-{
-    context:  ".",
-    entry:    "./source/index.ts",
-    filename: "[name].js",
-    output:   "./build",
-    tsconfig: "./tsconfig.json",
-};
-
 export default class Tasks
 {
+    private static createDefaults(): Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">>
+    {
+        return {
+            context:  ".",
+            entry:    "./source/index.ts",
+            filename: "[name].js",
+            output:   "./build",
+            tsconfig: "./tsconfig.json",
+        };
+    }
+
     private static async optionsToConfiguration(options: Options & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
     {
+        const cwd = process.cwd();
+
+        const project = !options.project
+            ? cwd
+            : path.isAbsolute(options.project)
+                ? options.project
+                : path.resolve(cwd, options.project);
+
         const configuration: Configuration = removeUndefined
         ({
             context:       options.context,
@@ -38,7 +48,7 @@ export default class Tasks
             webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
-        const project = options.project ?? ".";
+        Tasks.resolvePaths(configuration, cwd);
 
         const projectPath = isFile(project)
             ? project
@@ -50,21 +60,25 @@ export default class Tasks
                 path.join(project, "surface.json"),
             ]);
 
+        const defaults = Tasks.createDefaults();
+
         if (projectPath)
         {
-            const projectConfiguration = { ...DEFAULTS, ...Tasks.resolveModule(await loadModule(projectPath)) } as Configuration;
+            Tasks.resolvePaths(defaults, path.parse(projectPath).dir);
 
-            const root = path.parse(projectPath).dir;
+            const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
             if (projectPath.endsWith(".json"))
             {
-                Tasks.resolvePaths(projectConfiguration, root);
+                Tasks.resolvePaths(projectConfiguration, path.parse(projectPath).dir);
             }
 
-            return { ...projectConfiguration, ...configuration };
+            return { ...defaults, ...projectConfiguration, ...configuration };
         }
 
-        return configuration;
+        Tasks.resolvePaths(defaults, cwd);
+
+        return { ...defaults, ...configuration };
     }
 
     private static resolveModule(module: object | { default: object }): object

@@ -1,11 +1,11 @@
 /* eslint-disable array-element-newline */
 /* eslint-disable import/no-namespace */
 
-import Mock                                    from "@surface/mock";
+import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import * as externalNS                         from "../../internal/external";
-import ForceTsResolvePlugin                    from "../../internal/plugins/force-ts-resolve-plugin";
+import { assert }                                         from "chai";
+import * as externalNS                                    from "../../internal/external";
+import ForceTsResolvePlugin                               from "../../internal/plugins/force-ts-resolve-plugin";
 
 @suite
 export default class ForceTsResolvePluginSpec

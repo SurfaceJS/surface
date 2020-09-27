@@ -12,95 +12,97 @@ import Configuration                          from "../internal/types/configurat
 import DevServerOptions                       from "../internal/types/dev-serve-options";
 import Options                                from "../internal/types/options";
 
-const root = path.parse(process.cwd()).root;
+const CWD = process.cwd();
 
 const compilerCtorMock = Mock.intance<typeof Compiler>();
 const isFileMock       = Mock.callable<typeof externalNS["isFile"]>();
 const lookupFileMock   = Mock.callable<typeof externalNS["lookupFile"]>();
 
-const ROOT_PROJECT                           = path.join(root, "project");
-const ROOT_PROJECT_BUILD                     = path.join(root, "project", "build");
-const ROOT_PROJECT_ESLINTRC_JS               = path.join(root, "project", ".eslintrc.js");
-const ROOT_PROJECT_ESLINTRC_JSON             = path.join(root, "project", ".eslintrc.json");
-const ROOT_PROJECT_ESLINTRC_YAML             = path.join(root, "project", ".eslintrc.yaml");
-const ROOT_PROJECT_ESLINTRC_YML              = path.join(root, "project", ".eslintrc.yml");
-const ROOT_PROJECT_NO_ESLINTRC               = path.join(root, "project-no-eslintrc");
-const ROOT_PROJECT_NO_ESLINTRC_BUILD         = path.join(root, "project-no-eslintrc", "build");
-const ROOT_PROJECT_NO_ESLINTRC_SURFACE_JSON  = path.join(root, "project-no-eslintrc", "surface.json");
-const ROOT_PROJECT_NO_ESLINTRC_TSCONFIG_JSON = path.join(root, "project-no-eslintrc", "tsconfig.json");
-const ROOT_PROJECT_SURFACE_DEVELOPMENT_JS    = path.join(root, "project", "surface.development.js");
-const ROOT_PROJECT_SURFACE_DEVELOPMENT_JSON  = path.join(root, "project", "surface.development.json");
-const ROOT_PROJECT_SURFACE_JS                = path.join(root, "project", "surface.js");
-const ROOT_PROJECT_SURFACE_JSON              = path.join(root, "project", "surface.json");
-const ROOT_PROJECT_TSCONFIG_JSON             = path.join(root, "project", "tsconfig.json");
-const ROOT_PROJECT_WEBPACK_CONFIG_JS         = path.join(root, "project", "webpack.config.js");
+const CWD_BUILD                             = path.join(CWD, "build");
+const CWD_PROJECT                           = path.join(CWD, "project");
+const CWD_PROJECT_BUILD                     = path.join(CWD, "project", "build");
+const CWD_PROJECT_ESLINTRC_JS               = path.join(CWD, "project", ".eslintrc.js");
+const CWD_PROJECT_ESLINTRC_JSON             = path.join(CWD, "project", ".eslintrc.json");
+const CWD_PROJECT_ESLINTRC_YAML             = path.join(CWD, "project", ".eslintrc.yaml");
+const CWD_PROJECT_ESLINTRC_YML              = path.join(CWD, "project", ".eslintrc.yml");
+const CWD_PROJECT_NO_ESLINTRC               = path.join(CWD, "project-no-eslintrc");
+const CWD_PROJECT_NO_ESLINTRC_BUILD         = path.join(CWD, "project-no-eslintrc", "build");
+const CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON  = path.join(CWD, "project-no-eslintrc", "surface.json");
+const CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON = path.join(CWD, "project-no-eslintrc", "tsconfig.json");
+const CWD_PROJECT_SURFACE_DEVELOPMENT_JS    = path.join(CWD, "project", "surface.development.js");
+const CWD_PROJECT_SURFACE_DEVELOPMENT_JSON  = path.join(CWD, "project", "surface.development.json");
+const CWD_PROJECT_SURFACE_JS                = path.join(CWD, "project", "surface.js");
+const CWD_PROJECT_SURFACE_JSON              = path.join(CWD, "project", "surface.json");
+const CWD_PROJECT_TSCONFIG_JSON             = path.join(CWD, "project", "tsconfig.json");
+const CWD_PROJECT_WEBPACK_CONFIG_JS         = path.join(CWD, "project", "webpack.config.js");
+const CWD_TSCONFIG_JSON                     = path.join(CWD, "tsconfig.json");
 
 const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
 {
-    context:  ".",
+    context:  CWD,
     entry:    "./source/index.ts",
     filename: "[name].js",
-    output:   "./build",
-    tsconfig: "./tsconfig.json",
+    output:   CWD_BUILD,
+    tsconfig: CWD_TSCONFIG_JSON,
 };
 
-isFileMock.call(ROOT_PROJECT_NO_ESLINTRC_SURFACE_JSON).returns(true);
-isFileMock.call(ROOT_PROJECT_SURFACE_DEVELOPMENT_JS).returns(true);
-isFileMock.call(ROOT_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
-isFileMock.call(ROOT_PROJECT_SURFACE_JS).returns(true);
-isFileMock.call(ROOT_PROJECT_SURFACE_JSON).returns(true);
+isFileMock.call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON).returns(true);
+isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JS).returns(true);
+isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
+isFileMock.call(CWD_PROJECT_SURFACE_JS).returns(true);
+isFileMock.call(CWD_PROJECT_SURFACE_JSON).returns(true);
 
 lookupFileMock
     .call
     ([
-        ROOT_PROJECT_SURFACE_DEVELOPMENT_JS,
-        ROOT_PROJECT_SURFACE_DEVELOPMENT_JSON,
-        ROOT_PROJECT_SURFACE_JS,
-        ROOT_PROJECT_SURFACE_JSON,
+        CWD_PROJECT_SURFACE_DEVELOPMENT_JS,
+        CWD_PROJECT_SURFACE_DEVELOPMENT_JSON,
+        CWD_PROJECT_SURFACE_JS,
+        CWD_PROJECT_SURFACE_JSON,
     ])
-    .returns(ROOT_PROJECT_SURFACE_JSON);
+    .returns(CWD_PROJECT_SURFACE_JSON);
 
 lookupFileMock
     .call
     ([
-        ROOT_PROJECT_ESLINTRC_JS,
-        ROOT_PROJECT_ESLINTRC_JSON,
-        ROOT_PROJECT_ESLINTRC_YML,
-        ROOT_PROJECT_ESLINTRC_YAML,
+        CWD_PROJECT_ESLINTRC_JS,
+        CWD_PROJECT_ESLINTRC_JSON,
+        CWD_PROJECT_ESLINTRC_YML,
+        CWD_PROJECT_ESLINTRC_YAML,
     ])
-    .returns(ROOT_PROJECT_ESLINTRC_JSON);
+    .returns(CWD_PROJECT_ESLINTRC_JSON);
 
 const removePathAsyncMock = Mock.callable<typeof externalNS["removePathAsync"]>();
 const loadModuleMock      = Mock.callable<typeof externalNS["loadModule"]>();
 
 loadModuleMock
-    .call(ROOT_PROJECT_SURFACE_JS)
+    .call(CWD_PROJECT_SURFACE_JS)
     .returns
     (
         Promise.resolve
         ({
-            context:  ROOT_PROJECT,
+            context:  CWD_PROJECT,
             entry:    "./source/index.ts",
             filename: "index.js",
-            output:   path.join(ROOT_PROJECT, "./www"),
-            tsconfig: path.join(ROOT_PROJECT, "./base.tsconfig.json"),
+            output:   path.join(CWD_PROJECT, "./www"),
+            tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
         }),
     );
 
 loadModuleMock
-    .call(ROOT_PROJECT_SURFACE_JSON)
+    .call(CWD_PROJECT_SURFACE_JSON)
     .returns(Promise.resolve({ forceTs: ["foo", "bar"] }));
 
 loadModuleMock
-    .call(ROOT_PROJECT_SURFACE_DEVELOPMENT_JSON)
-    .returns(Promise.resolve({ eslintrc: ROOT_PROJECT_ESLINTRC_JSON, forceTs: true }));
+    .call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON)
+    .returns(Promise.resolve({ eslintrc: CWD_PROJECT_ESLINTRC_JSON, forceTs: true }));
 
 loadModuleMock
-    .call(ROOT_PROJECT_NO_ESLINTRC_SURFACE_JSON)
+    .call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON)
     .returns(Promise.resolve({ }));
 
 loadModuleMock
-    .call(ROOT_PROJECT_WEBPACK_CONFIG_JS)
+    .call(CWD_PROJECT_WEBPACK_CONFIG_JS)
     .returns(Promise.resolve({ default: { } }));
 
 @suite
@@ -138,7 +140,7 @@ export default class TasksSpec
     {
         type Args = [Configuration, AnalyzerOptions];
 
-        const expected: Args = [{ }, { }];
+        const expected: Args = [DEFAULTS, { }];
 
         let actual: Args;
 
@@ -158,7 +160,11 @@ export default class TasksSpec
     {
         type Args = [Configuration, BuildOptions];
 
-        const expectedRun: Args = [{ }, { mode: "development" }];
+        const expectedRun: Args =
+        [
+            DEFAULTS,
+            { mode: "development" },
+        ];
 
         let actualRun: Args;
 
@@ -170,17 +176,17 @@ export default class TasksSpec
 
         await Tasks.build({ mode: "development" }),
 
-        assert.deepEqual(actualRun!, expectedRun);
+        assert.deepEqual(actualRun!, expectedRun, "actualRun deep equal to expectedRun");
 
         const expectedRunWithProject: Args =
         [
             {
                 ...DEFAULTS,
-                context:  ROOT_PROJECT,
-                eslintrc: ROOT_PROJECT_ESLINTRC_JSON,
+                context:  CWD_PROJECT,
+                eslintrc: CWD_PROJECT_ESLINTRC_JSON,
                 forceTs:  true,
-                output:   ROOT_PROJECT_BUILD,
-                tsconfig: ROOT_PROJECT_TSCONFIG_JSON,
+                output:   CWD_PROJECT_BUILD,
+                tsconfig: CWD_PROJECT_TSCONFIG_JSON,
             },
             { },
         ];
@@ -193,17 +199,17 @@ export default class TasksSpec
             .callback((...x) => actualRunWithProject = x)
             .returns(Promise.resolve());
 
-        await Tasks.build({ project: ROOT_PROJECT_SURFACE_DEVELOPMENT_JSON }),
+        await Tasks.build({ project: CWD_PROJECT_SURFACE_DEVELOPMENT_JSON }),
 
-        assert.deepEqual(actualRunWithProject!, expectedRunWithProject);
+        assert.deepEqual(actualRunWithProject!, expectedRunWithProject, "actualRunWithProject deep equal to expectedRunWithProject");
 
         const expectedRunWithNoEsLintProject: Args =
         [
             {
                 ...DEFAULTS,
-                context:  ROOT_PROJECT_NO_ESLINTRC,
-                output:   ROOT_PROJECT_NO_ESLINTRC_BUILD,
-                tsconfig: ROOT_PROJECT_NO_ESLINTRC_TSCONFIG_JSON,
+                context:  CWD_PROJECT_NO_ESLINTRC,
+                output:   CWD_PROJECT_NO_ESLINTRC_BUILD,
+                tsconfig: CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON,
             },
             { },
         ];
@@ -216,18 +222,19 @@ export default class TasksSpec
             .callback((...x) => actualRunWithNoEsLintProject = x)
             .returns(Promise.resolve());
 
-        await Tasks.build({ project: ROOT_PROJECT_NO_ESLINTRC_SURFACE_JSON }),
+        await Tasks.build({ project: CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON }),
 
-        assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject);
+        assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
 
         const expectedWatch: Args =
         [
             {
-                context:  ROOT_PROJECT,
+                context:  CWD_PROJECT,
                 entry:    "./source/index.ts",
+                eslintrc: CWD_PROJECT_ESLINTRC_JSON,
                 filename: "index.js",
-                output:   path.join(ROOT_PROJECT, "./www"),
-                tsconfig: path.join(ROOT_PROJECT, "./base.tsconfig.json"),
+                output:   path.join(CWD_PROJECT, "./www"),
+                tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
             },
             {
                 watch: true,
@@ -242,15 +249,15 @@ export default class TasksSpec
             .callback((...x) => actualWatch = x)
             .returns(Promise.resolve({ close: async () => Promise.resolve() }));
 
-        await Tasks.build({ project: ROOT_PROJECT_SURFACE_JS, watch: true }),
+        await Tasks.build({ project: CWD_PROJECT_SURFACE_JS, watch: true }),
 
-        assert.deepEqual(actualWatch!, expectedWatch);
+        assert.deepEqual(actualWatch!, expectedWatch, "actualWatch deep equal to expectedWatch");
     }
 
     @test
     public async clean(): Promise<void>
     {
-        const expected = [ROOT_PROJECT_BUILD, path.resolve(__dirname, "../internal", ".cache")];
+        const expected = [CWD_PROJECT_BUILD, path.resolve(__dirname, "../internal", ".cache")];
 
         const actual: string[] =
         [];
@@ -265,7 +272,7 @@ export default class TasksSpec
             .callback(x => actual.push(x))
             .returns(Promise.resolve(true));
 
-        await Tasks.clean({ project: path.join(root, "project") }),
+        await Tasks.clean({ project: path.join(CWD, "project") }),
 
         assert.deepEqual(actual!, expected);
     }
@@ -278,13 +285,13 @@ export default class TasksSpec
         const expected: Args =
         [
             {
-                context:       ROOT_PROJECT,
+                context:       CWD_PROJECT,
                 entry:         "./source/index.ts",
-                eslintrc:      ROOT_PROJECT_ESLINTRC_JSON,
+                eslintrc:      CWD_PROJECT_ESLINTRC_JSON,
                 filename:      "[name].js",
-                forceTs:       [path.join(ROOT_PROJECT, "foo"), path.join(ROOT_PROJECT, "bar")],
-                output:        ROOT_PROJECT_BUILD,
-                tsconfig:      ROOT_PROJECT_TSCONFIG_JSON,
+                forceTs:       [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
+                output:        CWD_PROJECT_BUILD,
+                tsconfig:      CWD_PROJECT_TSCONFIG_JSON,
                 webpackConfig: { },
             },
             { },
@@ -300,9 +307,9 @@ export default class TasksSpec
 
         const configuration: Options & DevServerOptions =
         {
-            eslintrc:      ROOT_PROJECT_ESLINTRC_JSON,
-            project:       ROOT_PROJECT_SURFACE_JSON,
-            webpackConfig: ROOT_PROJECT_WEBPACK_CONFIG_JS,
+            eslintrc:      CWD_PROJECT_ESLINTRC_JSON,
+            project:       "project",
+            webpackConfig: CWD_PROJECT_WEBPACK_CONFIG_JS,
         };
 
         await Tasks.serve(configuration),
