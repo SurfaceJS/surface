@@ -123,8 +123,7 @@ export default class Depsync
         }
 
         const dependentPackages = Array.from(this.lookup.values())
-            .filter(x => !!x.dependencies?.[$package.name])
-            .filter(x => x.dependencies?.[$package.name] != $package.version);
+            .filter(x => !!x.dependencies?.[$package.name] && x.dependencies?.[$package.name] != $package.version);
 
         for (const dependent of dependentPackages)
         {

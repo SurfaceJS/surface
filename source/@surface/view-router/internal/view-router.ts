@@ -9,13 +9,13 @@ import IRouteableElement                           from "./interfaces/routeable-
 import Metadata                                    from "./metadata";
 import NavigationDirectiveHandler                  from "./navigation-directive-handler";
 import RouteConfigurator                           from "./route-configurator";
-import RouterOutlet                                from "./router-outlet";
 import Component                                   from "./types/component";
 import Module                                      from "./types/module";
 import Location                                    from "./types/named-route";
 import Route                                       from "./types/route";
 import RouteConfiguration                          from "./types/route-configuration";
 import RouteDefinition                             from "./types/route-definition";
+import ViewRouterOptions                           from "./types/view-router-options";
 
 export default class ViewRouter
 {
@@ -28,21 +28,13 @@ export default class ViewRouter
     private readonly container:         Container;
     private readonly history:           [RouteDefinition, RouteData][] = [];
     private readonly middlewares:       IMiddleware[];
-    private readonly outletTag:         string;
     private readonly root:              Lazy<HTMLElement>;
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
     private index: number  = 0;
     private current?: { definition: RouteDefinition, routeData: RouteData, route: Route };
 
-    public constructor
-    (
-        root:        HTMLElement | string | (() => HTMLElement),
-        routes:      RouteConfiguration[],
-        middlewares: IMiddleware[] = [],
-        container:   Container = new Container(),
-        options:     { baseUrl?: string, slotTag?: string } = { },
-    )
+    public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
     {
         this.root = typeof root == "string"
             ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
@@ -50,10 +42,9 @@ export default class ViewRouter
                 ? new Lazy(() => root)
                 : new Lazy(root);
 
-        this.middlewares    = middlewares;
-        this.container      = container;
+        this.middlewares    = options.middlewares ?? [];
+        this.container      = options.container   ?? new Container();
         this.baseUrl        = options.baseUrl ? (options.baseUrl.startsWith("/") ? "" : "/") + options.baseUrl.replace(/\/$/, "") : "";
-        this.outletTag      = options.slotTag ?? "router-outlet";
         this.baseUrlPattern = new RegExp(`^${this.baseUrl.replace(/\//g, "\\/")}`);
 
         for (const definition of RouteConfigurator.configure(routes))
@@ -74,7 +65,7 @@ export default class ViewRouter
         CustomElement.registerDirective("to", (...args) => new NavigationDirectiveHandler(router, ...args));
     }
 
-    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route): void
+    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletTag = "router-outlet"): void
     {
         const outlets = Metadata.from(parent).outlets;
 
@@ -82,7 +73,7 @@ export default class ViewRouter
 
         if (!outlet)
         {
-            outlet = parent.shadowRoot!.querySelector<RouterOutlet>(key == "default" ? `${this.outletTag}:not([name])` : `${this.outletTag}[name=${key}]`);
+            outlet = parent.shadowRoot!.querySelector<HTMLElement>(key == "default" ? `${outletTag}:not([name])` : `${outletTag}[name=${key}]`);
 
             // istanbul ignore else
             if (outlet)
@@ -165,7 +156,7 @@ export default class ViewRouter
 
                         this.cache[index][key] = element;
 
-                        this.connectToOutlet(parent, element, key, to, from);
+                        this.connectToOutlet(parent, element, key, to, from, definition.selector);
 
                         if (!nextParent || key == "default")
                         {
