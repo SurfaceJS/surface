@@ -69,7 +69,7 @@ export default class Publisher
         const folderpath = path.join(paths.source.root, packageName);
         const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
 
-        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}/\n${files.map(x => `        |--/${x}`).join("\n")}`);
+        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}\n${files.map(x => `        |--/${x}`).join("\n")}`);
 
         const options: ICreateOptions = { cwd: folderpath.replace("@", "./@"), gzip: true, prefix: "package" };
 

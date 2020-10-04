@@ -26,7 +26,9 @@ export default class NpmRepository
     public constructor(registry = "https://registry.npmjs.org", silent = true)
     {
         this.registry = registry;
-        this.client   = new RegClient(silent ? { log: silentLog } : { });
+        this.client   = silent
+            ? new RegClient({ log: silentLog })
+            : new RegClient();
 
         this.addTag  = this.promisify(this.client.distTags.add);
         this.get     = this.promisify(this.client.get);

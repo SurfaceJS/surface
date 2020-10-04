@@ -167,7 +167,7 @@ export default class Tasks
 
         const auth = { alwaysAuth: true, token: options.token } as Credential;
 
-        await new Publisher(lookup, new NpmRepository(registry), auth, "public", true).publish(filterPackages(lookup.values(), options.include, exclude).map(x => x.name));
+        await new Publisher(lookup, new NpmRepository(registry, false), auth, "public", false).publish(filterPackages(lookup.values(), options.include, exclude).map(x => x.name));
 
         if (options.config == "development")
         {

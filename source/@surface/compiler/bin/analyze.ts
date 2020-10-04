@@ -10,8 +10,8 @@ import
     parsePattern,
     toArray,
     toBoolean,
-} from "../common";
-import Tasks         from "../tasks";
+} from "../internal/common";
+import Tasks         from "../internal/tasks";
 import createProgram from ".";
 
 const program = createProgram()

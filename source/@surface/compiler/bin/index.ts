@@ -1,5 +1,5 @@
 import { Command }                from "commander";
-import { toBooleanOrStringArray } from "../common";
+import { toBooleanOrStringArray } from "../internal/common";
 
 export default function createProgram(): Command
 {

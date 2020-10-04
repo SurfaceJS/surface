@@ -61,7 +61,7 @@ export default class BinSpec
             "--webpack-config",  ".",
         ];
 
-        await import("../internal/bin/analyze");
+        await import("../bin/analyze");
 
         const expected: Required<Options & AnalyzerOptions> =
         {
@@ -120,7 +120,7 @@ export default class BinSpec
             "--webpack-config", ".",
         ];
 
-        await import("../internal/bin/build");
+        await import("../bin/build");
 
         const expected: Required<Options & BuildOptions> =
         {
@@ -159,7 +159,7 @@ export default class BinSpec
             "", "",
         ];
 
-        await import("../internal/bin/clean");
+        await import("../bin/clean");
 
         assert.isTrue(actual!);
     }
@@ -194,7 +194,7 @@ export default class BinSpec
             "--webpack-config", ".",
         ];
 
-        await import("../internal/bin/serve");
+        await import("../bin/serve");
 
         const expected: Required<Omit<Options, "mode"> & DevServerOptions> =
         {
