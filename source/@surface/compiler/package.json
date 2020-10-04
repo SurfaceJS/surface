@@ -1,11 +1,7 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "analyze": "./bin/analyze.js",
-        "build": "./bin/build.js",
-        "clean": "./bin/clean.js",
-        "serve": "./bin/serve.js",
-        "surface-compiler": "./cli.js"
+        "sfcc": "./cli.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"

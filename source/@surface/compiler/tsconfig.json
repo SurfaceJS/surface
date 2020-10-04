@@ -10,8 +10,8 @@
         "./index.ts",
     ],
     "include": [
-        "bin",
+        "./bin",
         "./internal",
-        "./tests"
+        "./tests",
     ]
 }

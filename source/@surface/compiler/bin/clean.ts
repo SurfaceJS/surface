@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import Tasks       from "../tasks";
+import Tasks       from "../internal/tasks";
 
 const clean = new Command()
     .storeOptionsAsProperties(false)

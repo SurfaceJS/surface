@@ -1,4 +1,4 @@
-!(*.d).ts
+**/**/!(*.d).ts
 tests/**
 tsconfig.json
 tsconfig.tsbuildinfo

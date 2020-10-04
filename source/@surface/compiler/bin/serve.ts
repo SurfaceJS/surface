@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { Command }                                  from "commander";
-import { logLevelPattern, parsePattern, toBoolean } from "../common";
-import Tasks                                        from "../tasks";
+import { logLevelPattern, parsePattern, toBoolean } from "../internal/common";
+import Tasks                                        from "../internal/tasks";
 import createProgram                                from ".";
 
 const program = createProgram()
