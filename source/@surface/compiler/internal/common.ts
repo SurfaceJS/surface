@@ -6,6 +6,11 @@ export const logLevelPattern             = /^errors-only|minimal|none|normal|ver
 export const modePattern                 = /^development|none|production$/i;
 export const targetPattern               = /^node|web$/i;
 
+export function normalizeUrlPath(path: string): string
+{
+    return path ? (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "") : "";
+}
+
 export function removeUndefined<T extends object>(target: T): T
 {
     type Key   = keyof T;

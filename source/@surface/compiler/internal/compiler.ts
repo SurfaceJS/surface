@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
-import { Delegate } from "@surface/core";
-import chalk        from "chalk";
-import { log }      from "./common";
+import { Delegate }             from "@surface/core";
+import chalk                    from "chalk";
+import { log, normalizeUrlPath, removeUndefined } from "./common";
 import
 {
     createAnalyzerConfiguration,
@@ -76,22 +76,19 @@ export default class Compiler
             port                  = 8080,
         } = options;
 
-        const webpackConfiguration = createDevServerConfiguration(configuration, options);
+        const publicPath           = typeof configuration.publicPath == "string" ? normalizeUrlPath(configuration.publicPath) : "";
+        const webpackConfiguration = createDevServerConfiguration(configuration, { host, port, publicPath });
         const webpackCompiler      = webpack(webpackConfiguration);
 
-        const publicPath = configuration.publicPath
-            ? (configuration.publicPath.startsWith("/") ? "" : "/") + configuration.publicPath.replace(/\/$/, "")
-            : "";
-
-        const webpackDevServerConfiguration: WebpackDevServer.Configuration =
-        {
+        const webpackDevServerConfiguration: WebpackDevServer.Configuration = removeUndefined
+        ({
             historyApiFallback: { index: `${publicPath}/index.html` },
             hot:                options.hot,
             inline:             true,
             publicPath,
             stats:              statOptions,
             ...configuration.devServer,
-        };
+        });
 
         const server = new WebpackDevServer(webpackCompiler, webpackDevServerConfiguration);
 
@@ -99,8 +96,6 @@ export default class Compiler
             (error?: Error) => error ? reject(error) : resolve();
 
         await new Promise((resolve, reject) => server.listen(port, host, handlerAsync(resolve, reject)));
-
-        log(`WebpackDevServer listening at ${host}:`, port);
 
         return { close: async () => Promise.resolve(server.close()) };
     }

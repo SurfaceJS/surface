@@ -59,4 +59,4 @@ const nativeEvents =
     "onwheel",
 ];
 
-export default nativeEvents;
+export default new Set(nativeEvents);

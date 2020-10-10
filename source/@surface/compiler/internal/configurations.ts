@@ -13,9 +13,9 @@ import ForceTsResolvePlugin                  from "./plugins/force-ts-resolve-pl
 import AnalyzerOptions                       from "./types/analyzer-options";
 import BuildOptions                          from "./types/build-options";
 import Configuration                         from "./types/configuration";
-import DevServerOptions                      from "./types/dev-serve-options";
 
-type WebpackEntry = string | string[] | webpack.Entry | webpack.EntryFunc;
+type WebpackEntry  = string | string[] | webpack.Entry | webpack.EntryFunc;
+type ClientOptions = { host: string, port: number, publicPath: string };
 
 const loaders =
 {
@@ -81,9 +81,9 @@ const loaders =
     },
 };
 
-function configureDevServerEntry(entry: WebpackEntry | undefined, publicPath: string | undefined, serveOptions: DevServerOptions): WebpackEntry | undefined
+function configureDevServerEntry(entry: WebpackEntry | undefined, clientOptions: ClientOptions): WebpackEntry | undefined
 {
-    const webpackDevServerClient = `webpack-dev-server/client?http://${serveOptions.host}:${serveOptions.port}${publicPath}`;
+    const webpackDevServerClient = `webpack-dev-server/client?http://${clientOptions.host}:${clientOptions.port}${clientOptions.publicPath}`;
     const webpackHotDevServer    = "webpack/hot/dev-server";
 
     return Array.isArray(entry)
@@ -176,10 +176,6 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             mangle:   true,
         },
     });
-
-    const publicPath = configuration.publicPath
-        ? (configuration.publicPath.startsWith("/") ? "" : "/") + configuration.publicPath.replace(/\/$/, "")
-        : "";
 
     const alias: Record<string, string> = process.env.SURFACE_ENVIRONMENT == "development"
         ? {
@@ -314,7 +310,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             filename:   configuration.filename,
             path:       configuration.output,
             pathinfo:   !isProduction,
-            publicPath,
+            publicPath: configuration.publicPath,
         },
         performance:
         {
@@ -342,11 +338,11 @@ export function createBuildConfiguration(configuration: Configuration, options: 
     return createConfiguration(configuration, removeUndefined({ mode: options.mode }));
 }
 
-export function createDevServerConfiguration(configuration: Configuration, options: DevServerOptions): webpack.Configuration
+export function createDevServerConfiguration(configuration: Configuration, options: ClientOptions): webpack.Configuration
 {
     const extendedConfiguration: webpack.Configuration =
     {
-        entry:   configureDevServerEntry(configuration.entry, configuration.publicPath, options),
+        entry:   configureDevServerEntry(configuration.entry, options),
         mode:    "development",
         plugins: [new webpack.HotModuleReplacementPlugin()],
     };
