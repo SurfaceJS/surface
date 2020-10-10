@@ -5,7 +5,7 @@ import IIdentifier                     from "../interfaces/identifier";
 import IMemberExpression               from "../interfaces/member-expression";
 import NodeType                        from "../node-type";
 import TypeGuard                       from "../type-guard";
-import { AssignmentOperator }          from "../types";
+import { AssignmentOperator }          from "../types/operators";
 
 const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {

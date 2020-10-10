@@ -69,7 +69,7 @@ import
     LogicalOperator,
     UnaryOperator,
     UpdateOperator,
-} from "./types";
+} from "./types/operators";
 
 export default abstract class Expression
 {

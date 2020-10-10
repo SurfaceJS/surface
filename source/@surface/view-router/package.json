@@ -6,14 +6,14 @@
     "dependencies": {
         "@surface/collection": "0.1.0-alpha.0",
         "@surface/core": "0.1.0-alpha.0",
-        "@surface/custom-element": "1.0.0-dev.202006181244",
-        "@surface/dependency-injection": "1.0.0-dev.202006181244",
+        "@surface/custom-element": "1.0.0-alpha.0",
+        "@surface/dependency-injection": "1.0.0-alpha.0",
         "@surface/router": "0.1.0-alpha.0",
         "tslib": "2.0.1"
     },
     "description": "Web component view router.",
     "devDependencies": {
-        "@surface/test-suite": "file:../test-suite",
+        "@surface/test-suite": "0.1.0-alpha.0",
         "@types/chai": "file:../../../node_modules/@types/chai",
         "@types/jsdom": "file:../../../node_modules/@types/jsdom",
         "chai": "file:../../../node_modules/chai",

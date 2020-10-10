@@ -48,7 +48,7 @@ import
     LogicalOperator,
     UnaryOperator,
     UpdateOperator,
-} from "./types";
+} from "./types/operators";
 import Token                       from "./types/token";
 
 export default class Parser

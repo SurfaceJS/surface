@@ -6,7 +6,7 @@ import chalk                                    from "chalk";
 import glob                                     from "glob";
 import { Credential, IPackage, IPublishParams } from "npm-registry-client";
 import { ICreateOptions, create }               from "tar";
-import { filterPackages, paths, timestamp }     from "./common";
+import { filterPackages, log, paths }           from "./common";
 import Status                                   from "./enums/status";
 import NpmRepository                            from "./npm-repository";
 import Version                                  from "./version";
@@ -61,7 +61,6 @@ export default class Publisher
 
         return (await readdirAsync(folderpath))
             .map(x => path.join(folderpath, x));
-
     }
 
     private async createBody(packageName: string): Promise<Stream>
@@ -69,7 +68,7 @@ export default class Publisher
         const folderpath = path.join(paths.source.root, packageName);
         const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
 
-        console.log(`${timestamp()} Collected files:\n    ${chalk.bold.blue(packageName)}\n${files.map(x => `        |--/${x}`).join("\n")}`);
+        log(`Collected files:\n    ${chalk.bold.blue(packageName)}\n${files.map(x => `        |--/${x}`).join("\n")}`);
 
         const options: ICreateOptions = { cwd: folderpath.replace("@", "./@"), gzip: true, prefix: "package" };
 
@@ -84,7 +83,7 @@ export default class Publisher
         {
             if (await this.repository.getStatus($package) == Status.InRegistry)
             {
-                console.log(`${timestamp()} ${chalk.bold.blue($package.name)} is updated`);
+                log(`${chalk.bold.blue($package.name)} is updated`);
             }
             else if (!this.published.has($package))
             {
@@ -101,7 +100,7 @@ export default class Publisher
 
                 const body = await this.createBody($package.name);
 
-                console.log(`${timestamp()} Publishing ${$package.name}`);
+                log(`Publishing ${$package.name}`);
 
                 if (!this.debug)
                 {
@@ -114,7 +113,7 @@ export default class Publisher
                 {
                     const tag = version.prerelease.type == "dev" ? "next" : version.prerelease.type;
 
-                    console.log(`${timestamp()} Adding tag ${tag}`);
+                    log(`Adding tag ${tag}`);
 
                     if (!this.debug)
                     {

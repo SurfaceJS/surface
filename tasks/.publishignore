@@ -1,5 +1,4 @@
 @surface/cli
 @surface/components
-@surface/mock
 @surface/test-suite
 @surface/web-host

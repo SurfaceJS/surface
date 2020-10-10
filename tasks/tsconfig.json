@@ -1,15 +1,6 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "module": "commonjs",
-        "paths": {
-            "@surface/core": [
-                "../source/@surface/core"
-            ],
-            "@surface/enumerable": [
-                "../source/@surface/enumerable"
-            ]
-        },
         "types": [
             "node"
         ]

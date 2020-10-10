@@ -40,7 +40,8 @@
         "relink": "node ./tasks/cli relink",
         "setup": "npm i && tsc && node ./tasks/cli setup",
         "test": "mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
-        "unlink": "node ./tasks/cli unlink"
+        "unlink": "node ./tasks/cli unlink",
+        "postinstall": "cd ./tasks && npm i && tsc && node cli setup"
     },
     "version": "1.0.0"
 }

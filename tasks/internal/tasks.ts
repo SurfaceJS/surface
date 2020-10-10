@@ -1,3 +1,4 @@
+import { exec }       from "child_process";
 import fs             from "fs";
 import path           from "path";
 import { promisify }  from "util";
@@ -7,28 +8,45 @@ import
 {
     backupFile,
     cleanup,
-    createPath,
+    createLink,
+    createPathAsync,
     execute,
     filterPackages,
+    log,
     lookup,
     paths,
-    removePath,
+    removePathAsync,
     restoreBackup,
-    timestamp,
 } from "./common";
 import Depsync       from "./depsync";
+import StrategyType  from "./enums/strategy-type";
 import NpmRepository from "./npm-repository";
 import patterns      from "./patterns";
 import Publisher     from "./publisher";
-import StrategyType  from "./strategy-type";
 
+const execAsync      = promisify(exec);
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
 const tsc = path.resolve(__dirname, "../../node_modules/.bin/tsc");
 
+type PublishOptions =
+{
+    config?:   "development" | "release",
+    debug?:    boolean,
+    modules?:  string[],
+    strategy?: StrategyType,
+    target?:   string,
+    token:     string,
+};
+
 export default class Tasks
 {
+    private static async getTag(): Promise<string | undefined>
+    {
+        return (await execAsync("git tag --points-at HEAD")).stdout;
+    }
+
     public static async backup({ modules = [] as string[] } = { }): Promise<void>
     {
         const commands: Promise<void>[] = [];
@@ -39,12 +57,12 @@ export default class Tasks
 
             commands.push(backupFile(manifest));
 
-            console.log(`${timestamp()} Backuping ${chalk.bold.blue($package.name)}`);
+            log(`Backuping ${chalk.bold.blue($package.name)}`);
         }
 
         await Promise.all(commands);
 
-        console.log(`${timestamp()} ${chalk.bold.green("Backuping modules done!")}`);
+        log(chalk.bold.green("Backuping modules done!"));
     }
 
     public static async build({ modules = [] as string[], declaration = false } = { }): Promise<void>
@@ -55,30 +73,36 @@ export default class Tasks
         {
             const source = path.normalize(path.resolve(paths.source.root, $package.name));
 
-            commands.push(execute(`${timestamp()} Building ${chalk.bold.blue($package.name)}`, `${tsc} -p ${source} --declaration ${declaration}`));
+            commands.push(execute(`Building ${chalk.bold.blue($package.name)}`, `${tsc} -p ${source} --declaration ${declaration}`));
         }
 
         await Promise.all(commands);
 
-        console.log(`${timestamp()} ${chalk.bold.green("Building modules done!")}`);
+        log(chalk.bold.green("Building modules done!"));
     }
 
-    public static async clean({ modules = [] as string[] } = { }): Promise<void>
+    public static async clean({ modules = [] as string[], nodeModules = false } = { }): Promise<void>
     {
-        const commands: Promise<void>[] = [];
+        const commands: Promise<unknown>[] = [];
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
             const source = path.normalize(path.resolve(paths.source.root, $package.name));
 
-            console.log(`${timestamp()} Cleaning ${chalk.bold.blue($package.name)}`);
+            log(`Cleaning ${chalk.bold.blue($package.name)}`);
 
-            commands.push(cleanup(source, patterns.clean.include, patterns.clean.exclude));
+            if (nodeModules)
+            {
+                commands.push(removePathAsync(path.join(source, "node_modules")));
+                commands.push(removePathAsync(path.join(source, "package-lock.json")));
+            }
+
+            commands.push(cleanup(source, patterns.clean.includes, patterns.clean.excludes));
         }
 
         await Promise.all(commands);
 
-        console.log(`${timestamp()} ${chalk.bold.green("Cleaning done!")}`);
+        log(chalk.bold.green("Cleaning done!"));
     }
 
     public static async cover(filepath: string): Promise<void>
@@ -111,7 +135,7 @@ export default class Tasks
             if (targets)
             {
                 // eslint-disable-next-line max-len
-                commands.push(execute(`${timestamp()} Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${path.resolve(paths.source.root, $package.name)} && npm install ${targets} --save-exact`));
+                commands.push(execute(`Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${path.resolve(paths.source.root, $package.name)} && npm install ${targets} --save-exact`));
             }
         }
 
@@ -119,7 +143,7 @@ export default class Tasks
 
         await Tasks.link({ modules });
 
-        console.log(`${timestamp()} ${chalk.bold.green("Installing done!")}`);
+        log(chalk.bold.green("Installing done!"));
     }
 
     public static async link({ modules = [] as string[] } = { }): Promise<void>
@@ -132,25 +156,26 @@ export default class Tasks
                 const nodeModules = path.normalize(path.join(paths.source.root, $package.name, "node_modules"));
                 const symlink     = path.normalize(path.join(nodeModules, key));
 
-                createPath(path.join(nodeModules, "@surface"));
+                await createPathAsync(path.join(nodeModules, "@surface"));
 
                 if (!fs.existsSync(symlink))
                 {
-                    await execute(`${timestamp()} Linking ${chalk.bold.magenta(key)} to ${chalk.bold.blue($package.name)}`, `mklink /J ${symlink} ${original}`);
+                    log(`Linking ${chalk.bold.magenta(key)} to ${chalk.bold.blue($package.name)}`);
+
+                    await createLink(original, symlink);
                 }
             }
         }
 
-        console.log(chalk.bold.green(`${timestamp()} Linking done!`));
+        log(chalk.bold.green("Linking done!"));
     }
 
-    public static async publish(registry: string, options: { config: "development" | "release", token: string, include: string[], exclude: string[] }): Promise<void>
+    public static async publish(registry: string, options: PublishOptions): Promise<void>
     {
         const exclude = (await readFileAsync(path.join(__dirname, "../.publishignore")))
             .toString()
             .split("\n")
-            .map(x => x.trim())
-            .concat(options.exclude);
+            .map(x => x.trim());
 
         await Tasks.build({ declaration: true });
 
@@ -163,16 +188,27 @@ export default class Tasks
                 .substring(0, 12);
 
             await Tasks.sync({ strategy: StrategyType.ForceVersion, template: `*.*.*-dev.${timestamp}` });
+
+            await Tasks.restore();
+        }
+        else
+        {
+            const version = options.target
+                ? options.target
+                : await Tasks.getTag();
+
+            if (version)
+            {
+                await Tasks.sync({ strategy: StrategyType.Default, template: version });
+            }
         }
 
         const auth = { alwaysAuth: true, token: options.token } as Credential;
 
-        await new Publisher(lookup, new NpmRepository(registry, false), auth, "public", false).publish(filterPackages(lookup.values(), options.include, exclude).map(x => x.name));
+        const packages = filterPackages(lookup.values(), options.modules ?? [], exclude).map(x => x.name);
 
-        if (options.config == "development")
-        {
-            await Tasks.restore();
-        }
+        await new Publisher(lookup, new NpmRepository(registry, true), auth, "public", options.debug).publish(packages);
+
     }
 
     public static async relink({ modules = [] as string[] } = { }): Promise<void>
@@ -191,32 +227,34 @@ export default class Tasks
 
             commands.push(restoreBackup(manifest));
 
-            console.log(`${timestamp()} Restoring backup of ${chalk.bold.blue($package.name)}`);
+            log(`Restoring backup of ${chalk.bold.blue($package.name)}`);
         }
 
         await Promise.all(commands);
 
-        console.log(`${timestamp()} ${chalk.bold.green("Restoring backup done!")}`);
+        log(chalk.bold.green("Restoring backup done!"));
     }
 
     public static async setup(): Promise<void>
     {
-        await Tasks.clean();
+        // await Tasks.clean();
         await Tasks.install();
         await Tasks.build();
     }
 
-    public static async sync({ include = [], exclude = [], strategy, template }: { include?: string[], exclude?: string[], strategy?: StrategyType, template?: string }): Promise<void>
+    public static async sync(options: { modules?: string[], strategy?: StrategyType, template?: string }): Promise<void>
     {
-        const packages = await Depsync.sync(lookup, filterPackages(lookup.values(), include, exclude).map(x => x.name), { strategy, template });
+        const { modules, strategy, template } = options;
 
-        for (const $package of packages)
+        const syncedPackages = await Depsync.sync(lookup, modules, { strategy, template });
+
+        for (const $package of syncedPackages)
         {
             const filepath = path.join(paths.source.root, $package.name, "package.json");
 
             await writeFileAsync(filepath, JSON.stringify($package, null, 4));
 
-            console.log(`${timestamp()} Updated ${$package.name}`, chalk.gray(filepath));
+            log(`Updated ${$package.name} ${chalk.gray(filepath)}`);
         }
     }
 
@@ -228,12 +266,13 @@ export default class Tasks
 
             if (fs.existsSync(targetFolder))
             {
-                console.log(`${timestamp()} Unlinking @surface on ${chalk.bold.blue($package.name)}`);
-                removePath(targetFolder);
+                log(`Unlinking @surface on ${chalk.bold.blue($package.name)}`);
+
+                await removePathAsync(targetFolder);
             }
         }
 
-        console.log(`${timestamp()} ${chalk.bold.green("Unlinking done!")}`);
+        log(`${chalk.bold.green("Unlinking done!")}`);
 
         await Promise.resolve();
     }

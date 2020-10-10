@@ -1,6 +1,6 @@
 import ILiteral         from "../interfaces/literal";
 import NodeType         from "../node-type";
-import { LiteralValue } from "../types";
+import { LiteralValue } from "../types/operators";
 
 export default class Literal implements ILiteral
 {

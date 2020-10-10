@@ -10,7 +10,7 @@
     },
     "description": "Dependency Injection module.",
     "devDependencies": {
-        "@surface/test-suite": "file:../test-suite",
+        "@surface/test-suite": "0.1.0-alpha.0",
         "@types/chai": "file:../../../node_modules/@types/chai",
         "chai": "file:../../../node_modules/chai"
     },

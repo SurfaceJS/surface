@@ -1,0 +1,170 @@
+{
+    "configurations":
+    [
+        {
+            "args":
+            [
+                "build",
+                "-p", "./client",
+                // "--eslintrc", "./client/.eslintrc.json"
+                // "build",
+                // "-c",  "${workspaceFolder}/client",                          /* "-c|--context"         */
+                // "-e",  "./source/index.ts",                                  /* "-e|--entry"           */
+                // "-el", "${workspaceFolder}/client/.eslintrc.json",           /* "-el|--eslintrc"       */
+                // "-f",  "[name]/[hash].js",                                   /* "-f|--filename"        */
+                // "-ft", "./node_modules/@surface,../modules/source/@surface", /* "-ft|--force-ts"       */
+                // "-l",  "minimal",                                            /* "-l|--log"             */
+                // "-m",  "production",                                         /* "-m|--mode"            */
+                // "-o",  "${workspaceFolder}/server/wwwroot",                  /* "-o|--output"          */
+                // "-pp", "/",                                                  /* "-pp|--public-path"    */
+                // "-t",  "${workspaceFolder}/client/template.html",            /* "-t|--html-template"   */
+                // "-tc", "${workspaceFolder}/client/tsconfig.json",            /* "-tc|--tsconfig"       */
+                // // "-wc", "${workspaceFolder}/client/webpack-config.js",     /* "-wc|--webpack-config" */
+                // "-w",  "false",                                              /* "-w|--watch"           */
+            ],
+            "cwd":      "${workspaceFolder}",
+            "name":     "Launch Compiler",
+            "outFiles":
+            [
+                "${workspaceFolder}/source/@surface/compiler/node_modules/fork-ts-checker-webpack-plugin/**/*.js",
+                "${workspaceFolder}/source/@surface/*/internal/**/*.js",
+                "${workspaceFolder}/source/@surface/*/tests/**/*.js"
+            ],
+            "program":  "${workspaceFolder}/source/@surface/compiler/cli",
+            "protocol": "inspector",
+            "request":  "launch",
+            "skipFiles":
+            [
+                "<node_internals>/**",
+            ],
+            "type": "node"
+        },
+        {
+            "args":
+            [
+                "relink"
+            ],
+            "cwd":     "${workspaceFolder}/tasks",
+            "name":    "Launch Modules Tasks Cli",
+            "program": "${workspaceFolder}/tasks/cli",
+            "request": "launch",
+            "type":    "node"
+        },
+        {
+            "args":
+            [
+                "relink"
+            ],
+            "cwd":     "${workspaceFolder}/tasks",
+            "name":    "Launch Workbench Tasks Cli",
+            "program": "${workspaceFolder}/tasks/cli",
+            "request": "launch",
+            "type":    "node"
+        },
+        {
+            "cwd":      "${fileDirname}",
+            "name":     "Debug File",
+            "program":  "${fileDirname}/${fileBasenameNoExtension}.js",
+            "protocol": "inspector",
+            "request":  "launch",
+            "runtimeArgs":
+            [
+                "--nolazy"
+            ],
+            "skipFiles":
+            [
+                "<node_internals>/**",
+            ],
+            "sourceMaps": true,
+            "type":       "node"
+        },
+        {
+            // "args":
+            // [
+            //     "publish", "https://registry.npmjs.org1",
+            //     "-t"     , "123",
+            //     "-m"     , "@surface/custom-element",
+            //     "-d"     , "true"
+            // ],
+            "args":     ["clean"],
+            "cwd":      "${fileDirname}",
+            "name":     "Debug Task Cli",
+            "program":  "${workspaceFolder}/tasks/cli",
+            "protocol": "inspector",
+            "request":  "launch",
+            "runtimeArgs":
+            [
+                "--nolazy"
+            ],
+            "skipFiles":
+            [
+                "<node_internals>/**",
+            ],
+            "sourceMaps": true,
+            "type":       "node"
+        },
+        {
+            "args":
+            [
+                "-u",
+                "tdd",
+                "--timeout",
+                "9999999",
+                "--colors",
+                "${fileBasenameNoExtension}.js"
+            ],
+            "cwd":  "${fileDirname}",
+            "name": "Debug Test",
+            "outFiles":
+            [
+                "${workspaceFolder}/tasks/internal/**/*.js",
+                "${workspaceFolder}/tasks/tests/**/*.js",
+                "${workspaceFolder}/source/@surface/*/internal/**/*.js",
+                "${workspaceFolder}/source/@surface/*/tests/**/*.js"
+            ],
+            "program":  "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "protocol": "inspector",
+            "request":  "launch",
+            "runtimeArgs":
+            [
+                "--nolazy"
+            ],
+            "sourceMaps": true,
+            "skipFiles":
+            [
+                "${workspaceFolder}/node_modules/**/*.js",
+                "<node_internals>/**/*.js"
+            ],
+            "type": "node"
+        },
+        {
+            "args":
+            [
+                "-u",
+                "tdd",
+                "--timeout",
+                "9999999",
+                "--colors",
+                "source/@surface/*/tests/*.spec.js"
+            ],
+            "console": "integratedTerminal",
+            "cwd":     "${workspaceFolder}",
+            "name":    "Launch Tests",
+            "outFiles":
+            [
+                "${workspaceFolder}/source/@surface/*/*.js",
+                "${workspaceFolder}/source/@surface/*/internal/*.js",
+                "${workspaceFolder}/source/@surface/*/tests/*.js"
+            ],
+            "program": "${workspaceFolder}/tasks/node_modules/mocha/bin/_mocha",
+            "request": "launch",
+            "runtimeArgs":
+            [
+                "--nolazy"
+            ],
+            "sourceMaps": true,
+            "type":       "node"
+        }
+    ],
+    "version": "0.2.0"
+}
