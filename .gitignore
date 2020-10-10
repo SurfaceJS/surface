@@ -58,17 +58,17 @@ typings/
 .env
 
 # project
-*.orig
-*.js
-*.js.map
-*.d.ts
-.cache
-package-lock.json
-tsconfig.tsbuildinfo
 !environment.d.ts
-!types.d.ts
-!source/@surface/*/@types/**/*.d.ts
 !source/@surface/**/interfaces/**/*.d.ts
 !source/@surface/**/types/**/*.d.ts
+!source/@surface/*/@types/**/*.d.ts
+!tasks/**/interfaces/**/*d.ts
+!tasks/**/types/**/*d.ts
 !tasks/@types/**/*.d.ts
-!tasks/interfaces/**/*d.ts
+!types.d.ts
+*.d.ts
+*.js
+*.js.map
+*.orig
+.cache
+tsconfig.tsbuildinfo
