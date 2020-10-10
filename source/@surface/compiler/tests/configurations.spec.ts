@@ -21,6 +21,8 @@ export default class ConfigurationsSpec
     @test
     public createBuildConfiguration(): void
     {
+        process.env.SURFACE_ENVIRONMENT = "development";
+
         assert.isOk(createBuildConfiguration({ }, { }));
         assert.isOk(createBuildConfiguration({ }, { mode: "development" }));
     }

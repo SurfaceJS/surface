@@ -181,6 +181,21 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         ? (configuration.publicPath.startsWith("/") ? "" : "/") + configuration.publicPath.replace(/\/$/, "")
         : "";
 
+    const alias: Record<string, string> = process.env.SURFACE_ENVIRONMENT == "development"
+        ? {
+            "tslib":                  path.resolve(__dirname, "../node_modules", "tslib"),
+            "webpack-dev-server":     path.resolve(__dirname, "../node_modules", "webpack-dev-server"),
+            "webpack/hot/dev-server": path.resolve(__dirname, "../node_modules", "webpack/hot/dev-server"),
+        }
+        : { "webpack/hot/dev-server": "webpack/hot/dev-server" };
+
+    const modules = process.env.SURFACE_ENVIRONMENT == "development"
+        ? [
+            path.resolve(__dirname, "./loaders"),
+            path.resolve(__dirname, "../node_modules"),
+        ]
+        : ["node_modules"];
+
     const webpackConfiguration: webpack.Configuration =
     {
         context: configuration.context,
@@ -308,24 +323,14 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         plugins,
         resolve:
         {
-            alias:
-            {
-                "tslib":                  path.resolve(__dirname, "../node_modules", "tslib"),
-                "webpack-dev-server":     path.resolve(__dirname, "../node_modules", "webpack-dev-server"),
-                "webpack/hot/dev-server": path.resolve(__dirname, "../node_modules", "webpack/hot/dev-server"),
-            },
+            alias,
             extensions: [".ts", ".js"],
             modules:    [".", "node_modules"],
             plugins:    resolvePlugins,
         },
         resolveLoader:
         {
-            modules:
-            [
-                "node_modules",
-                path.resolve(__dirname, "./loaders"),
-                path.resolve(__dirname, "../node_modules"),
-            ],
+            modules,
         },
     };
 

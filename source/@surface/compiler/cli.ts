@@ -5,7 +5,7 @@ import { Command, ExecutableCommandOptions } from "commander";
 
 function createCommandOptions(target: string): ExecutableCommandOptions
 {
-    return { executableFile: path.resolve(__dirname, `./internal/bin/${target}.js`) };
+    return { executableFile: path.resolve(__dirname, `./bin/${target}.js`) };
 }
 
 const program = new Command();

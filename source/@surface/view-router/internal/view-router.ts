@@ -34,18 +34,14 @@ export default class ViewRouter
     private index: number  = 0;
     private current?: { definition: RouteDefinition, routeData: RouteData, route: Route };
 
-    public constructor(root: HTMLElement | string | (() => HTMLElement), routes: RouteConfiguration[], options: ViewRouterOptions = { })
+    public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
     {
-        this.root = typeof root == "string"
-            ? new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`))
-            : typeof root == "object"
-                ? new Lazy(() => root)
-                : new Lazy(root);
+        this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
 
-        this.middlewares    = options.middlewares ?? [];
-        this.container      = options.container   ?? new Container();
         this.baseUrl        = options.baseUrl ? (options.baseUrl.startsWith("/") ? "" : "/") + options.baseUrl.replace(/\/$/, "") : "";
         this.baseUrlPattern = new RegExp(`^${this.baseUrl.replace(/\//g, "\\/")}`);
+        this.container      = options.container   ?? new Container();
+        this.middlewares    = options.middlewares ?? [];
 
         for (const definition of RouteConfigurator.configure(routes))
         {

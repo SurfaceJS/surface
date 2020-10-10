@@ -2,7 +2,7 @@ import { Indexer, hasValue } from "@surface/core";
 import IBinaryExpression     from "../interfaces/binary-expression";
 import IExpression           from "../interfaces/expression";
 import NodeType              from "../node-type";
-import { BinaryOperator }    from "../types";
+import { BinaryOperator }    from "../types/operators";
 
 type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
 

@@ -2,8 +2,8 @@ import chalk                        from "chalk";
 import { IPackage }                 from "npm-registry-client";
 import { filterPackages }           from "./common";
 import Status                       from "./enums/status";
+import StrategyType                 from "./enums/strategy-type";
 import NpmRepository                from "./npm-repository";
-import StrategyType                 from "./strategy-type";
 import Version, { PrereleaseTypes } from "./version";
 
 const blue      = chalk.rgb(0, 115, 230);
@@ -94,7 +94,7 @@ export default class Depsync
                     // istanbul ignore if
                     if (!this.silent)
                     {
-                        console.log(`${chalk.bold.gray("[UPDATE]:")}  ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
+                        console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
                     }
                 }
             }
@@ -137,13 +137,39 @@ export default class Depsync
                 console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dependency in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
             }
 
-            if (!this.updated.has(dependent) && await this.repository.getStatus(dependent) == Status.InRegistry)
+            if (!this.updated.has(dependent))
             {
+                if (await this.repository.getStatus(dependent) == Status.InRegistry)
+                {
+                    this.update(dependent);
+                }
+
                 this.updated.add(dependent);
 
-                this.update(dependent);
-
                 await this.updateDependents(dependent);
+            }
+        }
+
+        const devDependentPackages = Array.from(this.lookup.values())
+            .filter(x => !!x.devDependencies?.[$package.name] && x.devDependencies?.[$package.name] != $package.version);
+
+        for (const devDependent of devDependentPackages)
+        {
+            const version = devDependent.devDependencies![$package.name];
+
+            devDependent.devDependencies![$package.name] = $package.version;
+
+            // istanbul ignore if
+            if (!this.silent)
+            {
+                console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dev dependency in ${blue(devDependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
+            }
+
+            if (!this.updated.has(devDependent))
+            {
+                this.updated.add(devDependent);
+
+                await this.updateDependents(devDependent);
             }
         }
     }
@@ -168,7 +194,7 @@ export default class Depsync
         // istanbul ignore if
         if (!this.silent)
         {
-            console.log(`${chalk.bold.gray("[UPDATE]:")}  ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
+            console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
         }
     }
 

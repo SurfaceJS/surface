@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-import child_process from "child_process";
-import fs            from "fs";
-import path          from "path";
-import util          from "util";
-import chalk         from "chalk";
-import { IPackage }  from "npm-registry-client";
-import StrategyType  from "./strategy-type";
+import child_process                        from "child_process";
+import fs                                   from "fs";
+import path                                 from "path";
+import util                                 from "util";
+import { createPathAsync, removePathAsync } from "@surface/io";
+import chalk                                from "chalk";
+import { IPackage }                         from "npm-registry-client";
+import StrategyType                         from "./enums/strategy-type";
 
 const copyFileAsync = util.promisify(fs.copyFile);
 const execAsync     = util.promisify(child_process.exec);
+const symlinkAsync  = util.promisify(fs.symlink);
 const lstatAsync    = util.promisify(fs.lstat);
 const readdirAsync  = util.promisify(fs.readdir);
 const renameAsync   = util.promisify(fs.rename);
@@ -54,48 +56,31 @@ export function buildLookup(packagesRoot: string): Map<string, IPackage>
 
 export async function cleanup(targetPath: string, include: RegExp, exclude: RegExp): Promise<void>
 {
-    for (const source of (await readdirAsync(targetPath)).map(x => path.join(targetPath, x)))
+    for (const filename of (await readdirAsync(targetPath)).map(x => path.join(targetPath, x)))
     {
-        if (!exclude.test(source))
+        if (!exclude.test(filename))
         {
-            if ((await lstatAsync(source)).isDirectory())
+            if ((await lstatAsync(filename)).isDirectory())
             {
-                await cleanup(source, include, exclude);
+                await cleanup(filename, include, exclude);
             }
-            else if (include.test(source))
+            else if (include.test(filename))
             {
-                await unlinkAsync(source);
+                log(`Deleting ${chalk.red(filename)}`);
+
+                await unlinkAsync(filename);
             }
+        }
+        else
+        {
+            log(`Ignoring ${chalk.grey(filename)}`);
         }
     }
 }
 
-export function createPath(targetPath: string, mode: number = 0o777): void
+export async function createLink(target: string, path: string): Promise<void>
 {
-    if (fs.existsSync(targetPath))
-    {
-        const resolvedPath = fs.lstatSync(targetPath).isSymbolicLink()
-            ? fs.readlinkSync(targetPath)
-            : targetPath;
-
-        if (!fs.lstatSync(resolvedPath).isDirectory())
-        {
-            throw new Error(`${resolvedPath} exist and isn't an directory`);
-        }
-
-        return;
-    }
-
-    const parentDir = path.dirname(targetPath.toString());
-
-    if (!fs.existsSync(parentDir))
-    {
-        createPath(parentDir, mode);
-
-        fs.mkdirSync(targetPath, mode);
-    }
-
-    fs.mkdirSync(targetPath, mode);
+    await symlinkAsync(target, path, "junction");
 }
 
 export function dashedToTitle(value: string): string
@@ -114,7 +99,7 @@ export async function execute(label: string, command: string): Promise<void>
 {
     try
     {
-        console.log(label);
+        log(label);
         const { stdout, stderr } = await execAsync(command);
 
         if (stdout)
@@ -138,42 +123,71 @@ export function filterPackages(source: Iterable<IPackage>, include: Iterable<str
     return Array.from(filterLookupEnumerator(source, include, exclude));
 }
 
-export function removePath(targetPath: string): boolean
+export function log(message: unknown): void
 {
-    if (fs.existsSync(targetPath))
+    console.log(`${chalk.gray(`[${new Date().toISOString()}]`)} ${message}`);
+}
+
+export function parsePatternPath(pattern: string): RegExp
+{
+    let expression = "";
+
+    for (let index = 0, len = pattern.length; index < len; index++)
     {
-        const lstat = fs.lstatSync(targetPath);
+        const character = pattern[index];
 
-        if (lstat.isSymbolicLink() || lstat.isFile())
+        switch (character)
         {
-            fs.unlinkSync(targetPath);
-        }
-        else
-        {
-            for (const fileOrDirectory of fs.readdirSync(targetPath))
-            {
-                removePath(path.join(targetPath, fileOrDirectory));
-            }
+            case "/":
+                expression += "(\\/|\\\\)";
+                break;
+            case ".":
+                expression += `\\${character}`;
+                break;
+            case "*":
+                {
+                    const previous = pattern[index - 1];
 
-            fs.rmdirSync(targetPath);
-        }
+                    let starCount = 1;
 
-        return true;
+                    while (pattern[index + 1] == "*")
+                    {
+                        starCount++;
+                        index++;
+                    }
+
+                    const next = pattern[index + 1];
+
+                    const isGlobstar = starCount > 1
+                        && (previous == "/" || !previous)
+                        && (next     == "/" || !next);
+
+                    if (isGlobstar)
+                    {
+                        expression += "(.*)(\\/|\\\\)?";
+                        index++;
+                    }
+                    else
+                    {
+                        expression += "([^\\/\\\\]*)";
+                    }
+                }
+                break;
+            default:
+                expression += character;
+        }
     }
 
-    return false;
+    expression = `^${expression}$`;
+
+    return new RegExp(expression);
 }
 
 export async function restoreBackup(source: string): Promise<void>
 {
     await renameAsync(`${source}.backup`, source);
 
-    removePath(`${source}.backup`);
-}
-
-export function timestamp(): string
-{
-    return chalk.bold.gray(`[${new Date().toISOString()}]`);
+    await removePathAsync(`${source}.backup`);
 }
 
 export function typeGuard<T>(target: unknown, condition: boolean): target is T
@@ -192,6 +206,17 @@ export const paths =
 };
 
 export const lookup = buildLookup(paths.source.surface);
+
+export const parsePattern = (pattern: RegExp) =>
+    (value: string = ""): string =>
+    {
+        if (pattern.test(value))
+        {
+            return value.toLowerCase();
+        }
+
+        throw new Error(`'${value}' dont match the pattern ${pattern}`);
+    };
 
 export const toArray         = (source: string): string[] => source.split(",");
 export const toStrategyFlags = (source: string): StrategyType =>
@@ -215,3 +240,5 @@ export const toStrategyFlags = (source: string): StrategyType =>
     return flag;
 };
 export const toString = (source: string): string => source;
+
+export { createPathAsync, removePathAsync };

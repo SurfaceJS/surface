@@ -2,6 +2,7 @@
     "author": "HitalloExiled",
     "description": "Global modules and shared types",
     "devDependencies": {
+        "@surface/io": "latest",
         "@types/chai": "file:../node_modules/@types/chai",
         "@types/glob": "7.1.3",
         "@types/minipass": "2.2.0",

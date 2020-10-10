@@ -3,8 +3,8 @@ import { IGetData, IPackage }                  from "npm-registry-client";
 import Mock, { It }                            from "../../source/@surface/mock";
 import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite";
 import Depsync, { IOptions }                   from "../internal/depsync";
+import StrategyType                            from "../internal/enums/strategy-type";
 import NpmRepository                           from "../internal/npm-repository";
-import StrategyType                            from "../internal/strategy-type";
 
 const toLookup = (source: IPackage[]): Map<string, IPackage> => new Map(source.map(x => [x.name, x]));
 
