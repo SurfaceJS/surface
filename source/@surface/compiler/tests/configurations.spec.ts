@@ -38,10 +38,10 @@ export default class ConfigurationsSpec
     @test
     public createDevServerConfiguration(): void
     {
-        assert.isOk(createDevServerConfiguration({ }, { }));
-        assert.isOk(createDevServerConfiguration({ }, { host: "localhost", hot: true, port: 8080 }));
-        assert.isOk(createDevServerConfiguration({ entry: ["."] }, { }));
-        assert.isOk(createDevServerConfiguration({ entry: { index: "." } }, { }));
-        assert.isOk(createDevServerConfiguration({ entry: "." }, { }));
+        assert.isOk(createDevServerConfiguration({ },                       { host: "localhost", port: 8080, publicPath: "" }));
+        assert.isOk(createDevServerConfiguration({ },                       { host: "localhost", port: 8080, publicPath: "" }));
+        assert.isOk(createDevServerConfiguration({ entry: ["."] },          { host: "localhost", port: 8080, publicPath: "" }));
+        assert.isOk(createDevServerConfiguration({ entry: { index: "." } }, { host: "localhost", port: 8080, publicPath: "" }));
+        assert.isOk(createDevServerConfiguration({ entry: "." },            { host: "localhost", port: 8080, publicPath: "" }));
     }
 }

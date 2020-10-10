@@ -205,7 +205,7 @@ export default class TemplateParser
             (
                 attribute.name.startsWith(":")
                 || attribute.name.startsWith("#")
-                || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name))
+                || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.has(attribute.name))
             )
             {
                 yield attribute;

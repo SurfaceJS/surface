@@ -36,12 +36,12 @@
         "install-workspace": "node ./tasks/cli install",
         "link": "node ./tasks/cli link",
         "lint": "eslint . --ext .ts",
+        "postinstall": "cd ./tasks && npm i && tsc -p ./tsconfig.no-tests.json && node cli setup",
         "publish": "node ./tasks/cli publish",
         "relink": "node ./tasks/cli relink",
-        "setup": "npm i && tsc && node ./tasks/cli setup",
+        "setup": "node ./tasks/cli setup",
         "test": "mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
-        "unlink": "node ./tasks/cli unlink",
-        "postinstall": "cd ./tasks && npm i && tsc && node cli setup"
+        "unlink": "node ./tasks/cli unlink"
     },
     "version": "1.0.0"
 }

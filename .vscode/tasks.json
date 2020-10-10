@@ -117,7 +117,7 @@
         {
             "command": "node ${workspaceFolder}/tasks/cli install -m ${input:modules}",
             "isBackground": true,
-            "label": "Install Modules",
+            "label": "Install Module",
             "presentation": {
                 "reveal": "always"
             },
