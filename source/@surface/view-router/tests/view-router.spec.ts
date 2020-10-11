@@ -148,23 +148,6 @@ export default class ViewRouterSpec
     }
 
     @test @shouldPass
-    public create(): void
-    {
-        const root = document.body.firstElementChild as AppRoot;
-
-        // @ts-expect-error
-        const root1 = new ViewRouter("app-root", []).root.value;
-        // @ts-expect-error
-        const root2 = new ViewRouter(root, []).root.value;
-        // @ts-expect-error
-        const root3 = new ViewRouter(() => document.querySelector("app-root"), []).root.value;
-
-        assert.equal(root1, root, "root1 equal root");
-        assert.equal(root2, root, "root2 equal root");
-        assert.equal(root3, root, "root3 equal root");
-    }
-
-    @test @shouldPass
     public async push(): Promise<void>
     {
         await this.router.pushCurrentLocation();

@@ -3,7 +3,7 @@ import { expect }                      from "chai";
 import { capture, captureAll, format } from "../../internal/common/string";
 
 @suite
-export default class CommonStringtSpec
+export default class CommonStringSpec
 {
     @test @shouldPass
     public capture(): void

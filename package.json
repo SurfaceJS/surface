@@ -40,7 +40,7 @@
         "publish": "node ./tasks/cli publish",
         "relink": "node ./tasks/cli relink",
         "setup": "node ./tasks/cli setup",
-        "test": "mocha --ui tdd source/@surface/*/tests/**/*.spec.js",
+        "test": "mocha --ui tdd **/source/@surface/*/tests/**/*.spec.js",
         "unlink": "node ./tasks/cli unlink"
     },
     "version": "1.0.0"
