@@ -33,7 +33,7 @@
         "build": "tsc -p ./tasks/tsconfig.no-tests.json",
         "cover": "nyc mocha --ui tdd **/source/@surface/*/tests/**/*.spec.js",
         "lint": "eslint . --ext .ts",
-        "postinstall": "cd ./tasks && npm i",
+        "postinstall": "cd ./tasks && npm i && cd ..",
         "task:build": "node ./tasks/cli build",
         "task:clean": "node ./tasks/cli clean",
         "task:install": "node ./tasks/cli install",
