@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { exec }       from "child_process";
 import fs             from "fs";
 import path           from "path";
@@ -113,7 +114,6 @@ export default class Tasks
 
         const target = file.name.replace(".spec", "");
 
-        // eslint-disable-next-line max-len
         await execute(`cover ${chalk.bold.blue(file.name)} tests`, `${path.join(bin, "nyc")} --include **/${target}.js --include **/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
     }
 
@@ -134,8 +134,7 @@ export default class Tasks
 
             if (targets)
             {
-                // eslint-disable-next-line max-len
-                commands.push(execute(`Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${path.resolve(paths.source.root, $package.name)} && npm install ${targets} --save-exact`));
+                commands.push(execute(`Installing ${chalk.bold.blue($package.name)} dependencies.`, `cd ${path.resolve(paths.source.root, $package.name)} && npm install ${targets} --save-exact --silent`));
             }
         }
 
@@ -208,7 +207,6 @@ export default class Tasks
         const packages = filterPackages(lookup.values(), options.modules ?? [], exclude).map(x => x.name);
 
         await new Publisher(lookup, new NpmRepository(registry, true), auth, "public", options.debug).publish(packages);
-
     }
 
     public static async relink({ modules = [] as string[] } = { }): Promise<void>

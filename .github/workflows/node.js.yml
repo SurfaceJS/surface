@@ -16,9 +16,11 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        node-version: [10.x, 12.x, 14.x]
 
     steps:
+    - name: "Set r/w permissions"
+      run: sudo chmod -R 777 /home/runner/work/modules
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -26,4 +28,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm set unsafe-perm true
     - run: npm ci
+    - run: npm build
+    - run: npm run task:setup
     - run: npm test
+    - run: npm task:publish -- -t ${{ secrets.NPM_AUTH_TOKEN }} -c development
