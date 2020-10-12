@@ -16,19 +16,29 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x, 12.x, 14.x]
+        node-version: [12.x, 14.x]
 
     steps:
-    - name: "Set r/w permissions"
-      run: sudo chmod -R 777 /home/runner/work/modules
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Cache Node.js modules
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
     - run: npm set unsafe-perm true
-    - run: npm ci
+    - name: Intalling packages
+      run: npm ci
     - run: npm run build
-    - run: npm run task:setup
-    - run: npm run test
-    - run: npm task:publish -- -t ${{ secrets.NPM_AUTH_TOKEN }} -c development
+    - name: Setup enviroment
+      run: npm run task:setup
+    - name: Run lint
+      run: npm run lint
+    - name: Run tests
+      run: npm run tests
