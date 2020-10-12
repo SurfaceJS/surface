@@ -36,9 +36,9 @@ jobs:
     - name: Intalling packages
       run: npm ci
     - run: npm run build
-    - name: Setup enviroment
+    - name: Setup environment
       run: npm run task:setup
     - name: Run lint
       run: npm run lint
     - name: Run tests
-      run: npm run tests
+      run: npm run test
