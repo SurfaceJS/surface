@@ -1,33 +1,35 @@
-import fs            from "fs";
-import path          from "path";
-import { promisify } from "util";
-
-const lstatAsync    = promisify(fs.lstat);
-const mkdirAsync    = promisify(fs.mkdir);
-const readdirAsync  = promisify(fs.readdir);
-const readlinkAsync = promisify(fs.readlink);
-const rmdirAsync    = promisify(fs.rmdir);
-const unlinkAsync   = promisify(fs.unlink);
-
-/**
- * Create a path.
- * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
- */
-export function createPath(path: string): void;
+import path from "path";
+import
+{
+    existsSync,
+    lstatAsync,
+    lstatSync,
+    mkdirAsync,
+    mkdirSync,
+    readdirAsync,
+    readdirSync,
+    readlinkAsync,
+    readlinkSync,
+    rmdirAsync,
+    rmdirSync,
+    statSync,
+    unlinkAsync,
+    unlinkSync,
+} from "./external";
 
 /**
  * Create a path.
  * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  * @param mode A file mode.
  */
-export function createPath(path: string, mode:  number): void;
+export function createPath(path: string, mode?: number): void;
 export function createPath(targetPath: string, mode: number = 0o777): void
 {
-    if (fs.existsSync(targetPath))
+    if (existsSync(targetPath))
     {
-        const resolvedPath = fs.lstatSync(targetPath).isSymbolicLink() ? fs.readlinkSync(targetPath) : targetPath;
+        const resolvedPath = lstatSync(targetPath).isSymbolicLink() ? readlinkSync(targetPath) : targetPath;
 
-        if (!fs.lstatSync(resolvedPath).isDirectory())
+        if (!lstatSync(resolvedPath).isDirectory())
         {
             throw new Error(`${resolvedPath} exist and isn't an directory`);
         }
@@ -37,30 +39,24 @@ export function createPath(targetPath: string, mode: number = 0o777): void
 
     const parentDir = path.dirname(targetPath.toString());
 
-    if (!fs.existsSync(parentDir))
+    if (!existsSync(parentDir))
     {
         createPath(parentDir, mode);
-        return fs.mkdirSync(targetPath, mode);
+        return mkdirSync(targetPath, mode);
     }
 
-    return fs.mkdirSync(targetPath, mode);
+    return mkdirSync(targetPath, mode);
 }
-
-/**
- * Asynchronously create a path.
- * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
- */
-export async function createPathAsync(path: string): Promise<void>;
 
 /**
  * Asynchronous create a path.
  * @param path A path to create. If a URL is provided, it must use the `file:` protocol.
  * @param mode A file mode.
  */
-export async function createPathAsync(path: string, mode: number): Promise<void>;
+export async function createPathAsync(path: string, mode?: number): Promise<void>;
 export async function createPathAsync(targetPath: string, mode: number = 0o777): Promise<void>
 {
-    if (fs.existsSync(targetPath))
+    if (existsSync(targetPath))
     {
         const resolvedPath = (await lstatAsync(targetPath)).isSymbolicLink() ? await readlinkAsync(targetPath) : targetPath;
 
@@ -74,7 +70,7 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
 
     const parentDir = path.dirname(targetPath);
 
-    if (!fs.existsSync(parentDir))
+    if (!existsSync(parentDir))
     {
         await createPathAsync(parentDir, mode);
 
@@ -84,12 +80,17 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
     return mkdirAsync(targetPath, mode);
 }
 
+/**
+ * Verifies if a path is a directory.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
+ */
+export function isDirectory(path: string): boolean;
 export function isDirectory(filePath: string): boolean
 {
     let stat;
     try
     {
-        stat = fs.statSync(filePath);
+        stat = statSync(filePath);
     }
     catch (e)
     {
@@ -103,12 +104,17 @@ export function isDirectory(filePath: string): boolean
     return stat.isDirectory();
 }
 
+/**
+ * Verifies if a path is a file.
+ * @param path Path to verify. If a URL is provided, it must use the `file:` protocol.
+ */
+export function isFile(path: string): boolean;
 export function isFile(filePath: string): boolean
 {
     let stat;
     try
     {
-        stat = fs.statSync(filePath);
+        stat = statSync(filePath);
     }
     catch (e)
     {
@@ -124,7 +130,7 @@ export function isFile(filePath: string): boolean
 
 /**
  * Look up for target file/directory.
- * @param startPath Path to start resolution.
+ * @param startPath Path to start resolution. If a URL is provided, it must use the `file:` protocol.
  * @param target    Target file/directory.
  */
 export function lookup(startPath: string, target: string): string | null
@@ -133,9 +139,9 @@ export function lookup(startPath: string, target: string): string | null
 
     while (slices.length > 0)
     {
-        const filepath = path.join(slices.join("/"), target);
+        const filepath = path.join(slices.join(path.sep), target);
 
-        if (fs.existsSync(filepath))
+        if (existsSync(filepath))
         {
             return filepath;
         }
@@ -155,14 +161,14 @@ export function lookupFile(lookup: string[], context: string = process.cwd()): s
 {
     for (const filepath of lookup)
     {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && fs.lstatSync(filepath).isFile())
+        if (path.isAbsolute(filepath) && existsSync(filepath) && lstatSync(filepath).isFile())
         {
             return filepath;
         }
 
         const resolved = path.resolve(context, filepath);
 
-        if (fs.existsSync(resolved) && fs.lstatSync(resolved).isFile())
+        if (existsSync(resolved) && lstatSync(resolved).isFile())
         {
             return resolved;
         }
@@ -180,14 +186,14 @@ export async function lookupFileAsync(lookup: string[], context: string = proces
 {
     for (const filepath of lookup)
     {
-        if (path.isAbsolute(filepath) && fs.existsSync(filepath) && (await lstatAsync(filepath)).isFile())
+        if (path.isAbsolute(filepath) && existsSync(filepath) && (await lstatAsync(filepath)).isFile())
         {
             return filepath;
         }
 
         const resolved = path.resolve(context, filepath);
 
-        if (fs.existsSync(resolved) && (await lstatAsync(resolved)).isFile())
+        if (existsSync(resolved) && (await lstatAsync(resolved)).isFile())
         {
             return resolved;
         }
@@ -198,26 +204,28 @@ export async function lookupFileAsync(lookup: string[], context: string = proces
 
 /**
  * Deletes recursively delete a path and unlink symbolic links
- * @param targetPath path to delete
+ * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
  */
+
+export function removePath(path: string): boolean;
 export function removePath(targetPath: string): boolean
 {
-    if (fs.existsSync(targetPath))
+    if (existsSync(targetPath))
     {
-        const lstat = fs.lstatSync(targetPath);
+        const lstat = lstatSync(targetPath);
 
         if (lstat.isSymbolicLink() || lstat.isFile())
         {
-            fs.unlinkSync(targetPath);
+            unlinkSync(targetPath);
         }
         else
         {
-            for (const fileOrDirectory of fs.readdirSync(targetPath))
+            for (const fileOrDirectory of readdirSync(targetPath))
             {
                 removePath(path.join(targetPath, fileOrDirectory));
             }
 
-            fs.rmdirSync(targetPath);
+            rmdirSync(targetPath);
         }
 
         return true;
@@ -228,11 +236,12 @@ export function removePath(targetPath: string): boolean
 
 /**
  * Asynchronously delete a path recursively and unlink symbolic links
- * @param targetPath path to delete
+ * @param path Path to delete. If a URL is provided, it must use the `file:` protocol.
  */
+export async function removePathAsync(path: string): Promise<boolean>;
 export async function removePathAsync(targetPath: string): Promise<boolean>
 {
-    if (fs.existsSync(targetPath))
+    if (existsSync(targetPath))
     {
         const lstat = await lstatAsync(targetPath);
 

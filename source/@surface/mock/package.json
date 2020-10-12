@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/core": "0.1.0-alpha.0",
         "@surface/enumerable": "1.0.0-alpha.0",
-        "tslib": "2.0.1"
+        "tslib": "2.0.3"
     },
     "description": "Mock library.",
     "devDependencies": {

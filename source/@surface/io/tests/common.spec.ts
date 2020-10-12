@@ -154,8 +154,8 @@ export default class CommonSpec
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/file");
 
-        fs.writeFileSync(path.join(pathToMake), "delete me");
-        chai.expect(() => createPath(path.join(pathToMake))).to.throw(Error, `${pathToMake} exist and isn't an directory`);
+        fs.writeFileSync(pathToMake, "delete me");
+        chai.expect(() => createPath(pathToMake)).to.throw(Error, `${pathToMake} exist and isn't an directory`);
     }
 
     @test @shouldFail
@@ -163,11 +163,11 @@ export default class CommonSpec
     {
         const pathToMake = path.resolve(__dirname, "./fixtures/file");
 
-        fs.writeFileSync(path.join(pathToMake), "delete me");
+        fs.writeFileSync(pathToMake, "delete me");
 
         try
         {
-            await createPathAsync(path.join(pathToMake));
+            await createPathAsync(pathToMake);
 
         }
         catch (error)

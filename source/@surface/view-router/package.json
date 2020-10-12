@@ -9,7 +9,7 @@
         "@surface/custom-element": "1.0.0-alpha.0",
         "@surface/dependency-injection": "1.0.0-alpha.0",
         "@surface/router": "0.1.0-alpha.0",
-        "tslib": "2.0.1"
+        "tslib": "2.0.3"
     },
     "description": "Web component view router.",
     "devDependencies": {
