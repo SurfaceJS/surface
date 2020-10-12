@@ -1,3 +1,4 @@
+import { Stats } from "fs";
 import path from "path";
 import
 {
@@ -16,6 +17,23 @@ import
     unlinkAsync,
     unlinkSync,
 } from "./external";
+
+function getStats(filepath: string): Stats | null
+{
+    try
+    {
+        return statSync(filepath);
+    }
+    catch (e)
+    {
+        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
+        {
+            return null;
+        }
+
+        throw e;
+    }
+}
 
 /**
  * Create a path.
@@ -37,15 +55,16 @@ export function createPath(targetPath: string, mode: number = 0o777): void
         return;
     }
 
-    const parentDir = path.dirname(targetPath.toString());
+    const parent = path.dirname(targetPath);
 
-    if (!existsSync(parentDir))
+    if (!existsSync(parent))
     {
-        createPath(parentDir, mode);
-        return mkdirSync(targetPath, mode);
+        createPath(parent, mode);
+
+        mkdirSync(targetPath, mode);
     }
 
-    return mkdirSync(targetPath, mode);
+    mkdirSync(targetPath, mode);
 }
 
 /**
@@ -68,11 +87,11 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
         return;
     }
 
-    const parentDir = path.dirname(targetPath);
+    const parent = path.dirname(targetPath);
 
-    if (!existsSync(parentDir))
+    if (!existsSync(parent))
     {
-        await createPathAsync(parentDir, mode);
+        await createPathAsync(parent, mode);
 
         return mkdirAsync(targetPath, mode);
     }
@@ -87,21 +106,9 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
 export function isDirectory(path: string): boolean;
 export function isDirectory(filePath: string): boolean
 {
-    let stat;
-    try
-    {
-        stat = statSync(filePath);
-    }
-    catch (e)
-    {
-        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
-        {
-            return false;
-        }
+    const stats = getStats(filePath);
 
-        throw e;
-    }
-    return stat.isDirectory();
+    return !!stats && stats.isDirectory();
 }
 
 /**
@@ -111,21 +118,9 @@ export function isDirectory(filePath: string): boolean
 export function isFile(path: string): boolean;
 export function isFile(filePath: string): boolean
 {
-    let stat;
-    try
-    {
-        stat = statSync(filePath);
-    }
-    catch (e)
-    {
-        if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
-        {
-            return false;
-        }
+    const stats = getStats(filePath);
 
-        throw e;
-    }
-    return stat.isFile() || stat.isFIFO();
+    return !!stats && (stats.isFile() || stats.isFIFO());
 }
 
 /**
@@ -182,7 +177,7 @@ export function lookupFile(lookup: string[], context: string = process.cwd()): s
  * @param lookup  Relative or absolute path to folder or file.
  * @param context Cotext used to resolve.
  */
-export async function lookupFileAsync(lookup: string[], context: string = process.cwd()): Promise<string>
+export async function lookupFileAsync(lookup: string[], context: string = process.cwd()): Promise<string | null>
 {
     for (const filepath of lookup)
     {
@@ -199,7 +194,7 @@ export async function lookupFileAsync(lookup: string[], context: string = proces
         }
     }
 
-    throw new Error("paths not found");
+    return null;
 }
 
 /**
@@ -253,7 +248,7 @@ export async function removePathAsync(targetPath: string): Promise<boolean>
         {
             for (const fileOrDirectory of await readdirAsync(targetPath))
             {
-                removePath(path.join(targetPath, fileOrDirectory));
+                await removePathAsync(path.join(targetPath, fileOrDirectory));
             }
 
             await rmdirAsync(targetPath);

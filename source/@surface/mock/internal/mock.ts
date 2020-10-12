@@ -141,8 +141,8 @@ export default class Mock<T extends object>
     }
 
     public call(...args: Parameters<Cast<T, Callable>>): IReturnsSetup<Cast<T, Callable>>;
-    public call<TArgs extends ParameterOverloads<Cast<T, Callable>>>(...args: TArgs): IReturnsSetup<Overload<Cast<T, Callable>, TArgs>>;
-    public call<TOverload extends Overload<Cast<T, Callable>, ParameterOverloads<Cast<T, Callable>>>>(...args: Parameters<TOverload>): IReturnsSetup<TOverload>
+    public call<TOverload extends Overload<Cast<T, Callable>, ParameterOverloads<Cast<T, Callable>>>>(...args: Parameters<TOverload>): IReturnsSetup<TOverload>;
+    public call<TArgs extends ParameterOverloads<Cast<T, Callable>>>(...args: TArgs): IReturnsSetup<Overload<Cast<T, Callable>, TArgs>>
     {
         const setup = this.setup(CALL);
 
