@@ -1,0 +1,1 @@
+powershell -NonInteractive -ExecutionPolicy Unrestricted -command "&{ .\setup.ps1 }"

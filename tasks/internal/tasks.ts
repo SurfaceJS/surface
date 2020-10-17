@@ -235,7 +235,7 @@ export default class Tasks
 
     public static async setup(): Promise<void>
     {
-        // await Tasks.clean();
+        await Tasks.clean();
         await Tasks.install();
         await Tasks.build();
     }
