@@ -9,7 +9,7 @@ import
     tryObserveByObservable,
     tryObserveKeyByObservable,
 } from "../../common";
-import IPlaceholderDirective    from "../../interfaces/directives/placeholder-directive";
+import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import ParallelWorker           from "../../parallel-worker";
 import { Injection }            from "../../types";

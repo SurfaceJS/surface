@@ -5,7 +5,7 @@ import
     tryObserveByObservable,
     tryObserveKeyByObservable,
 } from "../../common";
-import IInjectDirective         from "../../interfaces/directives/inject-directive";
+import IInjectDirective         from "../../interfaces/inject-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import TemplateDirectiveHandler from ".";
 

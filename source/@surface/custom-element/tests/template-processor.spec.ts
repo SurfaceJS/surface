@@ -12,6 +12,7 @@ import { renderDone, timeout }                 from "../internal/processors";
 import TemplateParser                          from "../internal/template-parser";
 import TemplateProcessor                       from "../internal/template-processor";
 import CustomDirectiveHandler                  from "./fixtures/custom-directive";
+import customDirectiveFactory                  from "./fixtures/custom-directive-factory";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -20,6 +21,7 @@ class XComponent extends HTMLElement { }
 window.customElements.define("x-component", XComponent);
 
 directiveRegistry.set("custom", CustomDirectiveHandler);
+directiveRegistry.set("custom-factory", customDirectiveFactory);
 
 function tryAction(action: Delegate): RawError
 {
@@ -255,7 +257,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithAttributesWithEventBind(): void
+    public elementWithEventDirectiveBind(): void
     {
         const host = getHost();
 
@@ -263,7 +265,7 @@ export default class TemplateProcessorSpec
 
         host.click = () => clicked = true;
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.click'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.click'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -273,7 +275,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithEventDirectiveBind(): void
+    public elementWithEventDirectiveExpression(): void
     {
         const host = getHost<{ method?: Function }>();
 
@@ -281,7 +283,7 @@ export default class TemplateProcessorSpec
 
         host.method = (value: boolean) => clicked = value;
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.method(true)'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.method(true)'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -295,7 +297,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click='() => window.name = \"clicked\"'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='() => window.name = \"clicked\"'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -309,7 +311,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost<{ clicked: boolean }>();
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.clicked = true'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.clicked = true'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -323,11 +325,12 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #custom:directive=\"'Hello World!!!'\"></span>";
+        host.shadowRoot.innerHTML = "<span #custom:directive=\"'Hello World!!!'\"></span><span #custom-factory:factory-directive=\"'Hello World!!!'\"></span>";
 
         process(host, host.shadowRoot);
 
         assert.equal(host.shadowRoot.firstElementChild!.textContent, "directive: Hello World!!!");
+        assert.equal(host.shadowRoot.lastElementChild!.textContent, "factory-directive: Hello World!!!");
     }
 
     @test @shouldPass
@@ -1241,10 +1244,10 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click=\"host.fn\"></span>";
+        host.shadowRoot.innerHTML = "<span @click=\"host.fn\"></span>";
 
-        const message = "Evaluation error in #on:click=\"host.fn\": host.fn is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"host.fn\">";
+        const message = "Evaluation error in @click=\"host.fn\": host.fn is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span @click=\"host.fn\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1259,10 +1262,10 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click=\"host.value = { value }\"></span>";
+        host.shadowRoot.innerHTML = "<span @click=\"host.value = { value }\"></span>";
 
         const message = "value is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
+        const stack   = "<x-component>\n   #shadow-root\n      <span @click=\"++host.value\">";
 
         const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1277,10 +1280,10 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click=\"() => host.fn()\"></span>";
+        host.shadowRoot.innerHTML = "<span @click=\"() => host.fn()\"></span>";
 
         const message = "host.fn is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
+        const stack   = "<x-component>\n   #shadow-root\n      <span @click=\"() => host.fn()\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1713,21 +1716,21 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    @test @shouldFail
-    public observationErrorOnKeyDirective(): void
-    {
-        const host = getHost();
+    // @test @shouldFail
+    // public observationErrorOnKeyDirective(): void
+    // {
+    //     const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on=\"x => x\" #on-key=\"host.key\"></span>";
+    //     host.shadowRoot.innerHTML = "<span #on=\"x => x\" #on-key=\"host.key\"></span>";
 
-        const message = "Observation error in #on-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on=\"x => x\" #on-key=\"host.key\">";
+    //     const message = "Observation error in #on-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+    //     const stack   = "<x-component>\n   #shadow-root\n      <span #on=\"x => x\" #on-key=\"host.key\">";
 
-        const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new CustomStackError(message, stack));
+    //     const actual   = tryAction(() => process(host, host.shadowRoot));
+    //     const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
-    }
+    //     assert.deepEqual(actual, expected);
+    // }
 
     @test @shouldFail
     public observationErrorCustomDirective(): void

@@ -10,7 +10,7 @@ import
     ObservableExpression,
     observableExpressions,
     unobservableExpressions,
-} from "./expectations/observer-visitor-expected";
+} from "./observer-visitor-expected";
 
 @suite
 export default class ObserverVisitorSpec

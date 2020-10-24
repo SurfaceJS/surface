@@ -1,5 +1,5 @@
 import { IDisposable }     from "@surface/core";
-import ITemplateDescriptor from "./interfaces/descriptors/template-descriptor";
+import ITemplateDescriptor from "./interfaces/template-descriptor";
 import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
 import TemplateProcessor   from "./template-processor";

@@ -1,7 +1,7 @@
 import { IDisposable, assert }                           from "@surface/core";
 import { ISubscription }                                 from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
-import IChoiceBranchDirective                            from "../../interfaces/directives/choice-branch-directive";
+import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
 import ParallelWorker                                    from "../../parallel-worker";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";

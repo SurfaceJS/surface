@@ -1,7 +1,7 @@
-<span value="Hello {host.name}" #on:click="host.handler" ::value-a="host.value" :value-b="host.x++">
+<span value="Hello {host.name}" @click="host.handler" ::value-a="host.value" :value-b="host.x++">
     Some {"interpolation"} here
 </span>
-<span #inject:tile="{ title }">
+<span #inject:title="{ title }">
     <h1>{title}</h1>
 </span>
 <hr>

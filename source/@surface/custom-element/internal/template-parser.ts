@@ -6,15 +6,16 @@ import { Indexer, assert, contains, dashedToCamel, typeGuard }                  
 import Enumerable                                                                               from "@surface/enumerable";
 import Expression, { IExpression, IIdentifier, IPattern, SyntaxError, TypeGuard }               from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                               from "./common";
-import IElementDescriptor                                                                       from "./interfaces/descriptors/element-descriptor";
-import ITemplateDescriptor                                                                      from "./interfaces/descriptors/template-descriptor";
-import ITextNodeDescriptor                                                                      from "./interfaces/descriptors/text-node-descriptor";
-import IAttributeDirective                                                                      from "./interfaces/directives/attribute-directive";
-import IChoiceBranchDirective                                                                   from "./interfaces/directives/choice-branch-directive";
-import ICustomDirective                                                                         from "./interfaces/directives/custom-directive";
-import IInjectDirective                                                                         from "./interfaces/directives/inject-directive";
-import ILoopDirective                                                                           from "./interfaces/directives/loop-directive";
-import IPlaceholderDirective                                                                    from "./interfaces/directives/placeholder-directive";
+import IAttributeDirective                                                                      from "./interfaces/attribute-directive";
+import IChoiceBranchDirective                                                                   from "./interfaces/choice-branch-directive";
+import ICustomDirective                                                                         from "./interfaces/custom-directive";
+import IElementDescriptor                                                                       from "./interfaces/element-descriptor";
+import IEventDirective                                                                          from "./interfaces/event-directive";
+import IInjectDirective                                                                         from "./interfaces/inject-directive";
+import ILoopDirective                                                                           from "./interfaces/loop-directive";
+import IPlaceholderDirective                                                                    from "./interfaces/placeholder-directive";
+import ITemplateDescriptor                                                                      from "./interfaces/template-descriptor";
+import ITextNodeDescriptor                                                                      from "./interfaces/text-node-descriptor";
 import nativeEvents                                                                             from "./native-events";
 import ObserverVisitor                                                                          from "./observer-visitor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./parsers";
@@ -204,6 +205,7 @@ export default class TemplateParser
             else if
             (
                 attribute.name.startsWith(":")
+                || attribute.name.startsWith("@")
                 || attribute.name.startsWith("#")
                 || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.has(attribute.name))
             )
@@ -297,6 +299,7 @@ export default class TemplateParser
         {
             attributes: [],
             directives: [],
+            events:     [],
             path:       this.indexStack.join("-"),
             textNodes:  [],
         };
@@ -305,7 +308,27 @@ export default class TemplateParser
 
         for (const attribute of this.enumerateAttributes(element))
         {
-            if (attribute.name.startsWith("#"))
+            if (attribute.name.startsWith("@"))
+            {
+                const name           = attribute.name.replace("@", "");
+                const rawExpression = `${attribute.name}=\"${attribute.value}\"`;
+                const expression     = this.tryParseExpression(parseExpression, attribute.value || "undefined", rawExpression);
+                const observables    = ObserverVisitor.observe(expression);
+
+                const descriptor: IEventDirective =
+                {
+                    expression,
+                    name,
+                    observables,
+                    rawExpression,
+                    stackTrace,
+                };
+
+                elementDescriptor.events.push(descriptor);
+
+                element.removeAttributeNode(attribute);
+            }
+            else if (attribute.name.startsWith("#"))
             {
                 if (!attribute.name.endsWith("-key"))
                 {
@@ -391,7 +414,7 @@ export default class TemplateParser
             }
         }
 
-        if (elementDescriptor.attributes.length > 0 || elementDescriptor.directives.length > 0)
+        if (elementDescriptor.attributes.length + elementDescriptor.directives.length + elementDescriptor.events.length > 0)
         {
             this.templateDescriptor.elements.push(elementDescriptor);
 
@@ -613,7 +636,14 @@ export default class TemplateParser
             {
                 this.templateDescriptor.lookup.push([...rawParentPath]);
 
-                this.templateDescriptor.elements.push({ attributes: [], directives: [], path: parentPath, textNodes: [textNodeDescriptor] });
+                this.templateDescriptor.elements.push
+                ({
+                    attributes: [],
+                    directives: [],
+                    events:     [],
+                    path:       parentPath,
+                    textNodes:  [textNodeDescriptor],
+                });
             }
 
             node.nodeValue = " ";

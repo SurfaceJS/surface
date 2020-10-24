@@ -2,7 +2,7 @@ import { Delegate, IDisposable }                                             fro
 import { TypeGuard }                                                         from "@surface/expression";
 import { ISubscription }                                                     from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
-import ILoopDirective                                                        from "../../interfaces/directives/loop-directive";
+import ILoopDirective                                                        from "../../interfaces/loop-directive";
 import ParallelWorker                                                        from "../../parallel-worker";
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from ".";

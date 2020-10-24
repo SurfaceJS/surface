@@ -7,7 +7,7 @@ import
     tryObserveByObservable,
     tryObserveKeyByObservable,
 } from "../../common";
-import ICustomDirective from "../../interfaces/directives/custom-directive";
+import ICustomDirective from "../../interfaces/custom-directive";
 
 export default abstract class DirectiveHandler implements IDisposable
 {
