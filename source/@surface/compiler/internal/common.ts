@@ -11,22 +11,15 @@ export function normalizeUrlPath(path: string): string
     return path ? (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "") : "";
 }
 
-export function removeUndefined<T extends object>(target: T): T
+export function createOnlyDefinedProxy<T extends object>(target: T): T
 {
-    type Key   = keyof T;
-    type Value = T[Key];
-
-    const result: Partial<Record<Key, Value>> = { };
-
-    for (const [key, value] of Object.entries(target) as [Key, Value][])
+    const handler: ProxyHandler<T> =
     {
-        if (!Object.is(value, undefined))
-        {
-            result[key] = value;
-        }
-    }
+        has:     (target, key: keyof T) => key in target && !Object.is(target[key], undefined),
+        ownKeys: target => Object.entries(target).filter(x => !Object.is(x[1], undefined)).map(x => x[0]),
+    };
 
-    return result as T;
+    return new Proxy(target, handler);
 }
 
 export const parsePattern = (pattern: RegExp) =>

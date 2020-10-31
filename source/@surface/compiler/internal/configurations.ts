@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
 import os                                    from "os";
 import path                                  from "path";
@@ -8,7 +9,7 @@ import HtmlWebpackPlugin                     from "html-webpack-plugin";
 import TerserWebpackPlugin                   from "terser-webpack-plugin";
 import webpack                               from "webpack";
 import { BundleAnalyzerPlugin }              from "webpack-bundle-analyzer";
-import { removeUndefined }                   from "./common";
+import { createOnlyDefinedProxy }            from "./common";
 import ForceTsResolvePlugin                  from "./plugins/force-ts-resolve-plugin";
 import AnalyzerOptions                       from "./types/analyzer-options";
 import BuildOptions                          from "./types/build-options";
@@ -48,8 +49,8 @@ const loaders =
             removeCR: true,
         },
     },
-    sass:       { loader: "sass-loader" },
-    style:      { loader: "style-loader" },
+    sass:   { loader: "sass-loader" },
+    style:  { loader: "style-loader" },
     thread:
     {
         loader:  "thread-loader",
@@ -88,8 +89,8 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, clientOptions
 
 export function createAnalyzerConfiguration(configuration: Configuration, options: AnalyzerOptions): webpack.Configuration
 {
-    const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options = removeUndefined
-    ({
+    const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
+    {
         analyzerHost:   options.host,
         analyzerMode:   options.analyzerMode ?? "static",
         analyzerPort:   options.port,
@@ -98,18 +99,18 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
         logLevel:       options.logLevel,
         openAnalyzer:   options.open,
         reportFilename: options.reportFilename,
-    });
+    };
 
-    const extendedConfiguration: webpack.Configuration = removeUndefined
-    ({
+    const extendedConfiguration: webpack.Configuration =
+    {
         mode:    options.mode,
-        plugins: [new BundleAnalyzerPlugin(bundleAnalyzerPluginOptions)],
-    });
+        plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(bundleAnalyzerPluginOptions))],
+    };
 
-    return createConfiguration(configuration, extendedConfiguration);
+    return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
 
-export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration, hot: boolean = false): webpack.Configuration
+export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration, library: boolean = false): webpack.Configuration
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -123,22 +124,17 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         resolvePlugins.push(new ForceTsResolvePlugin(paths));
     }
 
-    if (hot && extendedConfiguration.mode != "production")
-    {
-        plugins.push(new webpack.HotModuleReplacementPlugin());
-    }
-
     const forkTsCheckerWebpackPluginOptions: ForkTsCheckerWebpackPluginOptions =
     {
         eslint:
         {
             files:   `${configuration.context}/**/*.{js,ts}`,
-            options: removeUndefined
+            options: createOnlyDefinedProxy
             ({
                 configFile: configuration.eslintrc,
             }),
         },
-        typescript: removeUndefined
+        typescript: createOnlyDefinedProxy
         ({
             build:      true,
             configFile: configuration.tsconfig,
@@ -146,13 +142,17 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         }),
     };
 
-    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-        ? { template: configuration.htmlTemplate }
-        : configuration.htmlTemplate;
-
     plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
-    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+
+    if (!library)
+    {
+        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+            ? { template: configuration.htmlTemplate }
+            : configuration.htmlTemplate;
+
+        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+    }
 
     const isProduction = extendedConfiguration.mode == "production";
 
@@ -303,7 +303,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
 
 export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration
 {
-    return createConfiguration(configuration, removeUndefined({ mode: options.mode }));
+    return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
 }
 
 export function createDevServerConfiguration(configuration: Configuration, options: ClientOptions): webpack.Configuration

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
 import path                                                         from "path";
-import { removeUndefined }                                          from "./common";
+import { createOnlyDefinedProxy }                                          from "./common";
 import Compiler                                                     from "./compiler";
 import { isFile, loadModule, lookupFile, removePathAsync, webpack } from "./external";
 import AnalyzerOptions                                              from "./types/analyzer-options";
@@ -33,7 +33,7 @@ export default class Tasks
                 ? options.project
                 : path.resolve(cwd, options.project);
 
-        const configuration: Configuration = removeUndefined
+        const configuration: Configuration = createOnlyDefinedProxy
         ({
             context:       options.context,
             entry:         options.entry,
@@ -139,8 +139,8 @@ export default class Tasks
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const analyzerOptions: AnalyzerOptions = removeUndefined
-        ({
+        const analyzerOptions: AnalyzerOptions =
+        {
             analyzerMode:   options.analyzerMode,
             defaultSizes:   options.defaultSizes,
             exclude:        options.exclude,
@@ -150,45 +150,45 @@ export default class Tasks
             open:           options.open,
             port:           options.port,
             reportFilename: options.reportFilename,
-        });
+        };
 
-        await Compiler.analyze(configuration, analyzerOptions);
+        await removePathAsync(configuration.output!);
+
+        await Compiler.analyze(configuration, createOnlyDefinedProxy(analyzerOptions));
     }
 
     public static async build(options: Options & BuildOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const buildOptions: BuildOptions = removeUndefined
-        ({
-            hot:      options.hot,
+        const buildOptions: BuildOptions =
+        {
             logLevel: options.logLevel,
             mode:     options.mode,
             watch:    options.watch,
-        });
+        };
+
+        await removePathAsync(configuration.output!);
 
         options.watch
-            ? await Compiler.watch(configuration, buildOptions)
-            : await Compiler.run(configuration, buildOptions);
-    }
-
-    public static async clean(): Promise<void>
-    {
-        await removePathAsync(path.resolve(__dirname, ".cache"));
+            ? await Compiler.watch(configuration, createOnlyDefinedProxy(buildOptions))
+            : await Compiler.run(configuration, createOnlyDefinedProxy(buildOptions));
     }
 
     public static async serve(options: Options & DevServerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const devServerOptions: DevServerOptions = removeUndefined
-        ({
+        const devServerOptions: DevServerOptions =
+        {
             host:     options.host,
             hot:      options.hot,
             logLevel: options.logLevel,
             port:     options.port,
-        });
+        };
 
-        await Compiler.serve(configuration, devServerOptions);
+        await removePathAsync(configuration.output!);
+
+        await Compiler.serve(configuration, createOnlyDefinedProxy(devServerOptions));
     }
 }

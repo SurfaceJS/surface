@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
-import { Delegate }                               from "@surface/core";
-import chalk                                      from "chalk";
-import { log, normalizeUrlPath, removeUndefined } from "./common";
+import { Delegate }                                      from "@surface/core";
+import chalk                                             from "chalk";
+import { createOnlyDefinedProxy, log, normalizeUrlPath } from "./common";
 import
 {
     createAnalyzerConfiguration,
@@ -24,21 +24,23 @@ const DEFAULT_STATS_OPTIONS =
     warnings: true,
 };
 
+type StatOptions = string | boolean | object;
+
 export default class Compiler
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: object): (err?: Error, result?: webpack.Stats) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats) => unknown
     {
         return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: object = DEFAULT_STATS_OPTIONS): Promise<void>
+    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
     {
         const webpackCompiler = webpack(webpackConfiguration);
 
         await new Promise<string>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: object = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
     {
         const webpackCompiler = webpack(webpackConfiguration);
 
@@ -80,7 +82,7 @@ export default class Compiler
         const webpackConfiguration = createDevServerConfiguration(configuration, { host, port, publicPath });
         const webpackCompiler      = webpack(webpackConfiguration);
 
-        const webpackDevServerConfiguration: WebpackDevServer.Configuration = removeUndefined
+        const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
             historyApiFallback: { index: `${publicPath}/index.html` },
             hot:                options.hot,

@@ -255,23 +255,6 @@ export default class TasksSpec
     }
 
     @test
-    public async clean(): Promise<void>
-    {
-        const expected = path.resolve(__dirname, "../internal", ".cache");
-
-        let actual: string;
-
-        removePathAsyncMock
-            .call(expected)
-            .callback(x => actual = x)
-            .returns(Promise.resolve(true));
-
-        await Tasks.clean(),
-
-        assert.deepEqual(actual!, expected);
-    }
-
-    @test
     public async serve(): Promise<void>
     {
         type Args = [Configuration, DevServerOptions];
