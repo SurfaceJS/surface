@@ -1,13 +1,13 @@
 /* eslint-disable import/no-namespace */
-import Mock, { It }                                                   from "@surface/mock";
+import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                                                     from "chai";
-import type webpack                                                   from "webpack";
-import type WebpackDevServer                                          from "webpack-dev-server";
-import * as commonNS                                                  from "../internal/common";
-import Compiler                                                       from "../internal/compiler";
-import * as configurationsNS                                          from "../internal/configurations";
-import * as externalNS                                                from "../internal/external";
+import { assert }                             from "chai";
+import type webpack                           from "webpack";
+import type WebpackDevServer                  from "webpack-dev-server";
+import * as commonNS                          from "../internal/common";
+import Compiler                               from "../internal/compiler";
+import * as configurationsNS                  from "../internal/configurations";
+import * as externalNS                        from "../internal/external";
 
 type Common         = typeof commonNS;
 type Configurations = typeof configurationsNS;

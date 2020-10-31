@@ -4,14 +4,14 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.1.0-alpha.0",
+        "@surface/core": "file:../core",
         "tslib": "2.0.3"
     },
     "description": "Enumerable module the provides many methods to iterate through of collections.",
     "devDependencies": {
-        "@surface/test-suite": "0.1.0-alpha.0",
-        "@types/chai": "file:../../../node_modules/@types/chai",
-        "chai": "file:../../../node_modules/chai"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -26,5 +26,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "1.0.0-alpha.0"
+    "version": "1.0.0-alpha.1"
 }

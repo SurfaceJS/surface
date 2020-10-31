@@ -31,7 +31,7 @@ export default class PublisherSpec
         const getDataMock       = Mock.instance<IGetData>();
         const npmRepositoryMock = new Mock(new NpmRepository());
 
-        getDataMock.setupGet("versions").returns({ "0.5.0": { } });
+        getDataMock.setupGet("versions").returns({ "0.5.0": { } as IPackage });
 
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.resolve(getDataMock.proxy));
@@ -178,7 +178,7 @@ export default class PublisherSpec
         ];
 
         const getDataMock = Mock.instance<IGetData>();
-        getDataMock.setupGet("versions").returns({ "2.0.0": { } });
+        getDataMock.setupGet("versions").returns({ "2.0.0": { } as IPackage });
 
         const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())

@@ -9,6 +9,7 @@ const patterns =
         excludes: combine
         (
             "**/@?types/**/*.d.ts",
+            "**/cli.js",
             "**/environment.d.ts",
             "**/interfaces/**/*.d.ts",
             "**/node_modules",

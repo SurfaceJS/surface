@@ -22,16 +22,6 @@ program
     .action(Tasks.clean);
 
 program
-    .command("install")
-    .option("-m|--modules <n>", "Modules to install", toArray, [])
-    .action(Tasks.install);
-
-program
-    .command("link")
-    .option("-m|--modules <n>", "Modules to link", toArray, [])
-    .action(Tasks.link);
-
-program
     .command("publish <registry>")
     .requiredOption("-t|--token <n>", "NPM token", toString)
     .option("-c|--config   <n>", "Configuration", parsePattern(/^development|release$/))
@@ -40,27 +30,5 @@ program
     .option("-s|--strategy <n>", "Strategy to sync dependencies", toStrategyFlags)
     .option("-t|--target   <n>", "Target version to sync", toString)
     .action(Tasks.publish);
-
-program
-    .command("relink")
-    .option("-m|--modules <n>", "Modules to relink", toArray, [])
-    .action(Tasks.relink);
-
-program
-    .command("setup")
-    .action(Tasks.setup);
-
-program
-    .command("sync")
-    .option("-r|--registry <n>", "Registry", toStrategyFlags)
-    .option("-s|--strategy <n>", "Strategy to sync dependencies", toStrategyFlags)
-    .option("-m|--modules  [n]", "Modules to sync", toArray, [])
-    .option("-t|--template <n>", "Template version to sync", toString)
-    .action(Tasks.sync);
-
-program
-    .command("unlink")
-    .option("-m|--modules [n]", "Modules to unlink", toArray, [])
-    .action(Tasks.unlink);
 
 program.parse(process.argv);
