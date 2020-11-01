@@ -14,19 +14,10 @@ import AnalyzerOptions                       from "./types/analyzer-options";
 import BuildOptions                          from "./types/build-options";
 import Configuration                         from "./types/configuration";
 
-type WebpackEntry  = string | string[] | webpack.Entry | webpack.EntryFunc;
 type ClientOptions = { host: string, port: number, publicPath: string };
 
 const loaders =
 {
-    cache:
-    {
-        loader:  "cache-loader",
-        options:
-        {
-            cacheDirectory: path.resolve(__dirname, ".cache"),
-        },
-    },
     css:     { loader: "css-loader" },
     extract: { loader: "extract-loader" },
     file:
@@ -81,7 +72,7 @@ const loaders =
     },
 };
 
-function configureDevServerEntry(entry: WebpackEntry | undefined, clientOptions: ClientOptions): WebpackEntry | undefined
+function configureDevServerEntry(entry: webpack.Entry | undefined, clientOptions: ClientOptions): webpack.Entry | undefined
 {
     const webpackDevServerClient = `webpack-dev-server/client?http://${clientOptions.host}:${clientOptions.port}${clientOptions.publicPath}`;
     const webpackHotDevServer    = "webpack/hot/dev-server";
@@ -120,8 +111,8 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
 
 export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration, hot: boolean = false): webpack.Configuration
 {
-    const resolvePlugins: webpack.ResolvePlugin[] = [];
-    const plugins:        webpack.Plugin[]        = [];
+    const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
+    const plugins:        webpack.WebpackPluginInstance[]   = [];
 
     if (configuration.forceTs)
     {
@@ -159,7 +150,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         ? { template: configuration.htmlTemplate }
         : configuration.htmlTemplate;
 
-    plugins.push(new webpack.WatchIgnorePlugin([/\.js$/, /\.d\.ts$/]));
+    plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
     plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
 
@@ -167,7 +158,6 @@ export function createConfiguration(configuration: Configuration, extendedConfig
 
     const tersePlugin = new TerserWebpackPlugin
     ({
-        cache:           true,
         extractComments: true,
         parallel:        true,
         terserOptions:
@@ -194,8 +184,12 @@ export function createConfiguration(configuration: Configuration, extendedConfig
 
     const webpackConfiguration: webpack.Configuration =
     {
+        cache:
+        {
+            type: "filesystem",
+        },
         context: configuration.context,
-        devtool: isProduction ? false : "#source-map",
+        devtool: isProduction ? false : "source-map",
         entry:   configuration.entry,
         mode:    "development",
         module:
@@ -260,7 +254,6 @@ export function createConfiguration(configuration: Configuration, extendedConfig
                     test: /\.ts$/,
                     use:
                     [
-                        loaders.cache,
                         loaders.thread,
                         loaders.ts,
                     ],
@@ -269,41 +262,16 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         },
         optimization:
         {
+            chunkIds:             isProduction ? "total-size" : "named",
             concatenateModules:   isProduction,
+            emitOnErrors:         false,
             flagIncludedChunks:   isProduction,
             mergeDuplicateChunks: isProduction,
             minimize:             isProduction,
-            minimizer:            [tersePlugin],
-            namedChunks:          !isProduction,
-            namedModules:         !isProduction,
-            noEmitOnErrors:       true,
-            occurrenceOrder:      true,
+            minimizer:            [tersePlugin as webpack.WebpackPluginInstance],
+            moduleIds:            isProduction ? "size" : "named",
             providedExports:      true,
-            splitChunks:
-            {
-                cacheGroups:
-                {
-                    common:
-                    {
-                        minChunks:          2,
-                        priority:           -20,
-                        reuseExistingChunk: true,
-                    },
-                    vendors:
-                    {
-                        priority: -10,
-                        test:     /[\\/]node_modules[\\/]/,
-                    },
-                },
-                chunks:             "async",
-                maxAsyncRequests:   5,
-                maxInitialRequests: 3,
-                maxSize:            0,
-                minChunks:          1,
-                minSize:            30000,
-                name:               true,
-            },
-            usedExports: isProduction,
+            usedExports:          isProduction,
         },
         output:
         {

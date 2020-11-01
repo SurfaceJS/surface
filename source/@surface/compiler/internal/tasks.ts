@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
-import path                                                from "path";
-import webpack                                             from "webpack";
-import { removeUndefined }                                 from "./common";
-import Compiler                                            from "./compiler";
-import { isFile, loadModule, lookupFile, removePathAsync } from "./external";
-import AnalyzerOptions                                     from "./types/analyzer-options";
-import BuildOptions                                        from "./types/build-options";
-import Configuration                                       from "./types/configuration";
-import DevServerOptions                                    from "./types/dev-serve-options";
-import Options                                             from "./types/options";
+import path                                                         from "path";
+import { removeUndefined }                                          from "./common";
+import Compiler                                                     from "./compiler";
+import { isFile, loadModule, lookupFile, removePathAsync, webpack } from "./external";
+import AnalyzerOptions                                              from "./types/analyzer-options";
+import BuildOptions                                                 from "./types/build-options";
+import Configuration                                                from "./types/configuration";
+import DevServerOptions                                             from "./types/dev-serve-options";
+import Options                                                      from "./types/options";
 
 export default class Tasks
 {

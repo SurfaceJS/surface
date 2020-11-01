@@ -1,12 +1,12 @@
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import type webpack      from "webpack";
 import WebpackDevServer  from "webpack-dev-server";
+import WebpackTypes      from "./webpack";
 
 type Configuration =
 {
     context?:       string,
     devServer?:     WebpackDevServer.Configuration,
-    entry?:         webpack.Configuration["entry"],
+    entry?:         WebpackTypes.Configuration["entry"],
     eslintrc?:      string,
     filename?:      string,
     forceTs?:       boolean | string[],
@@ -14,7 +14,7 @@ type Configuration =
     output?:        string,
     publicPath?:    string,
     tsconfig?:      string,
-    webpackConfig?: webpack.Configuration,
+    webpackConfig?: WebpackTypes.Configuration,
 };
 
 export default Configuration;

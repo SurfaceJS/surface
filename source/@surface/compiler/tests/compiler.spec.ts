@@ -8,6 +8,7 @@ import * as commonNS                          from "../internal/common";
 import Compiler                               from "../internal/compiler";
 import * as configurationsNS                  from "../internal/configurations";
 import * as externalNS                        from "../internal/external";
+// import WebpackTypes                           from "../internal/types/webpack";
 
 type Common         = typeof commonNS;
 type Configurations = typeof configurationsNS;
@@ -24,7 +25,7 @@ function setup(type: "ok" | "ko"): void
     const error = type == "ko" ? new Error("Some goes wrong") : undefined;
 
     const statsMock            = Mock.instance<webpack.Stats>();
-    const compilerWatchingMock = Mock.instance<webpack.Compiler.Watching>();
+    const compilerWatchingMock = Mock.instance<ReturnType<webpack.Compiler["watch"]>>();
 
     compilerWatchingMock
         .setup("close")
