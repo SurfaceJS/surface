@@ -12,7 +12,6 @@ import Tasks         from "../internal/tasks";
 import createProgram from ".";
 
 const program = createProgram()
-    .option("--hot               [n]", "Enable hot module reload.", toBoolean)
     .option("--log-level         <n>", "Output verbosity level. Can be 'errors-only', 'minimal', 'none', 'normal', 'verbose'.", parsePattern(logLevelPattern))
     .option("--mode              <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
     .option("--watch             [n]", "Enable Watch mode compilation.", toBoolean)

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
-import { Delegate }             from "@surface/core";
-import chalk                    from "chalk";
-import { log, normalizeUrlPath, removeUndefined } from "./common";
+import { Delegate }                                      from "@surface/core";
+import chalk                                             from "chalk";
+import { createOnlyDefinedProxy, log, normalizeUrlPath } from "./common";
 import
 {
     createAnalyzerConfiguration,
@@ -15,7 +15,7 @@ import CompilerSignal                from "./types/compiler-signal";
 import Configuration                 from "./types/configuration";
 import DevServerOptions              from "./types/dev-serve-options";
 
-const DEFAULT_STATS_OPTIONS: webpack.Stats.ToStringOptions =
+const DEFAULT_STATS_OPTIONS =
 {
     assets:   true,
     colors:   true,
@@ -24,29 +24,31 @@ const DEFAULT_STATS_OPTIONS: webpack.Stats.ToStringOptions =
     warnings: true,
 };
 
+type StatOptions = string | boolean | object;
+
 export default class Compiler
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: webpack.Stats.ToStringOptions): webpack.Compiler.Handler
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats) => unknown
     {
-        return (error, stats) => error ? reject(error) : (log(stats.toString(statOptions)), resolve());
+        return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: webpack.Stats.ToStringOptions = DEFAULT_STATS_OPTIONS): Promise<void>
+    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
     {
         const webpackCompiler = webpack(webpackConfiguration);
 
         await new Promise<string>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: webpack.Stats.ToStringOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
     {
         const webpackCompiler = webpack(webpackConfiguration);
 
-        let watching: webpack.Compiler.Watching;
+        let watching: ReturnType<webpack.Compiler["watch"]>;
 
         await new Promise<string>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
 
-        return { close: async () => new Promise(resolve => watching.close(resolve)) };
+        return { close: async () => new Promise((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
 
     public static async analyze(configuration: Configuration, options: AnalyzerOptions): Promise<void>
@@ -80,7 +82,7 @@ export default class Compiler
         const webpackConfiguration = createDevServerConfiguration(configuration, { host, port, publicPath });
         const webpackCompiler      = webpack(webpackConfiguration);
 
-        const webpackDevServerConfiguration: WebpackDevServer.Configuration = removeUndefined
+        const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
             historyApiFallback: { index: `${publicPath}/index.html` },
             hot:                options.hot,

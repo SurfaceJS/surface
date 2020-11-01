@@ -3,7 +3,7 @@ import webpack from "webpack";
 type Options =
 {
     context?:       string,
-    entry?:         string[],
+    entry?:         [string, ...string[]],
     eslintrc?:      string,
     filename?:      string,
     forceTs?:       boolean | string[],

@@ -1,8 +1,8 @@
-import path              from "path";
-import { ResolvePlugin } from "webpack";
-import { fs }            from "../external";
+import path                   from "path";
+import { fs }                 from "../external";
+import IResolvePluginInstance from "./interfaces/resolve-plugin-instance";
 
-export default class ForceTsResolvePlugin implements ResolvePlugin
+export default class ForceTsResolvePlugin implements IResolvePluginInstance
 {
     public constructor(private readonly paths: string[] = [])
     { }

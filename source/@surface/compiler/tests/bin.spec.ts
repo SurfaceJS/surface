@@ -108,7 +108,6 @@ export default class BinSpec
             "--eslintrc",       ".",
             "--filename",       ".",
             "--force-ts",       "true",
-            "--hot",            "true",
             "--html-template",  ".",
             "--log-level",      "errors-only",
             "--mode",           "development",
@@ -129,7 +128,6 @@ export default class BinSpec
             eslintrc:      ".",
             filename:      ".",
             forceTs:       true,
-            hot:           true,
             htmlTemplate:  ".",
             logLevel:      "errors-only",
             mode:          "development",
@@ -142,26 +140,6 @@ export default class BinSpec
         };
 
         assert.deepEqual(actual!, expected);
-    }
-
-    @test
-    public async clean(): Promise<void>
-    {
-        let actual: boolean;
-
-        tasksMock
-            .setup("clean")
-            .call()
-            .callback(() => actual = true);
-
-        process.argv =
-        [
-            "", "",
-        ];
-
-        await import("../bin/clean");
-
-        assert.isTrue(actual!);
     }
 
     @test
