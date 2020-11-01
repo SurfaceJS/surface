@@ -2,9 +2,11 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Delegate, Indexer }                   from "@surface/core";
+import { Delegate, Indexer, uuidv4 }                   from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
+import CustomElement                           from "../internal/custom-element";
+import { element }                             from "../internal/decorators";
 import directiveRegistry                       from "../internal/directive-registry";
 import CustomStackError                        from "../internal/errors/custom-stack-error";
 import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
@@ -238,7 +240,33 @@ export default class TemplateProcessorSpec
         host.id = "host";
         host.id = "hostRoot";
 
-        host.shadowRoot.innerHTML = "<span ::value='host.value'</span>";
+        host.shadowRoot.innerHTML = "<span ::value=\"host.value\"></span>";
+
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
+
+        host.value = "";
+        span.value = "";
+
+        process(host, host.shadowRoot);
+
+        host.value = "foo";
+
+        assert.equal(span.value, "foo");
+
+        span.value = "foo";
+
+        assert.equal(host.value, "foo");
+    }
+
+    @test @shouldPass
+    public elementWithTwoWayComputedDataBinding(): void
+    {
+        const host = getHost<{ value?: string }>();
+
+        host.id = "host";
+        host.id = "hostRoot";
+
+        host.shadowRoot.innerHTML = "<span ::value=\"host['value']\"></span>";
 
         const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
 
@@ -414,6 +442,28 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items></template><span>!!!</span>";
         host.innerHTML            = "<template #inject:items>World</template>";
+
+        root.shadowRoot.appendChild(host);
+
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
+
+        await renderDone();
+
+        assert.equal(host.shadowRoot.textContent, "Hello World!!!");
+    }
+
+    @test @shouldPass
+    public async templateWithNestedInjectAndPlaceholderDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        root.id = "root";
+        host.id = "host";
+
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items></template><span>!!!</span>";
+        host.innerHTML            = "<template #inject:items><template #inject:items>World</template></template>";
 
         root.shadowRoot.appendChild(host);
 
@@ -1223,6 +1273,52 @@ export default class TemplateProcessorSpec
         assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
     }
 
+    @test @shouldPass
+    public async elementWithLazyDefinition(): Promise<void>
+    {
+        const host = document.createElement("div");
+
+        document.body.appendChild(host);
+
+        const DUMMY_CHILD  = `dummy-child-${uuidv4()}`;
+        const DUMMY_PARENT = `dummy-parent-${uuidv4()}`;
+        const X_ELEMENT    = `x-element-${uuidv4()}`;
+
+        @element(DUMMY_CHILD)
+        class DummyChild extends CustomElement
+        { }
+
+        @element(DUMMY_PARENT)
+        class DummyParent extends CustomElement
+        { }
+
+        const template =
+        `
+            <template #for="const i in host.indexes">
+                <${DUMMY_PARENT}>
+                    <${DUMMY_CHILD} data-index="{i}">
+                    </${DUMMY_CHILD}>
+                </${DUMMY_PARENT}>
+            </template>
+        `;
+
+        @element(X_ELEMENT, template)
+        class XElement extends CustomElement
+        {
+            public indexes: number[] = [1, 2, 3];
+        }
+
+        const xelement = new XElement();
+
+        await renderDone();
+
+        host.appendChild(xelement);
+
+        assert.instanceOf(host.firstElementChild, XElement);
+        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild, DummyParent);
+        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild!.firstElementChild, DummyChild);
+    }
+
     @test @shouldFail
     public evaluationErrorOneWayDataBinding(): void
     {
@@ -1239,7 +1335,7 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    @test @shouldPass
+    @test @shouldFail
     public evaluationErrorEventBind(): void
     {
         const host = getHost();

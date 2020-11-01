@@ -149,12 +149,7 @@ export default class TemplateProcessor
 
         if (constructor && !(element instanceof constructor))
         {
-            processor = TemplateProcessor.postProcessing.get(element);
-
-            if (!processor)
-            {
-                TemplateProcessor.postProcessing.set(element, processor = []);
-            }
+            TemplateProcessor.postProcessing.set(element, processor = []);
         }
 
         const subscriptions: ISubscription[] = [];
@@ -236,7 +231,6 @@ export default class TemplateProcessor
                 }
             };
 
-            /* istanbul ignore else */
             if (!processor)
             {
                 action();
