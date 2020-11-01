@@ -1,14 +1,14 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "sfcc": "./cli.js"
+        "sfcc": "cli.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.1.0-alpha.0",
-        "@surface/io": "0.1.0-alpha.0",
+        "@surface/core": "file:../core",
+        "@surface/io": "file:../io",
         "@types/fork-ts-checker-webpack-plugin": "0.4.5",
         "@types/html-webpack-plugin": "3.2.3",
         "@types/loader-utils": "2.0.1",
@@ -28,8 +28,8 @@
         "html-loader": "1.2.1",
         "html-webpack-plugin": "4.3.0",
         "loader-utils": "2.0.0",
-        "node-sass": "4.14.1",
         "resolve-url-loader": "3.1.1",
+        "sass": "1.28.0",
         "sass-loader": "9.0.3",
         "style-loader": "1.2.1",
         "terser-webpack-plugin": "4.1.0",
@@ -44,10 +44,10 @@
     },
     "description": "Module responsible for managing the compilation of typescript, scss/sass and packaging with webpack.",
     "devDependencies": {
-        "@surface/mock": "1.0.0-alpha.0",
-        "@surface/test-suite": "0.1.0-alpha.0",
-        "@types/chai": "file:../../../node_modules/@types/chai",
-        "chai": "file:../../../node_modules/chai"
+        "@surface/mock": "file:../mock",
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -63,5 +63,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "0.1.0-alpha.0"
+    "version": "1.0.0-alpha.1"
 }

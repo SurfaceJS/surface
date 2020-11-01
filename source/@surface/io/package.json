@@ -4,16 +4,16 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.1.0-alpha.0",
+        "@surface/core": "file:../core",
         "@types/node": "14.11.8",
         "tslib": "2.0.3"
     },
     "description": "IO modules.",
     "devDependencies": {
-        "@surface/mock": "1.0.0-alpha.0",
-        "@surface/test-suite": "0.1.0-alpha.0",
-        "@types/chai": "file:../../../node_modules/@types/chai",
-        "chai": "file:../../../node_modules/chai"
+        "@surface/mock": "file:../mock",
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -28,5 +28,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "0.1.0-alpha.0"
+    "version": "0.1.0-alpha.1"
 }

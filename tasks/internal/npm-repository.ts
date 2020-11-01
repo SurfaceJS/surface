@@ -49,7 +49,10 @@ export default class NpmRepository
         {
             const data = await this.get(packageName, { });
 
-            const versions = Object.keys(data.versions);
+            const versions = Object.entries(data.versions)
+                .filter(x => !x[1]!.deprecated)
+                .map(x => x[0])
+                .sort((left, right) => Version.compare(Version.parse(left), Version.parse(right)));
 
             return versions[versions.length - 1];
         }

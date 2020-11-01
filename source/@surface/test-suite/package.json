@@ -4,13 +4,13 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "0.1.0-alpha.0",
+        "@surface/core": "file:../core",
         "tslib": "2.0.3"
     },
     "description": "Oriented object test suite powered by mocha.",
     "devDependencies": {
-        "@types/chai": "file:../../../node_modules/@types/chai",
-        "chai": "file:../../../node_modules/chai"
+        "@types/chai": "4.2.14",
+        "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -23,11 +23,11 @@
     "main": "index.js",
     "name": "@surface/test-suite",
     "peerDependencies": {
-        "mocha": "8.1.1"
+        "mocha": "8.2.0"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "0.1.0-alpha.0"
+    "version": "0.1.0-alpha.1"
 }

@@ -1,4 +1,4 @@
-import { Queue }  from "@surface/collection";
+import { Queue }    from "@surface/collection";
 import { Delegate } from "@surface/core";
 
 type Callback = (value: unknown) => void;

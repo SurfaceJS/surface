@@ -4,20 +4,20 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.1.0-alpha.0",
-        "@surface/core": "0.1.0-alpha.0",
-        "@surface/custom-element": "1.0.0-alpha.0",
-        "@surface/dependency-injection": "1.0.0-alpha.0",
-        "@surface/router": "0.1.0-alpha.0",
+        "@surface/collection": "file:../collection",
+        "@surface/core": "file:../core",
+        "@surface/custom-element": "file:../custom-element",
+        "@surface/dependency-injection": "file:../dependency-injection",
+        "@surface/router": "file:../router",
         "tslib": "2.0.3"
     },
     "description": "Web component view router.",
     "devDependencies": {
-        "@surface/test-suite": "0.1.0-alpha.0",
-        "@types/chai": "file:../../../node_modules/@types/chai",
-        "@types/jsdom": "file:../../../node_modules/@types/jsdom",
-        "chai": "file:../../../node_modules/chai",
-        "jsdom": "file:../../../node_modules/jsdom"
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
+        "@types/jsdom": "16.2.5",
+        "chai": "4.2.0",
+        "jsdom": "16.4.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -34,5 +34,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "version": "1.0.0-alpha.0"
+    "version": "1.0.0-alpha.1"
 }

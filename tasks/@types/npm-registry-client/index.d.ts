@@ -83,6 +83,7 @@ declare module "npm-registry-client"
         devDependencies?: Record<string, string>;
         name:             string;
         version:          string;
+        deprecated?: string;
     }
 
     interface ICredential
@@ -160,7 +161,7 @@ declare module "npm-registry-client"
             modified: string,
             created:  string,
         };
-        versions: Record<string, IPackage | unknown>;
+        versions: Record<string, IPackage | undefined>;
     }
 
     export interface IGetParams
