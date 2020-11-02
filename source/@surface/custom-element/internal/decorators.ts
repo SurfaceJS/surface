@@ -5,7 +5,6 @@ import
     IDisposable,
     Indexer,
     camelToDashed,
-    overrideConstructor,
     overrideProperty,
 } from "@surface/core";
 import Reactive, { ISubscription } from "@surface/reactive";
@@ -215,18 +214,23 @@ export function element(tagname: string, template?: string, style?: string, opti
 
             staticMetadata.template = templateElement;
 
-            const action = (instance: InstanceType<T>): InstanceType<T> =>
+            const handler: ProxyHandler<T> =
             {
-                TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                construct: (target, args, newTarget) =>
+                {
+                    const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
 
-                const metadata = Metadata.of(instance)!;
+                    TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
-                staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
+                    const metadata = Metadata.of(instance)!;
 
-                return instance;
+                    staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
+
+                    return instance;
+                },
             };
 
-            const proxy = overrideConstructor(target, action);
+            const proxy = new Proxy(target, handler);
 
             window.customElements.define(tagname, proxy, options);
 

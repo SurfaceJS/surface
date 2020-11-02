@@ -1,11 +1,11 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { uuidv4 }                      from "@surface/core";
-import { shouldPass, suite, test }     from "@surface/test-suite";
-import { assert }                      from "chai";
-import CustomElement, { templateable } from "../internal/custom-element";
-import { attribute, element }          from "../internal/decorators";
+import { uuidv4 }                  from "@surface/core";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                  from "chai";
+import CustomElement               from "../internal/custom-element";
+import { attribute, element }      from "../internal/decorators";
 
 @suite
 export default class DecoratorsSpec
@@ -134,7 +134,7 @@ export default class DecoratorsSpec
     public elementDecoratorCustomElementWithTemplateAndStyleAndOptions(): void
     {
         @element(`mock-${uuidv4()}`, "<div>Template</div>", "div { color: red; }", { extends: "div" })
-        class Mock extends templateable(HTMLDivElement)
+        class Mock extends CustomElement.as(HTMLDivElement)
         {
             public constructor()
             {

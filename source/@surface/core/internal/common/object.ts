@@ -230,32 +230,6 @@ export function objectFactory(keys: [string, unknown][], target: Indexer = { }):
     return target;
 }
 
-/**
- * Inject an action to be executed after instantiation.
- * @param constructor target constructor
- * @param action action to be executed
- */
-export function overrideConstructor<T extends Constructor>(constructor: T, action: Delegate<[InstanceType<T>], InstanceType<T>>): T
-{
-    const proxy =
-    {
-        // eslint-disable-next-line object-shorthand
-        [constructor.name]: function(...args: unknown[])
-        {
-            const instance = Reflect.construct(constructor, args, new.target) as InstanceType<T>;
-
-            return action(instance);
-        },
-    }[constructor.name];
-
-    Reflect.setPrototypeOf(proxy, Reflect.getPrototypeOf(constructor));
-    Object.defineProperties(proxy, Object.getOwnPropertyDescriptors(constructor));
-
-    proxy.prototype.constructor = proxy;
-
-    return proxy as unknown as T;
-}
-
 // eslint-disable-next-line max-len
 export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string | symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor | null, beforeSetter?: boolean): PropertyDescriptor
 {

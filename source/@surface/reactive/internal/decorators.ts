@@ -1,7 +1,7 @@
-import { Constructor, IDisposable, overrideConstructor } from "@surface/core";
-import ISubscription                                     from "./interfaces/subscription";
-import Reactive                                          from "./reactive";
-import StaticMetadata                                    from "./static-metadata";
+import { Constructor, IDisposable } from "@surface/core";
+import ISubscription                from "./interfaces/subscription";
+import Reactive                     from "./reactive";
+import StaticMetadata               from "./static-metadata";
 
 export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
 {
@@ -28,9 +28,19 @@ export function observable<T extends Constructor>(target: T): T
 {
     const metadata = StaticMetadata.from(target);
 
-    const action = (instance: InstanceType<T>): InstanceType<T> => (metadata.actions.forEach(x => x(instance)), instance);
+    const handler: ProxyHandler<T> =
+    {
+        construct: (target, args, newTarget) =>
+        {
+            const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
 
-    return overrideConstructor(target, action);
+            metadata.actions.forEach(x => x(instance));
+
+            return instance;
+        },
+    };
+
+    return new Proxy(target, handler);
 }
 
 export function notify<T extends object>(...properties: (keyof T)[]): <U extends T>(target: U, propertyKey: string) => void

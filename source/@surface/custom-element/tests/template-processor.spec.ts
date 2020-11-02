@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Delegate, Indexer, uuidv4 }                   from "@surface/core";
+import { Delegate, Indexer, uuidv4 }           from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import CustomElement                           from "../internal/custom-element";

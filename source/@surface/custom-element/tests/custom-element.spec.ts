@@ -11,6 +11,8 @@ export default class CustomElementSpec
     @test @shouldPass
     public construct(): void
     {
-        assert.doesNotThrow(() => new MockElement());
+        const instance = new MockElement();
+
+        assert.isOk(instance);
     }
 }

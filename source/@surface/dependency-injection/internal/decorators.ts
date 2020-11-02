@@ -1,8 +1,9 @@
-import { Constructor, overrideConstructor } from "@surface/core";
-import Container                            from "./container";
-import StaticMetadata                       from "./metadata";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable import/prefer-default-export */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+import { Constructor } from "@surface/core";
+import StaticMetadata  from "./metadata";
+
 export function inject(key: string | symbol | Constructor): any
 {
     return (...args: [object, string | symbol, number] | [object, string | symbol, PropertyDescriptor]) =>
@@ -22,10 +23,4 @@ export function inject(key: string | symbol | Constructor): any
             metadata.properties.push([propertyKey, key]);
         }
     };
-}
-
-export function injectable(container: Container): <T extends Constructor>(target: T) => T
-{
-    return <T extends Constructor>(target: T) =>
-        overrideConstructor(target, x => container.inject(x));
 }

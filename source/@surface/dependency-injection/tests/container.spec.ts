@@ -1,6 +1,7 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Container, { inject, injectable }       from "..";
+import Container                               from "../internal/container";
+import { inject }                              from "../internal/decorators";
 import Bar                                     from "./mocks/bar";
 import Baz                                     from "./mocks/baz";
 import Foo                                     from "./mocks/foo";
@@ -129,22 +130,6 @@ export default class DependencyInjectionSpec
     public resolveFactory(): void
     {
         const instance1 = container.resolve<InjectableMock>("factory");
-        const instance2 = container.resolve(InjectableMock);
-
-        assert.notEqual(instance1, instance2, "instance1 equal instance2");
-        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
-        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
-        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
-    }
-
-    @test @shouldPass
-    public injectable(): void
-    {
-        @injectable(container)
-        class Mock extends InjectableMock
-        { }
-
-        const instance1 = new Mock(container.resolve("baz"));
         const instance2 = container.resolve(InjectableMock);
 
         assert.notEqual(instance1, instance2, "instance1 equal instance2");
