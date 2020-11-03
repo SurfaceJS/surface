@@ -19,8 +19,6 @@ window.open = url =>
     return jsdom.window as object as Window;
 };
 
-window.requestAnimationFrame = callback => setTimeout(() => callback(0));
-
 Object.assign
 (
     global,

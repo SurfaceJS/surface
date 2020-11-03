@@ -1,6 +1,6 @@
-import { IDisposable, Indexer, assert } from "@surface/core";
-import { TypeGuard }                    from "@surface/expression";
-import { ISubscription }                from "@surface/reactive";
+import { CancellationTokenSource, IDisposable, Indexer, assert } from "@surface/core";
+import { TypeGuard }                                             from "@surface/expression";
+import { ISubscription }                                         from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -24,11 +24,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     private readonly template:        HTMLTemplateElement;
     private readonly templateBlock:   TemplateBlock = new TemplateBlock();
 
-    private currentDisposable: IDisposable | null   = null;
-    private disposed:          boolean              = false;
-    private key:               string               = "";
-    private subscription:      ISubscription | null = null;
-    private timer:             number               = 0;
+    private currentDisposable:       IDisposable | null   = null;
+    private disposed:                boolean              = false;
+    private key:                     string               = "";
+    private subscription:            ISubscription | null = null;
+    private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
 
     private injection?: Injection;
 
@@ -60,12 +60,14 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private applyLazyInjection(): void
     {
-        this.timer = window.setTimeout(() => this.applyInjection());
+        this.cancellationTokenSource = new CancellationTokenSource();
+
+        ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "after");
     }
 
     private inject(injection?: Injection): void
     {
-        window.clearTimeout(this.timer);
+        this.cancellationTokenSource.cancel();
 
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
@@ -77,11 +79,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const notify = async (): Promise<void> => ParallelWorker.run(task);
+        const notify = (): void => ParallelWorker.run(task);
 
         this.subscription = tryObserveByObservable(this.scope, this.directive, { notify }, true);
 
-        void this.fireAsync(notify);
+        notify();
     }
 
     private onKeyChange(): void

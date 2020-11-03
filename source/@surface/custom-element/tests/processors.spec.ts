@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { shouldPass, suite, test }     from "@surface/test-suite";
-import { assert }                      from "chai";
-import { processTemplate, renderDone } from "../internal/processors";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                  from "chai";
+import { whenDone, processTemplate }   from "../internal/processors";
 
 @suite
 export default class ProcessorsSpec
@@ -27,7 +27,7 @@ export default class ProcessorsSpec
 
         const [content] = processTemplate("<span #if='host.visible'>Hello {host.message} !!!</span>", scope);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -35,14 +35,14 @@ export default class ProcessorsSpec
 
         scope.host.visible = false;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "#close");
 
         scope.host.visible = true;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -61,7 +61,7 @@ export default class ProcessorsSpec
 
         scope.items = [1, 2, 3];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Item: 1");

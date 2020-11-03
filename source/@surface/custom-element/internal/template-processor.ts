@@ -292,7 +292,7 @@ export default class TemplateProcessor
 
             assert(template.parentNode);
 
-            const currentContext = data.context ?? template.parentNode;
+            const currentContext = template.parentNode;
 
             disposables.push(new InjectDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }

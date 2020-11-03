@@ -44,11 +44,9 @@ export default class DataBind
         {
             const metadata = Metadata.from(member);
 
-            type Key = keyof HTMLElement;
-
             function action(this: HTMLElement): void
             {
-                observer.notify(this[key as Key]);
+                observer.notify(this[key as keyof HTMLElement]);
             }
 
             member.addEventListener("input", action);

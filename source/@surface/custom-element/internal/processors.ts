@@ -25,12 +25,7 @@ export function processTemplate(template: string, scope: object): [DocumentFragm
     return [content, disposable];
 }
 
-export async function renderDone(): Promise<void>
+export async function whenDone(): Promise<void>
 {
-    await ParallelWorker.done();
-}
-
-export async function timeout(): Promise<void>
-{
-    await new Promise(x => setTimeout(x, 0));
+    await ParallelWorker.whenDone();
 }

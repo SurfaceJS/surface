@@ -25,12 +25,12 @@
     },
     "scripts": {
         "build": "tsc -p ./tasks/tsconfig.no-tests.json && npm run task:build",
-        "cover": "nyc --check-coverage mocha --ui tdd **/source/@surface/*/tests/**/*.spec.js",
+        "cover": "nyc --check-coverage mocha --require ./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js",
         "lint": "eslint . --ext .ts",
         "task:build": "node ./tasks/cli build",
         "task:clean": "node ./tasks/cli clean",
         "task:publish": "node ./tasks/cli publish",
-        "test": "mocha --ui tdd **/source/@surface/*/tests/**/*.spec.js"
+        "test": "mocha --require ./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js"
     },
     "version": "1.0.0",
     "workspaces": [

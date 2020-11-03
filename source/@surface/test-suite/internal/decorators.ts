@@ -240,12 +240,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (beforeCallback)
                 {
-                    mocha.before(beforeCallback[DESCRIPTION] ?? "", beforeCallback.bind(context));
+                    mocha.before(beforeCallback[DESCRIPTION]!, beforeCallback.bind(context));
                 }
 
                 if (beforeEachCallback)
                 {
-                    mocha.beforeEach(beforeEachCallback[DESCRIPTION] ?? "", beforeEachCallback.bind(context));
+                    mocha.beforeEach(beforeEachCallback[DESCRIPTION]!, beforeEachCallback.bind(context));
                 }
 
                 for (const test of tests)
@@ -270,12 +270,12 @@ export function suite(targetOrDescription: Function | string): ClassDecorator | 
 
                 if (afterEachCallback)
                 {
-                    mocha.afterEach(afterEachCallback[DESCRIPTION] ?? "", afterEachCallback.bind(context));
+                    mocha.afterEach(afterEachCallback[DESCRIPTION]!, afterEachCallback.bind(context));
                 }
 
                 if (afterCallback)
                 {
-                    mocha.after(afterCallback[DESCRIPTION] ?? "", afterCallback.bind(context));
+                    mocha.after(afterCallback[DESCRIPTION]!, afterCallback.bind(context));
                 }
             },
         );

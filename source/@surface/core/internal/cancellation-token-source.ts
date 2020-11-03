@@ -1,9 +1,13 @@
-import CancelationToken from "./types/cancelation-token";
+import EventListener    from "./event-listener";
+import CancellationToken from "./types/cancellation-token";
 
-export default class CancelationTokenSource
+export default class CancellationTokenSource
 {
     private canceled: boolean = false;
-    public readonly token: CancelationToken;
+
+    private readonly onCancelation: EventListener<void> = new EventListener();
+
+    public readonly token: CancellationToken;
 
     public constructor()
     {
@@ -15,11 +19,16 @@ export default class CancelationTokenSource
             {
                 return $this.canceled;
             },
+            get onCancellation()
+            {
+                return $this.onCancelation;
+            },
         };
     }
 
     public cancel(): void
     {
         this.canceled = true;
+        this.onCancelation.notify();
     }
 }

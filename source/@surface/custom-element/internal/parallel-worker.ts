@@ -1,98 +1,122 @@
-import { Queue }    from "@surface/collection";
-import { Delegate } from "@surface/core";
-
-type Callback = (value: unknown) => void;
+import { Queue }               from "@surface/collection";
+import { Delegate, fireAsync } from "@surface/core";
 
 export default class ParallelWorker
 {
     public static readonly default = new ParallelWorker();
 
-    private readonly queue: Queue<[Delegate, Callback]> = new Queue();
+    private readonly queue:     Queue<Delegate> = new Queue();
+    private readonly postQueue: Queue<Delegate> = new Queue();
 
     private readonly interval: number;
 
-    private _done:    Promise<void>              = Promise.resolve();
-    private expended: number                     = 0;
-    private resolve:  Delegate | null            = null;
-    private reject:   Delegate<[unknown]> | null = null;
-    private running:  boolean                    = false;
+    private currentExecution: Promise<void> = Promise.resolve();
+    private running:          boolean       = false;
 
     public constructor(interval: number = 16.17)
     {
         this.interval = interval;
     }
 
-    public static async done(): Promise<void>
+    public static async whenDone(): Promise<void>
     {
-        return ParallelWorker.default.done();
+        return ParallelWorker.default.whenDone();
     }
 
-    public static async run<TAction extends Delegate>(action: TAction): Promise<ReturnType<TAction>>
+    public static run(action: Delegate, stage: "normal" | "after" = "normal"): void
     {
-        return ParallelWorker.default.run(action);
+        ParallelWorker.default.run(action, stage);
     }
 
-    private execute(): void
+    private execute(resolve: Delegate, reject: Delegate<[Error]>): void
     {
-        let rejected = false;
-        this.running = true;
-
-        while (this.queue.length > 0)
+        try
         {
-            const [action, callback] = this.queue.dequeue()!;
+            let expended = 0;
 
-            const start = window.performance.now();
-
-            try
+            while (this.queue.length > 0)
             {
-                callback(action());
+                const action = this.queue.dequeue()!;
+
+                const start = window.performance.now();
+
+                action();
 
                 const end = window.performance.now();
 
-                this.expended += end - start;
+                expended += end - start;
 
-                if (this.expended > this.interval)
+                if (expended > this.interval)
                 {
-                    this.expended = 0;
-
-                    window.requestAnimationFrame(() => this.execute());
+                    window.requestAnimationFrame(() => this.execute(resolve, reject));
 
                     return;
                 }
             }
-            catch (error)
-            {
-                this.reject?.(error);
-                this.reject = null;
 
-                rejected = true;
+            while (this.postQueue.length > 0)
+            {
+                const action = this.postQueue.dequeue()!;
+
+                const start = window.performance.now();
+
+                action();
+
+                const end = window.performance.now();
+
+                expended += end - start;
+
+                if (expended > this.interval)
+                {
+                    window.requestAnimationFrame(() => this.execute(resolve, reject));
+
+                    return;
+                }
             }
         }
-
-        this.expended = 0;
-        this.running  = false;
-
-        if (!rejected)
+        catch (error)
         {
-            this.resolve?.();
-            this.resolve = null;
+            this.queue.clear();
+            this.postQueue.clear();
+
+            reject(error);
+
+            return;
+        }
+
+        if (this.queue.length > 0)
+        {
+            this.execute(resolve, reject);
+        }
+        else
+        {
+            resolve();
         }
     }
 
-    public async done(): Promise<void>
+    public async whenDone(): Promise<void>
     {
-        return this._done;
+        return this.currentExecution;
     }
 
-    public async run<TAction extends Delegate>(action: TAction): Promise<ReturnType<TAction>>
+    public run(action: Delegate, stage: "normal" | "after" = "normal"): void
     {
+        switch (stage)
+        {
+            case "after":
+                this.postQueue.enqueue(action);
+                break;
+            case "normal":
+            default:
+                this.queue.enqueue(action);
+                break;
+        }
+
         if (!this.running)
         {
-            this._done = new Promise((resolve, reject) => (this.resolve = resolve, this.reject = reject));
+            this.running = true;
 
-            window.setTimeout(() => this.execute());
+            this.currentExecution = new Promise<void>((resolve, reject) => void fireAsync(() => this.execute(resolve, reject)).finally(() => this.running = false));
         }
-
-        return await new Promise(resolve => this.queue.enqueue([action, resolve as Callback]));
     }
 }
