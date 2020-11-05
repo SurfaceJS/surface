@@ -482,7 +482,6 @@ export default class TemplateProcessorSpec
         root.injectKey = "key-b";
 
         await whenDone();
-        // await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
@@ -490,14 +489,12 @@ export default class TemplateProcessorSpec
         host.placeholderKey = "key-b";
 
         await whenDone();
-        // await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
 
         host.placeholderKey = "key-a";
 
         await whenDone();
-        // await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
     }

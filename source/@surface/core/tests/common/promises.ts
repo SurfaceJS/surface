@@ -1,7 +1,7 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
 import CancellationTokenSource                 from "../../internal/cancellation-token-source";
-import { fireAsync }                           from "../../internal/common/promises";
+import { runAsync }                           from "../../internal/common/promises";
 
 @suite
 export default class PromisesSpec
@@ -11,7 +11,7 @@ export default class PromisesSpec
     {
         const now = Date.now();
 
-        await fireAsync(() => void 0, 10);
+        await runAsync(() => void 0, 10);
 
         const expended = Date.now() - now;
 
@@ -25,7 +25,7 @@ export default class PromisesSpec
 
         const cancellationTokenSource = new CancellationTokenSource();
 
-        const promise = fireAsync(() => void 0, 10, cancellationTokenSource.token);
+        const promise = runAsync(() => void 0, 10, cancellationTokenSource.token);
 
         cancellationTokenSource.cancel();
 

@@ -4,9 +4,9 @@ import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
 import TemplateProcessor   from "./template-processor";
 
-const cache = new Map<string, [HTMLTemplateElement, ITemplateDescriptor]>();
+const cache = new Map<string, [template: HTMLTemplateElement, descriptor: ITemplateDescriptor]>();
 
-export function processTemplate(template: string, scope: object): [DocumentFragment, IDisposable]
+export function processTemplate(template: string, scope: object): [content: DocumentFragment, disposable: IDisposable]
 {
     if (!cache.has(template))
     {

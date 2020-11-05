@@ -62,7 +62,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         this.cancellationTokenSource = new CancellationTokenSource();
 
-        ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "after");
+        ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
     }
 
     private inject(injection?: Injection): void

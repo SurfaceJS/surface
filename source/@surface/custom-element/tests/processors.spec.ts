@@ -1,9 +1,9 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import { whenDone, processTemplate }   from "../internal/processors";
+import { shouldPass, suite, test }   from "@surface/test-suite";
+import { assert }                    from "chai";
+import { processTemplate, whenDone } from "../internal/processors";
 
 @suite
 export default class ProcessorsSpec

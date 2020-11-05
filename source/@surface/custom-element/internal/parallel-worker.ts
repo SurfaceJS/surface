@@ -1,14 +1,13 @@
-import { Queue }               from "@surface/collection";
-import { Delegate, fireAsync } from "@surface/core";
+import { Queue }              from "@surface/collection";
+import { Delegate, runAsync } from "@surface/core";
 
 export default class ParallelWorker
 {
     public static readonly default = new ParallelWorker();
 
-    private readonly queue:     Queue<Delegate> = new Queue();
-    private readonly postQueue: Queue<Delegate> = new Queue();
-
-    private readonly interval: number;
+    private readonly normalQueue: Queue<Delegate> = new Queue();
+    private readonly lowQueue:    Queue<Delegate> = new Queue();
+    private readonly interval:     number;
 
     private currentExecution: Promise<void> = Promise.resolve();
     private running:          boolean       = false;
@@ -23,74 +22,57 @@ export default class ParallelWorker
         return ParallelWorker.default.whenDone();
     }
 
-    public static run(action: Delegate, stage: "normal" | "after" = "normal"): void
+    public static run(action: Delegate, priority: "normal" | "low" = "normal"): void
     {
-        ParallelWorker.default.run(action, stage);
+        ParallelWorker.default.run(action, priority);
     }
 
-    private execute(resolve: Delegate, reject: Delegate<[Error]>): void
+    private async nextFrame(): Promise<number>
+    {
+        return new Promise(resolve => window.requestAnimationFrame(resolve));
+    }
+
+    private async processQueue(queue: Queue<Delegate>, ...higher: Queue<Delegate>[]): Promise<void>
+    {
+        let expended = 0;
+
+        while (queue.length > 0)
+        {
+            const action = queue.dequeue()!;
+
+            const start = window.performance.now();
+
+            action();
+
+            const end = window.performance.now();
+
+            expended += end - start;
+
+            if (expended > this.interval)
+            {
+                expended = 0;
+
+                await this.nextFrame();
+            }
+
+            if (higher.some(x => x.length > 0))
+            {
+                await this.execute();
+            }
+        }
+    }
+
+    private async execute(): Promise<void>
     {
         try
         {
-            let expended = 0;
-
-            while (this.queue.length > 0)
-            {
-                const action = this.queue.dequeue()!;
-
-                const start = window.performance.now();
-
-                action();
-
-                const end = window.performance.now();
-
-                expended += end - start;
-
-                if (expended > this.interval)
-                {
-                    window.requestAnimationFrame(() => this.execute(resolve, reject));
-
-                    return;
-                }
-            }
-
-            while (this.postQueue.length > 0)
-            {
-                const action = this.postQueue.dequeue()!;
-
-                const start = window.performance.now();
-
-                action();
-
-                const end = window.performance.now();
-
-                expended += end - start;
-
-                if (expended > this.interval)
-                {
-                    window.requestAnimationFrame(() => this.execute(resolve, reject));
-
-                    return;
-                }
-            }
+            await this.processQueue(this.normalQueue);
+            await this.processQueue(this.lowQueue, this.normalQueue);
         }
-        catch (error)
+        finally
         {
-            this.queue.clear();
-            this.postQueue.clear();
-
-            reject(error);
-
-            return;
-        }
-
-        if (this.queue.length > 0)
-        {
-            this.execute(resolve, reject);
-        }
-        else
-        {
-            resolve();
+            this.normalQueue.clear();
+            this.lowQueue.clear();
         }
     }
 
@@ -99,16 +81,16 @@ export default class ParallelWorker
         return this.currentExecution;
     }
 
-    public run(action: Delegate, stage: "normal" | "after" = "normal"): void
+    public run(action: Delegate, priority: "normal" | "low" = "normal"): void
     {
-        switch (stage)
+        switch (priority)
         {
-            case "after":
-                this.postQueue.enqueue(action);
+            case "low":
+                this.lowQueue.enqueue(action);
                 break;
             case "normal":
             default:
-                this.queue.enqueue(action);
+                this.normalQueue.enqueue(action);
                 break;
         }
 
@@ -116,7 +98,7 @@ export default class ParallelWorker
         {
             this.running = true;
 
-            this.currentExecution = new Promise<void>((resolve, reject) => void fireAsync(() => this.execute(resolve, reject)).finally(() => this.running = false));
+            this.currentExecution = runAsync(this.execute.bind(this)).finally(() => this.running = false);
         }
     }
 }

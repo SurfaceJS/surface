@@ -7,7 +7,7 @@ type Timer = unknown;
 declare function clearTimeout(timer: Timer): Timer;
 declare function setTimeout(action: Callable, timeout?: number): Timer;
 
-export async function fireAsync<T extends Callable>(action: T, timeout?: number, cancellationToken?: CancellationToken): Promise<ReturnType<T>>
+export async function runAsync<T>(action: () => T | Promise<T>, timeout?: number, cancellationToken?: CancellationToken): Promise<T>
 {
     return new Promise
     (
@@ -25,7 +25,16 @@ export async function fireAsync<T extends Callable>(action: T, timeout?: number,
                     {
                         try
                         {
-                            resolve(action());
+                            const value = action();
+
+                            if (value instanceof Promise)
+                            {
+                                value.then(resolve, reject);
+                            }
+                            else
+                            {
+                                resolve(value);
+                            }
                         }
                         catch (error)
                         {

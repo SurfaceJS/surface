@@ -1,4 +1,4 @@
-import { fireAsync }     from "./common/promises";
+import { runAsync }     from "./common/promises";
 import AggregateError    from "./errors/aggregate-error";
 import { Delegate }      from "./types";
 import CancellationToken from "./types/cancellation-token";
@@ -61,7 +61,7 @@ export default class ParallelWorker
         {
             this.running = true;
 
-            this.currentExecution = fireAsync(() => this.execute())
+            this.currentExecution = runAsync(() => this.execute())
                 .finally(() => this.running = false);
         }
 
