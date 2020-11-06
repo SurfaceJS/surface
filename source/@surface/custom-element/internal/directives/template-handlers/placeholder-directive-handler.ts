@@ -60,6 +60,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private applyLazyInjection(): void
     {
+        this.cancellationTokenSource.dispose();
         this.cancellationTokenSource = new CancellationTokenSource();
 
         ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
@@ -159,6 +160,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         if (!this.disposed)
         {
+            this.cancellationTokenSource.dispose();
             this.currentDisposable?.dispose();
 
             this.keySubscription.unsubscribe();

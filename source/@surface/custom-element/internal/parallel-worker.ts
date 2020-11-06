@@ -7,7 +7,7 @@ export default class ParallelWorker
 
     private readonly normalQueue: Queue<Delegate> = new Queue();
     private readonly lowQueue:    Queue<Delegate> = new Queue();
-    private readonly interval:     number;
+    private readonly interval:    number;
 
     private currentExecution: Promise<void> = Promise.resolve();
     private running:          boolean       = false;
@@ -32,7 +32,7 @@ export default class ParallelWorker
         return new Promise(resolve => window.requestAnimationFrame(resolve));
     }
 
-    private async processQueue(queue: Queue<Delegate>, ...higher: Queue<Delegate>[]): Promise<void>
+    private async processQueue(queue: Queue<Delegate>, hasPriorityChange?: () => boolean): Promise<void>
     {
         let expended = 0;
 
@@ -55,7 +55,7 @@ export default class ParallelWorker
                 await this.nextFrame();
             }
 
-            if (higher.some(x => x.length > 0))
+            if (hasPriorityChange?.())
             {
                 await this.execute();
             }
@@ -67,7 +67,7 @@ export default class ParallelWorker
         try
         {
             await this.processQueue(this.normalQueue);
-            await this.processQueue(this.lowQueue, this.normalQueue);
+            await this.processQueue(this.lowQueue, () => this.normalQueue.length > 0);
         }
         finally
         {

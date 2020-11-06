@@ -1,6 +1,6 @@
 import { Stack }                                   from "@surface/collection";
 import { Constructor, Lazy, assertGet, typeGuard } from "@surface/core";
-import CustomElement                               from "@surface/custom-element";
+import { DirectiveHandlerRegistry }                from "@surface/custom-element/internal/types";
 import Container                                   from "@surface/dependency-injection";
 import { RouteData }                               from "@surface/router";
 import Router                                      from "@surface/router/internal/router";
@@ -56,9 +56,9 @@ export default class ViewRouter
         }
     }
 
-    public static registerDirective(router: ViewRouter): void
+    public static createDirectiveRegistry(router: ViewRouter): DirectiveHandlerRegistry
     {
-        CustomElement.registerDirective("to", (...args) => new NavigationDirectiveHandler(router, ...args));
+        return { handler: (...args) => new NavigationDirectiveHandler(router, ...args), name: "to" };
     }
 
     private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletTag = "router-outlet"): void

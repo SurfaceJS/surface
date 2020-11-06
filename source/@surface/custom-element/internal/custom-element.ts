@@ -53,8 +53,8 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         };
     }
 
-    public static registerDirective<T extends DirectiveHandlerRegistry>(name: string, handlerConstructor: T): void
+    public static registerDirective(registry: DirectiveHandlerRegistry): void
     {
-        directiveRegistry.set(name, handlerConstructor);
+        directiveRegistry.set(registry.name, registry.handler);
     }
 }

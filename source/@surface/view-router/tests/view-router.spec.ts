@@ -142,7 +142,9 @@ export default class ViewRouterSpec
             },
         };
 
-        ViewRouter.registerDirective(this.router = new ViewRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] }));
+        this.router = new ViewRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
+
+        CustomElement.registerDirective(ViewRouter.createDirectiveRegistry(this.router));
 
         document.body.appendChild(new AppRoot());
     }
