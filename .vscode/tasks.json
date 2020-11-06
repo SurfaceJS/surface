@@ -105,39 +105,9 @@
             "type": "shell"
         },
         {
-            "command": "npm run task:install -- -m ${input:modules}",
-            "isBackground": true,
-            "label": "Install Module",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
             "command": "npm task:publish -- --t ${env:NPM_AUTH_TOKEN}",
             "isBackground": true,
             "label": "Publish to NPM - DEV",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": "npm task:sync -- -s ${input:strategy-type}",
-            "isBackground": true,
-            "label": "Sync Dependencies",
-            "presentation": {
-                "reveal": "always"
-            },
-            "problemMatcher": [],
-            "type": "shell"
-        },
-        {
-            "command": "npm task:sync -- -s ${input:strategy-type} -t ${input:sync-version}",
-            "isBackground": true,
-            "label": "Sync Dependencies version",
             "presentation": {
                 "reveal": "always"
             },

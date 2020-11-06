@@ -1,7 +1,7 @@
 import { IDisposable, assert }                           from "@surface/core";
 import { ISubscription }                                 from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
-import IChoiceBranchDirective                            from "../../interfaces/directives/choice-branch-directive";
+import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
 import ParallelWorker                                    from "../../parallel-worker";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";
@@ -31,7 +31,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const notify = async (): Promise<void> => ParallelWorker.run(this.task.bind(this));
+        const notify = (): void => ParallelWorker.run(this.task.bind(this));
 
         for (let index = 0; index < branches.length; index++)
         {
@@ -47,7 +47,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             template.remove();
         }
 
-        void this.fireAsync(notify);
+        notify();
     }
 
     private task(): void

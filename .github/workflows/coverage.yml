@@ -32,4 +32,4 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v1.0.14
       with:
-        token: 4b464452-081a-4cf4-ba1c-c6c5346ea66a
+        token: ${{ secrets.CODECOV_TOKEN }}

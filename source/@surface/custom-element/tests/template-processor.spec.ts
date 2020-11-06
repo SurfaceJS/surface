@@ -2,16 +2,19 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Delegate, Indexer }                   from "@surface/core";
+import { Delegate, Indexer, uuidv4 }           from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
+import CustomElement                           from "../internal/custom-element";
+import { element }                             from "../internal/decorators";
 import directiveRegistry                       from "../internal/directive-registry";
 import CustomStackError                        from "../internal/errors/custom-stack-error";
 import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
-import { renderDone, timeout }                 from "../internal/processors";
+import { whenDone }                            from "../internal/processors";
 import TemplateParser                          from "../internal/template-parser";
 import TemplateProcessor                       from "../internal/template-processor";
 import CustomDirectiveHandler                  from "./fixtures/custom-directive";
+import customDirectiveFactory                  from "./fixtures/custom-directive-factory";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -20,6 +23,7 @@ class XComponent extends HTMLElement { }
 window.customElements.define("x-component", XComponent);
 
 directiveRegistry.set("custom", CustomDirectiveHandler);
+directiveRegistry.set("custom-factory", customDirectiveFactory);
 
 function tryAction(action: Delegate): RawError
 {
@@ -41,7 +45,7 @@ async function tryActionAsync(action: Delegate): Promise<RawError>
     {
         action();
 
-        await renderDone();
+        await whenDone();
     }
     catch (error)
     {
@@ -236,7 +240,7 @@ export default class TemplateProcessorSpec
         host.id = "host";
         host.id = "hostRoot";
 
-        host.shadowRoot.innerHTML = "<span ::value='host.value'</span>";
+        host.shadowRoot.innerHTML = "<span ::value=\"host.value\"></span>";
 
         const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
 
@@ -255,7 +259,33 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithAttributesWithEventBind(): void
+    public elementWithTwoWayComputedDataBinding(): void
+    {
+        const host = getHost<{ value?: string }>();
+
+        host.id = "host";
+        host.id = "hostRoot";
+
+        host.shadowRoot.innerHTML = "<span ::value=\"host['value']\"></span>";
+
+        const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { value?: string };
+
+        host.value = "";
+        span.value = "";
+
+        process(host, host.shadowRoot);
+
+        host.value = "foo";
+
+        assert.equal(span.value, "foo");
+
+        span.value = "foo";
+
+        assert.equal(host.value, "foo");
+    }
+
+    @test @shouldPass
+    public elementWithEventDirectiveBind(): void
     {
         const host = getHost();
 
@@ -263,7 +293,7 @@ export default class TemplateProcessorSpec
 
         host.click = () => clicked = true;
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.click'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.click'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -273,7 +303,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithEventDirectiveBind(): void
+    public elementWithEventDirectiveExpression(): void
     {
         const host = getHost<{ method?: Function }>();
 
@@ -281,7 +311,7 @@ export default class TemplateProcessorSpec
 
         host.method = (value: boolean) => clicked = value;
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.method(true)'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.method(true)'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -295,7 +325,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click='() => window.name = \"clicked\"'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='() => window.name = \"clicked\"'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -309,7 +339,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost<{ clicked: boolean }>();
 
-        host.shadowRoot.innerHTML = "<span #on:click='host.clicked = true'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='host.clicked = true'>Text</span>";
 
         process(host, host.shadowRoot);
 
@@ -323,11 +353,12 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #custom:directive=\"'Hello World!!!'\"></span>";
+        host.shadowRoot.innerHTML = "<span #custom:directive=\"'Hello World!!!'\"></span><span #custom-factory:factory-directive=\"'Hello World!!!'\"></span>";
 
         process(host, host.shadowRoot);
 
         assert.equal(host.shadowRoot.firstElementChild!.textContent, "directive: Hello World!!!");
+        assert.equal(host.shadowRoot.lastElementChild!.textContent, "factory-directive: Hello World!!!");
     }
 
     @test @shouldPass
@@ -394,8 +425,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await new Promise(x => window.setTimeout(x));
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
     }
@@ -417,7 +447,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
@@ -439,38 +469,32 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await timeout();
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
 
         root.injectKey = "key-b";
 
-        await timeout();
-        await renderDone();
-
-        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
         host.placeholderKey = "key-b";
 
-        await timeout();
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
 
         host.placeholderKey = "key-a";
 
-        await timeout();
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
     }
@@ -515,7 +539,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
     }
@@ -537,13 +561,13 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Hello People!!!");
 
         host.item = { value: "World" };
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
@@ -573,7 +597,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",  "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "#close", "childNodes[1]");
@@ -585,7 +609,7 @@ export default class TemplateProcessorSpec
             ["Three", 3, true],
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
@@ -604,7 +628,7 @@ export default class TemplateProcessorSpec
             ["Three", 3, true],
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
@@ -627,13 +651,13 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.firstElementChild?.textContent, "First");
 
         host.order = 2;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.firstElementChild?.textContent, "");
 
@@ -655,19 +679,19 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[1].textContent, "First");
 
         host.order = 2;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Second");
 
         host.order = 3;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
     }
@@ -683,7 +707,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
@@ -691,7 +715,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
@@ -702,7 +726,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent,  "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent,  "Element: 0", "childNodes[1]");
@@ -716,7 +740,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [2];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
@@ -734,7 +758,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
@@ -742,7 +766,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
@@ -753,7 +777,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
@@ -767,7 +791,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [2];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2", "childNodes[1]");
@@ -775,11 +799,11 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await renderDone();
+        await whenDone();
 
         host.elements = [3, 2, 1];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 3", "childNodes[1]");
@@ -803,7 +827,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -811,7 +835,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[1, 2], [2, 4]];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -822,7 +846,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[1, 2], [2, 4], [3, 6]];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -836,7 +860,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[2, 4]];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
@@ -854,7 +878,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
@@ -866,7 +890,7 @@ export default class TemplateProcessorSpec
             [2, { item: { name: "two" } }],
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
@@ -882,7 +906,7 @@ export default class TemplateProcessorSpec
             [3, { item: { name: "three" } }],
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                   "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one",   "childNodes[1]");
@@ -896,7 +920,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[2, { item: { name: "two" } }]];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2, Name: two", "childNodes[1]");
@@ -914,7 +938,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -926,7 +950,7 @@ export default class TemplateProcessorSpec
             { values: [2, 4] },
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -942,7 +966,7 @@ export default class TemplateProcessorSpec
             { values: [3, 6] },
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -956,7 +980,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [{ values: [2, 4] }];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
@@ -974,7 +998,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -986,7 +1010,7 @@ export default class TemplateProcessorSpec
             { values: [2, [[4]]] },
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -1002,7 +1026,7 @@ export default class TemplateProcessorSpec
             { values: [3, [[6]]] },
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
@@ -1016,7 +1040,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [{ values: [2, [[4]]] }];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
@@ -1048,7 +1072,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
@@ -1056,7 +1080,7 @@ export default class TemplateProcessorSpec
 
         host.condition = true;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
@@ -1070,7 +1094,7 @@ export default class TemplateProcessorSpec
 
         host.condition = false;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
@@ -1106,14 +1130,14 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
 
         host.condition = true;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
@@ -1145,7 +1169,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
@@ -1153,7 +1177,7 @@ export default class TemplateProcessorSpec
 
         host.condition = true;
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
@@ -1195,7 +1219,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
@@ -1207,7 +1231,7 @@ export default class TemplateProcessorSpec
             ["Three", 3],
         ];
 
-        await renderDone();
+        await whenDone();
 
         assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
@@ -1218,6 +1242,52 @@ export default class TemplateProcessorSpec
         assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
         assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
         assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
+    }
+
+    @test @shouldPass
+    public async elementWithLazyDefinition(): Promise<void>
+    {
+        const host = document.createElement("div");
+
+        document.body.appendChild(host);
+
+        const DUMMY_CHILD  = `dummy-child-${uuidv4()}`;
+        const DUMMY_PARENT = `dummy-parent-${uuidv4()}`;
+        const X_ELEMENT    = `x-element-${uuidv4()}`;
+
+        @element(DUMMY_CHILD)
+        class DummyChild extends CustomElement
+        { }
+
+        @element(DUMMY_PARENT)
+        class DummyParent extends CustomElement
+        { }
+
+        const template =
+        `
+            <template #for="const i in host.indexes">
+                <${DUMMY_PARENT}>
+                    <${DUMMY_CHILD} data-index="{i}">
+                    </${DUMMY_CHILD}>
+                </${DUMMY_PARENT}>
+            </template>
+        `;
+
+        @element(X_ELEMENT, template)
+        class XElement extends CustomElement
+        {
+            public indexes: number[] = [1, 2, 3];
+        }
+
+        const xelement = new XElement();
+
+        await whenDone();
+
+        host.appendChild(xelement);
+
+        assert.instanceOf(host.firstElementChild, XElement);
+        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild, DummyParent);
+        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild!.firstElementChild, DummyChild);
     }
 
     @test @shouldFail
@@ -1236,58 +1306,21 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    @test @shouldPass
+    @test @shouldFail
     public evaluationErrorEventBind(): void
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #on:click=\"host.fn\"></span>";
+        host.shadowRoot.innerHTML = "<span @click=\"host.fn\"></span>";
 
-        const message = "Evaluation error in #on:click=\"host.fn\": host.fn is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"host.fn\">";
-
-        const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new CustomStackError(message, stack));
-
-        assert.deepEqual(actual, expected);
-    }
-
-    /*
-    Can't capture error
-    @test @shouldPass
-    public evaluationErrorEventBodyExpression(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span #on:click=\"host.value = { value }\"></span>";
-
-        const message = "value is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"++host.value\">";
-
-        const actual   = tryAction(() => (process(host, host.shadowRoot), host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"))));
-        const expected = toRaw(new CustomStackError(message, stack));
-
-        assert.deepEqual(actual, expected);
-
-    }
-
-    Can't capture error
-    @test @shouldPass
-    public evaluationErrorEventArrowFunction(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span #on:click=\"() => host.fn()\"></span>";
-
-        const message = "host.fn is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on:click=\"() => host.fn()\">";
+        const message = "Evaluation error in @click=\"host.fn\": host.fn is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span @click=\"host.fn\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
         assert.deepEqual(actual, expected);
     }
-    */
 
     @test @shouldPass
     public evaluationErrorCustomDirective(): void
@@ -1714,22 +1747,6 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldFail
-    public observationErrorOnKeyDirective(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span #on=\"x => x\" #on-key=\"host.key\"></span>";
-
-        const message = "Observation error in #on-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #on=\"x => x\" #on-key=\"host.key\">";
-
-        const actual   = tryAction(() => process(host, host.shadowRoot));
-        const expected = toRaw(new CustomStackError(message, stack));
-
-        assert.deepEqual(actual, expected);
-    }
-
-    @test @shouldFail
     public observationErrorCustomDirective(): void
     {
         const host = getHost();
@@ -1776,45 +1793,4 @@ export default class TemplateProcessorSpec
 
         assert.deepEqual(actual, expected);
     }
-
-    /*
-    @test @shouldPass
-    public async xteste(): Promise<void>
-    {
-        const root = getHost();
-        const host = getHost<{ items?: Array<number> }>();
-
-        host.shadowRoot.innerHTML = `<template #placeholder #for='const i of host.items'><span>Placeholder: {i}</span></template>`;
-
-        root.shadowRoot.appendChild(host);
-        document.body.appendChild(root);
-
-        host.items = [];
-
-        process(host, host.shadowRoot);
-        process(root, root.shadowRoot);
-
-        await render();
-
-        assert.equal(host.shadowRoot.querySelector("span"), null);
-
-        host.items = [1, 2, 3];
-
-        // await timeout();
-        await render();
-
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 1");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 2");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 3");
-
-        host.items = [4, 5, 6];
-
-        // await timeout();
-        await render();
-
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(1)")?.textContent, "Placeholder: 4");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(2)")?.textContent, "Placeholder: 5");
-        assert.equal(host.shadowRoot.querySelector("span:nth-child(3)")?.textContent, "Placeholder: 6");
-    }
-    */
 }

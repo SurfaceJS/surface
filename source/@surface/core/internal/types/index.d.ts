@@ -51,6 +51,7 @@ type NewableOverloads<T> = T extends
                 : never;
 
 export type AsyncDelegate<TArgs extends unknown[] = [], TResult = void> = (...args: TArgs) => Promise<TResult>;
+export type AsyncCallable                                               = (...args: any[]) => Promise<any>;
 export type Callable                                                    = (...args: any[]) => any;
 export type Cast<T, U>                                                  = T extends U ? T : never;
 export type ClassDecoratorOf<T>                                         = (target: Constructor<T>) => Constructor<T> | void;

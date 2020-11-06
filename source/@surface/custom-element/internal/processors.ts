@@ -1,12 +1,12 @@
 import { IDisposable }     from "@surface/core";
-import ITemplateDescriptor from "./interfaces/descriptors/template-descriptor";
+import ITemplateDescriptor from "./interfaces/template-descriptor";
 import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
 import TemplateProcessor   from "./template-processor";
 
-const cache = new Map<string, [HTMLTemplateElement, ITemplateDescriptor]>();
+const cache = new Map<string, [template: HTMLTemplateElement, descriptor: ITemplateDescriptor]>();
 
-export function processTemplate(template: string, scope: object): [DocumentFragment, IDisposable]
+export function processTemplate(template: string, scope: object): [content: DocumentFragment, disposable: IDisposable]
 {
     if (!cache.has(template))
     {
@@ -25,12 +25,7 @@ export function processTemplate(template: string, scope: object): [DocumentFragm
     return [content, disposable];
 }
 
-export async function renderDone(): Promise<void>
+export async function whenDone(): Promise<void>
 {
-    await ParallelWorker.done();
-}
-
-export async function timeout(): Promise<void>
-{
-    await new Promise(x => setTimeout(x, 0));
+    await ParallelWorker.whenDone();
 }

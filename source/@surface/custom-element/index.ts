@@ -1,7 +1,7 @@
 import CustomElement from "./internal/custom-element";
 
 export type { default as ICustomElement }   from "./internal/interfaces/custom-element";
-export type { default as ICustomDirective } from "./internal/interfaces/directives/custom-directive";
+export type { default as ICustomDirective } from "./internal/interfaces/custom-directive";
 
 export * from "./internal/custom-element";
 export * from "./internal/decorators";

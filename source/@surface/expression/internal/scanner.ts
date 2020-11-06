@@ -5,6 +5,20 @@ import SyntaxError from "./syntax-error";
 import TokenType   from "./token-type";
 import Token       from "./types/token";
 
+const BACK_TICK                 = 0x60;
+const BLACKSLASH                = 0x5C;
+const CHAR_LOWERCASE_U          = 0x75;
+const CLOSE_CURLY_BRACKET       = 0x7D;
+const CLOSE_ROUND_BRACKET       = 0x29;
+const DOT                       = 0x2E;
+const DOUBLE_QUOTE              = 0x22;
+const HIGH_SURROGATE_AREA_BEGIN = 0xD800;
+const LOW_SURROGATE_AREA_END    = 0xDFFF;
+const OPEN_ROUND_BRACKET        = 0x28;
+const SEMI_COMA                 = 0x3B;
+const SINGLE_QUOTE              = 0x27;
+const UNICODE_RANGE_END         = 0x10FFFF;
+
 export default class Scanner
 {
     private readonly curlyStack: string[];
@@ -127,16 +141,19 @@ export default class Scanner
         while (!this.eof())
         {
             const charCode = this.source.charCodeAt(this.index);
-            if (charCode == 0x5C)
+
+            if (charCode == BLACKSLASH)
             {
                 // Blackslash (U+005C) marks Unicode escape sequence.
                 this.setCursorAt(start);
+
                 return this.getComplexIdentifier();
             }
-            else if (charCode >= 0xD800 && charCode < 0xDFFF)
+            else if (charCode >= HIGH_SURROGATE_AREA_BEGIN && charCode < LOW_SURROGATE_AREA_END)
             {
                 // Need to handle surrogate pairs.
                 this.setCursorAt(start);
+
                 return this.getComplexIdentifier();
             }
 
@@ -161,9 +178,9 @@ export default class Scanner
         this.setCursorAt(this.index + id.length);
 
         // '\u' (U+005C, U+0075) denotes an escaped character.
-        if (codePoint == 0x5C)
+        if (codePoint == BLACKSLASH)
         {
-            if (this.source.charCodeAt(this.index) != 0x75)
+            if (this.source.charCodeAt(this.index) != CHAR_LOWERCASE_U)
             {
                 this.throwUnexpectedToken();
             }
@@ -199,11 +216,11 @@ export default class Scanner
             this.setCursorAt(this.index + char.length);
 
             // '\u' (U+005C, U+0075) denotes an escaped character.
-            if (codePoint == 0x5C)
+            if (codePoint == BLACKSLASH)
             {
                 id = id.substr(0, id.length - 1);
 
-                if (this.source.charCodeAt(this.index) != 0x75)
+                if (this.source.charCodeAt(this.index) != CHAR_LOWERCASE_U)
                 {
                     this.throwUnexpectedToken();
                 }
@@ -417,7 +434,7 @@ export default class Scanner
         const start = this.index;
 
         // Backslash (U+005C) starts an escaped character.
-        const id = this.source.charCodeAt(start) == 0x5C ? this.getComplexIdentifier() : this.getIdentifier();
+        const id = this.source.charCodeAt(start) == BLACKSLASH ? this.getComplexIdentifier() : this.getIdentifier();
 
         // There is no keyword or literal with only one character.
         // Thus, it must be an identifier.
@@ -1199,7 +1216,7 @@ export default class Scanner
             code = code * 16 + this.hexValue(char);
         }
 
-        if (code > 0x10FFFF || char != "}")
+        if (code > UNICODE_RANGE_END || char != "}")
         {
             this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
         }
@@ -1265,21 +1282,17 @@ export default class Scanner
             return this.scanIdentifier();
         }
 
-        // Very common: ( and ) and ;
-        if (charCode == 0x28 || charCode == 0x29 || charCode == 0x3B)
+        if (charCode == OPEN_ROUND_BRACKET || charCode == CLOSE_ROUND_BRACKET || charCode == SEMI_COMA)
         {
             return this.scanPunctuator();
         }
 
-        // String literal starts with single quote (U+0027) or double quote (U+0022).
-        if (charCode == 0x27 || charCode == 0x22)
+        if (charCode == SINGLE_QUOTE || charCode == DOUBLE_QUOTE)
         {
             return this.scanStringLiteral();
         }
 
-        // Dot (.) U+002E can also start a floating-point number, hence the need
-        // To check the next character.
-        if (charCode == 0x2E)
+        if (charCode == DOT)
         {
             if (Character.isDecimalDigit(this.source.charCodeAt(this.index + 1)))
             {
@@ -1293,14 +1306,13 @@ export default class Scanner
             return this.scanNumericLiteral();
         }
 
-        // Template literals start with ` (U+0060) for template head or } (U+007D) for template middle or template tail.
-        if (charCode == 0x60 || charCode == 0x7D && this.curlyStack[this.curlyStack.length - 1] == "${")
+        if (charCode == BACK_TICK || charCode == CLOSE_CURLY_BRACKET && this.curlyStack[this.curlyStack.length - 1] == "${")
         {
             return this.scanTemplate();
         }
 
         // Possible identifier start in a surrogate pair.
-        if (charCode >= 0xD800 && charCode < 0xDFFF)
+        if (charCode >= HIGH_SURROGATE_AREA_BEGIN && charCode < LOW_SURROGATE_AREA_END)
         {
             if (Character.isIdentifierStart(this.source.codePointAt(this.index) as number))
             {

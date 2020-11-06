@@ -5,6 +5,17 @@ import { Delegate }   from "./types";
 export default class EventListener<TValue = unknown> implements IEventListener<TValue>
 {
     private readonly listeners: Set<Delegate<[TValue]>> = new Set();
+    private disposed = false;
+
+    public dispose(): void
+    {
+        if (!this.disposed)
+        {
+            this.disposed = true;
+
+            this.listeners.clear();
+        }
+    }
 
     public subscribe(listerner: Delegate<[TValue]>): ISubscription
     {

@@ -1,8 +1,6 @@
-import OnDirectiveHandler           from "./directives/handlers/on-directive-handler";
-import { DirectiveHandlerRegistry } from "./types";
+import { DirectiveHandlerConstructor, DirectiveHandlerFactory } from "./types";
 
-const directiveRegistry = new Map<string, DirectiveHandlerRegistry>();
-
-directiveRegistry.set("on", OnDirectiveHandler);
+const directiveRegistry = new Map<string, DirectiveHandlerConstructor | DirectiveHandlerFactory>();
 
 export default directiveRegistry;
+

@@ -1,4 +1,5 @@
 /* eslint-disable max-lines */
+
 import { format, tuple }           from "@surface/core";
 import { hasDuplicated }           from "./common";
 import AssignmentProperty          from "./elements/assignment-property";

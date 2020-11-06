@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 /* eslint-disable max-len */
 /* eslint-disable max-lines-per-function */
 // eslint-disable-next-line import/no-unassigned-import
@@ -9,7 +8,7 @@ import { IIdentifier }                                                   from "@
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error";
-import ITemplateDescriptor                                               from "../internal/interfaces/descriptors/template-descriptor";
+import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
 import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
 import TemplateParser                                                    from "../internal/template-parser";
 
@@ -54,7 +53,7 @@ export default class TemplateParserSpec
 
         template.innerHTML =
         [
-            "<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
+            "<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
             "<span #inject>Empty</span>",
             "<span #inject:title=\"{ title }\"><h1>{title}</h1></span>",
             "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
@@ -66,7 +65,7 @@ export default class TemplateParserSpec
             "<span #placeholder:value=\"({ name: host.name })\">Default {name}</span>",
             "<span #placeholder=\"({ name: host.name })\" #placeholder-key=\"host.dynamicPlaceholderKey\">Default {name}</span>",
             "<table>",
-            "<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">",
+            "<tr>",
             "<th>Id</th>",
             "<th>Name</th>",
             "<th>Status</th>",
@@ -130,6 +129,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0-0",
                                     textNodes:
                                     [
@@ -181,6 +181,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0-0",
                                     textNodes:
                                     [
@@ -315,6 +316,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0-0",
                                     textNodes:
                                     [
@@ -339,6 +341,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0-1",
                                     textNodes:
                                     [
@@ -363,6 +366,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0-2",
                                     textNodes:
                                     [
@@ -447,6 +451,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0",
                                     textNodes:
                                     [
@@ -497,6 +502,7 @@ export default class TemplateParserSpec
                                 {
                                     attributes: [],
                                     directives: [],
+                                    events:     [],
                                     path:       "0",
                                     textNodes:
                                     [
@@ -549,7 +555,7 @@ export default class TemplateParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
                             type: "interpolation",
                         },
@@ -563,7 +569,7 @@ export default class TemplateParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
                             type: "twoway",
                         },
@@ -577,26 +583,25 @@ export default class TemplateParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
                             type: "oneway",
                         },
                     ],
                     directives:
+                    [],
+                    events:
                     [
                         {
                             expression:       parseExpression("host.handler"),
-                            keyExpression:    parseExpression("'click'"),
-                            keyObservables:   [],
-                            name:             "on",
+                            name:             "click",
                             observables:      [["host", "handler"]],
-                            rawExpression:    "#on:click=\"host.handler\"",
-                            rawKeyExpression: "",
+                            rawExpression:    "@click=\"host.handler\"",
                             stackTrace:
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                             ],
                         },
                     ],
@@ -612,7 +617,7 @@ export default class TemplateParserSpec
                             [
                                 ["<x-component>"],
                                 ["#shadow-root"],
-                                ["<span value=\"Hello {host.name}\" #on:click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["<span value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                                 ["Some {'interpolation'} here"],
                             ],
                         },
@@ -620,32 +625,8 @@ export default class TemplateParserSpec
                 },
                 {
                     attributes: [],
-                    directives:
-                    [
-                        {
-                            expression:       parseExpression("host.handler"),
-                            keyExpression:    parseExpression("host.dynamicOnKey"),
-                            keyObservables:   [["host", "dynamicOnKey"]],
-                            name:             "on",
-                            observables:      [["host", "handler"]],
-                            rawExpression:    "#on=\"host.handler\"",
-                            rawKeyExpression: "#on-key=\"host.dynamicOnKey\"",
-                            stackTrace:
-                            [
-                                ["<x-component>"],
-                                ["#shadow-root"],
-                                ["...11 other(s) node(s)", "<table>"],
-                                ["<tbody>"],
-                                ["<tr #on=\"host.handler\" #on-key=\"host.dynamicOnKey\">"],
-                            ],
-                        },
-                    ],
-                    path:      "11-0-0",
-                    textNodes: [],
-                },
-                {
-                    attributes: [],
                     directives: [],
+                    events:     [],
                     path:       "13",
                     textNodes:
                     [
@@ -665,12 +646,17 @@ export default class TemplateParserSpec
                     ],
                 },
             ],
-            lookup: [[0], [0, 0], [1], [2], [3], [5], [6], [7], [8], [9], [10], [11, 0, 0], [11, 0, 1], [13], [13, 0]],
+            lookup: [[0], [0, 0], [1], [2], [3], [5], [6], [7], [8], [9], [10], [11, 0, 1], [13], [13, 0]],
         };
 
         const actual = TemplateParser.parseReference("x-component", template);
 
-        assert.deepEqual(actual, expected);
+        assert.deepEqual(actual.directives.injections,   expected.directives.injections,   "actual.directives deep Equal to expected.injections");
+        assert.deepEqual(actual.directives.logicals,     expected.directives.logicals,     "actual.logicals deep Equal to expected.logicals");
+        assert.deepEqual(actual.directives.loops,        expected.directives.loops,        "actual.loops deep Equal to expected.loops");
+        assert.deepEqual(actual.directives.placeholders, expected.directives.placeholders, "actual.directives deep Equal to expected.placeholders");
+        assert.deepEqual(actual.elements,                expected.elements,                "actual.elements deep Equal to expected.elements");
+        assert.deepEqual(actual.lookup,                  expected.lookup,                  "actual.lookup deep Equal to expected.lookup");
     }
 
     @shouldPass @test

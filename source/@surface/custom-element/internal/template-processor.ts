@@ -13,16 +13,18 @@ import
 } from "./common";
 import DataBind                    from "./data-bind";
 import directiveRegistry           from "./directive-registry";
+import EventDirectiveHandler       from "./directives/handlers/event-directive-handler";
 import ChoiceDirectiveHandler      from "./directives/template-handlers/choice-directive-handler";
 import InjectDirectiveHandler      from "./directives/template-handlers/inject-directive-handler";
 import LoopDirectiveHandler        from "./directives/template-handlers/loop-directive-handler";
 import PlaceholderDirectiveHandler from "./directives/template-handlers/placeholder-directive-handler";
 import TemplateProcessError        from "./errors/template-process-error";
-import IDirectivesDescriptor       from "./interfaces/descriptors/directives-descriptor";
-import ITemplateDescriptor         from "./interfaces/descriptors/template-descriptor";
-import ITextNodeDescriptor         from "./interfaces/descriptors/text-node-descriptor";
-import IAttributeDirective         from "./interfaces/directives/attribute-directive";
-import ICustomDirective            from "./interfaces/directives/custom-directive";
+import IAttributeDirective         from "./interfaces/attribute-directive";
+import ICustomDirective            from "./interfaces/custom-directive";
+import IDirectivesDescriptor       from "./interfaces/directives-descriptor";
+import IEventDirective             from "./interfaces/event-directive";
+import ITemplateDescriptor         from "./interfaces/template-descriptor";
+import ITextNodeDescriptor         from "./interfaces/text-node-descriptor";
 import ITraceable                  from "./interfaces/traceable";
 import { DirectiveHandlerFactory } from "./types";
 
@@ -121,6 +123,7 @@ export default class TemplateProcessor
             const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
             subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
+            disposables.push(...this.processEvents(localScope, element, descriptor.events));
             disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
             subscriptions.push(...this.processTextNode(localScope, descriptor.textNodes));
 
@@ -146,12 +149,7 @@ export default class TemplateProcessor
 
         if (constructor && !(element instanceof constructor))
         {
-            processor = TemplateProcessor.postProcessing.get(element);
-
-            if (processor)
-            {
-                TemplateProcessor.postProcessing.set(element, processor = []);
-            }
+            TemplateProcessor.postProcessing.set(element, processor = []);
         }
 
         const subscriptions: ISubscription[] = [];
@@ -233,7 +231,6 @@ export default class TemplateProcessor
                 }
             };
 
-            /* istanbul ignore else */
             if (!processor)
             {
                 action();
@@ -273,6 +270,18 @@ export default class TemplateProcessor
         return disposables;
     }
 
+    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable[]
+    {
+        const disposables: IDisposable[] = [];
+
+        for (const directive of events)
+        {
+            disposables.push(new EventDirectiveHandler(localScope, element, directive));
+        }
+
+        return disposables;
+    }
+
     private processTemplateDirectives(data: ITemplateDirectivesData): IDisposable
     {
         const disposables: IDisposable[] = [];
@@ -283,7 +292,7 @@ export default class TemplateProcessor
 
             assert(template.parentNode);
 
-            const currentContext = data.context ?? template.parentNode;
+            const currentContext = template.parentNode;
 
             disposables.push(new InjectDirectiveHandler(data.scope, currentContext, this.host, template, directive));
         }
