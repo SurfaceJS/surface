@@ -2,19 +2,20 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Delegate, Indexer, uuidv4 }           from "@surface/core";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import CustomElement                           from "../internal/custom-element";
-import { element }                             from "../internal/decorators";
-import directiveRegistry                       from "../internal/directive-registry";
-import CustomStackError                        from "../internal/errors/custom-stack-error";
-import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
-import { whenDone }                            from "../internal/processors";
-import TemplateParser                          from "../internal/template-parser";
-import TemplateProcessor                       from "../internal/template-processor";
-import CustomDirectiveHandler                  from "./fixtures/custom-directive";
-import customDirectiveFactory                  from "./fixtures/custom-directive-factory";
+import { Delegate, Indexer, uuidv4 }                                     from "@surface/core";
+import { after, afterEach, before, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                                                        from "chai";
+import ChangeTracker                                                     from "../internal/change-tracker";
+import CustomElement                                                     from "../internal/custom-element";
+import { element }                                                       from "../internal/decorators";
+import directiveRegistry                                                 from "../internal/directive-registry";
+import CustomStackError                                                  from "../internal/errors/custom-stack-error";
+import TemplateEvaluationError                                           from "../internal/errors/template-evaluation-error";
+import { whenDone }                                                      from "../internal/processors";
+import TemplateParser                                                    from "../internal/template-parser";
+import TemplateProcessor                                                 from "../internal/template-processor";
+import CustomDirectiveHandler                                            from "./fixtures/custom-directive";
+import customDirectiveFactory                                            from "./fixtures/custom-directive-factory";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -99,6 +100,24 @@ function process(host: Element, root: Node, scope?: Indexer): void
 @suite
 export default class TemplateProcessorSpec
 {
+    @before
+    public before(): void
+    {
+        ChangeTracker.instance.start();
+    }
+
+    @after
+    public after(): void
+    {
+        ChangeTracker.instance.stop();
+    }
+
+    @afterEach
+    public afterEach(): void
+    {
+        ChangeTracker.instance.clear();
+    }
+
     @test @shouldPass
     public elementWithoutAttributes(): void
     {
@@ -123,7 +142,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithAttributeInterpolation(): void
+    public async elementWithAttributeInterpolation(): Promise<void>
     {
         const host = getHost();
 
@@ -140,13 +159,16 @@ export default class TemplateProcessorSpec
             assert.equal(input.getAttribute("parent"), "X-COMPONENT");
 
             host.lang = "en-us";
+
+            await whenDone();
+
             assert.equal(input.lang, "en-us");
             assert.equal(input.getAttribute("lang"), "en-us");
         }
     }
 
     @test @shouldPass
-    public elementWithAttributeCompoundInterpolation(): void
+    public async elementWithAttributeCompoundInterpolation(): Promise<void>
     {
         const host = getHost();
 
@@ -158,6 +180,8 @@ export default class TemplateProcessorSpec
         assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
 
         host.lang = "en-us";
+
+        await whenDone();
 
         assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
     }
@@ -233,7 +257,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithTwoWayDataBinding(): void
+    public async elementWithTwoWayDataBinding(): Promise<void>
     {
         const host = getHost<{ value?: string }>();
 
@@ -251,15 +275,19 @@ export default class TemplateProcessorSpec
 
         host.value = "foo";
 
+        await whenDone();
+
         assert.equal(span.value, "foo");
 
         span.value = "foo";
+
+        await whenDone();
 
         assert.equal(host.value, "foo");
     }
 
     @test @shouldPass
-    public elementWithTwoWayComputedDataBinding(): void
+    public async elementWithTwoWayComputedDataBinding(): Promise<void>
     {
         const host = getHost<{ value?: string }>();
 
@@ -277,9 +305,13 @@ export default class TemplateProcessorSpec
 
         host.value = "foo";
 
+        await whenDone();
+
         assert.equal(span.value, "foo");
 
         span.value = "foo";
+
+        await whenDone();
 
         assert.equal(host.value, "foo");
     }
@@ -362,7 +394,7 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithTextNodeInterpolation(): void
+    public async elementWithTextNodeInterpolation(): Promise<void>
     {
         const host = getHost();
 
@@ -375,11 +407,13 @@ export default class TemplateProcessorSpec
 
         host.id = "02";
 
+        await whenDone();
+
         assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 02");
     }
 
     @test @shouldPass
-    public elementWithTextNodeInterpolationExpression(): void
+    public async elementWithTextNodeInterpolationExpression(): Promise<void>
     {
         const host = getHost();
 
@@ -391,6 +425,8 @@ export default class TemplateProcessorSpec
         assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "true");
 
         host.id = "02";
+
+        await whenDone();
 
         assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "false");
     }

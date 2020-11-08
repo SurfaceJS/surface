@@ -28,8 +28,8 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.keyNotify.bind(this) }, true);
-        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.valueNotify.bind(this) }, true);
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, this.keyNotify.bind(this), true);
+        this.subscription    = tryObserveByObservable(scope, directive,    this.valueNotify.bind(this), true);
 
         this.keyNotify();
         this.valueNotify();

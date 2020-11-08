@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 export type { default as IDisposable }       from "./internal/interfaces/disposable";
 export type { default as IEventListener }    from "./internal/interfaces/event-listener";
+export type { default as IWorker }           from "./internal/interfaces/worker";
 export type { default as CancellationToken } from "./internal/types/cancellation-token";
 
 export type
@@ -32,6 +33,7 @@ export type
     Overload,
     Overwrite,
     ParameterOverloads,
+    PropertyType,
     Required,
     TypesOf,
     UnionToIntersection,

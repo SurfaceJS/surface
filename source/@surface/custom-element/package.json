@@ -8,7 +8,6 @@
         "@surface/core": "file:../core",
         "@surface/enumerable": "file:../enumerable",
         "@surface/expression": "file:../expression",
-        "@surface/reactive": "file:../reactive",
         "@surface/reflection": "file:../reflection",
         "tslib": "2.0.3"
     },

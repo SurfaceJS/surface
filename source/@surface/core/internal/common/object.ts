@@ -149,9 +149,30 @@ export function getKeyValue(target: Indexer, path: string | string[]): { key: st
     return { key, value: member[key] };
 }
 
-export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string | string[]): T | undefined
+export function getValue(target: object, path: string | string[]): unknown
 {
-    return getKeyValue<TTarget, T>(target, path).value;
+    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
+
+    if (keys.length > 0)
+    {
+        if (key in target)
+        {
+            return getValue((target as Indexer)[key] as Indexer, keys);
+        }
+
+        const typeName = target instanceof Function ? target.name : target.constructor.name;
+
+        throw new Error(`Property "${key}" does not exists on type ${typeName}`);
+    }
+
+    return (target as Indexer)[key];
+}
+
+export function setValue(root: object, path: string | string[], value: unknown): void
+{
+    const { key, member } = getKeyMember(root, path);
+
+    (member as Indexer)[key] = value;
 }
 
 /**

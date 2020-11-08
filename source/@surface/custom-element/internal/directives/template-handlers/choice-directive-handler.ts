@@ -31,12 +31,10 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const notify = (): void => ParallelWorker.run(this.task.bind(this));
+        const listener = (): void => ParallelWorker.run(this.task.bind(this));
 
         for (let index = 0; index < branches.length; index++)
         {
-            const listener = { notify };
-
             const branche  = branches[index];
             const template = templates[index];
 
@@ -47,7 +45,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             template.remove();
         }
 
-        notify();
+        listener();
     }
 
     private task(): void

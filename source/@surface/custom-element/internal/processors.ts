@@ -1,4 +1,5 @@
 import { IDisposable }     from "@surface/core";
+import ChangeTracker from "./change-tracker";
 import ITemplateDescriptor from "./interfaces/template-descriptor";
 import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
@@ -27,5 +28,5 @@ export function processTemplate(template: string, scope: object): [content: Docu
 
 export async function whenDone(): Promise<void>
 {
-    await ParallelWorker.whenDone();
+    return ParallelWorker.whenDone().finally(async () => ChangeTracker.instance.nextTick());
 }

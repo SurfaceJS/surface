@@ -30,8 +30,8 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         template.remove();
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.task.bind(this) }, true);
-        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.task.bind(this) }, true);
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, this.task.bind(this), true);
+        this.subscription    = tryObserveByObservable(scope, directive,    this.task.bind(this), true);
 
         this.task();
     }

@@ -35,11 +35,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, template);
 
-        const notify = (): void => ParallelWorker.run(this.task.bind(this));
+        const listener = (): void => ParallelWorker.run(this.task.bind(this));
 
-        this.subscription = tryObserveByObservable(scope, directive, { notify }, true);
+        this.subscription = tryObserveByObservable(scope, directive, listener, true);
 
-        notify();
+        listener();
     }
 
     private action(value: unknown, index: number): void

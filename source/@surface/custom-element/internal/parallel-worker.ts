@@ -3,28 +3,29 @@ import { Delegate, runAsync } from "@surface/core";
 
 export default class ParallelWorker
 {
-    public static readonly default = new ParallelWorker();
+    private static readonly instance = new ParallelWorker(16.17);
 
-    private readonly normalQueue: Queue<Delegate> = new Queue();
+    private readonly highQueue:   Queue<Delegate> = new Queue();
     private readonly lowQueue:    Queue<Delegate> = new Queue();
+    private readonly normalQueue: Queue<Delegate> = new Queue();
     private readonly interval:    number;
 
     private currentExecution: Promise<void> = Promise.resolve();
     private running:          boolean       = false;
 
-    public constructor(interval: number = 16.17)
+    private constructor(interval: number)
     {
         this.interval = interval;
     }
 
     public static async whenDone(): Promise<void>
     {
-        return ParallelWorker.default.whenDone();
+        return ParallelWorker.instance.currentExecution;
     }
 
-    public static run(action: Delegate, priority: "normal" | "low" = "normal"): void
+    public static run(action: Delegate, priority: "high" | "normal" | "low" = "normal"): void
     {
-        ParallelWorker.default.run(action, priority);
+        ParallelWorker.instance.run(action, priority);
     }
 
     private async nextFrame(): Promise<number>
@@ -66,25 +67,25 @@ export default class ParallelWorker
     {
         try
         {
-            await this.processQueue(this.normalQueue);
-            await this.processQueue(this.lowQueue, () => this.normalQueue.length > 0);
+            await this.processQueue(this.highQueue);
+            await this.processQueue(this.normalQueue, () => this.highQueue.length > 0);
+            await this.processQueue(this.lowQueue, () => this.highQueue.length > 0 || this.normalQueue.length > 0);
         }
         finally
         {
+            this.highQueue.clear();
             this.normalQueue.clear();
             this.lowQueue.clear();
         }
     }
 
-    public async whenDone(): Promise<void>
-    {
-        return this.currentExecution;
-    }
-
-    public run(action: Delegate, priority: "normal" | "low" = "normal"): void
+    public run(action: Delegate, priority: "high" | "normal" | "low" = "normal"): void
     {
         switch (priority)
         {
+            case "high":
+                this.lowQueue.enqueue(action);
+                break;
             case "low":
                 this.lowQueue.enqueue(action);
                 break;

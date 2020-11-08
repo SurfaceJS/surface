@@ -46,7 +46,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.templateBlock.insertAt(parent, template);
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, { notify: this.onKeyChange.bind(this) }, true);
+        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, this.onKeyChange.bind(this), true);
 
         this.onKeyChange();
     }
@@ -80,11 +80,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const notify = (): void => ParallelWorker.run(task);
+        const listener = (): void => ParallelWorker.run(task);
 
-        this.subscription = tryObserveByObservable(this.scope, this.directive, { notify }, true);
+        this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
 
-        notify();
+        listener();
     }
 
     private onKeyChange(): void

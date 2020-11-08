@@ -79,6 +79,7 @@ export type OnlyOfType<T extends object, U>                             = Pick<T
 export type Overload<T extends Callable, TArgs>                         = Extract<CalleableOverloads<T>, [TArgs, any]>[1];
 export type Overwrite<T, U>                                             = { [K in Exclude<keyof T, U>]: K extends keyof U ? U[K] : T[K] };
 export type ParameterOverloads<T extends Callable>                      = CalleableOverloads<T>[0];
+export type PropertyType<T extends object, K>                           = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                 = { [K in keyof T]-?: NonNullable<T[K]> };
 export type TypesOf<T>                                                  = T[keyof T];
 export type UnionToIntersection<U>                                      = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;

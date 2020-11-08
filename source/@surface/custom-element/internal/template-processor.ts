@@ -2,6 +2,7 @@ import { Delegate, IDisposable, Indexer, assert, typeGuard } from "@surface/core
 import { TypeGuard }                                         from "@surface/expression";
 import { ISubscription }                                     from "@surface/reactive";
 import Type, { FieldInfo }                                   from "@surface/reflection";
+import ChangeTracker                                         from "./change-tracker";
 import
 {
     classMap,
@@ -43,6 +44,8 @@ interface ITemplateDirectivesData
     scope:      object;
     context?:   Node;
 }
+
+ChangeTracker.instance.start();
 
 export default class TemplateProcessor
 {
@@ -171,7 +174,7 @@ export default class TemplateProcessor
 
                     if (descriptor.type == "oneway")
                     {
-                        let notify: Delegate;
+                        let listener: Delegate;
 
                         if (descriptor.name == "class" || descriptor.name == "style")
                         {
@@ -179,18 +182,18 @@ export default class TemplateProcessor
 
                             element.setAttributeNode(attribute);
 
-                            notify = descriptor.name == "class"
+                            listener = descriptor.name == "class"
                                 ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
                                 : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
+                            listener = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
                         }
 
-                        const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+                        const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
-                        notify();
+                        listener();
 
                         subscriptions.push(subscription);
                     }
@@ -214,20 +217,20 @@ export default class TemplateProcessor
                             throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
 
-                        subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
+                        subscriptions.push(...DataBind.twoWay(target, [targetProperty], element, [descriptor.key]));
                     }
                 }
                 else
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+                    const listener = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+                    const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
                     subscriptions.push(subscription);
 
-                    notify();
+                    listener();
                 }
             };
 
@@ -341,13 +344,13 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = (): string => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+            const listener = (): string => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+            const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
             subscriptions.push(subscription);
 
-            notify();
+            listener();
         }
 
         return subscriptions;
