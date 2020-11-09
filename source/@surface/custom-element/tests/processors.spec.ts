@@ -1,13 +1,27 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { shouldPass, suite, test }   from "@surface/test-suite";
-import { assert }                    from "chai";
-import { processTemplate, whenDone } from "../internal/processors";
+import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                                         from "chai";
+import ChangeTracker                                      from "../internal/change-tracker";
+import { processTemplate, whenDone }                      from "../internal/processors";
 
 @suite
 export default class ProcessorsSpec
 {
+    @beforeEach
+    public before(): void
+    {
+        ChangeTracker.instance.start();
+    }
+
+    @afterEach
+    public afterEach(): void
+    {
+        ChangeTracker.instance.stop();
+        ChangeTracker.instance.clear();
+    }
+
     @test @shouldPass
     public process(): void
     {
@@ -75,7 +89,7 @@ export default class ProcessorsSpec
     }
 
     @test @shouldPass
-    public dispose(): void
+    public async dispose(): Promise<void>
     {
         const scope = { host: { message: "World" } };
 
@@ -85,11 +99,15 @@ export default class ProcessorsSpec
 
         scope.host.message = "Web";
 
+        await whenDone();
+
         assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
 
         disposeable.dispose();
 
         scope.host.message = "World";
+
+        await whenDone();
 
         assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
     }

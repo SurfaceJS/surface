@@ -1,138 +1,71 @@
 import { Queue }              from "@surface/collection";
 import { Delegate, runAsync } from "@surface/core";
-import IObserver              from "./interfaces/observer";
 import ParallelWorker         from "./parallel-worker";
 import Watcher                from "./watcher";
 
 export default class ChangeTracker
 {
-    public static readonly instance: ChangeTracker = new ChangeTracker();
+    public static readonly instance: ChangeTracker = new ChangeTracker(20);
 
-    private readonly callbackQueue: Queue<[resolve: Delegate, reject: Delegate<[Error]>]> = new Queue();
-    private readonly tracks: Map<object, Map<string, Watcher>>                            = new Map();
+    private readonly callbackQueue: Queue<Delegate> = new Queue();
+    private readonly watchers:        Set<Watcher>    = new Set();
+    private readonly interval:      number;
 
-    private readonly interval: number = 16.17;
-    private running:  boolean = false;
+    private running: boolean = false;
 
-    private detectChanges(): void
+    public constructor(interval: number)
     {
-        for (const watchers of this.tracks.values())
-        {
-            for (const watcher of watchers.values())
-            {
-                ParallelWorker.run(() => watcher.detectChange(), "high");
-            }
-        }
+        this.interval = interval;
     }
 
     private async execute(): Promise<void>
     {
         while (this.running)
         {
-            const start = window.performance.now();
-
-            try
+            for (const watcher of this.watchers)
             {
-                this.detectChanges();
-
-                await ParallelWorker.whenDone();
-
-                this.resolve();
-            }
-            catch (error)
-            {
-                this.resolve(error);
+                ParallelWorker.run(() => watcher.detectChange(), "high");
             }
 
-            const end = window.performance.now();
+            this.resolve();
 
-            const expended = end - start;
-
-            // istanbul ignore if
-            if (expended > this.interval)
-            {
-                await this.sleep(0);
-            }
-            else
-            {
-                await this.sleep(this.interval - expended);
-            }
+            await this.suspend(this.interval);
         }
     }
 
-    private resolve(error?: Error): void
+    private resolve(): void
     {
         while (this.callbackQueue.length > 0)
         {
-            const [resolve, reject] = this.callbackQueue.dequeue()!;
-
-            error ? reject(error) : resolve();
+            this.callbackQueue.dequeue()!();
         }
     }
 
-    private async sleep(timeout: number): Promise<void>
+    private async suspend(timeout?: number): Promise<void>
     {
         return new Promise(resolve => window.setTimeout(resolve, timeout));
     }
 
     public clear(): void
     {
-        this.tracks.clear();
+        this.watchers.clear();
     }
 
-    public async nextTick(): Promise<void>
+    public async nextCicle(): Promise<void>
     {
         return this.running
-            ? new Promise((resolve, reject) => this.callbackQueue.enqueue([resolve, reject]))
+            ? new Promise(resolve => this.callbackQueue.enqueue(resolve))
             : Promise.resolve();
     }
 
-    public observe(root: object, path: string[]): IObserver
+    public attach(watcher: Watcher): void
     {
-        let watchers = this.tracks.get(root);
+        this.watchers.add(watcher);
+    }
 
-        if (!watchers)
-        {
-            this.tracks.set(root, watchers = new Map());
-        }
-
-        const key = path.join("\u{1}");
-
-        let watcher = watchers.get(key);
-
-        if (!watcher)
-        {
-            watchers.set(key, watcher = new Watcher(root, path));
-        }
-
-        const disposeGarbage = (): void =>
-        {
-            if (watcher!.observer.size == 0)
-            {
-                watchers!.delete(key);
-            }
-
-            if (watchers!.size == 0)
-            {
-                this.tracks.delete(root);
-            }
-        };
-
-        const handler: ProxyHandler<IObserver> =
-        {
-            get: (target, key: keyof IObserver): unknown =>
-            {
-                switch (key)
-                {
-                    case "unsubscribe":
-                        return (action: Delegate<[unknown]>): void => (target.unsubscribe(action), disposeGarbage());
-                    default:
-                        return target[key];
-                }
-            },
-        };
-
-        return new Proxy(watcher.observer, handler);
+    public dettach(watcher: Watcher): void
+    {
+        this.watchers.delete(watcher);
     }
 
     public start(): void

@@ -1,29 +1,25 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { after, afterEach, before, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                            from "chai";
-import ChangeTracker                                         from "../internal/change-tracker";
-import DataBind                                              from "../internal/data-bind";
+import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                                         from "chai";
+import ChangeTracker                                      from "../internal/change-tracker";
+import DataBind                                           from "../internal/data-bind";
+import { whenDone }                                       from "../internal/processors";
 
 @suite
 export default class DataBindSpec
 {
-    @before
-    public before(): void
+    @beforeEach
+    public beforeEach(): void
     {
         ChangeTracker.instance.start();
-    }
-
-    @after
-    public after(): void
-    {
-        ChangeTracker.instance.stop();
     }
 
     @afterEach
     public afterEach(): void
     {
+        ChangeTracker.instance.stop();
         ChangeTracker.instance.clear();
     }
 
@@ -38,7 +34,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(changed);
     }
@@ -53,7 +49,7 @@ export default class DataBindSpec
         // Todo: Review if should throw error or not
         DataBind.oneWay(target, ["value"], () => undefined);
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(true);
     }
@@ -83,7 +79,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(changed);
     }
@@ -113,7 +109,7 @@ export default class DataBindSpec
 
         target.setValue(2);
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(changed);
     }
@@ -131,7 +127,7 @@ export default class DataBindSpec
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(changed);
     }
@@ -150,7 +146,7 @@ export default class DataBindSpec
 
         attribute.value = "2";
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.equal(value, "2");
     }
@@ -179,13 +175,13 @@ export default class DataBindSpec
 
         left.value = 2;
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.equal(right.value, 2);
 
         right.value = 3;
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.equal(left.value, 3);
     }
@@ -199,7 +195,7 @@ export default class DataBindSpec
 
         DataBind.observe(target, [["value", "length"]], () => observed = true);
 
-        await ChangeTracker.instance.nextTick();
+        await whenDone();
 
         assert.isTrue(observed);
     }

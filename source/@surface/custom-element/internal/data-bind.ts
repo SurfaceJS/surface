@@ -1,6 +1,8 @@
 import { Delegate, getValue, setValue } from "@surface/core";
 import ChangeTracker                    from "./change-tracker";
 import ISubscription                    from "./interfaces/subscription";
+import Metadata                         from "./metadata/metadata";
+import Watcher                          from "./watcher";
 
 export default class DataBind
 {
@@ -8,18 +10,44 @@ export default class DataBind
     {
         const subscriptions = observables.map(path => DataBind.oneWay(target, path, listener, lazy));
 
-        return { unsubscribe: () => subscriptions.forEach(x => x.unsubscribe()) };
+        return { unsubscribe: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 
     public static oneWay(root: object, path: string[], listener: Delegate<[unknown]>, lazy: boolean = false): ISubscription
     {
-        const observer = ChangeTracker.instance.observe(root, path);
+        const watchers = Metadata.from(root).watchers;
 
-        const subscription = observer.subscribe(listener);
+        const key = path.join("\u{1}");
+
+        let watcher = watchers.get(key);
+
+        if (!watcher)
+        {
+            watchers.set(key, watcher = new Watcher(root, path));
+        }
+
+        ChangeTracker.instance.attach(watcher);
+
+        watcher.observer.subscribe(listener);
+
+        const subscription =
+        {
+            unsubscribe: () =>
+            {
+                watcher!.observer.unsubscribe(listener);
+
+                if (watcher!.observer.size == 0)
+                {
+                    watchers.delete(key);
+
+                    ChangeTracker.instance.dettach(watcher!);
+                }
+            },
+        };
 
         if (!lazy)
         {
-            observer.notify(getValue(root, path));
+            watcher.observer.notify(getValue(root, path));
         }
 
         return subscription;

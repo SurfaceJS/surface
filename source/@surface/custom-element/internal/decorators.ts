@@ -1,3 +1,4 @@
+/* eslint-disable func-style */
 import
 {
     Constructor,
@@ -13,6 +14,7 @@ import ICustomElement              from "./interfaces/custom-element";
 import Metadata                    from "./metadata/metadata";
 import PrototypeMetadata           from "./metadata/prototype-metadata";
 import StaticMetadata              from "./metadata/static-metadata";
+import ParallelWorker              from "./parallel-worker";
 import { TEMPLATEABLE }            from "./symbols";
 import TemplateParser              from "./template-parser";
 import TemplateProcessor           from "./template-processor";
@@ -62,6 +64,83 @@ function stringToCSSStyleSheet(source: string): CSSStyleSheet
     return sheet;
 }
 
+function wraperPrototype(prototype: ICustomElement): void
+{
+    const attributeChangedCallback = (callback?: ICustomElement["attributeChangedCallback"]): ICustomElement["attributeChangedCallback"] => function (this: ICustomElement, name, oldValue, newValue, namespace)
+    {
+        if (!Metadata.from(this).reflectingAttribute)
+        {
+            StaticMetadata.from(this.constructor)
+                .conversionHandlers[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
+
+            callback?.call(this, name, oldValue, newValue, namespace);
+        }
+    };
+
+    const connectedCallback = (callback?: ICustomElement["connectedCallback"]): ICustomElement["connectedCallback"] => function (this: ICustomElement)
+    {
+        const action = (): void =>
+        {
+            const root = this.getRootNode();
+
+            if (root instanceof ShadowRoot)
+            {
+                const metadata = Metadata.from(root.host);
+
+                if (metadata.disposed)
+                {
+                    this.dispose?.();
+                }
+                else
+                {
+                    metadata.disposables.push({ dispose: () => this.dispose?.() });
+                }
+            }
+        };
+
+        // action();
+
+        ParallelWorker.run(action, "low");
+
+        callback?.call(this);
+    };
+
+    const dispose = (callback?: ICustomElement["dispose"]): ICustomElement["dispose"] => function (this: ICustomElement)
+    {
+        const metadata = Metadata.of(this)!;
+
+        if (!metadata.disposed)
+        {
+            metadata.disposed = true;
+
+            // ParallelWorker.run(() => metadata.disposables.forEach(x => x.dispose()), "low");
+            metadata.disposables.forEach(x => x.dispose());
+        }
+
+        // metadata.disposables.forEach(x => x.dispose());
+
+        callback?.call(this);
+    };
+
+    wraperLifecycle(prototype, "attributeChangedCallback", attributeChangedCallback);
+    wraperLifecycle(prototype, "connectedCallback", connectedCallback);
+    wraperLifecycle(prototype, "dispose", dispose);
+}
+
+function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomElement, key: K, action: Delegate<[ICustomElement[K]], ICustomElement[K]>): void
+{
+    const metadata = PrototypeMetadata.from(prototype) as unknown as Indexer;
+
+    const callback = prototype[key];
+
+    if (!callback || callback != metadata[key])
+    {
+        prototype[key] = action(callback);
+
+        metadata[key] = prototype[key];
+    }
+}
+
 export function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
 export function attribute(target: ICustomElement, propertyKey: string): void;
 export function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
@@ -72,8 +151,7 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
 
         const attributeName = camelToDashed(propertyKey);
 
-        const prototypeMetadata = PrototypeMetadata.from(target);
-        const staticMetadata    = StaticMetadata.from(constructor);
+        const staticMetadata = StaticMetadata.from(constructor);
 
         staticMetadata.observedAttributes.push(attributeName);
 
@@ -118,26 +196,6 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
                 target[propertyKey] = converted;
             }
         };
-
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        const attributeChangedCallback = target.attributeChangedCallback;
-
-        if (!attributeChangedCallback || attributeChangedCallback != prototypeMetadata.attributeChangedCallback)
-        {
-            target.attributeChangedCallback = function(this: HTMLElement, name: string, oldValue: string | undefined, newValue: string, namespace: string | undefined)
-            {
-                if (!Metadata.from(this).reflectingAttribute)
-                {
-                    StaticMetadata.from(this.constructor)
-                        .conversionHandlers[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
-
-                    attributeChangedCallback?.call(this, name, oldValue, newValue, namespace);
-                }
-            };
-
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            prototypeMetadata.attributeChangedCallback = target.attributeChangedCallback;
-        }
 
         const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown): void =>
         {
@@ -199,6 +257,8 @@ export function element(tagname: string, template?: string, style?: string, opti
     {
         if (target[TEMPLATEABLE])
         {
+            wraperPrototype(target.prototype);
+
             const staticMetadata = StaticMetadata.from(target);
 
             const templateElement = document.createElement("template");
@@ -220,9 +280,11 @@ export function element(tagname: string, template?: string, style?: string, opti
                 {
                     const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
 
-                    TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                    const disposable = TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
-                    const metadata = Metadata.of(instance)!;
+                    const metadata = Metadata.from(instance)!;
+
+                    metadata.disposables.push(disposable);
 
                     staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
 

@@ -89,6 +89,8 @@ export default class ViewRouter
             {
                 oldElement.onLeave?.(to, from);
 
+                oldElement.dispose?.();
+
                 outlet.replaceChild(element, oldElement);
             }
             else
@@ -192,7 +194,7 @@ export default class ViewRouter
 
     private disconnectElements(): void
     {
-        this.connectedElements.forEach(x => x.remove());
+        this.connectedElements.forEach(x => (x.dispose?.(), x.remove()));
 
         this.current = undefined;
     }
@@ -210,6 +212,8 @@ export default class ViewRouter
                 if (typeGuard<IRouteableElement>(instance, !!instance))
                 {
                     instance.onLeave?.(to, from);
+
+                    instance.dispose?.();
 
                     instance.remove();
                 }

@@ -65,7 +65,6 @@ export default class TemplateProcessor
 
     public static process(data: ITemplateProcessorData): IDisposable
     {
-        /* istanbul ignore if */
         if (TemplateProcessor.postProcessing.has(data.host))
         {
             TemplateProcessor.postProcessing.get(data.host)!.forEach(action => action());
@@ -116,35 +115,28 @@ export default class TemplateProcessor
 
     private process(scope: object, context?: Node): IDisposable
     {
-        const subscriptions: ISubscription[] = [];
-        const disposables:   IDisposable[]   = [];
+        const disposables: IDisposable[]   = [];
 
         for (const descriptor of this.descriptor.elements)
         {
-            const element = this.lookup[descriptor.path] as HTMLElement;
+            const element = this.lookup[descriptor.path] as HTMLElement & Partial<IDisposable>;
 
             const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
-            subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
-            disposables.push(...this.processEvents(localScope, element, descriptor.events));
-            disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
-            subscriptions.push(...this.processTextNode(localScope, descriptor.textNodes));
+            disposables.push(this.processAttributes(localScope, element, descriptor.attributes));
+            disposables.push(this.processEvents(localScope, element, descriptor.events));
+            disposables.push(this.processElementDirectives(localScope, element, descriptor.directives));
+            disposables.push(this.processTextNode(localScope, descriptor.textNodes));
 
             element.dispatchEvent(new Event("bind"));
         }
 
         disposables.push(this.processTemplateDirectives({ context, directives: this.descriptor.directives, scope: createScope(scope) }));
 
-        return {
-            dispose: () =>
-            {
-                subscriptions.splice(0).forEach(x => x.unsubscribe());
-                disposables.splice(0).forEach(x => x.dispose());
-            },
-        };
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): ISubscription[]
+    private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): IDisposable
     {
         const constructor = window.customElements.get(element.localName);
 
@@ -244,10 +236,10 @@ export default class TemplateProcessor
             }
         }
 
-        return subscriptions;
+        return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 
-    private processElementDirectives(scope: object, element: HTMLElement, directives: ICustomDirective[]): IDisposable[]
+    private processElementDirectives(scope: object, element: HTMLElement, directives: ICustomDirective[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
@@ -270,10 +262,10 @@ export default class TemplateProcessor
             }
         }
 
-        return disposables;
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable[]
+    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
@@ -282,7 +274,7 @@ export default class TemplateProcessor
             disposables.push(new EventDirectiveHandler(localScope, element, directive));
         }
 
-        return disposables;
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
     private processTemplateDirectives(data: ITemplateDirectivesData): IDisposable
@@ -336,7 +328,7 @@ export default class TemplateProcessor
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
     }
 
-    private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): ISubscription[]
+    private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): IDisposable
     {
         const subscriptions: ISubscription[] = [];
 
@@ -353,6 +345,6 @@ export default class TemplateProcessor
             listener();
         }
 
-        return subscriptions;
+        return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 }
