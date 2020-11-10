@@ -1,31 +1,19 @@
 import { Queue }              from "@surface/collection";
 import { Delegate, runAsync } from "@surface/core";
 
-export default class ParallelWorker
+export default class Scheduler
 {
-    private static readonly instance = new ParallelWorker(16.17);
-
     private readonly highQueue:   Queue<Delegate> = new Queue();
     private readonly lowQueue:    Queue<Delegate> = new Queue();
     private readonly normalQueue: Queue<Delegate> = new Queue();
-    private readonly interval:    number;
+    private readonly timeout:     number;
 
     private currentExecution: Promise<void> = Promise.resolve();
     private running:          boolean       = false;
 
-    private constructor(interval: number)
+    public constructor(timeout: number)
     {
-        this.interval = interval;
-    }
-
-    public static async whenDone(): Promise<void>
-    {
-        return ParallelWorker.instance.currentExecution;
-    }
-
-    public static run(action: Delegate, priority: "high" | "normal" | "low" = "normal"): void
-    {
-        ParallelWorker.instance.run(action, priority);
+        this.timeout = timeout;
     }
 
     private async nextFrame(): Promise<number>
@@ -49,7 +37,7 @@ export default class ParallelWorker
 
             expended += end - start;
 
-            if (expended > this.interval)
+            if (expended > this.timeout)
             {
                 expended = 0;
 
@@ -79,19 +67,19 @@ export default class ParallelWorker
         }
     }
 
-    public run(action: Delegate, priority: "high" | "normal" | "low" = "normal"): void
+    public enqueue(task: Delegate, priority: "high" | "normal" | "low" = "normal"): void
     {
         switch (priority)
         {
             case "high":
-                this.highQueue.enqueue(action);
+                this.highQueue.enqueue(task);
                 break;
             case "low":
-                this.lowQueue.enqueue(action);
+                this.lowQueue.enqueue(task);
                 break;
             case "normal":
             default:
-                this.normalQueue.enqueue(action);
+                this.normalQueue.enqueue(task);
                 break;
         }
 
@@ -101,5 +89,10 @@ export default class ParallelWorker
 
             this.currentExecution = runAsync(this.execute.bind(this)).finally(() => this.running = false);
         }
+    }
+
+    public async whenDone(): Promise<void>
+    {
+        return this.currentExecution;
     }
 }

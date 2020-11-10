@@ -1,4 +1,3 @@
-import { ISubscription } from "@surface/reactive";
 import
 {
     tryEvaluateKeyExpressionByTraceable,
@@ -6,6 +5,7 @@ import
     tryObserveKeyByObservable,
 } from "../../common";
 import IInjectDirective         from "../../interfaces/inject-directive";
+import ISubscription            from "../../interfaces/subscription";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import TemplateDirectiveHandler from ".";
 

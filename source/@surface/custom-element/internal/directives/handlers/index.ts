@@ -1,5 +1,4 @@
-import { IDisposable }   from "@surface/core";
-import { ISubscription } from "@surface/reactive";
+import { IDisposable } from "@surface/core";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -8,6 +7,7 @@ import
     tryObserveKeyByObservable,
 } from "../../common";
 import ICustomDirective from "../../interfaces/custom-directive";
+import ISubscription    from "../../interfaces/subscription";
 
 export default abstract class DirectiveHandler implements IDisposable
 {

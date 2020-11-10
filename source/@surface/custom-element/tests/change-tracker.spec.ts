@@ -2,24 +2,50 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                         from "chai";
-import chaiAsPromised                          from "chai-as-promised";
-import ChangeTracker                           from "../internal/change-tracker";
-import ParallelWorker from "../internal/parallel-worker";
-import Watcher from "../internal/watcher";
+import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
+import { assert, use }             from "chai";
+import chaiAsPromised              from "chai-as-promised";
+import ChangeTracker               from "../internal/change-tracker";
+import Scheduler                   from "../internal/scheduler";
+import Watcher                     from "../internal/watcher";
 
 use(chaiAsPromised);
 
 @suite
 export default class ChangeTrackerSpec
 {
+    private readonly changeTracker: ChangeTracker;
+    private readonly scheduler:     Scheduler;
+
+    public constructor()
+    {
+        this.scheduler     = new Scheduler(0);
+        this.changeTracker = new ChangeTracker(this.scheduler, 0);
+    }
+
+    private async whenDone(): Promise<void>
+    {
+        await this.changeTracker.nextCicle();
+        await this.scheduler.whenDone();
+    }
+
+    @beforeEach
+    public beforeEach(): void
+    {
+        this.changeTracker.start();
+    }
+
+    @afterEach
+    public afterEach(): void
+    {
+        this.changeTracker.stop();
+        this.changeTracker.clear();
+    }
+
     @test @shouldPass
     public async observe(): Promise<void>
     {
-        const changeTracker = new ChangeTracker(0);
-
-        changeTracker.start();
+        this.changeTracker.start(); // Coverage
 
         const target = { child: { value: 1 },  value: 1 };
 
@@ -38,12 +64,12 @@ export default class ChangeTrackerSpec
         value1Watcher.observer.subscribe(x => valueReceiver1 = x as typeof valueReceiver1);
         value2Watcher.observer.subscribe(x => valueReceiver2 = x as typeof valueReceiver2);
 
-        changeTracker.attach(childWatcher);
-        changeTracker.attach(childValueWatcher);
-        changeTracker.attach(value1Watcher);
-        changeTracker.attach(value2Watcher);
+        this.changeTracker.attach(childWatcher);
+        this.changeTracker.attach(childValueWatcher);
+        this.changeTracker.attach(value1Watcher);
+        this.changeTracker.attach(value2Watcher);
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.notEqual(target.child, childReceiver);
         assert.notEqual(target.child.value, childValueReceiver);
@@ -53,16 +79,16 @@ export default class ChangeTrackerSpec
         target.child = { value: 2 };
         target.value = 2;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(target.child, childReceiver);
         assert.equal(target.child.value, childValueReceiver);
         assert.equal(target.value, valueReceiver1);
         assert.equal(target.value, valueReceiver2);
 
-        changeTracker.stop();
+        this.changeTracker.stop();
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.isOk(true);
     }
@@ -70,11 +96,6 @@ export default class ChangeTrackerSpec
     @test @shouldPass
     public async observeTwoWay(): Promise<void>
     {
-        const changeTracker = new ChangeTracker(0);
-
-        changeTracker.start();
-        changeTracker.start(); // Coverage
-
         const left  = { value: 1 };
         const right = { value: 2 };
 
@@ -84,29 +105,29 @@ export default class ChangeTrackerSpec
         leftWatcher.observer.subscribe(x => right.value = x as number);
         rightWatcher.observer.subscribe(x => left.value = x as number);
 
-        changeTracker.attach(rightWatcher);
-        changeTracker.attach(leftWatcher);
+        this.changeTracker.attach(rightWatcher);
+        this.changeTracker.attach(leftWatcher);
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.notEqual(left.value, right.value);
 
         left.value = 3;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(left.value, right.value);
 
         right.value = 4;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(left.value, right.value);
 
         left.value = 3;
         right.value = 5;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(right.value, 5);
         assert.equal(left.value, right.value);
@@ -114,21 +135,19 @@ export default class ChangeTrackerSpec
         right.value = 6;
         left.value = 2;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(right.value, 6);
         assert.equal(left.value, right.value);
 
-        changeTracker.stop();
-        changeTracker.clear(); // Coverage
+        this.changeTracker.stop();
+        this.changeTracker.clear(); // Coverage
     }
 
     @test @shouldPass
     public async unsubscribe(): Promise<void>
     {
-        const changeTracker = new ChangeTracker(0);
-
-        changeTracker.start();
+        this.changeTracker.start();
 
         const target = { value: 0 };
 
@@ -142,75 +161,32 @@ export default class ChangeTrackerSpec
         const subscription1 = watcher.observer.subscribe(x => valueReceiver1 = x as typeof valueReceiver1);
         const subscription2 = watcher.observer.subscribe(x => valueReceiver2 = x as typeof valueReceiver2);
 
-        changeTracker.attach(watcher);
+        this.changeTracker.attach(watcher);
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.equal(target.value, valueReceiver1);
         assert.equal(target.value, valueReceiver2);
 
-        changeTracker.dettach(watcher);
+        this.changeTracker.dettach(watcher);
 
         target.value = 2;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.notEqual(target.value, valueReceiver1);
         assert.notEqual(target.value, valueReceiver2);
 
-        changeTracker.attach(watcher);
+        this.changeTracker.attach(watcher);
 
         subscription1.unsubscribe();
         subscription2.unsubscribe();
 
         target.value = 3;
 
-        await changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
+        await this.whenDone();
 
         assert.notEqual(target.value, valueReceiver1);
         assert.notEqual(target.value, valueReceiver2);
-
-        changeTracker.stop();
     }
-
-    // @test @shouldFail
-    // public async detectChangesError(): Promise<void>
-    // {
-    //     const changeTracker = new ChangeTracker(0);
-
-    //     changeTracker.start();
-
-    //     const watcher = new Watcher({ value: 1 }, ["x", "y", "x"]);
-
-    //     changeTracker.attach(watcher);
-
-    //     await assert.isFulfilled(changeTracker.nextCicle().then(async () => ParallelWorker.whenDone()));
-
-    //     watcher.observer.subscribe(() => void 0);
-
-    //     await assert.isRejected(changeTracker.nextCicle().then(async () => ParallelWorker.whenDone()), "Property \"x\" does not exists on type Object", "changeTracker.nextCicle() isRejected");
-
-    //     changeTracker.stop();
-    // }
-
-    // @test @shouldFail
-    // public async workerError(): Promise<void>
-    // {
-    //     const changeTracker = new ChangeTracker(0);
-
-    //     changeTracker.start();
-
-    //     const watcher = new Watcher({ value: 1 }, ["value"]);
-
-    //     // eslint-disable-next-line max-statements-per-line
-    //     watcher.observer.subscribe(() => { throw new Error("Some error"); });
-
-    //     changeTracker.attach(watcher);
-
-    //     const promise = changeTracker.nextCicle().then(async () => ParallelWorker.whenDone());
-
-    //     await assert.isRejected(promise, "Some error", "changeTracker.nextCicle() isRejected");
-
-    //     changeTracker.stop();
-    // }
 }

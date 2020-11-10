@@ -8,16 +8,15 @@ import
     camelToDashed,
     overrideProperty,
 } from "@surface/core";
-import Reactive, { ISubscription } from "@surface/reactive";
 import { createHostScope }         from "./common";
 import ICustomElement              from "./interfaces/custom-element";
 import Metadata                    from "./metadata/metadata";
 import PrototypeMetadata           from "./metadata/prototype-metadata";
 import StaticMetadata              from "./metadata/static-metadata";
-import ParallelWorker              from "./parallel-worker";
 import { TEMPLATEABLE }            from "./symbols";
 import TemplateParser              from "./template-parser";
 import TemplateProcessor           from "./template-processor";
+import { scheduler } from "./workers";
 
 const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
 
@@ -98,9 +97,7 @@ function wraperPrototype(prototype: ICustomElement): void
             }
         };
 
-        // action();
-
-        ParallelWorker.run(action, "low");
+        scheduler.enqueue(action, "low");
 
         callback?.call(this);
     };
@@ -113,11 +110,8 @@ function wraperPrototype(prototype: ICustomElement): void
         {
             metadata.disposed = true;
 
-            // ParallelWorker.run(() => metadata.disposables.forEach(x => x.dispose()), "low");
-            metadata.disposables.forEach(x => x.dispose());
+            scheduler.enqueue(() => metadata.disposables.forEach(x => x.dispose()), "low");
         }
-
-        // metadata.disposables.forEach(x => x.dispose());
 
         callback?.call(this);
     };
@@ -225,26 +219,6 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
     return decorator(target, propertyKey) as unknown as void;
 }
 
-export function computed<T extends object>(...properties: (keyof T)[]): <U extends T>(target: U, propertyKey: string) => void
-{
-    return <U extends T>(target: U, propertyKey: string) =>
-    {
-        const action = (instance: HTMLElement): IDisposable =>
-        {
-            const subscriptions: ISubscription[] = [];
-
-            for (const property of properties)
-            {
-                subscriptions.push(Reactive.observe(instance, property as string).observer.subscribe({ notify: () => Reactive.notify(instance, propertyKey) }));
-            }
-
-            return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
-        };
-
-        StaticMetadata.from(target.constructor).postConstruct.push(action);
-    };
-}
-
 export function define(name: string, options?: ElementDefinitionOptions): <TTarget extends Constructor<HTMLElement>>(target: TTarget) => void
 {
     return <TTarget extends Constructor<HTMLElement>>(target: TTarget) =>
@@ -319,27 +293,6 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
         };
 
         StaticMetadata.from(target.constructor).postConstruct.push(action);
-    };
-}
-
-export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
-{
-    return <U extends T>(target: U, propertyKey: string) =>
-    {
-        if (typeof target[propertyKey as keyof U] == "function")
-        {
-
-            const action = (instance: HTMLElement): IDisposable =>
-            {
-                const notify = (value: unknown): unknown => (instance as object as Record<string, Function>)[propertyKey](value);
-
-                const subscription = Reactive.observe(instance, property as string).observer.subscribe({ notify });
-
-                return { dispose: () => subscription.unsubscribe() };
-            };
-
-            StaticMetadata.from(target.constructor).postConstruct.push(action);
-        }
     };
 }
 

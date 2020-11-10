@@ -1,9 +1,9 @@
 import { Delegate, IDisposable }                                             from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
-import { ISubscription }                                                     from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/loop-directive";
-import ParallelWorker                                                        from "../../parallel-worker";
+import ISubscription                                                         from "../../interfaces/subscription";
+import { scheduler }                                                         from "../../workers";
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from ".";
 
@@ -33,7 +33,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, template);
 
-        const listener = (): void => ParallelWorker.run(this.task.bind(this));
+        const listener = (): void => scheduler.enqueue(this.task.bind(this));
 
         this.subscription = tryObserveByObservable(scope, directive, listener, true);
 
@@ -73,7 +73,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            ParallelWorker.run(() => this.action(element, current), "high");
+            scheduler.enqueue(() => this.action(element, current), "high");
         }
     }
 
@@ -85,7 +85,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            ParallelWorker.run(() => this.action(element, current), "high");
+            scheduler.enqueue(() => this.action(element, current), "high");
         }
     }
 
@@ -102,7 +102,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.iterator(elements, this.action);
 
-        ParallelWorker.run(() => this.templateBlock.setContent(this.tree), "high");
+        scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high");
     }
 
     public dispose(): void

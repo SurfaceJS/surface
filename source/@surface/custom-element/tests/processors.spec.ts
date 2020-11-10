@@ -3,8 +3,8 @@ import "./fixtures/dom";
 
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                                         from "chai";
-import ChangeTracker                                      from "../internal/change-tracker";
-import { processTemplate, whenDone }                      from "../internal/processors";
+import { processTemplate }                                from "../internal/processors";
+import { changeTracker, whenDone }                        from "../internal/workers";
 
 @suite
 export default class ProcessorsSpec
@@ -12,14 +12,14 @@ export default class ProcessorsSpec
     @beforeEach
     public before(): void
     {
-        ChangeTracker.instance.start();
+        changeTracker.start();
     }
 
     @afterEach
     public afterEach(): void
     {
-        ChangeTracker.instance.stop();
-        ChangeTracker.instance.clear();
+        changeTracker.stop();
+        changeTracker.clear();
     }
 
     @test @shouldPass

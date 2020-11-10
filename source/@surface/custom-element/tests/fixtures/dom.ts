@@ -6,6 +6,8 @@ jsdom.reconfigure({ url: "http://localhost.com" });
 
 const window = jsdom.window;
 
+window.requestAnimationFrame = setImmediate as unknown as (typeof window)["requestAnimationFrame"];
+
 const windows = [window];
 
 window.open = url =>

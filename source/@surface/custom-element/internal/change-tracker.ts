@@ -1,21 +1,21 @@
 import { Queue }              from "@surface/collection";
 import { Delegate, runAsync } from "@surface/core";
-import ParallelWorker         from "./parallel-worker";
+import Scheduler              from "./scheduler";
 import Watcher                from "./watcher";
 
 export default class ChangeTracker
 {
-    public static readonly instance: ChangeTracker = new ChangeTracker(20);
-
     private readonly callbackQueue: Queue<Delegate> = new Queue();
-    private readonly watchers:        Set<Watcher>    = new Set();
     private readonly interval:      number;
+    private readonly scheduler:     Scheduler;
+    private readonly watchers:      Set<Watcher>    = new Set();
 
     private running: boolean = false;
 
-    public constructor(interval: number)
+    public constructor(scheduler: Scheduler, interval: number)
     {
-        this.interval = interval;
+        this.interval  = interval;
+        this.scheduler = scheduler;
     }
 
     private async execute(): Promise<void>
@@ -24,7 +24,7 @@ export default class ChangeTracker
         {
             for (const watcher of this.watchers)
             {
-                ParallelWorker.run(() => watcher.detectChange(), "high");
+                this.scheduler.enqueue(() => watcher.detectChange(), "high");
             }
 
             this.resolve();

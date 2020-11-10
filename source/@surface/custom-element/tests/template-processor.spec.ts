@@ -5,15 +5,14 @@ import "./fixtures/dom";
 import { Delegate, Indexer, uuidv4 }                                  from "@surface/core";
 import { afterEach, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                                                     from "chai";
-import ChangeTracker                                                  from "../internal/change-tracker";
 import CustomElement                                                  from "../internal/custom-element";
 import { element }                                                    from "../internal/decorators";
 import directiveRegistry                                              from "../internal/directive-registry";
 import CustomStackError                                               from "../internal/errors/custom-stack-error";
 import TemplateEvaluationError                                        from "../internal/errors/template-evaluation-error";
-import { whenDone }                                                   from "../internal/processors";
 import TemplateParser                                                 from "../internal/template-parser";
 import TemplateProcessor                                              from "../internal/template-processor";
+import { changeTracker, whenDone }                                    from "../internal/workers";
 import CustomDirectiveHandler                                         from "./fixtures/custom-directive";
 import customDirectiveFactory                                         from "./fixtures/custom-directive-factory";
 
@@ -103,14 +102,14 @@ export default class TemplateProcessorSpec
     @beforeEach
     public beforeEach(): void
     {
-        ChangeTracker.instance.start();
+        changeTracker.start();
     }
 
     @afterEach
     public afterEach(): void
     {
-        ChangeTracker.instance.stop();
-        ChangeTracker.instance.clear();
+        changeTracker.stop();
+        changeTracker.clear();
     }
 
     @test @shouldPass

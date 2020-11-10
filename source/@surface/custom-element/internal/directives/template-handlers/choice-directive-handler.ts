@@ -1,8 +1,8 @@
 import { IDisposable, assert }                           from "@surface/core";
-import { ISubscription }                                 from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
-import ParallelWorker                                    from "../../parallel-worker";
+import ISubscription                                     from "../../interfaces/subscription";
+import { scheduler }                                     from "../../workers";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";
 
@@ -31,7 +31,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const listener = (): void => ParallelWorker.run(this.task.bind(this));
+        const listener = (): void => scheduler.enqueue(this.task.bind(this));
 
         for (let index = 0; index < branches.length; index++)
         {

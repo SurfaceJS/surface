@@ -1,6 +1,5 @@
 import { CancellationTokenSource, IDisposable, Indexer, assert } from "@surface/core";
 import { TypeGuard }                                             from "@surface/expression";
-import { ISubscription }                                         from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -10,9 +9,10 @@ import
     tryObserveKeyByObservable,
 } from "../../common";
 import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
+import ISubscription            from "../../interfaces/subscription";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import ParallelWorker           from "../../parallel-worker";
 import { Injection }            from "../../types";
+import { scheduler }            from "../../workers";
 import TemplateBlock            from "../template-block";
 import TemplateDirectiveHandler from ".";
 
@@ -63,7 +63,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.cancellationTokenSource.dispose();
         this.cancellationTokenSource = new CancellationTokenSource();
 
-        ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
+        scheduler.enqueue(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
     }
 
     private inject(injection?: Injection): void
@@ -80,7 +80,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const listener = (): void => ParallelWorker.run(task);
+        const listener = (): void => scheduler.enqueue(task);
 
         this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
 

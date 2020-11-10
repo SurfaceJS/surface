@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-readonly */
 import { IDisposable }    from "@surface/core";
 import { enumerateRange } from "../common";
 
@@ -7,33 +8,17 @@ type Anchor = Comment & { [BLOCKS]: Set<TemplateBlock> };
 
 export default class TemplateBlock implements IDisposable
 {
-    private _close: Anchor;
-    private _open:  Anchor;
-
+    private close:    Anchor;
     private disposed: boolean = false;
-
-    public get close(): Anchor
-    {
-        return this._close;
-    }
-
-    public get open(): Anchor
-    {
-        return this._open;
-    }
+    private open:     Anchor;
 
     public constructor()
     {
-        this._open  = document.createComment("#open") as Anchor;
-        this._close = document.createComment("#close") as Anchor;
+        this.open  = document.createComment("#open") as Anchor;
+        this.close = document.createComment("#close") as Anchor;
 
-        this._open[BLOCKS]  = new Set([this]);
-        this._close[BLOCKS] = new Set([this]);
-    }
-
-    public static isShared(anchor: Anchor): boolean
-    {
-        return anchor[BLOCKS].size > 1;
+        this.open[BLOCKS]  = new Set([this]);
+        this.close[BLOCKS] = new Set([this]);
     }
 
     private isAnchor(node: Node & { [BLOCKS]?: Set<TemplateBlock> }): node is Anchor
@@ -43,53 +28,53 @@ export default class TemplateBlock implements IDisposable
 
     private disconnect(): void
     {
-        if (this._open[BLOCKS].size == 1)
+        if (this.open[BLOCKS].size == 1)
         {
-            this._open.remove();
+            this.open.remove();
         }
         else
         {
-            this._open[BLOCKS].delete(this);
+            this.open[BLOCKS].delete(this);
         }
 
-        if (this._close[BLOCKS].size == 1)
+        if (this.close[BLOCKS].size == 1)
         {
-            this._close.remove();
+            this.close.remove();
         }
         else
         {
-            this._close[BLOCKS].delete(this);
+            this.close[BLOCKS].delete(this);
         }
     }
 
     private optimize(): void
     {
         const hasNestedDirective =
-               this._open.nextSibling
-            && this._open.nextSibling != this._close
-            && this.isAnchor(this._open.nextSibling)
-            && this._close.previousSibling
-            && this._close.previousSibling != this._open
-            && this.isAnchor(this._close.previousSibling);
+               this.open.nextSibling
+            && this.open.nextSibling != this.close
+            && this.isAnchor(this.open.nextSibling)
+            && this.close.previousSibling
+            && this.close.previousSibling != this.open
+            && this.isAnchor(this.close.previousSibling);
 
         if (hasNestedDirective)
         {
-            const nextOpen      = this._open.nextSibling      as Anchor;
-            const previousClose = this._close.previousSibling as Anchor;
+            const nextOpen      = this.open.nextSibling      as Anchor;
+            const previousClose = this.close.previousSibling as Anchor;
 
-            const open  = this._open;
-            const close = this._close;
+            const open  = this.open;
+            const close = this.close;
 
             for (const block of open[BLOCKS].values())
             {
-                block._open = nextOpen;
+                block.open = nextOpen;
 
                 nextOpen[BLOCKS].add(block);
             }
 
             for (const block of close[BLOCKS].values())
             {
-                block._close = previousClose;
+                block.close = previousClose;
 
                 previousClose[BLOCKS].add(block);
             }
@@ -101,13 +86,13 @@ export default class TemplateBlock implements IDisposable
 
     public connect(node: Node): void
     {
-        node.appendChild(this._open);
-        node.appendChild(this._close);
+        node.appendChild(this.open);
+        node.appendChild(this.close);
     }
 
     public clear(): void
     {
-        for (const element of enumerateRange(this._open, this._close))
+        for (const element of enumerateRange(this.open, this.close))
         {
             element.dispose?.();
 
@@ -128,38 +113,13 @@ export default class TemplateBlock implements IDisposable
 
     public insertAt(parent: Node & ParentNode, reference: Node): void
     {
-        parent.replaceChild(this._close, reference);
-        parent.insertBefore(this._open, this._close);
-    }
-
-    public makeSingleUser(): void
-    {
-        if (this._open[BLOCKS].size > 1)
-        {
-            this._open[BLOCKS].delete(this);
-
-            const start = document.createComment("#open") as Anchor;
-
-            start[BLOCKS] = new Set([this]);
-
-            this._open = start;
-        }
-
-        if (this._close[BLOCKS].size > 1)
-        {
-            this._close[BLOCKS].delete(this);
-
-            const end = document.createComment("#close") as Anchor;
-
-            end[BLOCKS] = new Set([this]);
-
-            this._close = end;
-        }
+        parent.replaceChild(this.close, reference);
+        parent.insertBefore(this.open, this.close);
     }
 
     public setContent<T extends Node>(content: T): void
     {
-        this._close.parentNode!.insertBefore(content, this._close);
+        this.close.parentNode!.insertBefore(content, this.close);
 
         this.optimize();
     }

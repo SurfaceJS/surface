@@ -1,8 +1,8 @@
 import { Delegate, getValue, setValue } from "@surface/core";
-import ChangeTracker                    from "./change-tracker";
 import ISubscription                    from "./interfaces/subscription";
 import Metadata                         from "./metadata/metadata";
 import Watcher                          from "./watcher";
+import { changeTracker } from "./workers";
 
 export default class DataBind
 {
@@ -26,7 +26,7 @@ export default class DataBind
             watchers.set(key, watcher = new Watcher(root, path));
         }
 
-        ChangeTracker.instance.attach(watcher);
+        changeTracker.attach(watcher);
 
         watcher.observer.subscribe(listener);
 
@@ -40,7 +40,7 @@ export default class DataBind
                 {
                     watchers.delete(key);
 
-                    ChangeTracker.instance.dettach(watcher!);
+                    changeTracker.dettach(watcher!);
                 }
             },
         };
