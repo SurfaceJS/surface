@@ -7,13 +7,11 @@ import ParallelWorker                                                        fro
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from ".";
 
-type Cache = { templateBlock: TemplateBlock, value: unknown, disposable: IDisposable };
-
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly cache:         Cache[] = [];
+    private readonly disposables:   IDisposable[] = [];
     private readonly directive:     ILoopDirective;
-    private readonly iterator:      (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => number;
+    private readonly iterator:      (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
     private readonly subscription:  ISubscription;
     private readonly template:      HTMLTemplateElement;
     private readonly templateBlock: TemplateBlock = new TemplateBlock();
@@ -44,89 +42,51 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     private action(value: unknown, index: number): void
     {
-        if (index >= this.cache.length || !Object.is(this.cache[index].value, value))
+        const mergedScope = TypeGuard.isIdentifier(this.directive.left)
+            ? { ...this.scope, [this.directive.left.name]: value }
+            : { ...this.scope, ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
+
+        const [content, disposable] = this.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
+
+        const block = new TemplateBlock();
+
+        block.connect(this.tree);
+
+        block.setContent(content);
+
+        this.disposables.push(block);
+        this.disposables.push(disposable);
+
+        const factor = Math.ceil(index / 1000);
+
+        if (factor * 1000 == index)
         {
-            const mergedScope = TypeGuard.isIdentifier(this.directive.left)
-                ? { ...this.scope, [this.directive.left.name]: value }
-                : { ...this.scope, ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
-
-            const templateBlock = new TemplateBlock();
-
-            const [content, disposable] = this.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
-
-            if (index < this.cache.length)
-            {
-                const entry = this.cache[index];
-
-                entry.disposable.dispose();
-                entry.templateBlock.dispose();
-
-                this.cache[index] = { disposable, templateBlock, value };
-            }
-            else
-            {
-                this.cache.push({ disposable, templateBlock, value });
-            }
-
-            templateBlock.connect(this.tree);
-
-            templateBlock.setContent(content);
-        }
-        else
-        {
-            const templateBlock = this.cache[index].templateBlock;
-
-            let simbling: ChildNode | null = null;
-
-            const clone = templateBlock.open.cloneNode() as Comment;
-
-            this.tree.appendChild(clone);
-
-            while ((simbling = templateBlock.open.nextSibling) && simbling != templateBlock.close)
-            {
-                this.tree.appendChild(simbling);
-            }
-
-            templateBlock.makeSingleUser();
-
-            this.tree.replaceChild(templateBlock.open, clone);
-            this.tree.appendChild(templateBlock.close);
+            this.templateBlock.setContent(this.tree);
         }
     }
 
-    private clearCache(index: number): void
-    {
-        for (const entry of this.cache.splice(index))
-        {
-            const { templateBlock, disposable } = entry;
-
-            disposable.dispose();
-            templateBlock.dispose();
-        }
-    }
-
-    private forOfIterator(elements: Iterable<unknown>): number
+    private forOfIterator(elements: Iterable<unknown>): void
     {
         let index = 0;
 
         for (const element of elements)
         {
-            this.action(element, index++);
-        }
+            const current = ++index;
 
-        return index;
+            ParallelWorker.run(() => this.action(element, current), "high");
+        }
     }
 
-    private forInIterator(elements: Iterable<unknown>): number
+    private forInIterator(elements: Iterable<unknown>): void
     {
         let index = 0;
 
         for (const element in elements)
         {
-            this.action(element, index++);
-        }
+            const current = ++index;
 
-        return index;
+            ParallelWorker.run(() => this.action(element, current), "high");
+        }
     }
 
     private task(): void
@@ -136,26 +96,20 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
             return;
         }
 
+        this.disposables.splice(0).forEach(x => x.dispose());
+
         const elements = tryEvaluateExpression(this.scope, this.directive.right, this.directive.rawExpression, this.directive.stackTrace) as Iterable<unknown>;
 
-        const index = this.iterator(elements, this.action);
+        this.iterator(elements, this.action);
 
-        this.clearCache(index);
-
-        this.templateBlock.setContent(this.tree);
+        ParallelWorker.run(() => this.templateBlock.setContent(this.tree), "high");
     }
 
     public dispose(): void
     {
         if (!this.disposed)
         {
-            for (const entry of this.cache.splice(0))
-            {
-                const { templateBlock, disposable } = entry;
-
-                disposable.dispose();
-                templateBlock.dispose();
-            }
+            this.disposables.splice(0).forEach(x => x.dispose());
 
             this.subscription.unsubscribe();
             this.templateBlock.dispose();

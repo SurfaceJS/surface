@@ -1,5 +1,4 @@
 import { IDisposable }    from "@surface/core";
-import Metadata           from "@surface/reactive/internal/metadata";
 import { enumerateRange } from "../common";
 
 const BLOCKS = Symbol("custom-element:template-blocks");
@@ -81,18 +80,18 @@ export default class TemplateBlock implements IDisposable
             const open  = this._open;
             const close = this._close;
 
-            for (const host of open[BLOCKS].values())
+            for (const block of open[BLOCKS].values())
             {
-                host._open = nextOpen;
+                block._open = nextOpen;
 
-                nextOpen[BLOCKS].add(host);
+                nextOpen[BLOCKS].add(block);
             }
 
-            for (const host of close[BLOCKS].values())
+            for (const block of close[BLOCKS].values())
             {
-                host._close = previousClose;
+                block._close = previousClose;
 
-                previousClose[BLOCKS].add(host);
+                previousClose[BLOCKS].add(block);
             }
 
             open.remove();
@@ -110,7 +109,7 @@ export default class TemplateBlock implements IDisposable
     {
         for (const element of enumerateRange(this._open, this._close))
         {
-            Metadata.of(element)?.disposables.forEach(x => x.dispose());
+            element.dispose?.();
 
             element.remove();
         }
