@@ -84,7 +84,7 @@ export default class ParallelWorker
         switch (priority)
         {
             case "high":
-                this.lowQueue.enqueue(action);
+                this.highQueue.enqueue(action);
                 break;
             case "low":
                 this.lowQueue.enqueue(action);
