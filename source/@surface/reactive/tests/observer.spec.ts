@@ -12,7 +12,7 @@ export default class ObserverSpec
         let value = 0;
         const observer = new Observer<number>();
 
-        observer.subscribe({ notify: x => value = x });
+        observer.subscribe(x => value = x);
 
         observer.notify(1);
 
@@ -25,7 +25,7 @@ export default class ObserverSpec
         let value = 0;
         const observer = new Observer<number>();
 
-        const listener = { notify: (x: number) => value = x };
+        const listener = (x: number): number => value = x;
 
         observer.subscribe(listener);
 
@@ -43,6 +43,6 @@ export default class ObserverSpec
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        assert.throws(() => new Observer().unsubscribe({ notify: () => undefined }), "Listerner not subscribed");
+        assert.throws(() => new Observer().unsubscribe(() => void 0), "Listerner not subscribed");
     }
 }

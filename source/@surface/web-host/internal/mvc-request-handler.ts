@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { Constructor, Indexer } from "@surface/core";
 import Enumerable               from "@surface/enumerable";
-import Type                     from "@surface/reflection";
+import { Type }                 from "@surface/reflection";
 import Router                   from "@surface/router";
 import ActionResult             from "./action-result";
 import Controller               from "./controller";

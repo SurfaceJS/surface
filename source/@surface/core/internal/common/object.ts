@@ -1,6 +1,5 @@
-import Hashcode                                                      from "../hashcode";
-import { Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                         from "./generic";
+import { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                                                        from "./generic";
 
 const PRIVATES = Symbol("core:privates");
 
@@ -119,60 +118,62 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
-export function getKeyMember<T extends object>(target: T, path: string | string[]): { key: string, member: T };
-export function getKeyMember(target: Indexer, path: string | string[]): { key: string, member: Indexer }
+export function getKeyProperty<T extends object>(root: T, ...path: string[]): [key: string, property: T];
+export function getKeyProperty(root: Indexer, ...path: string[]): [key: string, property: Indexer]
 {
-    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
+    const [key, ...keys] = path;
 
     if (keys.length > 0)
     {
-        if (key in target)
+        if (key in root)
         {
-            const member = target[key];
+            const member = root[key];
 
-            return getKeyMember(member as Indexer, keys);
+            return getKeyProperty(member as Indexer, ...keys);
         }
 
-        const typeName = target instanceof Function ? target.name : target.constructor.name;
+        const typeName = root instanceof Function ? root.name : root.constructor.name;
 
         throw new Error(`Property "${key}" does not exists on type ${typeName}`);
     }
 
-    return { key, member: target };
+    return [key, root];
 }
 
-export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string | string[]): { key: string, value: TValue };
-export function getKeyValue(target: Indexer, path: string | string[]): { key: string, value: unknown }
+export function getKeyValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, path: P): [key: string, value: ArrayPathOfValue<T, P>];
+export function getKeyValue(target: Indexer, path: string[]): [key: string, value: unknown]
 {
-    const { key, member } = getKeyMember(target, path);
+    const [key, property] = getKeyProperty(target, ...path);
 
-    return { key, value: member[key] };
+    return [key, property[key]];
 }
 
-export function getValue(target: object, path: string | string[]): unknown
+export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
+export function getValue(root: object, ...path: string[]): unknown
 {
-    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
+    const [key, ...keys] = path;
 
     if (keys.length > 0)
     {
-        if (key in target)
+        if (key in root)
         {
-            return getValue((target as Indexer)[key] as Indexer, keys);
+            return getValue((root as Indexer)[key] as object, ...keys);
         }
 
-        const typeName = target instanceof Function ? target.name : target.constructor.name;
+        const typeName = root instanceof Function ? root.name : root.constructor.name;
 
         throw new Error(`Property "${key}" does not exists on type ${typeName}`);
     }
 
-    return (target as Indexer)[key];
+    return (root as Indexer)[key];
 }
 
-export function setValue(root: object, path: string | string[], value: unknown): void
+export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
+export function setValue(value: unknown, root: object, ...path: string[]): void
 {
-    const { key, member } = getKeyMember(root, path);
+    const [key, property] = getKeyProperty(root, ...path);
 
-    (member as Indexer)[key] = value;
+    (property as Indexer)[key] = value;
 }
 
 /**
@@ -272,7 +273,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                     if (!Object.is(oldValue, value))
                     {
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
 
                         currentDescriptor.set!.call(this, value);
                     }
@@ -286,7 +287,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                     {
                         currentDescriptor.set!.call(this, value);
 
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
                     }
                 },
         };
@@ -311,7 +312,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                     if (!Object.is(oldValue, value))
                     {
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
 
                         privates[property as string] = value;
                     }
@@ -324,7 +325,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                     {
                         privates[property as string] = value;
 
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
                     }
                 },
         };
@@ -376,7 +377,7 @@ export function proxyFrom(...instances: Indexer[]): Indexer
         {
             for (const instance of instances)
             {
-                const descriptor = Object.getOwnPropertyDescriptor(instance, key);
+                const descriptor = Reflect.getOwnPropertyDescriptor(instance, key);
 
                 if (descriptor)
                 {
@@ -409,16 +410,6 @@ export function proxyFrom(...instances: Indexer[]): Indexer
     };
 
     return new Proxy(instances[0], handler);
-}
-
-/**
- * Performs deep comparision between values.
- * @param left  Left  value
- * @param right Right value
- */
-export function structuralEqual(left: unknown, right: unknown): boolean
-{
-    return left === right || Hashcode.encode(left) == Hashcode.encode(right);
 }
 
 export function *enumerateKeys(target: object): IterableIterator<string | number | symbol>

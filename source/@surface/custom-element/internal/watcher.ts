@@ -1,6 +1,6 @@
-import { Indexer, getValue } from "@surface/core";
-import IObserver             from "./interfaces/observer";
-import Observer              from "./observer";
+import { getValue } from "@surface/core";
+import IObserver    from "./interfaces/observer";
+import Observer     from "./observer";
 
 export default class Watcher
 {
@@ -15,14 +15,14 @@ export default class Watcher
     {
         this.root  = root;
         this.path  = path;
-        this.value = getValue(root as Indexer, path);
+        this.value = getValue(root, ...path);
     }
 
     public detectChange(): void
     {
         if (this.observer.size > 0)
         {
-            const value = getValue(this.root as Indexer, this.path);
+            const value = getValue(this.root, ...this.path);
 
             if (!Object.is(value, this.value))
             {

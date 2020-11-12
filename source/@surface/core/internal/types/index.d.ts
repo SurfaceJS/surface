@@ -50,6 +50,96 @@ type NewableOverloads<T> = T extends
                 ? [A1, new (...args: A1) => R1]
                 : never;
 
+export type ArrayPathOf<T, P> =
+[
+    ...
+    (
+        P extends [infer K0, infer K1, infer K2, infer K3, infer K4]
+            ? K0 extends keyof T
+                ? K1 extends keyof T[K0]
+                    ? K2 extends keyof T[K0][K1]
+                        ? K3 extends keyof T[K0][K1][K2]
+                            ? K4 extends keyof T[K0][K1][K2][K3]
+                                ? [K0, K1, K2, K3, K4]
+                                : never
+                            : never
+                        : never
+                    : never
+                : never
+            : P extends [infer K0, infer K1, infer K2, infer K3]
+                ? K0 extends keyof T
+                    ? K1 extends keyof T[K0]
+                        ? K2 extends keyof T[K0][K1]
+                            ? K3 extends keyof T[K0][K1][K2]
+                                ? [K0, K1, K2, K3]
+                                : never
+                            : never
+                        : never
+                    : never
+                : P extends [infer K0, infer K1, infer K2]
+                    ? K0 extends keyof T
+                        ? K1 extends keyof T[K0]
+                            ? K2 extends keyof T[K0][K1]
+                                ? [K0, K1, K2]
+                                : never
+                            : never
+                        : never
+                    : P extends [infer K0, infer K1]
+                        ? K0 extends keyof T
+                            ? K1 extends keyof T[K0]
+                                ? [K0, K1]
+                                : never
+                            : never
+                        : P extends [infer K0]
+                            ? K0 extends keyof T
+                                ? [K0]
+                                : never
+                            : string[]
+    )
+];
+export type ArrayPathOfValue<T, P> =
+    P extends [infer K0, infer K1, infer K2, infer K3, infer K4]
+        ? K0 extends keyof T
+            ? K1 extends keyof T[K0]
+                ? K2 extends keyof T[K0][K1]
+                    ? K3 extends keyof T[K0][K1][K2]
+                        ? K4 extends keyof T[K0][K1][K2][K3]
+                            ? T[K0][K1][K2][K3][K4]
+                            : never
+                        : never
+                    : never
+                : never
+            : never
+        : P extends [infer K0, infer K1, infer K2, infer K3]
+            ? K0 extends keyof T
+                ? K1 extends keyof T[K0]
+                    ? K2 extends keyof T[K0][K1]
+                        ? K3 extends keyof T[K0][K1][K2]
+                            ? T[K0][K1][K2][K3]
+                            : never
+                        : never
+                    : never
+                : never
+            : P extends [infer K0, infer K1, infer K2]
+                ? K0 extends keyof T
+                    ? K1 extends keyof T[K0]
+                        ? K2 extends keyof T[K0][K1]
+                            ? T[K0][K1][K2]
+                            : never
+                        : never
+                    : never
+                : P extends [infer K0, infer K1]
+                    ? K0 extends keyof T
+                        ? K1 extends keyof T[K0]
+                            ? T[K0][K1]
+                            : never
+                        : never
+                    : P extends [infer K0]
+                        ? K0 extends keyof T
+                            ? T[K0]
+                            : never
+                        : unknown;
+
 export type AsyncDelegate<TArgs extends unknown[] = [], TResult = void> = (...args: TArgs) => Promise<TResult>;
 export type AsyncCallable                                               = (...args: any[]) => Promise<any>;
 export type Callable                                                    = (...args: any[]) => any;

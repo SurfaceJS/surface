@@ -1,15 +1,15 @@
 import { IDisposable } from "@surface/core";
-import IReactor        from "./interfaces/reactor";
-import Reactor         from "./reactor";
+import Reactive         from "./reactive";
 
 const METADATA = Symbol("reactive:metadata");
 
 export default class Metadata
 {
-    public disposables:  IDisposable[] = [];
-    public keys:         Set<string>   = new Set();
-    public reactor:      IReactor      = new Reactor();
-    public wrappedArray: boolean       = false;
+    public computed:        Map<string, string[][]>              = new Map();
+    public disposables:     IDisposable[]                        = [];
+    public isReactiveArray: boolean                              = false;
+    public reactivePaths:   Map<string, Reactive>                = new Map();
+    public trackings:       Map<string, Map<Reactive, string[]>> = new Map();
 
     public static from(target: object & { [METADATA]?: Metadata }): Metadata
     {

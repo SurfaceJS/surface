@@ -1,64 +1,37 @@
-import { Constructor, IDisposable } from "@surface/core";
-import ISubscription                from "./interfaces/subscription";
-import Reactive                     from "./reactive";
-import StaticMetadata               from "./static-metadata";
+import { overrideProperty } from "@surface/core";
+import Metadata             from "./metadata";
 
-export function observe<T extends object>(property: keyof T): <U extends T>(target: U, propertyKey: string) => void
+export function computed<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor
 {
-    return <U extends T>(target: U, propertyKey: string) =>
+    return (target, propertyKey, descriptor) =>
     {
-        const metadata = StaticMetadata.from(target.constructor);
+        Metadata.from(target).computed.set(propertyKey, (properties as string[][]).map(x => Array.isArray(x) ? x : [x]));
 
-        const action = (instance: object): IDisposable =>
-        {
-            const notify = (value: unknown): unknown => (instance as Record<string, Function>)[propertyKey](value);
-
-            const subscription = Reactive
-                .observe(instance, property as string).observer
-                .subscribe({ notify });
-
-            return { dispose: () => subscription.unsubscribe() };
-        };
-
-        metadata.actions.push(action);
+        return descriptor;
     };
 }
 
-export function observable<T extends Constructor>(target: T): T
+export function notify<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string, descriptor?: PropertyDescriptor) => void
 {
-    const metadata = StaticMetadata.from(target);
-
-    const handler: ProxyHandler<T> =
+    return (target, propertyKey, descriptor) =>
     {
-        construct: (target, args, newTarget) =>
+        const keys = properties.map(x => Array.isArray(x) ? x.join("\u{fffff}") : x) as string[];
+
+        const action = (instance: object): void =>
         {
-            const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
+            const metadata = Metadata.of(instance);
 
-            metadata.actions.forEach(x => x(instance));
-
-            return instance;
-        },
-    };
-
-    return new Proxy(target, handler);
-}
-
-export function notify<T extends object>(...properties: (keyof T)[]): <U extends T>(target: U, propertyKey: string) => void
-{
-    return <U extends T>(target: U, propertyKey: string) =>
-    {
-        const action = (instance: object): IDisposable =>
-        {
-            const subscriptions: ISubscription[] = [];
-
-            for (const property of properties)
+            if (metadata)
             {
-                subscriptions.push(Reactive.observe(instance, propertyKey).observer.subscribe({ notify: () => Reactive.notify(instance, property as string) }));
+                for (const key of keys)
+                {
+                    metadata.reactivePaths.get(key)?.notify();
+                }
             }
-
-            return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
         };
 
-        StaticMetadata.from(target.constructor).actions.push(action);
+        overrideProperty(target, propertyKey, action, descriptor);
+
+        return descriptor;
     };
 }

@@ -47,7 +47,7 @@ export default class DataBind
 
         if (!lazy)
         {
-            watcher.observer.notify(getValue(root, path));
+            watcher.observer.notify(getValue(root, ...path));
         }
 
         return subscription;
@@ -55,8 +55,8 @@ export default class DataBind
 
     public static twoWay(left: object, leftPath: string[], right: object, rightPath: string[]): [ISubscription, ISubscription]
     {
-        const leftListener = (value: unknown): void => setValue(right, rightPath, value);
-        const rightListener = (value: unknown): void => setValue(left, leftPath, value);
+        const leftListener = (value: unknown): void => setValue(value, right, ...rightPath);
+        const rightListener = (value: unknown): void => setValue(value, left, ...leftPath);
 
         const leftSubscription  = DataBind.oneWay(left, leftPath, leftListener);
         const rightSubscription = DataBind.oneWay(right, rightPath, rightListener);

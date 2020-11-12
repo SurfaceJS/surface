@@ -37,7 +37,7 @@ export default class Compiler
     {
         const webpackCompiler = webpack(webpackConfiguration);
 
-        await new Promise<string>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
+        await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
     }
 
     private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
@@ -46,9 +46,9 @@ export default class Compiler
 
         let watching: ReturnType<webpack.Compiler["watch"]>;
 
-        await new Promise<string>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
+        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
 
-        return { close: async () => new Promise((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
+        return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
 
     public static async analyze(configuration: Configuration, options: AnalyzerOptions): Promise<void>
@@ -97,7 +97,7 @@ export default class Compiler
         const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
             (error?: Error) => error ? reject(error) : resolve();
 
-        await new Promise((resolve, reject) => server.listen(port, host, handlerAsync(resolve, reject)));
+        await new Promise<void>((resolve, reject) => server.listen(port, host, handlerAsync(resolve, reject)));
 
         return { close: async () => Promise.resolve(server.close()) };
     }

@@ -1,6 +1,6 @@
 import { Delegate, IDisposable, Indexer, assert, typeGuard } from "@surface/core";
 import { TypeGuard }                                         from "@surface/expression";
-import Type, { FieldInfo }                                   from "@surface/reflection";
+import { FieldInfo, Type }                                   from "@surface/reflection";
 import
 {
     classMap,

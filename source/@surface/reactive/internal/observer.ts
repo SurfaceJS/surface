@@ -1,19 +1,24 @@
-import IListener     from "./interfaces/listener";
+import { Delegate }  from "@surface/core";
 import IObserver     from "./interfaces/observer";
 import ISubscription from "./interfaces/subscription";
 
 export default class Observer<TValue = unknown> implements IObserver<TValue>
 {
-    private readonly listeners: Set<IListener<TValue>> = new Set();
+    private readonly listeners: Set<Delegate<[TValue]>> = new Set();
 
-    public subscribe(listerner: IListener<TValue>): ISubscription
+    public get size(): number
+    {
+        return this.listeners.size;
+    }
+
+    public subscribe(listerner: Delegate<[TValue]>): ISubscription
     {
         this.listeners.add(listerner);
 
         return { unsubscribe: () => this.unsubscribe(listerner) };
     }
 
-    public unsubscribe(listerner: IListener<TValue>): void
+    public unsubscribe(listerner: Delegate<[TValue]>): void
     {
         if (!this.listeners.delete(listerner))
         {
@@ -25,7 +30,7 @@ export default class Observer<TValue = unknown> implements IObserver<TValue>
     {
         for (const listerner of this.listeners)
         {
-            listerner.notify(value);
+            listerner(value);
         }
     }
 }
