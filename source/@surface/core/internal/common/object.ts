@@ -294,7 +294,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
     }
     else
     {
-        const privates = target[PRIVATES] = target[PRIVATES] ?? { };
+        const privates = privatesFrom(target);
 
         privates[property as string] = target[property as keyof T];
 
@@ -355,6 +355,11 @@ export function pathfy(source: object, options?: { keySeparator?: string, keyTra
     }
 
     return result;
+}
+
+export function privatesFrom<T extends { [PRIVATES]?: Indexer }>(target: T): Indexer
+{
+    return target[PRIVATES] = target[PRIVATES] ?? { };
 }
 
 export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Combine<TInstances>;

@@ -1,11 +1,11 @@
 import { Queue }              from "@surface/collection";
-import { Delegate, runAsync } from "@surface/core";
+import { CancellationToken, Delegate, runAsync } from "@surface/core";
 
 export default class Scheduler
 {
-    private readonly highQueue:   Queue<Delegate> = new Queue();
-    private readonly lowQueue:    Queue<Delegate> = new Queue();
-    private readonly normalQueue: Queue<Delegate> = new Queue();
+    private readonly highPriorityQueue:   Queue<[Delegate, CancellationToken?]> = new Queue();
+    private readonly lowPriorityQueue:    Queue<[Delegate, CancellationToken?]> = new Queue();
+    private readonly normalPriorityQueue: Queue<[Delegate, CancellationToken?]> = new Queue();
     private readonly timeout:     number;
 
     private currentExecution: Promise<void> = Promise.resolve();
@@ -21,17 +21,20 @@ export default class Scheduler
         return new Promise(resolve => window.requestAnimationFrame(resolve));
     }
 
-    private async processQueue(queue: Queue<Delegate>, hasPriorityChange?: () => boolean): Promise<void>
+    private async processQueue(queue: Queue<[Delegate, CancellationToken?]>, hasPriorityChange?: () => boolean): Promise<void>
     {
         let expended = 0;
 
         while (queue.length > 0)
         {
-            const action = queue.dequeue()!;
+            const [task, cancellationToken] = queue.dequeue()!;
 
             const start = window.performance.now();
 
-            action();
+            if (!cancellationToken?.canceled)
+            {
+                task();
+            }
 
             const end = window.performance.now();
 
@@ -55,31 +58,31 @@ export default class Scheduler
     {
         try
         {
-            await this.processQueue(this.highQueue);
-            await this.processQueue(this.normalQueue, () => this.highQueue.length > 0);
-            await this.processQueue(this.lowQueue, () => this.highQueue.length > 0 || this.normalQueue.length > 0);
+            await this.processQueue(this.highPriorityQueue);
+            await this.processQueue(this.normalPriorityQueue, () => this.highPriorityQueue.length > 0);
+            await this.processQueue(this.lowPriorityQueue, () => this.highPriorityQueue.length > 0 || this.normalPriorityQueue.length > 0);
         }
         finally
         {
-            this.highQueue.clear();
-            this.normalQueue.clear();
-            this.lowQueue.clear();
+            this.highPriorityQueue.clear();
+            this.normalPriorityQueue.clear();
+            this.lowPriorityQueue.clear();
         }
     }
 
-    public enqueue(task: Delegate, priority: "high" | "normal" | "low" = "normal"): void
+    public enqueue(task: Delegate, priority: "high" | "normal" | "low" = "normal", cancellationToken: CancellationToken | undefined = undefined): void
     {
         switch (priority)
         {
             case "high":
-                this.highQueue.enqueue(task);
+                this.highPriorityQueue.enqueue([task, cancellationToken]);
                 break;
             case "low":
-                this.lowQueue.enqueue(task);
+                this.lowPriorityQueue.enqueue([task, cancellationToken]);
                 break;
             case "normal":
             default:
-                this.normalQueue.enqueue(task);
+                this.normalPriorityQueue.enqueue([task, cancellationToken]);
                 break;
         }
 
