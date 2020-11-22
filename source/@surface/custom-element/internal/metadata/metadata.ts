@@ -1,11 +1,9 @@
 import { IDisposable } from "@surface/core";
 import { METADATA }    from "../symbols";
-import Watcher         from "../watcher";
 
 export default class Metadata
 {
-    public readonly disposables: IDisposable[]        = [];
-    public readonly watchers:    Map<string, Watcher> = new Map();
+    public readonly disposables: IDisposable[] = [];
 
     public disposed:            boolean = false;
     public hasListener:         boolean = false;

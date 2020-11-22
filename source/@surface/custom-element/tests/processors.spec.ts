@@ -1,27 +1,14 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
+import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                                         from "chai";
 import { processTemplate }                                from "../internal/processors";
-import { changeTracker, whenDone }                        from "../internal/workers";
+import { whenDone }                                       from "../internal/workers";
 
 @suite
 export default class ProcessorsSpec
 {
-    @beforeEach
-    public before(): void
-    {
-        changeTracker.start();
-    }
-
-    @afterEach
-    public afterEach(): void
-    {
-        changeTracker.stop();
-        changeTracker.clear();
-    }
-
     @test @shouldPass
     public process(): void
     {

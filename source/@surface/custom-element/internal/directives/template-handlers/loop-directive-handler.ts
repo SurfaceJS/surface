@@ -57,9 +57,9 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         this.disposables.push(block);
         this.disposables.push(disposable);
 
-        const factor = Math.ceil(index / 1000);
+        const multiple = 1000;
 
-        if (factor * 1000 == index)
+        if (Math.ceil(index / multiple) * multiple == index)
         {
             this.templateBlock.setContent(this.tree);
         }

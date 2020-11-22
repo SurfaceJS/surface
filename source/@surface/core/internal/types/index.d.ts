@@ -49,7 +49,6 @@ type NewableOverloads<T> = T extends
             : T extends new (...args: infer A1) => infer R1
                 ? [A1, new (...args: A1) => R1]
                 : never;
-
 export type ArrayPathOf<T, P> =
 [
     ...

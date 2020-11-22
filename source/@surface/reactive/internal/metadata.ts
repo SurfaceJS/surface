@@ -1,5 +1,5 @@
 import { IDisposable } from "@surface/core";
-import Reactive         from "./reactive";
+import Reactive        from "./reactive";
 
 const METADATA = Symbol("reactive:metadata");
 
@@ -13,7 +13,12 @@ export default class Metadata
 
     public static from(target: object & { [METADATA]?: Metadata }): Metadata
     {
-        return target[METADATA] = target[METADATA] ?? new Metadata();
+        if (!target[METADATA])
+        {
+            Object.defineProperty(target, METADATA, { configurable: true, enumerable: false, value: new Metadata(), writable: false });
+        }
+
+        return target[METADATA]!;
     }
 
     public static of(target: object & { [METADATA]?: Metadata }): Metadata | undefined

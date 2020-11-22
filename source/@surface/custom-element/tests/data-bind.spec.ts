@@ -1,27 +1,14 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import DataBind                                           from "../internal/data-bind";
-import { changeTracker, whenDone }                        from "../internal/workers";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                  from "chai";
+import DataBind                    from "../internal/data-bind";
+import { whenDone }                from "../internal/workers";
 
 @suite
 export default class DataBindSpec
 {
-    @beforeEach
-    public beforeEach(): void
-    {
-        changeTracker.start();
-    }
-
-    @afterEach
-    public afterEach(): void
-    {
-        changeTracker.stop();
-        changeTracker.clear();
-    }
-
     @test @shouldPass
     public async oneWayFieldDataBind(): Promise<void>
     {

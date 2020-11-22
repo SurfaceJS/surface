@@ -118,36 +118,6 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
-export function getKeyProperty<T extends object>(root: T, ...path: string[]): [key: string, property: T];
-export function getKeyProperty(root: Indexer, ...path: string[]): [key: string, property: Indexer]
-{
-    const [key, ...keys] = path;
-
-    if (keys.length > 0)
-    {
-        if (key in root)
-        {
-            const member = root[key];
-
-            return getKeyProperty(member as Indexer, ...keys);
-        }
-
-        const typeName = root instanceof Function ? root.name : root.constructor.name;
-
-        throw new Error(`Property "${key}" does not exists on type ${typeName}`);
-    }
-
-    return [key, root];
-}
-
-export function getKeyValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, path: P): [key: string, value: ArrayPathOfValue<T, P>];
-export function getKeyValue(target: Indexer, path: string[]): [key: string, value: unknown]
-{
-    const [key, property] = getKeyProperty(target, ...path);
-
-    return [key, property[key]];
-}
-
 export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
 export function getValue(root: object, ...path: string[]): unknown
 {
@@ -171,9 +141,18 @@ export function getValue(root: object, ...path: string[]): unknown
 export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
 export function setValue(value: unknown, root: object, ...path: string[]): void
 {
-    const [key, property] = getKeyProperty(root, ...path);
+    const key = path[path.length - 1];
 
-    (property as Indexer)[key] = value;
+    if (path.length - 1 > 0)
+    {
+        const property = getValue(root, ...path.slice(0, path.length - 1));
+
+        (property as Indexer)[key] = value;
+    }
+    else
+    {
+        (root as Indexer)[key] = value;
+    }
 }
 
 /**
@@ -359,7 +338,12 @@ export function pathfy(source: object, options?: { keySeparator?: string, keyTra
 
 export function privatesFrom<T extends { [PRIVATES]?: Indexer }>(target: T): Indexer
 {
-    return target[PRIVATES] = target[PRIVATES] ?? { };
+    if (!target[PRIVATES])
+    {
+        Object.defineProperty(target, PRIVATES, { configurable: true, enumerable: false, value: { }, writable: false });
+    }
+
+    return target[PRIVATES]!;
 }
 
 export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Combine<TInstances>;

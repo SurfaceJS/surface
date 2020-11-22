@@ -82,7 +82,7 @@ export default class DecoratorsSpec
         }
 
         assert.doesNotThrow(() => new Mock());
-        assert.deepEqual(Mock.observedAttributes, ["value1", "value2"]);
+        assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
     }
 
     @test @shouldPass

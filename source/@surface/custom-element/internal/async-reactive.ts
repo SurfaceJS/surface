@@ -1,31 +1,21 @@
-import { CancellationTokenSource, Indexer, hasValue, privatesFrom } from "@surface/core";
-import Reactive, { IObserver, Metadata, Mode }                      from "@surface/reactive";
-import Scheduler                                                    from "./scheduler";
+import { CancellationTokenSource, Indexer, hasValue } from "@surface/core";
+import Reactive, { IObserver, Metadata }              from "@surface/reactive";
+import Scheduler                                      from "./scheduler";
 
 export default class AsyncReactive extends Reactive
 {
     private readonly scheduler: Scheduler;
     private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
 
-    public constructor(root: object, path: string[], mode: Mode, scheduler: Scheduler)
+    public constructor(root: object, path: string[], scheduler: Scheduler)
     {
-        super(root, path, mode);
+        super(root, path);
 
         this.scheduler = scheduler;
     }
 
-    public static observe(root: object, path: string[], mode?: Mode): IObserver;
-    public static observe(root: object, path: string[], scheduler: Scheduler, mode?: Mode): IObserver;
-    public static observe(root: object, path: string[], ...args: [Mode?] | [Scheduler, Mode?]): IObserver
+    public static observe(root: object, path: string[], scheduler?: Scheduler): IObserver
     {
-        const [scheduler, mode] = args.length == 2
-            ? args as [Scheduler, Mode]
-            : args.length == 1
-                ? typeof args[0] == "string"
-                    ? [undefined, args[0]]
-                    : [args[0], "strict" as Mode]
-                : [undefined, "strict" as Mode];
-
         if (scheduler)
         {
             const key = path.join("\u{fffff}");
@@ -36,13 +26,13 @@ export default class AsyncReactive extends Reactive
 
             if (!reactive)
             {
-                metadata.reactivePaths.set(key, reactive = new AsyncReactive(root, path, mode, scheduler));
+                metadata.reactivePaths.set(key, reactive = new AsyncReactive(root, path, scheduler));
             }
 
             return reactive.observer;
         }
 
-        return Reactive.observe(root, path, mode);
+        return Reactive.observe(root, path);
     }
 
     public observe(root: Object, path: string[]): void
@@ -59,31 +49,15 @@ export default class AsyncReactive extends Reactive
 
             if (!tracking)
             {
-                const privates = privatesFrom(root as object);
-
-                privates[key] = property;
-
-                const action = (): void =>
+                const action = (event: Event): void =>
                 {
-                    const oldValue = privates[key];
-                    const newValue = (root as unknown as Indexer)[key];
+                    event.stopImmediatePropagation();
 
-                    if (!Object.is(oldValue, newValue))
+                    const tracking = Metadata.of(root)!.trackings.get(key)!;
+
+                    for (const [reactive] of tracking)
                     {
-                        privates[key] = newValue;
-
-                        const tracking = Metadata.of(root)!.trackings.get(key)!;
-
-                        for (const [reactive, path] of tracking)
-                        {
-                            if (path.length > 0)
-                            {
-                                reactive.unobserve(oldValue as Object, path);
-                                reactive.observe(newValue as Object, path);
-                            }
-
-                            reactive.notify();
-                        }
+                        reactive.notify();
                     }
                 };
 

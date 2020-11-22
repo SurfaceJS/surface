@@ -146,27 +146,27 @@ export default class ReactiveSpec
         assert.notEqual(target.a.b.c.value, c.value);
     }
 
-    @test @shouldPass
-    public observeLoosePath(): void
-    {
-        const target: { a?: { b?: { c?: { value: 1 } } }  } = { };
+    // @test @shouldPass
+    // public observeLoosePath(): void
+    // {
+    //     const target: { a?: { b?: { c?: { value: 1 } } }  } = { };
 
-        let receiver: number | undefined = 0;
+    //     let receiver: number | undefined = 0;
 
-        Reactive.observe(target, ["a", "b", "c", "value"], "loose").subscribe(x => receiver = x as typeof receiver);
+    //     Reactive.observe(target, ["a", "b", "c", "value"], "loose").subscribe(x => receiver = x as typeof receiver);
 
-        target.a = { };
+    //     target.a = { };
 
-        assert.equal(receiver, undefined);
+    //     assert.equal(receiver, undefined);
 
-        target.a = { b: { c: { value: 1 } } };
+    //     target.a = { b: { c: { value: 1 } } };
 
-        assert.equal(receiver, 1);
+    //     assert.equal(receiver, 1);
 
-        target.a = undefined;
+    //     target.a = undefined;
 
-        assert.equal(receiver, undefined);
-    }
+    //     assert.equal(receiver, undefined);
+    // }
 
     @test @shouldPass
     public observeArray(): void
@@ -229,6 +229,36 @@ export default class ReactiveSpec
         target.shift();
 
         assert.equal(target[0].value, receiver);
+    }
+
+    @test @shouldPass
+    public observeSpreadedRoot(): void
+    {
+        const target = { value: 1 };
+
+        let receiver = target.value;
+
+        Reactive.observe(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
+
+        assert.equal(target.value, receiver);
+
+        target.value = 2;
+
+        assert.equal(target.value, receiver);
+
+        const newTarget = { ...target };
+
+        let newReceiver = 0;
+
+        newTarget.value = 3;
+
+        assert.notEqual(newTarget.value, receiver);
+
+        Reactive.observe(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
+
+        newTarget.value = 4;
+
+        assert.equal(newTarget.value, newReceiver);
     }
 
     @test @shouldPass

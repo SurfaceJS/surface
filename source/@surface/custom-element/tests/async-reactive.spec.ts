@@ -16,17 +16,34 @@ export default class AsyncReactiveSpec
 
         const target = { value: 1 };
 
-        let receiver = target.value;
+        let asyncReceiver = target.value;
 
-        AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => receiver = x as number);
+        AsyncReactive.observe(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
+        AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
 
-        assert.equal(target.value, receiver);
+        assert.equal(target.value, asyncReceiver);
 
         target.value = 2;
 
         await scheduler.whenDone();
 
-        assert.equal(target.value, receiver);
+        assert.equal(target.value, asyncReceiver);
+    }
+
+    @test @shouldPass
+    public observeSync(): void
+    {
+        const target = { value: 1 };
+
+        let asyncReceiver = target.value;
+
+        AsyncReactive.observe(target, ["value"]).subscribe(x => asyncReceiver = x as number);
+
+        assert.equal(target.value, asyncReceiver);
+
+        target.value = 2;
+
+        assert.equal(target.value, asyncReceiver);
     }
 
     @test @shouldPass
@@ -62,8 +79,10 @@ export default class AsyncReactiveSpec
 
         let hits     = 0;
         let receiver = target.value;
+        let length   = target.value.length;
 
         AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
+        AsyncReactive.observe(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
 
         assert.equal(target.value, receiver);
 
@@ -74,5 +93,6 @@ export default class AsyncReactiveSpec
 
         assert.equal(hits, 1);
         assert.equal(target.value, receiver);
+        assert.equal(target.value.length, length);
     }
 }

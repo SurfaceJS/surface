@@ -1,8 +1,7 @@
 import { Delegate, getValue, setValue } from "@surface/core";
+import AsyncReactive                    from "./async-reactive";
 import ISubscription                    from "./interfaces/subscription";
-import Metadata                         from "./metadata/metadata";
-import Watcher                          from "./watcher";
-import { changeTracker } from "./workers";
+import { scheduler }                    from "./workers";
 
 export default class DataBind
 {
@@ -15,39 +14,13 @@ export default class DataBind
 
     public static oneWay(root: object, path: string[], listener: Delegate<[unknown]>, lazy: boolean = false): ISubscription
     {
-        const watchers = Metadata.from(root).watchers;
+        const observer = AsyncReactive.observe(root, path, scheduler);
 
-        const key = path.join("\u{1}");
-
-        let watcher = watchers.get(key);
-
-        if (!watcher)
-        {
-            watchers.set(key, watcher = new Watcher(root, path));
-        }
-
-        changeTracker.attach(watcher);
-
-        watcher.observer.subscribe(listener);
-
-        const subscription =
-        {
-            unsubscribe: () =>
-            {
-                watcher!.observer.unsubscribe(listener);
-
-                if (watcher!.observer.size == 0)
-                {
-                    watchers.delete(key);
-
-                    changeTracker.dettach(watcher!);
-                }
-            },
-        };
+        const subscription = observer.subscribe(listener);
 
         if (!lazy)
         {
-            watcher.observer.notify(getValue(root, ...path));
+            observer.notify(getValue(root, ...path));
         }
 
         return subscription;

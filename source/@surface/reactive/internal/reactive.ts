@@ -3,27 +3,24 @@ import { FieldInfo, MethodInfo, Type }         from "@surface/reflection";
 import IObserver                               from "./interfaces/observer";
 import Metadata                                from "./metadata";
 import Observer                                from "./observer";
-import Mode                                    from "./types/mode";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
 export default class Reactive
 {
-    protected readonly mode:     Mode;
     protected readonly observer: IObserver = new Observer();
     protected readonly path:     string[];
     protected readonly root:     object;
 
-    public constructor(root: object, path: string[], mode: Mode)
+    public constructor(root: object, path: string[])
     {
         this.root = root;
         this.path = path;
-        this.mode = mode;
 
         this.observe(root, path);
     }
 
-    public static observe(root: object, path: string[], mode: Mode = "strict"): IObserver
+    public static observe(root: object, path: string[]): IObserver
     {
         const key = path.join("\u{fffff}");
 
@@ -33,7 +30,7 @@ export default class Reactive
 
         if (!reactive)
         {
-            metadata.reactivePaths.set(key, reactive = new Reactive(root, path, mode));
+            metadata.reactivePaths.set(key, reactive = new Reactive(root, path));
         }
 
         return reactive.observer;
@@ -41,19 +38,14 @@ export default class Reactive
 
     protected getValue(root: object, path: string[]): unknown
     {
-        if (root)
+        const [key, ...keys] = path;
+
+        if (keys.length > 0)
         {
-            const [key, ...keys] = path;
-
-            if (keys.length > 0)
-            {
-                return this.getValue((root as Indexer)[key] as object, keys);
-            }
-
-            return (root as Indexer)[key];
+            return this.getValue((root as Indexer)[key] as object, keys);
         }
 
-        return undefined;
+        return (root as Indexer)[key];
     }
 
     protected observeArray(source: unknown[]): void
@@ -86,16 +78,11 @@ export default class Reactive
 
     protected observeProperty(root: object, key: string): void
     {
-        if (this.mode == "loose" && !(key in root))
-        {
-            (root as Indexer)[key] = undefined;
-        }
-
         const member = Type.from(root).getMember(key);
 
         if (!member)
         {
-            throw new Error(`Property ${key} does not exists on type ${root.constructor.name}`);
+            throw new Error(`Property "${key}" does not exists on type ${root.constructor.name}`);
         }
         else if (member.descriptor.configurable && (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo))
         {

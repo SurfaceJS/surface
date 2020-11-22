@@ -2,19 +2,19 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Delegate, Indexer, uuidv4 }                                  from "@surface/core";
-import { afterEach, beforeEach, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                                     from "chai";
-import CustomElement                                                  from "../internal/custom-element";
-import { element }                                                    from "../internal/decorators";
-import directiveRegistry                                              from "../internal/directive-registry";
-import CustomStackError                                               from "../internal/errors/custom-stack-error";
-import TemplateEvaluationError                                        from "../internal/errors/template-evaluation-error";
-import TemplateParser                                                 from "../internal/template-parser";
-import TemplateProcessor                                              from "../internal/template-processor";
-import { changeTracker, whenDone }                                    from "../internal/workers";
-import CustomDirectiveHandler                                         from "./fixtures/custom-directive";
-import customDirectiveFactory                                         from "./fixtures/custom-directive-factory";
+import { Delegate, Indexer, uuidv4 }           from "@surface/core";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                              from "chai";
+import CustomElement                           from "../internal/custom-element";
+import { element }                             from "../internal/decorators";
+import directiveRegistry                       from "../internal/directive-registry";
+import CustomStackError                        from "../internal/errors/custom-stack-error";
+import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error";
+import TemplateParser                          from "../internal/template-parser";
+import TemplateProcessor                       from "../internal/template-processor";
+import { whenDone }                            from "../internal/workers";
+import CustomDirectiveHandler                  from "./fixtures/custom-directive";
+import customDirectiveFactory                  from "./fixtures/custom-directive-factory";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -99,19 +99,6 @@ function process(host: Element, root: Node, scope?: Indexer): void
 @suite
 export default class TemplateProcessorSpec
 {
-    @beforeEach
-    public beforeEach(): void
-    {
-        changeTracker.start();
-    }
-
-    @afterEach
-    public afterEach(): void
-    {
-        changeTracker.stop();
-        changeTracker.clear();
-    }
-
     @test @shouldPass
     public elementWithoutAttributes(): void
     {
@@ -1588,239 +1575,239 @@ export default class TemplateProcessorSpec
         assert.deepEqual(actual, expected);
     }
 
-    // @test @shouldFail
-    // public observationErrorOneWayBinding(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorOneWayBinding(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span :name='host.value1'></span>";
+        host.shadowRoot.innerHTML = "<span :name='host.value1'></span>";
 
-    //     const message = "Observation error in :name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.value1\">";
+        const message = "Observation error in :name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.value1\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorTwoWayBinding(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorTwoWayBinding(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span ::name='host.value1'></span>";
+        host.shadowRoot.innerHTML = "<span ::name='host.value1'></span>";
 
-    //     const message = "Binding error in ::name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span ::name=\"host.value1\">";
+        const message = "Binding error in ::name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span ::name=\"host.value1\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorAttributeInterpolation(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorAttributeInterpolation(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span name='value: {host.value1}'></span>";
+        host.shadowRoot.innerHTML = "<span name='value: {host.value1}'></span>";
 
-    //     const message = "Observation error in name=\"value: {host.value1}\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
+        const message = "Observation error in name=\"value: {host.value1}\": Property \"value1\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorTextNodeInterpolation(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorTextNodeInterpolation(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span>{host.value1}</span>";
+        host.shadowRoot.innerHTML = "<span>{host.value1}</span>";
 
-    //     const message = "Observation error in {host.value1}: Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span>\n         {host.value1}";
+        const message = "Observation error in {host.value1}: Property \"value1\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span>\n         {host.value1}";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorPlaceholderDirective(): void
-    // {
-    //     const root = getHost();
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorPlaceholderDirective(): void
+    {
+        const root = getHost();
+        const host = getHost();
 
-    //     host.innerHTML = "<template #inject></template>";
+        host.innerHTML = "<template #inject></template>";
 
-    //     host.shadowRoot.innerHTML = "<template #placeholder:item=\"({ item: host.item })\"></template>";
+        host.shadowRoot.innerHTML = "<template #placeholder:item=\"({ item: host.item })\"></template>";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     const message = "Observation error in #placeholder:item=\"({ item: host.item })\": Property \"item\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"({ item: host.item })\">";
+        const message = "Observation error in #placeholder:item=\"({ item: host.item })\": Property \"item\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"({ item: host.item })\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorPlaceholderKeyDirective(): void
-    // {
-    //     const root = getHost();
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorPlaceholderKeyDirective(): void
+    {
+        const root = getHost();
+        const host = getHost();
 
-    //     host.innerHTML = "<template #inject></template>";
+        host.innerHTML = "<template #inject></template>";
 
-    //     host.shadowRoot.innerHTML = "<template #placeholder #placeholder-key=\"host.key\"></template>";
+        host.shadowRoot.innerHTML = "<template #placeholder #placeholder-key=\"host.key\"></template>";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     const message = "Observation error in #placeholder-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
+        const message = "Observation error in #placeholder-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async observationErrorInjectDirective(): Promise<void>
-    // {
-    //     const root = getHost();
-    //     const host = getHost();
+    @test @shouldFail
+    public async observationErrorInjectDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
 
-    //     host.innerHTML = "<template #inject=\"{ item = host.item }\"></template>";
+        host.innerHTML = "<template #inject=\"{ item = host.item }\"></template>";
 
-    //     host.shadowRoot.innerHTML = "<template #placeholder></template>";
+        host.shadowRoot.innerHTML = "<template #placeholder></template>";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     process(host, host.shadowRoot);
+        process(host, host.shadowRoot);
 
-    //     const message = "Observation error in #inject=\"{ item = host.item }\": Property \"item\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject=\"{ item = host.item }\">";
+        const message = "Observation error in #inject=\"{ item = host.item }\": Property \"item\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject=\"{ item = host.item }\">";
 
-    //     const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async observationErrorInjectKeyDirective(): Promise<void>
-    // {
-    //     const root = getHost();
-    //     const host = getHost();
+    @test @shouldFail
+    public async observationErrorInjectKeyDirective(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
 
-    //     host.innerHTML = "<template #inject #inject-key=\"host.key\"></template>";
+        host.innerHTML = "<template #inject #inject-key=\"host.key\"></template>";
 
-    //     host.shadowRoot.innerHTML = "<template #placeholder></template>";
+        host.shadowRoot.innerHTML = "<template #placeholder></template>";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        root.shadowRoot.appendChild(host);
+        document.body.appendChild(root);
 
-    //     process(host, host.shadowRoot);
+        process(host, host.shadowRoot);
 
-    //     const message = "Observation error in #inject-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"host.key\">";
+        const message = "Observation error in #inject-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"host.key\">";
 
-    //     const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorChoiceDirective(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorChoiceDirective(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<template #if=\"host.key\"></template>";
+        host.shadowRoot.innerHTML = "<template #if=\"host.key\"></template>";
 
-    //     const message = "Observation error in #if=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #if=\"host.key\">";
+        const message = "Observation error in #if=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #if=\"host.key\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorLoopDirective(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorLoopDirective(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<template #for=\"const keys of host.key\"></template>";
+        host.shadowRoot.innerHTML = "<template #for=\"const keys of host.key\"></template>";
 
-    //     const message = "Observation error in #for=\"const keys of host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #for=\"const keys of host.key\">";
+        const message = "Observation error in #for=\"const keys of host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #for=\"const keys of host.key\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorCustomDirective(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorCustomDirective(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span #custom=\"host.key\"></span>";
+        host.shadowRoot.innerHTML = "<span #custom=\"host.key\"></span>";
 
-    //     const message = "Observation error in #custom=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
+        const message = "Observation error in #custom=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public observationErrorCustomKeyDirective(): void
-    // {
-    //     const host = getHost();
+    @test @shouldFail
+    public observationErrorCustomKeyDirective(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<span #custom #custom-key=\"host.key\"></span>";
+        host.shadowRoot.innerHTML = "<span #custom #custom-key=\"host.key\"></span>";
 
-    //     const message = "Observation error in #custom-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #custom #custom-key=\"host.key\">";
+        const message = "Observation error in #custom-key=\"host.key\": Property \"key\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom #custom-key=\"host.key\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 
-    // @shouldFail @test
-    // public unresgisteredDirective(): void
-    // {
-    //     const host = getHost();
+    @shouldFail @test
+    public unresgisteredDirective(): void
+    {
+        const host = getHost();
 
-    //     host.shadowRoot.innerHTML = "<div><div></div><section><span #foo='bar'></span></section></div>";
+        host.shadowRoot.innerHTML = "<div><div></div><section><span #foo='bar'></span></section></div>";
 
-    //     const message = "Unregistered directive #foo.";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
+        const message = "Unregistered directive #foo.";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
 
-    //     const actual   = tryAction(() => process(host, host.shadowRoot));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => process(host, host.shadowRoot));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     assert.deepEqual(actual, expected);
-    // }
+        assert.deepEqual(actual, expected);
+    }
 }
