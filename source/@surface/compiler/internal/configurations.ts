@@ -19,7 +19,7 @@ type ClientOptions = { host: string, port: number, publicPath: string };
 
 const loaders =
 {
-    css:     { loader: "css-loader" },
+    css:     { loader: "css-loader", options: { esModule: false, sourceMap: true } },
     extract: { loader: "extract-loader" },
     file:
     {
