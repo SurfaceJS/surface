@@ -388,7 +388,7 @@ export default class TemplateParser
                     throwTemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.stackTrace);
                 }
 
-                const observables = !isTwoWay ? ObserverVisitor.observe(expression) : [];
+                const observables = ObserverVisitor.observe(expression);
 
                 if (isInterpolation)
                 {

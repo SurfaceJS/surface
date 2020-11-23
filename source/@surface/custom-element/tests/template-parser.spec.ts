@@ -563,7 +563,7 @@ export default class TemplateParserSpec
                             expression:    parseExpression("host.value"),
                             key:           "valueA",
                             name:          "value-a",
-                            observables:   [],
+                            observables:   [["host", "value"]],
                             rawExpression: "::value-a=\"host.value\"",
                             stackTrace:
                             [

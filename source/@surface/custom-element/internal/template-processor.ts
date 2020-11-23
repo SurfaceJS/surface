@@ -1,12 +1,10 @@
-import { Delegate, IDisposable, Indexer, assert, typeGuard } from "@surface/core";
-import { TypeGuard }                                         from "@surface/expression";
-import { FieldInfo, Type }                                   from "@surface/reflection";
+import { Delegate, IDisposable, Indexer, assert, getValue, typeGuard } from "@surface/core";
+import { FieldInfo, Type }                                             from "@surface/reflection";
 import
 {
     classMap,
     createScope,
     styleMap,
-    tryEvaluateExpression,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
 } from "./common";
@@ -188,25 +186,23 @@ export default class TemplateProcessor
                     }
                     else
                     {
-                        assert(TypeGuard.isMemberExpression(descriptor.expression));
+                        const path = descriptor.observables[0];
 
-                        const target         = tryEvaluateExpression(scope, descriptor.expression.object, descriptor.rawExpression, descriptor.stackTrace) as object;
-                        const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
-                            ? descriptor.expression.property.name
-                            : descriptor.expression.property.evaluate(scope) as string;
+                        const right    = getValue(scope, ...path.slice(0, path.length - 1)) as object;
+                        const rightKey = path[path.length - 1];
 
-                        const targetMember = Type.from(target).getMember(targetProperty);
+                        const rightMember = Type.from(right).getMember(rightKey);
 
-                        if (!targetMember || targetMember instanceof FieldInfo && targetMember.readonly)
+                        if (!rightMember || rightMember instanceof FieldInfo && rightMember.readonly)
                         {
-                            const message = targetMember
-                                ? `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" of ${target.constructor.name} is readonly`
-                                : `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" does not exists on type ${target.constructor.name}`;
+                            const message = rightMember
+                                ? `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" of ${right.constructor.name} is readonly`
+                                : `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" does not exists on type ${right.constructor.name}`;
 
                             throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
 
-                        subscriptions.push(...DataBind.twoWay(target, [targetProperty], element, [descriptor.key]));
+                        subscriptions.push(...DataBind.twoWay(element, [descriptor.key], scope, path));
                     }
                 }
                 else
