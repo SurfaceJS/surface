@@ -60,10 +60,9 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private applyLazyInjection(): void
     {
-        this.cancellationTokenSource.dispose();
         this.cancellationTokenSource = new CancellationTokenSource();
 
-        scheduler.enqueue(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
+        scheduler.enqueue(() => this.applyInjection(), "low", this.cancellationTokenSource.token);
     }
 
     private inject(injection?: Injection): void

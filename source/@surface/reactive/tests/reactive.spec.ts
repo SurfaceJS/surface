@@ -146,28 +146,6 @@ export default class ReactiveSpec
         assert.notEqual(target.a.b.c.value, c.value);
     }
 
-    // @test @shouldPass
-    // public observeLoosePath(): void
-    // {
-    //     const target: { a?: { b?: { c?: { value: 1 } } }  } = { };
-
-    //     let receiver: number | undefined = 0;
-
-    //     Reactive.observe(target, ["a", "b", "c", "value"], "loose").subscribe(x => receiver = x as typeof receiver);
-
-    //     target.a = { };
-
-    //     assert.equal(receiver, undefined);
-
-    //     target.a = { b: { c: { value: 1 } } };
-
-    //     assert.equal(receiver, 1);
-
-    //     target.a = undefined;
-
-    //     assert.equal(receiver, undefined);
-    // }
-
     @test @shouldPass
     public observeArray(): void
     {
@@ -175,40 +153,54 @@ export default class ReactiveSpec
 
         let receiver0 = target[0];
         let receiver1 = target[1];
+        let length    = target.length;
 
         Reactive.observe(target, ["0"]).subscribe(x => receiver0 = x as number);
         Reactive.observe(target, ["1"]).subscribe(x => receiver1 = x as number);
+        Reactive.observe(target, ["length"]).subscribe(x => length = x as number);
 
         target[0] = 3;
         target[1] = 4;
 
         assert.equal(target[0], receiver0);
         assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.unshift(5);
 
         assert.equal(target[0], receiver0);
         assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.pop();
 
         assert.equal(target[0], receiver0);
         assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.pop();
 
         assert.equal(target[0], receiver0);
         assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target.push(6);
 
         assert.equal(target[0], receiver0);
         assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
 
         target[1] = 7;
 
         assert.equal(target[0], receiver0);
         assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.reverse();
+
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
     }
 
     @test @shouldPass

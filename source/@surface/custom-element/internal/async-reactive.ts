@@ -37,7 +37,7 @@ export default class AsyncReactive extends Reactive
 
     public observe(root: Object, path: string[]): void
     {
-        if (root instanceof HTMLElement)
+        if (root instanceof HTMLElement && (root.contentEditable == "true" || root.nodeName == "INPUT"))
         {
             const [key, ...keys] = path;
 
@@ -45,17 +45,13 @@ export default class AsyncReactive extends Reactive
 
             let tracking = metadata.trackings.get(key);
 
-            const property = (root as unknown as Indexer)[key];
-
             if (!tracking)
             {
                 const action = (event: Event): void =>
                 {
                     event.stopImmediatePropagation();
 
-                    const tracking = Metadata.of(root)!.trackings.get(key)!;
-
-                    for (const [reactive] of tracking)
+                    for (const [reactive] of Metadata.of(root)!.trackings.get(key)!)
                     {
                         reactive.notify();
                     }
@@ -69,6 +65,8 @@ export default class AsyncReactive extends Reactive
             }
 
             tracking.set(this, keys);
+
+            const property = (root as unknown as Indexer)[key];
 
             if (keys.length > 0 && hasValue(property))
             {
