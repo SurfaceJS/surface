@@ -22,11 +22,11 @@ export default class AsyncReactive extends Reactive
 
             const metadata = Metadata.from(root);
 
-            let reactive = metadata.reactivePaths.get(key) as AsyncReactive | undefined;
+            let reactive = metadata.paths.get(key) as AsyncReactive | undefined;
 
             if (!reactive)
             {
-                metadata.reactivePaths.set(key, reactive = new AsyncReactive(root, path, scheduler));
+                metadata.paths.set(key, reactive = new AsyncReactive(root, path, scheduler));
             }
 
             return reactive.observer;

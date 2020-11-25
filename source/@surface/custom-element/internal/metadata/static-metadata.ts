@@ -1,14 +1,16 @@
 import { IDisposable, Indexer } from "@surface/core";
+import ITemplateDescriptor      from "../interfaces/template-descriptor";
 import { STATIC_METADATA }      from "../symbols";
 
 export default class StaticMetadata
 {
-    public conversionHandlers: Indexer<(target: Indexer, value: string) => void>     = { };
+    public converters:         Indexer<(target: Indexer, value: string) => void>     = { };
+    public finishers:          (<T extends HTMLElement>(target: T) => IDisposable)[] = [];
     public observedAttributes: string[]                                              = [];
-    public postConstruct:      (<T extends HTMLElement>(target: T) => IDisposable)[] = [];
     public styles:             CSSStyleSheet[]                                       = [];
 
-    public template?: HTMLTemplateElement;
+    public template?:   HTMLTemplateElement;
+    public descriptor?: ITemplateDescriptor;
 
     public static from(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata
     {
@@ -26,9 +28,9 @@ export default class StaticMetadata
     {
         const clone = new StaticMetadata();
 
-        clone.conversionHandlers = { ...this.conversionHandlers };
+        clone.converters         = { ...this.converters };
+        clone.finishers          = [...this.finishers];
         clone.observedAttributes = [...this.observedAttributes];
-        clone.postConstruct      = [...this.postConstruct];
         clone.styles             = [...this.styles];
 
         return clone;

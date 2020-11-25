@@ -25,7 +25,7 @@ export function notify<T extends object>(...properties: (keyof T | string[])[]):
             {
                 for (const key of keys)
                 {
-                    metadata.reactivePaths.get(key)?.notify();
+                    metadata.paths.get(key)?.notify();
                 }
             }
         };

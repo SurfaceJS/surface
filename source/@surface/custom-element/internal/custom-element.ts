@@ -1,6 +1,7 @@
 import { Constructor, assert }      from "@surface/core";
 import directiveRegistry            from "./directive-registry";
 import ICustomElement               from "./interfaces/custom-element";
+import Metadata from "./metadata/metadata";
 import StaticMetadata               from "./metadata/static-metadata";
 import { TEMPLATEABLE }             from "./symbols";
 import { DirectiveHandlerRegistry } from "./types";
@@ -50,11 +51,24 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
                 CustomElement.applyMetadata(this);
             }
+
+            public dispose(): void
+            {
+                Metadata.of(this)!.dispose();
+            }
         };
     }
 
-    public static registerDirective(registry: DirectiveHandlerRegistry): void
+    public static registerDirective(...registries: DirectiveHandlerRegistry[]): void
     {
-        directiveRegistry.set(registry.name, registry.handler);
+        for (const registry of registries)
+        {
+            directiveRegistry.set(registry.name, registry.handler);
+        }
+    }
+
+    public dispose(): void
+    {
+        Metadata.of(this)!.dispose();
     }
 }

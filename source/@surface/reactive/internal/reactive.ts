@@ -26,11 +26,11 @@ export default class Reactive
 
         const metadata = Metadata.from(root);
 
-        let reactive = metadata.reactivePaths.get(key);
+        let reactive = metadata.paths.get(key);
 
         if (!reactive)
         {
-            metadata.reactivePaths.set(key, reactive = new Reactive(root, path));
+            metadata.paths.set(key, reactive = new Reactive(root, path));
         }
 
         return reactive.observer;

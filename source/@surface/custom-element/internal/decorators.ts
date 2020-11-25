@@ -16,9 +16,9 @@ import StaticMetadata              from "./metadata/static-metadata";
 import { TEMPLATEABLE }            from "./symbols";
 import TemplateParser              from "./template-parser";
 import TemplateProcessor           from "./template-processor";
-import { scheduler } from "./workers";
+import { scheduler }               from "./workers";
 
-const STANDARD_BOOLEANS = ["checked", "disabled", "readonly"];
+const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
 function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeListOf<Element>, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
@@ -67,10 +67,10 @@ function wraperPrototype(prototype: ICustomElement): void
 {
     const attributeChangedCallback = (callback?: ICustomElement["attributeChangedCallback"]): ICustomElement["attributeChangedCallback"] => function (this: ICustomElement, name, oldValue, newValue, namespace)
     {
-        if (!Metadata.from(this).reflectingAttribute)
+        if (!Metadata.of(this)!.reflectingAttribute)
         {
-            StaticMetadata.from(this.constructor)
-                .conversionHandlers[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.includes(name) ? "true" : newValue);
+            StaticMetadata.of(this.constructor)!
+                .converters[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.has(name) ? "true" : newValue);
 
             callback?.call(this, name, oldValue, newValue, namespace);
         }
@@ -84,16 +84,7 @@ function wraperPrototype(prototype: ICustomElement): void
 
             if (root instanceof ShadowRoot)
             {
-                const metadata = Metadata.from(root.host);
-
-                if (metadata.disposed)
-                {
-                    this.dispose?.();
-                }
-                else
-                {
-                    metadata.disposables.push({ dispose: () => this.dispose?.() });
-                }
+                Metadata.of(root.host)?.disposables.push(this);
             }
         };
 
@@ -102,23 +93,8 @@ function wraperPrototype(prototype: ICustomElement): void
         callback?.call(this);
     };
 
-    const dispose = (callback?: ICustomElement["dispose"]): ICustomElement["dispose"] => function (this: ICustomElement)
-    {
-        const metadata = Metadata.of(this)!;
-
-        if (!metadata.disposed)
-        {
-            metadata.disposed = true;
-
-            scheduler.enqueue(() => metadata.disposables.forEach(x => x.dispose()), "low");
-        }
-
-        callback?.call(this);
-    };
-
     wraperLifecycle(prototype, "attributeChangedCallback", attributeChangedCallback);
     wraperLifecycle(prototype, "connectedCallback", connectedCallback);
-    wraperLifecycle(prototype, "dispose", dispose);
 }
 
 function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomElement, key: K, action: Delegate<[ICustomElement[K]], ICustomElement[K]>): void
@@ -180,7 +156,7 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
             }
         }
 
-        staticMetadata.conversionHandlers[attributeName] = (target: Indexer, value: string) =>
+        staticMetadata.converters[attributeName] = (target: Indexer, value: string) =>
         {
             const current   = target[propertyKey];
             const converted = converter(value);
@@ -195,7 +171,7 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
         {
             if (!Object.is(oldValue, undefined))
             {
-                const metadata = Metadata.from(instance);
+                const metadata = Metadata.of(instance)!;
 
                 metadata.reflectingAttribute = true;
 
@@ -246,7 +222,8 @@ export function element(tagname: string, template?: string, style?: string, opti
                 staticMetadata.styles.push(stringToCSSStyleSheet(style));
             }
 
-            staticMetadata.template = templateElement;
+            staticMetadata.template   = templateElement;
+            staticMetadata.descriptor = descriptor;
 
             const handler: ProxyHandler<T> =
             {
@@ -254,13 +231,14 @@ export function element(tagname: string, template?: string, style?: string, opti
                 {
                     const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
 
-                    const disposable = TemplateProcessor.process({ descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                    const metadata       = Metadata.from(instance);
+                    const staticMetadata = StaticMetadata.of(target)!;
 
-                    const metadata = Metadata.from(instance)!;
+                    const disposable = TemplateProcessor.process({ descriptor: staticMetadata.descriptor!, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
                     metadata.disposables.push(disposable);
 
-                    staticMetadata.postConstruct?.forEach(x => metadata.disposables.push(x(instance)));
+                    staticMetadata.finishers.forEach(finisher => metadata.disposables.push(finisher(instance)));
 
                     return instance;
                 },
@@ -292,7 +270,7 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
             return { dispose: () => element.removeEventListener(type, listener) };
         };
 
-        StaticMetadata.from(target.constructor).postConstruct.push(action);
+        StaticMetadata.from(target.constructor).finishers.push(action);
     };
 }
 

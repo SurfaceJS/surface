@@ -3,9 +3,10 @@ import { METADATA }    from "../symbols";
 
 export default class Metadata
 {
+    private disposed: boolean = false;
+
     public readonly disposables: IDisposable[] = [];
 
-    public disposed:            boolean = false;
     public hasListener:         boolean = false;
     public reflectingAttribute: boolean = false;
 
@@ -17,5 +18,15 @@ export default class Metadata
     public static of(target: object & { [METADATA]?: Metadata }): Metadata | undefined
     {
         return target[METADATA];
+    }
+
+    public dispose(): void
+    {
+        if (!this.disposed)
+        {
+            this.disposed = true;
+
+            this.disposables.slice(0).forEach(x => x.dispose());
+        }
     }
 }
