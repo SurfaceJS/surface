@@ -5,7 +5,6 @@ import CancellationToken from "../types/cancellation-token";
 
 type Timer = unknown;
 
-declare function clearTimeout(timer: Timer): Timer;
 declare function setTimeout(action: Callable, timeout?: number): Timer;
 
 export async function runAsync<T>(task: () => T | Promise<T>, timeout?: number, cancellationToken?: CancellationToken): Promise<T>
@@ -14,7 +13,7 @@ export async function runAsync<T>(task: () => T | Promise<T>, timeout?: number, 
     (
         (resolve, reject) =>
         {
-            const timer = setTimeout
+            setTimeout
             (
                 () =>
                 {
@@ -45,8 +44,6 @@ export async function runAsync<T>(task: () => T | Promise<T>, timeout?: number, 
                 },
                 timeout,
             );
-
-            cancellationToken?.onCancellation.subscribe(() => (clearTimeout(timer), reject(new TaskCanceledError())));
         },
     );
 }

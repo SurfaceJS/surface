@@ -1,9 +1,6 @@
-import EventListener from "../event-listener";
-
 type CancellationToken =
 {
-    canceled:       boolean,
-    onCancellation: EventListener<void>,
+    canceled: boolean,
 };
 
 export default CancellationToken;

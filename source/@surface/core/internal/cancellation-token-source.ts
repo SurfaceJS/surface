@@ -1,13 +1,8 @@
-import EventListener     from "./event-listener";
-import IDisposable       from "./interfaces/disposable";
 import CancellationToken from "./types/cancellation-token";
 
-export default class CancellationTokenSource implements IDisposable
+export default class CancellationTokenSource
 {
     private canceled: boolean = false;
-    private disposed: boolean = false;
-
-    private readonly onCancelation: EventListener<void> = new EventListener();
 
     public readonly token: CancellationToken;
 
@@ -21,26 +16,11 @@ export default class CancellationTokenSource implements IDisposable
             {
                 return $this.canceled;
             },
-            get onCancellation()
-            {
-                return $this.onCancelation;
-            },
         };
     }
 
     public cancel(): void
     {
         this.canceled = true;
-        this.onCancelation.notify();
-    }
-
-    public dispose(): void
-    {
-        if (!this.disposed)
-        {
-            this.disposed = true;
-
-            this.onCancelation.dispose();
-        }
     }
 }

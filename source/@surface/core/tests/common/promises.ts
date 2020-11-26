@@ -1,7 +1,10 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import { assert, use }                         from "chai";
+import chaiAsPromised                          from "chai-as-promised";
 import CancellationTokenSource                 from "../../internal/cancellation-token-source";
-import { runAsync }                           from "../../internal/common/promises";
+import { runAsync }                            from "../../internal/common/promises";
+
+use(chaiAsPromised);
 
 @suite
 export default class PromisesSpec
@@ -18,27 +21,15 @@ export default class PromisesSpec
         assert.isTrue(expended >= 10);
     }
 
-    @test @shouldPass
+    @test @shouldFail
     public async fireAsyncWithCancellationToken(): Promise<void>
     {
-        const now = Date.now();
-
         const cancellationTokenSource = new CancellationTokenSource();
 
         const promise = runAsync(() => void 0, 10, cancellationTokenSource.token);
 
         cancellationTokenSource.cancel();
 
-        await promise;
-
-        const expended = Date.now() - now;
-
-        assert.isTrue(expended < 10);
-    }
-
-    @test @shouldFail
-    public failingTest(): void
-    {
-        assert.isNotOk(false);
+        await assert.isRejected(promise, "Task was canceled");
     }
 }
