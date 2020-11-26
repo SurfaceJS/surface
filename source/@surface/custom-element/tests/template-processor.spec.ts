@@ -200,7 +200,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span :class='({ closed: true })'</span>";
+        host.shadowRoot.innerHTML = "<span :class='{ closed: true }'</span>";
 
         const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { foo?: string };
 
@@ -214,7 +214,7 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span :style='({ display: `none` })'</span>";
+        host.shadowRoot.innerHTML = "<span :style='{ display: `none` }'</span>";
 
         const span = host.shadowRoot.firstElementChild as HTMLSpanElement & { foo?: string };
 
@@ -525,7 +525,7 @@ export default class TemplateProcessorSpec
 
         childHost.shadowRoot.innerHTML =
         `
-            <template #placeholder:items2="({ item: host.item })">
+            <template #placeholder:items2="{ item: host.item }">
                 <span>Placeholder 2</span>
             </template>
         `;
@@ -533,7 +533,7 @@ export default class TemplateProcessorSpec
         childHost.innerHTML =
         `
             <template #inject:items2="{ item }">
-                <template #placeholder:items1="({ item })">
+                <template #placeholder:items1="{ item }">
                     <span>Placeholder 1</span>
                 </template>
             </template>
@@ -571,7 +571,7 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject:item='{ item }'>{item.value}</template>";
 
-        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:item='({ item: host.item })'></template><span>!!!</span>";
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:item='{ item: host.item }'></template><span>!!!</span>";
 
         root.shadowRoot.appendChild(host);
 
@@ -604,7 +604,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        host.shadowRoot.innerHTML = "<template #for=\"const item of host.items\" #placeholder:items=\"({ item })\"></template>";
+        host.shadowRoot.innerHTML = "<template #for=\"const item of host.items\" #placeholder:items=\"{ item }\"></template>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -1133,7 +1133,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML =
         `
-            <template #if="host.condition" #placeholder:items="({ item: host.item })">
+            <template #if="host.condition" #placeholder:items="{ item: host.item }">
                 <span>Default</span>
             </template>
         `;
@@ -1222,7 +1222,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.innerHTML =
         `
-            <template #for="const item of host.items" #placeholder:items="({ item })">
+            <template #for="const item of host.items" #placeholder:items="{ item }">
                 <span>Default</span>
             </template>
         `;
@@ -1344,10 +1344,10 @@ export default class TemplateProcessorSpec
     {
         const host = getHost();
 
-        host.shadowRoot.innerHTML = "<span #custom:directive=\"({ value })\"></span>";
+        host.shadowRoot.innerHTML = "<span #custom:directive=\"{ value }\"></span>";
 
-        const message = "Evaluation error in #custom:directive=\"({ value })\": value is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span #custom:directive=\"({ value })\">";
+        const message = "Evaluation error in #custom:directive=\"{ value }\": value is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #custom:directive=\"{ value }\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1427,15 +1427,15 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject:items=\"{ item: [key, value] }\"></template>";
 
-        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"({ item })\"></template></div>";
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ item }\"></template></div>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
 
         process(host, host.shadowRoot);
 
-        const message = "Evaluation error in #placeholder:items=\"({ item })\": item is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #placeholder:items=\"({ item })\">";
+        const message = "Evaluation error in #placeholder:items=\"{ item }\": item is not defined";
+        const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #placeholder:items=\"{ item }\">";
 
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1467,7 +1467,7 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject:items=\"{ item: value = lastItem }\"></template>";
 
-        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"({ })\"></template></div>";
+        host.shadowRoot.innerHTML = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ }\"></template></div>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
@@ -1647,13 +1647,13 @@ export default class TemplateProcessorSpec
 
         host.innerHTML = "<template #inject></template>";
 
-        host.shadowRoot.innerHTML = "<template #placeholder:item=\"({ item: host.item })\"></template>";
+        host.shadowRoot.innerHTML = "<template #placeholder:item=\"{ item: host.item }\"></template>";
 
         root.shadowRoot.appendChild(host);
         document.body.appendChild(root);
 
-        const message = "Observation error in #placeholder:item=\"({ item: host.item })\": Property \"item\" does not exists on type XComponent";
-        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"({ item: host.item })\">";
+        const message = "Observation error in #placeholder:item=\"{ item: host.item }\": Property \"item\" does not exists on type XComponent";
+        const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"{ item: host.item }\">";
 
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));

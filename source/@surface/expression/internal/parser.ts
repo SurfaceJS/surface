@@ -463,7 +463,7 @@ export default class Parser
         return expression;
     }
 
-    private expression(preventBlock?: boolean): IExpression
+    private expression(preventBlock: boolean = false): IExpression
     {
         const expression = this.isolateGrammar(this.assignmentExpression, preventBlock);
 
@@ -500,7 +500,7 @@ export default class Parser
 
     private isolateExpression(): IExpression
     {
-        const expression = this.expression(true);
+        const expression = this.expression();
 
         if (this.lookahead.type != TokenType.EOF)
         {
