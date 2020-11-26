@@ -31,7 +31,7 @@ export default class DataBind
         const leftListener = (value: unknown): void => setValue(value, right, ...rightPath);
         const rightListener = (value: unknown): void => setValue(value, left, ...leftPath);
 
-        const leftSubscription  = DataBind.oneWay(left, leftPath, leftListener);
+        const leftSubscription  = DataBind.oneWay(left, leftPath, leftListener, true);
         const rightSubscription = DataBind.oneWay(right, rightPath, rightListener);
 
         return [leftSubscription, rightSubscription];
