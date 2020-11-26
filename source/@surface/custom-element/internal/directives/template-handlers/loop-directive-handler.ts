@@ -1,4 +1,4 @@
-import { Delegate, IDisposable }                                             from "@surface/core";
+import { CancellationTokenSource, Delegate, IDisposable }                    from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/loop-directive";
@@ -9,13 +9,14 @@ import TemplateDirectiveHandler                                              fro
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly disposables:   IDisposable[] = [];
-    private readonly directive:     ILoopDirective;
-    private readonly iterator:      (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
-    private readonly subscription:  ISubscription;
-    private readonly template:      HTMLTemplateElement;
-    private readonly templateBlock: TemplateBlock = new TemplateBlock();
-    private readonly tree:          DocumentFragment;
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly directive:               ILoopDirective;
+    private readonly disposables:             IDisposable[] = [];
+    private readonly iterator:                (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
+    private readonly subscription:            ISubscription;
+    private readonly template:                HTMLTemplateElement;
+    private readonly templateBlock:           TemplateBlock = new TemplateBlock();
+    private readonly tree:                    DocumentFragment;
 
     private disposed: boolean = false;
 
@@ -33,7 +34,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, template);
 
-        const listener = (): void => scheduler.enqueue(this.task.bind(this));
+        const listener = (): void => scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(scope, directive, listener, true);
 
@@ -73,7 +74,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            scheduler.enqueue(() => this.action(element, current), "high");
+            scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
         }
     }
 
@@ -85,7 +86,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            scheduler.enqueue(() => this.action(element, current), "high");
+            scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
         }
     }
 
@@ -102,13 +103,15 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.iterator(elements, this.action);
 
-        scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high");
+        scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high", this.cancellationTokenSource.token);
     }
 
     public dispose(): void
     {
         if (!this.disposed)
         {
+            this.cancellationTokenSource.cancel();
+
             this.disposables.splice(0).forEach(x => x.dispose());
 
             this.subscription.unsubscribe();

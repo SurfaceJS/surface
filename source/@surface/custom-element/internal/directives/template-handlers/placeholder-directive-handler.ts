@@ -18,17 +18,18 @@ import TemplateDirectiveHandler from ".";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive:       IPlaceholderDirective;
-    private readonly keySubscription: ISubscription;
-    private readonly metadata:        TemplateMetadata;
-    private readonly template:        HTMLTemplateElement;
-    private readonly templateBlock:   TemplateBlock = new TemplateBlock();
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly directive:               IPlaceholderDirective;
+    private readonly keySubscription:         ISubscription;
+    private readonly metadata:                TemplateMetadata;
+    private readonly template:                HTMLTemplateElement;
+    private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
 
-    private currentDisposable:       IDisposable | null   = null;
-    private disposed:                boolean              = false;
-    private key:                     string               = "";
-    private subscription:            ISubscription | null = null;
-    private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private currentDisposable:                    IDisposable | null      = null;
+    private disposed:                             boolean                 = false;
+    private key:                                  string                  = "";
+    private subscription:                         ISubscription | null    = null;
+    private lazyInjectionCancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
 
     private injection?: Injection;
 
@@ -60,14 +61,14 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private applyLazyInjection(): void
     {
-        this.cancellationTokenSource = new CancellationTokenSource();
+        this.lazyInjectionCancellationTokenSource = new CancellationTokenSource();
 
-        scheduler.enqueue(() => this.applyInjection(), "low", this.cancellationTokenSource.token);
+        scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
     }
 
     private inject(injection?: Injection): void
     {
-        this.cancellationTokenSource.cancel();
+        this.lazyInjectionCancellationTokenSource.cancel();
 
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
@@ -79,7 +80,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const listener = (): void => scheduler.enqueue(task);
+        const listener = (): void => scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
 
@@ -111,11 +112,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private task(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
 
         this.templateBlock.clear();
@@ -139,11 +135,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private defaultTask(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
 
         this.templateBlock.clear();
@@ -159,7 +150,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         if (!this.disposed)
         {
-            this.cancellationTokenSource.dispose();
+            this.cancellationTokenSource.cancel();
             this.currentDisposable?.dispose();
 
             this.keySubscription.unsubscribe();

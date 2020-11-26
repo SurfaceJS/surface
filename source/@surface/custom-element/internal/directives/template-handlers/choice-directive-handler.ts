@@ -1,4 +1,4 @@
-import { IDisposable, assert }                           from "@surface/core";
+import { CancellationTokenSource, IDisposable, assert }  from "@surface/core";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
 import ISubscription                                     from "../../interfaces/subscription";
@@ -14,9 +14,10 @@ type Choice =
 
 export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly choices:       Choice[]        = [];
-    private readonly subscriptions: ISubscription[] = [];
-    private readonly templateBlock: TemplateBlock   = new TemplateBlock();
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly choices:                 Choice[]                = [];
+    private readonly subscriptions:           ISubscription[]         = [];
+    private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
 
     private currentDisposable: IDisposable | null = null;
     private disposed: boolean                     = false;
@@ -31,7 +32,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const listener = (): void => scheduler.enqueue(this.task.bind(this));
+        const listener = (): void => scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         for (let index = 0; index < branches.length; index++)
         {
@@ -79,6 +80,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     {
         if (!this.disposed)
         {
+            this.cancellationTokenSource.cancel();
             this.currentDisposable?.dispose();
 
             this.subscriptions.forEach(x => x.unsubscribe());

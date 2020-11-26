@@ -70,7 +70,7 @@ export default class Scheduler
         }
     }
 
-    public enqueue(task: Delegate, priority: "high" | "normal" | "low" = "normal", cancellationToken: CancellationToken | undefined = undefined): void
+    public enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken: CancellationToken | undefined = undefined): void
     {
         switch (priority)
         {
