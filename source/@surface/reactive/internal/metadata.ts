@@ -11,18 +11,18 @@ export default class Metadata
     public paths:           Map<string, Reactive>                = new Map();
     public trackings:       Map<string, Map<Reactive, string[]>> = new Map();
 
-    public static from(target: object & { [METADATA]?: Metadata }): Metadata
+    public static from(target: object): Metadata
     {
-        if (!target[METADATA])
+        if (!Reflect.has(target, METADATA))
         {
-            Object.defineProperty(target, METADATA, { configurable: true, enumerable: false, value: new Metadata(), writable: false });
+            Reflect.defineProperty(target, METADATA, { value: new Metadata() });
         }
 
-        return target[METADATA]!;
+        return Reflect.get(target, METADATA);
     }
 
-    public static of(target: object & { [METADATA]?: Metadata }): Metadata | undefined
+    public static of(target: object): Metadata | undefined
     {
-        return target[METADATA];
+        return Reflect.get(target, METADATA);
     }
 }

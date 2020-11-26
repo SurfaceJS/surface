@@ -49,5 +49,7 @@ export * from "./internal/common/string";
 export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
 export { default as EventListener }           from "./internal/event-listener";
 export { default as Hashcode }                from "./internal/hashcode";
+export { default as Hookable }                from "./internal/hookable";
+export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";
 export { default as Lazy }                    from "./internal/lazy";
 export { default as CancellationTokenSource } from "./internal/cancellation-token-source";

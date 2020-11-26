@@ -3,7 +3,7 @@ import
 {
     Constructor,
     Delegate,
-    IDisposable,
+    HookableMetadata,
     Indexer,
     camelToDashed,
     overrideProperty,
@@ -234,15 +234,17 @@ export function element(tagname: string, template?: string, style?: string, opti
                     const metadata       = Metadata.from(instance);
                     const staticMetadata = StaticMetadata.of(target)!;
 
-                    const disposable = TemplateProcessor.process({ descriptor: staticMetadata.descriptor!, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                    const disposable = TemplateProcessor.process({ descriptor: staticMetadata.descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
                     metadata.disposables.push(disposable);
 
-                    staticMetadata.finishers.forEach(finisher => metadata.disposables.push(finisher(instance)));
+                    HookableMetadata.of(target)!.finish(instance);
 
                     return instance;
                 },
             };
+
+            HookableMetadata.from(target).hooked = true;
 
             const proxy = new Proxy(target, handler);
 
@@ -257,20 +259,20 @@ export function element(tagname: string, template?: string, style?: string, opti
     };
 }
 
-export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean | AddEventListenerOptions): (target: object, propertyKey: string | symbol) => void
+export function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean | AddEventListenerOptions): (target: HTMLElement, propertyKey: string | symbol) => void
 {
-    return (target: object, propertyKey: string | symbol) =>
+    return (target: HTMLElement, propertyKey: string | symbol) =>
     {
-        const action = (element: HTMLElement): IDisposable =>
+        const action = (element: HTMLElement): void =>
         {
             const listener = (event: HTMLElementEventMap[K]): unknown => (element as object as Indexer<Function>)[propertyKey as string]!.call(element, event);
 
             element.addEventListener(type, listener, options);
 
-            return { dispose: () => element.removeEventListener(type, listener) };
+            Metadata.of(element)!.disposables.push({ dispose: () => element.removeEventListener(type, listener) });
         };
 
-        StaticMetadata.from(target.constructor).finishers.push(action);
+        HookableMetadata.from(target.constructor as typeof HTMLElement).initializers.push(action);
     };
 }
 

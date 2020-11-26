@@ -9,16 +9,23 @@ export default class PrototypeMetadata
     public connectedCallback?:        ICustomElement["connectedCallback"];
     public disconnectedCallback?:     ICustomElement["disconnectedCallback"];
 
-    public static from(target: object & { [PROTOTYPE_METADATA]?: PrototypeMetadata }): PrototypeMetadata
+    public static from(target: object): PrototypeMetadata
     {
-        return target[PROTOTYPE_METADATA] = !target.hasOwnProperty(PROTOTYPE_METADATA) && !!target[PROTOTYPE_METADATA]
-            ? target[PROTOTYPE_METADATA]!.clone()
-            : target[PROTOTYPE_METADATA] ?? new PrototypeMetadata();
+        if (!Reflect.has(target, PROTOTYPE_METADATA))
+        {
+            Reflect.defineProperty(target, PROTOTYPE_METADATA, { value: new PrototypeMetadata() });
+        }
+        else if (!target.hasOwnProperty(PROTOTYPE_METADATA))
+        {
+            return (Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata).clone();
+        }
+
+        return Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata;
     }
 
-    public static of(target: object & { [PROTOTYPE_METADATA]?: PrototypeMetadata }): PrototypeMetadata | undefined
+    public static of(target: object): PrototypeMetadata | undefined
     {
-        return target[PROTOTYPE_METADATA];
+        return Reflect.get(target, PROTOTYPE_METADATA);
     }
 
     public clone(): PrototypeMetadata
