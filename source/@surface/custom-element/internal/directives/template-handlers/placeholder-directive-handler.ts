@@ -1,5 +1,6 @@
 import { CancellationTokenSource, IDisposable, Indexer, assert } from "@surface/core";
 import { TypeGuard }                                             from "@surface/expression";
+import { Subscription }         from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -9,7 +10,6 @@ import
     tryObserveKeyByObservable,
 } from "../../common";
 import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
-import ISubscription            from "../../interfaces/subscription";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import { Injection }            from "../../types";
 import { scheduler }            from "../../workers";
@@ -20,7 +20,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly directive:               IPlaceholderDirective;
-    private readonly keySubscription:         ISubscription;
+    private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
     private readonly template:                HTMLTemplateElement;
     private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
@@ -28,8 +28,8 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     private currentDisposable:                    IDisposable | null      = null;
     private disposed:                             boolean                 = false;
     private key:                                  string                  = "";
-    private subscription:                         ISubscription | null    = null;
     private lazyInjectionCancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private subscription:                         Subscription | null     = null;
 
     private injection?: Injection;
 

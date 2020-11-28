@@ -1,7 +1,7 @@
 import { CancellationTokenSource, IDisposable, assert }  from "@surface/core";
+import { Subscription }                                  from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
-import ISubscription                                     from "../../interfaces/subscription";
 import { scheduler }                                     from "../../workers";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";
@@ -16,7 +16,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly choices:                 Choice[]                = [];
-    private readonly subscriptions:           ISubscription[]         = [];
+    private readonly subscriptions:           Subscription[]          = [];
     private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
 
     private currentDisposable: IDisposable | null = null;

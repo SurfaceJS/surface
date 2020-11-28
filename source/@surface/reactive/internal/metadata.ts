@@ -1,5 +1,5 @@
 import { IDisposable } from "@surface/core";
-import Reactive        from "./reactive";
+import Observer from "./observer";
 
 const METADATA = Symbol("reactive:metadata");
 
@@ -8,8 +8,8 @@ export default class Metadata
     public computed:        Map<string, string[][]>              = new Map();
     public disposables:     IDisposable[]                        = [];
     public isReactiveArray: boolean                              = false;
-    public paths:           Map<string, Reactive>                = new Map();
-    public trackings:       Map<string, Map<Reactive, string[]>> = new Map();
+    public observers:       Map<string, Observer>                = new Map();
+    public subjects:        Map<string, Map<Observer, string[]>> = new Map();
 
     public static from(target: object): Metadata
     {

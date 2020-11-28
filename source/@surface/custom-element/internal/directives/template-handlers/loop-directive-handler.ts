@@ -1,8 +1,8 @@
 import { CancellationTokenSource, Delegate, IDisposable }                    from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
+import { Subscription }                                                      from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/loop-directive";
-import ISubscription                                                         from "../../interfaces/subscription";
 import { scheduler }                                                         from "../../workers";
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from ".";
@@ -13,7 +13,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     private readonly directive:               ILoopDirective;
     private readonly disposables:             IDisposable[] = [];
     private readonly iterator:                (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
-    private readonly subscription:            ISubscription;
+    private readonly subscription:            Subscription;
     private readonly template:                HTMLTemplateElement;
     private readonly templateBlock:           TemplateBlock = new TemplateBlock();
     private readonly tree:                    DocumentFragment;

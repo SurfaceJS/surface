@@ -1,6 +1,5 @@
 import { Indexer, hasValue, overrideProperty } from "@surface/core";
 import { FieldInfo, MethodInfo, Type }         from "@surface/reflection";
-import IObserver                               from "./interfaces/observer";
 import Metadata                                from "./metadata";
 import Observer                                from "./observer";
 
@@ -8,47 +7,52 @@ const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "uns
 
 export default class Reactive
 {
-    protected readonly observer: IObserver = new Observer();
-    protected readonly path:     string[];
-    protected readonly root:     object;
-
-    public constructor(root: object, path: string[])
+    protected static observe(root: Object, path: string[], observer: Observer): void
     {
-        this.root = root;
-        this.path = path;
-
-        this.observe(root, path);
-    }
-
-    public static observe(root: object, path: string[]): IObserver
-    {
-        const key = path.join("\u{fffff}");
-
-        const metadata = Metadata.from(root);
-
-        let reactive = metadata.paths.get(key);
-
-        if (!reactive)
+        if (root instanceof Object)
         {
-            metadata.paths.set(key, reactive = new Reactive(root, path));
-        }
+            const [key, ...keys] = path;
 
-        return reactive.observer;
+            const metadata = Metadata.from(root);
+
+            let subject = metadata.subjects.get(key);
+
+            if (!subject)
+            {
+                if (Array.isArray(root) && !metadata.isReactiveArray)
+                {
+                    this.observeArray(root);
+                }
+
+                const computed = metadata.computed.get(key);
+
+                if (computed)
+                {
+                    for (const dependencies of computed)
+                    {
+                        this.observe(root, dependencies, observer);
+                    }
+                }
+                else
+                {
+                    this.observeProperty(root, key);
+                }
+
+                metadata.subjects.set(key, subject = new Map());
+            }
+
+            subject.set(observer, keys);
+
+            const property = (root as Indexer)[key];
+
+            if (keys.length > 0 && hasValue(property))
+            {
+                this.observe(property, keys, observer);
+            }
+        }
     }
 
-    protected getValue(root: object, path: string[]): unknown
-    {
-        const [key, ...keys] = path;
-
-        if (keys.length > 0)
-        {
-            return this.getValue((root as Indexer)[key] as object, keys);
-        }
-
-        return (root as Indexer)[key];
-    }
-
-    protected observeArray(source: unknown[]): void
+    protected static observeArray(source: unknown[]): void
     {
         for (const method of ARRAY_METHODS)
         {
@@ -64,7 +68,7 @@ export default class Reactive
 
                 if (this.length != length)
                 {
-                    metadata.trackings.get("length")?.forEach((_, x) => x.notify());
+                    metadata.subjects.get("length")?.forEach((_, x) => x.notify());
                 }
 
                 return elements;
@@ -76,7 +80,7 @@ export default class Reactive
         Metadata.of(source)!.isReactiveArray = true;
     }
 
-    protected observeProperty(root: object, key: string): void
+    protected static observeProperty(root: object, key: string): void
     {
         const member = Type.from(root).getMember(key);
 
@@ -88,17 +92,17 @@ export default class Reactive
         {
             const action = (instance: object, newValue: unknown, oldValue: unknown): void =>
             {
-                const tracking = Metadata.of(instance)!.trackings.get(key)!;
+                const observers = Metadata.of(instance)!.subjects.get(key)!;
 
-                for (const [reactive, path] of tracking)
+                for (const [observer, path] of observers)
                 {
                     if (path.length > 0)
                     {
-                        hasValue(oldValue) && reactive.unobserve(oldValue, path);
-                        hasValue(newValue) && reactive.observe(newValue, path);
+                        hasValue(oldValue) && this.unobserve(oldValue, path, observer);
+                        hasValue(newValue) && this.observe(newValue, path, observer);
                     }
 
-                    reactive.notify();
+                    observer.notify();
                 }
             };
 
@@ -106,75 +110,55 @@ export default class Reactive
         }
     }
 
-    public observe(root: Object, path: string[]): void
+    protected static unobserve(root: Object, path: string[], observer: Observer): void
     {
         if (root instanceof Object)
         {
             const [key, ...keys] = path;
 
-            const metadata = Metadata.from(root);
-
-            let tracking = metadata.trackings.get(key);
-
-            if (!tracking)
-            {
-                if (Array.isArray(root) && !metadata.isReactiveArray)
-                {
-                    this.observeArray(root);
-                }
-
-                const computed = metadata.computed.get(key);
-
-                if (computed)
-                {
-                    for (const dependencies of computed)
-                    {
-                        this.observe(root, dependencies);
-                    }
-                }
-                else
-                {
-                    this.observeProperty(root, key);
-                }
-
-                metadata.trackings.set(key, tracking = new Map());
-            }
-
-            tracking.set(this, keys);
+            Metadata.of(root)!.subjects.get(key)?.delete(observer);
 
             const property = (root as Indexer)[key];
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.observe(property, keys);
+                this.unobserve(property, keys, observer);
             }
         }
     }
 
-    public unobserve(root: Object, path: string[]): void
+    public static from(root: object, path: string[]): Observer
     {
-        if (root instanceof Object)
+        const key = path.join("\u{fffff}");
+
+        const metadata = Metadata.from(root);
+
+        let observer = metadata.observers.get(key);
+
+        if (!observer)
         {
-            const [key, ...keys] = path;
+            this.observe(root, path, observer = new Observer(root, path));
 
-            Metadata.of(root)!.trackings.get(key)?.delete(this);
+            metadata.observers.set(key, observer);
+        }
 
-            const property = (root as Indexer)[key];
+        return observer;
+    }
 
-            if (keys.length > 0 && hasValue(property))
+    public static notify(root: object, path?: string[]): void
+    {
+        const metadata = Metadata.of(root);
+
+        if (metadata)
+        {
+            if (path)
             {
-                this.unobserve(property, keys);
+                metadata.observers.get(path.join("\u{fffff}"))?.notify();
             }
-        }
-    }
-
-    public notify(): void
-    {
-        if (this.observer.size > 0)
-        {
-            const value = this.getValue(this.root, this.path);
-
-            this.observer.notify(value);
+            else
+            {
+                metadata.observers.forEach(x => x.notify());
+            }
         }
     }
 }

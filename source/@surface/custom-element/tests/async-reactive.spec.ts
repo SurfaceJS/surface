@@ -18,8 +18,8 @@ export default class AsyncReactiveSpec
 
         let asyncReceiver = target.value;
 
-        AsyncReactive.observe(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
-        AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
+        AsyncReactive.from(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
+        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
 
         assert.equal(target.value, asyncReceiver);
 
@@ -37,7 +37,7 @@ export default class AsyncReactiveSpec
 
         let asyncReceiver = target.value;
 
-        AsyncReactive.observe(target, ["value"]).subscribe(x => asyncReceiver = x as number);
+        AsyncReactive.from(target, ["value"]).subscribe(x => asyncReceiver = x as number);
 
         assert.equal(target.value, asyncReceiver);
 
@@ -56,7 +56,7 @@ export default class AsyncReactiveSpec
         let receiver = target.value;
         let hits = 0;
 
-        AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
+        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
 
         assert.equal(target.value, receiver);
 
@@ -81,8 +81,8 @@ export default class AsyncReactiveSpec
         let receiver = target.value;
         let length   = target.value.length;
 
-        AsyncReactive.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
-        AsyncReactive.observe(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
+        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
+        AsyncReactive.from(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
 
         assert.equal(target.value, receiver);
 

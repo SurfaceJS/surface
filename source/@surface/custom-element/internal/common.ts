@@ -1,5 +1,6 @@
 import { Delegate, IDisposable, Indexer, assert } from "@surface/core";
 import { Evaluate, IExpression, IPattern }        from "@surface/expression";
+import { Subscription }                           from "@surface/reactive";
 import DataBind                                   from "./data-bind";
 import TemplateEvaluationError                    from "./errors/template-evaluation-error";
 import TemplateObservationError                   from "./errors/template-observation-error";
@@ -7,7 +8,6 @@ import TemplateParseError                         from "./errors/template-parse-
 import IKeyValueObservable                        from "./interfaces/key-value-observable";
 import IKeyValueTraceable                         from "./interfaces/key-value-traceable";
 import IObservable                                from "./interfaces/observable";
-import ISubscription                              from "./interfaces/subscription";
 import ITraceable                                 from "./interfaces/traceable";
 import { Observables, StackTrace }                from "./types";
 
@@ -131,7 +131,7 @@ export function tryEvaluatePatternByTraceable(scope: object, value: unknown, tra
     return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }
 
-export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
+export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): Subscription
 {
     try
     {
@@ -145,12 +145,12 @@ export function tryObserve(scope: object, observables: Observables, listener: De
     }
 }
 
-export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: Delegate<[unknown]>, lazy?: boolean): ISubscription
+export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
 {
     return tryObserve(scope, observable.observables, listener, observable.rawExpression, observable.stackTrace, lazy);
 }
 
-export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: Delegate<[unknown]>, lazy?: boolean): ISubscription
+export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
 {
     return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
 }

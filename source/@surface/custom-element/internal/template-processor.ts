@@ -1,4 +1,5 @@
 import { Delegate, IDisposable, Indexer, assert, getValue, typeGuard } from "@surface/core";
+import { Subscription } from "@surface/reactive";
 import { FieldInfo, Type }                                             from "@surface/reflection";
 import
 {
@@ -20,7 +21,6 @@ import IAttributeDirective         from "./interfaces/attribute-directive";
 import ICustomDirective            from "./interfaces/custom-directive";
 import IDirectivesDescriptor       from "./interfaces/directives-descriptor";
 import IEventDirective             from "./interfaces/event-directive";
-import ISubscription               from "./interfaces/subscription";
 import ITemplateDescriptor         from "./interfaces/template-descriptor";
 import ITextNodeDescriptor         from "./interfaces/text-node-descriptor";
 import ITraceable                  from "./interfaces/traceable";
@@ -142,7 +142,7 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.set(element, processor = []);
         }
 
-        const subscriptions: ISubscription[] = [];
+        const subscriptions: Subscription[] = [];
 
         for (const descriptor of attributeDescriptors)
         {
@@ -323,7 +323,7 @@ export default class TemplateProcessor
 
     private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): IDisposable
     {
-        const subscriptions: ISubscription[] = [];
+        const subscriptions: Subscription[] = [];
 
         for (const descriptor of descriptors)
         {

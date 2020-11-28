@@ -13,7 +13,7 @@ export default class ReactiveSpec
 
         let receiver = 0;
 
-        Reactive.observe(target, ["value"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["value"]).subscribe(x => receiver = x as number);
 
         target.value = 2;
 
@@ -26,7 +26,7 @@ export default class ReactiveSpec
         const target   = { a: { b: { c: { value: 0 } } } };
         let   receiver = 0;
 
-        Reactive.observe(target, ["a", "b", "c", "value"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => receiver = x as number);
 
         target.a.b.c.value = 1;
 
@@ -66,7 +66,7 @@ export default class ReactiveSpec
         const target   = { value: "" };
         let   receiver = 0;
 
-        Reactive.observe(target, ["value", "length"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["value", "length"]).subscribe(x => receiver = x as number);
 
         target.value = "Hello World!!!";
 
@@ -81,8 +81,8 @@ export default class ReactiveSpec
         let receiver1 = 0;
         let receiver2 = 0;
 
-        Reactive.observe(target, ["a", "value"]).subscribe(x => receiver1 = x as number);
-        Reactive.observe(target, ["a", "value"]).subscribe(x => receiver2 = x as number);
+        Reactive.from(target, ["a", "value"]).subscribe(x => receiver1 = x as number);
+        Reactive.from(target, ["a", "value"]).subscribe(x => receiver2 = x as number);
 
         target.a.value = 2;
 
@@ -104,9 +104,9 @@ export default class ReactiveSpec
         let aReceiver     = { b: { c: { value: 0 } } };
         let bReceiver     = { c: { value: 0 } };
 
-        Reactive.observe(target, ["a"]).subscribe(x => aReceiver = x as typeof aReceiver);
-        Reactive.observe(target, ["a", "b", "c", "value"]).subscribe(x => valueReceiver = x as number);
-        Reactive.observe(target, ["a", "b"]).subscribe(x => bReceiver = x as typeof bReceiver);
+        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as typeof aReceiver);
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => valueReceiver = x as number);
+        Reactive.from(target, ["a", "b"]).subscribe(x => bReceiver = x as typeof bReceiver);
 
         target.a.b = { c: { value: 1 } };
 
@@ -129,8 +129,8 @@ export default class ReactiveSpec
         let abcValueReceiver = 0;
         let cValueReceiver   = 0;
 
-        Reactive.observe(target, ["a", "b", "c", "value"]).subscribe(x => abcValueReceiver = x as typeof abcValueReceiver);
-        Reactive.observe(c, ["value"]).subscribe(x => cValueReceiver = x as typeof cValueReceiver);
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => abcValueReceiver = x as typeof abcValueReceiver);
+        Reactive.from(c, ["value"]).subscribe(x => cValueReceiver = x as typeof cValueReceiver);
 
         target.a.b.c.value = 1;
 
@@ -155,9 +155,9 @@ export default class ReactiveSpec
         let receiver1 = target[1];
         let length    = target.length;
 
-        Reactive.observe(target, ["0"]).subscribe(x => receiver0 = x as number);
-        Reactive.observe(target, ["1"]).subscribe(x => receiver1 = x as number);
-        Reactive.observe(target, ["length"]).subscribe(x => length = x as number);
+        Reactive.from(target, ["0"]).subscribe(x => receiver0 = x as number);
+        Reactive.from(target, ["1"]).subscribe(x => receiver1 = x as number);
+        Reactive.from(target, ["length"]).subscribe(x => length = x as number);
 
         target[0] = 3;
         target[1] = 4;
@@ -210,7 +210,7 @@ export default class ReactiveSpec
 
         let receiver = target[0].value;
 
-        Reactive.observe(target, ["0", "value"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["0", "value"]).subscribe(x => receiver = x as number);
 
         assert.equal(target[0].value, receiver);
 
@@ -230,7 +230,7 @@ export default class ReactiveSpec
 
         let receiver = target.value;
 
-        Reactive.observe(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
+        Reactive.from(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
 
         assert.equal(target.value, receiver);
 
@@ -246,7 +246,7 @@ export default class ReactiveSpec
 
         assert.notEqual(newTarget.value, receiver);
 
-        Reactive.observe(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
+        Reactive.from(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
 
         newTarget.value = 4;
 
@@ -254,7 +254,32 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public computed(): void
+    public notify(): void
+    {
+        Reactive.notify({ }); // Coverage
+
+        const target = { a: 1, b: 1 };
+
+        let aReceiver = 0;
+        let bReceiver = 0;
+
+        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as number);
+        Reactive.from(target, ["b"]).subscribe(x => bReceiver = x as number);
+
+        Reactive.notify(target, ["a"]);
+        Reactive.notify(target, ["c"]); // Coverage
+
+        assert.equal(target.a, aReceiver);
+        assert.notEqual(target.b, bReceiver);
+
+        Reactive.notify(target);
+
+        assert.equal(target.a, aReceiver);
+        assert.equal(target.b, bReceiver);
+    }
+
+    @test @shouldPass
+    public decoratorComputed(): void
     {
         class Target
         {
@@ -278,7 +303,7 @@ export default class ReactiveSpec
 
         let receiver = 0;
 
-        Reactive.observe(target, ["sum"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
 
         target.recalculate();
 
@@ -286,7 +311,7 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public notify(): void
+    public decoratorNotify(): void
     {
         class Target
         {
@@ -312,7 +337,7 @@ export default class ReactiveSpec
 
         let receiver = 0;
 
-        Reactive.observe(target, ["sum"]).subscribe(x => receiver = x as number);
+        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
 
         target.recalculate();
 
@@ -324,11 +349,11 @@ export default class ReactiveSpec
     {
         const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
 
-        assert.throws(() => Reactive.observe(target, ["a", "b", "c", "value"]));
+        assert.throws(() => Reactive.from(target, ["a", "b", "c", "value"]));
 
         target.a = { b: { c: { value: 1 } } };
 
-        Reactive.observe(target, ["a", "b", "c", "value"]);
+        Reactive.from(target, ["a", "b", "c", "value"]);
 
         assert.throws(() => target.a = { });
     }

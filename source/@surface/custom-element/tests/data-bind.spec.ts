@@ -159,6 +159,8 @@ export default class DataBindSpec
 
         DataBind.twoWay(left, ["value"], right, ["value"]);
 
+        await whenDone();
+
         left.value = 2;
 
         await whenDone();

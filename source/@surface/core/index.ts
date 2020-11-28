@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/indent */
 export type { default as IDisposable }       from "./internal/interfaces/disposable";
-export type { default as IEventListener }    from "./internal/interfaces/event-listener";
-export type { default as IWorker }           from "./internal/interfaces/worker";
 export type { default as CancellationToken } from "./internal/types/cancellation-token";
 
 export type
@@ -47,7 +45,6 @@ export * from "./internal/common/promises";
 export * from "./internal/common/string";
 
 export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
-export { default as EventListener }           from "./internal/event-listener";
 export { default as Hashcode }                from "./internal/hashcode";
 export { default as Hookable }                from "./internal/hookable";
 export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";

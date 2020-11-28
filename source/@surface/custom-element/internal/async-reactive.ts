@@ -1,41 +1,11 @@
-import { CancellationTokenSource, Indexer, hasValue } from "@surface/core";
-import Reactive, { IObserver, Metadata }              from "@surface/reactive";
-import Scheduler                                      from "./scheduler";
+import { Indexer, hasValue }            from "@surface/core";
+import Reactive, { Metadata, Observer } from "@surface/reactive";
+import AsyncObserver                    from "./async-observer";
+import Scheduler                        from "./scheduler";
 
 export default class AsyncReactive extends Reactive
 {
-    private readonly scheduler: Scheduler;
-    private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
-
-    public constructor(root: object, path: string[], scheduler: Scheduler)
-    {
-        super(root, path);
-
-        this.scheduler = scheduler;
-    }
-
-    public static observe(root: object, path: string[], scheduler?: Scheduler): IObserver
-    {
-        if (scheduler)
-        {
-            const key = path.join("\u{fffff}");
-
-            const metadata = Metadata.from(root);
-
-            let reactive = metadata.paths.get(key) as AsyncReactive | undefined;
-
-            if (!reactive)
-            {
-                metadata.paths.set(key, reactive = new AsyncReactive(root, path, scheduler));
-            }
-
-            return reactive.observer;
-        }
-
-        return Reactive.observe(root, path);
-    }
-
-    public observe(root: Object, path: string[]): void
+    protected static observe(root: Object, path: string[], observer: Observer): void
     {
         if (root instanceof HTMLElement && (root.contentEditable == "true" || root.nodeName == "INPUT"))
         {
@@ -43,17 +13,17 @@ export default class AsyncReactive extends Reactive
 
             const metadata = Metadata.from(root);
 
-            let tracking = metadata.trackings.get(key);
+            let subject = metadata.subjects.get(key);
 
-            if (!tracking)
+            if (!subject)
             {
                 const action = (event: Event): void =>
                 {
                     event.stopImmediatePropagation();
 
-                    for (const [reactive] of Metadata.of(root)!.trackings.get(key)!)
+                    for (const [observer] of Metadata.of(root)!.subjects.get(key)!)
                     {
-                        reactive.notify();
+                        observer.notify();
                     }
                 };
 
@@ -61,37 +31,44 @@ export default class AsyncReactive extends Reactive
 
                 this.observeProperty(root, key);
 
-                metadata.trackings.set(key, tracking = new Map());
+                metadata.subjects.set(key, subject = new Map());
             }
 
-            tracking.set(this, keys);
+            subject.set(observer, keys);
 
             const property = (root as unknown as Indexer)[key];
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.observe(property, keys);
+                this.observe(property, keys, observer);
             }
         }
         else
         {
-            super.observe(root, path);
+            super.observe(root, path, observer);
         }
     }
 
-    public notify(): void
+    public static from(root: object, path: string[], scheduler?: Scheduler): Observer
     {
-        const task = (): void =>
+        if (scheduler)
         {
-            const value = this.getValue(this.root, this.path);
+            const key = path.join("\u{fffff}");
 
-            this.observer.notify(value);
-        };
+            const metadata = Metadata.from(root);
 
-        this.cancellationTokenSource.cancel();
+            let observer = metadata.observers.get(key);
 
-        this.cancellationTokenSource = new CancellationTokenSource();
+            if (!observer)
+            {
+                this.observe(root, path, observer = new AsyncObserver(root, path, scheduler));
 
-        this.scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
+                metadata.observers.set(key, observer);
+            }
+
+            return observer;
+        }
+
+        return super.from(root, path);
     }
 }

@@ -1,4 +1,5 @@
 import { CancellationTokenSource } from "@surface/core";
+import { Subscription }            from "@surface/reactive";
 import
 {
     tryEvaluateKeyExpressionByTraceable,
@@ -6,7 +7,6 @@ import
     tryObserveKeyByObservable,
 } from "../../common";
 import IInjectDirective         from "../../interfaces/inject-directive";
-import ISubscription            from "../../interfaces/subscription";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import { scheduler }            from "../../workers";
 import TemplateDirectiveHandler from ".";
@@ -15,9 +15,9 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly directive:               IInjectDirective;
-    private readonly keySubscription:         ISubscription;
+    private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
-    private readonly subscription:            ISubscription;
+    private readonly subscription:            Subscription;
     private readonly template:                HTMLTemplateElement;
 
     private disposed: boolean = false;
