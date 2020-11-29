@@ -3,7 +3,7 @@ import { TypeGuard }                                                         fro
 import { Subscription }                                                      from "@surface/reactive";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
 import ILoopDirective                                                        from "../../interfaces/loop-directive";
-import { scheduler }                                                         from "../../workers";
+import { scheduler }                                                         from "../../singletons";
 import TemplateBlock                                                         from "../template-block";
 import TemplateDirectiveHandler                                              from ".";
 
@@ -34,7 +34,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, template);
 
-        const listener = (): void => scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(scope, directive, listener, true);
 
@@ -74,7 +74,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
+            void scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
         }
     }
 
@@ -86,7 +86,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
         {
             const current = ++index;
 
-            scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
+            void scheduler.enqueue(() => this.action(element, current), "high", this.cancellationTokenSource.token);
         }
     }
 
@@ -103,7 +103,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.iterator(elements, this.action);
 
-        scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high", this.cancellationTokenSource.token);
+        void scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high", this.cancellationTokenSource.token);
     }
 
     public dispose(): void

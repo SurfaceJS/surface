@@ -36,6 +36,7 @@ Object.assign
         NamedNodeMap:          window.NamedNodeMap,
         Node:                  window.Node,
         NodeList:              window.NodeList,
+        ShadowRoot:            window.ShadowRoot,
         Window:                window.constructor,
         document:              window.document,
         location:              window.location,

@@ -4,7 +4,7 @@ import "./fixtures/dom";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
 import DataBind                    from "../internal/data-bind";
-import { whenDone }                from "../internal/workers";
+import { scheduler }               from "../internal/singletons";
 
 @suite
 export default class DataBindSpec
@@ -20,7 +20,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(changed);
     }
@@ -35,7 +35,7 @@ export default class DataBindSpec
         // Todo: Review if should throw error or not
         DataBind.oneWay(target, ["value"], () => undefined);
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(true);
     }
@@ -65,7 +65,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(changed);
     }
@@ -95,7 +95,7 @@ export default class DataBindSpec
 
         target.setValue(2);
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(changed);
     }
@@ -113,7 +113,7 @@ export default class DataBindSpec
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(changed);
     }
@@ -132,7 +132,7 @@ export default class DataBindSpec
 
         attribute.value = "2";
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(value, "2");
     }
@@ -159,17 +159,17 @@ export default class DataBindSpec
 
         DataBind.twoWay(left, ["value"], right, ["value"]);
 
-        await whenDone();
+        await scheduler.whenDone();
 
         left.value = 2;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(right.value, 2);
 
         right.value = 3;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(left.value, 3);
     }
@@ -183,7 +183,7 @@ export default class DataBindSpec
 
         DataBind.observe(target, [["value", "length"]], () => observed = true);
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.isTrue(observed);
     }

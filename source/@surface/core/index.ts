@@ -44,9 +44,11 @@ export * from "./internal/common/object";
 export * from "./internal/common/promises";
 export * from "./internal/common/string";
 
+export { default as CancellationTokenSource } from "./internal/cancellation-token-source";
+export { default as AggregateError }          from "./internal/errors/aggregate-error";
 export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
+export { default as TaskCanceledError }       from "./internal/errors/task-canceled-error";
 export { default as Hashcode }                from "./internal/hashcode";
 export { default as Hookable }                from "./internal/hookable";
-export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";
 export { default as Lazy }                    from "./internal/lazy";
-export { default as CancellationTokenSource } from "./internal/cancellation-token-source";
+export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";

@@ -6,7 +6,7 @@ export type { default as ICustomDirective } from "./internal/interfaces/custom-d
 export * from "./internal/custom-element";
 export * from "./internal/decorators";
 export * from "./internal/processors";
-export * from "./internal/workers";
+export * from "./internal/singletons";
 
 export { default as DirectiveHandler } from "./internal/directives/handlers";
 export default CustomElement;

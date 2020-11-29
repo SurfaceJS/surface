@@ -8,7 +8,7 @@ import
 } from "../../common";
 import IInjectDirective         from "../../interfaces/inject-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import { scheduler }            from "../../workers";
+import { scheduler }            from "../../singletons";
 import TemplateDirectiveHandler from ".";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
@@ -33,7 +33,7 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         template.remove();
 
-        const listener = (): void => scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         this.keySubscription = tryObserveKeyByObservable(scope, directive, listener, true);
         this.subscription    = tryObserveByObservable(scope, directive,    listener, true);

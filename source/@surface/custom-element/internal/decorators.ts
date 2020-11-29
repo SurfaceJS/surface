@@ -13,10 +13,10 @@ import ICustomElement              from "./interfaces/custom-element";
 import Metadata                    from "./metadata/metadata";
 import PrototypeMetadata           from "./metadata/prototype-metadata";
 import StaticMetadata              from "./metadata/static-metadata";
+import { scheduler }               from "./singletons";
 import { TEMPLATEABLE }            from "./symbols";
 import TemplateParser              from "./template-parser";
 import TemplateProcessor           from "./template-processor";
-import { scheduler }               from "./workers";
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
@@ -88,7 +88,7 @@ function wraperPrototype(prototype: ICustomElement): void
             }
         };
 
-        scheduler.enqueue(action, "low");
+        void scheduler.enqueue(action, "low");
 
         callback?.call(this);
     };

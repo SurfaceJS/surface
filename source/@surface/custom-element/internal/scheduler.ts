@@ -1,12 +1,21 @@
-import { Queue }              from "@surface/collection";
-import { CancellationToken, Delegate, runAsync } from "@surface/core";
+import { Queue }                                                                    from "@surface/collection";
+import { AggregateError, CancellationToken, Delegate, TaskCanceledError, runAsync } from "@surface/core";
+
+type Entry =
+[
+    task:               Delegate<[], unknown>,
+    resolve:            Delegate<[unknown]>,
+    reject:             Delegate<[Error]>,
+    cancellationToken?: CancellationToken,
+];
 
 export default class Scheduler
 {
-    private readonly highPriorityQueue:   Queue<[Delegate, CancellationToken?]> = new Queue();
-    private readonly lowPriorityQueue:    Queue<[Delegate, CancellationToken?]> = new Queue();
-    private readonly normalPriorityQueue: Queue<[Delegate, CancellationToken?]> = new Queue();
-    private readonly timeout:     number;
+    private readonly errors:              Error[]      = [];
+    private readonly highPriorityQueue:   Queue<Entry> = new Queue();
+    private readonly lowPriorityQueue:    Queue<Entry> = new Queue();
+    private readonly normalPriorityQueue: Queue<Entry> = new Queue();
+    private readonly timeout:             number;
 
     private currentExecution: Promise<void> = Promise.resolve();
     private running:          boolean       = false;
@@ -21,19 +30,32 @@ export default class Scheduler
         return new Promise(resolve => window.requestAnimationFrame(resolve));
     }
 
-    private async processQueue(queue: Queue<[Delegate, CancellationToken?]>, hasPriorityChange?: () => boolean): Promise<void>
+    private async processQueue(queue: Queue<Entry>, hasPriorityChange?: () => boolean): Promise<void>
     {
         let expended = 0;
 
         while (queue.length > 0)
         {
-            const [task, cancellationToken] = queue.dequeue()!;
+            const [task, resolve, reject, cancellationToken] = queue.dequeue()!;
 
             const start = window.performance.now();
 
             if (!cancellationToken?.canceled)
             {
-                task();
+                try
+                {
+                    resolve(task());
+                }
+                catch (error)
+                {
+                    this.errors.push(error);
+
+                    reject(error);
+                }
+            }
+            else
+            {
+                reject(new TaskCanceledError());
             }
 
             const end = window.performance.now();
@@ -56,41 +78,47 @@ export default class Scheduler
 
     private async execute(): Promise<void>
     {
-        try
-        {
-            await this.processQueue(this.highPriorityQueue);
-            await this.processQueue(this.normalPriorityQueue, () => this.highPriorityQueue.length > 0);
-            await this.processQueue(this.lowPriorityQueue, () => this.highPriorityQueue.length > 0 || this.normalPriorityQueue.length > 0);
-        }
-        finally
-        {
-            this.highPriorityQueue.clear();
-            this.normalPriorityQueue.clear();
-            this.lowPriorityQueue.clear();
-        }
+        await this.processQueue(this.highPriorityQueue);
+        await this.processQueue(this.normalPriorityQueue, () => this.highPriorityQueue.length > 0);
+        await this.processQueue(this.lowPriorityQueue, () => this.highPriorityQueue.length > 0 || this.normalPriorityQueue.length > 0);
     }
 
-    public enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken: CancellationToken | undefined = undefined): void
+    private start(): void
     {
+        this.errors.length = 0;
+
+        this.running = true;
+
+        this.currentExecution = runAsync(this.execute.bind(this)).then(this.stop.bind(this));
+    }
+
+    private async stop(): Promise<void>
+    {
+        this.running = false;
+
+        if (this.errors.length > 0)
+        {
+            throw new AggregateError([...this.errors]);
+        }
+
+        return Promise.resolve();
+    }
+
+    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken | undefined = undefined): Promise<ReturnType<T>>
+    {
+        if (!this.running)
+        {
+            this.start();
+        }
+
         switch (priority)
         {
             case "high":
-                this.highPriorityQueue.enqueue([task, cancellationToken]);
-                break;
+                return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
             case "low":
-                this.lowPriorityQueue.enqueue([task, cancellationToken]);
-                break;
-            case "normal":
+                return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
             default:
-                this.normalPriorityQueue.enqueue([task, cancellationToken]);
-                break;
-        }
-
-        if (!this.running)
-        {
-            this.running = true;
-
-            this.currentExecution = runAsync(this.execute.bind(this)).finally(() => this.running = false);
+                return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
         }
     }
 

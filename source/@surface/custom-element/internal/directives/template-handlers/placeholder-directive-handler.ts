@@ -11,8 +11,8 @@ import
 } from "../../common";
 import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
+import { scheduler }            from "../../singletons";
 import { Injection }            from "../../types";
-import { scheduler }            from "../../workers";
 import TemplateBlock            from "../template-block";
 import TemplateDirectiveHandler from ".";
 
@@ -63,7 +63,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         this.lazyInjectionCancellationTokenSource = new CancellationTokenSource();
 
-        scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
+        void scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
     }
 
     private inject(injection?: Injection): void
@@ -80,7 +80,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const listener = (): void => scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
 

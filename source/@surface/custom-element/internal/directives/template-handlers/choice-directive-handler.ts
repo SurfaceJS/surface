@@ -2,7 +2,7 @@ import { CancellationTokenSource, IDisposable, assert }  from "@surface/core";
 import { Subscription }                                  from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
-import { scheduler }                                     from "../../workers";
+import { scheduler }                                     from "../../singletons";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";
 
@@ -32,7 +32,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const listener = (): void => scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         for (let index = 0; index < branches.length; index++)
         {

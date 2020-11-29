@@ -1,7 +1,7 @@
 import { Delegate, setValue } from "@surface/core";
 import { Subscription }       from "@surface/reactive";
 import AsyncReactive          from "./async-reactive";
-import { scheduler }          from "./workers";
+import { scheduler }          from "./singletons";
 
 export default class DataBind
 {
