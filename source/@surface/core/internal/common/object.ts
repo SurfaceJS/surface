@@ -1,6 +1,5 @@
-import Hashcode                                                      from "../hashcode";
-import { Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                         from "./generic";
+import { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                                                        from "./generic";
 
 const PRIVATES = Symbol("core:privates");
 
@@ -119,39 +118,41 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
-export function getKeyMember<T extends object>(target: T, path: string | string[]): { key: string, member: T };
-export function getKeyMember(target: Indexer, path: string | string[]): { key: string, member: Indexer }
+export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
+export function getValue(root: object, ...path: string[]): unknown
 {
-    const [key, ...keys] = Array.isArray(path) ? path : path.split(".");
+    const [key, ...keys] = path;
 
     if (keys.length > 0)
     {
-        if (key in target)
+        if (key in root)
         {
-            const member = target[key];
-
-            return getKeyMember(member as Indexer, keys);
+            return getValue((root as Indexer)[key] as object, ...keys);
         }
 
-        const typeName = target instanceof Function ? target.name : target.constructor.name;
+        const typeName = root instanceof Function ? root.name : root.constructor.name;
 
         throw new Error(`Property "${key}" does not exists on type ${typeName}`);
     }
 
-    return { key, member: target };
+    return (root as Indexer)[key];
 }
 
-export function getKeyValue<TTarget extends object, TValue = unknown>(target: TTarget, path: string | string[]): { key: string, value: TValue };
-export function getKeyValue(target: Indexer, path: string | string[]): { key: string, value: unknown }
+export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
+export function setValue(value: unknown, root: object, ...path: string[]): void
 {
-    const { key, member } = getKeyMember(target, path);
+    const key = path[path.length - 1];
 
-    return { key, value: member[key] };
-}
+    if (path.length - 1 > 0)
+    {
+        const property = getValue(root, ...path.slice(0, path.length - 1));
 
-export function getValue<TTarget extends object, T = unknown>(target: TTarget, path: string | string[]): T | undefined
-{
-    return getKeyValue<TTarget, T>(target, path).value;
+        (property as Indexer)[key] = value;
+    }
+    else
+    {
+        (root as Indexer)[key] = value;
+    }
 }
 
 /**
@@ -251,7 +252,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                     if (!Object.is(oldValue, value))
                     {
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
 
                         currentDescriptor.set!.call(this, value);
                     }
@@ -265,14 +266,14 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                     {
                         currentDescriptor.set!.call(this, value);
 
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
                     }
                 },
         };
     }
     else
     {
-        const privates = target[PRIVATES] = target[PRIVATES] ?? { };
+        const privates = privatesFrom(target);
 
         privates[property as string] = target[property as keyof T];
 
@@ -290,7 +291,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
 
                     if (!Object.is(oldValue, value))
                     {
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
 
                         privates[property as string] = value;
                     }
@@ -303,7 +304,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                     {
                         privates[property as string] = value;
 
-                        action(this, oldValue, value);
+                        action(this, value, oldValue);
                     }
                 },
         };
@@ -335,6 +336,16 @@ export function pathfy(source: object, options?: { keySeparator?: string, keyTra
     return result;
 }
 
+export function privatesFrom<T extends { [PRIVATES]?: Indexer }>(target: T): Indexer
+{
+    if (!target[PRIVATES])
+    {
+        Object.defineProperty(target, PRIVATES, { configurable: true, enumerable: false, value: { }, writable: false });
+    }
+
+    return target[PRIVATES]!;
+}
+
 export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Combine<TInstances>;
 export function proxyFrom(...instances: Indexer[]): Indexer
 {
@@ -355,7 +366,7 @@ export function proxyFrom(...instances: Indexer[]): Indexer
         {
             for (const instance of instances)
             {
-                const descriptor = Object.getOwnPropertyDescriptor(instance, key);
+                const descriptor = Reflect.getOwnPropertyDescriptor(instance, key);
 
                 if (descriptor)
                 {
@@ -388,16 +399,6 @@ export function proxyFrom(...instances: Indexer[]): Indexer
     };
 
     return new Proxy(instances[0], handler);
-}
-
-/**
- * Performs deep comparision between values.
- * @param left  Left  value
- * @param right Right value
- */
-export function structuralEqual(left: unknown, right: unknown): boolean
-{
-    return left === right || Hashcode.encode(left) == Hashcode.encode(right);
 }
 
 export function *enumerateKeys(target: object): IterableIterator<string | number | symbol>

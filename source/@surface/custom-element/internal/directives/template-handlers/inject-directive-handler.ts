@@ -1,4 +1,5 @@
-import { ISubscription } from "@surface/reactive";
+import { CancellationTokenSource } from "@surface/core";
+import { Subscription }            from "@surface/reactive";
 import
 {
     tryEvaluateKeyExpressionByTraceable,
@@ -7,15 +8,17 @@ import
 } from "../../common";
 import IInjectDirective         from "../../interfaces/inject-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
+import { scheduler }            from "../../singletons";
 import TemplateDirectiveHandler from ".";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive:       IInjectDirective;
-    private readonly keySubscription: ISubscription;
-    private readonly metadata:        TemplateMetadata;
-    private readonly subscription:    ISubscription;
-    private readonly template:        HTMLTemplateElement;
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly directive:               IInjectDirective;
+    private readonly keySubscription:         Subscription;
+    private readonly metadata:                TemplateMetadata;
+    private readonly subscription:            Subscription;
+    private readonly template:                HTMLTemplateElement;
 
     private disposed: boolean = false;
     private key:      string  = "";
@@ -30,19 +33,16 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         template.remove();
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.task.bind(this) }, true);
-        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.task.bind(this) }, true);
+        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, listener, true);
+        this.subscription    = tryObserveByObservable(scope, directive,    listener, true);
 
         this.task();
     }
 
     private task(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.disposeCurrentInjection();
 
         this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
@@ -70,6 +70,7 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
     {
         if (!this.disposed)
         {
+            this.cancellationTokenSource.cancel();
             this.disposeCurrentInjection();
 
             this.keySubscription.unsubscribe();

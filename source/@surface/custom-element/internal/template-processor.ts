@@ -1,13 +1,11 @@
-import { Delegate, IDisposable, Indexer, assert, typeGuard } from "@surface/core";
-import { TypeGuard }                                         from "@surface/expression";
-import { ISubscription }                                     from "@surface/reactive";
-import Type, { FieldInfo }                                   from "@surface/reflection";
+import { Delegate, IDisposable, Indexer, assert, getValue, typeGuard } from "@surface/core";
+import { Subscription } from "@surface/reactive";
+import { FieldInfo, Type }                                             from "@surface/reflection";
 import
 {
     classMap,
     createScope,
     styleMap,
-    tryEvaluateExpression,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
 } from "./common";
@@ -62,7 +60,6 @@ export default class TemplateProcessor
 
     public static process(data: ITemplateProcessorData): IDisposable
     {
-        /* istanbul ignore if */
         if (TemplateProcessor.postProcessing.has(data.host))
         {
             TemplateProcessor.postProcessing.get(data.host)!.forEach(action => action());
@@ -113,35 +110,28 @@ export default class TemplateProcessor
 
     private process(scope: object, context?: Node): IDisposable
     {
-        const subscriptions: ISubscription[] = [];
-        const disposables:   IDisposable[]   = [];
+        const disposables: IDisposable[]   = [];
 
         for (const descriptor of this.descriptor.elements)
         {
-            const element = this.lookup[descriptor.path] as HTMLElement;
+            const element = this.lookup[descriptor.path] as HTMLElement & Partial<IDisposable>;
 
             const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
-            subscriptions.push(...this.processAttributes(localScope, element, descriptor.attributes));
-            disposables.push(...this.processEvents(localScope, element, descriptor.events));
-            disposables.push(...this.processElementDirectives(localScope, element, descriptor.directives));
-            subscriptions.push(...this.processTextNode(localScope, descriptor.textNodes));
+            disposables.push(this.processAttributes(localScope, element, descriptor.attributes));
+            disposables.push(this.processEvents(localScope, element, descriptor.events));
+            disposables.push(this.processElementDirectives(localScope, element, descriptor.directives));
+            disposables.push(this.processTextNode(localScope, descriptor.textNodes));
 
             element.dispatchEvent(new Event("bind"));
         }
 
         disposables.push(this.processTemplateDirectives({ context, directives: this.descriptor.directives, scope: createScope(scope) }));
 
-        return {
-            dispose: () =>
-            {
-                subscriptions.splice(0).forEach(x => x.unsubscribe());
-                disposables.splice(0).forEach(x => x.dispose());
-            },
-        };
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): ISubscription[]
+    private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): IDisposable
     {
         const constructor = window.customElements.get(element.localName);
 
@@ -152,7 +142,7 @@ export default class TemplateProcessor
             TemplateProcessor.postProcessing.set(element, processor = []);
         }
 
-        const subscriptions: ISubscription[] = [];
+        const subscriptions: Subscription[] = [];
 
         for (const descriptor of attributeDescriptors)
         {
@@ -171,7 +161,7 @@ export default class TemplateProcessor
 
                     if (descriptor.type == "oneway")
                     {
-                        let notify: Delegate;
+                        let listener: Delegate;
 
                         if (descriptor.name == "class" || descriptor.name == "style")
                         {
@@ -179,55 +169,53 @@ export default class TemplateProcessor
 
                             element.setAttributeNode(attribute);
 
-                            notify = descriptor.name == "class"
+                            listener = descriptor.name == "class"
                                 ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
                                 : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
                         }
                         else
                         {
-                            notify = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
+                            listener = () => (element as object as Indexer)[descriptor.key] = tryEvaluateExpressionByTraceable(scope, descriptor);
                         }
 
-                        const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+                        const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
-                        notify();
+                        listener();
 
                         subscriptions.push(subscription);
                     }
                     else
                     {
-                        assert(TypeGuard.isMemberExpression(descriptor.expression));
+                        const path = descriptor.observables[0];
 
-                        const target         = tryEvaluateExpression(scope, descriptor.expression.object, descriptor.rawExpression, descriptor.stackTrace) as object;
-                        const targetProperty = TypeGuard.isIdentifier(descriptor.expression.property)
-                            ? descriptor.expression.property.name
-                            : descriptor.expression.property.evaluate(scope) as string;
+                        const right    = getValue(scope, ...path.slice(0, path.length - 1)) as object;
+                        const rightKey = path[path.length - 1];
 
-                        const targetMember = Type.from(target).getMember(targetProperty);
+                        const rightMember = Type.from(right).getMember(rightKey);
 
-                        if (!targetMember || targetMember instanceof FieldInfo && targetMember.readonly)
+                        if (!rightMember || rightMember instanceof FieldInfo && rightMember.readonly)
                         {
-                            const message = targetMember
-                                ? `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" of ${target.constructor.name} is readonly`
-                                : `Binding error in ${descriptor.rawExpression}: Property "${targetProperty}" does not exists on type ${target.constructor.name}`;
+                            const message = rightMember
+                                ? `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" of ${right.constructor.name} is readonly`
+                                : `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" does not exists on type ${right.constructor.name}`;
 
                             throw new TemplateProcessError(message, this.buildStack(descriptor));
                         }
 
-                        subscriptions.push(...DataBind.twoWay(target, targetProperty, element, descriptor.key));
+                        subscriptions.push(...DataBind.twoWay(element, [descriptor.key], scope, path));
                     }
                 }
                 else
                 {
                     const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const notify = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+                    const listener = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
 
-                    const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+                    const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
                     subscriptions.push(subscription);
 
-                    notify();
+                    listener();
                 }
             };
 
@@ -241,10 +229,10 @@ export default class TemplateProcessor
             }
         }
 
-        return subscriptions;
+        return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 
-    private processElementDirectives(scope: object, element: HTMLElement, directives: ICustomDirective[]): IDisposable[]
+    private processElementDirectives(scope: object, element: HTMLElement, directives: ICustomDirective[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
@@ -267,10 +255,10 @@ export default class TemplateProcessor
             }
         }
 
-        return disposables;
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable[]
+    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
@@ -279,7 +267,7 @@ export default class TemplateProcessor
             disposables.push(new EventDirectiveHandler(localScope, element, directive));
         }
 
-        return disposables;
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
     private processTemplateDirectives(data: ITemplateDirectivesData): IDisposable
@@ -333,23 +321,23 @@ export default class TemplateProcessor
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
     }
 
-    private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): ISubscription[]
+    private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): IDisposable
     {
-        const subscriptions: ISubscription[] = [];
+        const subscriptions: Subscription[] = [];
 
         for (const descriptor of descriptors)
         {
             const node = this.lookup[descriptor.path];
 
-            const notify = (): string => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+            const listener = (): string => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
 
-            const subscription = tryObserveByObservable(scope, descriptor, { notify }, true);
+            const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
             subscriptions.push(subscription);
 
-            notify();
+            listener();
         }
 
-        return subscriptions;
+        return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 }

@@ -3,12 +3,12 @@ import { tuple }   from "./generic";
 
 export function camelToText(value: string): string
 {
-    return value.split(/(?=[A-Z])/g).join(" ").toLowerCase();
+    return value.split(/(?=[A-Z0-9])/g).join(" ").toLowerCase();
 }
 
 export function camelToDashed(value: string): string
 {
-    return value.split(/(?=[A-Z])/g).join("-").toLowerCase();
+    return value.split(/(?=[A-Z0-9])/g).join("-").toLowerCase();
 }
 
 export function capture(source: string, start: RegExp, end: RegExp): [string, string, string]

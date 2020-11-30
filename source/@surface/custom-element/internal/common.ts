@@ -1,15 +1,15 @@
-import { Indexer, assert }                 from "@surface/core";
-import { Evaluate, IExpression, IPattern } from "@surface/expression";
-import { IListener, ISubscription }        from "@surface/reactive";
-import DataBind                            from "./data-bind";
-import TemplateEvaluationError             from "./errors/template-evaluation-error";
-import TemplateObservationError            from "./errors/template-observation-error";
-import TemplateParseError                  from "./errors/template-parse-error";
-import IKeyValueObservable                 from "./interfaces/key-value-observable";
-import IKeyValueTraceable                  from "./interfaces/key-value-traceable";
-import IObservable                         from "./interfaces/observable";
-import ITraceable                          from "./interfaces/traceable";
-import { Observables, StackTrace }         from "./types";
+import { Delegate, IDisposable, Indexer, assert } from "@surface/core";
+import { Evaluate, IExpression, IPattern }        from "@surface/expression";
+import { Subscription }                           from "@surface/reactive";
+import DataBind                                   from "./data-bind";
+import TemplateEvaluationError                    from "./errors/template-evaluation-error";
+import TemplateObservationError                   from "./errors/template-observation-error";
+import TemplateParseError                         from "./errors/template-parse-error";
+import IKeyValueObservable                        from "./interfaces/key-value-observable";
+import IKeyValueTraceable                         from "./interfaces/key-value-traceable";
+import IObservable                                from "./interfaces/observable";
+import ITraceable                                 from "./interfaces/traceable";
+import { Observables, StackTrace }                from "./types";
 
 // eslint-disable-next-line object-shorthand
 const wrapper = { "Window": /* istanbul ignore next */ function () { /* */ } }.Window as object as typeof Window;
@@ -131,7 +131,7 @@ export function tryEvaluatePatternByTraceable(scope: object, value: unknown, tra
     return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }
 
-export function tryObserve(scope: object, observables: Observables, listener: IListener, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): ISubscription
+export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): Subscription
 {
     try
     {
@@ -145,17 +145,17 @@ export function tryObserve(scope: object, observables: Observables, listener: IL
     }
 }
 
-export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
 {
     return tryObserve(scope, observable.observables, listener, observable.rawExpression, observable.stackTrace, lazy);
 }
 
-export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: IListener, lazy?: boolean): ISubscription
+export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
 {
     return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
 }
 
-export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
+export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode & Partial<IDisposable>>
 {
     let simbling: ChildNode | null = null;
 

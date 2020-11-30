@@ -1,19 +1,26 @@
-import IListener     from "./interfaces/listener";
-import IObserver     from "./interfaces/observer";
-import ISubscription from "./interfaces/subscription";
+import { Delegate, getValue } from "@surface/core";
+import Subscription           from "./types/subscription";
 
-export default class Observer<TValue = unknown> implements IObserver<TValue>
+export default class Observer<TValue = unknown>
 {
-    private readonly listeners: Set<IListener<TValue>> = new Set();
+    protected readonly path:      string[];
+    protected readonly root:      object;
+    protected readonly listeners: Set<Delegate<[TValue]>> = new Set();
 
-    public subscribe(listerner: IListener<TValue>): ISubscription
+    public constructor(root: object, path: string[])
+    {
+        this.root = root;
+        this.path = path;
+    }
+
+    public subscribe(listerner: Delegate<[TValue]>): Subscription
     {
         this.listeners.add(listerner);
 
         return { unsubscribe: () => this.unsubscribe(listerner) };
     }
 
-    public unsubscribe(listerner: IListener<TValue>): void
+    public unsubscribe(listerner: Delegate<[TValue]>): void
     {
         if (!this.listeners.delete(listerner))
         {
@@ -21,11 +28,16 @@ export default class Observer<TValue = unknown> implements IObserver<TValue>
         }
     }
 
-    public notify(value: TValue): void
+    public notify(): void
     {
-        for (const listerner of this.listeners)
+        if (this.listeners.size > 0)
         {
-            listerner.notify(value);
+            const value = getValue(this.root, ...this.path) as TValue;
+
+            for (const listerner of this.listeners)
+            {
+                listerner(value);
+            }
         }
     }
 }

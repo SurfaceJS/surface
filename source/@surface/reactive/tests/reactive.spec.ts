@@ -1,540 +1,360 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Reactive                                from "..";
-import Metadata                                from "../internal/metadata";
-import Reactor                                 from "../internal/reactor";
+import { computed, notify }                    from "../internal/decorators";
+import Reactive                                from "../internal/reactive";
 
 @suite
 export default class ReactiveSpec
 {
     @test @shouldPass
-    public getReactor(): void
+    public observeProperty(): void
     {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
+        const target = { value: 1 };
 
-        Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x });
+        let receiver = 0;
 
-        assert.equal(Reactive.getReactor({ }), undefined);
-        assert.instanceOf(Reactive.getReactor(emmiter.instance), Reactor);
+        Reactive.from(target, ["value"]).subscribe(x => receiver = x as number);
+
+        target.value = 2;
+
+        assert.equal(target.value, receiver);
+    }
+
+    @test @shouldPass
+    public observePath(): void
+    {
+        const target   = { a: { b: { c: { value: 0 } } } };
+        let   receiver = 0;
+
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => receiver = x as number);
+
+        target.a.b.c.value = 1;
+
+        assert.equal(target.a.b.c.value, receiver);
+
+        const c = target.a.b.c;
+
+        target.a.b.c = { value: 2 };
+
+        c.value = 3;
+
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #1");
+        assert.notEqual(c.value, receiver, "c.value not equal receiver");
+
+        const b = target.a.b;
+
+        target.a.b = { c: { value: 4 } };
+
+        b.c = { value: 5 };
+
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #2");
+        assert.notEqual(b.c.value, receiver, "b.c.value not equal receiver");
+
+        const a = target.a;
+
+        target.a = { b: { c: { value: 6 } } };
+
+        a.b = { c: { value: 7 } };
+
+        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #3");
+        assert.notEqual(a.b.c.value, receiver, "a.b.c.value not equal receiver");
+    }
+
+    @test @shouldPass
+    public observePathOfNonObjectType(): void
+    {
+        const target   = { value: "" };
+        let   receiver = 0;
+
+        Reactive.from(target, ["value", "length"]).subscribe(x => receiver = x as number);
+
+        target.value = "Hello World!!!";
+
+        assert.equal(target.value.length, receiver);
+    }
+
+    @test @shouldPass
+    public reobserve(): void
+    {
+        const target   = { a: { value: 1 } };
+
+        let receiver1 = 0;
+        let receiver2 = 0;
+
+        Reactive.from(target, ["a", "value"]).subscribe(x => receiver1 = x as number);
+        Reactive.from(target, ["a", "value"]).subscribe(x => receiver2 = x as number);
+
+        target.a.value = 2;
+
+        assert.equal(target.a.value, receiver1);
+        assert.equal(target.a.value, receiver2);
+
+        target.a = { value: 1 };
+
+        assert.equal(target.a.value, receiver1);
+        assert.equal(target.a.value, receiver2);
+    }
+
+    @test @shouldPass
+    public reobserveNestedPaths(): void
+    {
+        const target   = { a: { b: { c: { value: 0 } } } };
+
+        let valueReceiver = 0;
+        let aReceiver     = { b: { c: { value: 0 } } };
+        let bReceiver     = { c: { value: 0 } };
+
+        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as typeof aReceiver);
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => valueReceiver = x as number);
+        Reactive.from(target, ["a", "b"]).subscribe(x => bReceiver = x as typeof bReceiver);
+
+        target.a.b = { c: { value: 1 } };
+
+        assert.equal(target.a.b.c.value, valueReceiver);
+        assert.equal(target.a.b, bReceiver);
+
+        target.a = { b: { c: { value: 1 } } };
+
+        assert.equal(target.a.b.c.value, valueReceiver);
+        assert.equal(target.a.b,         bReceiver);
+        assert.equal(target.a,           aReceiver);
+    }
+
+    @test @shouldPass
+    public observeNestedPaths(): void
+    {
+        const target = { a: { b: { c: { value: 0 } } } };
+        const c      = target.a.b.c;
+
+        let abcValueReceiver = 0;
+        let cValueReceiver   = 0;
+
+        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => abcValueReceiver = x as typeof abcValueReceiver);
+        Reactive.from(c, ["value"]).subscribe(x => cValueReceiver = x as typeof cValueReceiver);
+
+        target.a.b.c.value = 1;
+
+        assert.equal(target.a.b.c.value, abcValueReceiver);
+        assert.equal(cValueReceiver, c.value);
+
+        target.a.b.c = { value: 2 };
+
+        c.value = 3;
+
+        assert.equal(target.a.b.c.value, abcValueReceiver);
+        assert.equal(cValueReceiver, c.value);
+        assert.notEqual(target.a.b.c.value, c.value);
+    }
+
+    @test @shouldPass
+    public observeArray(): void
+    {
+        const target = [1, 2];
+
+        let receiver0 = target[0];
+        let receiver1 = target[1];
+        let length    = target.length;
+
+        Reactive.from(target, ["0"]).subscribe(x => receiver0 = x as number);
+        Reactive.from(target, ["1"]).subscribe(x => receiver1 = x as number);
+        Reactive.from(target, ["length"]).subscribe(x => length = x as number);
+
+        target[0] = 3;
+        target[1] = 4;
+
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.unshift(5);
+
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.pop();
+
+        assert.equal(target[0], receiver0);
+        assert.equal(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.pop();
+
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.push(6);
+
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target[1] = 7;
+
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
+
+        target.reverse();
+
+        assert.equal(target[0], receiver0);
+        assert.notEqual(target[1], receiver1);
+        assert.equal(target.length, length);
+    }
+
+    @test @shouldPass
+    public observeArrayNestedPath(): void
+    {
+        const target = [{ value: 1 }];
+
+        let receiver = target[0].value;
+
+        Reactive.from(target, ["0", "value"]).subscribe(x => receiver = x as number);
+
+        assert.equal(target[0].value, receiver);
+
+        target.unshift({ value: 2 });
+
+        assert.equal(target[0].value, receiver);
+
+        target.shift();
+
+        assert.equal(target[0].value, receiver);
+    }
+
+    @test @shouldPass
+    public observeSpreadedRoot(): void
+    {
+        const target = { value: 1 };
+
+        let receiver = target.value;
+
+        Reactive.from(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
+
+        assert.equal(target.value, receiver);
+
+        target.value = 2;
+
+        assert.equal(target.value, receiver);
+
+        const newTarget = { ...target };
+
+        let newReceiver = 0;
+
+        newTarget.value = 3;
+
+        assert.notEqual(newTarget.value, receiver);
+
+        Reactive.from(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
+
+        newTarget.value = 4;
+
+        assert.equal(newTarget.value, newReceiver);
     }
 
     @test @shouldPass
     public notify(): void
     {
-        let notified = false;
+        Reactive.notify({ }); // Coverage
 
-        const emmiter = { instance: { name: "Emmiter",  value: 1 } };
+        const target = { a: 1, b: 1 };
 
-        Reactive.observe(emmiter.instance, "value", { notify: () => notified = true });
+        let aReceiver = 0;
+        let bReceiver = 0;
 
-        Reactive.notify(emmiter.instance, "value");
+        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as number);
+        Reactive.from(target, ["b"]).subscribe(x => bReceiver = x as number);
 
-        assert.isTrue(notified);
+        Reactive.notify(target, ["a"]);
+        Reactive.notify(target, ["c"]); // Coverage
+
+        assert.equal(target.a, aReceiver);
+        assert.notEqual(target.b, bReceiver);
+
+        Reactive.notify(target);
+
+        assert.equal(target.a, aReceiver);
+        assert.equal(target.b, bReceiver);
     }
 
     @test @shouldPass
-    public hasObserver(): void
+    public decoratorComputed(): void
     {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
+        class Target
+        {
+            private a: number = 0;
+            private b: number = 0;
 
-        assert.isFalse(Reactive.hasObserver(emmiter.instance, "value"));
+            @computed(["a"], ["b"])
+            public get sum(): number
+            {
+                return this.a + this.b;
+            }
 
-        Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x });
+            public recalculate(): void
+            {
+                this.a = Math.ceil(Math.random() * 100);
+                this.b = Math.ceil(Math.random() * 100);
+            }
+        }
 
-        assert.isTrue(Reactive.hasObserver(emmiter.instance, "value"));
+        const target = new Target();
+
+        let receiver = 0;
+
+        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
+
+        target.recalculate();
+
+        assert.equal(target.sum, receiver);
     }
 
     @test @shouldPass
-    public observeProperty(): void
+    public decoratorNotify(): void
     {
-        const emmiter   = { instance: { name: "Emmiter",  value: 1 } };
-        const receiverA = { instance: { name: "Receiver A", value: 2 } };
-        const receiverB = { instance: { name: "Receiver B", value: 2 } };
+        class Target
+        {
+            @notify("sum")
+            private a: number = 0;
 
-        Reactive.observe(emmiter.instance, "value", { notify: x => receiverA.instance.value = x });
-        Reactive.observe(emmiter.instance, "value", { notify: x => receiverB.instance.value = x });
+            @notify("sum")
+            private b: number = 0;
 
-        assert.isTrue(emmiter.instance.value == receiverA.instance.value, "#1");
-        assert.isTrue(emmiter.instance.value == receiverB.instance.value, "#1");
+            public get sum(): number
+            {
+                return this.a + this.b;
+            }
 
-        emmiter.instance.value = 5;
+            public recalculate(): void
+            {
+                this.a = Math.ceil(Math.random() * 100);
+                this.b = Math.ceil(Math.random() * 100);
+            }
+        }
 
-        assert.equal(receiverA.instance.value, 5, "#2");
-        assert.equal(receiverB.instance.value, 5, "#2");
+        const target = new Target();
 
-        receiverA.instance.value = 6;
-        receiverB.instance.value = 6;
+        let receiver = 0;
 
-        assert.equal(emmiter.instance.value, 5, "#3");
-    }
+        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
 
-    @test @shouldPass
-    public observePropertyArray(): void
-    {
-        const emmiter  = { instance: { elements: [{ value: 1 }], name: "Emmiter" } };
-        const receiver = { instance: { elements: [{ value: 2 }], name: "Receiver" } };
+        target.recalculate();
 
-        Reactive.observe(emmiter.instance, "elements.0.value", { notify: (x: number) => receiver.instance.elements[0].value = x });
-
-        assert.isTrue(emmiter.instance.elements[0].value == receiver.instance.elements[0].value, "#1");
-
-        emmiter.instance.elements[0].value = 5;
-
-        assert.equal(receiver.instance.elements[0].value, 5, "#2");
-
-        receiver.instance.elements[0].value = 6;
-
-        assert.equal(emmiter.instance.elements[0].value, 5, "#3");
-    }
-
-    @test @shouldPass
-    public observePropertyWithOutterReceiver(): void
-    {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
-
-        const listener = { notify: (x: number) => receiver.instance.value = x };
-
-        const { observer } = Reactive.observe(emmiter, "instance.value");
-
-        observer.subscribe(listener);
-
-        assert.equal(emmiter.instance.value == receiver.instance.value, false, "#1");
-
-        emmiter.instance.value = 5;
-
-        assert.equal(receiver.instance.value, 5, "#2");
-
-        receiver.instance.value = 6;
-
-        assert.equal(emmiter.instance.value, 5, "#3");
-    }
-
-    @test @shouldPass
-    public observePropertyLazySubscription(): void
-    {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
-
-        const { observer } = Reactive.observe(emmiter.instance, "value");
-
-        observer.subscribe({ notify: x => receiver.instance.value = x });
-
-        assert.equal(emmiter.instance.value == receiver.instance.value, false, "#1");
-
-        observer.notify(emmiter.instance.value);
-
-        assert.isTrue(emmiter.instance.value == receiver.instance.value, "#2");
-
-        emmiter.instance.value = 5;
-
-        assert.equal(receiver.instance.value, 5, "#3");
-
-        receiver.instance.value = 6;
-
-        assert.equal(emmiter.instance.value, 5, "#4");
-    }
-
-    @test @shouldPass
-    public observePropertyLazySubscriptionWithListener(): void
-    {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
-
-        const { observer } = Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x }, true);
-
-        assert.equal(emmiter.instance.value == receiver.instance.value, false, "#1");
-
-        observer.notify(emmiter.instance.value);
-
-        assert.isTrue(emmiter.instance.value == receiver.instance.value, "#2");
-
-        emmiter.instance.value = 5;
-
-        assert.equal(receiver.instance.value, 5, "#3");
-
-        receiver.instance.value = 6;
-
-        assert.equal(emmiter.instance.value, 5, "#4");
-    }
-
-    @test @shouldPass
-    public observeStringPath(): void
-    {
-        const emmiter  = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const receiver = { instance: { deep: { path: { value: 1 } }, name: "Receiver A" } };
-
-        Reactive.observe(emmiter.instance, "deep.path.value", { notify: (x: number) => receiver.instance.deep.path.value = x });
-
-        assert.isTrue(emmiter.instance.deep.path.value == receiver.instance.deep.path.value, "#1");
-
-        emmiter.instance.deep.path.value = 5;
-
-        assert.equal(receiver.instance.deep.path.value, 5, "#2");
-
-        receiver.instance.deep.path.value = 6;
-
-        assert.equal(emmiter.instance.deep.path.value, 5, "#3");
-    }
-
-    @test @shouldPass
-    public observeStringPathLazy(): void
-    {
-        const emmiter  = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const receiver = { instance: { deep: { path: { value: 2 } }, name: "Receiver A" } };
-
-        Reactive.observe(emmiter.instance, "deep.path.value", { notify: (x: number) => receiver.instance.deep.path.value = x }, true);
-
-        assert.isFalse(emmiter.instance.deep.path.value == receiver.instance.deep.path.value, "#1");
-
-        emmiter.instance.deep.path.value = 5;
-
-        assert.equal(receiver.instance.deep.path.value, 5, "#2");
-
-        receiver.instance.deep.path.value = 6;
-
-        assert.equal(emmiter.instance.deep.path.value, 5, "#3");
-    }
-
-    @test @shouldPass
-    public observeArrayPath(): void
-    {
-        const emmiter  = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const receiver = { instance: { deep: { path: { value: 1 } }, name: "Receiver A" } };
-
-        Reactive.observe(emmiter.instance, "deep.path.value".split("."), { notify: (x: number) => receiver.instance.deep.path.value = x });
-
-        assert.isTrue(emmiter.instance.deep.path.value == receiver.instance.deep.path.value, "#1");
-
-        emmiter.instance.deep.path.value = 5;
-
-        assert.equal(receiver.instance.deep.path.value, 5, "#2");
-
-        receiver.instance.deep.path.value = 6;
-
-        assert.equal(emmiter.instance.deep.path.value, 5, "#3");
-    }
-
-    @test @shouldPass
-    public observeTwoWayStringPath(): void
-    {
-        const emmiter  = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const receiver = { instance: { deep: { path: { value: 1 } }, name: "Receiver A" } };
-
-        Reactive.observeTwoWay(emmiter.instance, "deep.path.value", receiver.instance, "deep.path.value");
-
-        assert.isTrue(emmiter.instance.deep.path.value == receiver.instance.deep.path.value, "#1");
-
-        emmiter.instance.deep.path.value = 5;
-
-        assert.equal(receiver.instance.deep.path.value, 5, "#2");
-
-        receiver.instance.deep.path.value = 6;
-
-        assert.equal(emmiter.instance.deep.path.value, 6, "#3");
-    }
-
-    @test @shouldPass
-    public observeTwoWayArrayPath(): void
-    {
-        const emmiter  = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const receiver = { instance: { deep: { path: { value: 1 } }, name: "Receiver A" } };
-
-        Reactive.observeTwoWay(emmiter.instance, "deep.path.value".split("."), receiver.instance, "deep.path.value".split("."));
-
-        assert.isTrue(emmiter.instance.deep.path.value == receiver.instance.deep.path.value, "#1");
-
-        emmiter.instance.deep.path.value = 5;
-
-        assert.equal(receiver.instance.deep.path.value, 5, "#2");
-
-        receiver.instance.deep.path.value = 6;
-
-        assert.equal(emmiter.instance.deep.path.value, 6, "#3");
-    }
-
-    @test @shouldPass
-    // eslint-disable-next-line max-statements
-    public observePathEdgeCase(): void
-    {
-        const emmiterA = { instance: { deep: { path: { value: 1 } }, name: "Emmiter A" } };
-        const emmiterB = { instance: { deep: { path: { value: 2 } }, name: "Emmiter B" } };
-
-        const receiverA1 = { instance: { deep: { path: { value: 1 } }, name: "Receiver A" } };
-        const receiverA2 = { instance: { deep: { path: { value: 3 } }, name: "Receiver C" } };
-        const receiverB1 = { instance: { deep: { path: { value: 2 } }, name: "Receiver B" } };
-        const receiverB2 = { instance: { deep: { path: { value: 4 } }, name: "Receiver D" } };
-
-        Reactive.observe(emmiterA, "instance.deep.path.value", { notify: x => receiverA1.instance.deep.path.value = x as number });
-        Reactive.observe(emmiterA, "instance.deep",            { notify: x => receiverA2.instance.deep = x as typeof receiverA2["instance"]["deep"] });
-        Reactive.observe(emmiterB, "instance.deep.path.value", { notify: x => receiverB1.instance.deep.path.value = x as number });
-        Reactive.observe(emmiterB, "instance.deep",            { notify: x => receiverB2.instance.deep = x as typeof receiverA2["instance"]["deep"] });
-
-        assert.equal(receiverA1.instance.deep.path.value, 1, "#01");
-        assert.equal(receiverA2.instance.deep.path.value, 1, "#02");
-        assert.equal(receiverA2.instance.deep, emmiterA.instance.deep, "#02");
-
-        assert.equal(receiverB1.instance.deep.path.value, 2, "#03");
-        assert.equal(receiverB2.instance.deep.path.value, 2, "#04");
-        assert.equal(receiverB2.instance.deep, emmiterB.instance.deep, "#04");
-
-        emmiterA.instance.deep.path.value = 5;
-
-        assert.equal(receiverA1.instance.deep.path.value, 5, "#05");
-
-        receiverA1.instance.deep.path.value = 6;
-
-        assert.equal(emmiterA.instance.deep.path.value, 5, "#06");
-
-        receiverA2.instance.deep = { path: { value: 6 } };
-
-        assert.equal(emmiterA.instance.deep.path.value, 5, "#07");
-
-        emmiterA.instance = { deep: { path: { value: 10 } }, name: "new A" };
-
-        assert.equal(receiverA1.instance.deep.path.value, 10, "#08");
-        assert.equal(receiverA2.instance.deep, emmiterA.instance.deep, "#09");
-
-        emmiterA.instance.deep.path.value = 15;
-
-        assert.equal(receiverA1.instance.deep.path.value, 15, "#10");
-        assert.equal(receiverA2.instance.deep.path.value, 15, "#11");
-
-        emmiterB.instance = emmiterA.instance;
-
-        emmiterB.instance.name = "A to C";
-
-        assert.equal(receiverA1.instance.deep.path.value, 15, "#11");
-        assert.equal(receiverA2.instance.deep, emmiterB.instance.deep, "#12");
-        assert.equal(receiverB1.instance.deep.path.value, 15, "#13");
-        assert.equal(receiverB2.instance.deep, emmiterB.instance.deep, "#14");
-
-        emmiterB.instance = { deep: { path: { value: 20 } }, name: "new C" };
-
-        assert.equal(receiverA1.instance.deep.path.value, 15, "#15");
-        assert.equal(receiverA2.instance.deep, emmiterA.instance.deep, "#16");
-        assert.equal(receiverB1.instance.deep.path.value, 20, "#17");
-        assert.equal(receiverB2.instance.deep, emmiterB.instance.deep, "#18");
-
-        emmiterA.instance.deep.path.value = 30;
-        emmiterB.instance.deep.path.value = 40;
-
-        assert.equal(receiverA1.instance.deep.path.value, 30, "#19");
-        assert.equal(receiverA2.instance.deep.path.value, 30, "#20");
-        assert.equal(receiverB1.instance.deep.path.value, 40, "#21");
-        assert.equal(receiverB2.instance.deep.path.value, 40, "#22");
-
-        (emmiterA.instance as unknown) = null;
-
-        assert.equal(receiverA1.instance.deep.path.value, undefined, "#23");
-        assert.equal(receiverA2.instance.deep, undefined, "#24");
-
-        emmiterA.instance = { deep: { path: { value: 10 } }, name: "new A old null" };
-
-        assert.equal(receiverA1.instance.deep.path.value, 10, "#25");
-        assert.equal(receiverA2.instance.deep, emmiterA.instance.deep, "#26");
-    }
-
-    @test @shouldPass
-    public observeTwoWayEdgeCase(): void
-    {
-        const left  = { instance: { deep: { path: { id: 1, value: 1 } }, name: "left.instance.deep.path.value: 1" } };
-        const right = { instance: { deep: { path: { id: 2, value: 2 } }, name: "right.instance.deep.path.value: 2" } };
-
-        Metadata.from(left);
-        Metadata.from(right);
-
-        Reactive.observeTwoWay(left, "instance.deep.path.value", right.instance.deep, "path.value".split("."));
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#01 - left.instance.deep.path.value should be equal to right.instance.deep.path.value");
-
-        left.instance.deep.path.value = 5;
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#03 - left.instance.deep.path.value changed. right.instance.deep.path.value should have same value");
-
-        right.instance.deep.path.value = 6;
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#04 - right.instance.deep.path.value changed. left.instance.deep.path.value should have same value");
-
-        left.instance = { deep: { path: { id: 1, value: 10 } }, name: "left[new instance].deep.path.value: 10" };
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#05 - right.instance.deep.path.value should be equal left[new instance].deep.path.value");
-
-        right.instance.deep.path = { id: 2, value: 15 };
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#06 - left.instance.deep.path.value should be equal to right.instance.deep[new path].value");
-
-        (left.instance as unknown) = null;
-
-        assert.equal(left.instance, null, "#07");
-        assert.equal(right.instance.deep.path.value, undefined, "#08 - right.instance.deep.path.value should be undefined");
-
-        left.instance = { deep: { path: { id: 1, value: 30 } }, name: "left[old null, new instance].deep.path.value: 30" };
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#09 - right.instance.deep.path.value should be equal to left[old null, new instance].deep.path.value");
-    }
-
-    @test @shouldPass
-    public observeCrossTwoWay(): void
-    {
-        const leftA  = { instance: { deep: { path: { id: 1, value: 1 } }, name: "leftA.instance.deep.path.value: 1" } };
-        const rightA = { instance: { deep: { path: { id: 2, value: 2 } }, name: "rightA.instance.deep.path.value: 2" } };
-        const leftB  = { instance: { deep: { path: { id: 3, value: 3 } }, name: "leftB.instance.deep.path.value: 3" } };
-        const rightB = { instance: { deep: { path: { id: 4, value: 4 } }, name: "rightB.instance.deep.path.value: 4" } };
-
-        Reactive.observeTwoWay(leftA, "instance.deep.path.value", rightA.instance.deep, "path.value");
-        Reactive.observeTwoWay(leftB, "instance.deep.path.value", rightB.instance.deep, "path.value");
-
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#01 - leftA.instance.deep.path.value should be equal to rightA.instance.deep.path.value");
-        assert.isTrue(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#02 - leftB.instance.deep.path.value should be equal to rightB.instance.deep.path.value");
-
-        leftA.instance.deep.path.value = 5;
-
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#03 - leftA.instance.deep.path.value changed. rightA.instance.deep.path.value should have same value");
-
-        rightA.instance.deep.path.value = 6;
-
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#04 - rightA.instance.deep.path.value changed. leftA.instance.deep.path.value should have same value");
-
-        leftB.instance.deep.path.value = 7;
-
-        assert.isTrue(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#05 - leftB.instance.deep.path.value changed. rightB.instance.deep.path.value should have same value");
-
-        rightB.instance.deep.path.value = 8;
-
-        assert.isTrue(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#06 - rightB.instance.deep.path.value changed. leftB.instance.deep.path.value should have same value");
-
-        leftB.instance = leftA.instance;
-
-        // eslint-disable-next-line max-len
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value && leftA.instance.deep.path.value == leftB.instance.deep.path.value && leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#07 - Merged instance. Left A, Right A, Left B and Right B should have same value");
-
-        leftA.instance = { deep: { path: { id: 1, value: 10 } }, name: "leftA[new instance].deep.path.value: 10" };
-
-        assert.equal(leftA.instance.deep.path.value, 10, "#07");
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#08 - rightA.instance.deep.path.value should be equal leftA[new instance].deep.path.value");
-
-        assert.equal(leftB.instance.deep.path.value, 6,  "#10 - leftB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value");
-        assert.equal(rightB.instance.deep.path.value, 6, "#11 - rightB.instance.deep.path.value should not be affected leftA[new instance].deep.path.value");
-
-        rightA.instance.deep.path = { id: 2, value: 15 };
-        leftB.instance = { deep: { path: { id: 4, value: 20 } }, name: "leftB[new instance].deep.path.value: 20" };
-
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#12 - leftA.instance.deep.path.value should be equal to rightA.instance.deep[new path].value");
-        assert.isTrue(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#13 - rightB.instance.deep.path.value should be equal leftB[new instance].deep.path.value");
-
-        (leftA.instance as unknown) = null;
-
-        assert.equal(leftA.instance, null, "#14");
-        assert.equal(rightA.instance.deep.path.value, undefined, "#15 - rightA.instance.deep.path.value should be undefined");
-        assert.equal(leftB.instance.deep.path.value, 20,  "#16 - leftB.instance.deep.path.value should not be affected by leftA[instance = null]");
-        assert.equal(rightB.instance.deep.path.value, 20, "#17 - rightB.instance.deep.path.value should not be affected by leftA[instance = null]");
-
-        leftA.instance = { deep: { path: { id: 1, value: 30 } }, name: "leftA[old null, new instance].deep.path.value: 30" };
-        rightB.instance.deep.path = { id: 4, value: 40 };
-
-        assert.isTrue(leftA.instance.deep.path.value == rightA.instance.deep.path.value, "#18 - rightA.instance.deep.path.value should be equal to leftA[old null, new instance].deep.path.value");
-        assert.isTrue(leftB.instance.deep.path.value == rightB.instance.deep.path.value, "#19 - leftB.instance.deep.path.value should be equal to rightB.instance.deep[new path].value");
-    }
-
-    @test @shouldPass
-    public observeUnsubscribe(): void
-    {
-        const emmiter  = { instance: { name: "Emmiter",  value: 1 } };
-        const receiver = { instance: { name: "Receiver", value: 2 } };
-
-        const { subscription } = Reactive.observe(emmiter.instance, "value", { notify: x => receiver.instance.value = x });
-
-        assert.isTrue(emmiter.instance.value == receiver.instance.value, "#1");
-
-        emmiter.instance.value = 5;
-
-        assert.equal(receiver.instance.value, 5, "#2");
-
-        receiver.instance.value = 6;
-
-        assert.equal(emmiter.instance.value, 5, "#3");
-
-        subscription.unsubscribe();
-
-        emmiter.instance.value = 10;
-
-        assert.equal(receiver.instance.value, 6, "#2");
-    }
-
-    @test @shouldPass
-    public observeUnsubscribeTwoWay(): void
-    {
-        const left  = { instance: { deep: { path: { id: 1, value: 1 } } }, name: "left.instance.deep.path.value: 1" };
-        const right = { instance: { deep: { path: { id: 2, value: 2 } } }, name: "right.instance.deep.path.value: 2" };
-
-        const [leftSubscription, rightSubscription] = Reactive.observeTwoWay(left, "instance.deep.path.value", right.instance.deep, "path.value");
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#01 - left.instance.deep.path.value should be equal to right.instance.deep.path.value");
-
-        left.instance.deep.path.value = 5;
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#03 - left.instance.deep.path.value changed. right.instance.deep.path.value should have same value");
-
-        right.instance.deep.path.value = 6;
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#04 - right.instance.deep.path.value changed. left.instance.deep.path.value should have same value");
-
-        rightSubscription.unsubscribe();
-
-        left.instance.deep.path.value = 7;
-
-        assert.equal(left.instance.deep.path.value == right.instance.deep.path.value, false, "#05 - left.instance.deep.path.value changed. right.instance.deep.path.value should not be affected");
-
-        right.instance.deep.path.value = 8;
-
-        assert.isTrue(left.instance.deep.path.value == right.instance.deep.path.value, "#06 - right.instance.deep.path.value changed. left.instance.deep.path.value should have same value");
-
-        leftSubscription.unsubscribe();
-
-        right.instance.deep.path.value = 9;
-
-        assert.equal(left.instance.deep.path.value == right.instance.deep.path.value, false, "#05 - right.instance.deep.path.value changed. left.instance.deep.path.value should not be affected");
-    }
-
-    @test @shouldPass
-    public dispose(): void
-    {
-        const left  = { a: { value: 1 } };
-        const right = { a: { value: 1 } };
-
-        Reactive.observeTwoWay(left, ["a", "value"], right, ["a", "value"]);
-
-        left.a.value = 2;
-
-        assert.equal(left.a.value, right.a.value);
-
-        // Coverage
-        Reactive.dispose({ });
-
-        // Coverage
-        Metadata.from(left).disposables.push({ dispose: () => undefined });
-
-        Reactive.dispose(left);
-
-        left.a.value = 1;
-
-        assert.notEqual(left.a.value, right.a.value);
+        assert.equal(target.sum, receiver);
     }
 
     @test @shouldFail
-    public observeInvalidPath(): void
+    public observeStrictPath(): void
     {
-        const emmiter = { instance: { deep: { path: { id: 1, value: 1 } }, name: "left.instance.deep.path.value: 1" } };
+        const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
 
-        assert.throws(() => Reactive.observe(emmiter, "instance.deep1.path.value", { notify: () => null }));
-    }
+        assert.throws(() => Reactive.from(target, ["a", "b", "c", "value"]));
 
-    @test @shouldFail
-    public notifyNotReactiveTarget(): void
-    {
-        assert.throws(() => Reactive.notify({ }, "value"), "Target is not reactive");
+        target.a = { b: { c: { value: 1 } } };
+
+        Reactive.from(target, ["a", "b", "c", "value"]);
+
+        assert.throws(() => target.a = { });
     }
 }

@@ -1,4 +1,6 @@
-export default interface ICustomlement extends HTMLElement
+import { IDisposable } from "@surface/core";
+
+export default interface ICustomlement extends HTMLElement, IDisposable
 {
     shadowRoot: ShadowRoot;
     adoptedCallback?(): void;

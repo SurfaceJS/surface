@@ -1,9 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { shouldPass, suite, test }   from "@surface/test-suite";
-import { assert }                    from "chai";
-import { processTemplate, whenDone } from "../internal/processors";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                                         from "chai";
+import { processTemplate }                                from "../internal/processors";
+import { scheduler }                                      from "../internal/singletons";
 
 @suite
 export default class ProcessorsSpec
@@ -27,7 +28,7 @@ export default class ProcessorsSpec
 
         const [content] = processTemplate("<span #if='host.visible'>Hello {host.message} !!!</span>", scope);
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -35,14 +36,14 @@ export default class ProcessorsSpec
 
         scope.host.visible = false;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "#close");
 
         scope.host.visible = true;
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -61,7 +62,7 @@ export default class ProcessorsSpec
 
         scope.items = [1, 2, 3];
 
-        await whenDone();
+        await scheduler.whenDone();
 
         assert.equal(content.childNodes[0].textContent, "#open");
         assert.equal(content.childNodes[1].textContent, "Item: 1");
@@ -75,7 +76,7 @@ export default class ProcessorsSpec
     }
 
     @test @shouldPass
-    public dispose(): void
+    public async dispose(): Promise<void>
     {
         const scope = { host: { message: "World" } };
 
@@ -85,11 +86,15 @@ export default class ProcessorsSpec
 
         scope.host.message = "Web";
 
+        await scheduler.whenDone();
+
         assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
 
         disposeable.dispose();
 
         scope.host.message = "World";
+
+        await scheduler.whenDone();
 
         assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
     }

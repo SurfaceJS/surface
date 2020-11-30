@@ -388,7 +388,7 @@ export default class TemplateParser
                     throwTemplateParseError(`Two way data bind cannot be applied to dynamic properties: "${attribute.value}"`, this.stackTrace);
                 }
 
-                const observables = !isTwoWay ? ObserverVisitor.observe(expression) : [];
+                const observables = ObserverVisitor.observe(expression);
 
                 if (isInterpolation)
                 {
@@ -547,7 +547,7 @@ export default class TemplateParser
             const observables    = ObserverVisitor.observe(expression);
             const descriptor     = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const injectionDescriptor: IPlaceholderDirective =
+            const placeholderDirective: IPlaceholderDirective =
             {
                 descriptor,
                 expression,
@@ -560,7 +560,7 @@ export default class TemplateParser
                 stackTrace,
             };
 
-            this.templateDescriptor.directives.placeholders.push(injectionDescriptor);
+            this.templateDescriptor.directives.placeholders.push(placeholderDirective);
 
             this.saveLookup();
         }

@@ -1,6 +1,6 @@
 import { CancellationTokenSource, IDisposable, Indexer, assert } from "@surface/core";
 import { TypeGuard }                                             from "@surface/expression";
-import { ISubscription }                                         from "@surface/reactive";
+import { Subscription }         from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -11,24 +11,25 @@ import
 } from "../../common";
 import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
-import ParallelWorker           from "../../parallel-worker";
+import { scheduler }            from "../../singletons";
 import { Injection }            from "../../types";
 import TemplateBlock            from "../template-block";
 import TemplateDirectiveHandler from ".";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly directive:       IPlaceholderDirective;
-    private readonly keySubscription: ISubscription;
-    private readonly metadata:        TemplateMetadata;
-    private readonly template:        HTMLTemplateElement;
-    private readonly templateBlock:   TemplateBlock = new TemplateBlock();
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly directive:               IPlaceholderDirective;
+    private readonly keySubscription:         Subscription;
+    private readonly metadata:                TemplateMetadata;
+    private readonly template:                HTMLTemplateElement;
+    private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
 
-    private currentDisposable:       IDisposable | null   = null;
-    private disposed:                boolean              = false;
-    private key:                     string               = "";
-    private subscription:            ISubscription | null = null;
-    private cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private currentDisposable:                    IDisposable | null      = null;
+    private disposed:                             boolean                 = false;
+    private key:                                  string                  = "";
+    private lazyInjectionCancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private subscription:                         Subscription | null     = null;
 
     private injection?: Injection;
 
@@ -46,7 +47,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.templateBlock.insertAt(parent, template);
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, { notify: this.onKeyChange.bind(this) }, true);
+        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, this.onKeyChange.bind(this), true);
 
         this.onKeyChange();
     }
@@ -60,15 +61,14 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private applyLazyInjection(): void
     {
-        this.cancellationTokenSource.dispose();
-        this.cancellationTokenSource = new CancellationTokenSource();
+        this.lazyInjectionCancellationTokenSource = new CancellationTokenSource();
 
-        ParallelWorker.run(() => !this.cancellationTokenSource.token.canceled && this.applyInjection(), "low");
+        void scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
     }
 
     private inject(injection?: Injection): void
     {
-        this.cancellationTokenSource.cancel();
+        this.lazyInjectionCancellationTokenSource.cancel();
 
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
@@ -80,11 +80,11 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
-        const notify = (): void => ParallelWorker.run(task);
+        const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(this.scope, this.directive, { notify }, true);
+        this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
 
-        notify();
+        listener();
     }
 
     private onKeyChange(): void
@@ -112,11 +112,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private task(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
 
         this.templateBlock.clear();
@@ -140,11 +135,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private defaultTask(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
 
         this.templateBlock.clear();
@@ -160,7 +150,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     {
         if (!this.disposed)
         {
-            this.cancellationTokenSource.dispose();
+            this.cancellationTokenSource.cancel();
             this.currentDisposable?.dispose();
 
             this.keySubscription.unsubscribe();

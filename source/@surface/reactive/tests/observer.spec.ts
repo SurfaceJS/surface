@@ -9,12 +9,15 @@ export default class ObserverSpec
     @test @shouldPass
     public notify(): void
     {
+        const target = { value: 1 };
+
         let value = 0;
-        const observer = new Observer<number>();
 
-        observer.subscribe({ notify: x => value = x });
+        const observer = new Observer<number>(target, ["value"]);
 
-        observer.notify(1);
+        observer.subscribe(x => value = x);
+
+        observer.notify();
 
         assert.equal(value, 1);
     }
@@ -22,20 +25,25 @@ export default class ObserverSpec
     @test @shouldFail
     public unsubscribe(): void
     {
-        let value = 0;
-        const observer = new Observer<number>();
+        const target = { value: 1 };
 
-        const listener = { notify: (x: number) => value = x };
+        let value = 0;
+
+        const observer = new Observer<number>(target, ["value"]);
+
+        const listener = (x: number): number => value = x;
 
         observer.subscribe(listener);
 
-        observer.notify(1);
+        observer.notify();
 
         assert.equal(value, 1);
 
         observer.unsubscribe(listener);
 
-        observer.notify(2);
+        target.value = 2;
+
+        observer.notify();
 
         assert.equal(value, 1);
     }
@@ -43,6 +51,6 @@ export default class ObserverSpec
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        assert.throws(() => new Observer().unsubscribe({ notify: () => undefined }), "Listerner not subscribed");
+        assert.throws(() => new Observer({ }, []).unsubscribe(() => void 0), "Listerner not subscribed");
     }
 }

@@ -1,8 +1,8 @@
-import { IDisposable, assert }                           from "@surface/core";
-import { ISubscription }                                 from "@surface/reactive";
+import { CancellationTokenSource, IDisposable, assert }  from "@surface/core";
+import { Subscription }                                  from "@surface/reactive";
 import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
-import ParallelWorker                                    from "../../parallel-worker";
+import { scheduler }                                     from "../../singletons";
 import TemplateBlock                                     from "../template-block";
 import TemplateDirectiveHandler                          from ".";
 
@@ -14,9 +14,10 @@ type Choice =
 
 export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 {
-    private readonly choices:       Choice[]        = [];
-    private readonly subscriptions: ISubscription[] = [];
-    private readonly templateBlock: TemplateBlock   = new TemplateBlock();
+    private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly choices:                 Choice[]                = [];
+    private readonly subscriptions:           Subscription[]          = [];
+    private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
 
     private currentDisposable: IDisposable | null = null;
     private disposed: boolean                     = false;
@@ -31,12 +32,10 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const notify = (): void => ParallelWorker.run(this.task.bind(this));
+        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
         for (let index = 0; index < branches.length; index++)
         {
-            const listener = { notify };
-
             const branche  = branches[index];
             const template = templates[index];
 
@@ -47,16 +46,11 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             template.remove();
         }
 
-        notify();
+        listener();
     }
 
     private task(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
 
@@ -81,6 +75,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     {
         if (!this.disposed)
         {
+            this.cancellationTokenSource.cancel();
             this.currentDisposable?.dispose();
 
             this.subscriptions.forEach(x => x.unsubscribe());

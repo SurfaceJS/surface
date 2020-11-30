@@ -1,34 +1,42 @@
-import { IDisposable, Indexer } from "@surface/core";
-import { STATIC_METADATA }      from "../symbols";
+import { Indexer }         from "@surface/core";
+import ITemplateDescriptor from "../interfaces/template-descriptor";
+import { STATIC_METADATA } from "../symbols";
 
 export default class StaticMetadata
 {
-    public conversionHandlers: Indexer<(target: Indexer, value: string) => void>     = { };
+    public converters:         Indexer<(target: Indexer, value: string) => void>     = { };
+    public shadowRootInit:     ShadowRootInit                                        = { mode: "open" };
     public observedAttributes: string[]                                              = [];
-    public postConstruct:      (<T extends HTMLElement>(target: T) => IDisposable)[] = [];
     public styles:             CSSStyleSheet[]                                       = [];
 
-    public template?: HTMLTemplateElement;
+    public template!:   HTMLTemplateElement;
+    public descriptor!: ITemplateDescriptor;
 
-    public static from(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata
+    public static from(target: Function): StaticMetadata
     {
-        return target[STATIC_METADATA] = !target.hasOwnProperty(STATIC_METADATA) && !!target[STATIC_METADATA]
-            ? target[STATIC_METADATA]!.clone()
-            : target[STATIC_METADATA] ?? new StaticMetadata();
+        if (!Reflect.has(target, STATIC_METADATA))
+        {
+            Reflect.defineProperty(target, STATIC_METADATA, { value: new StaticMetadata() });
+        }
+        else if (!target.hasOwnProperty(STATIC_METADATA))
+        {
+            return (Reflect.get(target, STATIC_METADATA) as StaticMetadata).clone();
+        }
+
+        return Reflect.get(target, STATIC_METADATA) as StaticMetadata;
     }
 
     public static of(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata | undefined
     {
-        return target[STATIC_METADATA];
+        return Reflect.get(target, STATIC_METADATA);
     }
 
     public clone(): StaticMetadata
     {
         const clone = new StaticMetadata();
 
-        clone.conversionHandlers = { ...this.conversionHandlers };
+        clone.converters         = { ...this.converters };
         clone.observedAttributes = [...this.observedAttributes];
-        clone.postConstruct      = [...this.postConstruct];
         clone.styles             = [...this.styles];
 
         return clone;

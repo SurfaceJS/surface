@@ -3,17 +3,38 @@ import { METADATA }    from "../symbols";
 
 export default class Metadata
 {
-    public disposables: IDisposable[]   = [];
-    public hasListener: boolean         = false;
+    private disposed: boolean = false;
+
+    public readonly disposables: Set<IDisposable> = new Set();
+
+    public hasListener:         boolean = false;
     public reflectingAttribute: boolean = false;
 
-    public static from(target: object & { [METADATA]?: Metadata }): Metadata
+    public host?: Node;
+
+    public static from(target: object): Metadata
     {
-        return target[METADATA] = target[METADATA] ?? new Metadata();
+        if (!Reflect.has(target, METADATA))
+        {
+            Reflect.defineProperty(target, METADATA, { value: new Metadata() });
+        }
+
+        return Reflect.get(target, METADATA);
     }
 
-    public static of(target: object & { [METADATA]?: Metadata }): Metadata | undefined
+    public static of(target: object): Metadata | undefined
     {
-        return target[METADATA];
+        return Reflect.get(target, METADATA);
+    }
+
+    public dispose(): void
+    {
+        if (!this.disposed)
+        {
+            this.disposed = true;
+
+            this.disposables.forEach(x => x.dispose());
+            this.disposables.clear();
+        }
     }
 }

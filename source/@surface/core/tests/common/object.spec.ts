@@ -9,7 +9,6 @@ import
     objectFactory,
     pathfy,
     proxyFrom,
-    structuralEqual,
 } from "../../internal/common/object";
 import { Indexer } from "../../internal/types";
 
@@ -257,18 +256,5 @@ export default class CommonObjectSpec
         assert.notEqual(descriptors.e, undefined);
         assert.notEqual(descriptors.f, undefined);
         assert.notEqual(descriptors.g, undefined);
-    }
-
-    @test @shouldPass
-    public structuralEqual(): void
-    {
-        assert.equal(structuralEqual(1, 1),                                                 true,  "scenario 1");
-        assert.equal(structuralEqual([1, 2, 3], [1, 2, 3]),                                 true,  "scenario 2");
-        assert.equal(structuralEqual({ a: 1 }, { a: 1 }),                                   true,  "scenario 3");
-        assert.equal(structuralEqual({ b: 1 }, { a: 1 }),                                   false, "scenario 4");
-        assert.equal(structuralEqual({ a: 1, b: 2 }, { a: 1, b: 2 }),                       true,  "scenario 5");
-        assert.equal(structuralEqual({ a: 1, b: [1, 2] }, { a: 1, b: [1, 2] }),             true,  "scenario 6");
-        assert.equal(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: false } }), true,  "scenario 7");
-        assert.equal(structuralEqual({ a: 1, b: { c: false } }, { a: 1, b: { c: true } }),  false, "scenario 8");
     }
 }

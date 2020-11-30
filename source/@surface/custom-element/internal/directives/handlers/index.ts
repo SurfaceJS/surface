@@ -1,5 +1,5 @@
-import { IDisposable }   from "@surface/core";
-import { ISubscription } from "@surface/reactive";
+import { IDisposable }  from "@surface/core";
+import { Subscription } from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -14,8 +14,8 @@ export default abstract class DirectiveHandler implements IDisposable
     protected readonly directive:       ICustomDirective;
     protected readonly element:         HTMLElement;
     protected readonly scope:           object;
-    protected readonly subscription:    ISubscription;
-    protected readonly keySubscription: ISubscription;
+    protected readonly subscription:    Subscription;
+    protected readonly keySubscription: Subscription;
 
     protected key!: string;
     protected value: unknown;
@@ -28,8 +28,8 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.onBeforeBind?.();
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, { notify: this.keyNotify.bind(this) }, true);
-        this.subscription    = tryObserveByObservable(scope, directive,    { notify: this.valueNotify.bind(this) }, true);
+        this.keySubscription = tryObserveKeyByObservable(scope, directive, this.keyNotify.bind(this), true);
+        this.subscription    = tryObserveByObservable(scope, directive,    this.valueNotify.bind(this), true);
 
         this.keyNotify();
         this.valueNotify();

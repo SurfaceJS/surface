@@ -70,17 +70,13 @@ export default class ViewRouter
         if (!outlet)
         {
             outlet = parent.shadowRoot!.querySelector<HTMLElement>(key == "default" ? `${outletTag}:not([name])` : `${outletTag}[name=${key}]`);
-
-            // istanbul ignore else
-            if (outlet)
-            {
-                outlets.set(key, outlet);
-            }
         }
 
         // istanbul ignore else
         if (outlet)
         {
+            outlets.set(key, outlet);
+
             element.onEnter?.(to, from);
 
             const oldElement = outlet.firstElementChild as IRouteableElement | null;
@@ -88,6 +84,8 @@ export default class ViewRouter
             if (oldElement)
             {
                 oldElement.onLeave?.(to, from);
+
+                oldElement.dispose?.();
 
                 outlet.replaceChild(element, oldElement);
             }
@@ -97,6 +95,10 @@ export default class ViewRouter
             }
 
             this.connectedElements.push(element);
+        }
+        else
+        {
+            throw new Error(`Cannot find outlet ${key == "default" ? `<${outletTag}>` : `<${outletTag} name="${key}">`}`);
         }
     }
 
@@ -192,7 +194,7 @@ export default class ViewRouter
 
     private disconnectElements(): void
     {
-        this.connectedElements.forEach(x => x.remove());
+        this.connectedElements.forEach(x => (x.dispose?.(), x.remove()));
 
         this.current = undefined;
     }
@@ -210,6 +212,8 @@ export default class ViewRouter
                 if (typeGuard<IRouteableElement>(instance, !!instance))
                 {
                     instance.onLeave?.(to, from);
+
+                    instance.dispose?.();
 
                     instance.remove();
                 }

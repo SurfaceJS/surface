@@ -146,7 +146,7 @@ export default class Mock<T extends object>
     {
         const setup = this.setup(CALL);
 
-        return setup.call(...args);
+        return setup.call(...args) as object as IReturnsSetup<Overload<Cast<T, Callable>, TArgs>>;
     }
 
     public clear(): void
@@ -155,12 +155,12 @@ export default class Mock<T extends object>
     }
 
     public new(...args: ConstructorParameters<Cast<T, Newable>>): IReturnsInstanceSetup<Cast<T, Newable>>;
-    public new<TArgs extends ConstructorParameterOverloads<Cast<T, Newable>>>(...args: TArgs): IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>;
-    public new<TOverload extends ConstructorOverload<Cast<T, Newable>, ParameterOverloads<Cast<T, Callable>>>>(...args: ConstructorParameters<TOverload>): IReturnsInstanceSetup<Cast<TOverload, Newable>>
+    public new<TOverload extends ConstructorOverload<Cast<T, Newable>, ParameterOverloads<Cast<T, Callable>>>>(...args: ConstructorParameters<TOverload>): IReturnsInstanceSetup<Cast<TOverload, Newable>>;
+    public new<TArgs extends ConstructorParameterOverloads<Cast<T, Newable>>>(...args: TArgs): IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>
     {
         const setup = this.setup(NEW);
 
-        return setup.call(...args) as object as IReturnsInstanceSetup<Cast<TOverload, Newable>>;
+        return setup.call(...args) as object as IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>;
     }
 
     public setup<K extends keyof T>(key: K | symbol | number): ICallSetup<Cast<T[K], Callable>>

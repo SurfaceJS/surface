@@ -1,9 +1,10 @@
-import { Constructor, assert }      from "@surface/core";
-import directiveRegistry            from "./directive-registry";
-import ICustomElement               from "./interfaces/custom-element";
-import StaticMetadata               from "./metadata/static-metadata";
-import { TEMPLATEABLE }             from "./symbols";
-import { DirectiveHandlerRegistry } from "./types";
+import { Constructor, HookableMetadata } from "@surface/core";
+import directiveRegistry                 from "./directive-registry";
+import ICustomElement                    from "./interfaces/custom-element";
+import Metadata                          from "./metadata/metadata";
+import StaticMetadata                    from "./metadata/static-metadata";
+import { TEMPLATEABLE }                  from "./symbols";
+import { DirectiveHandlerRegistry }      from "./types";
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
@@ -21,18 +22,17 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
     private static applyMetadata(instance: HTMLElement & { shadowRoot: ShadowRoot }): void
     {
-        instance.attachShadow({ mode: "open" });
+        const staticMetadata = StaticMetadata.of(instance.constructor)!;
 
-        const metadata = StaticMetadata.from(instance.constructor);
+        instance.attachShadow(staticMetadata.shadowRootInit);
 
-        assert(metadata?.styles);
-        assert(metadata?.template);
+        (instance.shadowRoot as { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets = staticMetadata.styles;
 
-        (instance.shadowRoot as { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets = metadata.styles;
-
-        const content = metadata.template.content.cloneNode(true);
+        const content = staticMetadata.template.content.cloneNode(true);
 
         instance.shadowRoot.appendChild(content);
+
+        HookableMetadata.of(this.constructor as Constructor<HTMLElement>)?.initialize(instance);
     }
 
     public static as<T extends Constructor<HTMLElement>>(base: T): T & Constructor<ICustomElement>
@@ -50,11 +50,24 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
                 CustomElement.applyMetadata(this);
             }
+
+            public dispose(): void
+            {
+                Metadata.of(this)!.dispose();
+            }
         };
     }
 
-    public static registerDirective(registry: DirectiveHandlerRegistry): void
+    public static registerDirective(...registries: DirectiveHandlerRegistry[]): void
     {
-        directiveRegistry.set(registry.name, registry.handler);
+        for (const registry of registries)
+        {
+            directiveRegistry.set(registry.name, registry.handler);
+        }
+    }
+
+    public dispose(): void
+    {
+        Metadata.of(this)!.dispose();
     }
 }

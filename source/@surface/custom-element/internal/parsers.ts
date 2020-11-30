@@ -65,14 +65,16 @@ export function parseInterpolation(expression: string): IArrayExpression
 
 export function parseDestructuredPattern(expression: string): IPattern
 {
-    if (expression in cache)
+    const arrowExpression = `(${expression}) => 0`;
+
+    if (arrowExpression in cache)
     {
-        return cache[expression].clone() as IPattern;
+        return cache[arrowExpression].clone() as IPattern;
     }
 
     try
     {
-        return cache[expression] = (parseExpression(`(${expression}) => 0`) as IArrowFunctionExpression).parameters[0];
+        return cache[arrowExpression] = (parseExpression(arrowExpression) as IArrowFunctionExpression).parameters[0];
     }
     catch (error)
     {

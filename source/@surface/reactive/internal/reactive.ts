@@ -1,173 +1,164 @@
-import { Indexer, getKeyMember, getValue } from "@surface/core";
-import IListener                           from "./interfaces/listener";
-import IObserver                           from "./interfaces/observer";
-import IReactor                            from "./interfaces/reactor";
-import ISubscription                       from "./interfaces/subscription";
-import Metadata                            from "./metadata";
-import Observer                            from "./observer";
-import PropertyListener                    from "./property-listener";
-import PropertySubscription                from "./property-subscription";
-import Reactor                             from "./reactor";
+import { Indexer, hasValue, overrideProperty } from "@surface/core";
+import { FieldInfo, MethodInfo, Type }         from "@surface/reflection";
+import Metadata                                from "./metadata";
+import Observer                                from "./observer";
+
+const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
 export default class Reactive
 {
-    private static observePath(target: Indexer, path: string[]): { root: IReactor, dependency: IReactor, observer: IObserver }
+    protected static observe(root: Object, path: string[], observer: Observer): void
     {
-        const [key, ...keys] = path;
-
-        if (keys.length > 0)
+        if (root instanceof Object)
         {
-            if (!(key in target))
+            const [key, ...keys] = path;
+
+            const metadata = Metadata.from(root);
+
+            let subject = metadata.subjects.get(key);
+
+            if (!subject)
             {
-                throw new Error(`Property ${key} does not exist on ${target}`);
+                if (Array.isArray(root) && !metadata.isReactiveArray)
+                {
+                    this.observeArray(root);
+                }
+
+                const computed = metadata.computed.get(key);
+
+                if (computed)
+                {
+                    for (const dependencies of computed)
+                    {
+                        this.observe(root, dependencies, observer);
+                    }
+                }
+                else
+                {
+                    this.observeProperty(root, key);
+                }
+
+                metadata.subjects.set(key, subject = new Map());
             }
 
-            const reactor = Reactor.makeReactive(target, key);
+            subject.set(observer, keys);
 
-            const value = target[key] as Indexer;
+            const property = (root as Indexer)[key];
 
-            const { root, dependency, observer } = Reactive.observePath(value, keys);
-
-            reactor.dependencies.set(key, dependency);
-
-            return { dependency: reactor, observer, root };
+            if (keys.length > 0 && hasValue(property))
+            {
+                this.observe(property, keys, observer);
+            }
         }
-
-        const { reactor, observer } = Reactive.observeProperty(target, key);
-
-        return { dependency: reactor, observer, root: reactor };
     }
 
-    private static observeProperty(target: Indexer, key: string): { reactor: IReactor, observer: IObserver }
+    protected static observeArray(source: unknown[]): void
     {
-        const reactor = Reactor.makeReactive(target, key);
+        for (const method of ARRAY_METHODS)
+        {
+            const fn = source[method] as Function;
 
-        let observer = reactor.observers.get(key);
+            function proxy(this: unknown[], ...args: unknown[]): unknown
+            {
+                const metadata = Metadata.of(this)!;
+
+                const length = this.length;
+
+                const elements = fn.apply(this, args);
+
+                if (this.length != length)
+                {
+                    metadata.subjects.get("length")?.forEach((_, x) => x.notify());
+                }
+
+                return elements;
+            }
+
+            Object.defineProperty(source, method, { configurable: true, enumerable: false, value: proxy });
+        }
+
+        Metadata.of(source)!.isReactiveArray = true;
+    }
+
+    protected static observeProperty(root: object, key: string): void
+    {
+        const member = Type.from(root).getMember(key);
+
+        if (!member)
+        {
+            throw new Error(`Property "${key}" does not exists on type ${root.constructor.name}`);
+        }
+        else if (member.descriptor.configurable && (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo))
+        {
+            const action = (instance: object, newValue: unknown, oldValue: unknown): void =>
+            {
+                const observers = Metadata.of(instance)!.subjects.get(key)!;
+
+                for (const [observer, path] of observers)
+                {
+                    if (path.length > 0)
+                    {
+                        hasValue(oldValue) && this.unobserve(oldValue, path, observer);
+                        hasValue(newValue) && this.observe(newValue, path, observer);
+                    }
+
+                    observer.notify();
+                }
+            };
+
+            overrideProperty(root, key, action, member.descriptor);
+        }
+    }
+
+    protected static unobserve(root: Object, path: string[], observer: Observer): void
+    {
+        if (root instanceof Object)
+        {
+            const [key, ...keys] = path;
+
+            Metadata.of(root)!.subjects.get(key)?.delete(observer);
+
+            const property = (root as Indexer)[key];
+
+            if (keys.length > 0 && hasValue(property))
+            {
+                this.unobserve(property, keys, observer);
+            }
+        }
+    }
+
+    public static from(root: object, path: string[]): Observer
+    {
+        const key = path.join("\u{fffff}");
+
+        const metadata = Metadata.from(root);
+
+        let observer = metadata.observers.get(key);
 
         if (!observer)
         {
-            reactor.observers.set(key, observer = new Observer());
+            this.observe(root, path, observer = new Observer(root, path));
+
+            metadata.observers.set(key, observer);
         }
 
-        return { observer, reactor };
+        return observer;
     }
 
-    public static dispose<T extends object>(target: T): void
+    public static notify(root: object, path?: string[]): void
     {
-        const metadata = Metadata.of(target);
+        const metadata = Metadata.of(root);
 
         if (metadata)
         {
-            metadata.disposables.forEach(x => x.dispose());
-            metadata.reactor.dispose();
-        }
-    }
-
-    public static getReactor(target: object): IReactor | undefined
-    {
-        return Metadata.of(target)?.reactor;
-    }
-
-    public static hasObserver<T extends Indexer>(target: T, key: keyof T): boolean
-    {
-        return Metadata.of(target)?.reactor.observers.has(key as string) ?? false;
-    }
-
-    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey): { reactor: IReactor, observer: IObserver<TTarget[TKey]> };
-    public static observe(target: object, path: string | string[]): { reactor: IReactor, observer: IObserver };
-    // eslint-disable-next-line max-len
-    public static observe<TTarget extends object, TKey extends keyof TTarget>(target: TTarget, key: TKey, listener: IListener<TTarget[TKey]>, lazy?: boolean): { reactor: IReactor, observer: IObserver<TTarget[TKey]>, subscription: ISubscription };
-    public static observe(target: object, path: string | string[], listener: IListener, lazy?: boolean): { reactor: IReactor, observer: IObserver, subscription: ISubscription };
-    public static observe(...args: [Indexer, string | string[], IListener?, boolean?]): { reactor: IReactor, observer: IObserver, subscription?: ISubscription }
-    {
-        const [target, pathOrKeys, listener, lazy] = args;
-
-        const keys = Array.isArray(pathOrKeys) ? pathOrKeys : pathOrKeys.split(".");
-
-        if (keys.length > 1)
-        {
-            const { root: reactor, observer } = Reactive.observePath(target, keys);
-
-            if (listener)
+            if (path)
             {
-                const subscription = observer.subscribe(listener);
-
-                if (!lazy)
-                {
-                    observer.notify(getValue(target, keys));
-                }
-
-                return { observer, reactor, subscription };
+                metadata.observers.get(path.join("\u{fffff}"))?.notify();
             }
-
-            return { observer, reactor };
-        }
-
-        const key = keys[0];
-
-        const { reactor, observer } = Reactive.observeProperty(target, key);
-
-        if (listener)
-        {
-            const subscription = observer.subscribe(listener);
-
-            if (!lazy)
+            else
             {
-                observer.notify(target[key]);
+                metadata.observers.forEach(x => x.notify());
             }
-
-            return { observer, reactor, subscription };
-        }
-
-        return { observer, reactor };
-    }
-
-    // eslint-disable-next-line max-len
-    public static observeTwoWay<TLeft extends Indexer = Indexer, TLeftKey extends keyof TLeft = string, TRight extends Indexer = Indexer, TRightKey extends keyof TRight = string>(left: TLeft, leftKey: TLeftKey, right: TRight, rightKey: TRightKey): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string | string[], right: Indexer, rightPath: string | string[]): [ISubscription, ISubscription];
-    public static observeTwoWay(left: Indexer, leftPath: string | string[], right: Indexer, rightPath: string | string[]): [ISubscription, ISubscription]
-    {
-        const leftKeys  = Array.isArray(leftPath)  ? leftPath  : leftPath.split(".");
-        const rightKeys = Array.isArray(rightPath) ? rightPath : rightPath.split(".");
-
-        const { key: leftKey,  member: leftMember }  = getKeyMember(left, leftPath);
-        const { key: rightKey, member: rightMember } = getKeyMember(right, rightPath);
-
-        const leftListener  = new PropertyListener(rightMember, rightKey);
-        const rightListener = new PropertyListener(leftMember, leftKey);
-
-        const { root: leftReactor,  observer: leftObserver }  = Reactive.observePath(left, leftKeys);
-        const { root: rightReactor, observer: rightObserver } = Reactive.observePath(right, rightKeys);
-
-        leftObserver.subscribe(leftListener);
-        leftListener.notify(leftMember[leftKey]);
-
-        const leftSubscription = new PropertySubscription(rightListener, rightObserver);
-
-        leftReactor.setPropertySubscription(rightKey, leftSubscription);
-
-        rightObserver.subscribe(rightListener);
-
-        const rightSubscription = new PropertySubscription(leftListener, leftObserver);
-
-        rightReactor.setPropertySubscription(leftKey, rightSubscription);
-
-        return [leftSubscription, rightSubscription];
-    }
-
-    public static notify<T extends object>(target: T, key: keyof T): void;
-    public static notify(target: object, key: string): void;
-    public static notify(target: Indexer, key: string): void
-    {
-        const reactor = Metadata.of(target)?.reactor;
-
-        if (reactor)
-        {
-            reactor.notify(target, key);
-        }
-        else
-        {
-            throw new Error("Target is not reactive");
         }
     }
 }

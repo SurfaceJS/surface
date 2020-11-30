@@ -1,6 +1,6 @@
+/* eslint-disable import/prefer-default-export */
 import { IDisposable }     from "@surface/core";
 import ITemplateDescriptor from "./interfaces/template-descriptor";
-import ParallelWorker      from "./parallel-worker";
 import TemplateParser      from "./template-parser";
 import TemplateProcessor   from "./template-processor";
 
@@ -23,9 +23,4 @@ export function processTemplate(template: string, scope: object): [content: Docu
     const disposable = TemplateProcessor.process({ descriptor, host: content, root: content, scope });
 
     return [content, disposable];
-}
-
-export async function whenDone(): Promise<void>
-{
-    await ParallelWorker.whenDone();
 }

@@ -1,9 +1,11 @@
 <span value="Hello {host.name}" @click="host.handler" ::value-a="host.value" :value-b="host.x++">
     Some {"interpolation"} here
 </span>
-<span #inject:title="{ title }">
-    <h1>{title}</h1>
-</span>
+<x-foo>
+    <span #inject:title="{ title }">
+        <h1>{title}</h1>
+    </span>
+</x-foo>
 <hr>
 <span #if="host.status == 1">
     Active
