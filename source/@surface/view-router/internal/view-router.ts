@@ -70,17 +70,13 @@ export default class ViewRouter
         if (!outlet)
         {
             outlet = parent.shadowRoot!.querySelector<HTMLElement>(key == "default" ? `${outletTag}:not([name])` : `${outletTag}[name=${key}]`);
-
-            // istanbul ignore else
-            if (outlet)
-            {
-                outlets.set(key, outlet);
-            }
         }
 
         // istanbul ignore else
         if (outlet)
         {
+            outlets.set(key, outlet);
+
             element.onEnter?.(to, from);
 
             const oldElement = outlet.firstElementChild as IRouteableElement | null;
@@ -99,6 +95,10 @@ export default class ViewRouter
             }
 
             this.connectedElements.push(element);
+        }
+        else
+        {
+            throw new Error(`Cannot find outlet ${key == "default" ? `<${outletTag}>` : `<${outletTag} name="${key}">`}`);
         }
     }
 

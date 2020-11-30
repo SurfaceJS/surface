@@ -17,8 +17,8 @@ export default class Scheduler
     private readonly normalPriorityQueue: Queue<Entry> = new Queue();
     private readonly timeout:             number;
 
-    private currentExecution: Promise<void> = Promise.resolve();
-    private running:          boolean       = false;
+    private execution: Promise<void> = Promise.resolve();
+    private running:   boolean       = false;
 
     public constructor(timeout: number)
     {
@@ -89,10 +89,10 @@ export default class Scheduler
 
         this.running = true;
 
-        this.currentExecution = runAsync(this.execute.bind(this)).then(this.stop.bind(this));
+        this.execution = runAsync(this.execute.bind(this)).then(this.stop.bind(this));
     }
 
-    private async stop(): Promise<void>
+    private stop(): void
     {
         this.running = false;
 
@@ -100,8 +100,6 @@ export default class Scheduler
         {
             throw new AggregateError([...this.errors]);
         }
-
-        return Promise.resolve();
     }
 
     public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken | undefined = undefined): Promise<ReturnType<T>>
@@ -124,6 +122,6 @@ export default class Scheduler
 
     public async whenDone(): Promise<void>
     {
-        return this.currentExecution;
+        return this.execution;
     }
 }

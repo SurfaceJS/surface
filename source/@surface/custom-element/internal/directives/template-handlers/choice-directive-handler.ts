@@ -51,11 +51,6 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
     private task(): void
     {
-        if (this.disposed)
-        {
-            return;
-        }
-
         this.currentDisposable?.dispose();
         this.currentDisposable = null;
 

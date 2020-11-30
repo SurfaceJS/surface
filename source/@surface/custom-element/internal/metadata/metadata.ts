@@ -5,10 +5,12 @@ export default class Metadata
 {
     private disposed: boolean = false;
 
-    public readonly disposables: IDisposable[] = [];
+    public readonly disposables: Set<IDisposable> = new Set();
 
     public hasListener:         boolean = false;
     public reflectingAttribute: boolean = false;
+
+    public host?: Node;
 
     public static from(target: object): Metadata
     {
@@ -31,7 +33,8 @@ export default class Metadata
         {
             this.disposed = true;
 
-            this.disposables.slice(0).forEach(x => x.dispose());
+            this.disposables.forEach(x => x.dispose());
+            this.disposables.clear();
         }
     }
 }

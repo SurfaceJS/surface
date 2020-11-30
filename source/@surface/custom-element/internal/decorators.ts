@@ -84,17 +84,38 @@ function wraperPrototype(prototype: ICustomElement): void
 
             if (root instanceof ShadowRoot)
             {
-                Metadata.of(root.host)?.disposables.push(this);
+                const hostMetadata = Metadata.of(root.host);
+                const metadata =     Metadata.of(this)!;
+
+                if (hostMetadata && root.host != metadata.host)
+                {
+                    metadata.host = root.host;
+
+                    hostMetadata.disposables.add(this);
+                }
             }
         };
 
-        void scheduler.enqueue(action, "low");
+        void scheduler.enqueue(action, "high");
+
+        callback?.call(this);
+    };
+
+    const disconnectedCallback = (callback?: ICustomElement["disconnectedCallback"]): ICustomElement["disconnectedCallback"] => function (this: ICustomElement)
+    {
+        const host = Metadata.of(this)!.host;
+
+        if (host)
+        {
+            Metadata.of(host)?.disposables.delete(this);
+        }
 
         callback?.call(this);
     };
 
     wraperLifecycle(prototype, "attributeChangedCallback", attributeChangedCallback);
     wraperLifecycle(prototype, "connectedCallback", connectedCallback);
+    wraperLifecycle(prototype, "disconnectedCallback", disconnectedCallback);
 }
 
 function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomElement, key: K, action: Delegate<[ICustomElement[K]], ICustomElement[K]>): void
@@ -236,7 +257,7 @@ export function element(tagname: string, template?: string, style?: string, opti
 
                     const disposable = TemplateProcessor.process({ descriptor: staticMetadata.descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
-                    metadata.disposables.push(disposable);
+                    metadata.disposables.add(disposable);
 
                     HookableMetadata.of(target)!.finish(instance);
 
@@ -269,7 +290,7 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
 
             element.addEventListener(type, listener, options);
 
-            Metadata.of(element)!.disposables.push({ dispose: () => element.removeEventListener(type, listener) });
+            Metadata.of(element)!.disposables.add({ dispose: () => element.removeEventListener(type, listener) });
         };
 
         HookableMetadata.from(target.constructor as typeof HTMLElement).initializers.push(action);

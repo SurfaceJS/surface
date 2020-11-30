@@ -22,6 +22,6 @@ export default class AsyncObserver extends Observer
 
         this.cancellationTokenSource = new CancellationTokenSource();
 
-        this.scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
+        void this.scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
     }
 }
