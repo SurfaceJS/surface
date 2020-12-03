@@ -1,7 +1,7 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { hasValue }        from "@surface/core";
+import ICoalesceExpression from "../interfaces/coalesce-expression";
+import IExpression         from "../interfaces/expression";
+import NodeType            from "../node-type";
 
 export default class CoalesceExpression implements IExpression
 {
@@ -42,7 +42,12 @@ export default class CoalesceExpression implements IExpression
         this._right = right;
     }
 
-    public evaluate(scope: Indexer<unknown>, useCache?: boolean): unknown
+    public clone(): ICoalesceExpression
+    {
+        return new CoalesceExpression(this.left.clone(), this.right.clone());
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

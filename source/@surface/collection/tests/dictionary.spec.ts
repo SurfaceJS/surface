@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Dictionary                  from "../dictionary";
-import KeyValuePair                from "../key-value-pair";
+import Dictionary                  from "../internal/dictionary";
+import KeyValuePair                from "../internal/key-value-pair";
 
 @suite
 export default class ListSpec
@@ -9,7 +9,7 @@ export default class ListSpec
     @test @shouldPass
     public createEmpty(): void
     {
-        expect(() => new Dictionary<string, Object>()).to.not.throw();
+        expect(() => new Dictionary<string, object>()).to.not.throw();
     }
 
     @test @shouldPass

@@ -1,7 +1,10 @@
-import IPattern  from "../interfaces/pattern";
+import IPattern  from "./interfaces/pattern";
 import TypeGuard from "./type-guard";
+import Token     from "./types/token";
 
-export function hasDuplicated(parameters: Array<IPattern>): boolean
+export function hasDuplicated(parameters: IPattern[]): boolean;
+export function hasDuplicated(parameters: IPattern[], lookeaheads: Token[]): { result: true, token: Token } | { result: false, token: null };
+export function hasDuplicated(parameters: IPattern[], lookeaheads?: Token[]): boolean | { result: boolean, token: Token | null }
 {
     const cache = new Set<string>();
 
@@ -13,10 +16,9 @@ export function hasDuplicated(parameters: Array<IPattern>): boolean
             {
                 return true;
             }
-            else
-            {
-                cache.add(pattern.name);
-            }
+
+            cache.add(pattern.name);
+
         }
         else if (TypeGuard.isAssignmentPattern(pattern))
         {
@@ -43,12 +45,9 @@ export function hasDuplicated(parameters: Array<IPattern>): boolean
                         return true;
                     }
                 }
-                else
+                else if (isDuplicated(property.argument))
                 {
-                    if (isDuplicated(property.argument))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -60,13 +59,18 @@ export function hasDuplicated(parameters: Array<IPattern>): boolean
         return false;
     };
 
-    for (const parameter of parameters)
+    if (lookeaheads)
     {
-        if (isDuplicated(parameter))
+        for (let index = 0; index < parameters.length; index++)
         {
-            return true;
+            if (isDuplicated(parameters[index]))
+            {
+                return { result: true, token: lookeaheads[index] };
+            }
         }
+
+        return { result: false, token: null };
     }
 
-    return false;
+    return parameters.some(isDuplicated);
 }

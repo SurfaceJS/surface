@@ -1,5 +1,6 @@
-import INode    from "../../interfaces/node";
-import NodeType from "../../node-type";
+import INode            from "../interfaces/node";
+import ITemplateElement from "../interfaces/template-element";
+import NodeType         from "../node-type";
 
 export default class TemplateElement implements INode
 {
@@ -50,5 +51,10 @@ export default class TemplateElement implements INode
         this._cooked = cooked;
         this._raw    = raw;
         this._tail   = tail;
+    }
+
+    public clone(): ITemplateElement
+    {
+        return new TemplateElement(this.cooked, this.raw, this.tail);
     }
 }

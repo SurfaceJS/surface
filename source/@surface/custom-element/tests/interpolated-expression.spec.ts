@@ -1,8 +1,41 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
+import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                              from "chai";
-import InterpolatedExpression                          from "../internal/interpolated-expression";
+import { assert }                              from "chai";
+import InterpolatedExpression                  from "../internal/interpolated-expression";
+
+type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
+
+function parseWithError(expression: string): RawError | null
+{
+    try
+    {
+        InterpolatedExpression.parse(expression);
+    }
+    catch (error)
+    {
+        return toRaw(error);
+    }
+
+    return null;
+}
+
+function toRaw(error: Error): RawError
+{
+    if (error instanceof SyntaxError)
+    {
+        return {
+            column:     error.column,
+            index:      error.index,
+            lineNumber: error.lineNumber,
+            message:    error.message,
+        };
+    }
+
+    return { message: error.message };
+}
 
 class Mock
 {
@@ -33,26 +66,16 @@ class Mock
 export default class InterpolatedExpressionSpec
 {
     @test @shouldPass
-    public cache(): void
-    {
-        const expression = InterpolatedExpression.parse("Use cache");
-
-        expect(expression.evaluate({ })).to.deep.equal(["Use cache"]);
-
-        expect(InterpolatedExpression.parse("Use cache")).to.equal(expression);
-    }
-
-    @test @shouldPass
     public expressionWithoutInterpolation(): void
     {
         const scope = { this: new Mock() };
 
         const expression = InterpolatedExpression.parse("{this.value}");
 
-        expect(expression.evaluate(scope)).to.deep.equal([0]);
+        assert.deepEqual(expression.evaluate(scope), [0]);
 
         scope.this.value = 1;
-        expect(expression.evaluate(scope)).to.deep.equal([1]);
+        assert.deepEqual(expression.evaluate(scope), [1]);
     }
 
     @test @shouldPass
@@ -62,10 +85,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("{ this.value } value at start");
 
-        expect(expression.evaluate(scope)).to.deep.equal([0, " value at start"]);
+        assert.deepEqual(expression.evaluate(scope), [0, " value at start"]);
 
         scope.this.value = 1;
-        expect(expression.evaluate(scope)).to.deep.equal([1, " value at start"]);
+        assert.deepEqual(expression.evaluate(scope), [1, " value at start"]);
     }
 
     @test @shouldPass
@@ -75,10 +98,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("Value { this.value } at middle");
 
-        expect(expression.evaluate(scope)).to.deep.equal(["Value ", 0, " at middle"]);
+        assert.deepEqual(expression.evaluate(scope), ["Value ", 0, " at middle"]);
 
         scope.this.value = 1;
-        expect(expression.evaluate(scope)).to.deep.equal(["Value ", 1, " at middle"]);
+        assert.deepEqual(expression.evaluate(scope), ["Value ", 1, " at middle"]);
     }
 
     @test @shouldPass
@@ -88,10 +111,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("value at end { this.value }");
 
-        expect(expression.evaluate(scope)).to.deep.equal(["value at end ", 0]);
+        assert.deepEqual(expression.evaluate(scope), ["value at end ", 0]);
 
         scope.this.value = 1;
-        expect(expression.evaluate(scope)).to.deep.equal(["value at end ", 1]);
+        assert.deepEqual(expression.evaluate(scope), ["value at end ", 1]);
     }
 
     @test @shouldPass
@@ -101,11 +124,11 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("{ this.value } text at center { this.text }");
 
-        expect(expression.evaluate(scope)).to.deep.equal([0, " text at center ", "Hello World!!!"]);
+        assert.deepEqual(expression.evaluate(scope), [0, " text at center ", "Hello World!!!"]);
 
         scope.this.value = 1;
         scope.this.text  = "Just Hello!";
-        expect(expression.evaluate(scope)).to.deep.equal([1, " text at center ", "Just Hello!"]);
+        assert.deepEqual(expression.evaluate(scope), [1, " text at center ", "Just Hello!"]);
     }
 
     @test @shouldPass
@@ -113,7 +136,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { \" double quoted string } - { \" } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " double quoted string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " double quoted string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -121,7 +144,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { \" double \\\"quoted\\\" string } - { \" } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " double \"quoted\" string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " double \"quoted\" string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -129,7 +152,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ' single quoted string } - { ' } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " single quoted string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " single quoted string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -137,7 +160,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ' single \\'quoted\\' string } - { ' } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " single 'quoted' string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " single 'quoted' string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -145,7 +168,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template single string } - { ` } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " template single string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " template single string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -153,7 +176,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template \\`single\\` string } - { ` } inside");
 
-        expect(expression.evaluate({ })).to.deep.equal(["interpolatation with ", " template `single` string } - { ", " inside"]);
+        assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " template `single` string } - { ", " inside"]);
     }
 
     @test @shouldPass
@@ -161,7 +184,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + \"1\"} ` } inside");
 
-        expect(expression.evaluate({  })).to.deep.equal(["interpolatation with ", " template single value: 1 ", " inside"]);
+        assert.deepEqual(expression.evaluate({  }), ["interpolatation with ", " template single value: 1 ", " inside"]);
     }
 
     @test @shouldPass
@@ -169,7 +192,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { value == 'default' ? '' : `${value} expression` } inside");
 
-        expect(expression.evaluate({ value: "conditional" })).to.deep.equal(["interpolatation with ", "conditional expression", " inside"]);
+        assert.deepEqual(expression.evaluate({ value: "conditional" }), ["interpolatation with ", "conditional expression", " inside"]);
     }
 
     @test @shouldPass
@@ -177,7 +200,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\{ this.value }");
 
-        expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression { this.value }"]);
+        assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression { this.value }"]);
     }
 
     @test @shouldPass
@@ -185,7 +208,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\\\{ 'scaped' }");
 
-        expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression \\", "scaped"]);
+        assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression \\", "scaped"]);
     }
 
     @test @shouldPass
@@ -193,7 +216,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\{ { 'scaped' } }");
 
-        expect(expression.evaluate({ })).to.deep.equal(["This is an scaped expression { ", "scaped", " }"]);
+        assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression { ", "scaped", " }"]);
     }
 
     @test @shouldPass
@@ -201,27 +224,45 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an { '\\'very\\'' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
 
-        expect(expression.evaluate({ })).to.deep.equal(["This is an ", "\'very\'", " complex {scaped} \\", "interpolation", " \\}"]);
+        assert.deepEqual(expression.evaluate({ }), ["This is an ", "\'very\'", " complex {scaped} \\", "interpolation", " \\}"]);
     }
 
     @test @shouldFail
     public unclosedBrancket(): void
     {
-        expect(() => InterpolatedExpression.parse("This { Should throw")).to.throw(Error, "Unexpected end of expression");
-        expect(() => InterpolatedExpression.parse("This { 'Should throw' ")).to.throw(Error, "Unexpected end of expression");
+        assert.deepEqual(parseWithError("This { Should throw"), toRaw(new SyntaxError("Unexpected end of expression", 1, 18, 19)));
+        assert.deepEqual(parseWithError("This { 'Should throw' "), toRaw(new SyntaxError("Unexpected end of expression", 1, 21, 22)));
+
+        assert.deepEqual(parseWithError("This\n{\nShould\nthrow"), toRaw(new SyntaxError("Unexpected end of expression", 4, 18, 19)));
+        assert.deepEqual(parseWithError("This\n{\n'Should\nthrow' "), toRaw(new SyntaxError("Unexpected end of expression", 4, 21, 22)));
     }
 
     @test @shouldFail
     public unclosedString(): void
     {
-        expect(() => InterpolatedExpression.parse("This { 'Should throw }")).to.throw(Error, "Unexpected end of expression");
-        expect(() => InterpolatedExpression.parse("This { 'Should throw\" }")).to.throw(Error, "Unexpected end of expression");
-        expect(() => InterpolatedExpression.parse("This { 'Should throw\\' }")).to.throw(Error, "Unexpected end of expression");
+        assert.deepEqual(parseWithError("This { 'Should throw }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 21, 22)));
+        assert.deepEqual(parseWithError("This { `Should throw }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 21, 22)));
+        assert.deepEqual(parseWithError("This { 'Should throw\" }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 22, 23)));
+        assert.deepEqual(parseWithError("This { 'Should throw\\' }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 23, 24)));
+
+        assert.deepEqual(parseWithError("This\n{\n'Should\nthrow }"), toRaw(new SyntaxError("Unexpected end of expression", 4, 21, 22)));
+        assert.deepEqual(parseWithError("This\n{\n`Should\nthrow\" }"), toRaw(new SyntaxError("Unexpected end of expression", 4, 22, 23)));
+        assert.deepEqual(parseWithError("This\n{\n'Should\nthrow\" }"), toRaw(new SyntaxError("Unexpected end of expression", 4, 22, 23)));
+        assert.deepEqual(parseWithError("This\n{\n'Should\nthrow\\' }"), toRaw(new SyntaxError("Unexpected end of expression", 4, 23, 24)));
+    }
+
+    @test @shouldFail
+    public unclosedTemplateBrackedString(): void
+    {
+        assert.deepEqual(parseWithError("This { `Should ${'throw'` }"), toRaw(new SyntaxError("Unexpected end of expression", 1, 26, 27)));
+
+        assert.deepEqual(parseWithError("This\n{\n`Should ${'throw'` }"), toRaw(new SyntaxError("Unexpected end of expression", 3, 26, 27)));
     }
 
     @test @shouldFail
     public invalidSyntax(): void
     {
-        expect(() => InterpolatedExpression.parse("This is my value: { this.? }")).to.throw(Error, "Unexpected token ? at posistion 6");
+        assert.deepEqual(parseWithError("This is my value: { this.? }"), toRaw(new SyntaxError("Unexpected token ?", 1, 25, 26)));
+        assert.deepEqual(parseWithError("This \n is \n my \n value: { \n this.? }"), toRaw(new SyntaxError("Unexpected token ?", 5, 33, 7)));
     }
 }

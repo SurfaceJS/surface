@@ -1,6 +1,7 @@
-import IExpression from "../../interfaces/expression";
-import INode       from "../../interfaces/node";
-import NodeType    from "../../node-type";
+import IExpression from "../interfaces/expression";
+import INode       from "../interfaces/node";
+import IProperty   from "../interfaces/property";
+import NodeType    from "../node-type";
 import TypeGuard   from "../type-guard";
 
 export default class Property implements INode
@@ -66,20 +67,23 @@ export default class Property implements INode
         this._shorthand  = shorthand;
     }
 
+    public clone(): IProperty
+    {
+        return new Property(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
+    }
+
     public toString(): string
     {
         if (this.shorthand)
         {
             return this.value.toString();
         }
-        else
-        {
-            if (TypeGuard.isIdentifier(this.key) || (TypeGuard.isLiteral(this.key) && typeof this.key.value == "number"))
-            {
-                return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
-            }
 
+        if (TypeGuard.isIdentifier(this.key) || TypeGuard.isLiteral(this.key) && typeof this.key.value == "number")
+        {
             return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
         }
+
+        return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
     }
 }

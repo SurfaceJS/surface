@@ -1,27 +1,53 @@
-import { Indexer, Nullable } from "@surface/core";
-import ISubscription         from "@surface/reactive/interfaces/subscription";
-import { nativeEvents }      from "./native-events";
-import { interpolation }     from "./patterns";
-import { SUBSCRIPTIONS }     from "./symbols";
-import { Subscriber }        from "./types";
+import { Delegate, IDisposable, Indexer, assert } from "@surface/core";
+import { Evaluate, IExpression, IPattern }        from "@surface/expression";
+import { Subscription }                           from "@surface/reactive";
+import DataBind                                   from "./data-bind";
+import TemplateEvaluationError                    from "./errors/template-evaluation-error";
+import TemplateObservationError                   from "./errors/template-observation-error";
+import TemplateParseError                         from "./errors/template-parse-error";
+import IKeyValueObservable                        from "./interfaces/key-value-observable";
+import IKeyValueTraceable                         from "./interfaces/key-value-traceable";
+import IObservable                                from "./interfaces/observable";
+import ITraceable                                 from "./interfaces/traceable";
+import { Observables, StackTrace }                from "./types";
 
-const wrapper = { "Window": /* istanbul ignore next */ function () { return; } }["Window"] as object as typeof Window;
+// eslint-disable-next-line object-shorthand
+const wrapper = { "Window": /* istanbul ignore next */ function () { /* */ } }.Window as object as typeof Window;
 
 wrapper.prototype = window;
 wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
-export function createScope(scope: Indexer): Indexer
+function buildStackTrace(stackTrace: StackTrace): string
 {
-    scope["$class"] = classMap;
+    return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
+}
 
+export function createHostScope(host: HTMLElement): object
+{
+    return { $class: classMap, $style: styleMap, host };
+}
+
+export function createScope(scope: object): object
+{
     const handler: ProxyHandler<Indexer> =
     {
-        get: (target, key) => key in target ? target[key as string] : (windowWrapper as Indexer)[key as string],
-        has: (target, key) => key in target || key in windowWrapper,
+        get:                      (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
         getOwnPropertyDescriptor: (target, key) =>
-            Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key)
+            Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key),
+        has: (target, key) => key in target || key in windowWrapper,
+        set: (target, key, value) =>
+        {
+            if (typeof key == "symbol")
+            {
+                target[key as unknown as string] = value;
+
+                return true;
+            }
+
+            throw new ReferenceError(`Assignment to constant variable "${String(key)}"`);
+        },
     };
 
     return new Proxy(scope, handler);
@@ -35,12 +61,7 @@ export function classMap(classes: Record<string, boolean>): string
         .join(" ");
 }
 
-export function pushSubscription(target: Subscriber, subscription: ISubscription): void
-{
-    (target[SUBSCRIPTIONS] = target[SUBSCRIPTIONS] ?? []).push(subscription);
-}
-
-export function scapeBrackets(value: string)
+export function scapeBrackets(value: string): string
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
 }
@@ -48,43 +69,95 @@ export function scapeBrackets(value: string)
 export function styleMap(rules: Record<string, boolean>): string
 {
     return Object.entries(rules)
-        .map(([key, value]) => `${key}: ${value}` )
+        .map(([key, value]) => `${key}: ${value}`)
         .join("; ");
 }
 
-export function* enumerateExpresssionAttributes(element: Element): Iterable<Attr>
+export function throwTemplateEvaluationError(message: string, stackTrace: StackTrace): never
 {
-    for (const attribute of Array.from(element.attributes))
+    throw new TemplateEvaluationError(message, buildStackTrace(stackTrace));
+}
+
+export function throwTemplateObservationError(message: string, stackTrace: StackTrace): never
+{
+    throw new TemplateObservationError(message, buildStackTrace(stackTrace));
+}
+
+export function throwTemplateParseError(message: string, stackTrace: StackTrace): never
+{
+    throw new TemplateParseError(message, buildStackTrace(stackTrace));
+}
+
+export function tryEvaluateExpression(scope: object, expression: IExpression, rawExpression: string, stackTrace: StackTrace): unknown
+{
+    try
     {
-        if (attribute.name.startsWith("*"))
-        {
-            const wrapper = document.createAttribute(attribute.name.replace(/^\*/, ""));
+        return expression.evaluate(scope);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
 
-            wrapper.value = attribute.value;
-            element.removeAttributeNode(attribute);
-            element.setAttributeNode(wrapper);
-
-            yield wrapper;
-        }
-        else if
-        (
-            attribute.name.startsWith(":")
-            || attribute.name.startsWith("on:")
-            || (interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.includes(attribute.name)))
-        )
-        {
-            yield attribute;
-        }
-        else
-        {
-            attribute.value = scapeBrackets(attribute.value);
-        }
+        throwTemplateEvaluationError(`Evaluation error in ${rawExpression}: ${error.message}`, stackTrace);
     }
 }
 
-export function* enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
+export function tryEvaluateExpressionByTraceable(scope: object, traceable: { expression: IExpression } & ITraceable): unknown
 {
-    let simbling: Nullable<ChildNode> = null;
+    return tryEvaluateExpression(scope, traceable.expression, traceable.rawExpression, traceable.stackTrace);
+}
+
+export function tryEvaluateKeyExpressionByTraceable(scope: object, traceable: { keyExpression: IExpression } & IKeyValueTraceable): unknown
+{
+    return tryEvaluateExpression(scope, traceable.keyExpression, traceable.rawKeyExpression, traceable.stackTrace);
+}
+
+export function tryEvaluatePattern(scope: object, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
+{
+    try
+    {
+        return Evaluate.pattern(scope, pattern, value);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateEvaluationError(`Evaluation error in ${rawExpression}: ${error.message}`, stackTrace);
+    }
+}
+
+export function tryEvaluatePatternByTraceable(scope: object, value: unknown, traceable: { pattern: IPattern } & ITraceable): Indexer
+{
+    return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
+}
+
+export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): Subscription
+{
+    try
+    {
+        return DataBind.observe(scope, observables, listener, lazy);
+    }
+    catch (error)
+    {
+        assert(error instanceof Error);
+
+        throwTemplateObservationError(`Observation error in ${rawExpression}: ${error.message}`, stackTrace);
+    }
+}
+
+export function tryObserveByObservable(scope: object, observable: IObservable & ITraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
+{
+    return tryObserve(scope, observable.observables, listener, observable.rawExpression, observable.stackTrace, lazy);
+}
+
+export function tryObserveKeyByObservable(scope: object, observable: IKeyValueObservable & IKeyValueTraceable, listener: Delegate<[unknown]>, lazy?: boolean): Subscription
+{
+    return tryObserve(scope, observable.keyObservables, listener, observable.rawKeyExpression, observable.stackTrace, lazy);
+}
+
+export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode & Partial<IDisposable>>
+{
+    let simbling: ChildNode | null = null;
 
     while ((simbling = start.nextSibling) && simbling != end)
     {

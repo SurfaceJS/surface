@@ -1,41 +1,47 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
-import { Indexer }                 from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import * as chai                   from "chai";
+import { assert }                  from "chai";
 import DataBind                    from "../internal/data-bind";
+import { scheduler }               from "../internal/singletons";
 
 @suite
 export default class DataBindSpec
 {
     @test @shouldPass
-    public oneWayFieldDataBind(): void
+    public async oneWayFieldDataBind(): Promise<void>
     {
         const target = { value: 1 };
 
         let changed = false;
 
-        DataBind.oneWay(target, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], () => changed = true);
 
         target.value = 2;
 
-        chai.expect(changed).to.equal(true);
+        await scheduler.whenDone();
+
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
-    public oneWayReadonlyFieldDataBind(): void
+    public async oneWayReadonlyFieldDataBind(): Promise<void>
     {
         const target = { value: 1 };
 
         Object.defineProperty(target, "value", { value: target.value, writable: false });
 
-        DataBind.oneWay(target, "value", { notify: () => undefined }); // Todo: Review if should throw error or not
+        // Todo: Review if should throw error or not
+        DataBind.oneWay(target, ["value"], () => undefined);
 
-        chai.expect(true);
+        await scheduler.whenDone();
+
+        assert.isTrue(true);
     }
 
     @test @shouldPass
-    public oneWayPropertyDataBind(): void
+    public async oneWayPropertyDataBind(): Promise<void>
     {
         class Mock
         {
@@ -55,15 +61,17 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], () => changed = true);
 
         target.value = 2;
 
-        chai.expect(changed).to.equal(true);
+        await scheduler.whenDone();
+
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
-    public oneWayReadonlyPropertyDataBind(): void
+    public async oneWayReadonlyPropertyDataBind(): Promise<void>
     {
         class Mock
         {
@@ -83,30 +91,35 @@ export default class DataBindSpec
 
         let changed = false;
 
-        DataBind.oneWay(target as unknown as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], () => changed = true);
 
         target.setValue(2);
 
-        chai.expect(changed).to.equal(true);
+        await scheduler.whenDone();
+
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
-    public oneWayElementDataBind(): void
+    public async oneWayElementDataBind(): Promise<void>
     {
         const target = document.createElement("input");
         target.value = "1";
 
         let changed = false;
-        DataBind.oneWay(target as Indexer, "value", { notify: () => changed = true });
+        DataBind.oneWay(target, ["value"], () => changed = true);
 
         target.value = "2";
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
-        chai.expect(changed).to.equal(true);
+
+        await scheduler.whenDone();
+
+        assert.isTrue(changed);
     }
 
     @test @shouldPass
-    public oneWayAttributeDataBind(): void
+    public async oneWayAttributeDataBind(): Promise<void>
     {
         const target = document.createElement("input");
         target.setAttribute("data-value", "1");
@@ -114,30 +127,18 @@ export default class DataBindSpec
         const attribute = target.attributes[0];
 
         let value = "1";
-        DataBind.oneWay(attribute as Indexer, "value", { notify: () => value = attribute.value });
+
+        DataBind.oneWay(attribute, ["value"], () => value = attribute.value);
 
         attribute.value = "2";
-        chai.expect(value).to.equal("2");
+
+        await scheduler.whenDone();
+
+        assert.equal(value, "2");
     }
 
-    // Deprecated
-    // @test @shouldPass
-    // public oneWayPropertyAttributeDataBind(): void
-    // {
-    //     const target = document.createElement("div");
-    //     target.lang = "pt-br";
-
-    //     let value = target.lang;
-    //     DataBind.oneWay(target, "lang", { notify: () => value = target.lang });
-
-    //     target.setAttribute("lang", "en-us");
-    //     target.setAttribute("lang1", "en-us");
-    //     chai.expect(value, "value").to.equal("en-us");
-    //     chai.expect(target.getAttribute("lang1"), "getAttribute").to.equal("en-us");
-    // }
-
     @test @shouldPass
-    public twoWayObjectDataBind(): void
+    public async twoWayObjectDataBind(): Promise<void>
     {
         class Mock
         {
@@ -156,14 +157,34 @@ export default class DataBindSpec
         const left  = new Mock();
         const right = new Mock();
 
-        DataBind.twoWay(left as Indexer, "value", right as Indexer, "value");
+        DataBind.twoWay(left, ["value"], right, ["value"]);
+
+        await scheduler.whenDone();
 
         left.value = 2;
 
-        chai.expect(right.value).to.equal(2);
+        await scheduler.whenDone();
+
+        assert.equal(right.value, 2);
 
         right.value = 3;
 
-        chai.expect(left.value).to.equal(3);
+        await scheduler.whenDone();
+
+        assert.equal(left.value, 3);
+    }
+
+    @test @shouldPass
+    public async observe(): Promise<void>
+    {
+        const target  = { value: "string" };
+
+        let observed = false;
+
+        DataBind.observe(target, [["value", "length"]], () => observed = true);
+
+        await scheduler.whenDone();
+
+        assert.isTrue(observed);
     }
 }

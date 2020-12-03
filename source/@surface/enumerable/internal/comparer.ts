@@ -1,4 +1,4 @@
-import IComparer from "../interfaces/comparer";
+import IComparer from "./interfaces/comparer";
 
 export default class Comparer<TKey> implements IComparer<TKey>
 {

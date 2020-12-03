@@ -1,12 +1,12 @@
-import { inject } from "../../";
-import { Bar }    from "./bar";
-import { Baz }    from "./baz";
-import { Foo }    from "./foo";
+import { inject } from "../..";
+import Bar        from "./bar";
+import Baz        from "./baz";
+import Foo        from "./foo";
 
 export default class InjectableMock
 {
     private _bar!: Bar;
-    private _baz!: Baz;
+    private readonly _baz!: Baz;
 
     @inject("foo")
     public foo!: Foo;

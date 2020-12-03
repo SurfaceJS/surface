@@ -1,15 +1,19 @@
-import { Nullable } from "@surface/core";
-import IGroup       from "../interfaces/group";
+import IGroup from "./interfaces/group";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
 {
-    private readonly source: Array<TElement> = [];
-    public get elements(): Array<TElement>
+    private readonly _hash:  number;
+    private readonly _key:   TKey;
+    private readonly source: TElement[] = [];
+
+    private _next?: Group<TKey, TElement>;
+    private _hashNext?: Group<TKey, TElement>;
+
+    public get elements(): TElement[]
     {
         return this.source;
     }
 
-    private readonly _key: TKey;
     public get key(): TKey
     {
         return this._key;
@@ -20,30 +24,27 @@ export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
         return this.source.length;
     }
 
-    private readonly _hash: number;
     public get hash(): number
     {
         return this._hash;
     }
 
-    private _hashNext: Nullable<Group<TKey, TElement>>;
-    public get hashNext(): Nullable<Group<TKey, TElement>>
+    public get hashNext(): Group<TKey, TElement> | undefined
     {
         return this._hashNext;
     }
 
-    public set hashNext(value: Nullable<Group<TKey, TElement>>)
+    public set hashNext(value: Group<TKey, TElement> | undefined)
     {
         this._hashNext = value;
     }
 
-    private _next: Nullable<Group<TKey, TElement>>;
-    public get next(): Nullable<Group<TKey, TElement>>
+    public get next(): Group<TKey, TElement> | undefined
     {
         return this._next;
     }
 
-    public set next(value: Nullable<Group<TKey, TElement>>)
+    public set next(value: Group<TKey, TElement> | undefined)
     {
         this._next = value;
     }

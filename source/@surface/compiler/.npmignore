@@ -1,4 +1,6 @@
-*.ts
-cache
+**/!(*.d).ts
+.cache/**
+@types/**
+tests/**
 tsconfig.json
-!*.d.ts
+tsconfig.tsbuildinfo

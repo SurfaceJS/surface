@@ -1,8 +1,21 @@
 {
+    "compilerOptions": {
+        "baseUrl": ".",
+        "types": [
+            "node"
+        ],
+        "paths": {
+            "webpack": ["./node_modules/@types/webpack"]
+        }
+    },
     "extends": "../../../tsconfig.json",
-    "compilerOptions":
-    {
-        "typeRoots": ["./@types", "./node_modules/@types"],
-        "types":     ["node", "webpack"]
-    }
+    "files": [
+        "./cli.ts",
+        "./index.ts",
+    ],
+    "include": [
+        "./bin",
+        "./internal",
+        "./tests",
+    ]
 }

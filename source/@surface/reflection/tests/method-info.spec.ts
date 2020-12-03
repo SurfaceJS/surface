@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import MethodInfo                  from "../method-info";
-import ParameterInfo               from "../parameter-info";
-import Type                        from "../type";
+import MethodInfo                  from "../internal/method-info";
+import ParameterInfo               from "../internal/parameter-info";
+import Type                        from "../internal/type";
 import Mock                        from "./fixtures/mock";
 
 const methodInfo = new MethodInfo("instanceMethod", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethod")!, Type.of(Mock), false, false);
@@ -43,12 +43,19 @@ export default class FieldInfoSpec
     @test @shouldPass
     public metadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo
+        (
+            "instanceMethodWithParametersMetadata",
+            Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!,
+            Type.of(Mock),
+            false,
+            false,
+        );
 
         const metadata =
         {
-            "design:returntype": undefined,
             "design:paramtypes": [Number, String, Boolean],
+            "design:returntype": undefined,
             "design:type":       Function,
         };
 
@@ -80,7 +87,14 @@ export default class FieldInfoSpec
     @test @shouldPass
     public withParametersMetadata(): void
     {
-        const methodInfo = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
+        const methodInfo = new MethodInfo
+        (
+            "instanceMethodWithParametersMetadata",
+            Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!,
+            Type.of(Mock),
+            false,
+            false,
+        );
 
         const parameters =
         [

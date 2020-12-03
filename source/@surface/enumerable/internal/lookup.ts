@@ -1,22 +1,23 @@
-import { Func1, Nullable } from "@surface/core";
-import Hashcode            from "@surface/core/hashcode";
-import IComparer           from "../interfaces/comparer";
-import ILookup             from "../interfaces/lookup";
-import Group               from "./group";
+import { Delegate, Hashcode } from "@surface/core";
+import Group                  from "./group";
+import IComparer              from "./interfaces/comparer";
+import ILookup                from "./interfaces/lookup";
 
-export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<TKey, TElement>>, ILookup<TKey, TElement>
+export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TElement>
 {
-    private comparer:  IComparer<TKey>;
-    private groups:    Array<Group<TKey, TElement>>;
-    private lastGroup: Nullable<Group<TKey, TElement>>;
+    private readonly comparer: IComparer<TKey>;
+
+    private groups:    Group<TKey, TElement>[];
+    private lastGroup?: Group<TKey, TElement>;
 
     private _count: number;
+
     public get count(): number
     {
         return this._count;
     }
 
-    public constructor(source: Iterable<TSource>, keySelector: Func1<TSource, TKey>, elementSelector: Func1<TSource, TElement>, comparer: IComparer<TKey>)
+    public constructor(source: Iterable<TSource>, keySelector: Delegate<[TSource], TKey>, elementSelector: Delegate<[TSource], TElement>, comparer: IComparer<TKey>)
     {
         const initialSize = 7;
 
@@ -49,7 +50,7 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
 
         const index = hash % this.groups.length;
 
-        let group = new Group<TKey, TElement>(hash, key);
+        const group = new Group<TKey, TElement>(hash, key);
 
         group.hashNext = this.groups[index];
         this.groups[index] = group;
@@ -61,6 +62,7 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
         else
         {
             group.next = this.lastGroup.next;
+
             this.lastGroup.next = group;
         }
 
@@ -70,9 +72,9 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
         return group;
     }
 
-    private getGroup(key: TKey, hash: number): Nullable<Group<TKey, TElement>>
+    private getGroup(key: TKey, hash: number): Group<TKey, TElement> | null
     {
-        for (let group: Nullable<Group<TKey, TElement>> = this.groups[hash % this.groups.length]; !!group; group = group.hashNext)
+        for (let group: Group<TKey, TElement> | undefined = this.groups[hash % this.groups.length]; !!group; group = group.hashNext)
         {
             if (group.hash == hash && this.comparer.equals(group.key, key))
             {
@@ -80,7 +82,7 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
             }
         }
 
-        return;
+        return null;
     }
 
     private resize(): void
@@ -124,7 +126,7 @@ export default class Lookup<TSource, TKey, TElement> implements Iterable<Group<T
         return !!this.getGroup(key, Hashcode.encode(key));
     }
 
-    public get(key: TKey): Array<TElement>
+    public get(key: TKey): TElement[]
     {
         const group = this.getGroup(key, Hashcode.encode(key));
 

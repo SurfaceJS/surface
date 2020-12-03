@@ -1,19 +1,19 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./root.scss?global";
 
-import CustomElement from "@surface/custom-element";
-import { element }   from "@surface/custom-element/decorators";
-import template      from "./index.html";
-import style         from "./index.scss";
-
-@element("smd-app", template, style)
-export default class App extends CustomElement
-{ }
+import CustomElement, { element } from "@surface/custom-element";
+import template                   from "./index.html";
+import style                      from "./index.scss";
 
 declare global
 {
-    // tslint:disable-next-line:interface-name
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface HTMLElementTagNameMap
     {
         "smd-app": App;
     }
 }
+
+@element("smd-app", template, style)
+export default class App extends CustomElement
+{ }

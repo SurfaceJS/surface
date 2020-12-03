@@ -1,7 +1,7 @@
-import IRawPalette    from "./interfaces/raw-palette";
-import IRawTheme      from "./interfaces/raw-theme";
 import materialColors from "./internal/material-colors";
 import ThemeProvider  from "./internal/theme-provider";
+import RawPalette     from "./types/raw-palette";
+import RawTheme       from "./types/raw-theme";
 
 export default class MaterialDesign
 {
@@ -23,7 +23,7 @@ export default class MaterialDesign
         return this;
     }
 
-    public static useTheme(theme: IRawPalette|IRawTheme): typeof MaterialDesign
+    public static useTheme(theme: RawPalette|RawTheme): typeof MaterialDesign
     {
         this.themeProvider.use(theme);
 

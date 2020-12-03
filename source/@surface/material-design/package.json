@@ -4,24 +4,24 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/color": "0.0.0",
-        "@surface/core": "0.0.4",
-        "@surface/custom-element": "0.0.5",
-        "@surface/enumerable": "0.0.0",
-        "@surface/expression": "0.0.0",
-        "@surface/reactive": "0.0.0",
-        "@surface/reflection": "0.0.0",
+        "@surface/collection": "file:../collection",
+        "@surface/color": "file:../color",
+        "@surface/core": "file:../core",
+        "@surface/custom-element": "file:../custom-element",
+        "@surface/enumerable": "file:../enumerable",
+        "@surface/expression": "file:../expression",
+        "@surface/reactive": "file:../reactive",
+        "@surface/reflection": "file:../reflection",
         "material-design-icons-iconfont": "5.0.1",
         "resize-observer-polyfill": "1.5.1",
-        "tslib": "1.10.0"
+        "tslib": "2.0.3"
     },
     "description": "Surface web material design",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
-        "@types/jsdom": "12.2.4",
+        "@surface/test-suite": "file:../test-suite",
+        "@types/jsdom": "16.2.5",
         "chai": "4.2.0",
-        "jsdom": "15.2.1"
+        "jsdom": "16.4.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -40,6 +40,5 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "types": "index.d.ts",
-    "version": "0.0.0"
+    "version": "0.1.0-alpha.1"
 }

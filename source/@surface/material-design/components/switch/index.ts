@@ -1,16 +1,25 @@
-import { mixer }                                               from "@surface/core/common/object";
-import CustomElement                                           from "@surface/custom-element";
-import { attribute, computed, element, event, observe, query } from "@surface/custom-element/decorators";
-import colorable                                               from "../../mixins/colorable";
-import disableable                                             from "../../mixins/disableable";
-import elevatable                                              from "../../mixins/elevatable";
-import rippleable                                              from "../../mixins/rippleable";
-import themeable                                               from "../../mixins/themeable";
-import template                                                from "./index.html";
-import style                                                   from "./index.scss";
+import { mixer }                                           from "@surface/core";
+import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
+import { computed, observe }                               from "@surface/reactive";
+import colorable                                           from "../../mixins/colorable";
+import disableable                                         from "../../mixins/disableable";
+import elevatable                                          from "../../mixins/elevatable";
+import rippleable                                          from "../../mixins/rippleable";
+import themeable                                           from "../../mixins/themeable";
+import template                                            from "./index.html";
+import style                                               from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-switch": Switch;
+    }
+}
 
 @element("smd-switch", template, style)
-export class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
+export default class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
     protected colorable!: HTMLElement;
@@ -37,7 +46,7 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
     }
 
     @observe("checked")
-    protected onChange(_value: boolean)
+    protected onChange(): void
     {
         super.dispatchEvent(new Event("change"));
     }
@@ -53,14 +62,5 @@ export class Switch extends mixer(CustomElement, [colorable, disableable, elevat
             inset:     this.inset,
             labelable: !!this.label,
         };
-    }
-}
-
-declare global
-{
-    // tslint:disable-next-line:interface-name
-    interface HTMLElementTagNameMap
-    {
-        "smd-switch": Switch;
     }
 }

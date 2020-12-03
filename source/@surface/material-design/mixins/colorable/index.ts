@@ -1,11 +1,10 @@
-import { Constructor } from "@surface/core";
-import CustomElement   from "@surface/custom-element";
-import { attribute }   from "@surface/custom-element/decorators";
+import { Constructor }              from "@surface/core";
+import CustomElement, { attribute } from "@surface/custom-element";
 
 const CSS_COLORS_PATTERN = /^(#[a-f0-9]{6}|((rgba?|hsla?)\([^)]*)\))$/i;
 
-// tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+const colorable = <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     abstract class Colorable extends superClass
     {
@@ -14,7 +13,8 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
         protected abstract readonly colorable?: HTMLElement;
 
-        public constructor(...args: Array<any>)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        public constructor(...args: any[])
         {
             super(...args);
         }
@@ -67,3 +67,5 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Colorable;
 };
+
+export default colorable;

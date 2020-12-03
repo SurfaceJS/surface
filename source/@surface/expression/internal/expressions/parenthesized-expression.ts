@@ -1,7 +1,7 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { hasValue }             from "@surface/core";
+import IExpression              from "../interfaces/expression";
+import IParenthesizedExpression from "../interfaces/parenthesized-expression";
+import NodeType                 from "../node-type";
 
 export default class ParenthesizedExpression implements IExpression
 {
@@ -29,7 +29,12 @@ export default class ParenthesizedExpression implements IExpression
         this._argument = argument;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public clone(): IParenthesizedExpression
+    {
+        return new ParenthesizedExpression(this.argument.clone());
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {

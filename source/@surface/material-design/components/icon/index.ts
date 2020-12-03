@@ -1,9 +1,18 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./font-face.scss?global";
 
-import CustomElement          from "@surface/custom-element";
-import { attribute, element } from "@surface/custom-element/decorators";
-import template               from "./index.html";
-import style                  from "./index.scss";
+import CustomElement, { attribute, element } from "@surface/custom-element";
+import template                              from "./index.html";
+import style                                 from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-icon": Icon;
+    }
+}
 
 @element("smd-icon", template, style)
 export default class Icon extends CustomElement
@@ -19,14 +28,5 @@ export default class Icon extends CustomElement
     public set name(value: string)
     {
         this._name = value;
-    }
-}
-
-declare global
-{
-    // tslint:disable-next-line:interface-name
-    interface HTMLElementTagNameMap
-    {
-        "smd-icon": Icon;
     }
 }

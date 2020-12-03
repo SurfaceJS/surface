@@ -1,4 +1,4 @@
-export const nativeEvents =
+const nativeEvents =
 [
     "onabort",
     "onblur",
@@ -58,3 +58,5 @@ export const nativeEvents =
     "onwaiting",
     "onwheel",
 ];
+
+export default new Set(nativeEvents);

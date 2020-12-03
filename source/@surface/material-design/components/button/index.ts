@@ -1,20 +1,29 @@
-import { mixer }                               from "@surface/core/common/object";
-import CustomElement                           from "@surface/custom-element";
-import { attribute, computed, element, query } from "@surface/custom-element/decorators";
-import colorable                               from "../../mixins/colorable";
-import disableable                             from "../../mixins/disableable";
-import elevatable                              from "../../mixins/elevatable";
-import rippleable                              from "../../mixins/rippleable";
-import themeable                               from "../../mixins/themeable";
-import template                                from "./index.html";
-import style                                   from "./index.scss";
+import { mixer }                                    from "@surface/core";
+import CustomElement, { attribute, element, query } from "@surface/custom-element";
+import { computed }                                 from "@surface/reactive";
+import colorable                                    from "../../mixins/colorable";
+import disableable                                  from "../../mixins/disableable";
+import elevatable                                   from "../../mixins/elevatable";
+import rippleable                                   from "../../mixins/rippleable";
+import themeable                                    from "../../mixins/themeable";
+import template                                     from "./index.html";
+import style                                        from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-buttom": Button;
+    }
+}
 
 export type Size = ""
-    | "x-small"
-    | "small"
-    | "medium"
-    | "large"
-    | "x-large";
+| "x-small"
+| "small"
+| "medium"
+| "large"
+| "x-large";
 
 @element("smd-button", template, style)
 export default class Button extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
@@ -55,23 +64,14 @@ export default class Button extends mixer(CustomElement, [colorable, disableable
         return {
             ...super.elevationClasses,
             ...super.themeClasses,
-            container:  true,
             block:      this.block,
+            container:  true,
             fab:        this.fab,
             icon:       this.icon,
             outlined:   this.outlined,
             rounded:    this.rounded,
             text:       this.text,
-            tile:       this.tile
+            tile:       this.tile,
         };
-    }
-}
-
-declare global
-{
-    // tslint:disable-next-line:interface-name
-    interface HTMLElementTagNameMap
-    {
-        "smd-buttom": Button;
     }
 }

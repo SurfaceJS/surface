@@ -4,17 +4,18 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "0.0.0",
-        "@surface/common": "0.0.8",
-        "@surface/core": "0.0.3",
-        "@surface/enumerable": "0.0.5",
-        "@surface/reflection": "0.0.0",
-        "@surface/router": "0.0.0",
-        "tslib": "1.10.0"
+        "@surface/collection": "file:../collection",
+        "@surface/core": "file:../core",
+        "@surface/enumerable": "file:../enumerable",
+        "@surface/reflection": "file:../reflection",
+        "@surface/router": "file:../router",
+        "@types/node": "14.0.27",
+        "tslib": "2.0.3"
     },
     "description": "Simple web host for @surface projects.",
     "devDependencies": {
-        "@surface/test-suite": "0.0.0",
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
         "chai": "4.2.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
@@ -29,8 +30,5 @@
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "version": "0.0.0"
+    "version": "1.0.0-alpha.1"
 }

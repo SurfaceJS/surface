@@ -1,23 +1,23 @@
-import { Func1, Indexer, Nullable } from "@surface/core";
-import { hasValue }                 from "@surface/core/common/generic";
-import IExpression                  from "../../interfaces/expression";
-import NodeType                     from "../../node-type";
-import { UnaryOperator }            from "../../types";
+import { Delegate, Indexer, hasValue } from "@surface/core";
+import IExpression                     from "../interfaces/expression";
+import IUnaryExpression                from "../interfaces/unary-expression";
+import NodeType                        from "../node-type";
+import { UnaryOperator }               from "../types/operators";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 
 const unaryFunctions: Record<UnaryOperator, Operation> =
 {
+    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
     "+":      (expression, scope, useCache) => +(expression.evaluate(scope, useCache) as Object),
     "-":      (expression, scope, useCache) => -(expression.evaluate(scope, useCache) as Object),
-    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
-    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
     "typeof": (expression, scope, useCache) => typeof expression.evaluate(scope, useCache),
+    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
 };
 
 export default class UnaryExpression implements IExpression
 {
-    private cache: Nullable<Object>;
+    private cache: Object | null = null;
 
     private _argument: IExpression;
     public get argument(): IExpression
@@ -54,21 +54,26 @@ export default class UnaryExpression implements IExpression
     {
         this._operator = operator;
         this._argument = argument;
-        this.operation = unaryFunctions[this.operator] as Func1<unknown, Object>;
+        this.operation = unaryFunctions[this.operator] as Delegate<[unknown], Object>;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Object
+    public clone(): IUnaryExpression
+    {
+        return new UnaryExpression(this.argument.clone(), this.operator);
+    }
+
+    public evaluate(scope: object, useCache?: boolean): Object
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.argument, scope, !!useCache);
+        return this.cache = this.operation(this.argument, scope as Indexer, !!useCache);
     }
 
     public toString(): string
     {
-        return `${this.operator}${this.operator == "typeof" ? " ": ""}${this.argument}`;
+        return `${this.operator}${this.operator == "typeof" ? " " : ""}${this.argument}`;
     }
 }

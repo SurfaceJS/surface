@@ -1,1 +1,0 @@
-export const PATTERN = Symbol("expression:pattern");

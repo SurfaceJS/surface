@@ -1,16 +1,14 @@
-import { Constructor }   from "@surface/core";
-//import { typeGuard }     from "@surface/core/common/generic";
-import CustomElement     from "@surface/custom-element";
-import { event, styles } from "@surface/custom-element/decorators";
-import style             from "./index.scss";
+import { Constructor }                  from "@surface/core";
+import CustomElement, { event, styles } from "@surface/custom-element";
+import style                            from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
 const ANIMATION_IN    = "animation-in";
 const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
-// tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const lineRippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     @styles(style)
     abstract class LineRippleable extends superClass
@@ -45,7 +43,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
                         ripple.classList.add(ANIMATION_IN);
 
                         ripple.style.transform = "scaleX(1)";
-                    }
+                    },
                 );
             }
         }
@@ -55,7 +53,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         {
             if (!this.noRipple)
             {
-                const ripples = this.rippleable.querySelectorAll<HTMLElement>("." + RIPPLE);
+                const ripples = this.rippleable.querySelectorAll<HTMLElement>(`.${RIPPLE}`);
 
                 if (ripples.length == 0)
                 {
@@ -78,7 +76,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
                         setTimeout(() => ripples.forEach(x => x.parentNode && x.remove()), 300);
                     },
-                    timeLeft
+                    timeLeft,
                 );
             }
         }
@@ -86,3 +84,5 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return LineRippleable;
 };
+
+export default lineRippleable;

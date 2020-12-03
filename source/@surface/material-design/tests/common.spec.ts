@@ -1,6 +1,7 @@
+/* eslint-disable sort-keys */
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import { generateTheme }          from "../internal/common";
+import { generateTheme }           from "../internal/common";
 
 @suite
 export default class ThemeGeneratorSpec
@@ -8,7 +9,7 @@ export default class ThemeGeneratorSpec
     @test @shouldPass
     public generateColorMap(): void
     {
-        const raw = { light: { primary: "#ff0000", secondary: "#00ff00" }};
+        const raw = { light: { primary: "#ff0000", secondary: "#00ff00" } };
 
         const expected =
         {
@@ -47,8 +48,8 @@ export default class ThemeGeneratorSpec
                     "A200": "#26ff00ff",
                     "A400": "#22e000ff",
                     "A700": "#1cba00ff",
-                }
-            }
+                },
+            },
         };
 
         const actual = generateTheme(raw);

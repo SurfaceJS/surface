@@ -1,7 +1,7 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import IExpression  from "../../interfaces/expression";
-import NodeType     from "../../node-type";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import IThisExpression       from "../interfaces/this-expression";
+import NodeType              from "../node-type";
 
 export default class ThisExpression implements IExpression
 {
@@ -12,14 +12,19 @@ export default class ThisExpression implements IExpression
         return NodeType.ThisExpression;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public clone(): IThisExpression
+    {
+        return new ThisExpression();
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = scope["this"];
+        return this.cache = (scope as Indexer).this;
     }
 
     public toString(): string

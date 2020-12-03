@@ -1,23 +1,23 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import IExpression           from "../../interfaces/expression";
-import IProperty             from "../../interfaces/property";
-import ISpreadElement        from "../../interfaces/spread-element";
-import NodeType              from "../../node-type";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import IObjectExpression     from "../interfaces/object-expression";
+import IProperty             from "../interfaces/property";
+import ISpreadElement        from "../interfaces/spread-element";
+import NodeType              from "../node-type";
 import TypeGuard             from "../type-guard";
 
 export default class ObjectExpression implements IExpression
 {
-    private cache: Nullable<Indexer>;
+    private cache: Indexer | null = null;
 
-    private _properties: Array<IProperty|ISpreadElement>;
-    public get properties(): Array<IProperty|ISpreadElement>
+    private _properties: (IProperty | ISpreadElement)[];
+    public get properties(): (IProperty | ISpreadElement)[]
     {
         return this._properties;
     }
 
     /* istanbul ignore next */
-    public set properties(value: Array<IProperty|ISpreadElement>)
+    public set properties(value: (IProperty | ISpreadElement)[])
     {
         this._properties = value;
     }
@@ -27,12 +27,17 @@ export default class ObjectExpression implements IExpression
         return NodeType.ObjectExpression;
     }
 
-    public constructor(properties: Array<IProperty|ISpreadElement>)
+    public constructor(properties: (IProperty | ISpreadElement)[])
     {
         this._properties = properties;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Indexer
+    public clone(): IObjectExpression
+    {
+        return new ObjectExpression(this.properties.map(x => x.clone()));
+    }
+
+    public evaluate(scope: object, useCache?: boolean): Indexer
     {
         if (useCache && hasValue(this.cache))
         {
@@ -45,7 +50,7 @@ export default class ObjectExpression implements IExpression
         {
             if (TypeGuard.isProperty(property))
             {
-                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useCache) as string|number;
+                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useCache) as string | number;
 
                 evaluation[key] = property.value.evaluate(scope, useCache);
             }

@@ -1,9 +1,9 @@
-import { Constructor }             from "@surface/core";
-import CustomElement               from "@surface/custom-element";
-import { attribute, computed } from "@surface/custom-element/decorators";
+import { Constructor }              from "@surface/core";
+import CustomElement, { attribute } from "@surface/custom-element";
+import { computed }                 from "@surface/reactive";
 
-// tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const themeable = <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     class Themeable extends superClass
     {
@@ -22,3 +22,5 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Themeable;
 };
+
+export default themeable;

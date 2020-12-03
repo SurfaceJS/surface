@@ -1,7 +1,15 @@
-import CustomElement from "../..";
-import { element }   from "../../decorators";
+import CustomElement from "../../internal/custom-element";
+import { element }   from "../../internal/decorators";
 
-@element("mock-element", "<span>this value is: {host.value}</span><span>Another Span</span>", "span { color: red; }")
+const template =
+`
+    <span>this value is: {host.value}</span>
+    <span>Another Span</span>
+`;
+
+const style = "span { color: red; }";
+
+@element("mock-element", template, style)
 export default class MockElement extends CustomElement
 {
     public value: number = 0;

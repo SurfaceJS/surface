@@ -1,129 +1,195 @@
-import chai                        from "chai";
-import { shouldFail, suite, test } from "../../test-suite";
-import { Baz }                     from "./mocks/baz";
-import container, { SYMBOL_KEY }   from "./mocks/container";
-import InjectableMock              from "./mocks/injectable-mock";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                              from "chai";
+import Container                               from "../internal/container";
+import { inject }                              from "../internal/decorators";
+import Bar                                     from "./mocks/bar";
+import Baz                                     from "./mocks/baz";
+import Foo                                     from "./mocks/foo";
+import InjectableMock                          from "./mocks/injectable-mock";
+
+const SYMBOL_KEY = Symbol("symbol-key");
+
+const container = new Container()
+    .registerSingleton("bar", Bar)
+    .registerSingleton("baz", Baz)
+    .registerSingleton("foo", Foo)
+    .registerSingleton(InjectableMock)
+    .registerSingleton("factory", x => new InjectableMock(x.resolve("baz")))
+    .registerSingleton("injectable-mock", InjectableMock)
+    .registerSingleton(SYMBOL_KEY, InjectableMock);
 
 @suite
 export default class DependencyInjectionSpec
 {
-    @test
-    public resolveConstructor(): void
+    @test @shouldPass
+    public injectUnregisteredConstructor(): void
     {
-        const instance1 = container.resolveConstructor(InjectableMock);
+        const instance = new Container().inject(class Mock { });
+
+        assert.notEqual(instance, null, "instance notEqual null");
+    }
+
+    @test @shouldPass
+    public injectUnregisteredInstance(): void
+    {
+        const instance = new Container().inject(new class Mock { }());
+
+        assert.notEqual(instance, null, "instance notEqual null");
+    }
+
+    @test @shouldPass
+    public registerSingleton(): void
+    {
+        class Mock { }
+
+        const container = new Container()
+            .registerSingleton(Mock);
+
+        const instance = container.resolve(Mock);
+
+        container.registerSingleton("key", instance);
+
+        assert.equal(instance, container.resolve(Mock), "intance equal container.resolve(Mock)");
+    }
+
+    @test @shouldPass
+    public registerTransient(): void
+    {
+        const key = "mock";
+        class Mock { }
+
+        const container = new Container()
+            .registerTransient(Mock)
+            .registerTransient(key, Mock);
+
+        assert.notEqual(container.resolve(Mock), container.resolve(Mock), "container.resolve(Mock) notEqual container.resolve(Mock)");
+        assert.notEqual(container.resolve(key), container.resolve(key), "container.resolve(key) notEqual container.resolve(key)");
+    }
+
+    @test @shouldPass
+    public injectUsingConstructor(): void
+    {
+        const instance1 = container.inject(InjectableMock);
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.expect(instance1).to.not.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
+        assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
+        assert.deepEqual(instance1.foo, instance2.foo, "instance1.foo deepEqual instance2.foo");
+        assert.deepEqual(instance1.bar, instance2.bar, "instance1.bar deepEqual instance2.bar");
+        assert.deepEqual(instance1.baz, instance2.baz, "instance1.baz deepEqual instance2.baz");
     }
 
-    @test
-    public resolveConstructorWithoutInjections(): void
-    {
-        const instance1 = container.resolveConstructor(class Mock { });
-
-        chai.expect(instance1).to.not.equal(null);
-    }
-
-    @test
-    public resolveInstanceWithoutInjections(): void
-    {
-        const instance = container.resolveInstance(new (class Mock { })());
-
-        chai.expect(instance).to.not.equal(null);
-    }
-
-    @test
+    @test @shouldPass
     public resolveInstance(): void
     {
-        const instance1 = container.resolveInstance(new InjectableMock(new Baz()));
+        const instance1 = container.inject(new InjectableMock(new Baz()));
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.expect(instance1).to.not.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.not.equal(instance2.baz);
+        assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.notEqual(instance1.baz, instance2.baz, "instance1.baz notEqual instance2.baz");
     }
 
-    @test
+    @test @shouldPass
     public resolveFromStringKey(): void
     {
         const instance1 = container.resolve<InjectableMock>("injectable-mock");
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.expect(instance1).to.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
     }
 
-    @test
+    @test @shouldPass
     public resolveFromSymbolKey(): void
     {
         const instance1 = container.resolve<InjectableMock>(SYMBOL_KEY);
         const instance2 = container.resolve<InjectableMock>(SYMBOL_KEY);
 
-        chai.expect(instance1).to.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
     }
 
-    @test
+    @test @shouldPass
     public resolveFromConstructorKey(): void
     {
         const instance1 = container.resolve(InjectableMock);
         const instance2 = container.resolve(InjectableMock);
 
-        chai.expect(instance1).to.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
+        assert.equal(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
     }
 
-    @test
+    @test @shouldPass
     public resolveFactory(): void
     {
         const instance1 = container.resolve<InjectableMock>("factory");
         const instance2 = container.resolve(InjectableMock);
 
-        chai.expect(instance1).to.not.equal(instance2);
-        chai.expect(instance1.foo).to.not.equal(instance2.foo);
-        chai.expect(instance1.bar).to.not.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
+        assert.notEqual(instance1, instance2, "instance1 equal instance2");
+        assert.equal(instance1.foo, instance2.foo, "instance1.foo equal instance2.foo");
+        assert.equal(instance1.bar, instance2.bar, "instance1.bar equal instance2.bar");
+        assert.equal(instance1.baz, instance2.baz, "instance1.baz equal instance2.baz");
     }
 
-    @test
-    public resolveWithNewInstance(): void
+    @test @shouldPass
+    public merge(): void
     {
-        const instance1 = container.resolve(InjectableMock, true);
-        const instance2 = container.resolve(InjectableMock, true);
+        class LeftA { }
+        class LeftB { }
+        class RightA { }
+        class RightB { }
 
-        chai.expect(instance1).to.not.equal(instance2);
-        chai.expect(instance1.foo).to.equal(instance2.foo);
-        chai.expect(instance1.bar).to.equal(instance2.bar);
-        chai.expect(instance1.baz).to.equal(instance2.baz);
-    }
+        const left = new Container()
+            .registerSingleton(LeftA)
+            .registerTransient(LeftB);
 
-    @test
-    public resolveWithNewInstanceCascade(): void
-    {
-        const instance1 = container.resolve(InjectableMock, true, true);
-        const instance2 = container.resolve(InjectableMock, true, true);
+        const right = new Container()
+            .registerSingleton(RightA)
+            .registerTransient(RightB);
 
-        chai.expect(instance1).to.not.equal(instance2);
-        chai.expect(instance1.foo).to.not.equal(instance2.foo);
-        chai.expect(instance1.bar).to.not.equal(instance2.bar);
-        chai.expect(instance1.baz).to.not.equal(instance2.baz);
+        const container = Container.merge(left, right);
+
+        assert.instanceOf(container.resolve(LeftA), LeftA, "container.resolve(LeftA) instanceOf LeftA");
+        assert.instanceOf(container.resolve(LeftB), LeftB, "container.resolve(LeftB) instanceOf LeftB");
+        assert.instanceOf(container.resolve(RightA), RightA, "container.resolve(RightA) instanceOf RightA");
+        assert.instanceOf(container.resolve(RightB), RightB, "container.resolve(RightB) instanceOf RightB");
     }
 
     @test @shouldFail
     public resolveInvalidKey(): void
     {
-        chai.expect(() => container.resolve(class Foo { }), "constructor").to.throw("Cannot resolve entry for the key Foo");
-        chai.expect(() => container.resolve(Symbol("s")),   "symbol").to.throw("Cannot resolve entry for the key Symbol(s)");
-        chai.expect(() => container.resolve("$"),           "string").to.throw("Cannot resolve entry for the key $");
+        assert.throws(() => container.resolve(class Foo { }), Error, "Cannot resolve entry for the key Foo");
+        assert.throws(() => container.resolve(Symbol("s")),   Error, "Cannot resolve entry for the key Symbol(s)");
+        assert.throws(() => container.resolve("$"),           Error, "Cannot resolve entry for the key $");
+    }
+
+    @test @shouldFail
+    public resolveCircularity(): void
+    {
+        class MockA
+        {
+            @inject("mock-b")
+            public readonly mock!: object;
+        }
+
+        class MockB
+        {
+            @inject(MockA)
+            public readonly mock!: object;
+        }
+
+        const container = new Container()
+            .registerSingleton(MockA)
+            .registerSingleton("mock-b", MockB);
+
+        assert.throws(() => container.resolve(MockA), Error, "Circularity dependency to the key: [function MockA]");
+        assert.throws(() => container.resolve("mock-b"), Error, "Circularity dependency to the key: mock-b");
     }
 }

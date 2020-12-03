@@ -1,11 +1,10 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import PropertyInfo                from "../property-info";
-import Type                        from "../type";
+import PropertyInfo                from "../internal/property-info";
+import Type                        from "../internal/type";
 import Mock                        from "./fixtures/mock";
 
-// tslint:disable:no-non-null-assertion
-const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype ,"instanceProperty")!, Type.of(Mock), false, false);
+const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceProperty")!, Type.of(Mock), false, false);
 
 @suite
 export default class FieldInfoSpec
@@ -34,22 +33,23 @@ export default class FieldInfoSpec
         const metadata =
         {
             "design:paramtypes": [Number],
-            "design:type": Number
+            "design:type":       Number,
         };
 
-        expect(propertyInfo.metadata).to.deep.equal(metadata); // caching
+        // Caching
+        expect(propertyInfo.metadata).to.deep.equal(metadata);
         expect(propertyInfo.metadata).to.deep.equal(metadata);
     }
 
     @test @shouldPass
     public staticPropertymetadata(): void
     {
-        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock ,"staticProperty")!, Type.of(Mock), false, true);
+        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock, "staticProperty")!, Type.of(Mock), false, true);
 
         const metadata =
         {
             "design:paramtypes": [Number],
-            "design:type": Number,
+            "design:type":       Number,
         };
 
         expect(propertyInfo.metadata).to.deep.equal(metadata);

@@ -1,193 +1,365 @@
-import { after, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                           from "chai";
-import fs                                             from "fs";
-import path                                           from "path";
-import * as common                                    from "..";
+/* eslint-disable import/no-namespace */
+import path         from "path";
+import Mock, { It } from "@surface/mock";
+import
+{
+    afterEach,
+    beforeEach,
+    shouldFail,
+    shouldPass,
+    suite,
+    test,
+} from "@surface/test-suite";
+import { assert } from "chai";
+import
+{
+    createPath,
+    createPathAsync,
+    isDirectory,
+    isFile,
+    lookup,
+    lookupFile,
+    lookupFileAsync,
+    removePath,
+    removePathAsync,
+} from "../internal/common";
+import * as externalNS from "../internal/external";
+
+type ReaddirSync = (path: import("fs").PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => string[];
+type ReaddirAsync = (path: import("fs").PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => Promise<string[]>;
+type External = typeof externalNS;
+
+const existsSyncMock    = Mock.callable<External["existsSync"]>();
+const lstatAsyncMock    = Mock.callable<External["lstatAsync"]>();
+const lstatSyncMock     = Mock.callable<External["lstatSync"]>();
+const mkdirAsyncMock    = Mock.callable<External["mkdirAsync"]>();
+const mkdirSyncMock     = Mock.callable<External["mkdirSync"]>();
+const readdirAsyncMock  = Mock.callable<External["readdirAsync"]>();
+const readdirSyncMock   = Mock.callable<External["readdirSync"]>();
+const readlinkAsyncMock = Mock.callable<External["readlinkAsync"]>();
+const readlinkSyncMock  = Mock.callable<External["readlinkSync"]>();
+const rmdirAsyncMock    = Mock.callable<External["rmdirAsync"]>();
+const rmdirSyncMock     = Mock.callable<External["rmdirSync"]>();
+const statSyncMock      = Mock.callable<External["statSync"]>();
+const unlinkAsyncMock   = Mock.callable<External["unlinkAsync"]>();
+const unlinkSyncMock    = Mock.callable<External["unlinkSync"]>();
+
+const PATH = process.cwd();
 
 @suite
-export default class CommonSpec
+export default class IoSpec
 {
-    @after
-    public cleanup(): void
+    @beforeEach
+    public beforeEach(): void
     {
-        common.deletePath(path.resolve(__dirname, "fixtures"));
+        const external: Partial<typeof externalNS> =
+        {
+            existsSync:    existsSyncMock.proxy,
+            lstatAsync:    lstatAsyncMock.proxy,
+            lstatSync:     lstatSyncMock.proxy,
+            mkdirAsync:    mkdirAsyncMock.proxy,
+            mkdirSync:     mkdirSyncMock.proxy,
+            readdirAsync:  readdirAsyncMock.proxy,
+            readdirSync:   readdirSyncMock.proxy,
+            readlinkAsync: readlinkAsyncMock.proxy,
+            readlinkSync:  readlinkSyncMock.proxy,
+            rmdirAsync:    rmdirAsyncMock.proxy,
+            rmdirSync:     rmdirSyncMock.proxy,
+            statSync:      statSyncMock.proxy,
+            unlinkAsync:   unlinkAsyncMock.proxy,
+            unlinkSync:    unlinkSyncMock.proxy,
+        };
+
+        Mock.module(externalNS, external);
+    }
+
+    @afterEach
+    public afterEach(): void
+    {
+        Mock.restore(externalNS);
+
+        existsSyncMock.clear();
+        lstatAsyncMock.clear();
+        lstatSyncMock.clear();
+        mkdirAsyncMock.clear();
+        mkdirSyncMock.clear();
+        readdirAsyncMock.clear();
+        readdirSyncMock.clear();
+        readlinkAsyncMock.clear();
+        readlinkSyncMock.clear();
+        rmdirAsyncMock.clear();
+        rmdirSyncMock.clear();
+        statSyncMock.clear();
+        unlinkAsyncMock.clear();
+        unlinkSyncMock.clear();
     }
 
     @test @shouldPass
-    public makePath(): void
+    public createPath(): void
     {
-        const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
+        const PATH_TO        = path.join(PATH, "to");
+        const PATH_TO_CREATE = path.join(PATH_TO, "create");
 
-        common.makePath(pathToMake);
+        existsSyncMock.call(PATH).returns(true);
+        existsSyncMock.call(PATH_TO).returns(false);
+        existsSyncMock.call(PATH_TO_CREATE).returns(false);
 
-        chai.expect(fs.existsSync(pathToMake)).to.equal(true);
+        assert.doesNotThrow(() => createPath(PATH_TO_CREATE));
+
+        existsSyncMock.call(PATH_TO_CREATE).returns(true);
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => true, isSymbolicLink: () => false } as import("fs").Stats);
+
+        assert.doesNotThrow(() => createPath(PATH_TO_CREATE));
     }
 
     @test @shouldPass
-    public async makePathAsync(): Promise<void>
+    public createPathAsync(): void
     {
-        const pathToMake = path.resolve(__dirname, "./fixtures/deep/path/to/delete");
+        const PATH_TO        = path.join(PATH, "to");
+        const PATH_TO_CREATE = path.join(PATH_TO, "create");
 
-        await common.makePathAsync(pathToMake);
+        existsSyncMock.call(PATH).returns(true);
+        existsSyncMock.call(PATH_TO).returns(false);
+        existsSyncMock.call(PATH_TO_CREATE).returns(false);
 
-        chai.expect(fs.existsSync(pathToMake)).to.equal(true);
+        assert.doesNotThrow(() => void createPathAsync(PATH_TO_CREATE));
+
+        existsSyncMock.call(PATH_TO_CREATE).returns(true);
+        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => true, isSymbolicLink: () => false } as import("fs").Stats));
+
+        assert.doesNotThrow(() => void createPathAsync(PATH_TO_CREATE));
     }
 
     @test @shouldPass
-    public deletePath(): void
+    public isDirectory(): void
     {
-        const pathToDelete = path.resolve(__dirname, "./fixtures/deep");
+        const PATH_TO_FILE      = path.join(PATH, "to", "file");
+        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
 
-        common.deletePath(pathToDelete);
+        statSyncMock.call(PATH_TO_DIRECTORY).returns({ isDirectory: () => true } as import("fs").Stats);
+        statSyncMock.call(PATH_TO_ENOENT).throws({ code: "ENOENT" } as unknown as Error);
+        statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
+        statSyncMock.call(It.any()).returns({ isDirectory: () => false } as import("fs").Stats);
 
-        chai.expect(fs.existsSync(pathToDelete)).to.equal(false);
+        assert.isTrue(isDirectory(PATH_TO_DIRECTORY), "isDirectory(PATH_TO_DIRECTORY) is true");
+        assert.isFalse(isDirectory(PATH_TO_FILE),     "isDirectory(PATH_TO_FILE) is false");
+        assert.isFalse(isDirectory(PATH_TO_ENOENT),   "isDirectory(PATH_TO_ENOENT) is false");
+        assert.isFalse(isDirectory(PATH_TO_ENOTDIR),  "isDirectory(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
-    public deletePathWithFiles(): void
+    public isFile(): void
     {
-        const pathToDelete = path.resolve(__dirname, "./fixtures/files");
-        const pathToMake   = path.resolve(__dirname, "./fixtures/files/to/delete");
+        const PATH_TO_FILE      = path.join(PATH, "to", "file");
+        const PATH_TO_FIFO      = path.join(PATH, "to", "fifo");
+        const PATH_TO_DIRECTORY = path.join(PATH, "to", "directory");
+        const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
+        const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
 
-        common.makePath(pathToMake);
+        statSyncMock.call(PATH_TO_FILE).returns({ isFIFO: () => false, isFile: () => true } as import("fs").Stats);
+        statSyncMock.call(PATH_TO_FIFO).returns({ isFIFO: () => true, isFile: () => false } as import("fs").Stats);
+        statSyncMock.call(PATH_TO_ENOENT).throws({ code: "ENOENT" } as unknown as Error);
+        statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
+        statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as import("fs").Stats);
 
-        fs.writeFileSync(path.join(pathToMake, "file-1.txt"), "delete me");
-        fs.writeFileSync(path.join(pathToMake, "file-2.txt"), "delete me");
-
-        chai.expect(common.deletePath(pathToDelete)).to.equal(true);
-        chai.expect(fs.existsSync(pathToDelete)).to.equal(false);
+        assert.isTrue(isFile(PATH_TO_FILE),       "isFile(PATH_TO_FILE) is true");
+        assert.isTrue(isFile(PATH_TO_FIFO),       "isFile(PATH_TO_FIFO) is true");
+        assert.isFalse(isFile(PATH_TO_DIRECTORY), "isFile(PATH_TO_DIRECTORY) is false");
+        assert.isFalse(isFile(PATH_TO_ENOENT),    "isFile(PATH_TO_ENOENT) is false");
+        assert.isFalse(isFile(PATH_TO_ENOTDIR),   "isFile(PATH_TO_ENOTDIR) is false");
     }
 
     @test @shouldPass
-    public deletePathWithSymbolicLink(): void
+    public removePath(): void
     {
-        const realPath = path.resolve(__dirname, "./fixtures/real");
-        const linkPath = path.resolve(__dirname, "./fixtures/link");
+        const PATH_TO               = path.join(PATH, "to");
+        const PATH_EMPTY            = path.join(PATH, "empty");
+        const PATH_TO_REMOVE        = path.join(PATH_TO, "remove");
+        const PATH_TO_REMOVE_FILE   = path.join(PATH_TO_REMOVE, "file.ext");
+        const PATH_TO_SYMBOLIC_LINK = path.join(PATH_TO, "Symbolic", "Link");
 
-        fs.writeFileSync(realPath, "delete me");
+        existsSyncMock.call(PATH_TO_REMOVE).returns(true);
+        existsSyncMock.call(PATH_TO_REMOVE_FILE).returns(true);
+        existsSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(true);
+        lstatSyncMock.call(PATH_TO_REMOVE).returns({ isFile: () => false, isSymbolicLink: () => false } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_REMOVE_FILE).returns({ isFile: () => true, isSymbolicLink: () => false } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns({ isFile: () => false, isSymbolicLink: () => true } as import("fs").Stats);
+        readdirSyncMock.call<ReaddirSync>(PATH_TO_REMOVE).returns(["file.ext"]);
 
-        fs.symlinkSync(realPath, linkPath);
-
-        chai.expect(common.deletePath(linkPath)).to.equal(true);
-        chai.expect(fs.existsSync(linkPath)).to.equal(false);
+        assert.isTrue(removePath(PATH_TO_REMOVE),        "removePath(PATH_TO_REMOVE) is true");
+        assert.isTrue(removePath(PATH_TO_SYMBOLIC_LINK), "removePath(PATH_TO_SYMBOLIC_LINK) is true");
+        assert.isFalse(removePath(PATH_EMPTY),           "removePath(PATH_EMPTY) is false");
     }
 
     @test @shouldPass
-    public deleteNonExistingPath(): void
+    public async removePathAsync(): Promise<void>
     {
-        chai.expect(common.deletePath(path.resolve(__dirname, "./non/existing/path"))).to.equal(false);
+        const PATH_TO               = path.join(PATH, "to");
+        const PATH_EMPTY            = path.join(PATH, "empty");
+        const PATH_TO_REMOVE        = path.join(PATH_TO, "remove");
+        const PATH_TO_REMOVE_FILE   = path.join(PATH_TO_REMOVE, "file.ext");
+        const PATH_TO_SYMBOLIC_LINK = path.join(PATH_TO, "Symbolic", "Link");
+
+        existsSyncMock.call(PATH_TO_REMOVE).returns(true);
+        existsSyncMock.call(PATH_TO_REMOVE_FILE).returns(true);
+        existsSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(true);
+        lstatAsyncMock.call(PATH_TO_REMOVE).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_REMOVE_FILE).returns(Promise.resolve({ isFile: () => true, isSymbolicLink: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => true } as import("fs").Stats));
+        readdirAsyncMock.call<ReaddirAsync>(PATH_TO_REMOVE).returns(Promise.resolve(["file.ext"]));
+
+        assert.isTrue(await removePathAsync(PATH_TO_REMOVE),        "removePath(PATH_TO_REMOVE) is true");
+        assert.isTrue(await removePathAsync(PATH_TO_SYMBOLIC_LINK), "removePath(PATH_TO_SYMBOLIC_LINK) is true");
+        assert.isFalse(await removePathAsync(PATH_EMPTY),           "removePath(PATH_EMPTY) is false");
     }
 
     @test @shouldPass
-    public resolveRelativeFile(): void
+    public lookupFile(): void
     {
-        const expected = path.resolve(__dirname, "./fixtures/path/to/resolve-3/file.txt");
+        const expected = path.join(PATH, "resolve-3", "file.txt");
 
-        const paths =
+        const TO_RESOLVE_1_FILE = "./resolve-1/file.txt";
+        const TO_RESOLVE_2_FILE = "./resolve-2/file.txt";
+        const TO_RESOLVE_3_FILE = "./resolve-3/file.txt";
+
+        const relativePaths =
         [
-            "./fixtures/path/to/resolve-1/file.txt",
-            "./fixtures/path/to/resolve-2/file.txt",
-            "./fixtures/path/to/resolve-3/file.txt",
+            TO_RESOLVE_1_FILE,
+            TO_RESOLVE_2_FILE,
+            TO_RESOLVE_3_FILE,
         ];
 
+        const absoltePaths =
         [
-            path.join(__dirname, "./fixtures/path/to/resolve-1"),
-            path.join(__dirname, "./fixtures/path/to/resolve-2"),
-            path.join(__dirname, "./fixtures/path/to/resolve-3"),
-        ]
-        .forEach(common.makePath);
+            path.join(PATH, TO_RESOLVE_1_FILE),
+            path.join(PATH, TO_RESOLVE_2_FILE),
+            path.join(PATH, TO_RESOLVE_3_FILE),
+        ];
 
-        fs.writeFileSync(expected, "resolved");
+        assert.equal(lookupFile(relativePaths), null);
 
-        chai.expect(common.resolveFile(__dirname, paths)).to.equal(expected);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(false);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(false);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(true);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns({ isFile: () => false } as import("fs").Stats);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns({ isFile: () => false } as import("fs").Stats);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns({ isFile: () => true } as import("fs").Stats);
+
+        assert.equal(lookupFile(relativePaths), expected);
+        assert.equal(lookupFile(absoltePaths), expected);
     }
 
     @test @shouldPass
-    public resolveAbsoluteFile(): void
+    public async lookupFileAsync(): Promise<void>
     {
-        const expected = path.resolve(__dirname, "./fixtures/path/to/resolve-3/file.txt");
+        const expected = path.join(PATH, "resolve-3", "file.txt");
 
-        const paths =
+        const TO_RESOLVE_1_FILE = "./resolve-1/file.txt";
+        const TO_RESOLVE_2_FILE = "./resolve-2/file.txt";
+        const TO_RESOLVE_3_FILE = "./resolve-3/file.txt";
+
+        const relativePaths =
         [
-            "./fixtures/path/to/resolve-1/file.txt",
-            "./fixtures/path/to/resolve-2/file.txt",
-            path.join(__dirname, "./fixtures/path/to/resolve-3/file.txt"),
+            TO_RESOLVE_1_FILE,
+            TO_RESOLVE_2_FILE,
+            TO_RESOLVE_3_FILE,
         ];
 
+        const absoltePaths =
         [
-            path.join(__dirname, "./fixtures/path/to/resolve-1"),
-            path.join(__dirname, "./fixtures/path/to/resolve-2"),
-            path.join(__dirname, "./fixtures/path/to/resolve-3"),
-        ]
-        .forEach(common.makePath);
+            path.join(PATH, TO_RESOLVE_1_FILE),
+            path.join(PATH, TO_RESOLVE_2_FILE),
+            path.join(PATH, TO_RESOLVE_3_FILE),
+        ];
 
-        fs.writeFileSync(expected, "resolved");
+        assert.equal(await lookupFileAsync(relativePaths), null);
 
-        chai.expect(common.resolveFile(__dirname, paths)).to.equal(expected);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(false);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(false);
+        existsSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(true);
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(Promise.resolve({ isFile: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(Promise.resolve({ isFile: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(Promise.resolve({ isFile: () => true } as import("fs").Stats));
+
+        assert.equal(await lookupFileAsync(relativePaths), expected);
+        assert.equal(await lookupFileAsync(absoltePaths), expected);
     }
 
     @test @shouldPass
     public lookup(): void
     {
-        const pathToLookup = path.resolve(__dirname, "./fixtures/path/to/lookup");
-        const expected     = path.resolve(pathToLookup, "../../", "file.txt");
+        const PATH_TO_LOOKUP = path.join(PATH, "to", "lookup");
+        const PATH_FILE      = path.join(PATH, "file.txt");
+        const expected       = PATH_FILE;
 
-        common.makePath(pathToLookup);
+        existsSyncMock.call(PATH_FILE).returns(true);
 
-        fs.writeFileSync(expected, "look for me");
-
-        chai.expect(common.lookUp(pathToLookup, "file.txt")).to.equal(expected);
-    }
-
-    @test @shouldPass
-    public lookupInvalidPath(): void
-    {
-        chai.expect(common.lookUp(__dirname, `invalid-file-path${Date.now()}`)).to.equal(null);
+        assert.equal(lookup(PATH_TO_LOOKUP, "empty.txt"), null);
+        assert.equal(lookup(PATH_TO_LOOKUP, "file.txt"), expected);
     }
 
     @test @shouldFail
-    public makeInvalidPath(): void
+    public createPathError(): void
     {
-        const pathToMake = path.resolve(__dirname, "./fixtures/file");
+        const PATH_TO_CREATE = path.join(PATH, "to", "create");
 
-        fs.writeFileSync(path.join(pathToMake), "delete me");
-        chai.expect(() => common.makePath(path.join(pathToMake))).to.throw(Error, `${pathToMake} exist and isn't an directory`);
+        existsSyncMock.call(PATH_TO_CREATE).returns(true);
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => false } as import("fs").Stats);
+
+        assert.throws(() => createPath(PATH_TO_CREATE), Error, `${PATH_TO_CREATE} exist and isn't an directory`);
+
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => true } as import("fs").Stats);
+        readlinkSyncMock.call(PATH_TO_CREATE).returns(PATH_TO_CREATE);
+
+        assert.throws(() => createPath(PATH_TO_CREATE), Error, `${PATH_TO_CREATE} exist and isn't an directory`);
     }
 
     @test @shouldFail
-    public async makeInvalidPathAsync(): Promise<void>
+    public async createPathAsyncError(): Promise<void>
     {
-        const pathToMake = path.resolve(__dirname, "./fixtures/file");
+        const PATH_TO_CREATE        = path.join(PATH, "to", "create");
+        const PATH_TO_SIMBOLIC_LINK = path.join(PATH, "to", "simbolic", "link");
 
-        fs.writeFileSync(path.join(pathToMake), "delete me");
+        existsSyncMock.call(PATH_TO_CREATE).returns(true);
+        existsSyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(true);
+        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => true } as import("fs").Stats));
+        readlinkAsyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(Promise.resolve(PATH_TO_SIMBOLIC_LINK));
 
         try
         {
-            await common.makePathAsync(path.join(pathToMake));
-
+            await createPathAsync(PATH_TO_CREATE);
         }
         catch (error)
         {
-            chai.expect(error).to.includes(new Error(`${pathToMake} exist and isn't an directory`));
+            assert.deepEqual(`${PATH_TO_CREATE} exist and isn't an directory`, error.message);
+        }
+
+        try
+        {
+            await createPathAsync(PATH_TO_SIMBOLIC_LINK);
+        }
+        catch (error)
+        {
+            assert.deepEqual(`${PATH_TO_SIMBOLIC_LINK} exist and isn't an directory`, error.message);
         }
     }
 
-    @test @shouldPass
-    public makePathReadingSymbolicLink(): void
+    @test @shouldFail
+    public isDirectoryError(): void
     {
-        const realPath = path.resolve(__dirname, "./fixtures/real");
-        const linkPath = path.resolve(__dirname, "./fixtures/link");
+        statSyncMock.call(It.any()).throws(new Error());
 
-        fs.writeFileSync(realPath, "delete me");
-
-        fs.symlinkSync(realPath, linkPath);
-
-        chai.expect(() => common.makePath(linkPath)).to.throw(Error, `${realPath} exist and isn't an directory`);
+        assert.throws(() => isDirectory(PATH), Error);
     }
 
     @test @shouldFail
-    public cantResolveFile(): void
+    public isFileError(): void
     {
-        chai.expect(() => common.resolveFile(__dirname, ["./invalid/paht"])).to.throw(Error, "paths not found");
+        statSyncMock.call(It.any()).throws(new Error());
+
+        assert.throws(() => isFile(PATH), Error);
     }
 }

@@ -1,23 +1,24 @@
 {
-    "all": false,    
-    "exclude":
-    [
+    "all": false,
+    "branches": 90,
+    "exclude": [
+        "**/source/@surface/*/index.js",
         "**/tests"
     ],
-    "extension":
-    [
+    "extension": [
         ".js",
         ".ts"
     ],
-    "include":
-    [
+    "functions": 90,
+    "include": [
         "source/@surface/**/*.js",
         "source/@surface/**/*.ts"
     ],
-    "reporter":
-    [
+    "lines": 90,
+    "reporter": [
         "text-summary",
         "lcov"
     ],
-    "sourceMap": true
+    "sourceMap": true,
+    "statements": 90
 }

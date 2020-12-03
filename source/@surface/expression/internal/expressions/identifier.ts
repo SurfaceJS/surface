@@ -1,11 +1,10 @@
-import { Indexer }  from "@surface/core";
-import { hasValue } from "@surface/core/common/generic";
-import { format }   from "@surface/core/common/string";
-import IExpression  from "../../interfaces/expression";
-import IPattern     from "../../interfaces/pattern";
-import NodeType     from "../../node-type";
-import { PATTERN }  from "../../symbols";
-import Messages     from "../messages";
+import { Indexer, format, hasValue } from "@surface/core";
+import IExpression                   from "../interfaces/expression";
+import IIdentifier                   from "../interfaces/identifier";
+import IPattern                      from "../interfaces/pattern";
+import Messages                      from "../messages";
+import NodeType                      from "../node-type";
+import { PATTERN }                   from "../symbols";
 
 export default class Identifier implements IExpression, IPattern
 {
@@ -35,7 +34,12 @@ export default class Identifier implements IExpression, IPattern
         this._name = name;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public clone(): IIdentifier
+    {
+        return new Identifier(this.name);
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
@@ -52,7 +56,7 @@ export default class Identifier implements IExpression, IPattern
             throw new ReferenceError(format(Messages.identifierIsNotDefined, { identifier: this.name }));
         }
 
-        return this.cache = scope[this.name];
+        return this.cache = (scope as Indexer)[this.name];
     }
 
     public toString(): string

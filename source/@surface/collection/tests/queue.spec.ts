@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import Queue                                   from "../queue";
+import { assert }                  from "chai";
+import Queue                       from "../internal/queue";
 
 @suite
 export default class QueueSpec

@@ -1,0 +1,61 @@
+{
+    "breadcrumbs.enabled": true,
+    "editor.roundedSelection": false,
+    "files.associations": {
+        "*.config": "xml",
+        "*.resx": "xml"
+    },
+    "files.exclude": {
+        "**/*.config": true,
+        "**/*.d.ts": {
+            "when": "$(basename).js"
+        },
+        "**/*.js": {
+            "when": "$(basename).ts"
+        },
+        "**/*.js.map": true,
+        "**/*.orig": true,
+        "**/.DS_Store": true,
+        "**/.eslintignore": true,
+        "**/.git": true,
+        "**/.gitignore": true,
+        "**/.gitmodules": true,
+        "**/.hg": true,
+        "**/.nyc_output": true,
+        "**/.nycrc.json": true,
+        "**/.svn": true,
+        "**/.vs": true,
+        "**/CVS": true,
+        "**/LICENSE": true,
+        "**/README.md": true,
+        "**/coverage": true,
+        "**/node_modules": true,
+        "**/package-lock.json": true,
+        "**/tsconfig.tsbuildinfo": true
+    },
+    "javascript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "javascript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "javascript.implicitProjectConfig.checkJs": true,
+    "javascript.preferences.quoteStyle": "double",
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "typescript.preferences.quoteStyle": "double",
+    "typescript.tsdk": "modules/node_modules/typescript/lib",
+    "vsicons.associations.folders": [
+        {
+            "extensions": [
+                "internal"
+            ],
+            "format": "svg",
+            "icon": "private"
+        },
+        {
+            "extensions": [
+                "tasks"
+            ],
+            "format": "svg",
+            "icon": "tools"
+        }
+    ],
+    "workbench.iconTheme": "vscode-icons"
+}

@@ -1,2 +1,2 @@
-export class Baz
+export default class Baz
 { }

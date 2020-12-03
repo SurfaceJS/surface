@@ -1,10 +1,10 @@
-import { Constructor }                     from "@surface/core";
-import CustomElement                       from "@surface/custom-element";
-import { attribute, computed, styles } from "@surface/custom-element/decorators";
-import style                               from "./index.scss";
+import { Constructor }                      from "@surface/core";
+import CustomElement, { attribute, styles } from "@surface/custom-element";
+import { computed }                         from "@surface/reactive";
+import style                                from "./index.scss";
 
-// tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+const elevatable = <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     @styles(style)
     class Elevatable extends superClass
@@ -21,3 +21,5 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Elevatable;
 };
+
+export default elevatable;

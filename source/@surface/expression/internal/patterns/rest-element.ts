@@ -1,6 +1,7 @@
-import IPattern    from "../../interfaces/pattern";
-import NodeType    from "../../node-type";
-import { PATTERN } from "../../symbols";
+import IPattern     from "../interfaces/pattern";
+import IRestElement from "../interfaces/rest-element";
+import NodeType     from "../node-type";
+import { PATTERN }  from "../symbols";
 
 export default class RestElement implements IPattern
 {
@@ -27,6 +28,11 @@ export default class RestElement implements IPattern
     public constructor(argument: IPattern)
     {
         this._argument = argument;
+    }
+
+    public clone(): IRestElement
+    {
+        return new RestElement(this.argument.clone());
     }
 
     public toString(): string

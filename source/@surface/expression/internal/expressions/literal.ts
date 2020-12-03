@@ -1,6 +1,6 @@
-import ILiteral         from "../../interfaces/literal";
-import NodeType         from "../../node-type";
-import { LiteralValue } from "../../types";
+import ILiteral         from "../interfaces/literal";
+import NodeType         from "../node-type";
+import { LiteralValue } from "../types/operators";
 
 export default class Literal implements ILiteral
 {
@@ -24,6 +24,11 @@ export default class Literal implements ILiteral
     public constructor(value: LiteralValue)
     {
         this._value = value;
+    }
+
+    public clone(): ILiteral
+    {
+        return new Literal(this.value);
     }
 
     public evaluate(): LiteralValue

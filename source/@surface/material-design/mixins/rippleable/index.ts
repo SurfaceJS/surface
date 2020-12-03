@@ -1,16 +1,14 @@
-import { Constructor }   from "@surface/core";
-import { typeGuard }     from "@surface/core/common/generic";
-import CustomElement     from "@surface/custom-element";
-import { event, styles } from "@surface/custom-element/decorators";
-import style             from "./index.scss";
+import { Constructor, typeGuard }       from "@surface/core";
+import CustomElement, { event, styles } from "@surface/custom-element";
+import style                            from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
 const ANIMATION_IN    = "animation-in";
 const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
-// tslint:disable:no-any
-export default <T extends Constructor<CustomElement>>(superClass: T) =>
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const rippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
 {
     @styles(style)
     abstract class Rippleable extends superClass
@@ -45,7 +43,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
             const x = pageX - (bounding.x + window.scrollX);
             const y = pageY - (bounding.y + window.scrollY);
 
-            const size   = Math.sqrt((bounding.height ** 2) + (bounding.width ** 2)) * 2;
+            const size   = Math.sqrt(bounding.height ** 2 + bounding.width ** 2) * 2;
             const offset = size / 2;
 
             const ripple = document.createElement("span");
@@ -72,7 +70,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
 
                     ripple.style.transform = "scale(1)";
                     ripple.style.opacity   = "0.25";
-                }
+                },
             );
         }
 
@@ -82,7 +80,7 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
         @event("touchend", { passive: true })
         protected hide(): void
         {
-            const ripples = this.rippleable.querySelectorAll<HTMLElement>("." + RIPPLE);
+            const ripples = this.rippleable.querySelectorAll<HTMLElement>(`.${RIPPLE}`);
 
             if (ripples.length == 0)
             {
@@ -104,10 +102,12 @@ export default <T extends Constructor<CustomElement>>(superClass: T) =>
                     ripple.style.opacity = "0";
                     setTimeout(() => ripples.forEach(x => x.parentNode && x.remove()), 300);
                 },
-                timeLeft
+                timeLeft,
             );
         }
     }
 
     return Rippleable;
 };
+
+export default rippleable;

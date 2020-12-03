@@ -1,22 +1,22 @@
-import { Indexer, Nullable } from "@surface/core";
-import { hasValue }          from "@surface/core/common/generic";
-import IExpression           from "../../interfaces/expression";
-import ISpreadElement        from "../../interfaces/spread-element";
-import NodeType              from "../../node-type";
-import TypeGuard             from "../type-guard";
+import { hasValue }     from "@surface/core";
+import IArrayExpression from "../interfaces/array-expression";
+import IExpression      from "../interfaces/expression";
+import ISpreadElement   from "../interfaces/spread-element";
+import NodeType         from "../node-type";
+import TypeGuard        from "../type-guard";
 
 export default class ArrayExpression implements IExpression
 {
-    private cache: Nullable<Array<unknown>>;
+    private cache: unknown[] | null = null;
 
-    private _elements: Array<IExpression|ISpreadElement|null>;
-    public get elements(): Array<IExpression|ISpreadElement|null>
+    private _elements: (IExpression | ISpreadElement | null)[];
+    public get elements(): (IExpression | ISpreadElement | null)[]
     {
         return this._elements;
     }
 
     /* istanbul ignore next */
-    public set elements(value: Array<IExpression|ISpreadElement|null>)
+    public set elements(value: (IExpression | ISpreadElement | null)[])
     {
         this._elements = value;
     }
@@ -26,19 +26,24 @@ export default class ArrayExpression implements IExpression
         return NodeType.ArrayExpression;
     }
 
-    public constructor(elements: Array<IExpression|ISpreadElement|null>)
+    public constructor(elements: (IExpression | ISpreadElement | null)[])
     {
         this._elements = elements;
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): Array<unknown>
+    public clone(): IArrayExpression
+    {
+        return new ArrayExpression(this.elements.map(x => x?.clone() ?? null));
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown[]
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        const evaluation: Array<unknown> = [];
+        const evaluation: unknown[] = [];
 
         for (const element of this.elements)
         {
@@ -46,7 +51,7 @@ export default class ArrayExpression implements IExpression
             {
                 if (TypeGuard.isSpreadElement(element))
                 {
-                    evaluation.push(...element.argument.evaluate(scope, useCache) as Array<unknown>);
+                    evaluation.push(...element.argument.evaluate(scope, useCache) as unknown[]);
                 }
                 else
                 {
@@ -64,6 +69,6 @@ export default class ArrayExpression implements IExpression
 
     public toString(): string
     {
-        return `[${this.elements.map(x => (x || "undefined").toString()).join(", ")}]`;
+        return `[${this.elements.map(x => (x ?? "undefined").toString()).join(", ")}]`;
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-template-curly-in-string */
 import AssignmentProperty       from "../../internal/elements/assignment-property";
 import Property                 from "../../internal/elements/property";
 import SpreadElement            from "../../internal/elements/spread-element";
@@ -29,55 +30,56 @@ import RestElement              from "../../internal/patterns/rest-element";
 
 type ValidVisitSpec = { raw: string, value: string, context?: Object };
 
-export const validVisitors: Array<ValidVisitSpec> =
+// eslint-disable-next-line import/prefer-default-export
+export const validVisitors: ValidVisitSpec[] =
 [
     {
-        raw: "[1]",
+        raw:   "[1]",
         value:
         [
             ArrayExpression.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "[, 1]",
+        raw:   "[, 1]",
         value:
         [
             ArrayExpression.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "([a]) => a",
+        raw:   "([a]) => a",
         value:
         [
             ArrowFunctionExpression.name,
             ArrayPattern.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "([, a]) => a",
+        raw:   "([, a]) => a",
         value:
         [
             ArrowFunctionExpression.name,
             ArrayPattern.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x = 1",
+        raw:   "x = 1",
         value:
         [
             AssignmentExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "(x = 1) => x",
+        raw:   "(x = 1) => x",
         value:
         [
             ArrowFunctionExpression.name,
@@ -85,46 +87,46 @@ export const validVisitors: Array<ValidVisitSpec> =
             Identifier.name,
             Literal.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x + 1",
+        raw:   "x + 1",
         value:
         [
             BinaryExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x + 1",
+        raw:   "x + 1",
         value:
         [
             BinaryExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "f(1)",
+        raw:   "f(1)",
         value:
         [
             CallExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x ?? y",
+        raw:   "x ?? y",
         value:
         [
             CoalesceExpression.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x != null ? x : true",
+        raw:   "x != null ? x : true",
         value:
         [
             ConditionalExpression.name,
@@ -133,48 +135,48 @@ export const validVisitors: Array<ValidVisitSpec> =
             Literal.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x || false",
+        raw:   "x || false",
         value:
         [
             LogicalExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x.y",
+        raw:   "x.y",
         value:
         [
             MemberExpression.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "new f(1)",
+        raw:   "new f(1)",
         value:
         [
             NewExpression.name,
             Identifier.name,
             Literal.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "({ x: 1 })",
+        raw:   "({ x: 1 })",
         value:
         [
             ParenthesizedExpression.name,
             ObjectExpression.name,
             Property.name,
             Identifier.name,
-            Literal.name
-        ].join(" > ")
+            Literal.name,
+        ].join(" > "),
     },
     {
-        raw: "({ x }) => x",
+        raw:   "({ x }) => x",
         value:
         [
             ArrowFunctionExpression.name,
@@ -183,39 +185,39 @@ export const validVisitors: Array<ValidVisitSpec> =
             Identifier.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "(...x) => x",
+        raw:   "(...x) => x",
         value:
         [
             ArrowFunctionExpression.name,
             RestElement.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "(x, y)",
+        raw:   "(x, y)",
         value:
         [
             SequenceExpression.name,
             Identifier.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "f(...x)",
+        raw:   "f(...x)",
         value:
         [
             CallExpression.name,
             Identifier.name,
             SpreadElement.name,
             Identifier.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "tag`Hello: ${'World'}!!!`",
+        raw:   "tag`Hello: ${'World'}!!!`",
         value:
         [
             TaggedTemplateExpression.name,
@@ -223,40 +225,40 @@ export const validVisitors: Array<ValidVisitSpec> =
             TemplateLiteral.name,
             TemplateElement.name,
             TemplateElement.name,
-            Literal.name
-        ].join(" > ")
+            Literal.name,
+        ].join(" > "),
     },
     {
-        raw: "`Hello: ${ x }`",
+        raw:   "`Hello: ${ x }`",
         value:
         [
             TemplateLiteral.name,
             TemplateElement.name,
             TemplateElement.name,
-            Identifier.name
-        ].join(" > ")
+            Identifier.name,
+        ].join(" > "),
     },
     {
-        raw: "this",
+        raw:   "this",
         value:
         [
             ThisExpression.name,
-        ].join(" > ")
+        ].join(" > "),
     },
     {
-        raw: "x++",
+        raw:   "x++",
         value:
         [
             UpdateExpression.name,
-            Identifier.name
-        ].join(" > ")
+            Identifier.name,
+        ].join(" > "),
     },
     {
-        raw: "!x",
+        raw:   "!x",
         value:
         [
             UnaryExpression.name,
-            Identifier.name
-        ].join(" > ")
-    }
+            Identifier.name,
+        ].join(" > "),
+    },
 ];

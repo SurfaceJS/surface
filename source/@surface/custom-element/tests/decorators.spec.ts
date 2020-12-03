@@ -1,30 +1,22 @@
+// eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom";
 
+import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import CustomElement               from "..";
-import { attribute, element }      from "../decorators";
+import { assert }                  from "chai";
+import CustomElement               from "../internal/custom-element";
+import { attribute, element }      from "../internal/decorators";
 
 @suite
 export default class DecoratorsSpec
 {
     @test @shouldPass
-    public elementDecoratorHtmlElement(): void
-    {
-        @element("mock-element")
-        class Mock extends HTMLElement
-        { }
-
-        expect(() => new Mock()).to.not.throw();
-    }
-
-    @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
-        @element("mock-element")
+        @element(`mock-${uuidv4()}`)
         class Mock extends CustomElement
         {
-            public static observedAttributes?: Array<string>;
+            public static observedAttributes?: string[];
 
             private _value: Object = 1;
 
@@ -45,17 +37,17 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
-        expect(Mock.observedAttributes).to.deep.equal(["value"]);
+        assert.doesNotThrow(() => new Mock());
+        assert.deepEqual(Mock.observedAttributes, ["value"]);
     }
 
     @test @shouldPass
     public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
     {
-        @element("mock-element")
+        @element(`mock-${uuidv4()}`)
         class Mock extends CustomElement
         {
-            public static observedAttributes?: Array<string>;
+            public static observedAttributes?: string[];
 
             @attribute
             public get value1(): Object
@@ -89,14 +81,14 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
-        expect(Mock.observedAttributes).to.deep.equal(["value1", "value2"]);
+        assert.doesNotThrow(() => new Mock());
+        assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
     }
 
     @test @shouldPass
     public elementDecoratorCustomElement(): void
     {
-        @element("mock-element")
+        @element(`mock-${uuidv4()}`)
         class Mock extends CustomElement
         {
             public constructor()
@@ -105,13 +97,13 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplate(): void
     {
-        @element("mock-element", "<div>Template</div>")
+        @element(`mock-${uuidv4()}`, "<div>Template</div>")
         class Mock extends CustomElement
         {
             public constructor()
@@ -120,13 +112,13 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyle(): void
     {
-        @element("mock-element", "<div>Template</div>", "div { color: red; }")
+        @element(`mock-${uuidv4()}`, "<div>Template</div>", "div { color: red; }")
         class Mock extends CustomElement
         {
             public constructor()
@@ -135,14 +127,14 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
+        assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
-    public elementDecoratorCustomElementWithTemplateAndStyleAndShadyCss(): void
+    public elementDecoratorCustomElementWithTemplateAndStyleAndOptions(): void
     {
-        @element("mock-element", "<div>Template</div>", "div { color: red; }", { extends: "div" })
-        class Mock extends CustomElement
+        @element(`mock-${uuidv4()}`, "<div>Template</div>", "div { color: red; }", { extends: "div" })
+        class Mock extends CustomElement.as(HTMLDivElement)
         {
             public constructor()
             {
@@ -150,6 +142,6 @@ export default class DecoratorsSpec
             }
         }
 
-        expect(() => new Mock()).to.not.throw();
+        assert.doesNotThrow(() => new Mock());
     }
 }

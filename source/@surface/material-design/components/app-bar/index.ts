@@ -1,11 +1,20 @@
-import { mixer }                    from "@surface/core/common/object";
-import CustomElement                from "@surface/custom-element";
-import { computed, element, query } from "@surface/custom-element/decorators";
-import colorable                    from "../../mixins/colorable";
-import elevationable                from "../../mixins/elevatable";
-import themeable                    from "../../mixins/themeable";
-import template                     from "./index.html";
-import style                        from "./index.scss";
+import { mixer }                         from "@surface/core";
+import CustomElement, { element, query } from "@surface/custom-element";
+import { computed }                      from "@surface/reactive";
+import colorable                         from "../../mixins/colorable";
+import elevationable                     from "../../mixins/elevatable";
+import themeable                         from "../../mixins/themeable";
+import template                          from "./index.html";
+import style                             from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-app-bar": AppBar;
+    }
+}
 
 @element("smd-app-bar", template, style)
 export default class AppBar extends mixer(CustomElement, [colorable, elevationable, themeable])
@@ -18,7 +27,7 @@ export default class AppBar extends mixer(CustomElement, [colorable, elevationab
     {
         return {
             ...super.elevationClasses,
-            ...super.themeClasses
+            ...super.themeClasses,
         };
     }
 
@@ -27,14 +36,5 @@ export default class AppBar extends mixer(CustomElement, [colorable, elevationab
         super();
 
         this.elevation = 5;
-    }
-}
-
-declare global
-{
-    // tslint:disable-next-line:interface-name
-    interface HTMLElementTagNameMap
-    {
-        "smd-app-bar": AppBar;
     }
 }

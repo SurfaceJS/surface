@@ -1,8 +1,8 @@
-import { Indexer }         from "@surface/core";
-import { hasValue }        from "@surface/core/common/generic";
-import IExpression         from "../../interfaces/expression";
-import NodeType            from "../../node-type";
-import { LogicalOperator } from "../../types";
+import { Indexer, hasValue } from "@surface/core";
+import IExpression           from "../interfaces/expression";
+import ILogicalExpression    from "../interfaces/logical-expression";
+import NodeType              from "../node-type";
+import { LogicalOperator }   from "../types/operators";
 
 type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
 
@@ -67,14 +67,19 @@ export default class LogicalExpression implements IExpression
         this.operation = binaryFunctions[this.operator];
     }
 
-    public evaluate(scope: Indexer, useCache?: boolean): unknown
+    public clone(): ILogicalExpression
+    {
+        return new LogicalExpression(this.left.clone(), this.right.clone(), this.operator);
+    }
+
+    public evaluate(scope: object, useCache?: boolean): unknown
     {
         if (useCache && hasValue(this.cache))
         {
             return this.cache;
         }
 
-        return this.cache = this.operation(this.left, this.right, scope, !!useCache);
+        return this.cache = this.operation(this.left, this.right, scope as Indexer, !!useCache);
     }
 
     public toString(): string

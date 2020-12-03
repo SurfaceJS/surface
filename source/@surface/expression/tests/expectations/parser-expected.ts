@@ -1,62 +1,31 @@
-import { Constructor, Indexer, Nullable } from "@surface/core";
-import { format }                         from "@surface/core/common/string";
-import IExpression                        from "../../interfaces/expression";
-import ArrayExpression                    from "../../internal/expressions/array-expression";
-import ArrowFunctionExpression            from "../../internal/expressions/arrow-function-expression";
-import AssignmentExpression               from "../../internal/expressions/assignment-expression";
-import BinaryExpression                   from "../../internal/expressions/binary-expression" ;
-import CallExpression                     from "../../internal/expressions/call-expression";
-import CoalesceExpression                 from "../../internal/expressions/coalesce-expression";
-import ConditionalExpression              from "../../internal/expressions/conditional-expression";
-import Identifier                         from "../../internal/expressions/identifier";
-import Literal                            from "../../internal/expressions/literal";
-import LogicalExpression                  from "../../internal/expressions/logical-expression";
-import MemberExpression                   from "../../internal/expressions/member-expression";
-import NewExpression                      from "../../internal/expressions/new-expression";
-import ObjectExpression                   from "../../internal/expressions/object-expression";
-import SequenceExpression                 from "../../internal/expressions/sequence-expression";
-import TaggedTemplateExpression           from "../../internal/expressions/tagged-template-expression";
-import TemplateLiteral                    from "../../internal/expressions/template-literal";
-import ThisExpression                     from "../../internal/expressions/this-expression";
-import UnaryExpression                    from "../../internal/expressions/unary-expression";
-import UpdateExpression                   from "../../internal/expressions/update-expression";
-import Messages                           from "../../internal/messages";
-import SyntaxError                        from "../../syntax-error";
-
-export type ParseExpectedSpec =
-{
-    scope:    Indexer,
-    raw:      string,
-    toString: string,
-    type:     Constructor<IExpression>,
-    value:    Nullable<Object>,
-};
-
-export type InvalidParseExpectedSpec =
-{
-    scope: Object,
-    error: Error,
-    raw:   string,
-};
+/* eslint-disable no-template-curly-in-string */
+/* eslint-disable max-lines */
+import { Constructor, Indexer, format } from "@surface/core";
+import ArrayExpression                  from "../../internal/expressions/array-expression";
+import ArrowFunctionExpression          from "../../internal/expressions/arrow-function-expression";
+import AssignmentExpression             from "../../internal/expressions/assignment-expression";
+import BinaryExpression                 from "../../internal/expressions/binary-expression";
+import CallExpression                   from "../../internal/expressions/call-expression";
+import CoalesceExpression               from "../../internal/expressions/coalesce-expression";
+import ConditionalExpression            from "../../internal/expressions/conditional-expression";
+import Identifier                       from "../../internal/expressions/identifier";
+import Literal                          from "../../internal/expressions/literal";
+import LogicalExpression                from "../../internal/expressions/logical-expression";
+import MemberExpression                 from "../../internal/expressions/member-expression";
+import NewExpression                    from "../../internal/expressions/new-expression";
+import ObjectExpression                 from "../../internal/expressions/object-expression";
+import SequenceExpression               from "../../internal/expressions/sequence-expression";
+import TaggedTemplateExpression         from "../../internal/expressions/tagged-template-expression";
+import TemplateLiteral                  from "../../internal/expressions/template-literal";
+import ThisExpression                   from "../../internal/expressions/this-expression";
+import UnaryExpression                  from "../../internal/expressions/unary-expression";
+import UpdateExpression                 from "../../internal/expressions/update-expression";
+import IExpression                      from "../../internal/interfaces/expression";
+import Messages                         from "../../internal/messages";
+import SyntaxError                      from "../../internal/syntax-error";
 
 const scope =
 {
-    this:
-    {
-        id:        1,
-        value:     1,
-        value1:    0,
-        new:       "new",
-        greater:   (left: number, right: number) => left > right,
-        lesser:    (left: number, right: number) => left < right,
-        increment: (value: number) => ++value,
-        getObject: () => ({ value: "Hello World!!!" }),
-        getValue:  () => 42
-    },
-    getScope()
-    {
-        return this;
-    },
     MyClass: class MyClass
     {
         public id:     number;
@@ -64,7 +33,7 @@ const scope =
 
         public constructor(id?: number, active?: boolean)
         {
-            this.id     = id || 0;
+            this.id     = id ?? 0;
             this.active = !!active;
         }
 
@@ -73,7 +42,11 @@ const scope =
             return this.id;
         }
     },
-    noop(value: unknown)
+    getScope(): unknown
+    {
+        return this;
+    },
+    noop(value: unknown): unknown
     {
         return value;
     },
@@ -82,1498 +55,1504 @@ const scope =
         getValue(): number
         {
             return 1;
-        }
-    }
+        },
+    },
+    this:
+    {
+        getObject: (): object => ({ value: "Hello World!!!" }),
+        getValue:  (): number => 42,
+        greater:   (left: number, right: number): boolean => left > right,
+        id:        1,
+        // eslint-disable-next-line no-param-reassign
+        increment: (value: number): number => ++value,
+        lesser:    (left: number, right: number): boolean => left < right,
+        new:       "new",
+        value:     1,
+        value1:    0,
+    },
 };
 
-function makeTemplateObject(cooked: Array<string>, raw: Array<string>): Array<string>
+function makeTemplateObject(cooked: string[], raw: string[]): string[]
 {
     Object.defineProperty(cooked, "raw", { value: raw });
 
     return cooked;
 }
 
-// tslint:disable-next-line:no-any
-export const validExpressions: Array<ParseExpectedSpec> =
+export type ParseExpectedSpec =
+{
+    scope:    Indexer,
+    raw:      string,
+    toString: string,
+    type:     Constructor<IExpression>,
+    value:    unknown,
+};
+
+export type InvalidParseExpectedSpec =
+{
+    error: Error,
+    raw:   string,
+};
+
+export const validExpressions: ParseExpectedSpec[] =
 [
     {
-        scope:    scope,
         raw:      "[]",
-        value:    [],
+        scope,
         toString: "[]",
         type:     ArrayExpression,
+        value:    [],
     },
     {
-        scope:    scope,
         raw:      "[, 1, 2, , 3, ,]",
-        value:    [undefined, 1, 2, undefined, 3, undefined,],
+        scope,
         toString: "[undefined, 1, 2, undefined, 3, undefined]",
         type:     ArrayExpression,
+        value:    [undefined, 1, 2, undefined, 3, undefined],
     },
     {
-        scope:    scope,
         raw:      "[1, 'foo', true, { foo: 'bar' }]",
-        value:    [1, "foo", true, { foo: "bar" }],
+        scope,
         toString: "[1, \"foo\", true, { foo: \"bar\" }]",
         type:     ArrayExpression,
+        value:    [1, "foo", true, { foo: "bar" }],
     },
     {
-        scope:    { one: 1, two: 2 },
         raw:      "[1, 'foo', true, ...[{ foo: one }, { bar: two }]]",
-        value:    [1, "foo", true, { foo: 1 }, { bar: 2 }],
+        scope:    { one: 1, two: 2 },
         toString: "[1, \"foo\", true, ...[{ foo: one }, { bar: two }]]",
         type:     ArrayExpression,
+        value:    [1, "foo", true, { foo: 1 }, { bar: 2 }],
     },
     {
-        scope:    { factory: () => [1, 2, 3] },
         raw:      "[0, ...factory()]",
-        value:    [0, 1, 2, 3],
+        scope:    { factory: (): number[] => [1, 2, 3] },
         toString: "[0, ...factory()]",
         type:     ArrayExpression,
+        value:    [0, 1, 2, 3],
     },
     {
-        scope:    scope,
         raw:      "() => undefined",
-        value:    () => undefined,
+        scope,
         toString: "() => undefined",
         type:     ArrowFunctionExpression,
+        value:    (): unknown => undefined,
     },
     {
-        scope:    scope,
         raw:      "() => ({ x: 1 })",
-        value:    () => ({ x: 1 }),
+        scope,
         toString: "() => ({ x: 1 })",
         type:     ArrowFunctionExpression,
+        value:    (): unknown => ({ x: 1 }),
     },
     {
-        scope:    scope,
         raw:      "a => a++",
-        value:    (a: number) => a++,
+        scope,
         toString: "(a) => a++",
         type:     ArrowFunctionExpression,
+        // eslint-disable-next-line no-param-reassign
+        value:    (a: number): unknown => a++,
     },
     {
-        scope:    scope,
         raw:      "(a) => a++",
-        value:    (a: number) => a++,
+        scope,
         toString: "(a) => a++",
         type:     ArrowFunctionExpression,
+        // eslint-disable-next-line no-param-reassign
+        value:    (a: number): unknown => a++,
     },
     {
-        scope:    scope,
         raw:      "(a = 1) => a++",
-        value:    (a: number = 1) => a++,
+        scope,
         toString: "(a = 1) => a++",
         type:     ArrowFunctionExpression,
+        // eslint-disable-next-line no-param-reassign
+        value:    (a = 1): unknown => a++,
     },
     {
-        scope:    scope,
         raw:      "(a, b) => a + b",
-        value:    (a: number, b: number) => a + b,
+        scope,
         toString: "(a, b) => a + b",
         type:     ArrowFunctionExpression,
+        value:    (a: number, b: number): unknown => a + b,
     },
     {
-        scope:    scope,
         raw:      "([a]) => a",
-        value:    ([a]: Array<string>) => a,
+        scope,
         toString: "([a]) => a",
         type:     ArrowFunctionExpression,
+        value:    ([a]: string[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "([a], [b]) => [a, b]",
-        value:    ([a]: Array<string>, [b]: Array<string>) => [a, b],
+        scope,
         toString: "([a], [b]) => [a, b]",
         type:     ArrowFunctionExpression,
+        value:    ([a]: string[], [b]: string[]): unknown => [a, b],
     },
     {
-        scope:    scope,
         raw:      "([, a]) => a",
-        value:    ([, a]: Array<string>) => a,
+        scope,
         toString: "([, a]) => a",
         type:     ArrowFunctionExpression,
+        value:    ([, a]: string[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "([a = 1]) => a",
-        value:    ([a = 1]: Array<number>) => a,
+        scope,
         toString: "([a = 1]) => a",
         type:     ArrowFunctionExpression,
+        value:    ([a = 1]: number[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "(a, [b, c]) => a + b + c",
-        value:    (a: number, [b, c]: Array<number>) => a + b + c,
+        scope,
         toString: "(a, [b, c]) => a + b + c",
         type:     ArrowFunctionExpression,
+        value:    (a: number, [b, c]: number[]): unknown => a + b + c,
     },
     {
-        scope:    scope,
         raw:      "(a, [b, [c]]) => a + b + c",
-        value:    (a: number, [b, [c]]: [number, Array<number>]) => a + b + c,
+        scope,
         toString: "(a, [b, [c]]) => a + b + c",
         type:     ArrowFunctionExpression,
+        value:    (a: number, [b, [c]]: [number, number[]]): unknown => a + b + c,
     },
     {
-        scope:    scope,
         raw:      "(...a) => a",
-        value:    (...a: Array<number>) => a,
+        scope,
         toString: "(...a) => a",
         type:     ArrowFunctionExpression,
+        value:    (...a: number[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "(a, ...b) => [a, ...b]",
-        value:    (a: number, ...b: Array<number>) => [a, ...b],
+        scope,
         toString: "(a, ...b) => [a, ...b]",
         type:     ArrowFunctionExpression,
+        value:    (a: number, ...b: number[]): unknown => [a, ...b],
     },
     {
-        scope:    scope,
         raw:      "(...[a]) => a",
-        value:    (...[a]: Array<number>) => a,
+        scope,
         toString: "(...[a]) => a",
         type:     ArrowFunctionExpression,
+        value:    (...[a]: number[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "(...[, a]) => a",
-        value:    (...[, a]: Array<number>) => a,
+        scope,
         toString: "(...[, a]) => a",
         type:     ArrowFunctionExpression,
+        value:    (...[, a]: number[]): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "(...[a, ...b]) => a + b[0]",
-        value:    (...[a, ...b]: Array<number>) => a + b[0],
+        scope,
         toString: "(...[a, ...b]) => a + b[0]",
         type:     ArrowFunctionExpression,
+        value:    (...[a, ...b]: number[]): unknown => a + b[0],
     },
     {
-        scope:    scope,
         raw:      "(...[a, [b]]) => a + b",
-        value:    (...[a, [b]]: [number, Array<number>]) => a + b,
+        scope,
         toString: "(...[a, [b]]) => a + b",
         type:     ArrowFunctionExpression,
+        value:    (...[a, [b]]: [number, number[]]): unknown => a + b,
     },
     {
-        scope:    scope,
         raw:      "(...[a, { b }]) => a + b",
-        value:    (...[a, { b }]: [number, { b: number }]) => a + b,
+        scope,
         toString: "(...[a, { b }]) => a + b",
         type:     ArrowFunctionExpression,
+        value:    (...[a, { b }]: [number, { b: number }]): unknown => a + b,
     },
     {
-        scope:    scope,
         raw:      "(...[a, { b, ...c }]) => a + b + c.x + c.y + c.z",
-        value:    (...[a, { b, ...c }]: [number, { b: number, x: number, y: number, z: number }]) => a + b + c.x + c.y + c.z,
+        scope,
         toString: "(...[a, { b, ...c }]) => a + b + c.x + c.y + c.z",
         type:     ArrowFunctionExpression,
+        value:    (...[a, { b, ...c }]: [number, { b: number, x: number, y: number, z: number }]): unknown => a + b + c.x + c.y + c.z,
     },
     {
-        scope:    scope,
         raw:      "({ a }) => a",
-        value:    ({ a }: { a: string }) => a,
+        scope,
         toString: "({ a }) => a",
         type:     ArrowFunctionExpression,
+        value:    ({ a }: { a: string }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ \"a\": a }) => a",
-        value:    ({ "a": a }: { "a": string }) => a,
+        scope,
         toString: "({ \"a\": a }) => a",
         type:     ArrowFunctionExpression,
+        // eslint-disable-next-line no-useless-rename
+        value:    ({ "a": a }: { "a": string }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ 0: a }) => a",
-        value:    ({ 0: a }: { 0: string }) => a,
+        scope,
         toString: "({ 0: a }) => a",
         type:     ArrowFunctionExpression,
+        value:    ({ 0: a }: { 0: string }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ [0]: a }) => a",
-        value:    ({ [0]: a }: { [key: number]: string }) => a,
+        scope,
         toString: "({ [0]: a }) => a",
         type:     ArrowFunctionExpression,
+        // eslint-disable-next-line no-useless-computed-key
+        value:    ({ [0]: a }: { [key: number]: string }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ [scope.this.id]: a }) => a",
-        value:    ({ [scope.this.id]: a }: { [key: number]: string }) => a,
+        scope,
         toString: "({ [scope.this.id]: a }) => a",
         type:     ArrowFunctionExpression,
+        value:    ({ [scope.this.id]: a }: { [key: number]: string }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ a = 1 }) => a",
-        value:    ({ a = 1 }: { a: number }) => a,
+        scope,
         toString: "({ a = 1 }) => a",
         type:     ArrowFunctionExpression,
+        value:    ({ a = 1 }: { a: number }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "({ a: b }) => b",
-        value:    ({ a: b }: { a: number }) => b,
+        scope,
         toString: "({ a: b }) => b",
         type:     ArrowFunctionExpression,
+        value:    ({ a: b }: { a: number }): unknown => b,
     },
     {
-        scope:    scope,
         raw:      "({ a: [x] }) => x",
-        value:    ({ a: [x] }: { a: Array<number> }) => x,
+        scope,
         toString: "({ a: [x] }) => x",
         type:     ArrowFunctionExpression,
+        value:    ({ a: [x] }: { a: number[] }): unknown => x,
     },
     {
-        scope:    scope,
         raw:      "(...[{ a: [x] }]) => x",
-        value:    (...[{ a: [x] }]: Array<{ a: Array<number> }>) => x,
+        scope,
         toString: "(...[{ a: [x] }]) => x",
         type:     ArrowFunctionExpression,
+        value:    (...[{ a: [x] }]: { a: number[] }[]): unknown => x,
     },
     {
-        scope:    scope,
         raw:      "(a, { b, x: { c } }) => a + b + c",
-        value:    (a: number, { b, x: { c } }: { b: number, x: { c: number } }) => a + b + c,
+        scope,
         toString: "(a, { b, x: { c } }) => a + b + c",
         type:     ArrowFunctionExpression,
+        value:    (a: number, { b, x: { c } }: { b: number, x: { c: number } }): unknown => a + b + c,
     },
     {
-        scope:    scope,
         raw:      "(a, { b, x: { ...c } }) => [a, b, c]",
-        value:    (a: number, { b, x: { ...c } }: { b: number, x: { c: number } }) => [a, b, c],
+        scope,
         toString: "(a, { b, x: { ...c } }) => [a, b, c]",
         type:     ArrowFunctionExpression,
+        value:    (a: number, { b, x: { ...c } }: { b: number, x: { c: number } }): unknown => [a, b, c],
     },
     {
-        scope:    scope,
         raw:      "(...{ a }) => a",
-        value:    (...{ a }: { a: number }) => a,
+        scope,
         toString: "(...{ a }) => a",
         type:     ArrowFunctionExpression,
+        value:    (...{ a }: { a: number }): unknown => a,
     },
     {
-        scope:    scope,
         raw:      "(...{ a, x: { b } }) => a + b",
-        value:    (...{ a, x: { b } }: { a: number, x: { b: number } }) => a + b,
+        scope,
         toString: "(...{ a, x: { b } }) => a + b",
         type:     ArrowFunctionExpression,
+        value:    (...{ a, x: { b } }: { a: number, x: { b: number } }): unknown => a + b,
     },
     {
-        scope:    scope,
         raw:      "this.value = 0",
-        value:    0,
+        scope,
         toString: "this.value = 0",
-        type:     AssignmentExpression
+        type:     AssignmentExpression,
+        value:    0,
     },
     {
-        scope:    { this: { value: 1 }, key: "value" },
         raw:      "this[key] = 0",
-        value:    0,
+        scope:    { key: "value", this: { value: 1 } },
         toString: "this[key] = 0",
-        type:     AssignmentExpression
+        type:     AssignmentExpression,
+        value:    0,
     },
     {
-        scope:    scope,
         raw:      "this.value = this.value1 += 2",
-        value:    2,
+        scope,
         toString: "this.value = this.value1 += 2",
-        type:     AssignmentExpression
+        type:     AssignmentExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "this.value *= 2",
-        value:    4,
+        scope,
         toString: "this.value *= 2",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value **= 2",
-        value:    16,
-        toString: "this.value **= 2",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value /= 2",
-        value:    8,
-        toString: "this.value /= 2",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value %= 2",
-        value:    0,
-        toString: "this.value %= 2",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value += 2",
-        value:    2,
-        toString: "this.value += 2",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value -= 1",
-        value:    1,
-        toString: "this.value -= 1",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value <<= 2",
+        type:     AssignmentExpression,
         value:    4,
-        toString: "this.value <<= 2",
-        type:     AssignmentExpression
     },
     {
-        scope:    scope,
-        raw:      "this.value >>= 1",
-        value:    2,
-        toString: "this.value >>= 1",
-        type:     AssignmentExpression
+        raw:      "this.value **= 2",
+        scope,
+        toString: "this.value **= 2",
+        type:     AssignmentExpression,
+        value:    16,
     },
     {
-        scope:    scope,
-        raw:      "this.value >>>= 1",
-        value:    1,
-        toString: "this.value >>>= 1",
-        type:     AssignmentExpression
+        raw:      "this.value /= 2",
+        scope,
+        toString: "this.value /= 2",
+        type:     AssignmentExpression,
+        value:    8,
     },
     {
-        scope:    scope,
-        raw:      "this.value &= 1",
-        value:    1,
-        toString: "this.value &= 1",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "this.value ^= 1",
+        raw:      "this.value %= 2",
+        scope,
+        toString: "this.value %= 2",
+        type:     AssignmentExpression,
         value:    0,
-        toString: "this.value ^= 1",
-        type:     AssignmentExpression
     },
     {
-        scope:    scope,
-        raw:      "this.value |= 1",
+        raw:      "this.value += 2",
+        scope,
+        toString: "this.value += 2",
+        type:     AssignmentExpression,
+        value:    2,
+    },
+    {
+        raw:      "this.value -= 1",
+        scope,
+        toString: "this.value -= 1",
+        type:     AssignmentExpression,
         value:    1,
+    },
+    {
+        raw:      "this.value <<= 2",
+        scope,
+        toString: "this.value <<= 2",
+        type:     AssignmentExpression,
+        value:    4,
+    },
+    {
+        raw:      "this.value >>= 1",
+        scope,
+        toString: "this.value >>= 1",
+        type:     AssignmentExpression,
+        value:    2,
+    },
+    {
+        raw:      "this.value >>>= 1",
+        scope,
+        toString: "this.value >>>= 1",
+        type:     AssignmentExpression,
+        value:    1,
+    },
+    {
+        raw:      "this.value &= 1",
+        scope,
+        toString: "this.value &= 1",
+        type:     AssignmentExpression,
+        value:    1,
+    },
+    {
+        raw:      "this.value ^= 1",
+        scope,
+        toString: "this.value ^= 1",
+        type:     AssignmentExpression,
+        value:    0,
+    },
+    {
+        raw:      "this.value |= 1",
+        scope,
         toString: "this.value |= 1",
-        type:     AssignmentExpression
+        type:     AssignmentExpression,
+        value:    1,
     },
     {
-        scope:    { x: 1, y: 2 },
         raw:      "x = y++",
-        value:    2,
+        scope:    { x: 1, y: 2 },
         toString: "x = y++",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    { x: 1, y: 2 },
-        raw:      "x = ++y",
-        value:    3,
-        toString: "x = ++y",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    { x: 1, y: 2 },
-        raw:      "x += (x++, x + y)",
-        value:    6,
-        toString: "x += (x++, x + y)",
-        type:     AssignmentExpression
-    },
-    {
-        scope:    scope,
-        raw:      "1 + 1",
+        type:     AssignmentExpression,
         value:    2,
+    },
+    {
+        raw:      "x = ++y",
+        scope:    { x: 1, y: 2 },
+        toString: "x = ++y",
+        type:     AssignmentExpression,
+        value:    3,
+    },
+    {
+        raw:      "x += (x++, x + y)",
+        scope:    { x: 1, y: 2 },
+        toString: "x += (x++, x + y)",
+        type:     AssignmentExpression,
+        value:    6,
+    },
+    {
+        raw:      "1 + 1",
+        scope,
         toString: "1 + 1",
         type:     BinaryExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "1 - 1",
-        value:    0,
+        scope,
         toString: "1 - 1",
         type:     BinaryExpression,
+        value:    0,
     },
     {
-        scope:    scope,
         raw:      "2 * 2",
-        value:    4,
+        scope,
         toString: "2 * 2",
         type:     BinaryExpression,
+        value:    4,
     },
     {
-        scope:    scope,
         raw:      "4 / 2",
-        value:    2,
+        scope,
         toString: "4 / 2",
         type:     BinaryExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "10 % 3",
-        value:    1,
+        scope,
         toString: "10 % 3",
         type:     BinaryExpression,
+        value:    1,
     },
     {
-        scope:    { this: { id: 1 } },
         raw:      "'id' in this",
-        value:    true,
+        scope:    { this: { id: 1 } },
         toString: "\"id\" in this",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 == 1",
-        value:    true,
+        scope,
         toString: "1 == 1",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 === 1",
-        value:    true,
+        scope,
         toString: "1 === 1",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 != 1",
-        value:    false,
+        scope,
         toString: "1 != 1",
         type:     BinaryExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "1 !== 1",
-        value:    false,
+        scope,
         toString: "1 !== 1",
         type:     BinaryExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "({ } instanceof { }.constructor)",
-        value:    true,
+        scope,
         toString: "{ } instanceof { }.constructor",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 <= 0",
-        value:    false,
+        scope,
         toString: "1 <= 0",
         type:     BinaryExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "1 >= 0",
-        value:    true,
+        scope,
         toString: "1 >= 0",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 > 0",
-        value:    true,
+        scope,
         toString: "1 > 0",
         type:     BinaryExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "1 < 0",
-        value:    false,
+        scope,
         toString: "1 < 0",
         type:     BinaryExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "1 & 2",
-        value:    0,
+        scope,
         toString: "1 & 2",
         type:     BinaryExpression,
+        value:    0,
     },
     {
-        scope:    scope,
         raw:      "1 | 2",
-        value:    3,
+        scope,
         toString: "1 | 2",
         type:     BinaryExpression,
+        value:    3,
     },
     {
-        scope:    scope,
         raw:      "1 ^ 2",
-        value:    3,
+        scope,
         toString: "1 ^ 2",
         type:     BinaryExpression,
+        value:    3,
     },
     {
-        scope:    scope,
         raw:      "2 ** 2",
-        value:    4,
+        scope,
         toString: "2 ** 2",
-        type:     BinaryExpression
+        type:     BinaryExpression,
+        value:    4,
     },
     {
-        scope:    scope,
         raw:      "0b1000 << 2",
-        value:    0b100000,
+        scope,
         toString: "8 << 2",
-        type:     BinaryExpression
+        type:     BinaryExpression,
+        value:    0b100000,
     },
     {
-        scope:    scope,
         raw:      "0b1000 >> 2",
-        value:    0b10,
+        scope,
         toString: "8 >> 2",
-        type:     BinaryExpression
-    },
-    {
-        scope:    scope,
-        raw:      "0b1000 >>> 2",
+        type:     BinaryExpression,
         value:    0b10,
+    },
+    {
+        raw:      "0b1000 >>> 2",
+        scope,
         toString: "8 >>> 2",
-        type:     BinaryExpression
+        type:     BinaryExpression,
+        value:    0b10,
     },
     {
-        scope:    scope,
         raw:      "1 + 1 * 2 / 2",
-        value:    2,
+        scope,
         toString: "1 + 1 * 2 / 2",
-        type:     BinaryExpression
+        type:     BinaryExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "noop(true)",
-        value:    true,
+        scope,
         toString: "noop(true)",
         type:     CallExpression,
-    },
-    {
-        scope:    { fn: () => true },
-        raw:      "fn?.()",
         value:    true,
-        toString: "fn?.()",
-        type:     CallExpression,
     },
     {
-        scope:    { fn: null },
         raw:      "fn?.()",
-        value:    undefined,
+        scope:    { fn: (): unknown => true },
         toString: "fn?.()",
         type:     CallExpression,
+        value:    true,
     },
     {
-        scope:    scope,
+        raw:      "fn?.()",
+        scope:    { fn: null },
+        toString: "fn?.()",
+        type:     CallExpression,
+        value:    undefined,
+    },
+    {
         raw:      "getScope()",
-        value:    null,
+        scope,
         toString: "getScope()",
         type:     CallExpression,
+        value:    null,
     },
     {
-        scope:    scope,
         raw:      "this.getValue()",
-        value:    42,
+        scope,
         toString: "this.getValue()",
         type:     CallExpression,
+        value:    42,
     },
     {
-        scope:    scope,
         raw:      "this.increment(1)",
-        value:    2,
+        scope,
         toString: "this.increment(1)",
         type:     CallExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "this.greater(1, 2)",
-        value:    false,
+        scope,
         toString: "this.greater(1, 2)",
         type:     CallExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "this.greater(...[1, 2],)",
-        value:    false,
+        scope,
         toString: "this.greater(...[1, 2])",
         type:     CallExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "object.getValue()",
-        value:    1,
+        scope,
         toString: "object.getValue()",
         type:     CallExpression,
+        value:    1,
     },
     {
-        scope:    scope,
         raw:      "/test/.test(\"test\")",
-        value:    true,
+        scope,
         toString: "/test/.test(\"test\")",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "/test/i.test(\"TEST\")",
-        value:    true,
+        scope,
         toString: "/test/i.test(\"TEST\")",
-        type:     CallExpression
-    },
-    {
-        scope:    scope,
-        raw:      "(true ? this.greater : this.lesser)(1, 2)",
-        value:    false,
-        toString: "(true ? this.greater : this.lesser)(1, 2)",
-        type:     CallExpression
-    },
-    {
-        scope:    { greater: (a: number, b: number) => a == 1 && b == 2, factory: () => [1, 2] },
-        raw:      "greater(...factory())",
+        type:     CallExpression,
         value:    true,
-        toString: "greater(...factory())",
-        type:     CallExpression
     },
     {
-        scope:    { ...scope, factory: () => [2, true]},
+        raw:      "(true ? this.greater : this.lesser)(1, 2)",
+        scope,
+        toString: "(true ? this.greater : this.lesser)(1, 2)",
+        type:     CallExpression,
+        value:    false,
+    },
+    {
+        raw:      "greater(...factory())",
+        scope:    { factory: (): unknown => [1, 2], greater: (a: number, b: number): unknown => a == 1 && b == 2 },
+        toString: "greater(...factory())",
+        type:     CallExpression,
+        value:    true,
+    },
+    {
         raw:      "new MyClass(...factory()).getId()",
-        value:    2,
+        scope:    { ...scope, factory: (): unknown => [2, true] },
         toString: "new MyClass(...factory()).getId()",
         type:     CallExpression,
+        value:    2,
     },
     {
-        scope:    { },
         raw:      "(() => 1)()",
-        value:    1,
+        scope:    { },
         toString: "(() => 1)()",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    1,
     },
     {
-        scope:      { b: 1 },
         raw:      "(a => a + b)(1)",
-        value:    2,
+        scope:    { b: 1 },
         toString: "((a) => a + b)(1)",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    2,
     },
     {
-        scope:    { b: 1 },
         raw:      "((a = 1) => a + b)()",
-        value:    2,
-        toString: "((a = 1) => a + b)()",
-        type:     CallExpression
-    },
-    {
         scope:    { b: 1 },
+        toString: "((a = 1) => a + b)()",
+        type:     CallExpression,
+        value:    2,
+    },
+    {
         raw:      "((a, b) => a + b)(1, 2)",
-        value:    3,
+        scope:    { b: 1 },
         toString: "((a, b) => a + b)(1, 2)",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    3,
     },
     {
-        scope:    { },
         raw:      "((...a) => a)(1, 2)",
-        value:    [1, 2],
+        scope:    { },
         toString: "((...a) => a)(1, 2)",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
-        scope:    { },
         raw:      "((...[a, b]) => [a, b])(1, 2)",
-        value:    [1, 2],
+        scope:    { },
         toString: "((...[a, b]) => [a, b])(1, 2)",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
-        scope:    { },
         raw:      "(([a, b]) => [a, b])([1, 2])",
-        value:    [1, 2],
+        scope:    { },
         toString: "(([a, b]) => [a, b])([1, 2])",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
-        scope:    { },
         raw:      "(([a, ...b]) => [a, b])([1, 2, 3])",
-        value:    [1, [2, 3]],
+        scope:    { },
         toString: "(([a, ...b]) => [a, b])([1, 2, 3])",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, [2, 3]],
     },
     {
-        scope:    { },
         raw:      "(([, b]) => [b])([1, 2])",
-        value:    [2],
+        scope:    { },
         toString: "(([, b]) => [b])([1, 2])",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [2],
     },
     {
-        scope:    { },
         raw:      "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
-        value:    [1, 2],
+        scope:    { },
         toString: "(({ a, b }) => [a, b])({ a: 1, b: 2 })",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
-        scope:    { },
         raw:      "(({ a: { b: { c: { d } } } }) => d)({ a: { b: { c: { d: 2 } } } })",
-        value:    2,
+        scope:    { },
         toString: "(({ a: { b: { c: { d } } } }) => d)({ a: { b: { c: { d: 2 } } } })",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    2,
     },
     {
-        scope:    { },
         raw:      "(({ a: { b: { c: [d] } } }) => d)({ a: { b: { c: [2] } } })",
-        value:    2,
+        scope:    { },
         toString: "(({ a: { b: { c: [d] } } }) => d)({ a: { b: { c: [2] } } })",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    2,
     },
     {
-        scope:    { },
         raw:      "(({ a = 1, b }) => [a, b])({ b: 2 })",
-        value:    [1, 2],
+        scope:    { },
         toString: "(({ a = 1, b }) => [a, b])({ b: 2 })",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
-        scope:    { },
         raw:      "(({ a, ...b }) => [a, b])({ a: 1, b: 2, c: 3 })",
-        value:    [1, { b: 2, c: 3 }],
-        toString: "(({ a, ...b }) => [a, b])({ a: 1, b: 2, c: 3 })",
-        type:     CallExpression
-    },
-    {
-        scope:    { x: "a" },
-        raw:      "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
-        value:    [1, 2],
-        toString: "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
-        type:     CallExpression
-    },
-    {
         scope:    { },
-        raw:      "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
-        value:    [1, 2],
-        toString: "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
-        type:     CallExpression
+        toString: "(({ a, ...b }) => [a, b])({ a: 1, b: 2, c: 3 })",
+        type:     CallExpression,
+        value:    [1, { b: 2, c: 3 }],
     },
     {
+        raw:      "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
         scope:    { x: "a" },
-        raw:      "(({ [x]: a = 1, b }) => [a, b])({ b: 2 })",
+        toString: "(({ [x]: a, b }) => [a, b])({ a: 1, b: 2 })",
+        type:     CallExpression,
         value:    [1, 2],
+    },
+    {
+        raw:      "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
+        scope:    { },
+        toString: "(({ c: a = 1, b }) => [a, b])({ b: 2 })",
+        type:     CallExpression,
+        value:    [1, 2],
+    },
+    {
+        raw:      "(({ [x]: a = 1, b }) => [a, b])({ b: 2 })",
+        scope:    { x: "a" },
         toString: "(({ [x]: a = 1, b }) => [a, b])({ b: 2 })",
-        type:     CallExpression
+        type:     CallExpression,
+        value:    [1, 2],
     },
     {
+        raw:      "id ?? 2",
         scope:    { id: 1 },
-        raw:      "id ?? 2",
-        value:    1,
         toString: "id ?? 2",
-        type:     CoalesceExpression
+        type:     CoalesceExpression,
+        value:    1,
     },
     {
+        raw:      "id ?? 2",
         scope:    { id: null },
-        raw:      "id ?? 2",
-        value:    2,
         toString: "id ?? 2",
-        type:     CoalesceExpression
-    },
-    {
-        scope:    { id: 1, lastId: 2 },
-        raw:      "id ?? 0 || lastId ?? 4",
-        value:    1,
-        toString: "id ?? 0 || lastId ?? 4",
-        type:     CoalesceExpression
-    },
-    {
-        scope:    { id: null, lastId: null },
-        raw:      "id ?? 0 || lastId ?? 4",
-        value:    4,
-        toString: "id ?? 0 || lastId ?? 4",
-        type:     CoalesceExpression
-    },
-    {
-        scope:    scope,
-        raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
+        type:     CoalesceExpression,
         value:    2,
+    },
+    {
+        raw:      "id ?? 0 || lastId ?? 4",
+        scope:    { id: 1, lastId: 2 },
+        toString: "id ?? 0 || lastId ?? 4",
+        type:     CoalesceExpression,
+        value:    1,
+    },
+    {
+        raw:      "id ?? 0 || lastId ?? 4",
+        scope:    { id: null, lastId: null },
+        toString: "id ?? 0 || lastId ?? 4",
+        type:     CoalesceExpression,
+        value:    4,
+    },
+    {
+        raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
+        scope,
         toString: "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
-        type:     CoalesceExpression
+        type:     CoalesceExpression,
+        value:    2,
     },
     {
-        scope:    scope,
         raw:      "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
-        value:    0,
+        scope,
         toString: "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
-        type:     CoalesceExpression
+        type:     CoalesceExpression,
+        value:    0,
     },
     {
-        scope:    scope,
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
-        value:    "smaller",
+        scope,
         toString: "1 > 2 ? \"greater\" : \"smaller\"",
-        type:     ConditionalExpression
+        type:     ConditionalExpression,
+        value:    "smaller",
     },
     {
-        scope:    scope,
         raw:      "2 > 1 ? \"greater\" : \"smaller\"",
-        value:    "greater",
+        scope,
         toString: "2 > 1 ? \"greater\" : \"smaller\"",
-        type:     ConditionalExpression
+        type:     ConditionalExpression,
+        value:    "greater",
     },
     {
-        scope:    scope,
         raw:      "undefined",
-        value:    undefined,
+        scope,
         toString: "undefined",
         type:     Identifier,
+        value:    undefined,
     },
     {
-        scope:    scope,
         raw:      "1",
-        value:    1,
+        scope,
         toString: "1",
         type:     Literal,
+        value:    1,
     },
     {
-        scope:    scope,
         raw:      "\"double quotes\"",
-        value:    "double quotes",
+        scope,
         toString: "\"double quotes\"",
         type:     Literal,
+        value:    "double quotes",
     },
     {
-        scope:    scope,
         raw:      "'single quotes'",
-        value:    "single quotes",
+        scope,
         toString: "\"single quotes\"",
         type:     Literal,
+        value:    "single quotes",
     },
     {
-        scope:    scope,
         raw:      "true",
-        value:    true,
+        scope,
         toString: "true",
         type:     Literal,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "false",
-        value:    false,
+        scope,
         toString: "false",
         type:     Literal,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "null",
-        value:    null,
+        scope,
         toString: "null",
         type:     Literal,
+        value:    null,
     },
     {
-        scope:    scope,
         raw:      "/test/",
-        value:    /test/,
+        scope,
         toString: "/test/",
         type:     Literal,
+        value:    /test/,
     },
     {
-        scope:    scope,
         raw:      "/test/gi",
-        value:    /test/gi,
+        scope,
         toString: "/test/gi",
         type:     Literal,
+        value:    /test/gi,
     },
     {
-        scope:    scope,
         raw:      "true && false",
-        value:    false,
+        scope,
         toString: "true && false",
         type:     LogicalExpression,
+        value:    false,
     },
     {
-        scope:    scope,
         raw:      "true || false",
-        value:    true,
+        scope,
         toString: "true || false",
         type:     LogicalExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "false || true && !false",
-        value:    true,
+        scope,
         toString: "false || true && !false",
         type:     LogicalExpression,
+        value:    true,
     },
     {
-        scope:    scope,
         raw:      "this.new",
-        value:    "new",
+        scope,
         toString: "this.new",
         type:     MemberExpression,
+        value:    "new",
     },
     {
-        scope:    { this: { id: 1 } },
         raw:      "this.id",
-        value:    1,
+        scope:    { this: { id: 1 } },
         toString: "this.id",
         type:     MemberExpression,
+        value:    1,
     },
     {
-        scope:    scope,
         raw:      "this.increment",
-        value:    scope.this.increment,
+        scope,
         toString: "this.increment",
         type:     MemberExpression,
+        value:    scope.this.increment,
     },
     {
-        scope:    scope,
         raw:      "this['increment']",
-        value:    scope.this.increment,
+        scope,
         toString: "this[\"increment\"]",
         type:     MemberExpression,
+        value:    scope.this.increment,
     },
     {
-        scope:    scope,
         raw:      "this['x', 'increment']",
-        value:    scope.this.increment,
+        scope,
         toString: "this[(\"x\", \"increment\")]",
         type:     MemberExpression,
+        value:    scope.this.increment,
     },
     {
-        scope:    { this: { id: 1 } },
         raw:      "this?.id",
-        value:    1,
+        scope:    { this: { id: 1 } },
         toString: "this?.id",
         type:     MemberExpression,
+        value:    1,
     },
     {
-        scope:    { this: null },
         raw:      "this?.id",
-        value:    undefined,
+        scope:    { this: null },
         toString: "this?.id",
         type:     MemberExpression,
-    },
-    {
-        scope:    { this: { id: 1 } },
-        raw:      "this?.['id']",
-        value:    1,
-        toString: "this?.[\"id\"]",
-        type:     MemberExpression,
-    },
-    {
-        scope:    { this: null },
-        raw:      "this?.['id']",
         value:    undefined,
-        toString: "this?.[\"id\"]",
-        type:     MemberExpression,
     },
     {
-        scope:    scope,
+        raw:      "this?.['id']",
+        scope:    { this: { id: 1 } },
+        toString: "this?.[\"id\"]",
+        type:     MemberExpression,
+        value:    1,
+    },
+    {
+        raw:      "this?.['id']",
+        scope:    { this: null },
+        toString: "this?.[\"id\"]",
+        type:     MemberExpression,
+        value:    undefined,
+    },
+    {
         raw:      "this.getObject().value",
-        value:    "Hello World!!!",
+        scope,
         toString: "this.getObject().value",
         type:     MemberExpression,
+        value:    "Hello World!!!",
     },
     {
-        scope:    scope,
         raw:      "new MyClass",
-        value:    { id: 0, active: false },
+        scope,
         toString: "new MyClass()",
         type:     NewExpression,
+        value:    { active: false, id: 0 },
     },
     {
-        scope:    scope,
         raw:      "new MyClass(1, true)",
-        value:    { id: 1, active: true },
+        scope,
         toString: "new MyClass(1, true)",
         type:     NewExpression,
+        value:    { active: true, id: 1 },
     },
     {
-        scope:    { ...scope, factory: () => [1, true]},
         raw:      "new MyClass(...factory())",
-        value:    { id: 1, active: true },
+        scope:    { ...scope, factory: (): unknown => [1, true] },
         toString: "new MyClass(...factory())",
         type:     NewExpression,
+        value:    { active: true, id: 1 },
     },
     {
-        scope:    scope,
-        raw:      "({ })",
-        value:    { },
+        raw:      "{ }",
+        scope,
         toString: "{ }",
         type:     ObjectExpression,
+        value:    { },
     },
     {
-        scope:   scope,
-        raw:      "({ 1: 1 })",
-        value:    { 1: 1 },
+        raw:      "{ 1: 1 }",
+        scope,
         toString: "{ 1: 1 }",
         type:     ObjectExpression,
+        value:    { 1: 1 },
     },
     {
-        scope:    scope,
-        raw:      "({ new: 1 })",
-        value:    { new: 1 },
+        raw:      "{ new: 1 }",
+        scope,
         toString: "{ new: 1 }",
         type:     ObjectExpression,
+        value:    { new: 1 },
     },
     {
-        scope:    scope,
-        raw:      "({ true: 1 })",
-        value:    { true: 1 },
+        raw:      "{ true: 1 }",
+        scope,
         toString: "{ true: 1 }",
         type:     ObjectExpression,
+        value:    { true: 1 },
     },
     {
-        scope:    scope,
-        raw:      "({ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 })",
-        value:    { foo: 1, bar: [1, 2, 3], [{id: 1}.id]: 1 },
+        raw:      "{ foo: 1, bar: [1, ...[2, 3]], [{id: 1}.id]: 1 }",
+        scope,
         toString: "{ foo: 1, bar: [1, ...[2, 3]], [{ id: 1 }.id]: 1 }",
         type:     ObjectExpression,
+        value:    { bar: [1, 2, 3], [{ id: 1 }.id]: 1, foo: 1 },
     },
     {
-        scope:    scope,
-        raw:      "({ foo: 'bar', ...{ id: 2, value: 3 } })",
-        value:    { foo: "bar", id: 2, value: 3 },
+        raw:      "{ foo: 'bar', ...{ id: 2, value: 3 } }",
+        scope,
         toString: "{ foo: \"bar\", ...{ id: 2, value: 3 } }",
         type:     ObjectExpression,
+        value:    { foo: "bar", id: 2, value: 3 },
     },
     {
-        scope:    scope,
-        raw:      "({ foo: 'bar', ...[1, 2] })",
-        value:    { 0: 1, 1: 2, foo: "bar" },
+        raw:      "{ foo: 'bar', ...[1, 2] }",
+        scope,
         toString: "{ foo: \"bar\", ...[1, 2] }",
         type:     ObjectExpression,
+        value:    { 0: 1, 1: 2, foo: "bar" },
     },
     {
+        raw:      "{ id }",
         scope:    { id: 1 },
-        raw:      "({ id })",
-        value:    { id: 1 },
         toString: "{ id }",
         type:     ObjectExpression,
+        value:    { id: 1 },
     },
     {
+        raw:      "{ [id]: 2 }",
         scope:    { id: 1 },
-        raw:      "({ [id]: 2 })",
-        value:    { 1: 2 },
         toString: "{ [id]: 2 }",
         type:     ObjectExpression,
+        value:    { 1: 2 },
     },
     {
-        scope:    { factory: () => ({ id: 1 }) },
-        raw:      "({ foo: 1, ...factory() })",
-        value:    { foo: 1, id: 1 },
+        raw:      "{ foo: 1, ...factory() }",
+        scope:    { factory: (): unknown => ({ id: 1 }) },
         toString: "{ foo: 1, ...factory() }",
         type:     ObjectExpression,
+        value:    { foo: 1, id: 1 },
     },
     {
-        scope:    { x: 1, y: 2 },
         raw:      "x++, y + x",
-        value:    4,
-        toString: "(x++, y + x)",
-        type:     SequenceExpression,
-    },
-    {
         scope:    { x: 1, y: 2 },
-        raw:      "(x++, y + x)",
-        value:    4,
         toString: "(x++, y + x)",
         type:     SequenceExpression,
+        value:    4,
     },
     {
-        scope:    scope,
+        raw:      "(x++, y + x)",
+        scope:    { x: 1, y: 2 },
+        toString: "(x++, y + x)",
+        type:     SequenceExpression,
+        value:    4,
+    },
+    {
         raw:      "`The id is: ${this.id}`",
-        value:    "The id is: 1",
+        scope,
         toString: "`The id is: ${this.id}`",
-        type:     TemplateLiteral
+        type:     TemplateLiteral,
+        value:    "The id is: 1",
     },
     {
-        scope:    scope,
         raw:      "`The id is: ${1, 2, 3}`",
-        value:    "The id is: 3",
+        scope,
         toString: "`The id is: ${(1, 2, 3)}`",
-        type:     TemplateLiteral
+        type:     TemplateLiteral,
+        value:    "The id is: 3",
     },
     {
-        scope:    { name: "World", tag: (...args: Array<unknown>) => args },
         raw:      "tag`\\tHello ${name}!!!`",
-        value:    [makeTemplateObject(["\tHello ", "!!!"], ["\\tHello ", "!!!"]), "World"],
+        scope:    { name: "World", tag: (...args: unknown[]): unknown => args },
         toString: "tag`\\tHello ${name}!!!`",
-        type:     TaggedTemplateExpression
-    },
-    {
-        scope:    { name: "World", x: { tag: (...args: Array<unknown>) => args }},
-        raw:      "x.tag`\\tHello ${name}!!!`",
+        type:     TaggedTemplateExpression,
         value:    [makeTemplateObject(["\tHello ", "!!!"], ["\\tHello ", "!!!"]), "World"],
-        toString: "x.tag`\\tHello ${name}!!!`",
-        type:     TaggedTemplateExpression
     },
     {
-        scope:    { this: { id: 1 } },
+        raw:      "x.tag`\\tHello ${name}!!!`",
+        scope:    { name: "World", x: { tag: (...args: unknown[]): unknown => args } },
+        toString: "x.tag`\\tHello ${name}!!!`",
+        type:     TaggedTemplateExpression,
+        value:    [makeTemplateObject(["\tHello ", "!!!"], ["\\tHello ", "!!!"]), "World"],
+    },
+    {
         raw:      "this",
-        value:    { id: 1 },
+        scope:    { this: { id: 1 } },
         toString: "this",
         type:     ThisExpression,
+        value:    { id: 1 },
     },
     {
-        scope:    scope,
         raw:      "+1",
-        value:    1,
+        scope,
         toString: "+1",
-        type:     UnaryExpression
+        type:     UnaryExpression,
+        value:    1,
     },
     {
-        scope:    scope,
         raw:      "-1",
-        value:    -1,
+        scope,
         toString: "-1",
-        type:     UnaryExpression
+        type:     UnaryExpression,
+        value:    -1,
     },
     {
-        scope:    scope,
         raw:      "~1",
-        value:    -2,
+        scope,
         toString: "~1",
-        type:     UnaryExpression
+        type:     UnaryExpression,
+        value:    -2,
     },
     {
-        scope:    scope,
         raw:      "!true",
-        value:    false,
+        scope,
         toString: "!true",
-        type:     UnaryExpression
+        type:     UnaryExpression,
+        value:    false,
     },
     {
-        scope:    scope,
+        raw:      "!!true",
+        scope,
+        toString: "!!true",
+        type:     UnaryExpression,
+        value:    true,
+    },
+    {
         raw:      "typeof 1",
-        value:    "number",
+        scope,
         toString: "typeof 1",
-        type:     UnaryExpression
+        type:     UnaryExpression,
+        value:    "number",
     },
     {
-        scope:    { value: 1 },
         raw:      "++value",
-        value:    2,
+        scope:    { value: 1 },
         toString: "++value",
-        type:     UpdateExpression
-    },
-    {
-        scope: { 識別子: 1 },
-        raw:      "識別子--",
-        value:    1,
-        toString: "識別子--",
-        type:     UpdateExpression
-    },
-    {
-        scope:    { this: { value: 1 } },
-        raw:      "++this.value",
+        type:     UpdateExpression,
         value:    2,
+    },
+    {
+        raw:      "識別子--",
+        scope:    { 識別子: 1 },
+        toString: "識別子--",
+        type:     UpdateExpression,
+        value:    1,
+    },
+    {
+        raw:      "++this.value",
+        scope:    { this: { value: 1 } },
         toString: "++this.value",
-        type:     UpdateExpression
+        type:     UpdateExpression,
+        value:    2,
     },
     {
-        scope:    { this: { value: 1 } },
         raw:      "--this.value",
-        value:    0,
+        scope:    { this: { value: 1 } },
         toString: "--this.value",
-        type:     UpdateExpression
-    },
-    {
-        scope:    { this: { value: 1 }, key: "value" },
-        raw:      "--this[key]",
+        type:     UpdateExpression,
         value:    0,
+    },
+    {
+        raw:      "--this[key]",
+        scope:    { key: "value", this: { value: 1 } },
         toString: "--this[key]",
-        type:     UpdateExpression
+        type:     UpdateExpression,
+        value:    0,
     },
     {
-        scope:    { this: { value: 1 } },
         raw:      "this.value++",
-        value:    1,
-        toString: "this.value++",
-        type:     UpdateExpression
-    },
-    {
-        scope:    { this: { value: 1 }, key: "value" },
-        raw:      "this[key]++",
-        value:    1,
-        toString: "this[key]++",
-        type:     UpdateExpression
-    },
-    {
         scope:    { this: { value: 1 } },
-        raw:      "this.value--",
+        toString: "this.value++",
+        type:     UpdateExpression,
         value:    1,
+    },
+    {
+        raw:      "this[key]++",
+        scope:    { key: "value", this: { value: 1 } },
+        toString: "this[key]++",
+        type:     UpdateExpression,
+        value:    1,
+    },
+    {
+        raw:      "this.value--",
+        scope:    { this: { value: 1 } },
         toString: "this.value--",
-        type:     UpdateExpression
+        type:     UpdateExpression,
+        value:    1,
     },
 ];
 
-export const invalidExpressions: Array<InvalidParseExpectedSpec> =
+export const invalidExpressions: InvalidParseExpectedSpec[] =
 [
     {
-        scope:   scope,
-        raw:     "(x || y) = 1",
-        error:   new ReferenceError(Messages.invalidLeftHandSideInAssignment)
+        error: new SyntaxError(Messages.invalidLeftHandSideInAssignment, 1, 0, 1),
+        raw:   "(x || y) = 1",
     },
     {
-        scope:   scope,
-        raw:     "++(x || y)",
-        error:   new ReferenceError(Messages.invalidLeftHandSideExpressionInPrefixOperation)
+        error: new SyntaxError(Messages.invalidLeftHandSideExpressionInPrefixOperation, 1, 2, 3),
+        raw:   "++true",
     },
     {
-        scope:   scope,
-        raw:     "(x || y)++",
-        error:   new ReferenceError(Messages.invalidLeftHandSideExpressionInPostfixOperation)
+        error: new SyntaxError(Messages.invalidLeftHandSideExpressionInPostfixOperation, 1, 0, 1),
+        raw:   "true++",
     },
     {
-        scope:   scope,
-        raw:     "this.''",
-        error:   new SyntaxError(Messages.unexpectedString, 1, 5, 6)
+        error: new SyntaxError(Messages.invalidLeftHandSideExpressionInPrefixOperation, 1, 2, 3),
+        raw:   "++(x || y)",
     },
     {
-        scope:   scope,
-        raw:     "this.1",
-        error:   new SyntaxError(Messages.unexpectedNumber, 1, 4, 5)
+        error: new SyntaxError(Messages.invalidLeftHandSideExpressionInPostfixOperation, 1, 0, 1),
+        raw:   "(x || y)++",
     },
     {
-        scope:   scope,
-        raw:     ".",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "." }), 1, 0, 1)
+        error: new SyntaxError(Messages.unexpectedString, 1, 5, 6),
+        raw:   "this.''",
     },
     {
-        scope:   scope,
-        raw:     "if",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 0, 1)
+        error: new SyntaxError(Messages.unexpectedNumber, 1, 4, 5),
+        raw:   "this.1",
     },
     {
-        scope:   scope,
-        raw:     "this.?",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 5, 6)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "." }), 1, 0, 1),
+        raw:   ".",
     },
     {
-        scope:   scope,
-        raw:     "this?.?",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 6, 7)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 0, 1),
+        raw:   "if",
     },
     {
-        scope:   scope,
-        raw:     "this if",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 5, 6)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 5, 6),
+        raw:   "this.?",
     },
     {
-        scope:   scope,
-        raw:     "{ }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 0, 1)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 6, 7),
+        raw:   "this?.?",
     },
     {
-        scope:   scope,
-        raw:     "x => { }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 5, 6)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 5, 6),
+        raw:   "this if",
     },
     {
-        scope:   scope,
-        raw:     "() => { }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 6, 7)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 5, 6),
+        raw:   "x => { }",
     },
     {
-        scope:   scope,
-        raw:     "(x, y) => { }",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 10, 11)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 6, 7),
+        raw:   "() => { }",
     },
     {
-        scope:   scope,
-        raw:     "({ (foo) })",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "(" }), 1, 3, 4)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 10, 11),
+        raw:   "(x, y) => { }",
     },
     {
-        scope:   scope,
-        raw:     "({ new })",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "}" }), 1, 7, 8)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "(" }), 1, 3, 4),
+        raw:   "({ (foo) })",
     },
     {
-        scope:   scope,
-        raw:     "({ `x`: 1 })",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "" }), 1, 3, 4)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "}" }), 1, 7, 8),
+        raw:   "({ new })",
     },
     {
-        scope:   scope,
-        raw:     "1 + if",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 4, 5)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "" }), 1, 3, 4),
+        raw:   "({ `x`: 1 })",
     },
     {
-        scope:   scope,
-        raw:     "[ ? ]",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 2, 3)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "if" }), 1, 4, 5),
+        raw:   "1 + if",
     },
     {
-        scope:   scope,
-        raw:     "",
-        error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 0, 1)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "?" }), 1, 2, 3),
+        raw:   "[ ? ]",
     },
     {
-        scope:   scope,
-        raw:     "1 < 2 ? true .",
-        error:   new SyntaxError(Messages.unexpectedEndOfExpression, 1, 14, 15)
+        error: new SyntaxError(Messages.unexpectedEndOfExpression, 1, 0, 1),
+        raw:   "",
     },
     {
-        scope:   scope,
-        raw:     "() = 1",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 3, 4)
+        error: new SyntaxError(Messages.unexpectedEndOfExpression, 1, 14, 15),
+        raw:   "1 < 2 ? true .",
     },
     {
-        scope:   scope,
-        raw:     "(a += 1) => 1",
-        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 9, 10)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 3, 4),
+        raw:   "() = 1",
     },
     {
-        scope:   scope,
-        raw:     "([a += 1]) => 1",
-        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 11, 12)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "(a += 1) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...[a += 1]) => 1",
-        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 11, 12)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "([a += 1]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(x.y = 1) => 1",
-        error:   new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 10, 11)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 5, 6),
+        raw:   "(...[a += 1]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "({ x = 1 })",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 5, 6)
+        error: new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 1, 2),
+        raw:   "(x.y = 1) => 1",
     },
     {
-        scope:   scope,
-        raw:     "([x.y]) => 1",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 8, 9)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "=" }), 1, 5, 6),
+        raw:   "({ x = 1 })",
     },
     {
-        scope:   scope,
-        raw:     "({ x: 1 }) => 1",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 11, 12)
+        error: new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 1, 2),
+        raw:   "([x.y]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "([{ x: 1 }]) => 1",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 13, 14)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "([1]) => 0",
     },
     {
-        scope:   scope,
-        raw:     "(...x, y) => 1",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 5, 6)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 6, 7),
+        raw:   "([a], [1]) => 0",
     },
     {
-        scope:   scope,
-        raw:     "(x, ...y, z) => 1",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 8, 9)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "({ x: 1 }) => 1",
     },
     {
-        scope:   scope,
-        raw:     "([...x, y]) => 1",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 12, 13)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "." }), 1, 4, 5),
+        raw:   "({ x.y }) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...[...x, y]) => 1",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 9, 10)
+        error: new SyntaxError(Messages.illegalPropertyInDeclarationContext, 1, 1, 2),
+        raw:   "({ x: x.y }) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...[{ ...x, y }]) => 1",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 11, 12)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "([{ x: 1 }]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...{ a, { b }}) => a + b",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 9, 10)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 1, 2),
+        raw:   "(...x, y) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(a, { b, x: { c: 1 } }) => a + b + c",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "=>" }), 1, 24, 25)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 4, 5),
+        raw:   "(x, ...y, z) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...{ a, ...{ b } }) => a",
-        error:   new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 18, 19)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 1, 2),
+        raw:   "([...x, y]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "({ ...{ a }, b }) => a",
-        error:   new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 18, 19)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 9, 10),
+        raw:   "(...[...x, y]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...a = []) => a",
-        error:   new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 10, 11)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 10, 11),
+        raw:   "(...[{ ...x, y }]) => 1",
     },
     {
-        scope:   scope,
-        raw:     "(...[...a = 1]) => a",
-        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 13, 14)
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "{" }), 1, 9, 10),
+        raw:   "(...{ a, { b }}) => a + b",
     },
     {
-        scope:   scope,
-        raw:     "([x, ...y = []]) => y",
-        error:   new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 17, 18)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 4, 5),
+        raw:   "(a, { b, x: { c: 1 } }) => a + b + c",
     },
     {
-        scope:   scope,
-        raw:     "(a, a) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 11, 12)
+        error: new SyntaxError(Messages.restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts, 1, 12, 13),
+        raw:   "(...{ a, ...{ b } }) => a",
     },
     {
-        scope:   scope,
-        raw:     "(...[a, a]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 16, 17)
+        error: new SyntaxError(Messages.restParameterMustBeLastFormalParameter, 1, 1, 2),
+        raw:   "({ ...{ a }, b }) => a",
     },
     {
-        scope:   scope,
-        raw:     "(a, [a]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 13, 14)
+        error: new SyntaxError(Messages.restParameterMayNotHaveAdefaultInitializer, 1, 1, 2),
+        raw:   "(...a = []) => a",
     },
     {
-        scope:   scope,
-        raw:     "(a, [b, { b }]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 20, 21)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 8, 9),
+        raw:   "(...[...a = 1]) => a",
     },
     {
-        scope:   scope,
-        raw:     "(a, [b, { x: b }]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 23, 24)
+        error: new SyntaxError(Messages.invalidDestructuringAssignmentTarget, 1, 1, 2),
+        raw:   "([x, ...y = []]) => y",
     },
     {
-        scope:   scope,
-        raw:     "(a, [b, { x: { b } }]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 27, 28)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, a) => a",
     },
     {
-        scope:   scope,
-        raw:     "(a, [b, { x: { c, c } }]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 30, 31)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 1, 2),
+        raw:   "(...[a, a]) => a",
     },
     {
-        scope:   scope,
-        raw:     "(a, [b, { x: { c, ...c } }]) => a",
-        error:   new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 33, 34)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [a]) => a",
     },
     {
-        scope:   scope,
-        raw:     "x, y z",
-        error:   new SyntaxError(format(Messages.unexpectedToken, { token: "z" }), 1, 5, 6)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [b, { b }]) => a",
     },
     {
-        scope:   scope,
-        raw:     "x || x = 1",
-        error:   new ReferenceError(Messages.invalidLeftHandSideInAssignment)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [b, { x: b }]) => a",
     },
     {
-        scope:   scope,
-        raw:     "x || x => x",
-        error:   new SyntaxError(Messages.malformedArrowFunctionParameterList, 1, 7, 8)
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [b, { x: { b } }]) => a",
+    },
+    {
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [b, { x: { c, c } }]) => a",
+    },
+    {
+        error: new SyntaxError(Messages.duplicateParameterNameNotAllowedInThisContext, 1, 4, 5),
+        raw:   "(a, [b, { x: { c, ...c } }]) => a",
+    },
+    {
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "z" }), 1, 5, 6),
+        raw:   "x, y z",
+    },
+    {
+        error: new SyntaxError(Messages.invalidLeftHandSideInAssignment, 1, 7, 8),
+        raw:   "x || x = 1",
+    },
+    {
+        error: new SyntaxError(Messages.malformedArrowFunctionParameterList, 1, 7, 8),
+        raw:   "x || x => x",
     },
 ];

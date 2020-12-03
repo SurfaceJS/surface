@@ -1,8 +1,8 @@
-import { merge }                               from "@surface/core/common/object";
-import IRawPalette                             from "../interfaces/raw-palette";
-import IRawTheme                               from "../interfaces/raw-theme";
-import ITheme                                  from "../interfaces/theme";
-import { generateCssVariables, generateTheme } from "../internal/common";
+import { merge }                               from "@surface/core";
+import RawPalette                              from "../types/raw-palette";
+import RawTheme                                from "../types/raw-theme";
+import Theme                                   from "../types/theme";
+import { generateCssVariables, generateTheme } from "./common";
 import defaultTheme                            from "./default-theme";
 import materialColors                          from "./material-colors";
 
@@ -10,15 +10,15 @@ export default class ThemeProvider
 {
     private readonly style: HTMLStyleElement;
 
-    private readonly materialColorsVariables: Array<string>;
+    private readonly materialColorsVariables: string[];
 
-    private darkThemeVariables:  Array<string> = [];
-    private lightThemeVariables: Array<string> = [];
-    private themeVariables:      Array<string> = [];
+    private darkThemeVariables:  string[] = [];
+    private lightThemeVariables: string[] = [];
+    private themeVariables:      string[] = [];
 
     private _dark:  boolean = false;
 
-    public theme: ITheme;
+    public theme: Theme;
 
     public get dark(): boolean
     {
@@ -38,7 +38,7 @@ export default class ThemeProvider
     {
         this.materialColorsVariables = generateCssVariables(materialColors);
         this.style                   = this.createStyle();
-        this.theme                   = generateTheme(defaultTheme) as ITheme;
+        this.theme                   = generateTheme(defaultTheme) as Theme;
 
         this.updateVariables();
     }
@@ -72,18 +72,18 @@ export default class ThemeProvider
                 "*",
                 "{",
                 ...this.materialColorsVariables,
-                ...(this.dark ? this.darkThemeVariables : this.lightThemeVariables),
+                ...this.dark ? this.darkThemeVariables : this.lightThemeVariables,
                 ...this.themeVariables,
-                "}"
+                "}",
             ].join("\n");
         }
     }
 
-    public use(theme: IRawPalette|IRawTheme): void
+    public use(theme: RawPalette|RawTheme): void
     {
-        const generated = generateTheme("dark" in theme || "light" in theme ? theme : { light: theme as IRawPalette });
+        const generated = generateTheme("dark" in theme || "light" in theme ? theme : { light: theme as RawPalette });
 
-        this.theme = merge([this.theme, generated]) as ITheme;
+        this.theme = merge(this.theme, generated) as Theme;
 
         this.updateVariables();
     }

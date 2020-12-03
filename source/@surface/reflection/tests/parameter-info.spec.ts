@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import MethodInfo                  from "../method-info";
-import ParameterInfo               from "../parameter-info";
-import Type                        from "../type";
+import MethodInfo                  from "../internal/method-info";
+import ParameterInfo               from "../internal/parameter-info";
+import Type                        from "../internal/type";
 import Mock                        from "./fixtures/mock";
 
 const methodInfo    = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
@@ -33,7 +33,7 @@ export default class ParameterInfoSpec
     public noMetadata(): void
     {
         const methodInfo    = new MethodInfo("instanceMethodWithParameters", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParameters")!, Type.of(Mock), false, false);
-        const parameterInfo = new ParameterInfo("a", 0, methodInfo, undefined);
+        const parameterInfo = new ParameterInfo("a", 0, methodInfo, null);
         expect(parameterInfo.metadata).to.deep.equal({ });
     }
 

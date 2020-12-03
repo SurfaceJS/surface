@@ -1,3 +1,10 @@
 {
     "extends": "../../../tsconfig.json",
+    "files": [
+        "./index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
 }

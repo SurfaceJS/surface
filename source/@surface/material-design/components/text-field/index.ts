@@ -1,12 +1,20 @@
-import { assert }                                     from "@surface/core/common/generic";
-import { mixer }                                      from "@surface/core/common/object";
-import CustomElement                                  from "@surface/custom-element";
-import { attribute, computed, element, event, query } from "@surface/custom-element/decorators";
-import colorable                                      from "../../mixins/colorable";
-import lineRippleable                                 from "../../mixins/line-rippleable";
-import themeable                                      from "../../mixins/themeable";
-import template                                       from "./index.html";
-import style                                          from "./index.scss";
+import { assert, mixer }                                   from "@surface/core";
+import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
+import { computed }                                        from "@surface/reactive";
+import colorable                                           from "../../mixins/colorable";
+import lineRippleable                                      from "../../mixins/line-rippleable";
+import themeable                                           from "../../mixins/themeable";
+import template                                            from "./index.html";
+import style                                               from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-text-field": TextField;
+    }
+}
 
 @element("smd-text-field", template, style)
 export default class TextField extends mixer(CustomElement, [colorable, lineRippleable, themeable])
@@ -17,20 +25,18 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
     @query("#root")
     protected colorable!: HTMLElement;
 
-    protected get noRipple(): boolean
-    {
-        return this.outlined;
-    }
-
-    protected input!: HTMLElement;
-
     @query("#inputable")
     protected inputable!: HTMLElement;
 
     @query(".rippleable")
     protected rippleable!: HTMLElement;
 
-    public active: boolean = false;
+    protected get noRipple(): boolean
+    {
+        return this.outlined;
+    }
+
+    protected input!: HTMLElement;
 
     @attribute
     public counter: boolean = false;
@@ -64,6 +70,8 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
 
     @attribute
     public value: string = "";
+
+    public active: boolean = false;
 
     public get selectionEnd(): number
     {
@@ -171,14 +179,5 @@ export default class TextField extends mixer(CustomElement, [colorable, lineRipp
             this._selectionStart = start;
             this._selectionEnd   = end;
         }
-    }
-}
-
-declare global
-{
-    // tslint:disable-next-line:interface-name
-    interface HTMLElementTagNameMap
-    {
-        "smd-text-field": TextField;
     }
 }

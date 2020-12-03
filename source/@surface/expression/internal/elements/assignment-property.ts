@@ -1,9 +1,11 @@
-import IExpression from "../../interfaces/expression";
-import IPattern    from "../../interfaces/pattern";
-import NodeType    from "../../node-type";
-import TypeGuard   from "../type-guard";
+import IAssignmentProperty from "../interfaces/assignment-property";
+import IExpression         from "../interfaces/expression";
+import INode               from "../interfaces/node";
+import IPattern            from "../interfaces/pattern";
+import NodeType            from "../node-type";
+import TypeGuard           from "../type-guard";
 
-export default class AssignmentProperty
+export default class AssignmentProperty implements INode
 {
     private _computed: boolean;
     public get computed(): boolean
@@ -66,20 +68,23 @@ export default class AssignmentProperty
         this._shorthand  = shorthand;
     }
 
+    public clone(): IAssignmentProperty
+    {
+        return new AssignmentProperty(this.key.clone(), this.value.clone(), this.computed, this.shorthand);
+    }
+
     public toString(): string
     {
         if (this.shorthand)
         {
             return this.value.toString();
         }
-        else
-        {
-            if (TypeGuard.isIdentifier(this.key) || (TypeGuard.isLiteral(this.key) && typeof this.key.value == "number"))
-            {
-                return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
-            }
 
+        if (TypeGuard.isIdentifier(this.key) || TypeGuard.isLiteral(this.key) && typeof this.key.value == "number")
+        {
             return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
         }
+
+        return `${this.computed ? `[${this.key}]` : this.key}: ${this.value}`;
     }
 }

@@ -1,0 +1,148 @@
+{
+    "inputs": [
+        {
+            "default": "default",
+            "description": "Strategy type for dependency sync",
+            "id": "strategy-type",
+            "options": [
+                "default",
+                "force-version",
+                "force-dependent-updates",
+                "ignore-depentends"
+            ],
+            "type": "pickString"
+        },
+        {
+            "default": "*.*.*",
+            "description": "Version for dependency sync",
+            "id": "sync-version",
+            "type": "promptString"
+        },
+        {
+            "default": "@surface/core",
+            "description": "Modules",
+            "id": "modules",
+            "options": [
+                "@surface/cli",
+                "@surface/collection",
+                "@surface/compiler",
+                "@surface/core",
+                "@surface/custom-element",
+                "@surface/dependency-injection",
+                "@surface/enumerable",
+                "@surface/expression",
+                "@surface/io",
+                "@surface/mock",
+                "@surface/reactive",
+                "@surface/reflection",
+                "@surface/router",
+                "@surface/test-suite",
+                "@surface/view-router",
+                "@surface/web-host",
+            ],
+            "type": "pickString"
+        }
+    ],
+    "tasks": [
+        {
+            "command": "node cli clean; node cli build;",
+            "group": {
+                "isDefault": true,
+                "kind": "build"
+            },
+            "isBackground": true,
+            "label": "Compile Modules",
+            "options": {
+                "cwd": "${workspaceFolder}/tasks/"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1",
+            "label": "TS Compile File",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": {
+                "base": "$tsc",
+                "fileLocation": [
+                    "relative",
+                    "${fileDirname}"
+                ]
+            },
+            "type": "shell"
+        },
+        {
+            "command": "npm run cover",
+            "isBackground": true,
+            "label": "Cover Modules",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "node ${workspaceFolder}/tasks/cli cover ${file}",
+            "isBackground": true,
+            "label": "Cover File",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "type": "shell"
+        },
+        {
+            "command": "npm task:publish -- --t ${env:NPM_AUTH_TOKEN}",
+            "isBackground": true,
+            "label": "Publish to NPM - DEV",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "tsc; node ${workspaceFolder}/node_modules/mocha/bin/mocha --ui tdd ${fileBasenameNoExtension}.js",
+            "isBackground": true,
+            "label": "Test File",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": {
+                "base": "$tsc",
+                "fileLocation": [
+                    "relative",
+                    "${fileDirname}"
+                ]
+            },
+            "type": "shell"
+        },
+        {
+            "command": "npm run test",
+            "isBackground": true,
+            "label": "Test Modules",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        }
+    ],
+    "version": "2.0.0"
+}
