@@ -18,11 +18,6 @@ export default class Metadata
             Reflect.defineProperty(target, METADATA, { value: new Metadata() });
         }
 
-        return Reflect.get(target, METADATA);
-    }
-
-    public static of(target: object): Metadata | undefined
-    {
-        return Reflect.get(target, METADATA);
+        return Reflect.get(target, METADATA) as Metadata;
     }
 }

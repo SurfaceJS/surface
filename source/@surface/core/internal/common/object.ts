@@ -250,7 +250,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                 {
                     const oldValue = currentDescriptor.get?.call(this);
 
-                    if (!Object.is(oldValue, value))
+                    if (!Object.is(value, oldValue))
                     {
                         action(this, value, oldValue);
 
@@ -262,7 +262,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                 {
                     const oldValue = currentDescriptor.get?.call(this);
 
-                    if (!Object.is(oldValue, value))
+                    if (!Object.is(value, oldValue))
                     {
                         currentDescriptor.set!.call(this, value);
 
@@ -289,7 +289,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                 {
                     const oldValue = privates[property as string];
 
-                    if (!Object.is(oldValue, value))
+                    if (!Object.is(value, oldValue))
                     {
                         action(this, value, oldValue);
 
@@ -300,7 +300,7 @@ export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: In
                 {
                     const oldValue = privates[property as string];
 
-                    if (!Object.is(oldValue, value))
+                    if (!Object.is(value, oldValue))
                     {
                         privates[property as string] = value;
 

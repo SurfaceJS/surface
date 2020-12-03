@@ -17,18 +17,13 @@ export default class PrototypeMetadata
         }
         else if (!target.hasOwnProperty(PROTOTYPE_METADATA))
         {
-            return (Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata).clone();
+            Reflect.defineProperty(target, PROTOTYPE_METADATA, { value: (Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata).inherit() });
         }
 
         return Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata;
     }
 
-    public static of(target: object): PrototypeMetadata | undefined
-    {
-        return Reflect.get(target, PROTOTYPE_METADATA);
-    }
-
-    public clone(): PrototypeMetadata
+    public inherit(): PrototypeMetadata
     {
         return new PrototypeMetadata();
     }

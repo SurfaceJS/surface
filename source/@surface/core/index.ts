@@ -52,3 +52,4 @@ export { default as Hashcode }                from "./internal/hashcode";
 export { default as Hookable }                from "./internal/hookable";
 export { default as Lazy }                    from "./internal/lazy";
 export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";
+export { default as DisposableMetadata }      from "./internal/metadata/disposable-metadata";

@@ -21,7 +21,7 @@ export default class AsyncReactive extends Reactive
                 {
                     event.stopImmediatePropagation();
 
-                    for (const [observer] of Metadata.of(root)!.subjects.get(key)!)
+                    for (const [observer] of Metadata.from(root).subjects.get(key)!)
                     {
                         observer.notify();
                     }

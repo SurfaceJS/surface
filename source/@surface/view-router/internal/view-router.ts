@@ -69,7 +69,12 @@ export default class ViewRouter
 
         if (!outlet)
         {
-            outlet = parent.shadowRoot!.querySelector<HTMLElement>(key == "default" ? `${outletTag}:not([name])` : `${outletTag}[name=${key}]`);
+            if (!parent.shadowRoot)
+            {
+                throw new Error("Routeable component requires an open shadowRoot");
+            }
+
+            outlet = parent.shadowRoot.querySelector<HTMLElement>(key == "default" ? `${outletTag}:not([name])` : `${outletTag}[name=${key}]`);
         }
 
         // istanbul ignore else
@@ -117,31 +122,28 @@ export default class ViewRouter
             {
                 const entry = definition.stack[index];
 
-                if (!parent.shadowRoot)
-                {
-                    throw new Error("Routeable component requires an open shadowRoot");
-                }
-
                 const keys = new Set(entry.keys());
 
                 this.disconnectFromOutlets(parent, keys, to, from);
 
                 if (entry == this.current?.definition?.stack[index])
                 {
-                    parent = this.cache[index].default ?? this.cache[index][keys.values().next().value];
+                    const next = this.cache[index].default ?? this.cache[index][keys.values().next().value];
 
                     if (hasUpdate)
                     {
-                        parent.onUpdate?.(to, from);
+                        next.onUpdate?.(to, from);
                     }
                     else
                     {
-                        parent.onEnter?.(to, from);
+                        next.onEnter?.(to, from);
                     }
+
+                    parent = next!;
                 }
                 else
                 {
-                    let nextParent: HTMLElement | undefined;
+                    let next: HTMLElement | undefined;
 
                     this.cache[index] = { };
 
@@ -156,13 +158,13 @@ export default class ViewRouter
 
                         this.connectToOutlet(parent, element, key, to, from, definition.selector);
 
-                        if (!nextParent || key == "default")
+                        if (!next || key == "default")
                         {
-                            nextParent = element;
+                            next = element;
                         }
                     }
 
-                    parent = nextParent!;
+                    parent = next!;
                 }
             }
 

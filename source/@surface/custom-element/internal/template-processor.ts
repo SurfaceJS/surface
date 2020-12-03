@@ -110,7 +110,7 @@ export default class TemplateProcessor
 
     private process(scope: object, context?: Node): IDisposable
     {
-        const disposables: IDisposable[]   = [];
+        const disposables: IDisposable[] = [];
 
         for (const descriptor of this.descriptor.elements)
         {
@@ -165,13 +165,9 @@ export default class TemplateProcessor
 
                         if (descriptor.name == "class" || descriptor.name == "style")
                         {
-                            const attribute = document.createAttribute(descriptor.name);
-
-                            element.setAttributeNode(attribute);
-
                             listener = descriptor.name == "class"
-                                ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
+                                ? () => element.setAttribute(descriptor.name, classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>))
+                                : () => element.setAttribute(descriptor.name, styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>));
                         }
                         else
                         {
@@ -207,9 +203,9 @@ export default class TemplateProcessor
                 }
                 else
                 {
-                    const attribute = element.attributes.getNamedItem(descriptor.name)!;
+                    // const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const listener = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+                    const listener = (): void => element.setAttribute(descriptor.name, `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`);
 
                     const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 

@@ -20,18 +20,13 @@ export default class StaticMetadata
         }
         else if (!target.hasOwnProperty(STATIC_METADATA))
         {
-            return (Reflect.get(target, STATIC_METADATA) as StaticMetadata).clone();
+            Reflect.defineProperty(target, STATIC_METADATA, { value: (Reflect.get(target, STATIC_METADATA) as StaticMetadata).inherit() });
         }
 
         return Reflect.get(target, STATIC_METADATA) as StaticMetadata;
     }
 
-    public static of(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata | undefined
-    {
-        return Reflect.get(target, STATIC_METADATA);
-    }
-
-    public clone(): StaticMetadata
+    public inherit(): StaticMetadata
     {
         const clone = new StaticMetadata();
 

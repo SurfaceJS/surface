@@ -3,20 +3,21 @@ import
 {
     Constructor,
     Delegate,
+    DisposableMetadata,
     HookableMetadata,
     Indexer,
     camelToDashed,
-    overrideProperty,
 } from "@surface/core";
-import { createHostScope }         from "./common";
-import ICustomElement              from "./interfaces/custom-element";
-import Metadata                    from "./metadata/metadata";
-import PrototypeMetadata           from "./metadata/prototype-metadata";
-import StaticMetadata              from "./metadata/static-metadata";
-import { scheduler }               from "./singletons";
-import { TEMPLATEABLE }            from "./symbols";
-import TemplateParser              from "./template-parser";
-import TemplateProcessor           from "./template-processor";
+import AsyncReactive       from "./async-reactive";
+import { createHostScope } from "./common";
+import ICustomElement      from "./interfaces/custom-element";
+import Metadata            from "./metadata/metadata";
+import PrototypeMetadata   from "./metadata/prototype-metadata";
+import StaticMetadata      from "./metadata/static-metadata";
+import { scheduler }       from "./singletons";
+import { TEMPLATEABLE }    from "./symbols";
+import TemplateParser      from "./template-parser";
+import TemplateProcessor   from "./template-processor";
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
@@ -24,9 +25,7 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
 {
     return (target: HTMLElement, propertyKey: string | symbol) =>
     {
-        const privateKey = typeof propertyKey == "string"
-            ? `_${propertyKey.toString()}`
-            : Symbol(propertyKey.toString());
+        const PRIVATE_KEY = Symbol(propertyKey.toString());
 
         Object.defineProperty
         (
@@ -34,19 +33,19 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
             propertyKey,
             {
                 configurable: true,
-                get(this: HTMLElement & Indexer<(Element | null) | NodeListOf<Element>>)
+                get(this: HTMLElement & { [PRIVATE_KEY]?: (Element | null) | NodeListOf<Element> })
                 {
                     if (!this.shadowRoot)
                     {
                         throw Error("Can't query a closed shadow root");
                     }
 
-                    if (!!nocache || Object.is(this[privateKey as string], undefined))
+                    if (!!nocache || Object.is(this[PRIVATE_KEY], undefined))
                     {
-                        this[privateKey as string] = fn(this.shadowRoot);
+                        this[PRIVATE_KEY] = fn(this.shadowRoot);
                     }
 
-                    return this[privateKey as string] as unknown;
+                    return this[PRIVATE_KEY] as unknown;
                 },
             },
         );
@@ -67,9 +66,9 @@ function wraperPrototype(prototype: ICustomElement): void
 {
     const attributeChangedCallback = (callback?: ICustomElement["attributeChangedCallback"]): ICustomElement["attributeChangedCallback"] => function (this: ICustomElement, name, oldValue, newValue, namespace)
     {
-        if (!Metadata.of(this)!.reflectingAttribute)
+        if (!Metadata.from(this).reflectingAttribute.has(name))
         {
-            StaticMetadata.of(this.constructor)!
+            StaticMetadata.from(this.constructor)
                 .converters[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.has(name) ? "true" : newValue);
 
             callback?.call(this, name, oldValue, newValue, namespace);
@@ -84,14 +83,13 @@ function wraperPrototype(prototype: ICustomElement): void
 
             if (root instanceof ShadowRoot)
             {
-                const hostMetadata = Metadata.of(root.host);
-                const metadata =     Metadata.of(this)!;
+                const metadata = Metadata.from(this);
 
-                if (hostMetadata && root.host != metadata.host)
+                if (root.host != metadata.host)
                 {
                     metadata.host = root.host;
 
-                    hostMetadata.disposables.add(this);
+                    DisposableMetadata.from(root.host).add(this);
                 }
             }
         };
@@ -103,11 +101,11 @@ function wraperPrototype(prototype: ICustomElement): void
 
     const disconnectedCallback = (callback?: ICustomElement["disconnectedCallback"]): ICustomElement["disconnectedCallback"] => function (this: ICustomElement)
     {
-        const host = Metadata.of(this)!.host;
+        const host = Metadata.from(this).host;
 
         if (host)
         {
-            Metadata.of(host)?.disposables.delete(this);
+            DisposableMetadata.from(host).remove(this);
         }
 
         callback?.call(this);
@@ -136,9 +134,9 @@ export function attribute(converter: Delegate<[string], unknown>): (target: ICus
 export function attribute(target: ICustomElement, propertyKey: string): void;
 export function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
 {
-    const decorator = (target: ICustomElement, propertyKey: string): PropertyDescriptor =>
+    const decorator = (target: ICustomElement, propertyKey: string): void =>
     {
-        const constructor = target.constructor;
+        const constructor = target.constructor as Constructor;
 
         const attributeName = camelToDashed(propertyKey);
 
@@ -150,7 +148,7 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
         {
             function getter(this: Constructor): string[]
             {
-                return StaticMetadata.of(this)!.observedAttributes;
+                return StaticMetadata.from(this).observedAttributes;
             }
 
             Object.defineProperty(target.constructor, "observedAttributes", { get: getter });
@@ -188,21 +186,32 @@ export function attribute(...args: [Delegate<[string], unknown>] | [ICustomEleme
             }
         };
 
-        const action = (instance: HTMLElement, oldValue: unknown, newValue: unknown): void =>
+        const initializer = (instance: HTMLElement): void =>
         {
-            if (!Object.is(oldValue, undefined))
+            const metadata = Metadata.from(instance);
+
+            const action = (value: unknown): void =>
             {
-                const metadata = Metadata.of(instance)!;
+                metadata.reflectingAttribute.add(attributeName);
 
-                metadata.reflectingAttribute = true;
+                if (typeof value == "boolean")
+                {
+                    value ? instance.setAttribute(attributeName, "") : instance.removeAttribute(attributeName);
+                }
+                else
+                {
+                    instance.setAttribute(attributeName, `${value}`);
+                }
 
-                instance.setAttribute(attributeName, `${newValue}`);
+                metadata.reflectingAttribute.delete(attributeName);
+            };
 
-                metadata.reflectingAttribute = false;
-            }
+            const subscription = AsyncReactive.from(instance, [propertyKey]).subscribe(action);
+
+            DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };
 
-        return overrideProperty(target as HTMLElement, propertyKey, action, null, true);
+        HookableMetadata.from(constructor as Constructor<HTMLElement>).finishers.push(initializer);
     };
 
     if (args.length == 1)
@@ -252,14 +261,11 @@ export function element(tagname: string, template?: string, style?: string, opti
                 {
                     const instance = Reflect.construct(target, args, newTarget) as InstanceType<T>;
 
-                    const metadata       = Metadata.from(instance);
-                    const staticMetadata = StaticMetadata.of(target)!;
+                    const disposable = TemplateProcessor.process({ descriptor: StaticMetadata.from(target).descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
 
-                    const disposable = TemplateProcessor.process({ descriptor: staticMetadata.descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                    DisposableMetadata.from(instance).add(disposable);
 
-                    metadata.disposables.add(disposable);
-
-                    HookableMetadata.of(target)!.finish(instance);
+                    HookableMetadata.from(target).finish(instance);
 
                     return instance;
                 },
@@ -290,7 +296,7 @@ export function event<K extends keyof HTMLElementEventMap>(type: K, options?: bo
 
             element.addEventListener(type, listener, options);
 
-            Metadata.of(element)!.disposables.add({ dispose: () => element.removeEventListener(type, listener) });
+            DisposableMetadata.from(element).add({ dispose: () => element.removeEventListener(type, listener) });
         };
 
         HookableMetadata.from(target.constructor as typeof HTMLElement).initializers.push(action);

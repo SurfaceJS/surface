@@ -1,10 +1,10 @@
-import { HOOKABLE_METADATA } from "../symbols";
+import { HOOKABLE_METADATA }     from "../symbols";
 import { Constructor, Delegate } from "../types";
 
 export default class HookableMetadata<T extends Constructor>
 {
-    public readonly initializers: Delegate<[InstanceType<T>]>[] = [];
     public readonly finishers:    Delegate<[InstanceType<T>]>[] = [];
+    public readonly initializers: Delegate<[InstanceType<T>]>[] = [];
 
     public hooked: boolean = false;
 
@@ -12,24 +12,38 @@ export default class HookableMetadata<T extends Constructor>
     {
         if (!Reflect.has(target, HOOKABLE_METADATA))
         {
-            Object.defineProperty(target, HOOKABLE_METADATA, { configurable: true, enumerable: false, value: new HookableMetadata<T>() });
+            Reflect.defineProperty(target, HOOKABLE_METADATA, { value: new HookableMetadata() });
+        }
+        else if (!target.hasOwnProperty(HOOKABLE_METADATA))
+        {
+            Reflect.defineProperty(target, HOOKABLE_METADATA, { value: (Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>).clone() });
         }
 
-        return Reflect.get(target, HOOKABLE_METADATA)!;
+        return Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>;
     }
 
-    public static of<T extends Constructor>(target: T): HookableMetadata<T> | undefined
+    public static in<T extends Constructor>(target: T): boolean
     {
-        return Reflect.get(target, HOOKABLE_METADATA)!;
+        return Reflect.has(target, HOOKABLE_METADATA);
     }
 
-    public initialize(instance: InstanceType<T>): void
+    public clone(): HookableMetadata<T>
     {
-        this.initializers.forEach(initializer => initializer(instance));
+        const metadata = new HookableMetadata<T>();
+
+        metadata.finishers.push(...this.finishers);
+        metadata.initializers.push(...this.initializers);
+
+        return metadata;
     }
 
     public finish(instance: InstanceType<T>): void
     {
         this.finishers.forEach(finisher => finisher(instance));
+    }
+
+    public initialize(instance: InstanceType<T>): void
+    {
+        this.initializers.forEach(initializer => initializer(instance));
     }
 }

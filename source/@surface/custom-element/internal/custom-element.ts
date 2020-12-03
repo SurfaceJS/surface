@@ -1,10 +1,9 @@
-import { Constructor, HookableMetadata } from "@surface/core";
-import directiveRegistry                 from "./directive-registry";
-import ICustomElement                    from "./interfaces/custom-element";
-import Metadata                          from "./metadata/metadata";
-import StaticMetadata                    from "./metadata/static-metadata";
-import { TEMPLATEABLE }                  from "./symbols";
-import { DirectiveHandlerRegistry }      from "./types";
+import { Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
+import directiveRegistry                                     from "./directive-registry";
+import ICustomElement                                        from "./interfaces/custom-element";
+import StaticMetadata                                        from "./metadata/static-metadata";
+import { TEMPLATEABLE }                                      from "./symbols";
+import { DirectiveHandlerRegistry }                          from "./types";
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
@@ -22,7 +21,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
     private static applyMetadata(instance: HTMLElement & { shadowRoot: ShadowRoot }): void
     {
-        const staticMetadata = StaticMetadata.of(instance.constructor)!;
+        const staticMetadata = StaticMetadata.from(instance.constructor);
 
         instance.attachShadow(staticMetadata.shadowRootInit);
 
@@ -32,7 +31,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
         instance.shadowRoot.appendChild(content);
 
-        HookableMetadata.of(this.constructor as Constructor<HTMLElement>)?.initialize(instance);
+        HookableMetadata.from(instance.constructor as Constructor<HTMLElement>).initialize(instance);
     }
 
     public static as<T extends Constructor<HTMLElement>>(base: T): T & Constructor<ICustomElement>
@@ -53,7 +52,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
             public dispose(): void
             {
-                Metadata.of(this)!.dispose();
+                DisposableMetadata.from(this).dispose();
             }
         };
     }
@@ -68,6 +67,6 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
     public dispose(): void
     {
-        Metadata.of(this)!.dispose();
+        DisposableMetadata.from(this).dispose();
     }
 }
