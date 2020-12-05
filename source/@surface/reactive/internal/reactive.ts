@@ -1,7 +1,7 @@
-import { Indexer, hasValue, overrideProperty } from "@surface/core";
-import { FieldInfo, MethodInfo, Type }         from "@surface/reflection";
-import Metadata                                from "./metadata";
-import Observer                                from "./observer";
+import { Indexer, hasValue, privatesFrom } from "@surface/core";
+import { FieldInfo, MethodInfo, Type }     from "@surface/reflection";
+import Metadata                            from "./metadata";
+import Observer                            from "./observer";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
@@ -106,7 +106,61 @@ export default class Reactive
                 }
             };
 
-            overrideProperty(root, key, action, member.descriptor);
+            if (member.descriptor?.set)
+            {
+                Reflect.defineProperty
+                (
+                    root,
+                    key,
+                    {
+                        configurable: member.descriptor.configurable,
+                        enumerable:   member.descriptor.enumerable,
+                        get:          member.descriptor.get,
+                        set(this: object, value: unknown)
+                        {
+                            const oldValue = member.descriptor.get?.call(this);
+
+                            if (!Object.is(value, oldValue))
+                            {
+                                member.descriptor.set!.call(this, value);
+
+                                action(this, value, oldValue);
+                            }
+                        },
+                    },
+                );
+            }
+            else
+            {
+                const privates = privatesFrom(root);
+
+                privates[key] = (root as Indexer)[key];
+
+                Reflect.defineProperty
+                (
+                    root,
+                    key,
+                    {
+                        configurable: true,
+                        enumerable:   true,
+                        get()
+                        {
+                            return privates[key as string];
+                        },
+                        set(this: object, value: unknown)
+                        {
+                            const oldValue = privates[key as string];
+
+                            if (!Object.is(value, oldValue))
+                            {
+                                privates[key as string] = value;
+
+                                action(this, value, oldValue);
+                            }
+                        },
+                    },
+                );
+            }
         }
     }
 

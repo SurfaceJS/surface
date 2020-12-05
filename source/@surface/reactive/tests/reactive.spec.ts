@@ -1,6 +1,8 @@
+import { Hookable }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import { computed, notify }                    from "../internal/decorators";
+import computed                                from "../internal/decorators/computed";
+import notify                                  from "../internal/decorators/notify";
 import Reactive                                from "../internal/reactive";
 
 @suite
@@ -281,6 +283,7 @@ export default class ReactiveSpec
     @test @shouldPass
     public decoratorComputed(): void
     {
+        @Hookable.finisher
         class Target
         {
             private a: number = 0;
@@ -313,6 +316,7 @@ export default class ReactiveSpec
     @test @shouldPass
     public decoratorNotify(): void
     {
+        @Hookable.finisher
         class Target
         {
             @notify("sum")

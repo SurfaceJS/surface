@@ -23,7 +23,7 @@ export default class Hookable
         };
     }
 
-    public static inject<T extends Constructor>(target: T): T
+    public static finisher<T extends Constructor>(target: T): T
     {
         const metadata = HookableMetadata.from(target);
 

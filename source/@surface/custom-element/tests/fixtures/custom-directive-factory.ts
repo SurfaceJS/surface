@@ -1,4 +1,4 @@
-import DirectiveHandler       from "../../internal/directives/handlers";
+import DirectiveHandler       from "../../internal/directives/handlers/directive-handler";
 import ICustomDirective       from "../../internal/interfaces/custom-directive";
 import CustomDirectiveHandler from "./custom-directive";
 

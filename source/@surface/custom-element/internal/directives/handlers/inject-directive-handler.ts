@@ -9,7 +9,7 @@ import
 import IInjectDirective         from "../../interfaces/inject-directive";
 import TemplateMetadata         from "../../metadata/template-metadata";
 import { scheduler }            from "../../singletons";
-import TemplateDirectiveHandler from ".";
+import TemplateDirectiveHandler from "./template-directive-handler";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {

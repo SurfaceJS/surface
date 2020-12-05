@@ -1,0 +1,29 @@
+import { Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
+import Reactive from "../..";
+import Metadata                          from "../metadata";
+
+export default function notify<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string) => void
+{
+    return (target, propertyKey) =>
+    {
+        const finisher = (instance: object): void =>
+        {
+            const keys     = properties.map(x => Array.isArray(x) ? x.join("\u{fffff}") : x) as string[];
+            const metadata = Metadata.from(instance);
+
+            const action = (): void =>
+            {
+                for (const key of keys)
+                {
+                    metadata.observers.get(key)?.notify();
+                }
+            };
+
+            const subscription = Reactive.from(instance, [propertyKey]).subscribe(action);
+
+            DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
+        };
+
+        HookableMetadata.from(target.constructor as Constructor).finishers.push(finisher);
+    };
+}

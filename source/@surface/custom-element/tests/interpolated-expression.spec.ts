@@ -4,7 +4,7 @@ import "./fixtures/dom";
 import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import InterpolatedExpression                  from "../internal/interpolated-expression";
+import InterpolatedExpression                  from "../internal/parsers/interpolated-expression";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 

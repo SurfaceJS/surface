@@ -1,4 +1,4 @@
-import DirectiveHandler from "../../internal/directives/handlers";
+import DirectiveHandler from "../../internal/directives/handlers/directive-handler";
 
 export default class CustomDirectiveHandler extends DirectiveHandler
 {

@@ -4,7 +4,7 @@ import "./fixtures/dom";
 import Expression           from "@surface/expression";
 import { batchTest, suite } from "@surface/test-suite";
 import { assert }           from "chai";
-import ObserverVisitor      from "../internal/observer-visitor";
+import ObserverVisitor      from "../internal/reactivity/observer-visitor";
 import
 {
     ObservableExpression,

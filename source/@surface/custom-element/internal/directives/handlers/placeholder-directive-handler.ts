@@ -14,7 +14,7 @@ import TemplateMetadata         from "../../metadata/template-metadata";
 import { scheduler }            from "../../singletons";
 import { Injection }            from "../../types";
 import TemplateBlock            from "../template-block";
-import TemplateDirectiveHandler from ".";
+import TemplateDirectiveHandler from "./template-directive-handler";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {

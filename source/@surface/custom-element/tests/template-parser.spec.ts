@@ -9,8 +9,8 @@ import { shouldFail, shouldPass, suite, test }                           from "@
 import { assert }                                                        from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error";
 import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
-import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
-import TemplateParser                                                    from "../internal/template-parser";
+import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers/expression-parsers";
+import TemplateParser                                                    from "../internal/parsers/template-parser";
 
 TemplateParser.testEnviroment = true;
 

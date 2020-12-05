@@ -1,6 +1,7 @@
-import { Delegate }          from "@surface/core";
-import { TEMPLATE_METADATA } from "../symbols";
-import { Injection }         from "../types";
+import { Delegate }  from "@surface/core";
+import { Injection } from "../types";
+
+export const TEMPLATE_METADATA  = Symbol("custom-element:template-metadata");
 
 export default class TemplateMetadata
 {

@@ -6,13 +6,12 @@ import { AggregateError, Delegate, Indexer, uuidv4 } from "@surface/core";
 import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
 import { assert }                                    from "chai";
 import CustomElement                                 from "../internal/custom-element";
-import { element }                                   from "../internal/decorators";
-import directiveRegistry                             from "../internal/directive-registry";
+import element                                       from "../internal/decorators/element";
 import CustomStackError                              from "../internal/errors/custom-stack-error";
 import TemplateEvaluationError                       from "../internal/errors/template-evaluation-error";
-import { scheduler }                                 from "../internal/singletons";
-import TemplateParser                                from "../internal/template-parser";
-import TemplateProcessor                             from "../internal/template-processor";
+import TemplateParser                                from "../internal/parsers/template-parser";
+import TemplateProcessor                             from "../internal/processors/template-processor";
+import { directiveRegistry, scheduler }              from "../internal/singletons";
 import CustomDirectiveHandler                        from "./fixtures/custom-directive";
 import customDirectiveFactory                        from "./fixtures/custom-directive-factory";
 

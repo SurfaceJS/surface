@@ -1,7 +1,7 @@
 import { Indexer, hasValue }            from "@surface/core";
 import Reactive, { Metadata, Observer } from "@surface/reactive";
+import type Scheduler                   from "../processors/scheduler";
 import AsyncObserver                    from "./async-observer";
-import Scheduler                        from "./scheduler";
 
 export default class AsyncReactive extends Reactive
 {

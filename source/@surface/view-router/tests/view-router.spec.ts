@@ -47,6 +47,10 @@ class HomeIndexView extends CustomElement implements IRouteableElement
 class HomeIndexDetailView extends HTMLElement implements IRouteableElement
 { }
 
+@define("about-invalid")
+class AboutInvalidView extends HTMLElement implements IRouteableElement
+{ }
+
 @define("data-view")
 class DataView extends HTMLElement
 {
@@ -117,7 +121,7 @@ export default class ViewRouterSpec
                 children:
                 [
                     {
-                        component: HTMLElement,
+                        component: AboutInvalidView,
                         path:      "invalid",
                     },
                 ],

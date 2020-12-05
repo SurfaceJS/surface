@@ -4,7 +4,7 @@ import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
 import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
 import { scheduler }                                     from "../../singletons";
 import TemplateBlock                                     from "../template-block";
-import TemplateDirectiveHandler                          from ".";
+import TemplateDirectiveHandler                          from "./template-directive-handler";
 
 type Choice =
 {

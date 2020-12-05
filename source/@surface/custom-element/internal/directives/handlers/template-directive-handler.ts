@@ -1,6 +1,6 @@
 import { IDisposable }     from "@surface/core";
 import ITemplateDescriptor from "../../interfaces/template-descriptor";
-import TemplateProcessor   from "../../template-processor";
+import TemplateProcessor   from "../../processors/template-processor";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {

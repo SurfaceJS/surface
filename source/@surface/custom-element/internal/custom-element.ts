@@ -1,13 +1,14 @@
 import { Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
-import directiveRegistry                                     from "./directive-registry";
 import ICustomElement                                        from "./interfaces/custom-element";
 import StaticMetadata                                        from "./metadata/static-metadata";
-import { TEMPLATEABLE }                                      from "./symbols";
+import { directiveRegistry }                                 from "./singletons";
 import { DirectiveHandlerRegistry }                          from "./types";
+
+const CUSTOM_ELEMENT = Symbol("custom-element:instance");
 
 export default class CustomElement extends HTMLElement implements ICustomElement
 {
-    public static readonly [TEMPLATEABLE]: boolean = true;
+    public static readonly [CUSTOM_ELEMENT]: boolean = true;
 
     public shadowRoot!: ShadowRoot;
 
@@ -34,11 +35,16 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         HookableMetadata.from(instance.constructor as Constructor<HTMLElement>).initialize(instance);
     }
 
+    public static [Symbol.hasInstance](instance: object): boolean
+    {
+        return Reflect.get(instance.constructor, CUSTOM_ELEMENT);
+    }
+
     public static as<T extends Constructor<HTMLElement>>(base: T): T & Constructor<ICustomElement>
     {
         return class CustomElementExtends extends base implements ICustomElement
         {
-            public static readonly [TEMPLATEABLE]: boolean = true;
+            public static readonly [CUSTOM_ELEMENT]: boolean = true;
 
             public shadowRoot!: ShadowRoot;
 

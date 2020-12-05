@@ -66,7 +66,9 @@ export default class Queue<T> extends Enumerable<T>
 
     public clear(): void
     {
-        this.node = null;
+        this.node     = null;
+        this.lastNode = null;
+
         this._length = 0;
     }
 
@@ -95,6 +97,11 @@ export default class Queue<T> extends Enumerable<T>
         this.node = this.node?.next ?? null;
 
         this._length--;
+
+        if (this._length == 0)
+        {
+            this.lastNode = null;
+        }
 
         return value ?? null;
     }

@@ -1,7 +1,7 @@
 import { SyntaxError, TypeGuard }                                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                              from "@surface/test-suite";
 import { assert }                                                           from "chai";
-import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/parsers";
+import { parseDestructuredPattern, parseExpression, parseForLoopStatement } from "../internal/parsers/expression-parsers";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 

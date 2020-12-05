@@ -21,9 +21,7 @@ export default class Messages
     public static readonly restParameterMayNotHaveAdefaultInitializer                    = "Rest parameter may not have a default initializer";
     public static readonly restParameterMustBeLastFormalParameter                        = "Rest parameter must be last formal parameter";
     public static readonly unexpectedEndOfExpression                                     = "Unexpected end of expression";
-    public static readonly unexpectedIdentifier                                          = "Unexpected identifier";
     public static readonly unexpectedNumber                                              = "Unexpected number";
     public static readonly unexpectedString                                              = "Unexpected string";
     public static readonly unexpectedToken                                               = "Unexpected token ${token}";
-    public static readonly unexpectedTokenIllegal                                        = "Unexpected token ILLEGAL";
 }
