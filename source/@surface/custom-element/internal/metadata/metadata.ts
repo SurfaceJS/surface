@@ -1,14 +1,8 @@
-import { IDisposable } from "@surface/core";
-import { METADATA }    from "../symbols";
+export const METADATA = Symbol("custom-element:metadata");
 
 export default class Metadata
 {
-    private disposed: boolean = false;
-
-    public readonly disposables: Set<IDisposable> = new Set();
-
-    public hasListener:         boolean = false;
-    public reflectingAttribute: boolean = false;
+    public reflectingAttribute: Set<string> = new Set();
 
     public host?: Node;
 
@@ -20,21 +14,5 @@ export default class Metadata
         }
 
         return Reflect.get(target, METADATA);
-    }
-
-    public static of(target: object): Metadata | undefined
-    {
-        return Reflect.get(target, METADATA);
-    }
-
-    public dispose(): void
-    {
-        if (!this.disposed)
-        {
-            this.disposed = true;
-
-            this.disposables.forEach(x => x.dispose());
-            this.disposables.clear();
-        }
     }
 }

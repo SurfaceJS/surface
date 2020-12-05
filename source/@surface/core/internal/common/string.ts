@@ -1,14 +1,13 @@
 import { Indexer } from "../types";
-import { tuple }   from "./generic";
 
 export function camelToText(value: string): string
 {
-    return value.split(/(?=[A-Z0-9])/g).join(" ").toLowerCase();
+    return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join(" ").toLowerCase();
 }
 
 export function camelToDashed(value: string): string
 {
-    return value.split(/(?=[A-Z0-9])/g).join("-").toLowerCase();
+    return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join("-").toLowerCase();
 }
 
 export function capture(source: string, start: RegExp, end: RegExp): [string, string, string]
@@ -24,7 +23,7 @@ export function capture(source: string, start: RegExp, end: RegExp): [string, st
 
 export function captureAll(source: string, start: RegExp, end: RegExp): [string, string, string][]
 {
-    let captures = tuple("", "", "");
+    let captures = ["", "", ""];
     let content  = source;
 
     const result: [string, string, string][] = [];

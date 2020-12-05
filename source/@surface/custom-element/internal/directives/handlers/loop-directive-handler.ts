@@ -5,7 +5,7 @@ import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } fro
 import ILoopDirective                                                        from "../../interfaces/loop-directive";
 import { scheduler }                                                         from "../../singletons";
 import TemplateBlock                                                         from "../template-block";
-import TemplateDirectiveHandler                                              from ".";
+import TemplateDirectiveHandler                                              from "./template-directive-handler";
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {

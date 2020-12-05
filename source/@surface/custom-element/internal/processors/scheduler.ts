@@ -1,5 +1,5 @@
-import { Queue }                                                                    from "@surface/collection";
-import { AggregateError, CancellationToken, Delegate, TaskCanceledError, runAsync } from "@surface/core";
+import { Queue }                                                 from "@surface/collection";
+import { AggregateError, CancellationToken, Delegate, runAsync } from "@surface/core";
 
 type Entry =
 [
@@ -40,7 +40,11 @@ export default class Scheduler
 
             const start = window.performance.now();
 
-            if (!cancellationToken?.canceled)
+            if (cancellationToken?.canceled)
+            {
+                resolve(undefined);
+            }
+            else
             {
                 try
                 {
@@ -52,10 +56,6 @@ export default class Scheduler
 
                     reject(error);
                 }
-            }
-            else
-            {
-                reject(new TaskCanceledError());
             }
 
             const end = window.performance.now();
@@ -102,7 +102,9 @@ export default class Scheduler
         }
     }
 
-    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken | undefined = undefined): Promise<ReturnType<T>>
+    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low"): Promise<ReturnType<T>>
+    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<ReturnType<T> | undefined>
+    public async enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken?: CancellationToken): Promise<unknown>
     {
         if (!this.running)
         {
@@ -112,11 +114,11 @@ export default class Scheduler
         switch (priority)
         {
             case "high":
-                return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
+                return new Promise((resolve, reject) => this.highPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
             case "low":
-                return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
+                return new Promise((resolve, reject) => this.lowPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
             default:
-                return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve as Delegate, reject, cancellationToken]));
+                return new Promise((resolve, reject) => this.normalPriorityQueue.enqueue([task, resolve, reject, cancellationToken]));
         }
     }
 

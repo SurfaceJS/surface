@@ -1,7 +1,7 @@
-import { Indexer, hasValue, overrideProperty } from "@surface/core";
-import { FieldInfo, MethodInfo, Type }         from "@surface/reflection";
-import Metadata                                from "./metadata";
-import Observer                                from "./observer";
+import { Indexer, hasValue, privatesFrom } from "@surface/core";
+import { FieldInfo, MethodInfo, Type }     from "@surface/reflection";
+import Metadata                            from "./metadata";
+import Observer                            from "./observer";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
@@ -60,7 +60,7 @@ export default class Reactive
 
             function proxy(this: unknown[], ...args: unknown[]): unknown
             {
-                const metadata = Metadata.of(this)!;
+                const metadata = Metadata.from(this)!;
 
                 const length = this.length;
 
@@ -77,7 +77,7 @@ export default class Reactive
             Object.defineProperty(source, method, { configurable: true, enumerable: false, value: proxy });
         }
 
-        Metadata.of(source)!.isReactiveArray = true;
+        Metadata.from(source).isReactiveArray = true;
     }
 
     protected static observeProperty(root: object, key: string): void
@@ -92,7 +92,7 @@ export default class Reactive
         {
             const action = (instance: object, newValue: unknown, oldValue: unknown): void =>
             {
-                const observers = Metadata.of(instance)!.subjects.get(key)!;
+                const observers = Metadata.from(instance).subjects.get(key)!;
 
                 for (const [observer, path] of observers)
                 {
@@ -106,7 +106,61 @@ export default class Reactive
                 }
             };
 
-            overrideProperty(root, key, action, member.descriptor);
+            if (member.descriptor?.set)
+            {
+                Reflect.defineProperty
+                (
+                    root,
+                    key,
+                    {
+                        configurable: member.descriptor.configurable,
+                        enumerable:   member.descriptor.enumerable,
+                        get:          member.descriptor.get,
+                        set(this: object, value: unknown)
+                        {
+                            const oldValue = member.descriptor.get?.call(this);
+
+                            if (!Object.is(value, oldValue))
+                            {
+                                member.descriptor.set!.call(this, value);
+
+                                action(this, value, oldValue);
+                            }
+                        },
+                    },
+                );
+            }
+            else
+            {
+                const privates = privatesFrom(root);
+
+                privates[key] = (root as Indexer)[key];
+
+                Reflect.defineProperty
+                (
+                    root,
+                    key,
+                    {
+                        configurable: true,
+                        enumerable:   true,
+                        get()
+                        {
+                            return privates[key as string];
+                        },
+                        set(this: object, value: unknown)
+                        {
+                            const oldValue = privates[key as string];
+
+                            if (!Object.is(value, oldValue))
+                            {
+                                privates[key as string] = value;
+
+                                action(this, value, oldValue);
+                            }
+                        },
+                    },
+                );
+            }
         }
     }
 
@@ -116,7 +170,7 @@ export default class Reactive
         {
             const [key, ...keys] = path;
 
-            Metadata.of(root)!.subjects.get(key)?.delete(observer);
+            Metadata.from(root).subjects.get(key)?.delete(observer);
 
             const property = (root as Indexer)[key];
 
@@ -147,18 +201,10 @@ export default class Reactive
 
     public static notify(root: object, path?: string[]): void
     {
-        const metadata = Metadata.of(root);
+        const metadata = Metadata.from(root);
 
-        if (metadata)
-        {
-            if (path)
-            {
-                metadata.observers.get(path.join("\u{fffff}"))?.notify();
-            }
-            else
-            {
-                metadata.observers.forEach(x => x.notify());
-            }
-        }
+        path
+            ? metadata.observers.get(path.join("\u{fffff}"))?.notify()
+            : metadata.observers.forEach(x => x.notify());
     }
 }

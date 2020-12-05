@@ -1,7 +1,6 @@
 import { Delegate, IDisposable, Indexer, assert } from "@surface/core";
 import { Evaluate, IExpression, IPattern }        from "@surface/expression";
 import { Subscription }                           from "@surface/reactive";
-import DataBind                                   from "./data-bind";
 import TemplateEvaluationError                    from "./errors/template-evaluation-error";
 import TemplateObservationError                   from "./errors/template-observation-error";
 import TemplateParseError                         from "./errors/template-parse-error";
@@ -9,6 +8,7 @@ import IKeyValueObservable                        from "./interfaces/key-value-o
 import IKeyValueTraceable                         from "./interfaces/key-value-traceable";
 import IObservable                                from "./interfaces/observable";
 import ITraceable                                 from "./interfaces/traceable";
+import DataBind                                   from "./reactivity/data-bind";
 import { Observables, StackTrace }                from "./types";
 
 // eslint-disable-next-line object-shorthand
@@ -64,6 +64,16 @@ export function classMap(classes: Record<string, boolean>): string
 export function scapeBrackets(value: string): string
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
+}
+
+export function stringToCSSStyleSheet(source: string): CSSStyleSheet
+{
+    const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
+
+    sheet.replaceSync(source);
+    sheet.toString = () => source;
+
+    return sheet;
 }
 
 export function styleMap(rules: Record<string, boolean>): string

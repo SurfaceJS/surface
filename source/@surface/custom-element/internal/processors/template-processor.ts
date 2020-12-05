@@ -1,5 +1,5 @@
 import { Delegate, IDisposable, Indexer, assert, getValue, typeGuard } from "@surface/core";
-import { Subscription } from "@surface/reactive";
+import { Subscription }                                                from "@surface/reactive";
 import { FieldInfo, Type }                                             from "@surface/reflection";
 import
 {
@@ -8,23 +8,23 @@ import
     styleMap,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
-} from "./common";
-import DataBind                    from "./data-bind";
-import directiveRegistry           from "./directive-registry";
-import EventDirectiveHandler       from "./directives/handlers/event-directive-handler";
-import ChoiceDirectiveHandler      from "./directives/template-handlers/choice-directive-handler";
-import InjectDirectiveHandler      from "./directives/template-handlers/inject-directive-handler";
-import LoopDirectiveHandler        from "./directives/template-handlers/loop-directive-handler";
-import PlaceholderDirectiveHandler from "./directives/template-handlers/placeholder-directive-handler";
-import TemplateProcessError        from "./errors/template-process-error";
-import IAttributeDirective         from "./interfaces/attribute-directive";
-import ICustomDirective            from "./interfaces/custom-directive";
-import IDirectivesDescriptor       from "./interfaces/directives-descriptor";
-import IEventDirective             from "./interfaces/event-directive";
-import ITemplateDescriptor         from "./interfaces/template-descriptor";
-import ITextNodeDescriptor         from "./interfaces/text-node-descriptor";
-import ITraceable                  from "./interfaces/traceable";
-import { DirectiveHandlerFactory } from "./types";
+} from "../common";
+import ChoiceDirectiveHandler      from "../directives/handlers/choice-directive-handler";
+import EventDirectiveHandler       from "../directives/handlers/event-directive-handler";
+import InjectDirectiveHandler      from "../directives/handlers/inject-directive-handler";
+import LoopDirectiveHandler        from "../directives/handlers/loop-directive-handler";
+import PlaceholderDirectiveHandler from "../directives/handlers/placeholder-directive-handler";
+import TemplateProcessError        from "../errors/template-process-error";
+import IAttributeDirective         from "../interfaces/attribute-directive";
+import ICustomDirective            from "../interfaces/custom-directive";
+import IDirectivesDescriptor       from "../interfaces/directives-descriptor";
+import IEventDirective             from "../interfaces/event-directive";
+import ITemplateDescriptor         from "../interfaces/template-descriptor";
+import ITextNodeDescriptor         from "../interfaces/text-node-descriptor";
+import ITraceable                  from "../interfaces/traceable";
+import DataBind                    from "../reactivity/data-bind";
+import { directiveRegistry }       from "../singletons";
+import { DirectiveHandlerFactory } from "../types";
 
 interface ITemplateProcessorData
 {
@@ -110,7 +110,7 @@ export default class TemplateProcessor
 
     private process(scope: object, context?: Node): IDisposable
     {
-        const disposables: IDisposable[]   = [];
+        const disposables: IDisposable[] = [];
 
         for (const descriptor of this.descriptor.elements)
         {
@@ -165,13 +165,9 @@ export default class TemplateProcessor
 
                         if (descriptor.name == "class" || descriptor.name == "style")
                         {
-                            const attribute = document.createAttribute(descriptor.name);
-
-                            element.setAttributeNode(attribute);
-
                             listener = descriptor.name == "class"
-                                ? () => attribute.value = classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>)
-                                : () => attribute.value = styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>);
+                                ? () => element.setAttribute(descriptor.name, classMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>))
+                                : () => element.setAttribute(descriptor.name, styleMap(tryEvaluateExpressionByTraceable(scope, descriptor) as Record<string, boolean>));
                         }
                         else
                         {
@@ -207,9 +203,9 @@ export default class TemplateProcessor
                 }
                 else
                 {
-                    const attribute = element.attributes.getNamedItem(descriptor.name)!;
+                    // const attribute = element.attributes.getNamedItem(descriptor.name)!;
 
-                    const listener = (): string => attribute.value = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+                    const listener = (): void => element.setAttribute(descriptor.name, `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`);
 
                     const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 

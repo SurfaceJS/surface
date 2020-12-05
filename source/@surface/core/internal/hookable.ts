@@ -5,7 +5,7 @@ export default class Hookable
 {
     public constructor()
     {
-        HookableMetadata.of(this.constructor as Constructor)?.initialize(this);
+        HookableMetadata.from(this.constructor as Constructor).initialize(this);
     }
 
     public static as<T extends Constructor>(base: T): T & Constructor
@@ -18,12 +18,12 @@ export default class Hookable
             {
                 super(...args);
 
-                HookableMetadata.of(this.constructor as Constructor)?.initialize(this);
+                HookableMetadata.from(this.constructor as Constructor).initialize(this);
             }
         };
     }
 
-    public static inject<T extends Constructor>(target: T): T
+    public static finisher<T extends Constructor>(target: T): T
     {
         const metadata = HookableMetadata.from(target);
 

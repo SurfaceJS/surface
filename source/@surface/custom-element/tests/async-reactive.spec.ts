@@ -3,8 +3,8 @@ import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import AsyncReactive               from "../internal/async-reactive";
-import Scheduler                   from "../internal/scheduler";
+import Scheduler                   from "../internal/processors/scheduler";
+import AsyncReactive               from "../internal/reactivity/async-reactive";
 
 @suite
 export default class AsyncReactiveSpec

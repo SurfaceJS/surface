@@ -1,13 +1,14 @@
 import { Indexer }         from "@surface/core";
 import ITemplateDescriptor from "../interfaces/template-descriptor";
-import { STATIC_METADATA } from "../symbols";
+
+export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 
 export default class StaticMetadata
 {
-    public converters:         Indexer<(target: Indexer, value: string) => void>     = { };
-    public shadowRootInit:     ShadowRootInit                                        = { mode: "open" };
-    public observedAttributes: string[]                                              = [];
-    public styles:             CSSStyleSheet[]                                       = [];
+    public converters:         Indexer<(target: Indexer, value: string) => void> = { };
+    public shadowRootInit:     ShadowRootInit                                    = { mode: "open" };
+    public observedAttributes: string[]                                          = [];
+    public styles:             CSSStyleSheet[]                                   = [];
 
     public template!:   HTMLTemplateElement;
     public descriptor!: ITemplateDescriptor;
@@ -20,18 +21,13 @@ export default class StaticMetadata
         }
         else if (!target.hasOwnProperty(STATIC_METADATA))
         {
-            return (Reflect.get(target, STATIC_METADATA) as StaticMetadata).clone();
+            Reflect.defineProperty(target, STATIC_METADATA, { value: (Reflect.get(target, STATIC_METADATA) as StaticMetadata).inherit() });
         }
 
         return Reflect.get(target, STATIC_METADATA) as StaticMetadata;
     }
 
-    public static of(target: Function & { [STATIC_METADATA]?: StaticMetadata }): StaticMetadata | undefined
-    {
-        return Reflect.get(target, STATIC_METADATA);
-    }
-
-    public clone(): StaticMetadata
+    public inherit(): StaticMetadata
     {
         const clone = new StaticMetadata();
 

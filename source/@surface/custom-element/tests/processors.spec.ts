@@ -2,9 +2,9 @@
 import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import { processTemplate }                                from "../internal/processors";
-import { scheduler }                                      from "../internal/singletons";
+import { assert }                  from "chai";
+import processTemplate             from "../internal/processors/process-template";
+import { scheduler }               from "../internal/singletons";
 
 @suite
 export default class ProcessorsSpec

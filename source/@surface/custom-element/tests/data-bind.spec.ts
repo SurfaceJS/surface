@@ -3,7 +3,7 @@ import "./fixtures/dom";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import DataBind                    from "../internal/data-bind";
+import DataBind                    from "../internal/reactivity/data-bind";
 import { scheduler }               from "../internal/singletons";
 
 @suite

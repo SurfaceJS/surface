@@ -6,7 +6,7 @@ import { CancellationTokenSource }             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert, use }                         from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import Scheduler                               from "../internal/scheduler";
+import Scheduler                               from "../internal/processors/scheduler";
 
 use(chaiAsPromised);
 
@@ -62,6 +62,23 @@ export default class SchedulerSpec
     }
 
     @test @shouldFail
+    public async queueAndCancelTask(): Promise<void>
+    {
+        const scheduler               = new Scheduler(0);
+        const cancellationTokenSource = new CancellationTokenSource();
+
+        let value = 0;
+
+        const promise = scheduler.enqueue(() => value = 1, "high", cancellationTokenSource.token);
+
+        cancellationTokenSource.cancel();
+
+        await promise;
+
+        assert.notEqual(value, 1);
+    }
+
+    @test @shouldFail
     public async taskWithError(): Promise<void>
     {
         const scheduler = new Scheduler(0);
@@ -79,18 +96,5 @@ export default class SchedulerSpec
         void scheduler.enqueue(() => { throw new Error(); }, "high");
 
         await assert.isRejected(scheduler.whenDone());
-    }
-
-    @test @shouldFail
-    public async queueAndCancelTask(): Promise<void>
-    {
-        const scheduler               = new Scheduler(0);
-        const cancellationTokenSource = new CancellationTokenSource();
-
-        const promise = scheduler.enqueue(() => 1, "high", cancellationTokenSource.token);
-
-        cancellationTokenSource.cancel();
-
-        await assert.isRejected(promise);
     }
 }

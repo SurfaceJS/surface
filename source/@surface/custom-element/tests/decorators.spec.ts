@@ -5,7 +5,8 @@ import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
 import CustomElement               from "../internal/custom-element";
-import { attribute, element }      from "../internal/decorators";
+import attribute                   from "../internal/decorators/attribute";
+import element                     from "../internal/decorators/element";
 
 @suite
 export default class DecoratorsSpec
