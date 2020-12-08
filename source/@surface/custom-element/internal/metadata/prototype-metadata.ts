@@ -1,5 +1,5 @@
 
-import ICustomElement from "../interfaces/custom-element";
+import type ICustomElement from "../interfaces/custom-element";
 
 export const PROTOTYPE_METADATA = Symbol("custom-element:prototype-metadata");
 

@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-require-imports */
-import path                                                         from "path";
-import { createOnlyDefinedProxy }                                          from "./common";
-import Compiler                                                     from "./compiler";
-import { isFile, loadModule, lookupFile, removePathAsync, webpack } from "./external";
-import AnalyzerOptions                                              from "./types/analyzer-options";
-import BuildOptions                                                 from "./types/build-options";
-import Configuration                                                from "./types/configuration";
-import DevServerOptions                                             from "./types/dev-serve-options";
-import Options                                                      from "./types/options";
+import path                                    from "path";
+import { isFile, lookupFile, removePathAsync } from "@surface/io";
+import type webpack                            from "webpack";
+import { createOnlyDefinedProxy }              from "./common.js";
+import Compiler                                from "./compiler.js";
+import type AnalyzerOptions                    from "./types/analyzer-options";
+import type BuildOptions                       from "./types/build-options";
+import type Configuration                      from "./types/configuration";
+import type DevServerOptions                   from "./types/dev-serve-options";
+import type Options                            from "./types/options";
 
 export default class Tasks
 {
@@ -44,7 +45,7 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
-            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
+            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await import(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
         Tasks.resolvePaths(configuration, cwd);
@@ -65,7 +66,7 @@ export default class Tasks
         {
             Tasks.resolvePaths(defaults, path.parse(projectPath).dir);
 
-            const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
+            const projectConfiguration = Tasks.resolveModule(await import(projectPath)) as Configuration;
 
             if (projectPath.endsWith(".json"))
             {

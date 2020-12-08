@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import path                                  from "path";
-import { Command, ExecutableCommandOptions } from "commander";
+import path                              from "path";
+import type { ExecutableCommandOptions } from "commander";
+import { Command }                       from "commander";
 
 function createCommandOptions(target: string): ExecutableCommandOptions
 {

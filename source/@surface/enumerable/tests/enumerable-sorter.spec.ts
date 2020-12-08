@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Comparer                    from "../internal/comparer";
-import EnumerableSorter            from "../internal/enumerable-sorter";
+import Comparer                    from "../internal/comparer.js";
+import EnumerableSorter            from "../internal/enumerable-sorter.js";
 
 @suite
 export default class EnumerableSorterSpec

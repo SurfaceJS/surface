@@ -1,6 +1,6 @@
-import { Callable, Delegate } from "@surface/core";
-import IReturnsSetup          from "./interfaces/returns-setup";
-import Setup                  from "./setup";
+import type { Callable, Delegate } from "@surface/core";
+import type IReturnsSetup          from "./interfaces/returns-setup";
+import Setup                       from "./setup.js";
 
 export default class BaseSetup<TMethod extends Callable, TResult> implements IReturnsSetup<TMethod>
 {

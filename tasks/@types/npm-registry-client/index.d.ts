@@ -1,7 +1,7 @@
 
 declare module "npm-registry-client"
 {
-    import { Stream } from "stream";
+    import type { Stream } from "stream";
 
     export interface IConfiguration
     {

@@ -1,9 +1,9 @@
 import { Hookable }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import computed                                from "../internal/decorators/computed";
-import notify                                  from "../internal/decorators/notify";
-import Reactive                                from "../internal/reactive";
+import computed                                from "../internal/decorators/computed.js";
+import notify                                  from "../internal/decorators/notify.js";
+import Reactive                                from "../internal/reactive.js";
 
 @suite
 export default class ReactiveSpec

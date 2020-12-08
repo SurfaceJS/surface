@@ -1,8 +1,7 @@
-/* eslint-disable import/prefer-default-export */
-import { IDisposable }     from "@surface/core";
-import ITemplateDescriptor from "../interfaces/template-descriptor";
-import TemplateParser      from "../parsers/template-parser";
-import TemplateProcessor   from "./template-processor";
+import type { IDisposable }     from "@surface/core";
+import type ITemplateDescriptor from "../interfaces/template-descriptor";
+import TemplateParser           from "../parsers/template-parser.js";
+import TemplateProcessor        from "./template-processor.js";
 
 const cache = new Map<string, [template: HTMLTemplateElement, descriptor: ITemplateDescriptor]>();
 

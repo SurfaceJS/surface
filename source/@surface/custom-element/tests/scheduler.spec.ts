@@ -1,12 +1,12 @@
 /* eslint-disable max-statements-per-line */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { CancellationTokenSource }             from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert, use }                         from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import Scheduler                               from "../internal/processors/scheduler";
+import Scheduler                               from "../internal/processors/scheduler.js";
 
 use(chaiAsPromised);
 

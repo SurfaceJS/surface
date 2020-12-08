@@ -1,6 +1,5 @@
-import
+import type
 {
-    ExpressionVisitor,
     IArrayPattern,
     IArrowFunctionExpression,
     IAssignmentExpression,
@@ -19,6 +18,10 @@ import
     ITaggedTemplateExpression,
     IThisExpression,
     IUpdateExpression,
+} from "@surface/expression";
+import
+{
+    ExpressionVisitor,
     NodeType,
     TypeGuard,
 } from "@surface/expression";

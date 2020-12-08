@@ -1,8 +1,7 @@
-import
+import type
 {
     Callable,
     Cast,
-    Constructor,
     ConstructorOverload,
     ConstructorParameterOverloads,
     Indexer,
@@ -10,19 +9,20 @@ import
     Overload,
     ParameterOverloads,
 } from "@surface/core";
-import CallSetup                                                              from "./call-setup";
-import ICallSetup                                                             from "./interfaces/call-setup";
-import IExecutable                                                            from "./interfaces/executable";
-import IGetSetup                                                              from "./interfaces/get-setup";
-import IReturnsInstanceSetup                                                  from "./interfaces/returns-instance-setup";
-import IReturnsSetup                                                          from "./interfaces/returns-setup";
-import ReturnSetup                                                            from "./return-setup";
+import CallSetup                  from "./call-setup.js";
+import type ICallSetup            from "./interfaces/call-setup";
+import type IExecutable           from "./interfaces/executable";
+import type IGetSetup             from "./interfaces/get-setup";
+import type IReturnsInstanceSetup from "./interfaces/returns-instance-setup";
+import type IReturnsSetup         from "./interfaces/returns-setup";
+import ReturnSetup                from "./return-setup.js";
 
-const CALL        = Symbol("mock:call");
-const NEW         = Symbol("mock:new");
-const DESCRIPTORS = Symbol("mock:descriptors");
+const CALL          = Symbol("mock:call");
+const DESCRIPTORS   = Symbol("mock:descriptors");
+const MOCK_INSTANCE = Symbol("mock:instance");
+const NEW           = Symbol("mock:new");
 
-export default class Mock<T extends object>
+export default class Mock<T extends object | Function>
 {
     private readonly setups: Map<string | symbol | number, IExecutable> = new Map();
 
@@ -78,11 +78,16 @@ export default class Mock<T extends object>
         return new Mock({ } as T);
     }
 
+    public static of<T extends object | Function>(target: T): Mock<T> | undefined
+    {
+        return Reflect.get(target, MOCK_INSTANCE);
+    }
+
     private createProxy(target: T): T
     {
         const handler: ProxyHandler<T> =
         {
-            apply: (target, _, args) =>
+            apply: (target, thisArgument, args) =>
             {
                 const setup = this.setups.get(CALL);
 
@@ -91,9 +96,9 @@ export default class Mock<T extends object>
                     return (setup.execute() as Callable)(...args);
                 }
 
-                return (target as Callable)(...args);
+                return Reflect.apply(target as Function, thisArgument, args);
             },
-            construct: (target, args) =>
+            construct: (target, args, newTarget) =>
             {
                 const setup = this.setups.get(NEW);
 
@@ -102,10 +107,15 @@ export default class Mock<T extends object>
                     return (setup.execute() as Callable)(...args) as object;
                 }
 
-                return new (target as Constructor)(...args);
+                return Reflect.construct(target as Function, args, newTarget);
             },
-            get: (target, key) =>
+            get: (target, key, receiver) =>
             {
+                if (key == MOCK_INSTANCE)
+                {
+                    return this;
+                }
+
                 const setup = this.setups.get(key);
 
                 if (setup)
@@ -113,13 +123,13 @@ export default class Mock<T extends object>
                     return setup.execute();
                 }
 
-                return target[key as keyof T];
+                return Reflect.get(target, key, receiver);
             },
             getOwnPropertyDescriptor: (target, key) =>
             {
                 const setup = this.setups.get(key);
 
-                const descriptor = Object.getOwnPropertyDescriptor(target, key);
+                const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
 
                 if (setup)
                 {

@@ -1,16 +1,11 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import ParenthesizedExpression                            from "../internal/expressions/parenthesized-expression";
-import Parser                                             from "../internal/parser";
-import SyntaxError                                        from "../internal/syntax-error";
-import TypeGuard                                          from "../internal/type-guard";
-import
-{
-    InvalidParseExpectedSpec,
-    ParseExpectedSpec,
-    invalidExpressions,
-    validExpressions,
-} from "./expectations/parser-expected";
+import { batchTest, shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
+import { assert }                                           from "chai";
+import ParenthesizedExpression                              from "../internal/expressions/parenthesized-expression.js";
+import Parser                                               from "../internal/parser.js";
+import SyntaxError                                          from "../internal/syntax-error.js";
+import TypeGuard                                            from "../internal/type-guard.js";
+import type { InvalidParseExpectedSpec, ParseExpectedSpec } from "./expectations/parser-expected.js";
+import { invalidExpressions, validExpressions }             from "./expectations/parser-expected.js";
 
 type RawSyntaxError = Pick<SyntaxError, "message" | "lineNumber" | "index" | "column"> | Pick<ReferenceError, "message">;
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { Command }                                  from "commander";
-import { logLevelPattern, parsePattern, toBoolean } from "../internal/common";
-import Tasks                                        from "../internal/tasks";
-import createProgram                                from ".";
+import type { Command }                             from "commander";
+import { logLevelPattern, parsePattern, toBoolean } from "../internal/common.js";
+import Tasks                                        from "../internal/tasks.js";
+import createProgram                                from "./create-program.js";
 
 const program = createProgram()
     .option("--host              <n>", "Dev server hostname.")

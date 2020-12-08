@@ -1,4 +1,4 @@
-import { Stats } from "fs";
+import type { Stats } from "fs";
 import path from "path";
 import
 {
@@ -16,7 +16,7 @@ import
     statSync,
     unlinkAsync,
     unlinkSync,
-} from "./external";
+} from "./external.js";
 
 function getStats(filepath: string): Stats | null
 {

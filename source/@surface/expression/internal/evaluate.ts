@@ -1,11 +1,11 @@
-import { Indexer }    from "@surface/core";
-import IArrayPattern  from "./interfaces/array-pattern";
-import IIdentifier    from "./interfaces/identifier";
-import IObjectPattern from "./interfaces/object-pattern";
-import IPattern       from "./interfaces/pattern";
-import IRestElement   from "./interfaces/rest-element";
-import Messages       from "./messages";
-import TypeGuard      from "./type-guard";
+import type { Indexer }    from "@surface/core";
+import type IArrayPattern  from "./interfaces/array-pattern";
+import type IIdentifier    from "./interfaces/identifier";
+import type IObjectPattern from "./interfaces/object-pattern";
+import type IPattern       from "./interfaces/pattern";
+import type IRestElement   from "./interfaces/rest-element";
+import Messages            from "./messages.js";
+import TypeGuard           from "./type-guard.js";
 
 export default class Evaluate
 {

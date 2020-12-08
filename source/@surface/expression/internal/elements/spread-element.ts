@@ -1,7 +1,7 @@
-import IExpression    from "../interfaces/expression";
-import INode          from "../interfaces/node";
-import ISpreadElement from "../interfaces/spread-element";
-import NodeType       from "../node-type";
+import type IExpression    from "../interfaces/expression";
+import type INode          from "../interfaces/node";
+import type ISpreadElement from "../interfaces/spread-element";
+import NodeType            from "../node-type.js";
 
 export default class SpreadElement implements INode
 {

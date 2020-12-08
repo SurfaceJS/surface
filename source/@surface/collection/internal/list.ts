@@ -1,5 +1,6 @@
-import { ArgumentOutOfRangeError, Delegate } from "@surface/core";
-import Enumerable                            from "@surface/enumerable";
+import type { Delegate }           from "@surface/core";
+import { ArgumentOutOfRangeError } from "@surface/core";
+import Enumerable                  from "@surface/enumerable";
 
 const SOURCE = Symbol("list:source");
 

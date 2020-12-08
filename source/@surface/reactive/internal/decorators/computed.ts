@@ -1,5 +1,6 @@
-import { Constructor, HookableMetadata } from "@surface/core";
-import Metadata                          from "../metadata";
+import type { Constructor } from "@surface/core";
+import { HookableMetadata } from "@surface/core";
+import Metadata             from "../metadata.js";
 
 export default function computed<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string, descriptor: PropertyDescriptor) => void
 {

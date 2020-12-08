@@ -1,13 +1,8 @@
-import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { assert }                                   from "chai";
-import Parser                                       from "../internal/parser";
-import
-{
-    ParserInvalidExpectation,
-    ParserValidExpectation,
-    invalidExpectations,
-    validExpectations,
-} from "./parser-expectations";
+import { batchTest, shouldFail, shouldPass, suite }              from "@surface/test-suite";
+import { assert }                                                from "chai";
+import Parser                                                    from "../internal/parser.js";
+import type { ParserInvalidExpectation, ParserValidExpectation } from "./parser-expectations.js";
+import { invalidExpectations, validExpectations }                from "./parser-expectations.js";
 
 @suite
 export default class ParserSpec

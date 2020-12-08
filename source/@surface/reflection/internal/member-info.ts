@@ -1,5 +1,5 @@
-import { Indexer } from "@surface/core";
-import Type        from "./type";
+import type { Indexer } from "@surface/core";
+import type Type        from "./type.js";
 
 export default abstract class MemberInfo
 {

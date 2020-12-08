@@ -1,7 +1,7 @@
-import { IExpression, IIdentifier, IPattern } from "@surface/expression";
-import IDescribeable                          from "./describeable";
-import IObservable                            from "./observable";
-import ITraceable                             from "./traceable";
+import type { IExpression, IIdentifier, IPattern } from "@surface/expression";
+import type IDescribeable                          from "./describeable";
+import type IObservable                            from "./observable";
+import type ITraceable                             from "./traceable";
 
 export default interface ILoopDirective extends IDescribeable, IObservable, ITraceable
 {

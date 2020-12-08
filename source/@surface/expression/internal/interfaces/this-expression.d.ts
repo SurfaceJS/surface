@@ -1,4 +1,4 @@
-import ThisExpression from "../expressions/this-expression";
+import type ThisExpression from "../expressions/this-expression.js";
 
 export default interface IThisExpression extends ThisExpression
 { }

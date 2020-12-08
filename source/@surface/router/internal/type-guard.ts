@@ -1,11 +1,11 @@
-import NodeType        from "./enums/node-type";
-import INode           from "./interfaces/node";
-import AssignmentNode  from "./nodes/assignment-node";
-import IdentifierNode  from "./nodes/identifier-node";
-import LiteralNode     from "./nodes/literal-node";
-import RestNode        from "./nodes/rest-node";
-import TransformerNode from "./nodes/transformer-node";
-import WildcardNode    from "./nodes/wildcard-node";
+import NodeType             from "./enums/node-type.js";
+import type INode           from "./interfaces/node.js";
+import type AssignmentNode  from "./nodes/assignment-node.js";
+import type IdentifierNode  from "./nodes/identifier-node.js";
+import type LiteralNode     from "./nodes/literal-node.js";
+import type RestNode        from "./nodes/rest-node.js";
+import type TransformerNode from "./nodes/transformer-node.js";
+import type WildcardNode    from "./nodes/wildcard-node.js";
 
 export default class TypeGuard
 {

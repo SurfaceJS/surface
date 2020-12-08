@@ -1,11 +1,11 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import FieldInfo                   from "../internal/field-info";
-import MethodInfo                  from "../internal/method-info";
-import PropertyInfo                from "../internal/property-info";
-import Type                        from "../internal/type";
-import BaseMock                    from "./fixtures/base-mock";
-import Mock                        from "./fixtures/mock";
+import FieldInfo                   from "../internal/field-info.js";
+import MethodInfo                  from "../internal/method-info.js";
+import PropertyInfo                from "../internal/property-info.js";
+import Type                        from "../internal/type.js";
+import BaseMock                    from "./fixtures/base-mock.js";
+import Mock                        from "./fixtures/mock.js";
 
 @suite
 export default class TypeSpec

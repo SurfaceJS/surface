@@ -1,8 +1,9 @@
-import { Delegate, Indexer, hasValue } from "@surface/core";
-import IExpression                     from "../interfaces/expression";
-import IUnaryExpression                from "../interfaces/unary-expression";
-import NodeType                        from "../node-type";
-import { UnaryOperator }               from "../types/operators";
+import type { Delegate, Indexer } from "@surface/core";
+import { hasValue }               from "@surface/core";
+import type IExpression           from "../interfaces/expression";
+import type IUnaryExpression      from "../interfaces/unary-expression";
+import NodeType                   from "../node-type.js";
+import type { UnaryOperator }     from "../types/operators";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 

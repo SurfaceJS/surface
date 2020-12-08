@@ -1,21 +1,21 @@
-import { Stack }                                   from "@surface/collection";
-import { Constructor, Lazy, assertGet, typeGuard } from "@surface/core";
-import { DirectiveHandlerRegistry }                from "@surface/custom-element/internal/types";
-import Container                                   from "@surface/dependency-injection";
-import { RouteData }                               from "@surface/router";
-import Router                                      from "@surface/router/internal/router";
-import IMiddleware                                 from "./interfaces/middleware";
-import IRouteableElement                           from "./interfaces/routeable-element";
-import Metadata                                    from "./metadata";
-import NavigationDirectiveHandler                  from "./navigation-directive-handler";
-import RouteConfigurator                           from "./route-configurator";
-import Component                                   from "./types/component";
-import Module                                      from "./types/module";
-import Location                                    from "./types/named-route";
-import Route                                       from "./types/route";
-import RouteConfiguration                          from "./types/route-configuration";
-import RouteDefinition                             from "./types/route-definition";
-import ViewRouterOptions                           from "./types/view-router-options";
+import { Stack }                         from "@surface/collection";
+import type { Constructor }              from "@surface/core";
+import { Lazy, assertGet, typeGuard }    from "@surface/core";
+import type { DirectiveHandlerRegistry } from "@surface/custom-element/internal/types";
+import Container                         from "@surface/dependency-injection";
+import Router, { RouteData }             from "@surface/router";
+import type IMiddleware                  from "./interfaces/middleware";
+import type IRouteableElement            from "./interfaces/routeable-element";
+import Metadata                          from "./metadata.js";
+import NavigationDirectiveHandler        from "./navigation-directive-handler.js";
+import RouteConfigurator                 from "./route-configurator.js";
+import type Component                    from "./types/component";
+import type Module                       from "./types/module";
+import type Location                     from "./types/named-route";
+import type Route                        from "./types/route";
+import type RouteConfiguration           from "./types/route-configuration";
+import type RouteDefinition              from "./types/route-definition";
+import type ViewRouterOptions            from "./types/view-router-options";
 
 export default class ViewRouter
 {

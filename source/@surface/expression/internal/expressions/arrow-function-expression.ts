@@ -1,9 +1,10 @@
-import { Indexer, hasValue, proxyFrom } from "@surface/core";
-import Evaluate                         from "../evaluate";
-import IArrowFunctionExpression         from "../interfaces/arrow-function-expression";
-import IExpression                      from "../interfaces/expression";
-import IPattern                         from "../interfaces/pattern";
-import NodeType                         from "../node-type";
+import type { Indexer }              from "@surface/core";
+import { hasValue, proxyFrom }       from "@surface/core";
+import Evaluate                      from "../evaluate.js";
+import type IArrowFunctionExpression from "../interfaces/arrow-function-expression";
+import type IExpression              from "../interfaces/expression";
+import type IPattern                 from "../interfaces/pattern";
+import NodeType                      from "../node-type.js";
 
 export default class ArrowFunctionExpression implements IExpression
 {

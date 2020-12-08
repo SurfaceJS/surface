@@ -1,5 +1,5 @@
-import { Indexer }         from "@surface/core";
-import ITemplateDescriptor from "../interfaces/template-descriptor";
+import type { Indexer }         from "@surface/core";
+import type ITemplateDescriptor from "../interfaces/template-descriptor";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 

@@ -1,5 +1,5 @@
-import Container   from "@surface/dependency-injection";
-import IMiddleware from "../interfaces/middleware";
+import type Container   from "@surface/dependency-injection.js";
+import type IMiddleware from "../interfaces/middleware.js";
 
 type ViewRouterOptions =
 {

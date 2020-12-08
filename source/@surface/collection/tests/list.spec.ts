@@ -2,7 +2,7 @@ import { ArgumentOutOfRangeError }             from "@surface/core";
 import Enumerable                              from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import List                                    from "../internal/list";
+import List                                    from "../internal/list.js";
 
 @suite
 export default class ListSpec

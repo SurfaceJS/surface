@@ -1,5 +1,5 @@
-import { Indexer } from "@surface/core";
-import RouteMatch  from "../internal/types/route-match";
+import type { Indexer } from "@surface/core";
+import type RouteMatch  from "../internal/types/route-match";
 
 export type RouteValidExpectation =
     {

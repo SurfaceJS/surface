@@ -1,12 +1,12 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import CustomElement               from "../internal/custom-element";
-import attribute                   from "../internal/decorators/attribute";
-import element                     from "../internal/decorators/element";
+import CustomElement               from "../internal/custom-element.js";
+import attribute                   from "../internal/decorators/attribute.js";
+import element                     from "../internal/decorators/element.js";
 
 @suite
 export default class DecoratorsSpec

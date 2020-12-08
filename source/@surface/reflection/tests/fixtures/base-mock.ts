@@ -1,4 +1,4 @@
-import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators";
+import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators.js";
 
 @classMetadata
 class BaseMock

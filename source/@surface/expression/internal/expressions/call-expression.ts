@@ -1,10 +1,10 @@
 import { format, hasValue } from "@surface/core";
-import ICallExpression      from "../interfaces/call-expression";
-import IExpression          from "../interfaces/expression";
-import ISpreadElement       from "../interfaces/spread-element";
-import Messages             from "../messages";
-import NodeType             from "../node-type";
-import TypeGuard            from "../type-guard";
+import type ICallExpression from "../interfaces/call-expression";
+import type IExpression     from "../interfaces/expression";
+import type ISpreadElement  from "../interfaces/spread-element";
+import Messages             from "../messages.js";
+import NodeType             from "../node-type.js";
+import TypeGuard            from "../type-guard.js";
 
 export default class CallExpression implements IExpression
 {

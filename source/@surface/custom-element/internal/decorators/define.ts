@@ -1,4 +1,4 @@
-import { Constructor } from "@surface/core";
+import type { Constructor } from "@surface/core";
 
 export default function define(name: string, options?: ElementDefinitionOptions): <TTarget extends Constructor<HTMLElement>>(target: TTarget) => void
 {

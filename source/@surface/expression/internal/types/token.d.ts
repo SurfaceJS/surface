@@ -1,4 +1,4 @@
-import TokenType from "../token-type";
+import type TokenType from "../token-type.js";
 
 type Token =
 {

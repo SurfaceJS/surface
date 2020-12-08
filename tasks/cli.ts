@@ -1,6 +1,6 @@
 import { Command }                                          from "commander";
-import { parsePattern, toArray, toStrategyFlags, toString } from "./internal/common";
-import Tasks                                                from "./internal/tasks";
+import { parsePattern, toArray, toStrategyFlags, toString } from "./internal/common.js";
+import Tasks                                                from "./internal/tasks.js";
 
 const program = new Command();
 

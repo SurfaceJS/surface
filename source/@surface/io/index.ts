@@ -1,1 +1,1 @@
-export * from "./internal/common";
+export * from "./internal/common.js";

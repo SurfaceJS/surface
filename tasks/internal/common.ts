@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import child_process                        from "child_process";
 import fs                                   from "fs";
+import { createRequire }                    from "module";
 import path                                 from "path";
+import { fileURLToPath }                    from "url";
 import util                                 from "util";
 import { createPathAsync, removePathAsync } from "@surface/io";
 import chalk                                from "chalk";
-import { IPackage }                         from "npm-registry-client";
-import StrategyType                         from "./enums/strategy-type";
+import type { IPackage }                    from "npm-registry-client";
+import StrategyType                         from "./enums/strategy-type.js";
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
 
 const copyFileAsync = util.promisify(fs.copyFile);
 const execAsync     = util.promisify(child_process.exec);
@@ -197,11 +202,11 @@ export function typeGuard<T>(target: unknown, condition: boolean): target is T
 
 export const paths =
 {
-    root:   path.resolve(__dirname, "../.."),
+    root:   path.resolve(dirname, "../.."),
     source:
     {
-        root:    path.resolve(__dirname, "../../source"),
-        surface: path.resolve(__dirname, "../../source/@surface"),
+        root:    path.resolve(dirname, "../../source"),
+        surface: path.resolve(dirname, "../../source/@surface"),
     },
 };
 

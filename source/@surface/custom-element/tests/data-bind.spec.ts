@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import DataBind                    from "../internal/reactivity/data-bind";
-import { scheduler }               from "../internal/singletons";
+import DataBind                    from "../internal/reactivity/data-bind.js";
+import { scheduler }               from "../internal/singletons.js";
 
 @suite
 export default class DataBindSpec

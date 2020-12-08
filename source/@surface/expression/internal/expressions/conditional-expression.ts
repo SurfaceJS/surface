@@ -1,7 +1,7 @@
-import { hasValue }           from "@surface/core";
-import IConditionalExpression from "../interfaces/conditional-expression";
-import IExpression            from "../interfaces/expression";
-import NodeType               from "../node-type";
+import { hasValue }                from "@surface/core";
+import type IConditionalExpression from "../interfaces/conditional-expression";
+import type IExpression            from "../interfaces/expression";
+import NodeType                    from "../node-type.js";
 
 export default class ConditionalExpression implements IExpression
 {

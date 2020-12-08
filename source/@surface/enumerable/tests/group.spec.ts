@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Group                       from "../internal/group";
+import Group                       from "../internal/group.js";
 
 @suite
 export default class GroupSpec

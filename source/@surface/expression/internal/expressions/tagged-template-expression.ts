@@ -1,10 +1,10 @@
-import { format, hasValue }      from "@surface/core";
-import IExpression               from "../interfaces/expression";
-import ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
-import Messages                  from "../messages";
-import NodeType                  from "../node-type";
-import TypeGuard                 from "../type-guard";
-import TemplateLiteral           from "./template-literal";
+import { format, hasValue }           from "@surface/core";
+import type IExpression               from "../interfaces/expression";
+import type ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
+import Messages                       from "../messages.js";
+import NodeType                       from "../node-type.js";
+import TypeGuard                      from "../type-guard.js";
+import type TemplateLiteral           from "./template-literal.js";
 
 export default class TaggedTemplateExpression implements IExpression
 {

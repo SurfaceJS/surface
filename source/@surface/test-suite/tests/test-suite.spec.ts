@@ -1,7 +1,7 @@
-import { expect } from "chai";
+/* eslint-disable import/extensions */
+import chai from "chai";
 import
 {
-    TestMethod,
     after,
     afterEach,
     batchTest,
@@ -12,7 +12,7 @@ import
     shouldPass,
     suite,
     test,
-} from "../internal/decorators";
+} from "../internal/decorators.js";
 import
 {
     AFTER,
@@ -25,7 +25,8 @@ import
     DESCRIPTION,
     EXPECTATION,
     TEST,
-} from "../internal/symbols";
+} from "../internal/symbols.js";
+import type TestMethod from "../internal/types/test-method";
 
 @suite
 export default class TestSuitSpec
@@ -60,13 +61,13 @@ export default class TestSuitSpec
         class Mock
         { }
 
-        expect(() => suite(Mock)).to.not.throw();
+        chai.expect(() => suite(Mock)).to.not.throw();
     }
 
     @test @shouldPass
     public decorateClassWithSuiteAndDescription(): void
     {
-        expect(() => suite("mock suite")(class Mock { })).to.not.throw();
+        chai.expect(() => suite("mock suite")(class Mock { })).to.not.throw();
     }
 
     @test @shouldPass
@@ -78,12 +79,12 @@ export default class TestSuitSpec
             @test
             public test(): void
             {
-                expect(true).to.equal(true);
+                chai.expect(true).to.equal(true);
             }
         }
 
-        expect((Mock.prototype.test as TestMethod)[TEST]).to.equal(true);
-        expect((Mock.prototype.test as TestMethod)[EXPECTATION]).to.equal("test");
+        chai.expect((Mock.prototype.test as TestMethod)[TEST]).to.equal(true);
+        chai.expect((Mock.prototype.test as TestMethod)[EXPECTATION]).to.equal("test");
     }
 
     @test @shouldPass
@@ -95,12 +96,12 @@ export default class TestSuitSpec
             @test("test should pass")
             public test(): void
             {
-                expect(true).to.equal(true);
+                chai.expect(true).to.equal(true);
             }
         }
 
-        expect((Mock.prototype.test as TestMethod)[TEST]).to.equal(true);
-        expect((Mock.prototype.test as TestMethod)[EXPECTATION]).to.equal("test should pass");
+        chai.expect((Mock.prototype.test as TestMethod)[TEST]).to.equal(true);
+        chai.expect((Mock.prototype.test as TestMethod)[EXPECTATION]).to.equal("test should pass");
     }
 
     @test @shouldPass
@@ -111,11 +112,11 @@ export default class TestSuitSpec
             @test @category("custom category")
             public testCategoryDecorator(): void
             {
-                expect(true).to.equal(true);
+                chai.expect(true).to.equal(true);
             }
         }
 
-        expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("custom category");
+        chai.expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("custom category");
     }
 
     @test @shouldPass
@@ -126,11 +127,11 @@ export default class TestSuitSpec
             @test @shouldPass
             public testCategoryDecorator(): void
             {
-                expect(true).to.equal(true);
+                chai.expect(true).to.equal(true);
             }
         }
 
-        expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("should pass");
+        chai.expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("should pass");
     }
 
     @test @shouldPass
@@ -141,11 +142,11 @@ export default class TestSuitSpec
             @test @shouldFail
             public testCategoryDecorator(): void
             {
-                expect(true).to.equal(true);
+                chai.expect(true).to.equal(true);
             }
         }
 
-        expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("should fail");
+        chai.expect((Mock.prototype.testCategoryDecorator as TestMethod)[CATEGORY]).to.equal("should fail");
     }
 
     @test @shouldPass
@@ -159,13 +160,13 @@ export default class TestSuitSpec
             @batchTest([1, 2, 3], (x: number) => `expected value is ${x}`)
             public batchTest(value: number): void
             {
-                expect(value).to.equal(current++);
+                chai.expect(value).to.equal(current++);
             }
         }
 
-        expect((Mock.prototype.batchTest as TestMethod)[BATCH]).to.equal(true);
-        expect((Mock.prototype.batchTest as TestMethod)[DATA]!.source).to.deep.equal([1, 2, 3]);
-        expect((Mock.prototype.batchTest as TestMethod)[DATA]!.expectation.toString())
+        chai.expect((Mock.prototype.batchTest as TestMethod)[BATCH]).to.equal(true);
+        chai.expect((Mock.prototype.batchTest as TestMethod)[DATA]!.source).to.deep.equal([1, 2, 3]);
+        chai.expect((Mock.prototype.batchTest as TestMethod)[DATA]!.expectation.toString())
             .to.deep.equal(((x: number) => `expected value is ${x}`).toString());
     }
 
@@ -182,8 +183,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.afterTests as TestMethod)[AFTER]).to.equal(true);
-        expect((Mock.prototype.afterTests as TestMethod)[DESCRIPTION]).to.equal("after tests");
+        chai.expect((Mock.prototype.afterTests as TestMethod)[AFTER]).to.equal(true);
+        chai.expect((Mock.prototype.afterTests as TestMethod)[DESCRIPTION]).to.equal("after tests");
     }
 
     @test @shouldPass
@@ -199,8 +200,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.afterTests as TestMethod)[AFTER]).to.equal(true);
-        expect((Mock.prototype.afterTests as TestMethod)[DESCRIPTION]).to.equal("after tests with custom description");
+        chai.expect((Mock.prototype.afterTests as TestMethod)[AFTER]).to.equal(true);
+        chai.expect((Mock.prototype.afterTests as TestMethod)[DESCRIPTION]).to.equal("after tests with custom description");
     }
 
     @test @shouldPass
@@ -216,8 +217,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.afterEachTests as TestMethod)[AFTER_EACH]).to.equal(true);
-        expect((Mock.prototype.afterEachTests as TestMethod)[DESCRIPTION]).to.equal("after each tests");
+        chai.expect((Mock.prototype.afterEachTests as TestMethod)[AFTER_EACH]).to.equal(true);
+        chai.expect((Mock.prototype.afterEachTests as TestMethod)[DESCRIPTION]).to.equal("after each tests");
     }
 
     @test @shouldPass
@@ -233,8 +234,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.beforeTests as TestMethod)[BEFORE]).to.equal(true);
-        expect((Mock.prototype.beforeTests as TestMethod)[DESCRIPTION]).to.equal("before tests");
+        chai.expect((Mock.prototype.beforeTests as TestMethod)[BEFORE]).to.equal(true);
+        chai.expect((Mock.prototype.beforeTests as TestMethod)[DESCRIPTION]).to.equal("before tests");
     }
 
     @test @shouldPass
@@ -250,8 +251,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.beforeTests as TestMethod)[BEFORE]).to.equal(true);
-        expect((Mock.prototype.beforeTests as TestMethod)[DESCRIPTION]).to.equal("before tests with custom description");
+        chai.expect((Mock.prototype.beforeTests as TestMethod)[BEFORE]).to.equal(true);
+        chai.expect((Mock.prototype.beforeTests as TestMethod)[DESCRIPTION]).to.equal("before tests with custom description");
     }
 
     @test @shouldPass
@@ -267,8 +268,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.beforeEachTests as TestMethod)[BEFORE_EACH]).to.equal(true);
-        expect((Mock.prototype.beforeEachTests as TestMethod)[DESCRIPTION]).to.equal("before each tests with custom description");
+        chai.expect((Mock.prototype.beforeEachTests as TestMethod)[BEFORE_EACH]).to.equal(true);
+        chai.expect((Mock.prototype.beforeEachTests as TestMethod)[DESCRIPTION]).to.equal("before each tests with custom description");
     }
 
     @test @shouldPass
@@ -284,8 +285,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.afterEachTests as TestMethod)[AFTER_EACH]).to.equal(true);
-        expect((Mock.prototype.afterEachTests as TestMethod)[DESCRIPTION]).to.equal("after each tests with custom description");
+        chai.expect((Mock.prototype.afterEachTests as TestMethod)[AFTER_EACH]).to.equal(true);
+        chai.expect((Mock.prototype.afterEachTests as TestMethod)[DESCRIPTION]).to.equal("after each tests with custom description");
     }
 
     @test @shouldPass
@@ -301,8 +302,8 @@ export default class TestSuitSpec
             }
         }
 
-        expect((Mock.prototype.beforeEachTests as TestMethod)[BEFORE_EACH]).to.equal(true);
-        expect((Mock.prototype.beforeEachTests as TestMethod)[DESCRIPTION]).to.equal("before each tests");
+        chai.expect((Mock.prototype.beforeEachTests as TestMethod)[BEFORE_EACH]).to.equal(true);
+        chai.expect((Mock.prototype.beforeEachTests as TestMethod)[DESCRIPTION]).to.equal("before each tests");
     }
 
     @test

@@ -1,4 +1,4 @@
-import { Indexer } from "@surface/core";
+import type { Indexer } from "@surface/core";
 
 export default class RouteData
 {

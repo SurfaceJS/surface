@@ -1,8 +1,9 @@
-import { Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
-import ICustomElement                                        from "./interfaces/custom-element";
-import StaticMetadata                                        from "./metadata/static-metadata";
-import { directiveRegistry }                                 from "./singletons";
-import { DirectiveHandlerRegistry }                          from "./types";
+import type { Constructor }                     from "@surface/core";
+import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import type ICustomElement                      from "./interfaces/custom-element";
+import StaticMetadata                           from "./metadata/static-metadata.js";
+import { directiveRegistry }                    from "./singletons.js";
+import type { DirectiveHandlerRegistry }        from "./types";
 
 const CUSTOM_ELEMENT = Symbol("custom-element:instance");
 

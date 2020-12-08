@@ -1,4 +1,4 @@
-import IChoiceBranchDirective from "./choice-branch-directive";
+import type IChoiceBranchDirective from "./choice-branch-directive";
 
 export default interface IChoiceDirective
 {

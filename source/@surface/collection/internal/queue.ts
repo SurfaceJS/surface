@@ -1,5 +1,5 @@
-import { Delegate } from "@surface/core";
-import Enumerable   from "@surface/enumerable";
+import type { Delegate } from "@surface/core";
+import Enumerable        from "@surface/enumerable";
 
 type Node<T> = { value: T, next?: Node<T> };
 

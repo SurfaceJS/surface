@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import PropertyInfo                from "../internal/property-info";
-import Type                        from "../internal/type";
-import Mock                        from "./fixtures/mock";
+import PropertyInfo                from "../internal/property-info.js";
+import Type                        from "../internal/type.js";
+import Mock                        from "./fixtures/mock.js";
 
 const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceProperty")!, Type.of(Mock), false, false);
 

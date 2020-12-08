@@ -1,4 +1,4 @@
-import IGroup from "./interfaces/group";
+import type IGroup from "./interfaces/group";
 
 export default class Group<TKey, TElement> implements IGroup<TKey, TElement>
 {

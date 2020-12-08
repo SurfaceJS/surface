@@ -1,15 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { assert }                                   from "chai";
-import ITransformer                                 from "../internal/interfaces/transformer";
-import Route                                        from "../internal/route";
-import RouteMatch                                   from "../internal/types/route-match";
-import
-{
-    RouteInvalidExpectation,
-    RouteValidExpectation,
-    routeInvalidExpectations,
-    routeValidExpectations,
-} from "./route-expectations";
+import { batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
+import { assert }                                              from "chai";
+import type ITransformer                                       from "../internal/interfaces/transformer";
+import Route                                                   from "../internal/route.js";
+import type RouteMatch                                         from "../internal/types/route-match";
+import type { RouteInvalidExpectation, RouteValidExpectation } from "./route-expectations.js";
+import { routeInvalidExpectations, routeValidExpectations }    from "./route-expectations.js";
 
 const transformer: ITransformer = { parse: x => x.split("."), stringfy: (x: string[]) => x.join(".") };
 const transformers = new Map([["transformer", transformer]]);

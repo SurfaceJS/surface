@@ -1,5 +1,6 @@
-import { Queue }                                                 from "@surface/collection";
-import { AggregateError, CancellationToken, Delegate, runAsync } from "@surface/core";
+import { Queue }                            from "@surface/collection";
+import type { CancellationToken, Delegate } from "@surface/core";
+import { AggregateError, runAsync }         from "@surface/core";
 
 type Entry =
 [

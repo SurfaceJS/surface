@@ -1,6 +1,7 @@
-import { Delegate, IDisposable, Indexer, assert, getValue, typeGuard } from "@surface/core";
-import { Subscription }                                                from "@surface/reactive";
-import { FieldInfo, Type }                                             from "@surface/reflection";
+import type { Delegate, IDisposable, Indexer } from "@surface/core";
+import { assert, getValue, typeGuard }         from "@surface/core";
+import type { Subscription }                   from "@surface/reactive";
+import { FieldInfo, Type }                     from "@surface/reflection";
 import
 {
     classMap,
@@ -8,23 +9,23 @@ import
     styleMap,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
-} from "../common";
-import ChoiceDirectiveHandler      from "../directives/handlers/choice-directive-handler";
-import EventDirectiveHandler       from "../directives/handlers/event-directive-handler";
-import InjectDirectiveHandler      from "../directives/handlers/inject-directive-handler";
-import LoopDirectiveHandler        from "../directives/handlers/loop-directive-handler";
-import PlaceholderDirectiveHandler from "../directives/handlers/placeholder-directive-handler";
-import TemplateProcessError        from "../errors/template-process-error";
-import IAttributeDirective         from "../interfaces/attribute-directive";
-import ICustomDirective            from "../interfaces/custom-directive";
-import IDirectivesDescriptor       from "../interfaces/directives-descriptor";
-import IEventDirective             from "../interfaces/event-directive";
-import ITemplateDescriptor         from "../interfaces/template-descriptor";
-import ITextNodeDescriptor         from "../interfaces/text-node-descriptor";
-import ITraceable                  from "../interfaces/traceable";
-import DataBind                    from "../reactivity/data-bind";
-import { directiveRegistry }       from "../singletons";
-import { DirectiveHandlerFactory } from "../types";
+} from "../common.js";
+import ChoiceDirectiveHandler           from "../directives/handlers/choice-directive-handler.js";
+import EventDirectiveHandler            from "../directives/handlers/event-directive-handler.js";
+import InjectDirectiveHandler           from "../directives/handlers/inject-directive-handler.js";
+import LoopDirectiveHandler             from "../directives/handlers/loop-directive-handler.js";
+import PlaceholderDirectiveHandler      from "../directives/handlers/placeholder-directive-handler.js";
+import TemplateProcessError             from "../errors/template-process-error.js";
+import type IAttributeDirective         from "../interfaces/attribute-directive";
+import type ICustomDirective            from "../interfaces/custom-directive";
+import type IDirectivesDescriptor       from "../interfaces/directives-descriptor";
+import type IEventDirective             from "../interfaces/event-directive";
+import type ITemplateDescriptor         from "../interfaces/template-descriptor";
+import type ITextNodeDescriptor         from "../interfaces/text-node-descriptor";
+import type ITraceable                  from "../interfaces/traceable";
+import DataBind                         from "../reactivity/data-bind.js";
+import { directiveRegistry }            from "../singletons.js";
+import type { DirectiveHandlerFactory } from "../types";
 
 interface ITemplateProcessorData
 {

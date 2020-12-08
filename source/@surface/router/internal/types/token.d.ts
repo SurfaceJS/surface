@@ -1,4 +1,4 @@
-import TokenType from "../enums/token-type";
+import type TokenType from "../enums/token-type.js";
 
 type Token =
 {

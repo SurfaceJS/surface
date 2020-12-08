@@ -1,7 +1,7 @@
-import IPattern     from "../interfaces/pattern";
-import IRestElement from "../interfaces/rest-element";
-import NodeType     from "../node-type";
-import { PATTERN }  from "../symbols";
+import type IPattern     from "../interfaces/pattern";
+import type IRestElement from "../interfaces/rest-element";
+import NodeType          from "../node-type.js";
+import { PATTERN }       from "../symbols.js";
 
 export default class RestElement implements IPattern
 {

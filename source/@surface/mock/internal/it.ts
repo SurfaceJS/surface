@@ -1,4 +1,4 @@
-import { makeIt } from "./common";
+import { makeIt } from "./common.js";
 
 export default class It
 {

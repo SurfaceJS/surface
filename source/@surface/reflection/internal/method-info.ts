@@ -1,6 +1,6 @@
-import MemberInfo    from "./member-info";
-import ParameterInfo from "./parameter-info";
-import Type          from "./type";
+import MemberInfo    from "./member-info.js";
+import ParameterInfo from "./parameter-info.js";
+import type Type     from "./type.js";
 
 export default class MethodInfo extends MemberInfo
 {

@@ -1,15 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import Expression                                         from "..";
-import Messages                                           from "../internal/messages";
-import NodeType                                           from "../internal/node-type";
-import
-{
-    EvaluationErrorExpected,
-    ExpressionFactoryExpected,
-    evaluationsExpected,
-    expressionFactoriesExpected,
-} from "./expectations/expression-expected";
+import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
+import { assert }                                                  from "chai";
+import Expression                                                  from "../internal/expression.js";
+import Messages                                                    from "../internal/messages.js";
+import NodeType                                                    from "../internal/node-type.js";
+import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expectations/expression-expected.js";
+import { evaluationsExpected, expressionFactoriesExpected }        from "./expectations/expression-expected.js";
 
 @suite
 export default class ExpressionSpec

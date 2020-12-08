@@ -1,4 +1,4 @@
-import { Constructor } from "@surface/core";
+import type { Constructor } from "@surface/core";
 
 const METADATA = Symbol("dependency-injection:static-metadata");
 

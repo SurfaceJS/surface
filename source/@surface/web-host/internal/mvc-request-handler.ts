@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Constructor, Indexer } from "@surface/core";
-import Enumerable               from "@surface/enumerable";
-import { Type }                 from "@surface/reflection";
-import Router                   from "@surface/router";
-import ActionResult             from "./action-result";
-import Controller               from "./controller";
-import HttpContext              from "./http-context";
-import RequestHandler           from "./request-handler";
+import type { Constructor, Indexer } from "@surface/core";
+import Enumerable                    from "@surface/enumerable";
+import { Type }                      from "@surface/reflection";
+import type Router                   from "@surface/router";
+import type ActionResult             from "./action-result.js";
+import Controller                    from "./controller.js";
+import type HttpContext              from "./http-context.js";
+import RequestHandler                from "./request-handler.js";
 
 export default class MvcRequestHandler extends RequestHandler
 {

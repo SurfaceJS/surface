@@ -1,5 +1,5 @@
-import Location from "../types/named-route";
-import Route    from "../types/route";
+import type Location from "../types/named-route";
+import type Route    from "../types/route";
 
 export default interface IMiddleware
 {

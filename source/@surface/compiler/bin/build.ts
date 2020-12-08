@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
+import type { Command } from "commander";
 import
 {
     logLevelPattern,
     modePattern,
     parsePattern,
     toBoolean,
-} from "../internal/common";
-import Tasks         from "../internal/tasks";
-import createProgram from ".";
+} from "../internal/common.js";
+import Tasks         from "../internal/tasks.js";
+import createProgram from "./create-program.js";
 
 const program = createProgram()
     .option("--log-level         <n>", "Output verbosity level. Can be 'errors-only', 'minimal', 'none', 'normal', 'verbose'.", parsePattern(logLevelPattern))

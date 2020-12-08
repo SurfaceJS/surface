@@ -1,6 +1,6 @@
-import { suite, test } from "../../source/@surface/test-suite";
-import NpmRepository   from "../internal/npm-repository";
-import Publisher       from "../internal/publisher";
+import { suite, test } from "../../source/@surface/test-suite/index.js";
+import NpmRepository   from "../internal/npm-repository.js";
+import Publisher       from "../internal/publisher.js";
 
 @suite
 export default class PublisherSpec

@@ -1,4 +1,4 @@
-import someObject, { someValue } from "./dependency";
+import someObject, { someValue } from "./dependency.js";
 
 function someFactory(): { object: typeof someObject, value: number}
 {

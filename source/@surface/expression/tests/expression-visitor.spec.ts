@@ -1,9 +1,9 @@
 import { batchTest, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                             from "chai";
-import Expression                             from "..";
-import RegExpLiteral                          from "../internal/expressions/reg-exp-literal";
-import { validVisitors }                      from "./expectations/expression-visitor-expected";
-import FixtureVisitor                         from "./fixtures/fixture-visitor";
+import Expression                             from "../internal/expression.js";
+import RegExpLiteral                          from "../internal/expressions/reg-exp-literal.js";
+import { validVisitors }                      from "./expectations/expression-visitor-expected.js";
+import FixtureVisitor                         from "./fixtures/fixture-visitor.js";
 
 @suite
 export default class ExpressionVisitorSpec

@@ -1,6 +1,6 @@
-import path                   from "path";
-import { fs }                 from "../external";
-import IResolvePluginInstance from "./interfaces/resolve-plugin-instance";
+import fs                          from "fs";
+import path                        from "path";
+import type IResolvePluginInstance from "./interfaces/resolve-plugin-instance.js";
 
 export default class ForceTsResolvePlugin implements IResolvePluginInstance
 {

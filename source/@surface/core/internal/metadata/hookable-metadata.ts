@@ -1,5 +1,6 @@
-import { HOOKABLE_METADATA }     from "../symbols";
-import { Constructor, Delegate } from "../types";
+import type { Constructor, Delegate } from "../types";
+
+const HOOKABLE_METADATA = Symbol("core:hookable-metadata");
 
 export default class HookableMetadata<T extends Constructor>
 {

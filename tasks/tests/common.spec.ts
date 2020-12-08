@@ -1,7 +1,8 @@
-import { assert }                                                    from "chai";
-import { batchTest, shouldPass, suite }                              from "../../source/@surface/test-suite";
-import { parsePatternPath }                                          from "../internal/common";
-import { CommonParsePatternPathValidExpectation, validExpectations } from "./common-expectations";
+import { assert }                                      from "chai";
+import { batchTest, shouldPass, suite }                from "../../source/@surface/test-suite/index.js";
+import { parsePatternPath }                            from "../internal/common.js";
+import type { CommonParsePatternPathValidExpectation } from "./common-expectations.js";
+import { validExpectations }                           from "./common-expectations.js";
 
 @suite
 export default class CommonSpec

@@ -1,4 +1,4 @@
-import { Indexer } from "../types";
+import type { Indexer } from "../types";
 
 export function camelToText(value: string): string
 {

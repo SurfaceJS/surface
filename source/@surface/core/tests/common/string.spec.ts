@@ -1,6 +1,6 @@
 import { shouldPass, suite, test }     from "@surface/test-suite";
 import { expect }                      from "chai";
-import { capture, captureAll, format } from "../../internal/common/string";
+import { capture, captureAll, format } from "../../internal/common/string.js";
 
 @suite
 export default class CommonStringSpec

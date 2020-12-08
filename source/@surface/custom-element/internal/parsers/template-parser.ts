@@ -2,25 +2,27 @@
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/indent */
 
-import { Indexer, assert, contains, dashedToCamel, typeGuard }                                  from "@surface/core";
+import type { Indexer }                                                                         from "@surface/core";
+import { assert, contains, dashedToCamel, typeGuard }                                           from "@surface/core";
 import Enumerable                                                                               from "@surface/enumerable";
-import Expression, { IExpression, IIdentifier, IPattern, SyntaxError, TypeGuard }               from "@surface/expression";
-import { scapeBrackets, throwTemplateParseError }                                               from "../common";
-import IAttributeDirective                                                                      from "../interfaces/attribute-directive";
-import IChoiceBranchDirective                                                                   from "../interfaces/choice-branch-directive";
-import ICustomDirective                                                                         from "../interfaces/custom-directive";
-import IElementDescriptor                                                                       from "../interfaces/element-descriptor";
-import IEventDirective                                                                          from "../interfaces/event-directive";
-import IInjectDirective                                                                         from "../interfaces/inject-directive";
-import ILoopDirective                                                                           from "../interfaces/loop-directive";
-import IPlaceholderDirective                                                                    from "../interfaces/placeholder-directive";
-import ITemplateDescriptor                                                                      from "../interfaces/template-descriptor";
-import ITextNodeDescriptor                                                                      from "../interfaces/text-node-descriptor";
-import ObserverVisitor                                                                          from "../reactivity/observer-visitor";
-import { StackTrace }                                                                           from "../types";
-import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers";
-import nativeEvents                                                                             from "./native-events";
-import { interpolation }                                                                        from "./patterns";
+import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
+import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
+import { scapeBrackets, throwTemplateParseError }                                               from "../common.js";
+import type IAttributeDirective                                                                 from "../interfaces/attribute-directive";
+import type IChoiceBranchDirective                                                              from "../interfaces/choice-branch-directive";
+import type ICustomDirective                                                                    from "../interfaces/custom-directive";
+import type IElementDescriptor                                                                  from "../interfaces/element-descriptor";
+import type IEventDirective                                                                     from "../interfaces/event-directive";
+import type IInjectDirective                                                                    from "../interfaces/inject-directive";
+import type ILoopDirective                                                                      from "../interfaces/loop-directive";
+import type IPlaceholderDirective                                                               from "../interfaces/placeholder-directive";
+import type ITemplateDescriptor                                                                 from "../interfaces/template-descriptor";
+import type ITextNodeDescriptor                                                                 from "../interfaces/text-node-descriptor";
+import ObserverVisitor                                                                          from "../reactivity/observer-visitor.js";
+import type { StackTrace }                                                                      from "../types";
+import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
+import nativeEvents                                                                             from "./native-events.js";
+import { interpolation }                                                                        from "./patterns.js";
 
 const DECOMPOSED = Symbol("custom-element:decomposed");
 const DIRECTIVE  = Symbol("custom-element:directive");

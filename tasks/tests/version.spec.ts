@@ -1,6 +1,6 @@
 import { assert }                              from "chai";
-import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite";
-import Version                                 from "../internal/version";
+import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite/index.js";
+import Version                                 from "../internal/version.js";
 
 @suite
 export default class VersionSpec

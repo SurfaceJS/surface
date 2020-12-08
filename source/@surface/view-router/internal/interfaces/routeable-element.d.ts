@@ -1,5 +1,5 @@
-import { IDisposable } from "@surface/core";
-import Route from "../types/route";
+import type { IDisposable } from "@surface/core";
+import type Route           from "../types/route";
 
 export default interface IRouteableElement extends HTMLElement, Partial<IDisposable>
 {

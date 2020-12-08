@@ -1,7 +1,7 @@
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Observer                                from "../internal/observer";
+import Observer                                from "../internal/observer.js";
 
 @suite
 export default class ObserverSpec

@@ -1,8 +1,8 @@
-import IAssignmentPattern from "../interfaces/assignment-pattern";
-import IExpression        from "../interfaces/expression";
-import IPattern           from "../interfaces/pattern";
-import NodeType           from "../node-type";
-import { PATTERN }        from "../symbols";
+import type IAssignmentPattern from "../interfaces/assignment-pattern";
+import type IExpression        from "../interfaces/expression";
+import type IPattern           from "../interfaces/pattern";
+import NodeType                from "../node-type.js";
+import { PATTERN }             from "../symbols.js";
 
 export default class AssignmentPattern implements IPattern
 {

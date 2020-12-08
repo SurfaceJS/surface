@@ -1,4 +1,4 @@
-import HttpContext from "../http-context";
+import type HttpContext from "../http-context.js";
 
 export default interface IStartup
 {

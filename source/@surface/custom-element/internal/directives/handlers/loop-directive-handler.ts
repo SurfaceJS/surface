@@ -1,11 +1,12 @@
-import { CancellationTokenSource, Delegate, IDisposable }                    from "@surface/core";
+import type { Delegate, IDisposable }                                        from "@surface/core";
+import { CancellationTokenSource }                                           from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
-import { Subscription }                                                      from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common";
-import ILoopDirective                                                        from "../../interfaces/loop-directive";
-import { scheduler }                                                         from "../../singletons";
-import TemplateBlock                                                         from "../template-block";
-import TemplateDirectiveHandler                                              from "./template-directive-handler";
+import type { Subscription }                                                 from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
+import type ILoopDirective                                                   from "../../interfaces/loop-directive";
+import { scheduler }                                                         from "../../singletons.js";
+import TemplateBlock                                                         from "../template-block.js";
+import TemplateDirectiveHandler                                              from "./template-directive-handler.js";
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {

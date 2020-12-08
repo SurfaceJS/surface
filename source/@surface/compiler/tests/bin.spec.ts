@@ -1,29 +1,20 @@
 /* eslint-disable array-element-newline */
-/* eslint-disable import/no-namespace */
-import Mock, { It }                           from "@surface/mock";
-import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "chai";
-import Tasks, * as tasksNS                    from "../internal/tasks";
-import AnalyzerOptions                        from "../internal/types/analyzer-options";
-import BuildOptions                           from "../internal/types/build-options";
-import DevServerOptions                       from "../internal/types/dev-serve-options";
-import Options                                from "../internal/types/options";
-
-const tasksMock = Mock.newable<typeof Tasks>();
+import Mock, { It }               from "@surface/mock";
+import { afterEach, suite, test } from "@surface/test-suite";
+import chai                       from "chai";
+import Tasks                      from "../internal/tasks.js";
+import type AnalyzerOptions       from "../internal/types/analyzer-options";
+import type BuildOptions          from "../internal/types/build-options";
+import type DevServerOptions      from "../internal/types/dev-serve-options";
+import type Options               from "../internal/types/options";
 
 @suite
 export default class BinSpec
 {
-    @beforeEach
-    public beforeEach(): void
-    {
-        Mock.module(tasksNS, { default: tasksMock.proxy });
-    }
-
     @afterEach
     public afterEach(): void
     {
-        Mock.restore(tasksNS);
+        Mock.of(Tasks)!.clear();
     }
 
     @test
@@ -31,7 +22,7 @@ export default class BinSpec
     {
         let actual: Required<Options & AnalyzerOptions>;
 
-        tasksMock
+        Mock.of(Tasks)!
             .setup("analyze")
             .call(It.any())
             .callback(x => actual = x as Required<Options & AnalyzerOptions>);
@@ -61,7 +52,7 @@ export default class BinSpec
             "--webpack-config",  ".",
         ];
 
-        await import("../bin/analyze");
+        await import("../bin/analyze.js");
 
         const expected: Required<Options & AnalyzerOptions> =
         {
@@ -87,7 +78,7 @@ export default class BinSpec
             webpackConfig:  ".",
         };
 
-        assert.deepEqual(actual!, expected);
+        chai.assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -95,7 +86,7 @@ export default class BinSpec
     {
         let actual: Required<Options & BuildOptions>;
 
-        tasksMock
+        Mock.of(Tasks)!
             .setup("build")
             .call(It.any())
             .callback(x => actual = x as Required<Options & BuildOptions>);
@@ -119,7 +110,7 @@ export default class BinSpec
             "--webpack-config", ".",
         ];
 
-        await import("../bin/build");
+        await import("../bin/build.js");
 
         const expected: Required<Options & BuildOptions> =
         {
@@ -139,7 +130,7 @@ export default class BinSpec
             webpackConfig: ".",
         };
 
-        assert.deepEqual(actual!, expected);
+        chai.assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -147,7 +138,7 @@ export default class BinSpec
     {
         let actual: Required<Options & DevServerOptions>;
 
-        tasksMock
+        Mock.of(Tasks)!
             .setup("serve")
             .call(It.any())
             .callback(x => actual = x as Required<Options & DevServerOptions>);
@@ -172,7 +163,7 @@ export default class BinSpec
             "--webpack-config", ".",
         ];
 
-        await import("../bin/serve");
+        await import("../bin/serve.js");
 
         const expected: Required<Omit<Options, "mode"> & DevServerOptions> =
         {
@@ -193,6 +184,6 @@ export default class BinSpec
             webpackConfig: ".",
         };
 
-        assert.deepEqual(actual!, expected);
+        chai.assert.deepEqual(actual!, expected);
     }
 }

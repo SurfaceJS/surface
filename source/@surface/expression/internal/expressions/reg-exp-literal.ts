@@ -1,7 +1,7 @@
-import { hasValue }   from "@surface/core";
-import ILiteral       from "../interfaces/literal";
-import IRegExpLiteral from "../interfaces/reg-exp-literal";
-import NodeType       from "../node-type";
+import { hasValue }        from "@surface/core";
+import type ILiteral       from "../interfaces/literal";
+import type IRegExpLiteral from "../interfaces/reg-exp-literal";
+import NodeType            from "../node-type.js";
 
 export default class RegExpLiteral implements ILiteral
 {

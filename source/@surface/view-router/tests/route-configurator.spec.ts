@@ -1,11 +1,11 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import RouteConfigurator                       from "../internal/route-configurator";
-import RouteConfiguration                      from "../internal/types/route-configuration";
-import IRouteDefinition                        from "../internal/types/route-definition";
+import RouteConfigurator                       from "../internal/route-configurator.js";
+import type RouteConfiguration                 from "../internal/types/route-configuration";
+import type IRouteDefinition                   from "../internal/types/route-definition";
 
 class User extends HTMLElement
 { }

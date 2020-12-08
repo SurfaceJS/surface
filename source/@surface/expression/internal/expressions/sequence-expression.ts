@@ -1,7 +1,7 @@
-import { hasValue }        from "@surface/core";
-import IExpression         from "../interfaces/expression";
-import ISequenceExpression from "../interfaces/sequence-expression";
-import NodeType            from "../node-type";
+import { hasValue }             from "@surface/core";
+import type IExpression         from "../interfaces/expression";
+import type ISequenceExpression from "../interfaces/sequence-expression";
+import NodeType                 from "../node-type.js";
 
 export default class SequenceExpression implements IExpression
 {

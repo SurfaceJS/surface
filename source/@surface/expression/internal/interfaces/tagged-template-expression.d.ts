@@ -1,4 +1,4 @@
-import TaggedTemplateExpression from "../expressions/tagged-template-expression";
+import type TaggedTemplateExpression from "../expressions/tagged-template-expression.js";
 
 export default interface ITaggedTemplateExpression extends TaggedTemplateExpression
 { }

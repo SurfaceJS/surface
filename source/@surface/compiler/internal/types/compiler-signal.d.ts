@@ -1,4 +1,4 @@
-import { AsyncDelegate } from "@surface/core";
+import type { AsyncDelegate } from "@surface/core";
 
 type CompilerSignal = { close: AsyncDelegate };
 

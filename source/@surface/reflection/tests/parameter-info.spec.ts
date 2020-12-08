@@ -1,9 +1,9 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import MethodInfo                  from "../internal/method-info";
-import ParameterInfo               from "../internal/parameter-info";
-import Type                        from "../internal/type";
-import Mock                        from "./fixtures/mock";
+import MethodInfo                  from "../internal/method-info.js";
+import ParameterInfo               from "../internal/parameter-info.js";
+import Type                        from "../internal/type.js";
+import Mock                        from "./fixtures/mock.js";
 
 const methodInfo    = new MethodInfo("instanceMethodWithParametersMetadata", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!, Type.of(Mock), false, false);
 const parameterInfo = new ParameterInfo("a", 0, methodInfo, Number);

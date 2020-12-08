@@ -1,10 +1,11 @@
-import { batchTest, shouldFail, shouldPass, suite, test }                       from "@surface/test-suite";
-import { expect }                                                               from "chai";
-import Messages                                                                 from "../internal/messages";
-import Scanner                                                                  from "../internal/scanner";
-import SyntaxError                                                              from "../internal/syntax-error";
-import TokenType                                                                from "../internal/token-type";
-import { ExpectedInvalidToken, ExpectedValidToken, invalidTokens, validTokens } from "./expectations/scanner-expected";
+import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { expect }                                         from "chai";
+import Messages                                           from "../internal/messages.js";
+import Scanner                                            from "../internal/scanner.js";
+import SyntaxError                                        from "../internal/syntax-error.js";
+import TokenType                                          from "../internal/token-type.js";
+import type { ExpectedInvalidToken, ExpectedValidToken }  from "./expectations/scanner-expected.js";
+import { invalidTokens, validTokens }                     from "./expectations/scanner-expected.js";
 
 @suite
 export default class ScannerSpec

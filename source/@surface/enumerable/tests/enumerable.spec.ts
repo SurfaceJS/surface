@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                              from "chai";
-import Enumerable                              from "..";
-import Comparer                                from "../internal/comparer";
-import Lookup                                  from "../internal/lookup";
+import Comparer                                from "../internal/comparer.js";
+import Enumerable                              from "../internal/enumerable.js";
+import Lookup                                  from "../internal/lookup.js";
 
 @suite
 export default class EnumerableSpec

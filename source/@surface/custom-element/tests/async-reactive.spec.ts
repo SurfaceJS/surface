@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import Scheduler                   from "../internal/processors/scheduler";
-import AsyncReactive               from "../internal/reactivity/async-reactive";
+import Scheduler                   from "../internal/processors/scheduler.js";
+import AsyncReactive               from "../internal/reactivity/async-reactive.js";
 
 @suite
 export default class AsyncReactiveSpec

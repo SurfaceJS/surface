@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import LinkedList                  from "../internal/linked-list";
+import LinkedList                  from "../internal/linked-list.js";
 
 @suite
 export default class LinkedListSpec

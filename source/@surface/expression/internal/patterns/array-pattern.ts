@@ -1,7 +1,7 @@
-import IArrayPattern from "../interfaces/array-pattern";
-import IPattern      from "../interfaces/pattern";
-import NodeType      from "../node-type";
-import { PATTERN }   from "../symbols";
+import type IArrayPattern from "../interfaces/array-pattern";
+import type IPattern      from "../interfaces/pattern";
+import NodeType           from "../node-type.js";
+import { PATTERN }        from "../symbols.js";
 
 export default class ArrayPattern implements IPattern
 {

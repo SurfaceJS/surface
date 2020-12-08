@@ -1,8 +1,8 @@
-import ActionResult from "./action-result";
-import HttpContext  from "./http-context";
-import JsonResult   from "./json-result";
-import StatusCode   from "./status-code";
-import ViewResult   from "./view-result";
+import type ActionResult from "./action-result.js";
+import type HttpContext  from "./http-context.js";
+import JsonResult        from "./json-result.js";
+import StatusCode        from "./status-code.js";
+import ViewResult        from "./view-result.js";
 
 export default abstract class Controller
 {

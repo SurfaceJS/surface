@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
-import Messages  from "../../internal/messages";
-import TokenType from "../../internal/token-type";
-import Token     from "../../internal/types/token";
+import Messages   from "../../internal/messages.js";
+import TokenType  from "../../internal/token-type.js";
+import type Token from "../../internal/types/token.js";
 
 export type ExpectedInvalidToken = { token: string, message: string };
 export type ExpectedValidToken   = { source: string, token: Token };

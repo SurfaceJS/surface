@@ -1,15 +1,15 @@
 import { CancellationTokenSource } from "@surface/core";
-import { Subscription }            from "@surface/reactive";
+import type { Subscription }       from "@surface/reactive";
 import
 {
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common";
-import IInjectDirective         from "../../interfaces/inject-directive";
-import TemplateMetadata         from "../../metadata/template-metadata";
-import { scheduler }            from "../../singletons";
-import TemplateDirectiveHandler from "./template-directive-handler";
+} from "../../common.js";
+import type IInjectDirective    from "../../interfaces/inject-directive";
+import TemplateMetadata         from "../../metadata/template-metadata.js";
+import { scheduler }            from "../../singletons.js";
+import TemplateDirectiveHandler from "./template-directive-handler.js";
 
 export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 {

@@ -1,10 +1,10 @@
 import { format, hasValue } from "@surface/core";
-import IExpression          from "../interfaces/expression";
-import INewExpression       from "../interfaces/new-expression";
-import ISpreadElement       from "../interfaces/spread-element";
-import Messages             from "../messages";
-import NodeType             from "../node-type";
-import TypeGuard            from "../type-guard";
+import type IExpression     from "../interfaces/expression";
+import type INewExpression  from "../interfaces/new-expression";
+import type ISpreadElement  from "../interfaces/spread-element";
+import Messages             from "../messages.js";
+import NodeType             from "../node-type.js";
+import TypeGuard            from "../type-guard.js";
 
 export default class NewExpression implements IExpression
 {

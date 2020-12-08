@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Comparer                    from "../internal/comparer";
+import Comparer                    from "../internal/comparer.js";
 
 @suite
 export default class ComparerSpec

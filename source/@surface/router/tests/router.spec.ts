@@ -1,7 +1,7 @@
-import { suite, test } from "@surface/test-suite";
-import { assert }      from "chai";
-import Router          from "../internal/router";
-import RouterMatch     from "../internal/types/router-match";
+import { suite, test }  from "@surface/test-suite";
+import { assert }       from "chai";
+import Router           from "../internal/router.js";
+import type RouterMatch from "../internal/types/router-match";
 
 @suite
 export default class RouterSpec

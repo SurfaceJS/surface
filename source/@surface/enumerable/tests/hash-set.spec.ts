@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Comparer                    from "../internal/comparer";
-import HashSet                     from "../internal/hash-set";
+import Comparer                    from "../internal/comparer.js";
+import HashSet                     from "../internal/hash-set.js";
 
 @suite
 export default class HashSetSpec

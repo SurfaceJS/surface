@@ -1,9 +1,9 @@
-import IAssignmentProperty from "../interfaces/assignment-property";
-import IExpression         from "../interfaces/expression";
-import INode               from "../interfaces/node";
-import IPattern            from "../interfaces/pattern";
-import NodeType            from "../node-type";
-import TypeGuard           from "../type-guard";
+import type IAssignmentProperty from "../interfaces/assignment-property";
+import type IExpression         from "../interfaces/expression";
+import type INode               from "../interfaces/node";
+import type IPattern            from "../interfaces/pattern";
+import NodeType                 from "../node-type.js";
+import TypeGuard                from "../type-guard.js";
 
 export default class AssignmentProperty implements INode
 {

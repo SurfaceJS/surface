@@ -1,5 +1,5 @@
-import { Indexer }   from "@surface/core";
-import { RouteData } from "@surface/router";
+import type { Indexer }   from "@surface/core";
+import type { RouteData } from "@surface/router";
 
 type Route =
 {

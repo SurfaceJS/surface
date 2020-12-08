@@ -1,6 +1,7 @@
-import { Constructor, DisposableMetadata, HookableMetadata } from "@surface/core";
-import Reactive from "../..";
-import Metadata                          from "../metadata";
+import type { Constructor }                     from "@surface/core";
+import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import Metadata                                 from "../metadata.js";
+import Reactive                                 from "../reactive.js";
 
 export default function notify<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string) => void
 {

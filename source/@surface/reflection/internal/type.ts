@@ -1,11 +1,11 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "reflect-metadata";
 
-import { Indexer }  from "@surface/core";
-import FieldInfo    from "./field-info";
-import MemberInfo   from "./member-info";
-import MethodInfo   from "./method-info";
-import PropertyInfo from "./property-info";
+import type { Indexer } from "@surface/core";
+import FieldInfo        from "./field-info.js";
+import type MemberInfo  from "./member-info.js";
+import MethodInfo       from "./method-info.js";
+import PropertyInfo     from "./property-info.js";
 
 type Member = { key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean };
 

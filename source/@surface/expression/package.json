@@ -27,5 +27,6 @@
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "sideEffects": false,
+    "type": "module",
     "version": "1.0.0-alpha.1"
 }

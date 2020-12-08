@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Dictionary                  from "../internal/dictionary";
-import KeyValuePair                from "../internal/key-value-pair";
+import Dictionary                  from "../internal/dictionary.js";
+import KeyValuePair                from "../internal/key-value-pair.js";
 
 @suite
 export default class ListSpec

@@ -1,5 +1,5 @@
-import { Callable, Delegate } from "@surface/core";
-import IGetSetup              from "./get-setup";
+import type { Callable, Delegate } from "@surface/core";
+import type IGetSetup              from "./get-setup";
 
 export default interface IReturnsSetup<TMethod extends Callable = Callable> extends IGetSetup<ReturnType<TMethod>>
 {

@@ -33,6 +33,7 @@
                 "after": true
             }
         ],
+        "@typescript-eslint/consistent-type-imports": "warn",
         "@typescript-eslint/default-param-last": "warn",
         "@typescript-eslint/dot-notation": "warn",
         "@typescript-eslint/explicit-function-return-type": [
@@ -138,6 +139,7 @@
         "@typescript-eslint/no-array-constructor": "warn",
         "@typescript-eslint/no-confusing-non-null-assertion": "warn",
         "@typescript-eslint/no-dupe-class-members": "warn",
+        "@typescript-eslint/no-duplicate-imports": "warn",
         "@typescript-eslint/no-dynamic-delete": "warn",
         "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-explicit-any": "warn",
@@ -247,7 +249,13 @@
         "import/default": "warn",
         "import/export": "warn",
         "import/exports-last": "warn",
-        "import/extensions": "warn",
+        "import/extensions": [
+            "warn",
+            "never",
+            {
+                "js": "always"
+            }
+        ],
         "import/first": "warn",
         "import/named": "warn",
         "import/namespace": "warn",
@@ -339,7 +347,6 @@
         "no-dupe-else-if": "warn",
         "no-dupe-keys": "warn",
         "no-duplicate-case": "warn",
-        "no-duplicate-imports": "warn",
         "no-else-return": "warn",
         "no-empty": "warn",
         "no-empty-character-class": "warn",

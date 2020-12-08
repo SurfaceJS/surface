@@ -1,4 +1,4 @@
-import INode from "./node";
+import type INode from "./node";
 
 export default interface IExpression extends INode
 {

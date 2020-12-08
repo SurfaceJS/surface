@@ -1,8 +1,8 @@
-import IExpression from "../interfaces/expression";
-import INode       from "../interfaces/node";
-import IProperty   from "../interfaces/property";
-import NodeType    from "../node-type";
-import TypeGuard   from "../type-guard";
+import type IExpression from "../interfaces/expression";
+import type INode       from "../interfaces/node";
+import type IProperty   from "../interfaces/property";
+import NodeType         from "../node-type.js";
+import TypeGuard        from "../type-guard.js";
 
 export default class Property implements INode
 {

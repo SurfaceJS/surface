@@ -1,9 +1,9 @@
-import { hasValue }     from "@surface/core";
-import IArrayExpression from "../interfaces/array-expression";
-import IExpression      from "../interfaces/expression";
-import ISpreadElement   from "../interfaces/spread-element";
-import NodeType         from "../node-type";
-import TypeGuard        from "../type-guard";
+import { hasValue }          from "@surface/core";
+import type IArrayExpression from "../interfaces/array-expression";
+import type IExpression      from "../interfaces/expression";
+import type ISpreadElement   from "../interfaces/spread-element";
+import NodeType              from "../node-type.js";
+import TypeGuard             from "../type-guard.js";
 
 export default class ArrayExpression implements IExpression
 {

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-namespace */
-import path         from "path";
-import Mock, { It } from "@surface/mock";
+import type { PathLike, Stats } from "fs";
+import path                     from "path";
+import Mock, { It }             from "@surface/mock";
 import
 {
     afterEach,
@@ -22,11 +23,11 @@ import
     lookupFileAsync,
     removePath,
     removePathAsync,
-} from "../internal/common";
-import * as externalNS from "../internal/external";
+} from "../internal/common.js";
+import * as externalNS from "../internal/external.js";
 
-type ReaddirSync = (path: import("fs").PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => string[];
-type ReaddirAsync = (path: import("fs").PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => Promise<string[]>;
+type ReaddirSync = (path: PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => string[];
+type ReaddirAsync = (path: PathLike, options?: { encoding: BufferEncoding | null, withFileTypes?: false } | BufferEncoding | null) => Promise<string[]>;
 type External = typeof externalNS;
 
 const existsSyncMock    = Mock.callable<External["existsSync"]>();
@@ -107,7 +108,7 @@ export default class IoSpec
         assert.doesNotThrow(() => createPath(PATH_TO_CREATE));
 
         existsSyncMock.call(PATH_TO_CREATE).returns(true);
-        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => true, isSymbolicLink: () => false } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => true, isSymbolicLink: () => false } as Stats);
 
         assert.doesNotThrow(() => createPath(PATH_TO_CREATE));
     }
@@ -125,7 +126,7 @@ export default class IoSpec
         assert.doesNotThrow(() => void createPathAsync(PATH_TO_CREATE));
 
         existsSyncMock.call(PATH_TO_CREATE).returns(true);
-        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => true, isSymbolicLink: () => false } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => true, isSymbolicLink: () => false } as Stats));
 
         assert.doesNotThrow(() => void createPathAsync(PATH_TO_CREATE));
     }
@@ -138,10 +139,10 @@ export default class IoSpec
         const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
         const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
 
-        statSyncMock.call(PATH_TO_DIRECTORY).returns({ isDirectory: () => true } as import("fs").Stats);
+        statSyncMock.call(PATH_TO_DIRECTORY).returns({ isDirectory: () => true } as Stats);
         statSyncMock.call(PATH_TO_ENOENT).throws({ code: "ENOENT" } as unknown as Error);
         statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
-        statSyncMock.call(It.any()).returns({ isDirectory: () => false } as import("fs").Stats);
+        statSyncMock.call(It.any()).returns({ isDirectory: () => false } as Stats);
 
         assert.isTrue(isDirectory(PATH_TO_DIRECTORY), "isDirectory(PATH_TO_DIRECTORY) is true");
         assert.isFalse(isDirectory(PATH_TO_FILE),     "isDirectory(PATH_TO_FILE) is false");
@@ -158,11 +159,11 @@ export default class IoSpec
         const PATH_TO_ENOENT    = path.join(PATH, "to", "ENOENT");
         const PATH_TO_ENOTDIR   = path.join(PATH, "to", "ENOTDIR");
 
-        statSyncMock.call(PATH_TO_FILE).returns({ isFIFO: () => false, isFile: () => true } as import("fs").Stats);
-        statSyncMock.call(PATH_TO_FIFO).returns({ isFIFO: () => true, isFile: () => false } as import("fs").Stats);
+        statSyncMock.call(PATH_TO_FILE).returns({ isFIFO: () => false, isFile: () => true } as Stats);
+        statSyncMock.call(PATH_TO_FIFO).returns({ isFIFO: () => true, isFile: () => false } as Stats);
         statSyncMock.call(PATH_TO_ENOENT).throws({ code: "ENOENT" } as unknown as Error);
         statSyncMock.call(PATH_TO_ENOTDIR).throws({ code: "ENOTDIR" } as unknown as Error);
-        statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as import("fs").Stats);
+        statSyncMock.call(It.any()).returns({ isFIFO: () => false, isFile: () => false } as Stats);
 
         assert.isTrue(isFile(PATH_TO_FILE),       "isFile(PATH_TO_FILE) is true");
         assert.isTrue(isFile(PATH_TO_FIFO),       "isFile(PATH_TO_FIFO) is true");
@@ -183,9 +184,9 @@ export default class IoSpec
         existsSyncMock.call(PATH_TO_REMOVE).returns(true);
         existsSyncMock.call(PATH_TO_REMOVE_FILE).returns(true);
         existsSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(true);
-        lstatSyncMock.call(PATH_TO_REMOVE).returns({ isFile: () => false, isSymbolicLink: () => false } as import("fs").Stats);
-        lstatSyncMock.call(PATH_TO_REMOVE_FILE).returns({ isFile: () => true, isSymbolicLink: () => false } as import("fs").Stats);
-        lstatSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns({ isFile: () => false, isSymbolicLink: () => true } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_REMOVE).returns({ isFile: () => false, isSymbolicLink: () => false } as Stats);
+        lstatSyncMock.call(PATH_TO_REMOVE_FILE).returns({ isFile: () => true, isSymbolicLink: () => false } as Stats);
+        lstatSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns({ isFile: () => false, isSymbolicLink: () => true } as Stats);
         readdirSyncMock.call<ReaddirSync>(PATH_TO_REMOVE).returns(["file.ext"]);
 
         assert.isTrue(removePath(PATH_TO_REMOVE),        "removePath(PATH_TO_REMOVE) is true");
@@ -205,9 +206,9 @@ export default class IoSpec
         existsSyncMock.call(PATH_TO_REMOVE).returns(true);
         existsSyncMock.call(PATH_TO_REMOVE_FILE).returns(true);
         existsSyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(true);
-        lstatAsyncMock.call(PATH_TO_REMOVE).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => false } as import("fs").Stats));
-        lstatAsyncMock.call(PATH_TO_REMOVE_FILE).returns(Promise.resolve({ isFile: () => true, isSymbolicLink: () => false } as import("fs").Stats));
-        lstatAsyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => true } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_REMOVE).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => false } as Stats));
+        lstatAsyncMock.call(PATH_TO_REMOVE_FILE).returns(Promise.resolve({ isFile: () => true, isSymbolicLink: () => false } as Stats));
+        lstatAsyncMock.call(PATH_TO_SYMBOLIC_LINK).returns(Promise.resolve({ isFile: () => false, isSymbolicLink: () => true } as Stats));
         readdirAsyncMock.call<ReaddirAsync>(PATH_TO_REMOVE).returns(Promise.resolve(["file.ext"]));
 
         assert.isTrue(await removePathAsync(PATH_TO_REMOVE),        "removePath(PATH_TO_REMOVE) is true");
@@ -243,9 +244,9 @@ export default class IoSpec
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(false);
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(false);
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(true);
-        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns({ isFile: () => false } as import("fs").Stats);
-        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns({ isFile: () => false } as import("fs").Stats);
-        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns({ isFile: () => true } as import("fs").Stats);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns({ isFile: () => false } as Stats);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns({ isFile: () => false } as Stats);
+        lstatSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns({ isFile: () => true } as Stats);
 
         assert.equal(lookupFile(relativePaths), expected);
         assert.equal(lookupFile(absoltePaths), expected);
@@ -279,9 +280,9 @@ export default class IoSpec
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(false);
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(false);
         existsSyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(true);
-        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(Promise.resolve({ isFile: () => false } as import("fs").Stats));
-        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(Promise.resolve({ isFile: () => false } as import("fs").Stats));
-        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(Promise.resolve({ isFile: () => true } as import("fs").Stats));
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_1_FILE)).returns(Promise.resolve({ isFile: () => false } as Stats));
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_2_FILE)).returns(Promise.resolve({ isFile: () => false } as Stats));
+        lstatAsyncMock.call(path.join(PATH, TO_RESOLVE_3_FILE)).returns(Promise.resolve({ isFile: () => true } as Stats));
 
         assert.equal(await lookupFileAsync(relativePaths), expected);
         assert.equal(await lookupFileAsync(absoltePaths), expected);
@@ -306,11 +307,11 @@ export default class IoSpec
         const PATH_TO_CREATE = path.join(PATH, "to", "create");
 
         existsSyncMock.call(PATH_TO_CREATE).returns(true);
-        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => false } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => false } as Stats);
 
         assert.throws(() => createPath(PATH_TO_CREATE), Error, `${PATH_TO_CREATE} exist and isn't an directory`);
 
-        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => true } as import("fs").Stats);
+        lstatSyncMock.call(PATH_TO_CREATE).returns({ isDirectory: () => false, isSymbolicLink: () => true } as Stats);
         readlinkSyncMock.call(PATH_TO_CREATE).returns(PATH_TO_CREATE);
 
         assert.throws(() => createPath(PATH_TO_CREATE), Error, `${PATH_TO_CREATE} exist and isn't an directory`);
@@ -324,8 +325,8 @@ export default class IoSpec
 
         existsSyncMock.call(PATH_TO_CREATE).returns(true);
         existsSyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(true);
-        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => false } as import("fs").Stats));
-        lstatAsyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => true } as import("fs").Stats));
+        lstatAsyncMock.call(PATH_TO_CREATE).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => false } as Stats));
+        lstatAsyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(Promise.resolve({ isDirectory: () => false, isSymbolicLink: () => true } as Stats));
         readlinkAsyncMock.call(PATH_TO_SIMBOLIC_LINK).returns(Promise.resolve(PATH_TO_SIMBOLIC_LINK));
 
         try

@@ -1,14 +1,14 @@
 import http                   from "http";
 import { List }               from "@surface/collection";
-import Router                 from "@surface/router";
-import Configuration          from "./configuration";
-import FallbackRequestHandler from "./fallback-request-handler";
-import HttpContext            from "./http-context";
-import IStartup               from "./interfaces/startup";
-import MvcRequestHandler      from "./mvc-request-handler";
-import RequestHandler         from "./request-handler";
-import StaticRequestHandler   from "./static-request-handler";
-import StatusCode             from "./status-code";
+import type Router            from "@surface/router";
+import type Configuration     from "./configuration.js";
+import FallbackRequestHandler from "./fallback-request-handler.js";
+import HttpContext            from "./http-context.js";
+import type IStartup          from "./interfaces/startup";
+import MvcRequestHandler      from "./mvc-request-handler.js";
+import type RequestHandler    from "./request-handler.js";
+import StaticRequestHandler   from "./static-request-handler.js";
+import StatusCode             from "./status-code.js";
 
 export default class WebHost
 {

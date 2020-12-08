@@ -1,5 +1,5 @@
 import Enumerable   from "@surface/enumerable";
-import KeyValuePair from "./key-value-pair";
+import KeyValuePair from "./key-value-pair.js";
 
 const SOURCE = Symbol("dictionary:source");
 

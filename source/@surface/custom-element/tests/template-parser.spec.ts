@@ -1,16 +1,16 @@
 /* eslint-disable max-len */
 /* eslint-disable max-lines-per-function */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
-import { Delegate }                                                      from "@surface/core";
-import { IIdentifier }                                                   from "@surface/expression";
+import type { Delegate }                                                 from "@surface/core";
+import type { IIdentifier }                                              from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import { assert }                                                        from "chai";
-import TemplateParseError                                                from "../internal/errors/template-parse-error";
-import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
-import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers/expression-parsers";
-import TemplateParser                                                    from "../internal/parsers/template-parser";
+import TemplateParseError                                                from "../internal/errors/template-parse-error.js";
+import type ITemplateDescriptor                                          from "../internal/interfaces/template-descriptor";
+import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers/expression-parsers.js";
+import TemplateParser                                                    from "../internal/parsers/template-parser.js";
 
 TemplateParser.testEnviroment = true;
 

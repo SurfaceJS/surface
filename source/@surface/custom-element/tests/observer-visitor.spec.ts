@@ -1,16 +1,12 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
-import Expression           from "@surface/expression";
-import { batchTest, suite } from "@surface/test-suite";
-import { assert }           from "chai";
-import ObserverVisitor      from "../internal/reactivity/observer-visitor";
-import
-{
-    ObservableExpression,
-    observableExpressions,
-    unobservableExpressions,
-} from "./observer-visitor-expected";
+import Expression                                         from "@surface/expression";
+import { batchTest, suite }                               from "@surface/test-suite";
+import { assert }                                         from "chai";
+import ObserverVisitor                                    from "../internal/reactivity/observer-visitor.js";
+import type { ObservableExpression }                      from "./observer-visitor-expected.js";
+import { observableExpressions, unobservableExpressions } from "./observer-visitor-expected.js";
 
 @suite
 export default class ObserverVisitorSpec

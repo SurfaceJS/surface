@@ -1,5 +1,6 @@
-import { DirectiveHandler, ICustomDirective } from "@surface/custom-element";
-import ViewRouter                             from "./view-router";
+import type { ICustomDirective } from "@surface/custom-element";
+import { DirectiveHandler }      from "@surface/custom-element";
+import type ViewRouter           from "./view-router.js";
 
 export default class NavigationDirectiveHandler extends DirectiveHandler
 {

@@ -1,4 +1,4 @@
-import { parsePatternPath } from "./common";
+import { parsePatternPath } from "./common.js";
 
 const combine = (...args: string[]): RegExp => new RegExp(args.map(x => `(${parsePatternPath(x).source})`).join("|"));
 

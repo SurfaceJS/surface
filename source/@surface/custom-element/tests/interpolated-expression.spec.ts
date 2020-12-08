@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import InterpolatedExpression                  from "../internal/parsers/interpolated-expression";
+import InterpolatedExpression                  from "../internal/parsers/interpolated-expression.js";
 
 type RawError = { message: string } | Pick<SyntaxError, "message" | "lineNumber" | "index" | "column">;
 

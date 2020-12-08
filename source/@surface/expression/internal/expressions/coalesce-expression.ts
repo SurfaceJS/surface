@@ -1,7 +1,7 @@
-import { hasValue }        from "@surface/core";
-import ICoalesceExpression from "../interfaces/coalesce-expression";
-import IExpression         from "../interfaces/expression";
-import NodeType            from "../node-type";
+import { hasValue }             from "@surface/core";
+import type ICoalesceExpression from "../interfaces/coalesce-expression.js";
+import type IExpression         from "../interfaces/expression.js";
+import NodeType                 from "../node-type.js";
 
 export default class CoalesceExpression implements IExpression
 {

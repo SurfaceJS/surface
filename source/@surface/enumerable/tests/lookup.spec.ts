@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { expect }                  from "chai";
-import Comparer                    from "../internal/comparer";
-import Group                       from "../internal/group";
-import Lookup                      from "../internal/lookup";
+import Comparer                    from "../internal/comparer.js";
+import Group                       from "../internal/group.js";
+import Lookup                      from "../internal/lookup.js";
 
 @suite
 export default class LookupSpec

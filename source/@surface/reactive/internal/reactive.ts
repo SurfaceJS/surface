@@ -1,7 +1,8 @@
-import { Indexer, hasValue, privatesFrom } from "@surface/core";
-import { FieldInfo, MethodInfo, Type }     from "@surface/reflection";
-import Metadata                            from "./metadata";
-import Observer                            from "./observer";
+import type { Indexer }                from "@surface/core";
+import { hasValue, privatesFrom }      from "@surface/core";
+import { FieldInfo, MethodInfo, Type } from "@surface/reflection";
+import Metadata                        from "./metadata.js";
+import Observer                        from "./observer.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 

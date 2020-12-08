@@ -1,11 +1,11 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import Container                               from "../internal/container";
-import { inject }                              from "../internal/decorators";
-import Bar                                     from "./mocks/bar";
-import Baz                                     from "./mocks/baz";
-import Foo                                     from "./mocks/foo";
-import InjectableMock                          from "./mocks/injectable-mock";
+import Container                               from "../internal/container.js";
+import { inject }                              from "../internal/decorators.js";
+import Bar                                     from "./mocks/bar.js";
+import Baz                                     from "./mocks/baz.js";
+import Foo                                     from "./mocks/foo.js";
+import InjectableMock                          from "./mocks/injectable-mock.js";
 
 const SYMBOL_KEY = Symbol("symbol-key");
 

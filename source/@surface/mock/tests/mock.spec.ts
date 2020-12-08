@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                  from "chai";
-import { It }                      from "..";
-import Mock                        from "../internal/mock";
-import someFactory                 from "./fixtures/consumer";
+import It                          from "../internal/it.js";
+import Mock                        from "../internal/mock.js";
+import someFactory                 from "./fixtures/consumer.js";
 
 async function main(): Promise<unknown>
 {

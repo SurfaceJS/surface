@@ -1,10 +1,10 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert, use }                         from "chai";
+import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import CancellationTokenSource                 from "../../internal/cancellation-token-source";
-import { runAsync }                            from "../../internal/common/promises";
+import CancellationTokenSource                 from "../../internal/cancellation-token-source.js";
+import { runAsync }                            from "../../internal/common/promises.js";
 
-use(chaiAsPromised);
+chai.use(chaiAsPromised);
 
 @suite
 export default class PromisesSpec
@@ -12,13 +12,22 @@ export default class PromisesSpec
     @test @shouldPass
     public async fireAsync(): Promise<void>
     {
-        const now = Date.now();
+        const promise1 = runAsync(() => void 0, 10);
 
-        await runAsync(() => void 0, 10);
+        await chai.assert.isFulfilled(promise1);
 
-        const expended = Date.now() - now;
+        const promise2 = runAsync(async () => Promise.resolve(), 10);
 
-        assert.isTrue(expended >= 10);
+        await chai.assert.isFulfilled(promise2);
+    }
+
+    @test @shouldFail
+    public async fireAsyncAndThrow(): Promise<void>
+    {
+        // eslint-disable-next-line max-statements-per-line
+        const promise = runAsync(() => { throw new Error("Some error"); }, 10);
+
+        await chai.assert.isRejected(promise, "Some error");
     }
 
     @test @shouldFail
@@ -30,6 +39,6 @@ export default class PromisesSpec
 
         cancellationTokenSource.cancel();
 
-        await assert.isRejected(promise, "Task was canceled");
+        await chai.assert.isRejected(promise, "Task was canceled");
     }
 }

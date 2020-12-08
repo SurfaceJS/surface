@@ -1,4 +1,4 @@
-import { IDisposable } from "@surface/core";
+import type { IDisposable } from "@surface/core";
 
 export default interface ICustomlement extends HTMLElement, IDisposable
 {

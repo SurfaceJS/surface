@@ -1,19 +1,20 @@
 /* eslint-disable max-lines */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
-import { AggregateError, Delegate, Indexer, uuidv4 } from "@surface/core";
-import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
-import { assert }                                    from "chai";
-import CustomElement                                 from "../internal/custom-element";
-import element                                       from "../internal/decorators/element";
-import CustomStackError                              from "../internal/errors/custom-stack-error";
-import TemplateEvaluationError                       from "../internal/errors/template-evaluation-error";
-import TemplateParser                                from "../internal/parsers/template-parser";
-import TemplateProcessor                             from "../internal/processors/template-processor";
-import { directiveRegistry, scheduler }              from "../internal/singletons";
-import CustomDirectiveHandler                        from "./fixtures/custom-directive";
-import customDirectiveFactory                        from "./fixtures/custom-directive-factory";
+import type { Delegate, Indexer }              from "@surface/core";
+import { AggregateError, uuidv4 }              from "@surface/core";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import { assert }                              from "chai";
+import CustomElement                           from "../internal/custom-element.js";
+import element                                 from "../internal/decorators/element.js";
+import CustomStackError                        from "../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error.js";
+import TemplateParser                          from "../internal/parsers/template-parser.js";
+import TemplateProcessor                       from "../internal/processors/template-processor.js";
+import { directiveRegistry, scheduler }        from "../internal/singletons.js";
+import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
+import CustomDirectiveHandler                  from "./fixtures/custom-directive.js";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 

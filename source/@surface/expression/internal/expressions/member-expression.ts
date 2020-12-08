@@ -1,8 +1,9 @@
-import { Indexer, hasValue } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import IMemberExpression     from "../interfaces/member-expression";
-import NodeType              from "../node-type";
-import TypeGuard             from "../type-guard";
+import type { Indexer }       from "@surface/core";
+import { hasValue }           from "@surface/core";
+import type IExpression       from "../interfaces/expression";
+import type IMemberExpression from "../interfaces/member-expression";
+import NodeType               from "../node-type.js";
+import TypeGuard              from "../type-guard.js";
 
 export default class MemberExpression implements IExpression
 {

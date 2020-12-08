@@ -1,8 +1,8 @@
-import { hasValue }     from "@surface/core";
-import IExpression      from "../interfaces/expression";
-import ITemplateElement from "../interfaces/template-element";
-import ITemplateLiteral from "../interfaces/template-literal";
-import NodeType         from "../node-type";
+import { hasValue }          from "@surface/core";
+import type IExpression      from "../interfaces/expression";
+import type ITemplateElement from "../interfaces/template-element";
+import type ITemplateLiteral from "../interfaces/template-literal";
+import NodeType              from "../node-type.js";
 
 export default class TemplateLiteral implements IExpression
 {

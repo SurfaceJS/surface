@@ -1,8 +1,9 @@
-import { Delegate, Indexer, typeGuard } from "@surface/core";
-import ITransformer                     from "./interfaces/transformer";
-import Route                            from "./route";
-import RouteData                        from "./route-data";
-import RouterMatch                      from "./types/router-match";
+import type { Delegate, Indexer } from "@surface/core";
+import { typeGuard }              from "@surface/core";
+import type ITransformer          from "./interfaces/transformer";
+import type RouteData             from "./route-data.js";
+import Route                      from "./route.js";
+import type RouterMatch           from "./types/router-match";
 
 type Entry<T> =
     {

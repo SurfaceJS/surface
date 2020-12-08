@@ -1,5 +1,5 @@
-import { Callable, Delegate, Newable } from "@surface/core";
-import IGetSetup              from "./get-setup";
+import type { Callable, Delegate, Newable } from "@surface/core";
+import type IGetSetup                       from "./get-setup";
 
 export default interface IReturnsInstanceSetup<TConstructor extends Newable = Newable> extends IGetSetup<InstanceType<TConstructor>>
 {

@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/indent */
-import { Delegate }                                      from "@surface/core";
+import type { Delegate }                                 from "@surface/core";
 import chalk                                             from "chalk";
-import { createOnlyDefinedProxy, log, normalizeUrlPath } from "./common";
+import webpack                                           from "webpack";
+import WebpackDevServer                                  from "webpack-dev-server";
+import { createOnlyDefinedProxy, log, normalizeUrlPath } from "./common.js";
 import
 {
     createAnalyzerConfiguration,
     createBuildConfiguration,
     createDevServerConfiguration,
-} from "./configurations";
-import { WebpackDevServer, webpack } from "./external";
-import AnalyzerOptions               from "./types/analyzer-options";
-import BuildOptions                  from "./types/build-options";
-import CompilerSignal                from "./types/compiler-signal";
-import Configuration                 from "./types/configuration";
-import DevServerOptions              from "./types/dev-serve-options";
+} from "./configurations.js";
+import type AnalyzerOptions          from "./types/analyzer-options";
+import type BuildOptions             from "./types/build-options";
+import type CompilerSignal           from "./types/compiler-signal";
+import type Configuration            from "./types/configuration";
+import type DevServerOptions         from "./types/dev-serve-options";
 
 const DEFAULT_STATS_OPTIONS =
 {

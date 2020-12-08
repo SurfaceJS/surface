@@ -1,16 +1,16 @@
 
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
 import { inject }                              from "@surface/dependency-injection";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import { assert }                              from "chai";
-import IMiddleware                             from "../internal/interfaces/middleware";
-import IRouteableElement                       from "../internal/interfaces/routeable-element";
-import Route                                   from "../internal/types/route";
-import RouteConfiguration                      from "../internal/types/route-configuration";
-import ViewRouter                              from "../internal/view-router";
+import type IMiddleware                        from "../internal/interfaces/middleware";
+import type IRouteableElement                  from "../internal/interfaces/routeable-element";
+import type Route                              from "../internal/types/route";
+import type RouteConfiguration                 from "../internal/types/route-configuration";
+import ViewRouter                              from "../internal/view-router.js";
 
 @element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
 class HomeView extends CustomElement

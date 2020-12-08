@@ -1,10 +1,11 @@
 /* eslint-disable no-template-curly-in-string */
 /* eslint-disable max-len */
-import { Indexer, format } from "@surface/core";
-import Expression          from "../..";
-import INode               from "../../internal/interfaces/node";
-import Messages            from "../../internal/messages";
-import NodeType            from "../../internal/node-type";
+import type { Indexer } from "@surface/core";
+import { format }       from "@surface/core";
+import Expression       from "../../internal/expression.js";
+import type INode       from "../../internal/interfaces/node";
+import Messages         from "../../internal/messages.js";
+import NodeType         from "../../internal/node-type.js";
 
 export type ExpressionFactoryExpected = { method: string, toString: string, type: NodeType, factory: () => INode };
 export type EvaluationErrorExpected   = { error: Error, raw: string, scope: Indexer };
