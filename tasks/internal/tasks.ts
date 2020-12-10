@@ -123,15 +123,17 @@ export default class Tasks
 
     public static async cover(filepath: string): Promise<void>
     {
-        const bin = path.resolve(dirname, "../../node_modules/.bin");
+        const bin   = path.resolve(dirname, "../../node_modules/.bin");
+        const mocha = path.join(bin, "mocha");
+        const c8    = path.join(bin, "c8");
 
         const file = path.parse(filepath);
 
         const target = file.name.replace(".spec", "");
 
-        const command = `${path.join(bin, "c8")} --include **/@surface/**/${target}.js --include **/@surface/**/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${path.join(file.dir, file.name)}.js`;
+        const command = `${c8} --include **/@surface/**/${target}.js --include **/@surface/**/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${mocha} --loader=@surface/mock-loader --ui=tdd ${path.join(file.dir, file.name)}.js`;
 
-        await execute(`cover ${chalk.bold.blue(file.name)} tests`, command);
+        await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
     }
 
     public static async publish(registry: string, options: PublishOptions): Promise<void>
@@ -160,7 +162,6 @@ export default class Tasks
             }
             else
             {
-
                 const timestamp = new Date().toISOString()
                     .replace(/[-T:]/g, "")
                     .substring(0, 12);

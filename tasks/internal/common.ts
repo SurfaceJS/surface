@@ -117,9 +117,9 @@ export async function execute(label: string, command: string): Promise<void>
             console.log(stderr);
         }
     }
-    catch (err)
+    catch (error)
     {
-        console.log(err.message);
+        console.log(error.message);
     }
 }
 

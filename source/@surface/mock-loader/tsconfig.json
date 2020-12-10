@@ -1,16 +1,17 @@
 {
     "compilerOptions": {
         "types": [
-            "node"
+            "node",
+        ],
+        "typeRoots": [
+            "./tests"
         ]
     },
-    "extends": "../tsconfig.json",
+    "extends": "../../../tsconfig.json",
     "files": [
-        "./cli.ts",
-        "./polyfill.ts"
+        "./index.ts"
     ],
     "include": [
-        "./@types",
         "./internal",
         "./tests"
     ]

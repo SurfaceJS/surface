@@ -4,7 +4,6 @@ import type
     Cast,
     ConstructorOverload,
     ConstructorParameterOverloads,
-    Indexer,
     Newable,
     Overload,
     ParameterOverloads,
@@ -18,7 +17,6 @@ import type IReturnsSetup         from "./interfaces/returns-setup";
 import ReturnSetup                from "./return-setup.js";
 
 const CALL          = Symbol("mock:call");
-const DESCRIPTORS   = Symbol("mock:descriptors");
 const MOCK_INSTANCE = Symbol("mock:instance");
 const NEW           = Symbol("mock:new");
 
@@ -33,34 +31,6 @@ export default class Mock<T extends object | Function>
         this.proxy = this.createProxy(target);
     }
 
-    public static module<T extends object>(module: T, proxies: Partial<T>): void
-    {
-        const descriptors: Indexer = { };
-
-        for (const [key, value] of Object.entries(proxies) as [keyof T, T[keyof T]][])
-        {
-            const descriptor = Object.getOwnPropertyDescriptor(module, key);
-
-            descriptors[key as string] = descriptor;
-
-            const newDescriptor = descriptor?.get
-                ? { ...descriptor, get: () => value }
-                : { ...descriptor, value };
-
-            Object.defineProperty(module, key, newDescriptor);
-        }
-
-        Object.defineProperty(module, DESCRIPTORS, { configurable: true, enumerable: true, value: descriptors });
-    }
-
-    public static restore<T extends object>(module: T): void
-    {
-        for (const [key, value] of (Object.entries(Reflect.get(module, DESCRIPTORS) ?? { }) as [string, PropertyDescriptor][]))
-        {
-            Object.defineProperty(module, key, value);
-        }
-    }
-
     public static callable<T extends Callable>(): Mock<T>
     {
         const callable = () => void 0;
@@ -70,7 +40,7 @@ export default class Mock<T extends object | Function>
 
     public static newable<T extends Newable>(): Mock<T>
     {
-        return new Mock(class Newable { } as T);
+        return new Mock(class { } as T);
     }
 
     public static instance<T extends object>(): Mock<T>
