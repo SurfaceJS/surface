@@ -3,7 +3,7 @@ import "./fixtures/dom.js";
 
 import Expression                                         from "@surface/expression";
 import { batchTest, suite }                               from "@surface/test-suite";
-import { assert }                                         from "chai";
+import chai                                               from "chai";
 import ObserverVisitor                                    from "../internal/reactivity/observer-visitor.js";
 import type { ObservableExpression }                      from "./observer-visitor-expected.js";
 import { observableExpressions, unobservableExpressions } from "./observer-visitor-expected.js";
@@ -18,7 +18,7 @@ export default class ObserverVisitorSpec
 
         const actual = ObserverVisitor.observe(expression);
 
-        assert.deepEqual(actual, observableExpression.expected);
+        chai.assert.deepEqual(actual, observableExpression.expected);
     }
 
     @batchTest(unobservableExpressions, x => `unobservable expression ${x}; shouldn't have observers`)
@@ -28,6 +28,6 @@ export default class ObserverVisitorSpec
 
         const paths = ObserverVisitor.observe(expression);
 
-        assert.equal(paths.length, 0);
+        chai.assert.equal(paths.length, 0);
     }
 }

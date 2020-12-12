@@ -1,6 +1,6 @@
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import chai                                    from "chai";
 import Observer                                from "../internal/observer.js";
 
 @suite
@@ -19,7 +19,7 @@ export default class ObserverSpec
 
         observer.notify();
 
-        assert.equal(value, 1);
+        chai.assert.equal(value, 1);
     }
 
     @test @shouldFail
@@ -37,7 +37,7 @@ export default class ObserverSpec
 
         observer.notify();
 
-        assert.equal(value, 1);
+        chai.assert.equal(value, 1);
 
         observer.unsubscribe(listener);
 
@@ -45,12 +45,12 @@ export default class ObserverSpec
 
         observer.notify();
 
-        assert.equal(value, 1);
+        chai.assert.equal(value, 1);
     }
 
     @test @shouldFail
     public unsubscribeInvalidListener(): void
     {
-        assert.throws(() => new Observer({ }, []).unsubscribe(() => void 0), "Listerner not subscribed");
+        chai.assert.throws(() => new Observer({ }, []).unsubscribe(() => void 0), "Listerner not subscribed");
     }
 }

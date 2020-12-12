@@ -12,11 +12,11 @@ import
     createDevServerConfiguration,
 } from "../internal/configurations.js?require=proxy";
 
-import type { Server } from "http";
-import Mock, { It }    from "@surface/mock";
-import { suite, test } from "@surface/test-suite";
-import chai            from "chai";
-import Compiler        from "../internal/compiler.js";
+import type { Server }            from "http";
+import Mock, { It }               from "@surface/mock";
+import { afterEach, suite, test } from "@surface/test-suite";
+import chai                       from "chai";
+import Compiler                   from "../internal/compiler.js";
 
 Mock.of<typeof import("../internal/common.js").log>(log)!.call();
 Mock.of<typeof import("../internal/configurations.js").createAnalyzerConfiguration>(createAnalyzerConfiguration)!.call(It.any(), It.any());
@@ -75,6 +75,13 @@ function setup(type: "ok" | "ko"): void
 @suite
 export default class CompilerSpec
 {
+    @afterEach
+    public afterEach(): void
+    {
+        webpackDevServerConstructor.clear();
+        webpackMock.clear();
+    }
+
     @test
     public async analyze(): Promise<void>
     {

@@ -3,7 +3,7 @@ import "./fixtures/dom.js";
 
 import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
+import chai                        from "chai";
 import CustomElement               from "../internal/custom-element.js";
 import attribute                   from "../internal/decorators/attribute.js";
 import element                     from "../internal/decorators/element.js";
@@ -38,8 +38,8 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
-        assert.deepEqual(Mock.observedAttributes, ["value"]);
+        chai.assert.doesNotThrow(() => new Mock());
+        chai.assert.deepEqual(Mock.observedAttributes, ["value"]);
     }
 
     @test @shouldPass
@@ -82,8 +82,8 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
-        assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
+        chai.assert.doesNotThrow(() => new Mock());
+        chai.assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
     }
 
     @test @shouldPass
@@ -98,7 +98,7 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
+        chai.assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -113,7 +113,7 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
+        chai.assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -128,7 +128,7 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
+        chai.assert.doesNotThrow(() => new Mock());
     }
 
     @test @shouldPass
@@ -143,6 +143,6 @@ export default class DecoratorsSpec
             }
         }
 
-        assert.doesNotThrow(() => new Mock());
+        chai.assert.doesNotThrow(() => new Mock());
     }
 }

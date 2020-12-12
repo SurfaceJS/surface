@@ -1,4 +1,4 @@
-import { assert }                              from "chai";
+import chai                                    from "chai";
 import type { IGetData, IPackage }             from "npm-registry-client";
 import Mock, { It }                            from "../../source/@surface/mock/index.js";
 import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite/index.js";
@@ -41,7 +41,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -82,7 +82,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync(["c"]);
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -117,7 +117,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -160,7 +160,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -189,7 +189,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -219,7 +219,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -247,7 +247,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -277,7 +277,7 @@ export default class PublisherSpec
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -302,7 +302,7 @@ export default class PublisherSpec
         }
         catch (error)
         {
-            assert.deepEqual(error, expected);
+            chai.assert.deepEqual(error, expected);
         }
     }
 }

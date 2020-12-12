@@ -1,5 +1,5 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
+import chai                        from "chai";
 import FieldInfo                   from "../internal/field-info.js";
 import Type                        from "../internal/type.js";
 import Mock                        from "./fixtures/mock.js";
@@ -12,30 +12,30 @@ export default class FieldInfoSpec
     @test @shouldPass
     public declaringType(): void
     {
-        expect(fieldInfo.declaringType).to.deep.equal(Type.of(Mock));
+        chai.assert.deepEqual(fieldInfo.declaringType, Type.of(Mock));
     }
 
     @test @shouldPass
     public isStatic(): void
     {
-        expect(fieldInfo.isStatic).to.equal(false);
+        chai.assert.equal(fieldInfo.isStatic, false);
     }
 
     @test @shouldPass
     public key(): void
     {
-        expect(fieldInfo.key).to.equal("instanceField");
+        chai.assert.equal(fieldInfo.key, "instanceField");
     }
 
     @test @shouldPass
     public metadata(): void
     {
-        expect(fieldInfo.metadata).to.deep.equal({ });
+        chai.assert.deepEqual(fieldInfo.metadata, { });
     }
 
     @test @shouldPass
     public readonly(): void
     {
-        expect(fieldInfo.readonly).to.equal(true);
+        chai.assert.equal(fieldInfo.readonly, true);
     }
 }

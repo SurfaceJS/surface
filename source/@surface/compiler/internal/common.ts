@@ -22,6 +22,11 @@ export function createOnlyDefinedProxy<T extends object>(target: T): T
     return new Proxy(target, handler);
 }
 
+export async function loadModule(uri: string): Promise<unknown>
+{
+    return import(uri);
+}
+
 export const parsePattern = (pattern: RegExp) =>
     (value: string = ""): string =>
     {

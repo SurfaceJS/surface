@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-require-imports */
 import path                                    from "path";
+import { typeGuard }                           from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
-import { createOnlyDefinedProxy }              from "./common.js";
+import { createOnlyDefinedProxy, loadModule }  from "./common.js";
 import Compiler                                from "./compiler.js";
 import type AnalyzerOptions                    from "./types/analyzer-options";
 import type BuildOptions                       from "./types/build-options";
@@ -45,7 +44,7 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
-            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await import(options.webpackConfig))) as webpack.Configuration | undefined,
+            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
         Tasks.resolvePaths(configuration, cwd);
@@ -66,7 +65,7 @@ export default class Tasks
         {
             Tasks.resolvePaths(defaults, path.parse(projectPath).dir);
 
-            const projectConfiguration = Tasks.resolveModule(await import(projectPath)) as Configuration;
+            const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
             if (projectPath.endsWith(".json"))
             {
@@ -81,9 +80,9 @@ export default class Tasks
         return { ...defaults, ...configuration };
     }
 
-    private static resolveModule(module: object | { default: object }): object
+    private static resolveModule(module: unknown): unknown
     {
-        if ("default" in module)
+        if (module && typeof module == "object" && typeGuard<{ default: unknown }>(module, "default" in module))
         {
             return module.default;
         }

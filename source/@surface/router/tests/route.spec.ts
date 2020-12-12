@@ -1,5 +1,5 @@
 import { batchTest, shouldFail, shouldPass, suite }            from "@surface/test-suite";
-import { assert }                                              from "chai";
+import chai                                                    from "chai";
 import type ITransformer                                       from "../internal/interfaces/transformer";
 import Route                                                   from "../internal/route.js";
 import type RouteMatch                                         from "../internal/types/route-match";
@@ -18,7 +18,7 @@ export default class RouteSpec
     {
         const actual = new Route(expectation.pattern, transformers).match(expectation.value);
 
-        assert.deepEqual(actual, expectation.expected);
+        chai.assert.deepEqual(actual, expectation.expected);
     }
 
     @shouldFail
@@ -27,6 +27,6 @@ export default class RouteSpec
     {
         const action = (): RouteMatch => new Route(expectation.pattern, transformers).match(expectation.value);
 
-        assert.throws(action, Error, expectation.error.message);
+        chai.assert.throws(action, Error, expectation.error.message);
     }
 }

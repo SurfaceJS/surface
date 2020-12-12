@@ -1,5 +1,5 @@
 import { suite, test }  from "@surface/test-suite";
-import { assert }       from "chai";
+import chai             from "chai";
 import Router           from "../internal/router.js";
 import type RouterMatch from "../internal/types/router-match";
 
@@ -19,7 +19,7 @@ export default class RouterSpec
             .map("/path", x => x)
             .match("/path1");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -41,7 +41,7 @@ export default class RouterSpec
             .map("/path")
             .match("/path");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -57,7 +57,7 @@ export default class RouterSpec
             .map("default", "/path", x => x)
             .match("default1", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -79,7 +79,7 @@ export default class RouterSpec
             .map("default", "/path")
             .match("default", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -95,7 +95,7 @@ export default class RouterSpec
             .map("default", "/path/{value}")
             .match("default", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -117,7 +117,7 @@ export default class RouterSpec
             .map("default", "/path/{value}")
             .match("default", { value: "path" });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -144,7 +144,7 @@ export default class RouterSpec
             .map("default", "/path/{boolean:Boolean}/{date:Date}/{number:Number}")
             .match("default", { boolean: true, date: new Date("2020-01-01"), number: 1 });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -154,7 +154,7 @@ export default class RouterSpec
             .map("/path")
             .match("/path1");
 
-        assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
+        chai.assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
     }
 
     @test
@@ -176,7 +176,7 @@ export default class RouterSpec
             .map("/path/{value}")
             .match("/path/path?value=1#example");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test
@@ -203,6 +203,6 @@ export default class RouterSpec
             .map("/path/{boolean:Boolean}/{date:Date}/{number:Number}")
             .match("/path/true/2020-01-01/1");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 }

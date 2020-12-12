@@ -2,7 +2,7 @@
 import "./fixtures/dom.js";
 
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
+import chai                                    from "chai";
 import RouteConfigurator                       from "../internal/route-configurator.js";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
 import type IRouteDefinition                   from "../internal/types/route-definition";
@@ -117,12 +117,12 @@ export default class ViewRouterSpec
 
         const actual = Array.from(RouteConfigurator.configure(routes));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
     public configureWithoutComponent(): void
     {
-        assert.throws(() => Array.from(RouteConfigurator.configure([{ components: { }, path: "/path" }])), Error, "Route \"/path\" requires at least one component");
+        chai.assert.throws(() => Array.from(RouteConfigurator.configure([{ components: { }, path: "/path" }])), Error, "Route \"/path\" requires at least one component");
     }
 }

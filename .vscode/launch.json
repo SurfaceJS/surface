@@ -106,10 +106,8 @@
         {
             "args":
             [
-                "-u",
-                "tdd",
-                "--timeout",
-                "9999999",
+                "-ui=tdd",
+                "--timeout=9999999",
                 "--colors",
                 "${fileBasenameNoExtension}.js"
             ],
@@ -127,6 +125,7 @@
             "request":  "launch",
             "runtimeArgs":
             [
+                "--loader=@surface/mock-loader",
                 "--nolazy"
             ],
             "sourceMaps": true,
@@ -137,34 +136,6 @@
             ],
             "type": "node"
         },
-        {
-            "args":
-            [
-                "-u",
-                "tdd",
-                "--timeout",
-                "9999999",
-                "--colors",
-                "source/@surface/*/tests/*.spec.js"
-            ],
-            "console": "integratedTerminal",
-            "cwd":     "${workspaceFolder}",
-            "name":    "Launch Tests",
-            "outFiles":
-            [
-                "${workspaceFolder}/source/@surface/*/*.js",
-                "${workspaceFolder}/source/@surface/*/internal/*.js",
-                "${workspaceFolder}/source/@surface/*/tests/*.js"
-            ],
-            "program": "${workspaceFolder}/tasks/node_modules/mocha/bin/_mocha",
-            "request": "launch",
-            "runtimeArgs":
-            [
-                "--nolazy"
-            ],
-            "sourceMaps": true,
-            "type":       "node"
-        }
     ],
     "version": "0.2.0"
 }
