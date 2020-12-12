@@ -1,33 +1,44 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import path                                  from "path";
 import { URL, fileURLToPath, pathToFileURL } from "url";
-import getExports                            from "./get-exports.js";
 
-const dirname        = path.dirname(fileURLToPath(import.meta.url));
-// const createProxyUrl = pathToFileURL(path.resolve(dirname, "./create-proxy.js"));
-const proxyNode      = `${pathToFileURL(path.join(path.parse(dirname).root, "proxy-node")).toString()}/`;
-const proxieFiles    = new Map<string, string>();
+const dirname          = path.dirname(fileURLToPath(import.meta.url));
+const proxyNode        = `${pathToFileURL(path.join(dirname, "proxy")).toString()}/`;
+const proxieFiles      = new Map<string, string>();
+const parentProxyFiles = new Map<string, string | undefined>();
 
-type Context =
+type GetFormatResult  = { format: string };
+type GetSourceContext = { format: string };
+type GetSourceResult  = { source: string };
+type ResolveContext   = { condition: string[], parentURL?: string };
+type ResolveResult    = { url: string };
+
+function getExports(module: object): string[]
 {
-    condition: string[],
-    parentUrl: string | undefined,
-};
+    const moduleExports: string[] = [];
 
-export async function resolve(specifier: string, context: Context, defaultResolve: (specifier: string, context: Context, defaultResolve: Function) => Promise<{ url: string }>): Promise<{ url: string }>
+    for (const key of Object.keys(module))
+    {
+        moduleExports.push(key == "default" ? "export default proxy.default" : `export let ${key} = proxy.${key}`);
+    }
+
+    return moduleExports;
+}
+
+export async function resolve(specifier: string, context: ResolveContext, defaultResolve: (specifier: string, context: ResolveContext, defaultResolve: Function) => Promise<ResolveResult>): Promise<ResolveResult>
 {
     let resolved: string;
+    const proxyContext = { condition: context.condition, parentURL: parentProxyFiles.get(context.parentURL!) ?? context.parentURL };
     try
     {
         resolved = specifier.startsWith(proxyNode)
             ? specifier
-            : (await defaultResolve(specifier, context, defaultResolve)).url;
+            : (await defaultResolve(specifier, proxyContext, defaultResolve)).url;
     }
     catch (error)
     {
         if (specifier.includes("?require=proxy"))
         {
-            resolved = `${(await defaultResolve(specifier.replace("?require=proxy", ""), context, defaultResolve)).url}?require=proxy`;
+            resolved = `${(await defaultResolve(specifier.replace("?require=proxy", ""), proxyContext, defaultResolve)).url}?require=proxy`;
         }
         else
         {
@@ -42,6 +53,7 @@ export async function resolve(specifier: string, context: Context, defaultResolv
         if (resolved.startsWith("node:"))
         {
             resolved = resolved.replace(/^node:/, proxyNode);
+            parentProxyFiles.set(resolved, context.parentURL);
         }
 
         url.searchParams.delete("require");
@@ -66,7 +78,7 @@ export async function resolve(specifier: string, context: Context, defaultResolv
     return { url: url.href.startsWith(proxyNode) ? url.href.replace(proxyNode, "node:") : url.href };
 }
 
-export async function getSource(specifier: string, context: { format: string }, defaultGetSource: (specifier: string, context: { format: string }, defaultResolve: Function) => Promise<{ source: string }>): Promise<{ source: string }>
+export async function getSource(specifier: string, context: GetSourceContext, defaultGetSource: (specifier: string, context: GetSourceContext, defaultResolve: Function) => Promise<GetSourceResult>): Promise<GetSourceResult>
 {
     const url = new URL(specifier);
 
@@ -89,16 +101,16 @@ export async function getSource(specifier: string, context: { format: string }, 
             return { source };
         }
 
-        const rawSpecifier = url.toString();
+        const rawSpecifier = url.href;
 
-        const originalSource = (await defaultGetSource(rawSpecifier, context, defaultGetSource)).source.toString();
+        const module = await import(rawSpecifier);
 
-        const { esm, exports } = getExports(originalSource);
+        const exports = getExports(module);
 
         const source =
         [
             "import { createProxy } from \"@surface/mock-loader\"",
-            `import ${esm ? "* as module" : "module"} from \"${rawSpecifier}\";`,
+            `import * as module from \"${rawSpecifier}\";`,
             "const proxy = createProxy(module);",
             ...exports,
         ].join("\n");
@@ -109,13 +121,13 @@ export async function getSource(specifier: string, context: { format: string }, 
     {
         url.searchParams.delete("require");
 
-        return defaultGetSource(url.toString(), context, defaultGetSource);
+        return defaultGetSource(url.href, context, defaultGetSource);
     }
 
     return defaultGetSource(specifier, context, defaultGetSource);
 }
 
-export async function getFormat(specifier: string, context: object, defaultGetFormat: (specifier: string, context: object, defaultResolve: Function) => Promise<{ format: string }>): Promise<{ format: string }>
+export async function getFormat(specifier: string, context: object, defaultGetFormat: (specifier: string, context: object, defaultResolve: Function) => Promise<GetFormatResult>): Promise<{ format: string }>
 {
     if (specifier.startsWith(proxyNode) || new URL(specifier).searchParams.get("require") == "proxy")
     {
