@@ -1,16 +1,18 @@
 import path                                  from "path";
 import { URL, fileURLToPath, pathToFileURL } from "url";
-
-const dirname          = path.dirname(fileURLToPath(import.meta.url));
-const proxyNode        = `${pathToFileURL(path.join(dirname, "proxy")).toString()}/`;
-const proxieFiles      = new Map<string, string>();
-const parentProxyFiles = new Map<string, string | undefined>();
+import getMocksMaps                          from "./get-mocks-maps.js";
 
 type GetFormatResult  = { format: string };
 type GetSourceContext = { format: string };
 type GetSourceResult  = { source: string };
 type ResolveContext   = { condition: string[], parentURL?: string };
 type ResolveResult    = { url: string };
+
+const proxyMap         = getMocksMaps();
+const dirname          = path.dirname(fileURLToPath(import.meta.url));
+const proxyNode        = `${pathToFileURL(path.join(dirname, "proxy")).toString()}/`;
+const proxyFiles       = new Map<string, string>();
+const parentProxyFiles = new Map<string, string | undefined>();
 
 function getExports(module: object): string[]
 {
@@ -48,22 +50,30 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     const url = new URL(resolved);
 
+    if (!proxyFiles.has(resolved) && (proxyMap.has(specifier) || proxyMap.has(resolved)))
+    {
+        url.searchParams.set("require", "proxy");
+
+        resolved = url.href;
+    }
+
     if (url.searchParams.get("require") == "proxy")
     {
-        if (resolved.startsWith("node:"))
+        if (url.href.startsWith("node:"))
         {
-            resolved = resolved.replace(/^node:/, proxyNode);
+            resolved = url.href.replace(/^node:/, proxyNode);
+
             parentProxyFiles.set(resolved, context.parentURL);
         }
 
         url.searchParams.delete("require");
 
-        proxieFiles.set(url.toString(), resolved);
+        proxyFiles.set(url.href, resolved);
 
         return { url: resolved };
     }
 
-    const proxyFile = proxieFiles.get(resolved);
+    const proxyFile = proxyFiles.get(resolved);
 
     if (proxyFile && new URL(resolved).searchParams.get("require") != "raw")
     {
@@ -92,7 +102,7 @@ export async function getSource(specifier: string, context: GetSourceContext, de
 
             const source =
             [
-                "import { createProxy } from \"@surface/mock-loader\"",
+                "import createProxy from \"@surface/mock-loader/internal/create-proxy.js\"",
                 `import * as module from \"${rawSpecifier}\";`,
                 "const proxy = createProxy(module);",
                 "export default proxy;",
@@ -109,7 +119,7 @@ export async function getSource(specifier: string, context: GetSourceContext, de
 
         const source =
         [
-            "import { createProxy } from \"@surface/mock-loader\"",
+            "import createProxy from \"@surface/mock-loader/internal/create-proxy.js\"",
             `import * as module from \"${rawSpecifier}\";`,
             "const proxy = createProxy(module);",
             ...exports,

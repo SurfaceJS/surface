@@ -20,14 +20,18 @@ const CALL          = Symbol("mock:call");
 const MOCK_INSTANCE = Symbol("mock:instance");
 const NEW           = Symbol("mock:new");
 
+type Mode = "strict" | "loose";
+
 export default class Mock<T extends object | Function>
 {
     private readonly setups: Map<string | symbol | number, IExecutable> = new Map();
+    private mode: Mode = "loose";
 
     public readonly proxy: T;
 
-    public constructor(target: T)
+    public constructor(target: T, mode: Mode = "loose")
     {
+        this.mode  = mode;
         this.proxy = this.createProxy(target);
     }
 
@@ -65,6 +69,10 @@ export default class Mock<T extends object | Function>
                 {
                     return (setup.execute() as Callable)(...args);
                 }
+                else if (this.mode == "strict")
+                {
+                    this.throwKeyDoesNotHasSetup("callable");
+                }
 
                 return Reflect.apply(target as Function, thisArgument, args);
             },
@@ -76,30 +84,38 @@ export default class Mock<T extends object | Function>
                 {
                     return (setup.execute() as Callable)(...args) as object;
                 }
+                else if (this.mode == "strict")
+                {
+                    this.throwKeyDoesNotHasSetup("newable");
+                }
 
                 return Reflect.construct(target as Function, args, newTarget);
             },
-            get: (target, key, receiver) =>
+            get: (target, propertyKey, receiver) =>
             {
-                if (key == MOCK_INSTANCE)
+                if (propertyKey == MOCK_INSTANCE)
                 {
                     return this;
                 }
 
-                const setup = this.setups.get(key);
+                const setup = this.setups.get(propertyKey);
 
                 if (setup)
                 {
                     return setup.execute();
                 }
+                else if (this.mode == "strict")
+                {
+                    this.throwKeyDoesNotHasSetup(propertyKey);
+                }
 
-                return Reflect.get(target, key, receiver);
+                return Reflect.get(target, propertyKey, receiver);
             },
-            getOwnPropertyDescriptor: (target, key) =>
+            getOwnPropertyDescriptor: (target, propertyKey) =>
             {
-                const setup = this.setups.get(key);
+                const setup = this.setups.get(propertyKey);
 
-                const descriptor = Reflect.getOwnPropertyDescriptor(target, key);
+                const descriptor = Reflect.getOwnPropertyDescriptor(target, propertyKey);
 
                 if (setup)
                 {
@@ -112,12 +128,21 @@ export default class Mock<T extends object | Function>
 
                     return { configurable: true, enumerable: true, value, writable: true };
                 }
+                else if (this.mode == "strict")
+                {
+                    this.throwKeyDoesNotHasSetup(propertyKey);
+                }
 
                 return descriptor;
             },
         };
 
         return new Proxy(target, handler);
+    }
+
+    private throwKeyDoesNotHasSetup(key: PropertyKey): never
+    {
+        throw new Error(`${typeof key == "symbol" ? key.description : key} does not has setup`);
     }
 
     public call(...args: Parameters<Cast<T, Callable>>): IReturnsSetup<Cast<T, Callable>>;
@@ -134,6 +159,11 @@ export default class Mock<T extends object | Function>
         this.setups.clear();
     }
 
+    public lock(): void
+    {
+        this.mode = "strict";
+    }
+
     public new(...args: ConstructorParameters<Cast<T, Newable>>): IReturnsInstanceSetup<Cast<T, Newable>>;
     public new<TOverload extends ConstructorOverload<Cast<T, Newable>, ParameterOverloads<Cast<T, Callable>>>>(...args: ConstructorParameters<TOverload>): IReturnsInstanceSetup<Cast<TOverload, Newable>>;
     public new<TArgs extends ConstructorParameterOverloads<Cast<T, Newable>>>(...args: TArgs): IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>
@@ -141,6 +171,12 @@ export default class Mock<T extends object | Function>
         const setup = this.setup(NEW);
 
         return setup.call(...args) as object as IReturnsInstanceSetup<ConstructorOverload<Cast<T, Newable>, TArgs>>;
+    }
+
+    public release(): void
+    {
+        this.mode = "loose";
+        this.setups.clear();
     }
 
     public setup<K extends keyof T>(key: K | symbol | number): ICallSetup<Cast<T[K], Callable>>
@@ -166,5 +202,10 @@ export default class Mock<T extends object | Function>
         }
 
         return setup as object as IGetSetup<T[K]>;
+    }
+
+    public unlock(): void
+    {
+        this.mode = "loose";
     }
 }

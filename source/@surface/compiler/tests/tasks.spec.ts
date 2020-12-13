@@ -1,27 +1,24 @@
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-import { isFile, lookupFile, removePathAsync  } from "@surface/io?require=proxy";
-import { loadModule }                           from "../internal/common.js?require=proxy";
-import Compiler                                 from "../internal/compiler.js?require=proxy";
-
-import path                                   from "path";
-import Mock, { It }                           from "@surface/mock";
-import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import chai                                   from "chai";
-import Tasks                                  from "../internal/tasks.js";
-import type AnalyzerOptions                   from "../internal/types/analyzer-options";
-import type BuildOptions                      from "../internal/types/build-options";
-import type Configuration                     from "../internal/types/configuration";
-import type DevServerOptions                  from "../internal/types/dev-serve-options";
-import type Options                           from "../internal/types/options";
+import path                                    from "path";
+import { isFile, lookupFile, removePathAsync } from "@surface/io";
+import Mock, { It }                            from "@surface/mock";
+import { afterEach, beforeEach, suite, test }  from "@surface/test-suite";
+import chai                                    from "chai";
+import { loadModule }                          from "../internal/common.js";
+import Compiler                                from "../internal/compiler.js";
+import Tasks                                   from "../internal/tasks.js";
+import type AnalyzerOptions                    from "../internal/types/analyzer-options";
+import type BuildOptions                       from "../internal/types/build-options";
+import type Configuration                      from "../internal/types/configuration";
+import type DevServerOptions                   from "../internal/types/dev-serve-options";
+import type Options                            from "../internal/types/options";
 
 const CWD = process.cwd();
 
-const isFileMock          = Mock.of<typeof import("@surface/io").isFile>(isFile)!;
-const lookupFileMock      = Mock.of<typeof import("@surface/io").lookupFile>(lookupFile)!;
-const removePathAsyncMock = Mock.of<typeof import("@surface/io").removePathAsync>(removePathAsync)!;
-const compilerCtorMock    = Mock.of<typeof import("../internal/compiler.js").default>(Compiler)!;
-const loadModuleMock      = Mock.of<typeof import("../internal/common.js").loadModule>(loadModule)!;
+const isFileMock          = Mock.of(isFile)!;
+const lookupFileMock      = Mock.of(lookupFile)!;
+const removePathAsyncMock = Mock.of(removePathAsync)!;
+const compilerCtorMock    = Mock.of(Compiler)!;
+const loadModuleMock      = Mock.of(loadModule)!;
 
 const CWD_BUILD                             = path.join(CWD, "build");
 const CWD_PROJECT                           = path.join(CWD, "project");
@@ -57,6 +54,11 @@ export default class TasksSpec
     @beforeEach
     public beforeEach(): void
     {
+        isFileMock.lock();
+        lookupFileMock.lock();
+        loadModuleMock.lock();
+        removePathAsyncMock.lock();
+
         isFileMock.call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JS).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
@@ -119,11 +121,11 @@ export default class TasksSpec
     @afterEach
     public afterEach(): void
     {
-        compilerCtorMock.clear();
-        isFileMock.clear();
-        loadModuleMock.clear();
-        lookupFileMock.clear();
-        removePathAsyncMock.clear();
+        compilerCtorMock.release();
+        isFileMock.release();
+        loadModuleMock.release();
+        lookupFileMock.release();
+        removePathAsyncMock.release();
     }
 
     @test

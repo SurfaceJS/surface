@@ -115,7 +115,7 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/mocha --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
+            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
             "isBackground": true,
             "label": "Test File",
             "options": {

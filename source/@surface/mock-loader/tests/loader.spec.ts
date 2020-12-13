@@ -1,7 +1,7 @@
+import fs                          from "fs";
 import Mock                        from "@surface/mock";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import fs                          from "fs?require=proxy";
 import fixture                     from "./fixture.js?require=proxy";
 import { getCommonJS, getESM }     from "./get-fixture.js";
 

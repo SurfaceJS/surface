@@ -1,47 +1,44 @@
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-/* eslint-disable import/no-namespace */
-import WebpackDevServer from "webpack-dev-server?require=proxy";
-import webpack          from "webpack?require=proxy";
-import { log }          from "../internal/common.js?require=proxy";
+
+import type { Server }                                            from "http";
+import Mock, { It }                                               from "@surface/mock";
+import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
+import chai                                                       from "chai";
+import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
+import webpack                                                    from "webpack";
+import WebpackDevServer                                           from "webpack-dev-server";
+import { log }                                                    from "../internal/common.js";
+import Compiler                                                   from "../internal/compiler.js";
 import
 {
     createAnalyzerConfiguration,
     createBuildConfiguration,
     createConfiguration,
     createDevServerConfiguration,
-} from "../internal/configurations.js?require=proxy";
+} from "../internal/configurations.js";
 
-import type { Server }            from "http";
-import Mock, { It }               from "@surface/mock";
-import { afterEach, suite, test } from "@surface/test-suite";
-import chai                       from "chai";
-import Compiler                   from "../internal/compiler.js";
+type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
-Mock.of<typeof import("../internal/common.js").log>(log)!.call();
-Mock.of<typeof import("../internal/configurations.js").createAnalyzerConfiguration>(createAnalyzerConfiguration)!.call(It.any(), It.any());
-Mock.of<typeof import("../internal/configurations.js").createBuildConfiguration>(createBuildConfiguration)!.call(It.any(), It.any());
-Mock.of<typeof import("../internal/configurations.js").createConfiguration>(createConfiguration)!.call(It.any(), It.any());
-Mock.of<typeof import("../internal/configurations.js").createDevServerConfiguration>(createDevServerConfiguration)!.call(It.any(), It.any());
-
-type WebpackCall = (options: import("webpack").Configuration, callback?: (err?: Error, stats?: import("webpack").Stats) => void) => import("webpack").Compiler;
-
-const webpackDevServerConstructor = Mock.of<typeof import("webpack-dev-server")>(WebpackDevServer)!;
-const webpackMock                 = Mock.of<WebpackCall>(webpack)!;
+const createAnalyzerConfigurationMock  = Mock.of(createAnalyzerConfiguration)!;
+const createBuildConfigurationMock     = Mock.of(createBuildConfiguration)!;
+const createConfigurationMock          = Mock.of(createConfiguration)!;
+const createDevServerConfigurationMock = Mock.of(createDevServerConfiguration)!;
+const logMock                          = Mock.of(log)!;
+const webpackDevServerConstructor      = Mock.of(WebpackDevServer)!;
+const webpackMock                      = Mock.of<WebpackCall>(webpack)!;
 
 function setup(type: "ok" | "ko"): void
 {
     const error = type == "ko" ? new Error("Some goes wrong") : undefined;
 
-    const statsMock            = Mock.instance<import("webpack").Stats>();
-    const compilerWatchingMock = Mock.instance<ReturnType<import("webpack").Compiler["watch"]>>();
+    const statsMock            = Mock.instance<Stats>();
+    const compilerWatchingMock = Mock.instance<ReturnType<WebpackCompiler["watch"]>>();
 
     compilerWatchingMock
         .setup("close")
         .call(It.any())
         .callback(callback => callback());
 
-    const compilerMock = Mock.instance<import("webpack").Compiler>();
+    const compilerMock = Mock.instance<WebpackCompiler>();
 
     compilerMock
         .setup("run")
@@ -58,7 +55,7 @@ function setup(type: "ok" | "ko"): void
         .call(It.any())
         .returns(compilerMock.proxy);
 
-    const WebpackDevServerMock = Mock.instance<import("webpack-dev-server")>();
+    const WebpackDevServerMock = Mock.instance<WebpackDevServer>();
 
     WebpackDevServerMock.setup("close");
 
@@ -75,11 +72,35 @@ function setup(type: "ok" | "ko"): void
 @suite
 export default class CompilerSpec
 {
+    @beforeEach
+    public beforeEach(): void
+    {
+        logMock.lock();
+        logMock.call();
+
+        createAnalyzerConfigurationMock.lock();
+        createAnalyzerConfigurationMock.call(It.any(), It.any());
+
+        createBuildConfigurationMock.lock();
+        createBuildConfigurationMock.call(It.any(), It.any());
+
+        createConfigurationMock.lock();
+        createConfigurationMock.call(It.any(), It.any());
+
+        createDevServerConfigurationMock.lock();
+        createDevServerConfigurationMock.call(It.any(), It.any());
+    }
+
     @afterEach
     public afterEach(): void
     {
-        webpackDevServerConstructor.clear();
-        webpackMock.clear();
+        logMock.release();
+        createAnalyzerConfigurationMock.release();
+        createBuildConfigurationMock.release();
+        createConfigurationMock.release();
+        createDevServerConfigurationMock.release();
+        webpackDevServerConstructor.release();
+        webpackMock.release();
     }
 
     @test

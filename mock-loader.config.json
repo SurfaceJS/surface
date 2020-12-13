@@ -1,0 +1,13 @@
+{
+    "modules":
+    [
+        "fs",
+        "@surface/io",
+        "webpack",
+        "webpack-dev-server",
+        "./source/@surface/compiler/internal/tasks.js",
+        "./source/@surface/compiler/internal/compiler.js",
+        "./source/@surface/compiler/internal/configurations.js",
+        "./source/@surface/compiler/internal/common.js"
+    ]
+}

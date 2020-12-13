@@ -3,14 +3,17 @@
 import type { Command } from "commander";
 import
 {
-    analyzerDefaultSizesPattern,
-    analyzerLogLevelPattern,
-    analyzerModePattern,
-    modePattern,
     parsePattern,
     toArray,
     toBoolean,
 } from "../internal/common.js";
+import
+{
+    analyzerDefaultSizesPattern,
+    analyzerLogLevelPattern,
+    analyzerModePattern,
+    modePattern,
+} from "../internal/patterns.js";
 import Tasks         from "../internal/tasks.js";
 import createProgram from "./create-program.js";
 

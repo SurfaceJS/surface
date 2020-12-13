@@ -1,8 +1,4 @@
-/* eslint-disable @typescript-eslint/no-extra-parens */
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-import fs from "fs?require=proxy";
-
+import fs                       from "fs";
 import type { PathLike, Stats } from "fs";
 import path                     from "path";
 import Mock, { It }             from "@surface/mock";
@@ -32,20 +28,20 @@ type Readdir     = (path: PathLike, callback: (err: NodeJS.ErrnoException | null
 type ReaddirSync = (path: PathLike) => string[];
 type Rmdir       = (path: PathLike, callback: (err: NodeJS.ErrnoException | null) => void) => void;
 
-const existsSyncMock   = Mock.of<typeof import("fs").existsSync>(fs.existsSync)!;
-const lstatMock        = Mock.of<typeof import("fs").lstat>(fs.lstat)!;
-const lstatSyncMock    = Mock.of<typeof import("fs").lstatSync>(fs.lstatSync)!;
-const mkdirMock        = Mock.of<typeof import("fs").mkdir>(fs.mkdir)!;
-const mkdirSyncMock    = Mock.of<typeof import("fs").mkdirSync>(fs.mkdirSync)!;
+const existsSyncMock   = Mock.of(fs.existsSync)!;
+const lstatMock        = Mock.of(fs.lstat)!;
+const lstatSyncMock    = Mock.of(fs.lstatSync)!;
+const mkdirMock        = Mock.of(fs.mkdir)!;
+const mkdirSyncMock    = Mock.of(fs.mkdirSync)!;
 const readdirMock      = Mock.of<Readdir>(fs.readdir)!;
 const readdirSyncMock  = Mock.of<ReaddirSync>(fs.readdirSync)!;
-const readlinkMock     = Mock.of<typeof import("fs").readlink>(fs.readlink)!;
-const readlinkSyncMock = Mock.of<typeof import("fs").readlinkSync>(fs.readlinkSync)!;
+const readlinkMock     = Mock.of(fs.readlink)!;
+const readlinkSyncMock = Mock.of(fs.readlinkSync)!;
 const rmdirMock        = Mock.of<Rmdir>(fs.rmdir)!;
-const rmdirSyncMock    = Mock.of<typeof import("fs").rmdirSync>(fs.rmdirSync)!;
-const statSyncMock     = Mock.of<typeof import("fs").statSync>(fs.statSync)!;
-const unlinkMock       = Mock.of<typeof import("fs").unlink>(fs.unlink)!;
-const unlinkSyncMock   = Mock.of<typeof import("fs").unlinkSync>(fs.unlinkSync)!;
+const rmdirSyncMock    = Mock.of(fs.rmdirSync)!;
+const statSyncMock     = Mock.of(fs.statSync)!;
+const unlinkMock       = Mock.of(fs.unlink)!;
+const unlinkSyncMock   = Mock.of(fs.unlinkSync)!;
 
 const PATH = process.cwd();
 

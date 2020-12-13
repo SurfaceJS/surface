@@ -20,9 +20,9 @@ export default class CommonStringSpec
         const actual2 = capture(source2, /"/, /"/);
         const actual3 = capture(source3, /"/, /(")(?!.*\1)/);
 
-        chai.assert.equal(actual1, expected1);
-        chai.assert.equal(actual2, expected2);
-        chai.assert.equal(actual3, expected3);
+        chai.assert.deepEqual(actual1, expected1);
+        chai.assert.deepEqual(actual2, expected2);
+        chai.assert.deepEqual(actual3, expected3);
     }
 
     @test @shouldPass

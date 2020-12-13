@@ -1,26 +1,28 @@
-/* eslint-disable import/order */
 /* eslint-disable array-element-newline */
-/* eslint-disable @typescript-eslint/consistent-type-imports */
+import Mock, { It }                           from "@surface/mock";
+import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
+import chai                                   from "chai";
+import Tasks                                  from "../internal/tasks.js";
+import type AnalyzerOptions                   from "../internal/types/analyzer-options";
+import type BuildOptions                      from "../internal/types/build-options";
+import type DevServerOptions                  from "../internal/types/dev-serve-options";
+import type Options                           from "../internal/types/options";
 
-import Tasks from "../internal/tasks.js?require=proxy";
-
-import Mock, { It }               from "@surface/mock";
-import { afterEach, suite, test } from "@surface/test-suite";
-import chai                       from "chai";
-import type AnalyzerOptions       from "../internal/types/analyzer-options";
-import type BuildOptions          from "../internal/types/build-options";
-import type DevServerOptions      from "../internal/types/dev-serve-options";
-import type Options               from "../internal/types/options";
-
-const tasksMock = Mock.of<typeof import("../internal/tasks.js").default>(Tasks)!;
+const tasksMock = Mock.of(Tasks)!;
 
 @suite
 export default class BinSpec
 {
+    @beforeEach
+    public beforeEach(): void
+    {
+        tasksMock.lock();
+    }
+
     @afterEach
     public afterEach(): void
     {
-        tasksMock.clear();
+        tasksMock.release();
     }
 
     @test

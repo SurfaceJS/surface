@@ -3,14 +3,13 @@
 /* eslint-disable array-element-newline */
 /* eslint-disable import/no-namespace */
 
-import fs from "fs?require=proxy";
-
+import fs                                                 from "fs";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                               from "chai";
 import ForceTsResolvePlugin                               from "../../internal/plugins/force-ts-resolve-plugin.js";
 
-const fsMock = Mock.of<typeof import("fs")>(fs)!;
+const fsMock = Mock.of(fs.existsSync)!;
 
 @suite
 export default class ForceTsResolvePluginSpec
@@ -18,10 +17,10 @@ export default class ForceTsResolvePluginSpec
     @beforeEach
     public beforeEach(): void
     {
-        fsMock.setup("existsSync").call("path-1/foo.ts").returns(true);
-        fsMock.setup("existsSync").call("path-2/foo.ts").returns(true);
-        fsMock.setup("existsSync").call("path-1/bar.ts").returns(false);
-        fsMock.setup("existsSync").call("path-2/bar.ts").returns(false);
+        fsMock.call("path-1/foo.ts").returns(true);
+        fsMock.call("path-2/foo.ts").returns(true);
+        fsMock.call("path-1/bar.ts").returns(false);
+        fsMock.call("path-2/bar.ts").returns(false);
     }
 
     @afterEach
