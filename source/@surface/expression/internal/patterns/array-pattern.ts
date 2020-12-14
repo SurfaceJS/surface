@@ -14,7 +14,7 @@ export default class ArrayPattern implements IPattern
         return this._elements;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set elements(value: (IPattern | null)[])
     {
         this._elements = value;

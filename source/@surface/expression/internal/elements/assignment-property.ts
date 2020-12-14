@@ -13,7 +13,7 @@ export default class AssignmentProperty implements INode
         return this._computed;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set computed(value: boolean)
     {
         this._computed = value;
@@ -25,7 +25,7 @@ export default class AssignmentProperty implements INode
         return this._key;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set key(value: IExpression)
     {
         this._key = value;
@@ -37,7 +37,7 @@ export default class AssignmentProperty implements INode
         return this._shorthand;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set shorthand(value: boolean)
     {
         this._shorthand = value;
@@ -49,7 +49,7 @@ export default class AssignmentProperty implements INode
         return this._value;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set value(value: IPattern)
     {
         this._value = value;

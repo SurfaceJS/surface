@@ -16,7 +16,7 @@ export default class TaggedTemplateExpression implements IExpression
         return this._callee;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set callee(value: IExpression)
     {
         this._callee = value;
@@ -28,7 +28,7 @@ export default class TaggedTemplateExpression implements IExpression
         return this._quasi;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set quasi(value: TemplateLiteral)
     {
         this._quasi = value;

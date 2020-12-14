@@ -49,7 +49,7 @@ export default class Type
             const metadata: Indexer = { };
 
             Reflect.getMetadataKeys(this.prototype)
-                .forEach(/* istanbul ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.prototype));
+                .forEach(/* c8 ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.prototype));
 
             this._metadata = metadata;
         }

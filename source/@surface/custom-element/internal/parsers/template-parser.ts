@@ -432,7 +432,7 @@ export default class TemplateParser
 
         const stackTrace = [...this.stackTrace];
 
-        /* istanbul ignore else */
+        /* c8 ignore else */
         if (directive.type == DirectiveType.If)
         {
             const branches: IChoiceBranchDirective[] = [];
@@ -597,7 +597,7 @@ export default class TemplateParser
             this.saveLookup();
         }
 
-        // istanbul ignore if
+        /* c8 ignore next 4 */
         if (!TemplateParser.testEnviroment)
         {
             template.removeAttribute(directive.name);

@@ -34,7 +34,7 @@ export default abstract class ExpressionVisitor
 {
     protected visit(node: INode): INode
     {
-        /* istanbul ignore else */
+        /* c8 ignore else */
         if (TypeGuard.isArrayExpression(node))
         {
             return this.visitArrayExpression(node);

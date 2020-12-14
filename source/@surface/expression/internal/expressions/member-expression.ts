@@ -15,7 +15,7 @@ export default class MemberExpression implements IExpression
         return this._computed;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set computed(value: boolean)
     {
         this._computed = value;
@@ -27,7 +27,7 @@ export default class MemberExpression implements IExpression
         return this._property;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set property(value: IExpression)
     {
         this._property = value;
@@ -39,7 +39,7 @@ export default class MemberExpression implements IExpression
         return this._object;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set object(value: IExpression)
     {
         this._object = value;
@@ -51,7 +51,7 @@ export default class MemberExpression implements IExpression
         return this._optional;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set optional(value: boolean)
     {
         this._optional = value;

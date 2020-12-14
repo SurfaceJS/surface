@@ -14,7 +14,7 @@ export default class RestElement implements IPattern
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IPattern)
     {
         this._argument = value;

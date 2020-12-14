@@ -16,7 +16,7 @@ export default class ArrowFunctionExpression implements IExpression
         return this._body;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set body(value: IExpression)
     {
         this._body = value;
@@ -28,7 +28,7 @@ export default class ArrowFunctionExpression implements IExpression
         return this._parameters;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set parameters(value: IPattern[])
     {
         this._parameters = value;

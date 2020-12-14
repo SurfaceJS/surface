@@ -15,7 +15,7 @@ export default class ArrayExpression implements IExpression
         return this._elements;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set elements(value: (IExpression | ISpreadElement | null)[])
     {
         this._elements = value;

@@ -443,7 +443,7 @@ export default class Parser
     {
         const token = this.nextToken();
 
-        /* istanbul ignore if */
+        /* c8 ignore if */
         if (token.type !== TokenType.Punctuator || token.raw !== value)
         {
             throw this.unexpectedTokenError(token);
@@ -986,8 +986,10 @@ export default class Parser
 
             case TokenType.Template:
                 return this.inheritGrammar(this.templateLiteralExpression);
-            /* istanbul ignore next */
+
             default:
+
+                /* c8 ignore next */
                 break;
         }
 
@@ -1031,7 +1033,8 @@ export default class Parser
 
                 if (shorthand)
                 {
-                    /* istanbul ignore else */
+
+                    /* c8 ignore else */
                     if (TypeGuard.isIdentifier(value))
                     {
                         return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);

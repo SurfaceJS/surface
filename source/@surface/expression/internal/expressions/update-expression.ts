@@ -33,7 +33,7 @@ export default class UpdateExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IIdentifier | IMemberExpression)
     {
         this._argument = value;
@@ -44,7 +44,7 @@ export default class UpdateExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: UpdateOperator)
     {
         this._operator = value;
@@ -55,7 +55,7 @@ export default class UpdateExpression implements IExpression
         return this._prefix;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set prefix(value: boolean)
     {
         this._prefix = value;

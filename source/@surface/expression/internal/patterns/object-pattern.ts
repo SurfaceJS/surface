@@ -16,7 +16,7 @@ export default class ObjectPattern implements IPattern
         return this._properties;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set properties(value: (IAssignmentProperty | IRestElement)[])
     {
         this._properties = value;

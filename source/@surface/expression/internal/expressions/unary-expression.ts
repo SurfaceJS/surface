@@ -26,7 +26,7 @@ export default class UnaryExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IExpression)
     {
         this._argument = value;
@@ -40,7 +40,7 @@ export default class UnaryExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: UnaryOperator)
     {
         this._operator = value;

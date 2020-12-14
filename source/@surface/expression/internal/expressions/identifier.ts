@@ -19,7 +19,7 @@ export default class Identifier implements IExpression, IPattern
         return this._name;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set name(value: string)
     {
         this._name = value;

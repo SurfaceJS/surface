@@ -14,7 +14,7 @@ import DataBind                                from "./reactivity/data-bind.js";
 import type { Observables, StackTrace }        from "./types";
 
 // eslint-disable-next-line object-shorthand
-const wrapper = { "Window": /* istanbul ignore next */ function () { /* */ } }.Window as object as typeof Window;
+const wrapper = { "Window": /* c8 ignore next */ function () { /* */ } }.Window as object as typeof Window;
 
 wrapper.prototype = window;
 wrapper.prototype.constructor = wrapper;

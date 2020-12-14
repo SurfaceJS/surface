@@ -13,7 +13,7 @@ export default class ParenthesizedExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IExpression)
     {
         this._argument = value;

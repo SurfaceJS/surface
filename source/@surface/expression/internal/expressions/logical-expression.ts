@@ -25,7 +25,7 @@ export default class LogicalExpression implements IExpression
         return this._left;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -37,7 +37,7 @@ export default class LogicalExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: LogicalOperator)
     {
         this._operator = value;
@@ -49,7 +49,7 @@ export default class LogicalExpression implements IExpression
         return this._right;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set right(value: IExpression)
     {
         this._right = value;

@@ -17,7 +17,7 @@ export default class ObjectExpression implements IExpression
         return this._properties;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set properties(value: (IProperty | ISpreadElement)[])
     {
         this._properties = value;

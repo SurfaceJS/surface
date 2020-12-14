@@ -83,7 +83,7 @@ export default class Evaluate
 
     public static pattern(scope: object, pattern: IPattern, value: unknown, rest: unknown[] = [], useCache: boolean = false): Indexer
     {
-        /* istanbul ignore else */
+        /* c8 ignore else */
         if (TypeGuard.isIdentifier(pattern))
         {
             return { [pattern.name]: value };
@@ -110,7 +110,7 @@ export default class Evaluate
             return Evaluate.restElement(scope, pattern, rest, useCache);
         }
 
-        /* istanbul ignore next */
+        /* c8 ignore next */
         throw new Error("Invalid pattern");
     }
 }

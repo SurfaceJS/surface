@@ -10,7 +10,7 @@ export default class TemplateElement implements INode
         return this._cooked;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set cooked(value: string)
     {
         this._cooked = value;
@@ -22,20 +22,21 @@ export default class TemplateElement implements INode
         return this._raw;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set raw(value: string)
     {
         this._raw = value;
     }
 
     private _tail: boolean;
-    /* istanbul ignore next */
+
+    /* c8 ignore next 4 */
     public get tail(): boolean
     {
         return this._tail;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set tail(value: boolean)
     {
         this._tail = value;
