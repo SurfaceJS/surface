@@ -9,7 +9,7 @@ import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-su
 import chai                                               from "chai";
 import ForceTsResolvePlugin                               from "../../internal/plugins/force-ts-resolve-plugin.js";
 
-const fsMock = Mock.of(fs.existsSync)!;
+const fsMock = Mock.of(fs)!;
 
 @suite
 export default class ForceTsResolvePluginSpec
@@ -17,10 +17,7 @@ export default class ForceTsResolvePluginSpec
     @beforeEach
     public beforeEach(): void
     {
-        fsMock.call("path-1/foo.ts").returns(true);
-        fsMock.call("path-2/foo.ts").returns(true);
-        fsMock.call("path-1/bar.ts").returns(false);
-        fsMock.call("path-2/bar.ts").returns(false);
+        fsMock.lock();
     }
 
     @afterEach
@@ -32,6 +29,15 @@ export default class ForceTsResolvePluginSpec
     @test @shouldPass
     public apply(): void
     {
+        const existsSyncMock = Mock.callable<typeof fs.existsSync>();
+
+        existsSyncMock.call("path-1/foo.ts").returns(true);
+        existsSyncMock.call("path-2/foo.ts").returns(true);
+        existsSyncMock.call("path-1/bar.ts").returns(false);
+        existsSyncMock.call("path-2/bar.ts").returns(false);
+
+        fsMock.setupGet("existsSync").returns(existsSyncMock.proxy);
+
         const resolver =
         {
             hooks:

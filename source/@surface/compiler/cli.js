@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import path from "path";
+import { fileURLToPath } from "url";
 import { Command } from "commander";
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 function createCommandOptions(target) {
-    return { executableFile: path.resolve(__dirname, `./bin/${target}.js`) };
+    return { executableFile: path.resolve(dirname, `./bin/${target}.js`) };
 }
 const program = new Command();
 program.command("analyze [options]", "Analyze bundle size.", createCommandOptions("analyze")).alias("a");

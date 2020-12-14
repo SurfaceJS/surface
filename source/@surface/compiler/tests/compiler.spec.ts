@@ -30,7 +30,10 @@ function setup(type: "ok" | "ko"): void
 {
     const error = type == "ko" ? new Error("Some goes wrong") : undefined;
 
-    const statsMock            = Mock.instance<Stats>();
+    const statsMock = Mock.instance<Stats>();
+
+    statsMock.setupGet("toString").returns(() => "");
+
     const compilerWatchingMock = Mock.instance<ReturnType<WebpackCompiler["watch"]>>();
 
     compilerWatchingMock

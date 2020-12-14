@@ -12,8 +12,8 @@ export default class LoaderSpec
     public mockOf(): void
     {
         chai.assert.equal(Mock.of(fixture)!.constructor.name, Mock.name);
-        chai.assert.equal(Mock.of(fs.read)!.constructor.name, Mock.name);
+        chai.assert.equal(Mock.of(fs)!.constructor.name, Mock.name);
         chai.assert.equal(fixture, getESM().default);
-        chai.assert.equal(fs.read, getCommonJS().read);
+        chai.assert.equal(fs, getCommonJS());
     }
 }

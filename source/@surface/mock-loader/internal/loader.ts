@@ -20,7 +20,7 @@ function getExports(module: object): string[]
 
     for (const key of Object.keys(module))
     {
-        moduleExports.push(key == "default" ? "export default proxy.default" : `export let ${key} = proxy.${key}`);
+        moduleExports.push(key == "default" ? "export default proxy.default;" : `export const ${key} = proxy.${key};`);
     }
 
     return moduleExports;
@@ -59,7 +59,7 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     if (url.searchParams.get("require") == "proxy")
     {
-        if (url.href.startsWith("node:"))
+        if (url.protocol == "node:")
         {
             resolved = url.href.replace(/^node:/, proxyNode);
 
@@ -95,21 +95,6 @@ export async function getSource(specifier: string, context: GetSourceContext, de
     if (url.searchParams.get("require") == "proxy")
     {
         url.searchParams.set("require", "raw");
-
-        if (url.href.startsWith(proxyNode))
-        {
-            const rawSpecifier = url.href;
-
-            const source =
-            [
-                "import createProxy from \"@surface/mock-loader/internal/create-proxy.js\"",
-                `import * as module from \"${rawSpecifier}\";`,
-                "const proxy = createProxy(module);",
-                "export default proxy;",
-            ].join("\n");
-
-            return { source };
-        }
 
         const rawSpecifier = url.href;
 

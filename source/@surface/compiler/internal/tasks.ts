@@ -63,13 +63,13 @@ export default class Tasks
 
         if (projectPath)
         {
-            Tasks.resolvePaths(defaults, path.parse(projectPath).dir);
+            Tasks.resolvePaths(defaults, path.dirname(projectPath));
 
             const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
             if (projectPath.endsWith(".json"))
             {
-                Tasks.resolvePaths(projectConfiguration, path.parse(projectPath).dir);
+                Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
             return { ...defaults, ...projectConfiguration, ...configuration };

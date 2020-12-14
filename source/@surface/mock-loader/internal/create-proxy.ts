@@ -4,11 +4,6 @@ const mocks = new WeakMap<object, Mock<object>>();
 
 function mockFrom(target: object): object
 {
-    if (Mock.of(target))
-    {
-        return target;
-    }
-
     let mock = mocks.get(target);
 
     if (!mock)

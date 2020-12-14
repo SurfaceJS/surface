@@ -5,6 +5,7 @@
         "@surface/io",
         "webpack",
         "webpack-dev-server",
+        "./source/@surface/io/internal/fs.js",
         "./source/@surface/compiler/internal/tasks.js",
         "./source/@surface/compiler/internal/compiler.js",
         "./source/@surface/compiler/internal/configurations.js",

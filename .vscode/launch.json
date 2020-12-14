@@ -109,9 +109,9 @@
                 "-ui=tdd",
                 "--timeout=9999999",
                 "--colors",
-                "${fileBasenameNoExtension}.js"
+                "${fileDirname}/${fileBasenameNoExtension}.js"
             ],
-            "cwd":  "${fileDirname}",
+            "cwd":  "${workspaceFolder}",
             "name": "Debug Test",
             "outFiles":
             [

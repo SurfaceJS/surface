@@ -1,8 +1,8 @@
-import { Command }                                          from "commander";
+import commander                                            from "commander";
 import { parsePattern, toArray, toStrategyFlags, toString } from "./internal/common.js";
 import Tasks                                                from "./internal/tasks.js";
 
-const program = new Command();
+const program = new commander.Command();
 
 program.version("1.0.0");
 
