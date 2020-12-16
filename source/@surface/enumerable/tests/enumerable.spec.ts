@@ -25,6 +25,7 @@ export default class EnumerableSpec
     public range(): void
     {
         chai.assert.deepEqual(Array.from(Enumerable.range(1, 3)), [1, 2, 3]);
+        chai.assert.deepEqual(Array.from(Enumerable.range(3, 1)), [3, 2, 1]);
     }
 
     @test @shouldPass
@@ -121,6 +122,9 @@ export default class EnumerableSpec
     public count(): void
     {
         chai.assert.equal(Enumerable.from([1, 2, 3]).count(), 3);
+        chai.assert.equal(Enumerable.from([1, 2, 3]).count(x => x > 1), 2);
+        chai.assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(), 3);
+        chai.assert.equal(Enumerable.from(Enumerable.from([1, 2, 3])).count(x => x > 1), 2);
     }
 
     @test @shouldPass

@@ -73,6 +73,7 @@ export default class List<T> extends Enumerable<T>
             },
         };
 
+        /* c8 ignore next 2 */ // c8 can't handle constructor return's
         return new Proxy(this, handler);
     }
 

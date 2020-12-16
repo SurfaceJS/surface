@@ -23,12 +23,9 @@ function parseStatement<TParser extends (expression: string) => any>(parser: TPa
     }
     catch (error)
     {
-        if (error instanceof SyntaxError)
-        {
-            throw getOffsetSyntaxError(statement, expression, error);
-        }
+        assert(error instanceof SyntaxError);
 
-        throw error;
+        throw getOffsetSyntaxError(statement, expression, error);
     }
 }
 

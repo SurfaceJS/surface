@@ -443,7 +443,7 @@ export default class Parser
     {
         const token = this.nextToken();
 
-        /* c8 ignore if */
+        /* c8 ignore next 4 */
         if (token.type !== TokenType.Punctuator || token.raw !== value)
         {
             throw this.unexpectedTokenError(token);
@@ -524,7 +524,7 @@ export default class Parser
             throw this.unexpectedTokenError(this.invalidInitialization);
         }
 
-        this.invalidInitialization = invalidInitialization ?? this.invalidInitialization;
+        this.invalidInitialization = invalidInitialization;
 
         return expression;
     }
@@ -987,9 +987,8 @@ export default class Parser
             case TokenType.Template:
                 return this.inheritGrammar(this.templateLiteralExpression);
 
+            /* c8 ignore next 2 */
             default:
-
-                /* c8 ignore next */
                 break;
         }
 
@@ -1033,8 +1032,6 @@ export default class Parser
 
                 if (shorthand)
                 {
-
-                    /* c8 ignore else */
                     if (TypeGuard.isIdentifier(value))
                     {
                         return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
@@ -1123,10 +1120,10 @@ export default class Parser
                 }
 
                 return new RestElement(this.reinterpretPattern(expression.argument, lookahead));
-            }
+            } /* c8 ignore next 2 */
             default:
                 break;
-        }
+        } /* c8 ignore next 3 */
 
         throw this.unexpectedTokenError(lookahead);
     }

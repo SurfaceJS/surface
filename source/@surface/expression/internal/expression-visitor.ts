@@ -34,7 +34,6 @@ export default abstract class ExpressionVisitor
 {
     protected visit(node: INode): INode
     {
-        /* c8 ignore else */
         if (TypeGuard.isArrayExpression(node))
         {
             return this.visitArrayExpression(node);
@@ -150,7 +149,7 @@ export default abstract class ExpressionVisitor
         else if (TypeGuard.isUnaryExpression(node))
         {
             return this.visitUnaryExpression(node);
-        }
+        } /* c8 ignore next 3 */
 
         return node;
     }

@@ -11,9 +11,4 @@ export default class StaticMetadata
     {
         return target[METADATA] = target[METADATA] ?? new StaticMetadata();
     }
-
-    public static of(target: Function & { [METADATA]?: StaticMetadata }): StaticMetadata | undefined
-    {
-        return target[METADATA];
-    }
 }

@@ -29,6 +29,12 @@ export default class FieldInfoSpec
     }
 
     @test @shouldPass
+    public isOwn(): void
+    {
+        chai.assert.equal(methodInfo.isOwn, false);
+    }
+
+    @test @shouldPass
     public isConstructor(): void
     {
         chai.assert.equal(methodInfo.isConstructor, false);

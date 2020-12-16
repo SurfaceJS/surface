@@ -22,6 +22,12 @@ export default class FieldInfoSpec
     }
 
     @test @shouldPass
+    public isOwn(): void
+    {
+        chai.assert.equal(propertyInfo.isOwn, false);
+    }
+
+    @test @shouldPass
     public key(): void
     {
         chai.assert.equal(propertyInfo.key, "instanceProperty");

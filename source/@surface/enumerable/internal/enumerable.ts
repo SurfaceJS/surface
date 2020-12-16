@@ -31,11 +31,6 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public static range(start: number, end: number): Enumerable<number>
     {
-        if (start > end)
-        {
-            throw new TypeError("Start cannot be greater than end");
-        }
-
         return new RangeIterator(start, end);
     }
 
@@ -1097,9 +1092,19 @@ class RangeIterator extends Enumerable<number>
 
     public *[Symbol.iterator](): Iterator<number>
     {
-        for (let i = this.start; i <= this.end; i++)
+        if (this.start < this.end)
         {
-            yield i;
+            for (let i = this.start; i <= this.end; i++)
+            {
+                yield i;
+            }
+        }
+        else
+        {
+            for (let i = this.start; i >= this.end; i--)
+            {
+                yield i;
+            }
         }
     }
 }

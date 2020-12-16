@@ -775,6 +775,13 @@ export const validExpressions: ParseExpectedSpec[] =
         value:    2,
     },
     {
+        raw:      "((a = 1) => a + b)(2)",
+        scope:    { b: 1 },
+        toString: "((a = 1) => a + b)(2)",
+        type:     CallExpression,
+        value:    3,
+    },
+    {
         raw:      "((a, b) => a + b)(1, 2)",
         scope:    { b: 1 },
         toString: "((a, b) => a + b)(1, 2)",

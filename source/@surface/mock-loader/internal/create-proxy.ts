@@ -14,7 +14,7 @@ function mockFrom(target: object): object
     return mock.proxy;
 }
 
-function proxieFrom(target: object): object
+export default function createProxy(target: object): object
 {
     const handler: ProxyHandler<object> =
     {
@@ -32,19 +32,4 @@ function proxieFrom(target: object): object
     };
 
     return new Proxy(target, handler);
-}
-
-export default function createProxy(value: unknown): unknown
-{
-    if (value && typeof value == "object" || value instanceof Object)
-    {
-        if (Reflect.get(value, Symbol.toStringTag) == "Module")
-        {
-            return proxieFrom(value);
-        }
-
-        return mockFrom(value);
-    }
-
-    return value;
 }
