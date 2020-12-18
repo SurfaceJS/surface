@@ -1,12 +1,12 @@
 import type { ICustomDirective } from "@surface/custom-element";
 import { DirectiveHandler }      from "@surface/custom-element";
-import type ViewRouter           from "./view-router.js";
+import type WebRouter           from "./web-router.js";
 
 export default class NavigationDirectiveHandler extends DirectiveHandler
 {
     private disposed: boolean = false;
 
-    public constructor(private readonly router: ViewRouter, scope: object, element: HTMLElement, directive: ICustomDirective)
+    public constructor(private readonly router: WebRouter, scope: object, element: HTMLElement, directive: ICustomDirective)
     {
         super(scope, element, directive);
 

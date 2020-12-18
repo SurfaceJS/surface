@@ -10,7 +10,7 @@ import type IMiddleware                        from "../internal/interfaces/midd
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
-import ViewRouter                              from "../internal/view-router.js";
+import WebRouter                              from "../internal/web-router.js";
 
 @element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
 class HomeView extends CustomElement
@@ -54,7 +54,7 @@ class AboutInvalidView extends HTMLElement implements IRouteableElement
 @define("data-view")
 class DataView extends HTMLElement
 {
-    @inject(ViewRouter.ROUTE_KEY)
+    @inject(WebRouter.ROUTE_KEY)
     public route!: Route;
 }
 
@@ -74,9 +74,9 @@ class AppRoot extends CustomElement
 { }
 
 @suite
-export default class ViewRouterSpec
+export default class WebRouterSpec
 {
-    private readonly router!: ViewRouter;
+    private readonly router!: WebRouter;
 
     public constructor()
     {
@@ -146,9 +146,9 @@ export default class ViewRouterSpec
             },
         };
 
-        this.router = new ViewRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
 
-        CustomElement.registerDirective(ViewRouter.createDirectiveRegistry(this.router));
+        CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
 
         document.body.appendChild(new AppRoot());
     }

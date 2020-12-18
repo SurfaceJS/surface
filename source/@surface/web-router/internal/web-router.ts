@@ -17,7 +17,7 @@ import type RouteConfiguration           from "./types/route-configuration";
 import type RouteDefinition              from "./types/route-definition";
 import type ViewRouterOptions            from "./types/view-router-options";
 
-export default class ViewRouter
+export default class WebRouter
 {
     public static readonly ROUTE_KEY: symbol = Symbol("view-router:route-data-key");
 
@@ -56,7 +56,7 @@ export default class ViewRouter
         }
     }
 
-    public static createDirectiveRegistry(router: ViewRouter): DirectiveHandlerRegistry
+    public static createDirectiveRegistry(router: WebRouter): DirectiveHandlerRegistry
     {
         return { handler: (...args) => new NavigationDirectiveHandler(router, ...args), name: "to" };
     }
@@ -151,7 +151,7 @@ export default class ViewRouter
                     {
                         const constructor = await this.resolveComponent(component);
 
-                        const element = Container.merge(this.container, new Container().registerSingleton(ViewRouter.ROUTE_KEY, to))
+                        const element = Container.merge(this.container, new Container().registerSingleton(WebRouter.ROUTE_KEY, to))
                             .inject(constructor) as IRouteableElement;
 
                         this.cache[index][key] = element;
