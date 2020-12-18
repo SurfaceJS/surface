@@ -20,9 +20,9 @@ const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 
 export default class Router<T = RouteData>
 {
-    protected readonly entries:     Entry<T>[]                = [];
-    protected readonly namedEntries: Map<string, Entry<T>>    = new Map();
-    protected readonly tranformers: Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
+    protected readonly entries:      Entry<T>[]                = [];
+    protected readonly namedEntries: Map<string, Entry<T>>     = new Map();
+    protected readonly tranformers:  Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
 
     public map(pattern: string): this;
     public map(pattern: string, selector: Delegate<[RouteData], T>): this;

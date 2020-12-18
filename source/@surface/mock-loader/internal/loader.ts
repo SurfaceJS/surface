@@ -8,9 +8,9 @@ type GetSourceResult  = { source: string };
 type ResolveContext   = { condition: string[], parentURL?: string };
 type ResolveResult    = { url: string };
 
-const MOCK_MODULE = "mock-module";
-const PROXY       = "proxy";
-const TARGET      = "target";
+const MOCK_LOAD = "mock-load";
+const PROXY     = "proxy";
+const TARGET    = "target";
 
 const protocolPattern     = /^\w+?:/;
 const relativePathPattern = /^\.?\.\//;
@@ -47,8 +47,8 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
         }
         else
         {
-            const proxyHint  = `?${MOCK_MODULE}=${PROXY}`;
-            const targetHint = `?${MOCK_MODULE}=${TARGET}`;
+            const proxyHint  = `?${MOCK_LOAD}=${PROXY}`;
+            const targetHint = `?${MOCK_LOAD}=${TARGET}`;
 
             const searchParams = specifier.includes(proxyHint)
                 ? proxyHint
@@ -71,12 +71,12 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
 
     if (proxyMap.has(specifier) || proxyMap.has(resolved))
     {
-        url.searchParams.set(MOCK_MODULE, PROXY);
+        url.searchParams.set(MOCK_LOAD, PROXY);
 
         resolved = url.href;
     }
 
-    if (url.searchParams.get(MOCK_MODULE) == PROXY)
+    if (url.searchParams.get(MOCK_LOAD) == PROXY)
     {
         if (url.protocol == "node:")
         {
@@ -85,14 +85,14 @@ export async function resolve(specifier: string, context: ResolveContext, defaul
             parentProxyFiles.set(resolved, context.parentURL);
         }
 
-        url.searchParams.delete(MOCK_MODULE);
+        url.searchParams.delete(MOCK_LOAD);
 
         proxyFiles.set(url.href, resolved);
 
         return { url: resolved };
     }
 
-    url.searchParams.delete(MOCK_MODULE);
+    url.searchParams.delete(MOCK_LOAD);
 
     if (url.href.startsWith(proxyNode))
     {
@@ -106,9 +106,9 @@ export async function getSource(specifier: string, context: GetSourceContext, de
 {
     const url = new URL(specifier);
 
-    if (url.searchParams.get(MOCK_MODULE) == PROXY)
+    if (url.searchParams.get(MOCK_LOAD) == PROXY)
     {
-        url.searchParams.set(MOCK_MODULE, TARGET);
+        url.searchParams.set(MOCK_LOAD, TARGET);
 
         const targetSpecifier = url.href;
 
@@ -132,7 +132,7 @@ export async function getSource(specifier: string, context: GetSourceContext, de
 
 export async function getFormat(specifier: string, context: object, defaultGetFormat: (specifier: string, context: object, defaultGetFormat: Function) => Promise<GetFormatResult>): Promise<{ format: string }>
 {
-    if (specifier.startsWith(proxyNode) || new URL(specifier).searchParams.get(MOCK_MODULE) == PROXY)
+    if (specifier.startsWith(proxyNode) || new URL(specifier).searchParams.get(MOCK_LOAD) == PROXY)
     {
         return { format: "module" };
     } /* c8 ignore next 4 */

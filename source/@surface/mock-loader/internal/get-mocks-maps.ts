@@ -1,42 +1,35 @@
 import fs                from "fs";
-import os                from "os";
 import path              from "path";
 import { pathToFileURL } from "url";
 
-type MockMap = { modules: string[] };
+type Configuration = { modules: string[] };
 
 export default function getMocksMaps(): Set<string>
 {
     const dirname = process.cwd();
-    const root    = path.parse(dirname).root;
 
-    const mockMapPath = path.join(dirname, "mock-loader.config.json");
+    const configurationPath = path.join(dirname, "mock-loader.config.json");
 
-    const mockMap = fs.existsSync(mockMapPath) ? JSON.parse(fs.readFileSync(mockMapPath).toString()) as MockMap : { modules: [] };
+    const configuration = fs.existsSync(configurationPath) ? JSON.parse(fs.readFileSync(configurationPath).toString()) as Configuration : { modules: [] };
 
-    const pathsToMock: string[] = [];
+    const paths = new Set<string>();
 
-    for (const module of mockMap.modules)
+    for (const module of configuration.modules)
     {
         if (module.startsWith("."))
         {
             const modulePath = path.resolve(dirname, module);
 
-            if (os.platform() == "win32")
-            {
-                pathsToMock.push(pathToFileURL(modulePath.replace(root, root.toUpperCase())).href);
-                pathsToMock.push(pathToFileURL(modulePath.replace(root, root.toLowerCase())).href);
-            }
-            else
-            {
-                pathsToMock.push(pathToFileURL(modulePath.toString()).href);
-            }
+            const root = path.parse(modulePath).root;
+
+            paths.add(pathToFileURL(modulePath.replace(root, root.toUpperCase())).href);
+            paths.add(pathToFileURL(modulePath.replace(root, root.toLowerCase())).href);
         }
         else
         {
-            pathsToMock.push(module);
+            paths.add(module);
         }
     }
 
-    return new Set(pathsToMock);
+    return paths;
 }
