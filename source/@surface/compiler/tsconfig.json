@@ -1,12 +1,8 @@
 {
     "compilerOptions": {
-        "baseUrl": ".",
         "types": [
             "node"
         ],
-        "paths": {
-            "webpack": ["./node_modules/@types/webpack"]
-        }
     },
     "extends": "../../../tsconfig.json",
     "files": [

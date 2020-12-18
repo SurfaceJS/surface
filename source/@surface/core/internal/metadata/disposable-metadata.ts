@@ -1,5 +1,6 @@
-import IDisposable             from "../interfaces/disposable";
-import { DISPOSABLE_METADATA } from "../symbols";
+import type IDisposable from "../interfaces/disposable";
+
+const DISPOSABLE_METADATA = Symbol("core:disposable-metadata");
 
 export default class DisposableMetadata implements IDisposable
 {

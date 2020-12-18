@@ -1,11 +1,11 @@
-import { Delegate, IDisposable } from "@surface/core";
-import { TypeGuard }             from "@surface/expression";
+import type { Delegate, IDisposable } from "@surface/core";
+import { TypeGuard }                  from "@surface/expression";
 import
 {
     throwTemplateEvaluationError,
     tryEvaluateExpression,
-} from "../../common";
-import IEventDirective from "../../interfaces/event-directive";
+} from "../../common.js";
+import type IEventDirective from "../../interfaces/event-directive";
 
 export default class EventDirectiveHandler implements IDisposable
 {

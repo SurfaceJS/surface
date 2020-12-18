@@ -1,28 +1,29 @@
 /* eslint-disable no-template-curly-in-string */
 /* eslint-disable max-lines */
-import { Constructor, Indexer, format } from "@surface/core";
-import ArrayExpression                  from "../../internal/expressions/array-expression";
-import ArrowFunctionExpression          from "../../internal/expressions/arrow-function-expression";
-import AssignmentExpression             from "../../internal/expressions/assignment-expression";
-import BinaryExpression                 from "../../internal/expressions/binary-expression";
-import CallExpression                   from "../../internal/expressions/call-expression";
-import CoalesceExpression               from "../../internal/expressions/coalesce-expression";
-import ConditionalExpression            from "../../internal/expressions/conditional-expression";
-import Identifier                       from "../../internal/expressions/identifier";
-import Literal                          from "../../internal/expressions/literal";
-import LogicalExpression                from "../../internal/expressions/logical-expression";
-import MemberExpression                 from "../../internal/expressions/member-expression";
-import NewExpression                    from "../../internal/expressions/new-expression";
-import ObjectExpression                 from "../../internal/expressions/object-expression";
-import SequenceExpression               from "../../internal/expressions/sequence-expression";
-import TaggedTemplateExpression         from "../../internal/expressions/tagged-template-expression";
-import TemplateLiteral                  from "../../internal/expressions/template-literal";
-import ThisExpression                   from "../../internal/expressions/this-expression";
-import UnaryExpression                  from "../../internal/expressions/unary-expression";
-import UpdateExpression                 from "../../internal/expressions/update-expression";
-import IExpression                      from "../../internal/interfaces/expression";
-import Messages                         from "../../internal/messages";
-import SyntaxError                      from "../../internal/syntax-error";
+import type { Constructor, Indexer } from "@surface/core";
+import { format }                    from "@surface/core";
+import ArrayExpression               from "../../internal/expressions/array-expression.js";
+import ArrowFunctionExpression       from "../../internal/expressions/arrow-function-expression.js";
+import AssignmentExpression          from "../../internal/expressions/assignment-expression.js";
+import BinaryExpression              from "../../internal/expressions/binary-expression.js";
+import CallExpression                from "../../internal/expressions/call-expression.js";
+import CoalesceExpression            from "../../internal/expressions/coalesce-expression.js";
+import ConditionalExpression         from "../../internal/expressions/conditional-expression.js";
+import Identifier                    from "../../internal/expressions/identifier.js";
+import Literal                       from "../../internal/expressions/literal.js";
+import LogicalExpression             from "../../internal/expressions/logical-expression.js";
+import MemberExpression              from "../../internal/expressions/member-expression.js";
+import NewExpression                 from "../../internal/expressions/new-expression.js";
+import ObjectExpression              from "../../internal/expressions/object-expression.js";
+import SequenceExpression            from "../../internal/expressions/sequence-expression.js";
+import TaggedTemplateExpression      from "../../internal/expressions/tagged-template-expression.js";
+import TemplateLiteral               from "../../internal/expressions/template-literal.js";
+import ThisExpression                from "../../internal/expressions/this-expression.js";
+import UnaryExpression               from "../../internal/expressions/unary-expression.js";
+import UpdateExpression              from "../../internal/expressions/update-expression.js";
+import type IExpression              from "../../internal/interfaces/expression";
+import Messages                      from "../../internal/messages.js";
+import SyntaxError                   from "../../internal/syntax-error.js";
 
 const scope =
 {
@@ -772,6 +773,13 @@ export const validExpressions: ParseExpectedSpec[] =
         toString: "((a = 1) => a + b)()",
         type:     CallExpression,
         value:    2,
+    },
+    {
+        raw:      "((a = 1) => a + b)(2)",
+        scope:    { b: 1 },
+        toString: "((a = 1) => a + b)(2)",
+        type:     CallExpression,
+        value:    3,
     },
     {
         raw:      "((a, b) => a + b)(1, 2)",

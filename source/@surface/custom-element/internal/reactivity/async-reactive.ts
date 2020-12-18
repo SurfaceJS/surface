@@ -1,7 +1,9 @@
-import { Indexer, hasValue }            from "@surface/core";
-import Reactive, { Metadata, Observer } from "@surface/reactive";
-import type Scheduler                   from "../processors/scheduler";
-import AsyncObserver                    from "./async-observer";
+import type { Indexer }       from "@surface/core";
+import { hasValue }           from "@surface/core";
+import type { Observer }      from "@surface/reactive";
+import Reactive, { Metadata } from "@surface/reactive";
+import type Scheduler         from "../processors/scheduler.js";
+import AsyncObserver          from "./async-observer.js";
 
 export default class AsyncReactive extends Reactive
 {

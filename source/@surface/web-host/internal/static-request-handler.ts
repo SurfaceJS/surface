@@ -1,7 +1,7 @@
-import HttpContext    from "./http-context";
-import mymeType       from "./myme-types";
-import RequestHandler from "./request-handler";
-import StatusCode     from "./status-code";
+import type HttpContext from "./http-context.js";
+import mymeType         from "./myme-types.js";
+import RequestHandler   from "./request-handler.js";
+import StatusCode       from "./status-code.js";
 
 export default class StaticRequestHandler extends RequestHandler
 {

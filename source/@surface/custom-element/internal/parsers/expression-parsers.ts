@@ -1,5 +1,5 @@
 import { assert } from "@surface/core";
-import Expression,
+import type
 {
     IArrayExpression,
     IArrowFunctionExpression,
@@ -7,11 +7,10 @@ import Expression,
     IIdentifier,
     INode,
     IPattern,
-    SyntaxError,
-    TypeGuard,
 } from "@surface/expression";
-import InterpolatedExpression from "./interpolated-expression";
-import { forExpression }      from "./patterns";
+import Expression, { SyntaxError, TypeGuard } from "@surface/expression";
+import InterpolatedExpression                 from "./interpolated-expression.js";
+import { forExpression }                      from "./patterns.js";
 
 const cache: Record<string, INode> = { };
 
@@ -24,12 +23,9 @@ function parseStatement<TParser extends (expression: string) => any>(parser: TPa
     }
     catch (error)
     {
-        if (error instanceof SyntaxError)
-        {
-            throw getOffsetSyntaxError(statement, expression, error);
-        }
+        assert(error instanceof SyntaxError);
 
-        throw error;
+        throw getOffsetSyntaxError(statement, expression, error);
     }
 }
 

@@ -1,6 +1,6 @@
 
-import { Callable, Overload, ParameterOverloads } from "@surface/core";
-import IReturnsSetup                              from "./returns-setup";
+import type { Callable, Overload, ParameterOverloads } from "@surface/core";
+import type IReturnsSetup                              from "./returns-setup";
 
 export default interface ICallSetup<TMethod extends Callable = Callable>
 {

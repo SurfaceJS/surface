@@ -1,21 +1,14 @@
-/* eslint-disable import/prefer-default-export */
-import
-{
-    Constructor,
-    Delegate,
-    DisposableMetadata,
-    HookableMetadata,
-    Indexer,
-} from "@surface/core";
-import { createHostScope, stringToCSSStyleSheet } from "../common";
-import CustomElement from "../custom-element";
-import ICustomElement                             from "../interfaces/custom-element";
-import Metadata                                   from "../metadata/metadata";
-import PrototypeMetadata                          from "../metadata/prototype-metadata";
-import StaticMetadata                             from "../metadata/static-metadata";
-import TemplateParser                             from "../parsers/template-parser";
-import TemplateProcessor                          from "../processors/template-processor";
-import { scheduler }                              from "../singletons";
+import type { Constructor, Delegate, Indexer }    from "@surface/core";
+import { DisposableMetadata, HookableMetadata }   from "@surface/core";
+import { createHostScope, stringToCSSStyleSheet } from "../common.js";
+import CustomElement                              from "../custom-element.js";
+import type ICustomElement                        from "../interfaces/custom-element";
+import Metadata                                   from "../metadata/metadata.js";
+import PrototypeMetadata                          from "../metadata/prototype-metadata.js";
+import StaticMetadata                             from "../metadata/static-metadata.js";
+import TemplateParser                             from "../parsers/template-parser.js";
+import TemplateProcessor                          from "../processors/template-processor.js";
+import { scheduler }                              from "../singletons.js";
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 

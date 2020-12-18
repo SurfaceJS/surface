@@ -1,10 +1,5 @@
-/* eslint-disable import/prefer-default-export */
-import
-{
-    DisposableMetadata,
-    HookableMetadata,
-    Indexer,
-} from "@surface/core";
+import type { Indexer }                         from "@surface/core";
+import { DisposableMetadata, HookableMetadata } from "@surface/core";
 
 export default function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean | AddEventListenerOptions): (target: HTMLElement, propertyKey: string | symbol) => void
 {

@@ -1,5 +1,5 @@
-import IDirectivesDescriptor from "./directives-descriptor";
-import IElementDescriptor    from "./element-descriptor";
+import type IDirectivesDescriptor from "./directives-descriptor";
+import type IElementDescriptor    from "./element-descriptor";
 
 export default interface ITemplateDescriptor
 {

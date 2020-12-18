@@ -1,6 +1,7 @@
-import { assert }                                                 from "@surface/core";
-import Expression, { IArrayExpression, IExpression, SyntaxError } from "@surface/expression";
-import { getOffsetSyntaxError, parseExpression }                  from "./expression-parsers";
+import { assert }                                from "@surface/core";
+import type { IArrayExpression, IExpression }    from "@surface/expression";
+import Expression, { SyntaxError }               from "@surface/expression";
+import { getOffsetSyntaxError, parseExpression } from "./expression-parsers.js";
 
 const stringTokens = ["\"", "'", "`"];
 

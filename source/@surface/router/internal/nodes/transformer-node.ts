@@ -1,8 +1,8 @@
-import NodeType       from "../enums/node-type";
-import INode          from "../interfaces/node";
-import TypeGuard      from "../type-guard";
-import AssignmentNode from "./assignment-node";
-import IdentifierNode from "./identifier-node";
+import NodeType            from "../enums/node-type.js";
+import type INode          from "../interfaces/node";
+import TypeGuard           from "../type-guard.js";
+import type AssignmentNode from "./assignment-node.js";
+import type IdentifierNode from "./identifier-node.js";
 
 export default class TransformerNode implements INode
 {

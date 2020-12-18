@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-readonly */
-import { IDisposable }    from "@surface/core";
-import { enumerateRange } from "../common";
+import type { IDisposable } from "@surface/core";
+import { enumerateRange }   from "../common.js";
 
 const BLOCKS = Symbol("custom-element:template-blocks");
 

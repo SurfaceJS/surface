@@ -1,7 +1,8 @@
-import { assert }                                                    from "chai";
-import { batchTest, shouldPass, suite }                              from "../../source/@surface/test-suite";
-import { parsePatternPath }                                          from "../internal/common";
-import { CommonParsePatternPathValidExpectation, validExpectations } from "./common-expectations";
+import chai                                            from "chai";
+import { batchTest, shouldPass, suite }                from "../../source/@surface/test-suite/index.js";
+import { parsePatternPath }                            from "../internal/common.js";
+import type { CommonParsePatternPathValidExpectation } from "./common-expectations.js";
+import { validExpectations }                           from "./common-expectations.js";
 
 @suite
 export default class CommonSpec
@@ -12,16 +13,16 @@ export default class CommonSpec
     {
         const regex = parsePatternPath(expectation.pattern);
 
-        assert.deepEqual(regex, expectation.regex, "regex deep equal to expectation.regex");
+        chai.assert.deepEqual(regex, expectation.regex, "regex deep equal to expectation.regex");
 
         for (const path of expectation.matches)
         {
-            assert.isTrue(regex.test(path), `regex.test(path).test("${path}") is true`);
+            chai.assert.isTrue(regex.test(path), `regex.test(path).test("${path}") is true`);
         }
 
         for (const path of expectation.unmatches)
         {
-            assert.isFalse(regex.test(path), `regex.test(path).test("${path}") is false`);
+            chai.assert.isFalse(regex.test(path), `regex.test(path).test("${path}") is false`);
         }
     }
 }

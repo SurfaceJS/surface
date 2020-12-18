@@ -3,14 +3,13 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
-        "declaration":                      false, // false In Dev
         "emitDecoratorMetadata":            true,
         "esModuleInterop":                  true,
         "experimentalDecorators":           true,
         "forceConsistentCasingInFileNames": false,
         "importHelpers":                    true,
         "lib":                              ["esnext"],
-        "module":                           "commonjs",
+        "module":                           "ESNext",
         "moduleResolution":                 "node",
         "noEmitHelpers":                    true,
         "noEmitOnError":                    true,
@@ -23,7 +22,7 @@
         "skipLibCheck":                     true,
         "sourceMap":                        true,
         "strict":                           true,
-        "target":                           "es2019",
+        "target":                           "ES2020",
         "types":                            []
     }
 }

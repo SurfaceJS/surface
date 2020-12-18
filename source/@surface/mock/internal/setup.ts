@@ -1,7 +1,9 @@
-import { Delegate, Hashcode }    from "@surface/core";
-import Enumerable, { IComparer } from "@surface/enumerable";
-import { isIt }                  from "./common";
-import Args                      from "./types/args";
+import type { Delegate }  from "@surface/core";
+import { Hashcode }       from "@surface/core";
+import type { IComparer } from "@surface/enumerable";
+import Enumerable         from "@surface/enumerable";
+import { isIt }           from "./common.js";
+import type Args          from "./types/args";
 
 const comparer: IComparer<unknown> =
 {

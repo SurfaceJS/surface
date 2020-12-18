@@ -1,19 +1,20 @@
 /* eslint-disable max-lines */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
-import { AggregateError, Delegate, Indexer, uuidv4 } from "@surface/core";
-import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
-import { assert }                                    from "chai";
-import CustomElement                                 from "../internal/custom-element";
-import element                                       from "../internal/decorators/element";
-import CustomStackError                              from "../internal/errors/custom-stack-error";
-import TemplateEvaluationError                       from "../internal/errors/template-evaluation-error";
-import TemplateParser                                from "../internal/parsers/template-parser";
-import TemplateProcessor                             from "../internal/processors/template-processor";
-import { directiveRegistry, scheduler }              from "../internal/singletons";
-import CustomDirectiveHandler                        from "./fixtures/custom-directive";
-import customDirectiveFactory                        from "./fixtures/custom-directive-factory";
+import type { Delegate, Indexer }              from "@surface/core";
+import { AggregateError, uuidv4 }              from "@surface/core";
+import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import chai                                    from "chai";
+import CustomElement                           from "../internal/custom-element.js";
+import element                                 from "../internal/decorators/element.js";
+import CustomStackError                        from "../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error.js";
+import TemplateParser                          from "../internal/parsers/template-parser.js";
+import TemplateProcessor                       from "../internal/processors/template-processor.js";
+import { directiveRegistry, scheduler }        from "../internal/singletons.js";
+import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
+import CustomDirectiveHandler                  from "./fixtures/custom-directive.js";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -123,7 +124,7 @@ export default class TemplateProcessorSpec
 
         if (host.shadowRoot.firstElementChild)
         {
-            assert.equal(host.shadowRoot.firstElementChild.getAttribute("value"), "1");
+            chai.assert.equal(host.shadowRoot.firstElementChild.getAttribute("value"), "1");
         }
     }
 
@@ -140,16 +141,16 @@ export default class TemplateProcessorSpec
         if (host.shadowRoot.firstElementChild)
         {
             const input = host.shadowRoot.firstElementChild as HTMLSpanElement;
-            assert.equal(input.lang, "pt-br");
-            assert.equal(input.getAttribute("lang"), "pt-br");
-            assert.equal(input.getAttribute("parent"), "X-COMPONENT");
+            chai.assert.equal(input.lang, "pt-br");
+            chai.assert.equal(input.getAttribute("lang"), "pt-br");
+            chai.assert.equal(input.getAttribute("parent"), "X-COMPONENT");
 
             host.lang = "en-us";
 
             await scheduler.whenDone();
 
-            assert.equal(input.lang, "en-us");
-            assert.equal(input.getAttribute("lang"), "en-us");
+            chai.assert.equal(input.lang, "en-us");
+            chai.assert.equal(input.getAttribute("lang"), "en-us");
         }
     }
 
@@ -163,13 +164,13 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: pt-br");
 
         host.lang = "en-us";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
     }
 
     @test @shouldPass
@@ -181,7 +182,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        assert.equal(host.shadowRoot.firstElementChild!.getAttribute("has-childs"), "Has childs: false");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.getAttribute("has-childs"), "Has childs: false");
     }
 
     @test @shouldPass
@@ -197,7 +198,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot, { host });
 
-        assert.equal(span.foo, "X-COMPONENT");
+        chai.assert.equal(span.foo, "X-COMPONENT");
     }
 
     @test @shouldPass
@@ -211,7 +212,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot, { host });
 
-        assert.isTrue(span.classList.contains("closed"));
+        chai.assert.isTrue(span.classList.contains("closed"));
     }
 
     @test @shouldPass
@@ -225,7 +226,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot, { host });
 
-        assert.equal(span.style.display, "none");
+        chai.assert.equal(span.style.display, "none");
     }
 
     @test @shouldPass
@@ -239,7 +240,7 @@ export default class TemplateProcessorSpec
 
         const span = host.shadowRoot.firstElementChild as HTMLSpanElement;
 
-        assert.equal(span.lang, "Node");
+        chai.assert.equal(span.lang, "Node");
     }
 
     @test @shouldPass
@@ -263,13 +264,13 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(span.value, "foo");
+        chai.assert.equal(span.value, "foo");
 
         span.value = "foo";
 
         await scheduler.whenDone();
 
-        assert.equal(host.value, "foo");
+        chai.assert.equal(host.value, "foo");
     }
 
     @test @shouldPass
@@ -293,13 +294,13 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(span.value, "foo");
+        chai.assert.equal(span.value, "foo");
 
         span.value = "foo";
 
         await scheduler.whenDone();
 
-        assert.equal(host.value, "foo");
+        chai.assert.equal(host.value, "foo");
     }
 
     @test @shouldPass
@@ -317,7 +318,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        assert.equal(clicked, true);
+        chai.assert.equal(clicked, true);
     }
 
     @test @shouldPass
@@ -335,7 +336,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        assert.equal(clicked, true);
+        chai.assert.equal(clicked, true);
     }
 
     @test @shouldPass
@@ -349,7 +350,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        assert.equal(window.name, "clicked");
+        chai.assert.equal(window.name, "clicked");
     }
 
     @test @shouldPass
@@ -363,7 +364,7 @@ export default class TemplateProcessorSpec
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        assert.equal(host.clicked, true);
+        chai.assert.equal(host.clicked, true);
     }
 
     @test @shouldPass
@@ -375,8 +376,8 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        assert.equal(host.shadowRoot.firstElementChild!.textContent, "directive: Hello World!!!");
-        assert.equal(host.shadowRoot.lastElementChild!.textContent, "factory-directive: Hello World!!!");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.textContent, "directive: Hello World!!!");
+        chai.assert.equal(host.shadowRoot.lastElementChild!.textContent, "factory-directive: Hello World!!!");
     }
 
     @test @shouldPass
@@ -389,13 +390,13 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 01");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 01");
 
         host.id = "02";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 02");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 02");
     }
 
     @test @shouldPass
@@ -408,13 +409,13 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "true");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "true");
 
         host.id = "02";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "false");
+        chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "false");
     }
 
     @test @shouldPass
@@ -431,7 +432,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        assert.equal(host.innerHTML, "<span>Hello </span><span>!!!</span>");
+        chai.assert.equal(host.innerHTML, "<span>Hello </span><span>!!!</span>");
     }
 
     @test @shouldPass
@@ -449,7 +450,7 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
+        chai.assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
     }
 
     @test @shouldPass
@@ -471,7 +472,7 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Hello World!!!");
+        chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -493,32 +494,32 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+        chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
+        chai.assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
 
         root.injectKey = "key-b";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
+        chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
         host.placeholderKey = "key-b";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
+        chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
 
         host.placeholderKey = "key-a";
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
+        chai.assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
     }
 
     @test @shouldPass
@@ -563,7 +564,7 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
+        chai.assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
     }
 
     @test @shouldPass
@@ -585,13 +586,13 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Hello People!!!");
+        chai.assert.equal(host.shadowRoot.textContent, "Hello People!!!");
 
         host.item = { value: "World" };
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.textContent, "Hello World!!!");
+        chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
 
     @test @shouldPass
@@ -621,8 +622,8 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",  "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",  "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "#close", "childNodes[1]");
 
         host.items =
         [
@@ -633,15 +634,15 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2",   "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",   "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",    "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",   "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2",   "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",   "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",    "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",   "childNodes[8]");
 
         host.items =
         [
@@ -652,14 +653,14 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "#close",   "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#open",    "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "Three: 3", "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "#close",   "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",    "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1",   "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",   "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",    "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "#close",   "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#open",    "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "Three: 3", "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "#close",   "childNodes[7]");
     }
 
     @test @shouldPass
@@ -675,19 +676,19 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.firstElementChild?.textContent, "First");
+        chai.assert.equal(host.shadowRoot.firstElementChild?.textContent, "First");
 
         host.order = 2;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.firstElementChild?.textContent, "");
+        chai.assert.equal(host.shadowRoot.firstElementChild?.textContent, "");
 
         host.shadowRoot.innerHTML = "";
 
         host.order = 0;
 
-        assert.equal(host.shadowRoot.childNodes.length, 0);
+        chai.assert.equal(host.shadowRoot.childNodes.length, 0);
     }
 
     @test @shouldPass
@@ -703,19 +704,19 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "First");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "First");
 
         host.order = 2;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Second");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Second");
 
         host.order = 3;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
     }
 
     @test @shouldPass
@@ -731,42 +732,42 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 1", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 1", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
 
         host.elements = [1, 2, 3];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent,  "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent,  "Element: 0", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent,  "#close",     "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent,  "#open",      "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent,  "Element: 1", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent,  "#close",     "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent,  "#open",      "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent,  "Element: 2", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent,  "#close",     "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent,  "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent,  "Element: 0", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent,  "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent,  "#open",      "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent,  "Element: 1", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent,  "#close",     "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent,  "#open",      "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent,  "Element: 2", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent,  "#close",     "childNodes[8]");
 
         host.elements = [2];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 0", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
     }
 
     @test @shouldPass
@@ -782,42 +783,42 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
 
         host.elements = [1, 2, 3];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
 
         host.elements = [2];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
 
         host.elements = [1, 2, 3];
 
@@ -827,15 +828,15 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 3", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 1", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",      "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 3", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",     "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",      "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",     "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",      "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 1", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",     "childNodes[8]");
     }
 
     @test @shouldPass
@@ -851,42 +852,42 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements = [[1, 2], [2, 4]];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements = [[1, 2], [2, 4], [3, 6]];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [[2, 4]];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -902,9 +903,9 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
 
         host.elements =
         [
@@ -914,12 +915,12 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                 "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                 "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                "childNodes[5]");
 
         host.elements =
         [
@@ -930,23 +931,23 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                   "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one",   "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                  "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                   "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two",   "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                  "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                   "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3, Name: three", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                  "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                   "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 1, Name: one",   "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                  "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                   "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element: 2, Name: two",   "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                  "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                   "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element: 3, Name: three", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                  "childNodes[8]");
 
         host.elements = [[2, { item: { name: "two" } }]];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2, Name: two", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                 "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element: 2, Name: two", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                "childNodes[2]");
     }
 
     @test @shouldPass
@@ -962,9 +963,9 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements =
         [
@@ -974,12 +975,12 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements =
         [
@@ -990,23 +991,23 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [{ values: [2, 4] }];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -1022,9 +1023,9 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
 
         host.elements =
         [
@@ -1034,12 +1035,12 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
 
         host.elements =
         [
@@ -1050,23 +1051,23 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 1, Element[1]: 2", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open",                        "childNodes[3]");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[4]");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close",                       "childNodes[5]");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open",                        "childNodes[6]");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Element[0]: 3, Element[1]: 6", "childNodes[7]");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close",                       "childNodes[8]");
 
         host.elements = [{ values: [2, [[4]]] }];
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",                        "childNodes[0]");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Element[0]: 2, Element[1]: 4", "childNodes[1]");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close",                       "childNodes[2]");
     }
 
     @test @shouldPass
@@ -1096,31 +1097,31 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
 
         host.condition = true;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
 
         host.condition = false;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1154,16 +1155,16 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
 
         host.condition = true;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1193,23 +1194,23 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Empty");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
 
         host.condition = true;
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1243,8 +1244,8 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "#close");
 
         host.items =
         [
@@ -1255,15 +1256,15 @@ export default class TemplateProcessorSpec
 
         await scheduler.whenDone();
 
-        assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
-        assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
-        assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
-        assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
-        assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
-        assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "One: 1");
+        chai.assert.equal(host.shadowRoot.childNodes[2].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[3].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[4].textContent, "Two: 2");
+        chai.assert.equal(host.shadowRoot.childNodes[5].textContent, "#close");
+        chai.assert.equal(host.shadowRoot.childNodes[6].textContent, "#open");
+        chai.assert.equal(host.shadowRoot.childNodes[7].textContent, "Three: 3");
+        chai.assert.equal(host.shadowRoot.childNodes[8].textContent, "#close");
     }
 
     @test @shouldPass
@@ -1307,9 +1308,9 @@ export default class TemplateProcessorSpec
 
         host.appendChild(xelement);
 
-        assert.instanceOf(host.firstElementChild, XElement);
-        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild, DummyParent);
-        assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild!.firstElementChild, DummyChild);
+        chai.assert.instanceOf(host.firstElementChild, XElement);
+        chai.assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild, DummyParent);
+        chai.assert.instanceOf(host.firstElementChild!.shadowRoot!.firstElementChild!.firstElementChild, DummyChild);
     }
 
     @test @shouldFail
@@ -1325,7 +1326,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1341,7 +1342,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -1357,7 +1358,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1373,7 +1374,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1389,7 +1390,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1405,7 +1406,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1421,7 +1422,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1445,7 +1446,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1461,7 +1462,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1485,7 +1486,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1509,7 +1510,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1525,7 +1526,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1541,7 +1542,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1559,7 +1560,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1577,7 +1578,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1593,7 +1594,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1609,7 +1610,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1625,7 +1626,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1641,7 +1642,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1663,7 +1664,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1685,7 +1686,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1709,7 +1710,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1733,7 +1734,7 @@ export default class TemplateProcessorSpec
         const actual   = await tryActionAsync(() => process(root, root.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1749,7 +1750,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1765,7 +1766,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1781,7 +1782,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldFail
@@ -1797,7 +1798,7 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -1813,6 +1814,6 @@ export default class TemplateProcessorSpec
         const actual   = tryAction(() => process(host, host.shadowRoot));
         const expected = toRaw(new CustomStackError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 }

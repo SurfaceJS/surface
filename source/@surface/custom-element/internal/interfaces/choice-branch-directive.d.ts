@@ -1,7 +1,7 @@
-import { IExpression }     from "@surface/expression";
-import IDescribeable       from "./describeable";
-import IObservable         from "./observable";
-import ITraceable          from "./traceable";
+import type { IExpression } from "@surface/expression";
+import type IDescribeable   from "./describeable";
+import type IObservable     from "./observable";
+import type ITraceable      from "./traceable";
 
 export default interface IChoiceBranchDirective extends IDescribeable, IObservable, ITraceable
 {

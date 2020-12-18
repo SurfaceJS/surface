@@ -1,8 +1,8 @@
 import { ArgumentOutOfRangeError }             from "@surface/core";
 import Enumerable                              from "@surface/enumerable";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                              from "chai";
-import List                                    from "../internal/list";
+import chai                                    from "chai";
+import List                                    from "../internal/list.js";
 
 @suite
 export default class ListSpec
@@ -10,7 +10,7 @@ export default class ListSpec
     @test @shouldPass
     public createEmpty(): void
     {
-        expect(new List().length).to.equal(0);
+        chai.assert.equal(new List().length, 0);
     }
 
     @test @shouldPass
@@ -18,10 +18,10 @@ export default class ListSpec
     {
         const list = new List([1, 2, 3]);
 
-        expect(list[0],     "list[0]").to.equal(1);
-        expect(list[1],     "list[1]").to.equal(2);
-        expect(list[2],     "list[2]").to.equal(3);
-        expect(list.length, "list.length").to.equal(3);
+        chai.assert.equal(list[0],     1, "list[0]");
+        chai.assert.equal(list[1],     2, "list[1]");
+        chai.assert.equal(list[2],     3, "list[2]");
+        chai.assert.equal(list.length, 3, "list.length");
     }
 
     @test @shouldPass
@@ -29,10 +29,10 @@ export default class ListSpec
     {
         const list = new List(Enumerable.from([1, 2, 3]));
 
-        expect(list[0],     "list[0]").to.equal(1);
-        expect(list[1],     "list[1]").to.equal(2);
-        expect(list[2],     "list[2]").to.equal(3);
-        expect(list.length, "list.length").to.equal(3);
+        chai.assert.equal(list[0],     1, "list[0]");
+        chai.assert.equal(list[1],     2, "list[1]");
+        chai.assert.equal(list[2],     3, "list[2]");
+        chai.assert.equal(list.length, 3, "list.length");
     }
 
     @test @shouldPass
@@ -41,18 +41,18 @@ export default class ListSpec
         const list = new List<number>();
         list.add(1);
 
-        expect(list[0],     "step 1 - list[0]").to.equal(1);
-        expect(list.length, "step 1 - list.length").to.equal(1);
+        chai.assert.equal(list[0],     1, "step 1 - list[0]");
+        chai.assert.equal(list.length, 1, "step 1 - list.length");
 
         list.add(2);
 
-        expect(list[1],     "step 2 - list[1]").to.equal(2);
-        expect(list.length, "step 2 - list.length").to.equal(2);
+        chai.assert.equal(list[1],     2, "step 2 - list[1]");
+        chai.assert.equal(list.length, 2, "step 2 - list.length");
 
         list.add(3);
 
-        expect(list[2],     "step 3 - list[2]").to.equal(3);
-        expect(list.length, "step 3 - list.length").to.equal(3);
+        chai.assert.equal(list[2],     3, "step 3 - list[2]");
+        chai.assert.equal(list.length, 3, "step 3 - list.length");
     }
 
     @test @shouldPass
@@ -65,20 +65,20 @@ export default class ListSpec
 
         list.addAt(666, 1);
 
-        expect(list[0],     "step 1 - list[0]").to.equal(1);
-        expect(list[1],     "step 1 - list[1]").to.equal(666);
-        expect(list[2],     "step 1 - list[2]").to.equal(2);
-        expect(list[3],     "step 1 - list[3]").to.equal(3);
-        expect(list.length, "step 1 - list.length").to.equal(4);
+        chai.assert.equal(list[0],     1,   "step 1 - list[0]");
+        chai.assert.equal(list[1],     666, "step 1 - list[1]");
+        chai.assert.equal(list[2],     2,   "step 1 - list[2]");
+        chai.assert.equal(list[3],     3,   "step 1 - list[3]");
+        chai.assert.equal(list.length, 4,   "step 1 - list.length");
 
         list.addAt(555, 0);
 
-        expect(list[0],     "step 2 - list[0]").to.equal(555);
-        expect(list[1],     "step 2 - list[1]").to.equal(1);
-        expect(list[2],     "step 2 - list[2]").to.equal(666);
-        expect(list[3],     "step 2 - list[3]").to.equal(2);
-        expect(list[4],     "step 2 - list[4]").to.equal(3);
-        expect(list.length, "step 2 - list.length").to.equal(5);
+        chai.assert.equal(list[0],     555, "step 2 - list[0]");
+        chai.assert.equal(list[1],     1,   "step 2 - list[1]");
+        chai.assert.equal(list[2],     666, "step 2 - list[2]");
+        chai.assert.equal(list[3],     2,   "step 2 - list[3]");
+        chai.assert.equal(list[4],     3,   "step 2 - list[4]");
+        chai.assert.equal(list.length, 5,   "step 2 - list.length");
 
     }
 
@@ -92,13 +92,13 @@ export default class ListSpec
 
         list.addAt([555, 666, 777], 1);
 
-        expect(list[0],     "list[0]").to.equal(1);
-        expect(list[1],     "list[1]").to.equal(555);
-        expect(list[2],     "list[2]").to.equal(666);
-        expect(list[3],     "list[3]").to.equal(777);
-        expect(list[4],     "list[4]").to.equal(2);
-        expect(list[5],     "list[5]").to.equal(3);
-        expect(list.length, "list.length").to.equal(6);
+        chai.assert.equal(list[0],     1,   "list[0]");
+        chai.assert.equal(list[1],     555, "list[1]");
+        chai.assert.equal(list[2],     666, "list[2]");
+        chai.assert.equal(list[3],     777, "list[3]");
+        chai.assert.equal(list[4],     2,   "list[4]");
+        chai.assert.equal(list[5],     3,   "list[5]");
+        chai.assert.equal(list.length, 6,   "list.length");
 
     }
 
@@ -112,13 +112,13 @@ export default class ListSpec
 
         list.addAt(new List([555, 666, 777]), 1);
 
-        expect(list[0],     "list[0]").to.equal(1);
-        expect(list[1],     "list[1]").to.equal(555);
-        expect(list[2],     "list[2]").to.equal(666);
-        expect(list[3],     "list[3]").to.equal(777);
-        expect(list[4],     "list[4]").to.equal(2);
-        expect(list[5],     "list[5]").to.equal(3);
-        expect(list.length, "list.length").to.equal(6);
+        chai.assert.equal(list[0],     1,   "list[0]");
+        chai.assert.equal(list[1],     555, "list[1]");
+        chai.assert.equal(list[2],     666, "list[2]");
+        chai.assert.equal(list[3],     777, "list[3]");
+        chai.assert.equal(list[4],     2,   "list[4]");
+        chai.assert.equal(list[5],     3,   "list[5]");
+        chai.assert.equal(list.length, 6,   "list.length");
     }
 
     @test @shouldPass
@@ -128,9 +128,9 @@ export default class ListSpec
 
         list.remove(1);
 
-        expect(list[0],     "list[0]").to.equal(1);
-        expect(list[1],     "list[1]").to.equal(3);
-        expect(list.length, "list.length").to.equal(2);
+        chai.assert.equal(list[0],     1, "list[0]");
+        chai.assert.equal(list[1],     3, "list[1]");
+        chai.assert.equal(list.length, 2, "list.length");
     }
 
     @test @shouldPass
@@ -144,9 +144,9 @@ export default class ListSpec
 
         list.remove(two);
 
-        expect(list[0],     "list[0]").to.deep.equal(one);
-        expect(list[1],     "list[1]").to.deep.equal(three);
-        expect(list.length, "list.length").to.equal(2);
+        chai.assert.deepEqual(list[0], one,   "list[0]");
+        chai.assert.deepEqual(list[1], three, "list[1]");
+        chai.assert.equal(list.length, 2,     "list.length");
     }
 
     @test @shouldPass
@@ -156,45 +156,45 @@ export default class ListSpec
 
         list[1] = 5;
 
-        expect(list[0],     "list[0]").to.deep.equal(1);
-        expect(list[1],     "list[1]").to.deep.equal(5);
-        expect(list[2],     "list[2]").to.deep.equal(3);
-        expect(list.length, "list.length").to.equal(3);
+        chai.assert.equal(list[0], 1, "list[0]");
+        chai.assert.equal(list[1], 5, "list[1]");
+        chai.assert.equal(list[2], 3, "list[2]");
+        chai.assert.equal(list.length, 3, "list.length");
     }
 
     @test @shouldPass
     public listHasIndex(): void
     {
-        expect(1 in new List([1, 2, 3])).to.equal(true);
+        chai.assert.isTrue(1 in new List([1, 2, 3]));
     }
 
     @test @shouldPass
     public listHasKey(): void
     {
-        expect("length" in new List()).to.equal(true);
+        chai.assert.isTrue("length" in new List());
     }
 
     @test @shouldFail
     public getIndexLesserThanToLength(): void
     {
-        expect(() => new List()[-1]).to.throw(ArgumentOutOfRangeError, "index is less than 0");
+        chai.assert.throw(() => new List()[-1], ArgumentOutOfRangeError, "index is less than 0");
     }
 
     @test @shouldFail
     public getIndexGreatherOrEqualToLength(): void
     {
-        expect(() => new List()[0]).to.throw(ArgumentOutOfRangeError, "index is equal to or greater than length");
+        chai.assert.throw(() => new List()[0], ArgumentOutOfRangeError, "index is equal to or greater than length");
     }
 
     @test @shouldFail
     public setIndexLesserThanToLength(): void
     {
-        expect(() => new List()[-1] = 1).to.throw(ArgumentOutOfRangeError, "index is less than 0");
+        chai.assert.throw(() => new List()[-1] = 1, ArgumentOutOfRangeError, "index is less than 0");
     }
 
     @test @shouldFail
     public setIndexGreatherOrEqualToLength(): void
     {
-        expect(() => new List()[0] = 1).to.throw(ArgumentOutOfRangeError, "index is equal to or greater than length");
+        chai.assert.throw(() => new List()[0] = 1, ArgumentOutOfRangeError, "index is equal to or greater than length");
     }
 }

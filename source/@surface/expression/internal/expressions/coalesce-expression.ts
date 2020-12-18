@@ -1,7 +1,7 @@
-import { hasValue }        from "@surface/core";
-import ICoalesceExpression from "../interfaces/coalesce-expression";
-import IExpression         from "../interfaces/expression";
-import NodeType            from "../node-type";
+import { hasValue }             from "@surface/core";
+import type ICoalesceExpression from "../interfaces/coalesce-expression.js";
+import type IExpression         from "../interfaces/expression.js";
+import NodeType                 from "../node-type.js";
 
 export default class CoalesceExpression implements IExpression
 {
@@ -13,7 +13,7 @@ export default class CoalesceExpression implements IExpression
         return this._left;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -25,7 +25,7 @@ export default class CoalesceExpression implements IExpression
         return this._right;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set right(value: IExpression)
     {
         this._right = value;

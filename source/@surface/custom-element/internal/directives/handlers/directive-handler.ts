@@ -1,13 +1,13 @@
-import { IDisposable }  from "@surface/core";
-import { Subscription } from "@surface/reactive";
+import type { IDisposable }  from "@surface/core";
+import type { Subscription } from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common";
-import ICustomDirective from "../../interfaces/custom-directive";
+} from "../../common.js";
+import type ICustomDirective from "../../interfaces/custom-directive";
 
 export default abstract class DirectiveHandler implements IDisposable
 {

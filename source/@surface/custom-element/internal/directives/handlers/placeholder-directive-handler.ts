@@ -1,6 +1,7 @@
-import { CancellationTokenSource, IDisposable, Indexer, assert } from "@surface/core";
-import { TypeGuard }                                             from "@surface/expression";
-import { Subscription }         from "@surface/reactive";
+import type { IDisposable, Indexer }       from "@surface/core";
+import { CancellationTokenSource, assert } from "@surface/core";
+import { TypeGuard }                       from "@surface/expression";
+import type { Subscription }               from "@surface/reactive";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -8,13 +9,13 @@ import
     tryEvaluatePatternByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common";
-import IPlaceholderDirective    from "../../interfaces/placeholder-directive";
-import TemplateMetadata         from "../../metadata/template-metadata";
-import { scheduler }            from "../../singletons";
-import { Injection }            from "../../types";
-import TemplateBlock            from "../template-block";
-import TemplateDirectiveHandler from "./template-directive-handler";
+} from "../../common.js";
+import type IPlaceholderDirective    from "../../interfaces/placeholder-directive";
+import TemplateMetadata              from "../../metadata/template-metadata.js";
+import { scheduler }                 from "../../singletons.js";
+import type { Injection }            from "../../types";
+import TemplateBlock                 from "../template-block.js";
+import TemplateDirectiveHandler      from "./template-directive-handler.js";
 
 export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
 {

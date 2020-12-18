@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import Dictionary                  from "../internal/dictionary";
-import KeyValuePair                from "../internal/key-value-pair";
+import chai                        from "chai";
+import Dictionary                  from "../internal/dictionary.js";
+import KeyValuePair                from "../internal/key-value-pair.js";
 
 @suite
 export default class ListSpec
@@ -9,13 +9,13 @@ export default class ListSpec
     @test @shouldPass
     public createEmpty(): void
     {
-        expect(() => new Dictionary<string, object>()).to.not.throw();
+        chai.assert.doesNotThrow(() => new Dictionary<string, object>());
     }
 
     @test @shouldPass
     public createFromObject(): void
     {
-        expect(() => Dictionary.of({ a: 1, b: 2 })).to.not.throw();
+        chai.assert.doesNotThrow(() => Dictionary.of({ a: 1, b: 2 }));
     }
 
     @test @shouldPass
@@ -25,21 +25,21 @@ export default class ListSpec
 
         dictionary.set("one", 1);
 
-        expect(dictionary.size).to.equal(1);
+        chai.assert.equal(dictionary.size, 1);
     }
 
     @test @shouldPass
     public getEntry(): void
     {
         const dictionary = Dictionary.of({ one: 1 });
-        expect(dictionary.get("one")).to.equal(1);
+        chai.assert.equal(dictionary.get("one"), 1);
     }
 
     @test @shouldPass
     public hasEntry(): void
     {
         const dictionary = Dictionary.of({ one: 1 });
-        expect(dictionary.has("one")).to.equal(true);
+        chai.assert.equal(dictionary.has("one"), true);
     }
 
     @test @shouldPass
@@ -47,18 +47,18 @@ export default class ListSpec
     {
         const dictionary = Dictionary.of({ one: 1 });
 
-        expect(dictionary.size,       "step 1 - dictionary.size").to.equal(1);
-        expect(dictionary.has("one"), "step 1 - dictionary.has('one')").to.equal(true);
+        chai.assert.equal(dictionary.size,       1, "step 1 - dictionary.size");
+        chai.assert.equal(dictionary.has("one"), true, "step 1 - dictionary.has('one')");
 
         dictionary.delete("one");
 
-        expect(dictionary.size,       "step 1 - dictionary.size").to.equal(0);
-        expect(dictionary.has("one"), "step 2 - dictionary.has('one')").to.equal(false);
+        chai.assert.equal(dictionary.size,       0, "step 1 - dictionary.size");
+        chai.assert.equal(dictionary.has("one"), false, "step 2 - dictionary.has('one')");
     }
 
     @test @shouldPass
     public iterateEntries(): void
     {
-        expect(Dictionary.of({ one: 1 }).toArray()).to.deep.equal([new KeyValuePair("one", 1)]);
+        chai.assert.deepEqual(Dictionary.of({ one: 1 }).toArray(), [new KeyValuePair("one", 1)]);
     }
 }

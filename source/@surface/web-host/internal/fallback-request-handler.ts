@@ -1,8 +1,8 @@
-import Enumerable     from "@surface/enumerable";
-import HttpContext    from "./http-context";
-import mymeType       from "./myme-types";
-import RequestHandler from "./request-handler";
-import StatusCode     from "./status-code";
+import Enumerable       from "@surface/enumerable";
+import type HttpContext from "./http-context.js";
+import mymeType         from "./myme-types.js";
+import RequestHandler   from "./request-handler.js";
+import StatusCode       from "./status-code.js";
 
 export default class FallbackRequestHandler extends RequestHandler
 {

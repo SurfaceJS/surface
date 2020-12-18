@@ -1,8 +1,9 @@
-import { batchTest, suite }                                  from "@surface/test-suite";
-import { assert }                                            from "chai";
-import TokenType                                             from "../internal/enums/token-type";
-import Scanner                                               from "../internal/scanner";
-import { ScannerValidExpectation, scannerValidExpectations } from "./scanner-expectations";
+import { batchTest, suite }             from "@surface/test-suite";
+import chai                             from "chai";
+import TokenType                        from "../internal/enums/token-type.js";
+import Scanner                          from "../internal/scanner.js";
+import type { ScannerValidExpectation } from "./scanner-expectations.js";
+import { scannerValidExpectations }     from "./scanner-expectations.js";
 
 @suite
 export default class RouteSpec
@@ -14,6 +15,6 @@ export default class RouteSpec
 
         const actual = scanner.nextToken();
 
-        assert.deepEqual(actual, expected.token);
+        chai.assert.deepEqual(actual, expected.token);
     }
 }

@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
-import Character   from "./character";
-import Messages    from "./messages";
-import SyntaxError from "./syntax-error";
-import TokenType   from "./token-type";
-import Token       from "./types/token";
+import Character   from "./character.js";
+import Messages    from "./messages.js";
+import SyntaxError from "./syntax-error.js";
+import TokenType   from "./token-type.js";
+import type Token  from "./types/token.js";
 
 const BACK_TICK                 = 0x60;
 const BLACKSLASH                = 0x5C;

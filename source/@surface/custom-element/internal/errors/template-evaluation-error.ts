@@ -1,4 +1,4 @@
-import CustomStackError from "./custom-stack-error";
+import CustomStackError from "./custom-stack-error.js";
 
 export default class TemplateEvaluationError extends CustomStackError
 { }

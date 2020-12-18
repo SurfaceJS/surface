@@ -1,11 +1,11 @@
-import { Indexer }    from "@surface/core";
-import IArrayPattern  from "./interfaces/array-pattern";
-import IIdentifier    from "./interfaces/identifier";
-import IObjectPattern from "./interfaces/object-pattern";
-import IPattern       from "./interfaces/pattern";
-import IRestElement   from "./interfaces/rest-element";
-import Messages       from "./messages";
-import TypeGuard      from "./type-guard";
+import type { Indexer }    from "@surface/core";
+import type IArrayPattern  from "./interfaces/array-pattern";
+import type IIdentifier    from "./interfaces/identifier";
+import type IObjectPattern from "./interfaces/object-pattern";
+import type IPattern       from "./interfaces/pattern";
+import type IRestElement   from "./interfaces/rest-element";
+import Messages            from "./messages.js";
+import TypeGuard           from "./type-guard.js";
 
 export default class Evaluate
 {
@@ -83,7 +83,6 @@ export default class Evaluate
 
     public static pattern(scope: object, pattern: IPattern, value: unknown, rest: unknown[] = [], useCache: boolean = false): Indexer
     {
-        /* istanbul ignore else */
         if (TypeGuard.isIdentifier(pattern))
         {
             return { [pattern.name]: value };
@@ -108,9 +107,8 @@ export default class Evaluate
         else if (TypeGuard.isRestElement(pattern))
         {
             return Evaluate.restElement(scope, pattern, rest, useCache);
-        }
+        } /* c8 ignore next 3 */
 
-        /* istanbul ignore next */
         throw new Error("Invalid pattern");
     }
 }

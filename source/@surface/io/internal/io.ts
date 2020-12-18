@@ -1,5 +1,5 @@
-import { Stats } from "fs";
-import path from "path";
+import type { Stats } from "fs";
+import path           from "path";
 import
 {
     existsSync,
@@ -16,7 +16,7 @@ import
     statSync,
     unlinkAsync,
     unlinkSync,
-} from "./external";
+} from "./fs.js";
 
 function getStats(filepath: string): Stats | null
 {
@@ -92,8 +92,6 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
     if (!existsSync(parent))
     {
         await createPathAsync(parent, mode);
-
-        return mkdirAsync(targetPath, mode);
     }
 
     return mkdirAsync(targetPath, mode);

@@ -1,4 +1,4 @@
-import ITraceable from "./traceable";
+import type ITraceable from "./traceable";
 
 export default interface IKeyValueTraceable extends ITraceable
 {

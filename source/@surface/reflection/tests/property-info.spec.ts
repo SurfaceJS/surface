@@ -1,8 +1,8 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import PropertyInfo                from "../internal/property-info";
-import Type                        from "../internal/type";
-import Mock                        from "./fixtures/mock";
+import chai                        from "chai";
+import PropertyInfo                from "../internal/property-info.js";
+import Type                        from "../internal/type.js";
+import Mock                        from "./fixtures/mock.js";
 
 const propertyInfo = new PropertyInfo("instanceProperty", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceProperty")!, Type.of(Mock), false, false);
 
@@ -12,19 +12,25 @@ export default class FieldInfoSpec
     @test @shouldPass
     public declaringType(): void
     {
-        expect(propertyInfo.declaringType).to.deep.equal(Type.of(Mock));
+        chai.assert.deepEqual(propertyInfo.declaringType, Type.of(Mock));
     }
 
     @test @shouldPass
     public isStatic(): void
     {
-        expect(propertyInfo.isStatic).to.equal(false);
+        chai.assert.equal(propertyInfo.isStatic, false);
+    }
+
+    @test @shouldPass
+    public isOwn(): void
+    {
+        chai.assert.equal(propertyInfo.isOwn, false);
     }
 
     @test @shouldPass
     public key(): void
     {
-        expect(propertyInfo.key).to.equal("instanceProperty");
+        chai.assert.equal(propertyInfo.key, "instanceProperty");
     }
 
     @test @shouldPass
@@ -37,8 +43,8 @@ export default class FieldInfoSpec
         };
 
         // Caching
-        expect(propertyInfo.metadata).to.deep.equal(metadata);
-        expect(propertyInfo.metadata).to.deep.equal(metadata);
+        chai.assert.deepEqual(propertyInfo.metadata, metadata);
+        chai.assert.deepEqual(propertyInfo.metadata, metadata);
     }
 
     @test @shouldPass
@@ -52,12 +58,12 @@ export default class FieldInfoSpec
             "design:type":       Number,
         };
 
-        expect(propertyInfo.metadata).to.deep.equal(metadata);
+        chai.assert.deepEqual(propertyInfo.metadata, metadata);
     }
 
     @test @shouldPass
     public readonly(): void
     {
-        expect(propertyInfo.readonly).to.equal(false);
+        chai.assert.equal(propertyInfo.readonly, false);
     }
 }

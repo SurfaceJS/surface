@@ -1,10 +1,11 @@
-import { CancellationTokenSource, IDisposable, assert }  from "@surface/core";
-import { Subscription }                                  from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByObservable } from "../../common";
-import IChoiceBranchDirective                            from "../../interfaces/choice-branch-directive";
-import { scheduler }                                     from "../../singletons";
-import TemplateBlock                                     from "../template-block";
-import TemplateDirectiveHandler                          from "./template-directive-handler";
+import type { IDisposable }                              from "@surface/core";
+import { CancellationTokenSource, assert }               from "@surface/core";
+import type { Subscription }                             from "@surface/reactive";
+import { tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
+import type IChoiceBranchDirective                       from "../../interfaces/choice-branch-directive";
+import { scheduler }                                     from "../../singletons.js";
+import TemplateBlock                                     from "../template-block.js";
+import TemplateDirectiveHandler                          from "./template-directive-handler.js";
 
 type Choice =
 {

@@ -1,9 +1,9 @@
-import fs           from "fs";
-import path         from "path";
-import ActionResult from "./action-result";
-import HttpContext  from "./http-context";
-import mymeType     from "./myme-types";
-import StatusCode   from "./status-code";
+import fs               from "fs";
+import path             from "path";
+import ActionResult     from "./action-result.js";
+import type HttpContext from "./http-context.js";
+import mymeType         from "./myme-types.js";
+import type StatusCode  from "./status-code.js";
 
 export default class ViewResult extends ActionResult
 {

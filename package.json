@@ -2,9 +2,10 @@
     "author": "HitalloExiled",
     "description": "Global modules and shared types",
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "4.8.1",
-        "@typescript-eslint/parser": "4.8.1",
-        "eslint": "7.13.0",
+        "@typescript-eslint/eslint-plugin": "4.9.1",
+        "@typescript-eslint/parser": "4.9.1",
+        "c8": "7.3.5",
+        "eslint": "7.15.0",
         "eslint-plugin-import": "2.22.1",
         "mocha": "8.2.1",
         "nyc": "15.1.0",
@@ -25,12 +26,12 @@
     },
     "scripts": {
         "build": "tsc -p ./tasks/tsconfig.no-tests.json && npm run task:build",
-        "cover": "nyc --check-coverage mocha --require ./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js",
+        "cover": "c8 --check-coverage mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js",
         "lint": "eslint . --ext .ts",
         "task:build": "node ./tasks/cli build",
         "task:clean": "node ./tasks/cli clean",
         "task:publish": "node ./tasks/cli publish",
-        "test": "mocha --require ./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js"
+        "test": "mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js --ui tdd **/source/@surface/*/tests/**/*.spec.js"
     },
     "version": "1.0.0",
     "workspaces": [

@@ -1,4 +1,4 @@
-import NodeType from "../enums/node-type";
+import type NodeType from "../enums/node-type.js";
 
 export default interface INode
 {

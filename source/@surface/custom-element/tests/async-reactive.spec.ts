@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import Scheduler                   from "../internal/processors/scheduler";
-import AsyncReactive               from "../internal/reactivity/async-reactive";
+import chai                        from "chai";
+import Scheduler                   from "../internal/processors/scheduler.js";
+import AsyncReactive               from "../internal/reactivity/async-reactive.js";
 
 @suite
 export default class AsyncReactiveSpec
@@ -21,13 +21,13 @@ export default class AsyncReactiveSpec
         AsyncReactive.from(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
         AsyncReactive.from(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
 
-        assert.equal(target.value, asyncReceiver);
+        chai.assert.equal(target.value, asyncReceiver);
 
         target.value = 2;
 
         await scheduler.whenDone();
 
-        assert.equal(target.value, asyncReceiver);
+        chai.assert.equal(target.value, asyncReceiver);
     }
 
     @test @shouldPass
@@ -39,11 +39,11 @@ export default class AsyncReactiveSpec
 
         AsyncReactive.from(target, ["value"]).subscribe(x => asyncReceiver = x as number);
 
-        assert.equal(target.value, asyncReceiver);
+        chai.assert.equal(target.value, asyncReceiver);
 
         target.value = 2;
 
-        assert.equal(target.value, asyncReceiver);
+        chai.assert.equal(target.value, asyncReceiver);
     }
 
     @test @shouldPass
@@ -58,7 +58,7 @@ export default class AsyncReactiveSpec
 
         AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
 
-        assert.equal(target.value, receiver);
+        chai.assert.equal(target.value, receiver);
 
         target.value = 2;
         target.value = 3;
@@ -66,8 +66,8 @@ export default class AsyncReactiveSpec
 
         await scheduler.whenDone();
 
-        assert.equal(hits, 1);
-        assert.equal(target.value, receiver);
+        chai.assert.equal(hits, 1);
+        chai.assert.equal(target.value, receiver);
     }
 
     @test @shouldPass
@@ -84,15 +84,15 @@ export default class AsyncReactiveSpec
         AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
         AsyncReactive.from(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
 
-        assert.equal(target.value, receiver);
+        chai.assert.equal(target.value, receiver);
 
         target.value = "Hello World !!!";
         target.dispatchEvent(new Event("input"));
 
         await scheduler.whenDone();
 
-        assert.equal(hits, 1);
-        assert.equal(target.value, receiver);
-        assert.equal(target.value.length, length);
+        chai.assert.equal(hits, 1);
+        chai.assert.equal(target.value, receiver);
+        chai.assert.equal(target.value.length, length);
     }
 }

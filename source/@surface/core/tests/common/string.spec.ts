@@ -1,6 +1,6 @@
 import { shouldPass, suite, test }     from "@surface/test-suite";
-import { expect }                      from "chai";
-import { capture, captureAll, format } from "../../internal/common/string";
+import chai                            from "chai";
+import { capture, captureAll, format } from "../../internal/common/string.js";
 
 @suite
 export default class CommonStringSpec
@@ -20,9 +20,9 @@ export default class CommonStringSpec
         const actual2 = capture(source2, /"/, /"/);
         const actual3 = capture(source3, /"/, /(")(?!.*\1)/);
 
-        expect(actual1).to.deep.equal(expected1);
-        expect(actual2).to.deep.equal(expected2);
-        expect(actual3).to.deep.equal(expected3);
+        chai.assert.deepEqual(actual1, expected1);
+        chai.assert.deepEqual(actual2, expected2);
+        chai.assert.deepEqual(actual3, expected3);
     }
 
     @test @shouldPass
@@ -54,7 +54,7 @@ export default class CommonStringSpec
 
         const actual = captureAll(source, /<.*?>/, /<\/.*?>/);
 
-        expect(actual).to.deep.equal(expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -66,6 +66,6 @@ export default class CommonStringSpec
         const actual   = format(pattern, source);
         const expected = "Hi Jon! Here your ticket, number: 33";
 
-        expect(actual).to.equal(expected);
+        chai.assert.equal(actual, expected);
     }
 }

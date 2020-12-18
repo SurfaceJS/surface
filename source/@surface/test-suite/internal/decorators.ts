@@ -1,11 +1,6 @@
-import
-{
-    Constructor,
-    Delegate,
-    Indexer,
-    camelToText,
-} from "@surface/core";
-import mocha from "./mocha";
+import type { Constructor, Delegate, Indexer } from "@surface/core";
+import { camelToText }                         from "@surface/core";
+import mocha                                   from "./mocha.js";
 import
 {
     AFTER,
@@ -18,25 +13,10 @@ import
     DESCRIPTION,
     EXPECTATION,
     TEST,
-} from "./symbols";
-
-type Test = { expectation: string, getMethod: (context: object) => () => void };
-
-export type TestMethod<T = unknown> = Function &
-{
-    [AFTER]?:       boolean,
-    [AFTER_EACH]?:  boolean,
-    [BEFORE]?:      boolean,
-    [BEFORE_EACH]?: boolean,
-    [BATCH]?:       boolean,
-    [CATEGORY]?:    string,
-    [DATA]?:        { source: T[], expectation: Delegate<[T], string> },
-    [DESCRIPTION]?: string,
-    [EXPECTATION]?: string,
-    [TEST]?:        boolean,
-};
-
-export type TestObject<T = unknown> = { [key: string]: TestMethod<T> };
+} from "./symbols.js";
+import type Test       from "./types/test";
+import type TestMethod from "./types/test-method";
+import type TestObject from "./types/test-object";
 
 export function after(description: string): MethodDecorator;
 export function after(target: object, key: string | symbol): void;

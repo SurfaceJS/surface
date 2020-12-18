@@ -1,4 +1,4 @@
-import { StackTrace } from "../types";
+import type { StackTrace } from "../types";
 
 export default interface ITraceable
 {

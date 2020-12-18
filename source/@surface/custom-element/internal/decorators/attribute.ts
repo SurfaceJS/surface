@@ -1,16 +1,9 @@
-import
-{
-    Constructor,
-    Delegate,
-    DisposableMetadata,
-    HookableMetadata,
-    Indexer,
-    camelToDashed,
-} from "@surface/core";
-import ICustomElement from "../interfaces/custom-element";
-import Metadata       from "../metadata/metadata";
-import StaticMetadata from "../metadata/static-metadata";
-import AsyncReactive  from "../reactivity/async-reactive";
+import type { Constructor, Delegate, Indexer }                 from "@surface/core";
+import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
+import type ICustomElement                                     from "../interfaces/custom-element";
+import Metadata                                                from "../metadata/metadata.js";
+import StaticMetadata                                          from "../metadata/static-metadata.js";
+import AsyncReactive                                           from "../reactivity/async-reactive.js";
 
 function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
 function attribute(target: ICustomElement, propertyKey: string): void;

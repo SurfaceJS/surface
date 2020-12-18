@@ -1,5 +1,5 @@
-import { RouteData } from "@surface/router";
-import HttpContext   from "./http-context";
+import type { RouteData } from "@surface/router";
+import type HttpContext   from "./http-context.js";
 
 export default abstract class ActionResult
 {

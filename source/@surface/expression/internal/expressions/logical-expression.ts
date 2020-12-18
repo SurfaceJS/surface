@@ -1,8 +1,9 @@
-import { Indexer, hasValue } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import ILogicalExpression    from "../interfaces/logical-expression";
-import NodeType              from "../node-type";
-import { LogicalOperator }   from "../types/operators";
+import type { Indexer }         from "@surface/core";
+import { hasValue }             from "@surface/core";
+import type IExpression         from "../interfaces/expression";
+import type ILogicalExpression  from "../interfaces/logical-expression";
+import NodeType                 from "../node-type.js";
+import type { LogicalOperator } from "../types/operators";
 
 type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
 
@@ -24,7 +25,7 @@ export default class LogicalExpression implements IExpression
         return this._left;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set left(value: IExpression)
     {
         this._left = value;
@@ -36,7 +37,7 @@ export default class LogicalExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: LogicalOperator)
     {
         this._operator = value;
@@ -48,7 +49,7 @@ export default class LogicalExpression implements IExpression
         return this._right;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set right(value: IExpression)
     {
         this._right = value;

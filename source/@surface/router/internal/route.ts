@@ -1,11 +1,12 @@
-import { Indexer, hasValue } from "@surface/core";
-import INode                 from "./interfaces/node";
-import ITransformer          from "./interfaces/transformer";
-import SegmentNode           from "./nodes/segment-node";
-import Parser                from "./parser";
-import RouteData             from "./route-data";
-import TypeGuard             from "./type-guard";
-import RouteMatch            from "./types/route-match";
+import type { Indexer }  from "@surface/core";
+import { hasValue }      from "@surface/core";
+import type INode        from "./interfaces/node";
+import type ITransformer from "./interfaces/transformer";
+import type SegmentNode  from "./nodes/segment-node.js";
+import Parser            from "./parser.js";
+import RouteData         from "./route-data.js";
+import TypeGuard         from "./type-guard.js";
+import type RouteMatch   from "./types/route-match";
 
 export default class Route
 {

@@ -1,9 +1,9 @@
-import { Command }                from "commander";
-import { toBooleanOrStringArray } from "../internal/common";
+import commander                  from "commander";
+import { toBooleanOrStringArray } from "../internal/common.js";
 
-export default function createProgram(): Command
+export default function createProgram(): commander.Command
 {
-    return new Command()
+    return new commander.Command()
         .storeOptionsAsProperties(false)
         .option("-c, --context       <n>", "The base directory for resolving the entry option (absolute path).")
         .option("-e, --entry         <n>", "Entry points.", (x = "") => x.split(","))
@@ -15,5 +15,5 @@ export default function createProgram(): Command
         .option("--force-ts          [n]", "Force resolve to the ts file when next to the transpiled js file.", toBooleanOrStringArray)
         .option("--public-path       <n>", "The output path from the view of the Javascript / HTML page.")
         .option("--tsconfig          <n>", "Path to tsconfig file (absolute path).")
-        .option("--webpack-config    <n>", "Path to webpack-config file (absolute path).") as Command;
+        .option("--webpack-config    <n>", "Path to webpack-config file (absolute path).") as commander.Command;
 }

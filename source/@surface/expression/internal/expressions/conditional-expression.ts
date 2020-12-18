@@ -1,7 +1,7 @@
-import { hasValue }           from "@surface/core";
-import IConditionalExpression from "../interfaces/conditional-expression";
-import IExpression            from "../interfaces/expression";
-import NodeType               from "../node-type";
+import { hasValue }                from "@surface/core";
+import type IConditionalExpression from "../interfaces/conditional-expression";
+import type IExpression            from "../interfaces/expression";
+import NodeType                    from "../node-type.js";
 
 export default class ConditionalExpression implements IExpression
 {
@@ -13,7 +13,7 @@ export default class ConditionalExpression implements IExpression
         return this._alternate;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set alternate(value: IExpression)
     {
         this._alternate = value;
@@ -25,7 +25,7 @@ export default class ConditionalExpression implements IExpression
         return this._consequent;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set consequent(value: IExpression)
     {
         this._consequent = value;
@@ -37,7 +37,7 @@ export default class ConditionalExpression implements IExpression
         return this._test;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set test(value: IExpression)
     {
         this._test = value;

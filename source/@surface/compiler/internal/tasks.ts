@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-require-imports */
-import path                                                         from "path";
-import { createOnlyDefinedProxy }                                          from "./common";
-import Compiler                                                     from "./compiler";
-import { isFile, loadModule, lookupFile, removePathAsync, webpack } from "./external";
-import AnalyzerOptions                                              from "./types/analyzer-options";
-import BuildOptions                                                 from "./types/build-options";
-import Configuration                                                from "./types/configuration";
-import DevServerOptions                                             from "./types/dev-serve-options";
-import Options                                                      from "./types/options";
+import path                                    from "path";
+import { typeGuard }                           from "@surface/core";
+import { isFile, lookupFile, removePathAsync } from "@surface/io";
+import type webpack                            from "webpack";
+import { createOnlyDefinedProxy, loadModule }  from "./common.js";
+import Compiler                                from "./compiler.js";
+import type AnalyzerOptions                    from "./types/analyzer-options";
+import type BuildOptions                       from "./types/build-options";
+import type Configuration                      from "./types/configuration";
+import type DevServerOptions                   from "./types/dev-serve-options";
+import type Options                            from "./types/options";
 
 export default class Tasks
 {
@@ -63,13 +63,13 @@ export default class Tasks
 
         if (projectPath)
         {
-            Tasks.resolvePaths(defaults, path.parse(projectPath).dir);
+            Tasks.resolvePaths(defaults, path.dirname(projectPath));
 
             const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
             if (projectPath.endsWith(".json"))
             {
-                Tasks.resolvePaths(projectConfiguration, path.parse(projectPath).dir);
+                Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
             return { ...defaults, ...projectConfiguration, ...configuration };
@@ -80,9 +80,9 @@ export default class Tasks
         return { ...defaults, ...configuration };
     }
 
-    private static resolveModule(module: object | { default: object }): object
+    private static resolveModule(module: unknown): unknown
     {
-        if ("default" in module)
+        if (module && typeof module == "object" && typeGuard<{ default: unknown }>(module, "default" in module))
         {
             return module.default;
         }

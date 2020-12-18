@@ -1,11 +1,12 @@
-import { Delegate, Indexer, hasValue } from "@surface/core";
-import IAssignmentExpression           from "../interfaces/assignment-expression";
-import IExpression                     from "../interfaces/expression";
-import IIdentifier                     from "../interfaces/identifier";
-import IMemberExpression               from "../interfaces/member-expression";
-import NodeType                        from "../node-type";
-import TypeGuard                       from "../type-guard";
-import { AssignmentOperator }          from "../types/operators";
+import type { Delegate, Indexer }  from "@surface/core";
+import { hasValue }                from "@surface/core";
+import type IAssignmentExpression  from "../interfaces/assignment-expression";
+import type IExpression            from "../interfaces/expression";
+import type IIdentifier            from "../interfaces/identifier";
+import type IMemberExpression      from "../interfaces/member-expression";
+import NodeType                    from "../node-type.js";
+import TypeGuard                   from "../type-guard.js";
+import type { AssignmentOperator } from "../types/operators";
 
 const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {
@@ -36,7 +37,7 @@ export default class AssignmentExpression implements IExpression
         return this._left;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set left(value: IIdentifier | IMemberExpression)
     {
         this._left = value;
@@ -48,7 +49,7 @@ export default class AssignmentExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: AssignmentOperator)
     {
         this._operator = value;
@@ -60,7 +61,7 @@ export default class AssignmentExpression implements IExpression
         return this._right;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set right(value: IExpression)
     {
         this._right = value;

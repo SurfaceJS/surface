@@ -1,4 +1,4 @@
-import { Observables } from "../types";
+import type { Observables } from "../types";
 
 export default interface IObservable
 {

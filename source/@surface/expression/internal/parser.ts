@@ -1,46 +1,46 @@
 /* eslint-disable max-lines */
 
 import { format, tuple }           from "@surface/core";
-import { hasDuplicated }           from "./common";
-import AssignmentProperty          from "./elements/assignment-property";
-import Property                    from "./elements/property";
-import SpreadElement               from "./elements/spread-element";
-import TemplateElement             from "./elements/template-element";
-import ArrayExpression             from "./expressions/array-expression";
-import ArrowFunctionExpression     from "./expressions/arrow-function-expression";
-import AssignmentExpression        from "./expressions/assignment-expression";
-import BinaryExpression            from "./expressions/binary-expression";
-import CallExpression              from "./expressions/call-expression";
-import CoalesceExpression          from "./expressions/coalesce-expression";
-import ConditionalExpression       from "./expressions/conditional-expression";
-import Identifier                  from "./expressions/identifier";
-import Literal                     from "./expressions/literal";
-import LogicalExpression           from "./expressions/logical-expression";
-import MemberExpression            from "./expressions/member-expression";
-import NewExpression               from "./expressions/new-expression";
-import ObjectExpression            from "./expressions/object-expression";
-import ParenthesizedExpression     from "./expressions/parenthesized-expression";
-import SequenceExpression          from "./expressions/sequence-expression";
-import TaggedTemplateExpression    from "./expressions/tagged-template-expression";
-import TemplateLiteral             from "./expressions/template-literal";
-import ThisExpression              from "./expressions/this-expression";
-import UnaryExpression             from "./expressions/unary-expression";
-import UpdateExpression            from "./expressions/update-expression";
-import IExpression                 from "./interfaces/expression";
-import INode                       from "./interfaces/node";
-import IPattern                    from "./interfaces/pattern";
-import ITemplateLiteral            from "./interfaces/template-literal";
-import Messages                    from "./messages";
-import NodeType                    from "./node-type";
-import ArrayPattern                from "./patterns/array-pattern";
-import AssignmentPattern           from "./patterns/assignment-pattern";
-import ObjectPattern               from "./patterns/object-pattern";
-import RestElement                 from "./patterns/rest-element";
-import Scanner                     from "./scanner";
-import SyntaxError                 from "./syntax-error";
-import TokenType                   from "./token-type";
-import TypeGuard                   from "./type-guard";
-import
+import { hasDuplicated }           from "./common.js";
+import AssignmentProperty          from "./elements/assignment-property.js";
+import Property                    from "./elements/property.js";
+import SpreadElement               from "./elements/spread-element.js";
+import TemplateElement             from "./elements/template-element.js";
+import ArrayExpression             from "./expressions/array-expression.js";
+import ArrowFunctionExpression     from "./expressions/arrow-function-expression.js";
+import AssignmentExpression        from "./expressions/assignment-expression.js";
+import BinaryExpression            from "./expressions/binary-expression.js";
+import CallExpression              from "./expressions/call-expression.js";
+import CoalesceExpression          from "./expressions/coalesce-expression.js";
+import ConditionalExpression       from "./expressions/conditional-expression.js";
+import Identifier                  from "./expressions/identifier.js";
+import Literal                     from "./expressions/literal.js";
+import LogicalExpression           from "./expressions/logical-expression.js";
+import MemberExpression            from "./expressions/member-expression.js";
+import NewExpression               from "./expressions/new-expression.js";
+import ObjectExpression            from "./expressions/object-expression.js";
+import ParenthesizedExpression     from "./expressions/parenthesized-expression.js";
+import SequenceExpression          from "./expressions/sequence-expression.js";
+import TaggedTemplateExpression    from "./expressions/tagged-template-expression.js";
+import TemplateLiteral             from "./expressions/template-literal.js";
+import ThisExpression              from "./expressions/this-expression.js";
+import UnaryExpression             from "./expressions/unary-expression.js";
+import UpdateExpression            from "./expressions/update-expression.js";
+import type IExpression            from "./interfaces/expression.js";
+import type INode                  from "./interfaces/node.js";
+import type IPattern               from "./interfaces/pattern.js";
+import type ITemplateLiteral       from "./interfaces/template-literal.js";
+import Messages                    from "./messages.js";
+import NodeType                    from "./node-type.js";
+import ArrayPattern                from "./patterns/array-pattern.js";
+import AssignmentPattern           from "./patterns/assignment-pattern.js";
+import ObjectPattern               from "./patterns/object-pattern.js";
+import RestElement                 from "./patterns/rest-element.js";
+import Scanner                     from "./scanner.js";
+import SyntaxError                 from "./syntax-error.js";
+import TokenType                   from "./token-type.js";
+import TypeGuard                   from "./type-guard.js";
+import type
 {
     AssignmentOperator,
     BinaryOperator,
@@ -50,7 +50,7 @@ import
     UnaryOperator,
     UpdateOperator,
 } from "./types/operators";
-import Token                       from "./types/token";
+import type Token from "./types/token";
 
 export default class Parser
 {
@@ -443,7 +443,7 @@ export default class Parser
     {
         const token = this.nextToken();
 
-        /* istanbul ignore if */
+        /* c8 ignore next 4 */
         if (token.type !== TokenType.Punctuator || token.raw !== value)
         {
             throw this.unexpectedTokenError(token);
@@ -524,7 +524,7 @@ export default class Parser
             throw this.unexpectedTokenError(this.invalidInitialization);
         }
 
-        this.invalidInitialization = invalidInitialization ?? this.invalidInitialization;
+        this.invalidInitialization = invalidInitialization;
 
         return expression;
     }
@@ -986,7 +986,8 @@ export default class Parser
 
             case TokenType.Template:
                 return this.inheritGrammar(this.templateLiteralExpression);
-            /* istanbul ignore next */
+
+            /* c8 ignore next 2 */
             default:
                 break;
         }
@@ -1031,7 +1032,6 @@ export default class Parser
 
                 if (shorthand)
                 {
-                    /* istanbul ignore else */
                     if (TypeGuard.isIdentifier(value))
                     {
                         return new AssignmentProperty(new Identifier(value.name), new Identifier(value.name), computed, shorthand);
@@ -1120,10 +1120,10 @@ export default class Parser
                 }
 
                 return new RestElement(this.reinterpretPattern(expression.argument, lookahead));
-            }
+            } /* c8 ignore next 2 */
             default:
                 break;
-        }
+        } /* c8 ignore next 3 */
 
         throw this.unexpectedTokenError(lookahead);
     }

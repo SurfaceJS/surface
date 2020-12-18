@@ -1,6 +1,6 @@
-import { hasValue, isIterable } from "./common/generic";
-import { enumerateKeys }        from "./common/object";
-import { Indexer }              from "./types";
+import { hasValue, isIterable } from "./common/generic.js";
+import { enumerateKeys }        from "./common/object.js";
+import type { Indexer }         from "./types";
 
 export default class Hashcode
 {

@@ -1,11 +1,15 @@
+/* eslint-disable import/order */
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 /* eslint-disable array-element-newline */
 /* eslint-disable import/no-namespace */
 
+import fs                                                 from "fs";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import * as externalNS                                    from "../../internal/external";
-import ForceTsResolvePlugin                               from "../../internal/plugins/force-ts-resolve-plugin";
+import chai                                               from "chai";
+import ForceTsResolvePlugin                               from "../../internal/plugins/force-ts-resolve-plugin.js";
+
+const fsMock = Mock.of(fs)!;
 
 @suite
 export default class ForceTsResolvePluginSpec
@@ -13,25 +17,27 @@ export default class ForceTsResolvePluginSpec
     @beforeEach
     public beforeEach(): void
     {
-        const fsMock = Mock.instance<typeof externalNS["fs"]>();
-
-        fsMock.setup("existsSync").call("path-1/foo.ts").returns(true);
-        fsMock.setup("existsSync").call("path-2/foo.ts").returns(true);
-        fsMock.setup("existsSync").call("path-1/bar.ts").returns(false);
-        fsMock.setup("existsSync").call("path-2/bar.ts").returns(false);
-
-        Mock.module(externalNS, { fs: fsMock.proxy });
+        fsMock.lock();
     }
 
     @afterEach
     public afterEach(): void
     {
-        Mock.restore(externalNS);
+        fsMock.clear();
     }
 
     @test @shouldPass
     public apply(): void
     {
+        const existsSyncMock = Mock.callable<typeof fs.existsSync>();
+
+        existsSyncMock.call("path-1/foo.ts").returns(true);
+        existsSyncMock.call("path-2/foo.ts").returns(true);
+        existsSyncMock.call("path-1/bar.ts").returns(false);
+        existsSyncMock.call("path-2/bar.ts").returns(false);
+
+        fsMock.setupGet("existsSync").returns(existsSyncMock.proxy);
+
         const resolver =
         {
             hooks:
@@ -50,7 +56,7 @@ export default class ForceTsResolvePluginSpec
             },
         };
 
-        assert.doesNotThrow(() => new ForceTsResolvePlugin().apply(resolver));
-        assert.doesNotThrow(() => new ForceTsResolvePlugin(["path-2"]).apply(resolver));
+        chai.assert.doesNotThrow(() => new ForceTsResolvePlugin().apply(resolver));
+        chai.assert.doesNotThrow(() => new ForceTsResolvePlugin(["path-2"]).apply(resolver));
     }
 }

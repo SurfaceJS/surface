@@ -1,7 +1,8 @@
-import { Delegate, setValue } from "@surface/core";
-import { Subscription }       from "@surface/reactive";
-import { scheduler }          from "../singletons";
-import AsyncReactive          from "./async-reactive";
+import type { Delegate }     from "@surface/core";
+import { setValue }          from "@surface/core";
+import type { Subscription } from "@surface/reactive";
+import { scheduler }         from "../singletons.js";
+import AsyncReactive         from "./async-reactive.js";
 
 export default class DataBind
 {

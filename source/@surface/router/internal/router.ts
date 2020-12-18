@@ -1,8 +1,9 @@
-import { Delegate, Indexer, typeGuard } from "@surface/core";
-import ITransformer                     from "./interfaces/transformer";
-import Route                            from "./route";
-import RouteData                        from "./route-data";
-import RouterMatch                      from "./types/router-match";
+import type { Delegate, Indexer } from "@surface/core";
+import { typeGuard }              from "@surface/core";
+import type ITransformer          from "./interfaces/transformer";
+import type RouteData             from "./route-data.js";
+import Route                      from "./route.js";
+import type RouterMatch           from "./types/router-match";
 
 type Entry<T> =
     {
@@ -19,9 +20,9 @@ const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 
 export default class Router<T = RouteData>
 {
-    protected readonly entries:     Entry<T>[]                = [];
-    protected readonly namedEntries: Map<string, Entry<T>>    = new Map();
-    protected readonly tranformers: Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
+    protected readonly entries:      Entry<T>[]                = [];
+    protected readonly namedEntries: Map<string, Entry<T>>     = new Map();
+    protected readonly tranformers:  Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
 
     public map(pattern: string): this;
     public map(pattern: string, selector: Delegate<[RouteData], T>): this;

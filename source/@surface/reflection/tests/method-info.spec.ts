@@ -1,9 +1,9 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import MethodInfo                  from "../internal/method-info";
-import ParameterInfo               from "../internal/parameter-info";
-import Type                        from "../internal/type";
-import Mock                        from "./fixtures/mock";
+import chai                        from "chai";
+import MethodInfo                  from "../internal/method-info.js";
+import ParameterInfo               from "../internal/parameter-info.js";
+import Type                        from "../internal/type.js";
+import Mock                        from "./fixtures/mock.js";
 
 const methodInfo = new MethodInfo("instanceMethod", Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethod")!, Type.of(Mock), false, false);
 
@@ -13,31 +13,37 @@ export default class FieldInfoSpec
     @test @shouldPass
     public declaringType(): void
     {
-        expect(methodInfo.declaringType).to.deep.equal(Type.of(Mock));
+        chai.assert.deepEqual(methodInfo.declaringType, Type.of(Mock));
     }
 
     @test @shouldPass
     public invoke(): void
     {
-        expect(methodInfo.invoke.toString()).to.equal(Mock.prototype.instanceMethod.toString());
+        chai.assert.equal(methodInfo.invoke.toString(), Mock.prototype.instanceMethod.toString());
     }
 
     @test @shouldPass
     public isStatic(): void
     {
-        expect(methodInfo.isStatic).to.equal(false);
+        chai.assert.equal(methodInfo.isStatic, false);
+    }
+
+    @test @shouldPass
+    public isOwn(): void
+    {
+        chai.assert.equal(methodInfo.isOwn, false);
     }
 
     @test @shouldPass
     public isConstructor(): void
     {
-        expect(methodInfo.isConstructor).to.equal(false);
+        chai.assert.equal(methodInfo.isConstructor, false);
     }
 
     @test @shouldPass
     public key(): void
     {
-        expect(methodInfo.key).to.equal("instanceMethod");
+        chai.assert.equal(methodInfo.key, "instanceMethod");
     }
 
     @test @shouldPass
@@ -59,13 +65,13 @@ export default class FieldInfoSpec
             "design:type":       Function,
         };
 
-        expect(methodInfo.metadata).to.deep.equal(metadata);
+        chai.assert.deepEqual(methodInfo.metadata, metadata);
     }
 
     @test @shouldPass
     public noParameters(): void
     {
-        expect(Array.from(methodInfo.parameters)).to.deep.equal([]);
+        chai.assert.deepEqual(Array.from(methodInfo.parameters), []);
     }
 
     @test @shouldPass
@@ -80,8 +86,8 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo, null),
         ];
 
-        expect(methodInfo.parameters.length).to.equal(3);
-        expect(methodInfo.parameters).to.deep.equal(parameters);
+        chai.assert.equal(methodInfo.parameters.length, 3);
+        chai.assert.deepEqual(methodInfo.parameters, parameters);
     }
 
     @test @shouldPass
@@ -103,7 +109,7 @@ export default class FieldInfoSpec
             new ParameterInfo("c", 2, methodInfo, Boolean),
         ];
 
-        expect(methodInfo.parameters.length).to.equal(3);
-        expect(methodInfo.parameters).to.deep.equal(parameters);
+        chai.assert.equal(methodInfo.parameters.length, 3);
+        chai.assert.deepEqual(methodInfo.parameters, parameters);
     }
 }

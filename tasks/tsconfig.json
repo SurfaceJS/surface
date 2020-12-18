@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
         "types": [
             "node"
         ]
@@ -8,7 +7,7 @@
     "extends": "../tsconfig.json",
     "files": [
         "./cli.ts",
-        "./polyfill.ts",
+        "./polyfill.ts"
     ],
     "include": [
         "./@types",

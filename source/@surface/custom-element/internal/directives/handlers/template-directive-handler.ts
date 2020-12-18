@@ -1,6 +1,6 @@
-import { IDisposable }     from "@surface/core";
-import ITemplateDescriptor from "../../interfaces/template-descriptor";
-import TemplateProcessor   from "../../processors/template-processor";
+import type { IDisposable }     from "@surface/core";
+import type ITemplateDescriptor from "../../interfaces/template-descriptor";
+import TemplateProcessor        from "../../processors/template-processor.js";
 
 export default abstract class TemplateDirectiveHandler implements IDisposable
 {

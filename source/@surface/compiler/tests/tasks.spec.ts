@@ -1,22 +1,24 @@
-/* eslint-disable import/no-namespace */
-import path                                   from "path";
-import Mock, { It }                           from "@surface/mock";
-import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "chai";
-import Compiler, * as compilerNS              from "../internal/compiler";
-import * as externalNS                        from "../internal/external";
-import Tasks                                  from "../internal/tasks";
-import AnalyzerOptions                        from "../internal/types/analyzer-options";
-import BuildOptions                           from "../internal/types/build-options";
-import Configuration                          from "../internal/types/configuration";
-import DevServerOptions                       from "../internal/types/dev-serve-options";
-import Options                                from "../internal/types/options";
+import path                                    from "path";
+import { isFile, lookupFile, removePathAsync } from "@surface/io";
+import Mock, { It }                            from "@surface/mock";
+import { afterEach, beforeEach, suite, test }  from "@surface/test-suite";
+import chai                                    from "chai";
+import { loadModule }                          from "../internal/common.js";
+import Compiler                                from "../internal/compiler.js";
+import Tasks                                   from "../internal/tasks.js";
+import type AnalyzerOptions                    from "../internal/types/analyzer-options";
+import type BuildOptions                       from "../internal/types/build-options";
+import type Configuration                      from "../internal/types/configuration";
+import type DevServerOptions                   from "../internal/types/dev-serve-options";
+import type Options                            from "../internal/types/options";
 
 const CWD = process.cwd();
 
-const compilerCtorMock = Mock.instance<typeof Compiler>();
-const isFileMock       = Mock.callable<typeof externalNS["isFile"]>();
-const lookupFileMock   = Mock.callable<typeof externalNS["lookupFile"]>();
+const isFileMock          = Mock.of(isFile)!;
+const lookupFileMock      = Mock.of(lookupFile)!;
+const removePathAsyncMock = Mock.of(removePathAsync)!;
+const compilerCtorMock    = Mock.of(Compiler)!;
+const loadModuleMock      = Mock.of(loadModule)!;
 
 const CWD_BUILD                             = path.join(CWD, "build");
 const CWD_PROJECT                           = path.join(CWD, "project");
@@ -46,93 +48,84 @@ const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | 
     tsconfig: CWD_TSCONFIG_JSON,
 };
 
-isFileMock.call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON).returns(true);
-isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JS).returns(true);
-isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
-isFileMock.call(CWD_PROJECT_SURFACE_JS).returns(true);
-isFileMock.call(CWD_PROJECT_SURFACE_JSON).returns(true);
-
-lookupFileMock
-    .call
-    ([
-        CWD_PROJECT_SURFACE_DEVELOPMENT_JS,
-        CWD_PROJECT_SURFACE_DEVELOPMENT_JSON,
-        CWD_PROJECT_SURFACE_JS,
-        CWD_PROJECT_SURFACE_JSON,
-    ])
-    .returns(CWD_PROJECT_SURFACE_JSON);
-
-lookupFileMock
-    .call
-    ([
-        CWD_PROJECT_ESLINTRC_JS,
-        CWD_PROJECT_ESLINTRC_JSON,
-        CWD_PROJECT_ESLINTRC_YML,
-        CWD_PROJECT_ESLINTRC_YAML,
-    ])
-    .returns(CWD_PROJECT_ESLINTRC_JSON);
-
-const removePathAsyncMock = Mock.callable<typeof externalNS["removePathAsync"]>();
-const loadModuleMock      = Mock.callable<typeof externalNS["loadModule"]>();
-
-loadModuleMock
-    .call(CWD_PROJECT_SURFACE_JS)
-    .returns
-    (
-        Promise.resolve
-        ({
-            context:  CWD_PROJECT,
-            entry:    "./source/index.ts",
-            filename: "index.js",
-            output:   path.join(CWD_PROJECT, "./www"),
-            tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
-        }),
-    );
-
-loadModuleMock
-    .call(CWD_PROJECT_SURFACE_JSON)
-    .returns(Promise.resolve({ forceTs: ["foo", "bar"] }));
-
-loadModuleMock
-    .call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON)
-    .returns(Promise.resolve({ eslintrc: CWD_PROJECT_ESLINTRC_JSON, forceTs: true }));
-
-loadModuleMock
-    .call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON)
-    .returns(Promise.resolve({ }));
-
-loadModuleMock
-    .call(CWD_PROJECT_WEBPACK_CONFIG_JS)
-    .returns(Promise.resolve({ default: { } }));
-
 @suite
 export default class TasksSpec
 {
     @beforeEach
     public beforeEach(): void
     {
-        const compilerNSMock: Partial<typeof compilerNS> =
-        {
-            default: compilerCtorMock.proxy,
-        };
+        isFileMock.lock();
+        lookupFileMock.lock();
+        loadModuleMock.lock();
+        removePathAsyncMock.lock();
 
-        const externalNSMock: Partial<typeof externalNS> =
-        {
-            isFile:          isFileMock.proxy,
-            loadModule:      loadModuleMock.proxy,
-            lookupFile:      lookupFileMock.proxy,
-            removePathAsync: removePathAsyncMock.proxy,
-        };
+        isFileMock.call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON).returns(true);
+        isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JS).returns(true);
+        isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
+        isFileMock.call(CWD_PROJECT_SURFACE_JS).returns(true);
+        isFileMock.call(CWD_PROJECT_SURFACE_JSON).returns(true);
 
-        Mock.module(compilerNS, compilerNSMock);
-        Mock.module(externalNS, externalNSMock);
+        lookupFileMock
+            .call
+            ([
+                CWD_PROJECT_SURFACE_DEVELOPMENT_JS,
+                CWD_PROJECT_SURFACE_DEVELOPMENT_JSON,
+                CWD_PROJECT_SURFACE_JS,
+                CWD_PROJECT_SURFACE_JSON,
+            ])
+            .returns(CWD_PROJECT_SURFACE_JSON);
+
+        lookupFileMock
+            .call
+            ([
+                CWD_PROJECT_ESLINTRC_JS,
+                CWD_PROJECT_ESLINTRC_JSON,
+                CWD_PROJECT_ESLINTRC_YML,
+                CWD_PROJECT_ESLINTRC_YAML,
+            ])
+            .returns(CWD_PROJECT_ESLINTRC_JSON);
+
+        loadModuleMock
+            .call(CWD_PROJECT_SURFACE_JS)
+            .returns
+            (
+                Promise.resolve
+                ({
+                    context:  CWD_PROJECT,
+                    entry:    "./source/index.ts",
+                    filename: "index.js",
+                    output:   path.join(CWD_PROJECT, "./www"),
+                    tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
+                }),
+            );
+
+        loadModuleMock
+            .call(CWD_PROJECT_SURFACE_JSON)
+            .returns(Promise.resolve({ forceTs: ["foo", "bar"] }));
+
+        loadModuleMock
+            .call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON)
+            .returns(Promise.resolve({ eslintrc: CWD_PROJECT_ESLINTRC_JSON, forceTs: true }));
+
+        loadModuleMock
+            .call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON)
+            .returns(Promise.resolve({ }));
+
+        loadModuleMock
+            .call(CWD_PROJECT_WEBPACK_CONFIG_JS)
+            .returns(Promise.resolve({ default: { } }));
+
+        removePathAsyncMock.call(It.any());
     }
 
     @afterEach
     public afterEach(): void
     {
-        Mock.restore(compilerNS);
-        Mock.restore(externalNS);
+        compilerCtorMock.release();
+        isFileMock.release();
+        loadModuleMock.release();
+        lookupFileMock.release();
+        removePathAsyncMock.release();
     }
 
     @test
@@ -152,7 +145,7 @@ export default class TasksSpec
 
         await Tasks.analyze({ }),
 
-        assert.deepEqual(actual!, expected);
+        chai.assert.deepEqual(actual!, expected);
     }
 
     @test
@@ -176,7 +169,7 @@ export default class TasksSpec
 
         await Tasks.build({ mode: "development" }),
 
-        assert.deepEqual(actualRun!, expectedRun, "actualRun deep equal to expectedRun");
+        chai.assert.deepEqual(actualRun!, expectedRun, "actualRun deep equal to expectedRun");
 
         const expectedRunWithProject: Args =
         [
@@ -201,7 +194,7 @@ export default class TasksSpec
 
         await Tasks.build({ project: CWD_PROJECT_SURFACE_DEVELOPMENT_JSON }),
 
-        assert.deepEqual(actualRunWithProject!, expectedRunWithProject, "actualRunWithProject deep equal to expectedRunWithProject");
+        chai.assert.deepEqual(actualRunWithProject!, expectedRunWithProject, "actualRunWithProject deep equal to expectedRunWithProject");
 
         const expectedRunWithNoEsLintProject: Args =
         [
@@ -224,7 +217,7 @@ export default class TasksSpec
 
         await Tasks.build({ project: CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON }),
 
-        assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
+        chai.assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
 
         const expectedWatch: Args =
         [
@@ -251,7 +244,7 @@ export default class TasksSpec
 
         await Tasks.build({ project: CWD_PROJECT_SURFACE_JS, watch: true }),
 
-        assert.deepEqual(actualWatch!, expectedWatch, "actualWatch deep equal to expectedWatch");
+        chai.assert.deepEqual(actualWatch!, expectedWatch, "actualWatch deep equal to expectedWatch");
     }
 
     @test
@@ -291,6 +284,6 @@ export default class TasksSpec
 
         await Tasks.serve(configuration),
 
-        assert.deepEqual(actual!, expected);
+        chai.assert.deepEqual(actual!, expected);
     }
 }

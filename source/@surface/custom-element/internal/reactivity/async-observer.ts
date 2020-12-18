@@ -1,7 +1,6 @@
 import { CancellationTokenSource } from "@surface/core";
 import { Observer }                from "@surface/reactive";
-
-import type Scheduler from "../processors/scheduler";
+import type Scheduler              from "../processors/scheduler.js";
 
 export default class AsyncObserver extends Observer
 {

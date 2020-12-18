@@ -1,5 +1,5 @@
-import { Indexer } from "@surface/core";
-import Component   from "./component";
+import type { Indexer } from "@surface/core";
+import type Component   from "./component";
 
 type ComponentOrFactory = Component | (() => Component);
 type RouteConfigurationComponent = { component: ComponentOrFactory };

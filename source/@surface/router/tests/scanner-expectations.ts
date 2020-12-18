@@ -1,5 +1,5 @@
-import TokenType from "../internal/enums/token-type";
-import Token     from "../internal/types/token";
+import TokenType  from "../internal/enums/token-type.js";
+import type Token from "../internal/types/token.js";
 
 export type ScannerValidExpectation =
 {

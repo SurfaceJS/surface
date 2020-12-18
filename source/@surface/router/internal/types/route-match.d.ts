@@ -1,4 +1,4 @@
-import RouteData from "../route-data";
+import type RouteData from "../route-data.js";
 
 type RouteMatch = { matched: true, routeData: RouteData } | { matched: false, reason: string };
 

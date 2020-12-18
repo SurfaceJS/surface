@@ -1,5 +1,5 @@
-import { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                                                        from "./generic";
+import type { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                                                             from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");
 

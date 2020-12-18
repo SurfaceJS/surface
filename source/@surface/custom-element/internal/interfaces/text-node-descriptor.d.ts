@@ -1,6 +1,6 @@
-import { IExpression } from "@surface/expression";
-import IObservable     from "./observable";
-import ITraceable      from "./traceable";
+import type { IExpression } from "@surface/expression";
+import type IObservable     from "./observable";
+import type ITraceable      from "./traceable";
 
 export default interface ITextNodeDescriptor extends IObservable, ITraceable
 {

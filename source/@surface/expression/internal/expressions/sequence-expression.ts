@@ -1,7 +1,7 @@
-import { hasValue }        from "@surface/core";
-import IExpression         from "../interfaces/expression";
-import ISequenceExpression from "../interfaces/sequence-expression";
-import NodeType            from "../node-type";
+import { hasValue }             from "@surface/core";
+import type IExpression         from "../interfaces/expression";
+import type ISequenceExpression from "../interfaces/sequence-expression";
+import NodeType                 from "../node-type.js";
 
 export default class SequenceExpression implements IExpression
 {
@@ -13,7 +13,7 @@ export default class SequenceExpression implements IExpression
         return this._expressions;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set expressions(value: IExpression[])
     {
         this._expressions = value;

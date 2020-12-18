@@ -1,4 +1,4 @@
-import Expression from "./internal/expression";
+import Expression from "./internal/expression.js";
 
 export type { default as IArrayExpression }          from "./internal/interfaces/array-expression";
 export type { default as IArrayPattern }             from "./internal/interfaces/array-pattern";
@@ -34,10 +34,10 @@ export type { default as IThisExpression }           from "./internal/interfaces
 export type { default as IUnaryExpression }          from "./internal/interfaces/unary-expression";
 export type { default as IUpdateExpression }         from "./internal/interfaces/update-expression";
 
-export { default as Evaluate }          from "./internal/evaluate";
-export { default as ExpressionVisitor } from "./internal/expression-visitor";
-export { default as NodeType }          from "./internal/node-type";
-export { default as SyntaxError }       from "./internal/syntax-error";
-export { default as TypeGuard }         from "./internal/type-guard";
+export { default as Evaluate }          from "./internal/evaluate.js";
+export { default as ExpressionVisitor } from "./internal/expression-visitor.js";
+export { default as NodeType }          from "./internal/node-type.js";
+export { default as SyntaxError }       from "./internal/syntax-error.js";
+export { default as TypeGuard }         from "./internal/type-guard.js";
 
 export default Expression;
