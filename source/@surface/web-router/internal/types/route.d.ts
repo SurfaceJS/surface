@@ -1,12 +1,11 @@
 import type { Indexer }   from "@surface/core";
-import type { RouteData } from "@surface/router";
 
 type Route =
 {
-    fullPath: string,
-    meta:     Indexer,
-    path:     string,
-    name?:    string,
-} & RouteData;
+    url:        URL,
+    parameters: Indexer,
+    meta:       Indexer,
+    name?:      string,
+};
 
 export default Route;

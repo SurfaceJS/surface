@@ -1,8 +1,8 @@
 import type { Delegate, Indexer } from "@surface/core";
 import { typeGuard }              from "@surface/core";
 import type ITransformer          from "./interfaces/transformer";
-import type RouteData             from "./route-data.js";
 import Route                      from "./route.js";
+import type RouteData             from "./types/route-data.js";
 import type RouterMatch           from "./types/router-match";
 
 type Entry<T> =
@@ -51,17 +51,22 @@ export default class Router<T = RouteData>
         return this;
     }
 
-    public match(uri: string): RouterMatch<T>;
+    public match(path: string): RouterMatch<T>;
     public match(name: string, parameters: Indexer): RouterMatch<T>;
     public match(...args: [string] | [string, Indexer]): RouterMatch<T>
     {
         if (args.length == 1)
         {
-            const uri = args[0];
+            const path = args[0];
+
+            if (path.includes("?") || path.includes("#"))
+            {
+                throw new Error(`"${path}" is not a valid url pathname`);
+            }
 
             for (const entry of this.entries)
             {
-                const match = entry.route.match(uri);
+                const match = entry.route.match(path);
 
                 if (match.matched)
                 {
@@ -69,7 +74,7 @@ export default class Router<T = RouteData>
                 }
             }
 
-            return { matched: false, reason: `No match found to the path: ${uri}` };
+            return { matched: false, reason: `No match found to the path: ${path}` };
         }
 
         const [name, parameters] = args;

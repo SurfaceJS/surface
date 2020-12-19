@@ -1,11 +1,11 @@
 import type { Indexer } from "@surface/core";
 
-type Location =
+type NamedRoute =
 {
     name:        string,
     hash?:       string,
     parameters?: Indexer,
-    query?:      Indexer<string>,
+    query?:      Indexer<string | string[]>,
 };
 
-export default Location;
+export default NamedRoute;
