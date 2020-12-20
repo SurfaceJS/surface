@@ -11,25 +11,27 @@
         "@surface/router": "file:../router",
         "tslib": "2.0.3"
     },
-    "description": "Web component view router.",
+    "description": "Web component router.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.14",
+        "@types/chai-as-promised": "7.1.3",
         "@types/jsdom": "16.2.5",
         "chai": "4.2.0",
+        "chai-as-promised": "7.1.1",
         "jsdom": "16.4.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",
-        "view",
+        "web",
         "router",
         "typescript",
         "webcomponents"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/view-router",
+    "name": "@surface/web-router",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

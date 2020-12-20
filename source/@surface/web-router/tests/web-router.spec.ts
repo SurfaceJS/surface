@@ -3,14 +3,16 @@
 import "./fixtures/dom.js";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
-import { inject }                              from "@surface/dependency-injection";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
+import chaiAsPromised                          from "chai-as-promised";
 import type IMiddleware                        from "../internal/interfaces/middleware";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
-import ViewRouter                              from "../internal/view-router.js";
+import WebRouter                               from "../internal/web-router.js";
+
+chai.use(chaiAsPromised);
 
 @element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
 class HomeView extends CustomElement
@@ -53,10 +55,7 @@ class AboutInvalidView extends HTMLElement implements IRouteableElement
 
 @define("data-view")
 class DataView extends HTMLElement
-{
-    @inject(ViewRouter.ROUTE_KEY)
-    public route!: Route;
-}
+{ }
 
 @define("about-view")
 class AboutView extends HTMLElement
@@ -74,9 +73,9 @@ class AppRoot extends CustomElement
 { }
 
 @suite
-export default class ViewRouterSpec
+export default class WebRouterSpec
 {
-    private readonly router!: ViewRouter;
+    private readonly router: WebRouter;
 
     public constructor()
     {
@@ -106,6 +105,11 @@ export default class ViewRouterSpec
                         components: { "non-default": { default: HomeIndexView } },
                         name:       "home-index",
                         path:       "index",
+                    },
+                    {
+                        components: { default: HomeIndexView },
+                        path:       "no-outlet",
+                        selector:   "#no-outlet",
                     },
                 ],
                 component: async () => Promise.resolve({ default: HomeView }),
@@ -146,9 +150,9 @@ export default class ViewRouterSpec
             },
         };
 
-        this.router = new ViewRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
 
-        CustomElement.registerDirective(ViewRouter.createDirectiveRegistry(this.router));
+        CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
 
         document.body.appendChild(new AppRoot());
     }
@@ -171,6 +175,36 @@ export default class ViewRouterSpec
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         chai.assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
+    }
+
+    @test @shouldPass
+    public async pushWithParameters(): Promise<void>
+    {
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
+
+        chai.assert.instanceOf(slot, HTMLElement);
+
+        await this.router.push("/data/post/1?query=1#hash");
+
+        const dataView = slot.firstElementChild as DataView;
+
+        const expected: Route =
+        {
+            meta:       { },
+            name:       "data",
+            parameters: { action: "post", id: 1 },
+            url:        new URL("http://localhost.com/base/path/data/post/1?query=1#hash"),
+        };
+
+        const actual = this.router.route;
+
+        chai.assert.deepEqual(actual, expected);
+
+        await this.router.push("/data/post/2?query=1#hash");
+
+        chai.assert.equal(dataView, slot.firstElementChild, "dataView equal slot.firstElementChild");
+        chai.assert.equal(actual.parameters.id, 2, "routeData.parameters.id equal 2");
+        chai.assert.notEqual(this.router.route, actual, "dataView.routeData equal routeData");
     }
 
     @test @shouldPass
@@ -217,14 +251,14 @@ export default class ViewRouterSpec
 
         chai.assert.instanceOf(slot, HTMLElement);
 
-        await this.router.push({ name: "home" });
+        await this.router.push({ hash: "baz", name: "home", query: { bar: ["1", "2"], foo: "foo" } });
 
-        chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
+        chai.assert.equal(window.location.href, "http://localhost.com/base/path/home?bar=1&bar=2&foo=foo#baz", "window.location.href equal 'http://localhost.com/base/path/home?bar=1&bar=2&foo=foo#baz'");
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "route to HomeView");
 
         await this.router.push({ name: "not-found" });
 
-        chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
+        chai.assert.equal(window.location.href, "http://localhost.com/base/path/home?bar=1&bar=2&foo=foo#baz", "window.location.href equal 'http://localhost.com/base/path/home?bar=1&bar=2&foo=foo#baz'");
         chai.assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 
@@ -259,39 +293,6 @@ export default class ViewRouterSpec
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "slot.firstElementChild to HomeView");
-    }
-
-    @test @shouldPass
-    public async pushWithInjection(): Promise<void>
-    {
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
-
-        chai.assert.instanceOf(slot, HTMLElement);
-
-        await this.router.push("/data/post/1?query=1#hash");
-
-        const dataView = slot.firstElementChild as DataView;
-
-        const expected: Route =
-            {
-                fullPath:   "/data/post/1?query=1#hash",
-                hash:       "hash",
-                meta:       { },
-                name:       "data",
-                parameters: { action: "post", id: 1 },
-                path:       "/data/post/1",
-                query:      { query: "1" },
-            };
-
-        const actual = dataView.route;
-
-        chai.assert.deepEqual(actual, expected);
-
-        await this.router.push("/data/post/2?query=1#hash");
-
-        chai.assert.equal(dataView, slot.firstElementChild, "dataView equal slot.firstElementChild");
-        chai.assert.equal(dataView.route, actual, "dataView.routeData equal routeData");
-        chai.assert.equal(actual.parameters.id, 2, "routeData.parameters.id equal 2");
     }
 
     @test @shouldPass
@@ -372,15 +373,20 @@ export default class ViewRouterSpec
     }
 
     @test @shouldFail
+    public emptyStack(): void
+    {
+        chai.assert.throw(() => new WebRouter("app", []).route, Error, "Router stack is empty");
+    }
+
+    @test @shouldFail
     public async invalidElement(): Promise<void>
     {
-        try
-        {
-            await this.router.push("/about/invalid");
-        }
-        catch (error)
-        {
-            chai.assert.equal((error as Error).message, "Routeable component requires an open shadowRoot");
-        }
+        await chai.assert.isRejected(this.router.push("/about/invalid"), Error, "Routeable component requires an open shadowRoot");
+    }
+
+    @test @shouldFail
+    public async cannotFindOutlet(): Promise<void>
+    {
+        await chai.assert.isRejected(this.router.push("/home/no-outlet"), Error, "Cannot find outlet by provided selector \"#no-outlet\"");
     }
 }

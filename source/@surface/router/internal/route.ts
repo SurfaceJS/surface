@@ -4,7 +4,6 @@ import type INode        from "./interfaces/node";
 import type ITransformer from "./interfaces/transformer";
 import type SegmentNode  from "./nodes/segment-node.js";
 import Parser            from "./parser.js";
-import RouteData         from "./route-data.js";
 import TypeGuard         from "./type-guard.js";
 import type RouteMatch   from "./types/route-match";
 
@@ -60,7 +59,7 @@ export default class Route
         }
     }
 
-    private collectParams(match: RegExpExecArray): Indexer
+    private collectParameters(match: RegExpExecArray): Indexer
     {
         const data: Indexer = { };
 
@@ -108,12 +107,12 @@ export default class Route
         return data;
     }
 
-    private matchParams(params: Indexer): RouteMatch
+    private matchParameters(params: Indexer): RouteMatch
     {
         const paths:         string[] = [];
         const missingParams: string[] = [];
 
-        const data: Indexer = { };
+        const parameters: Indexer = { };
 
         for (const segment of this.segments)
         {
@@ -132,7 +131,7 @@ export default class Route
                 {
                     let fallback: string | undefined;
 
-                    const value = data[node.left] = params[node.left] || (fallback = node.right);
+                    const value = parameters[node.left] = params[node.left] || (fallback = node.right);
 
                     if (value != fallback)
                     {
@@ -163,11 +162,11 @@ export default class Route
                     }
                     else if (value == defaultValue)
                     {
-                        data[node.name] = transformer.parse(value as string);
+                        parameters[node.name] = transformer.parse(value as string);
                     }
                     else
                     {
-                        data[node.name] = value;
+                        parameters[node.name] = value;
 
                         paths.push(transformer.stringfy(value));
                     }
@@ -185,13 +184,13 @@ export default class Route
                     }
                     else
                     {
-                        paths.push((data[node.name] = params[node.name]) as string);
+                        paths.push((parameters[node.name] = params[node.name]) as string);
                     }
 
                 }
                 else if (TypeGuard.isRest(node))
                 {
-                    const value = data[node.name] = params[node.name] ?? "";
+                    const value = parameters[node.name] = params[node.name] ?? "";
 
                     if (value)
                     {
@@ -208,19 +207,14 @@ export default class Route
 
         if (missingParams.length == 0)
         {
-            return {
-                matched:   true,
-                routeData: new RouteData(paths.join(""), data, { }, ""),
-            };
+            return { matched: true, routeData: { parameters, path: paths.join("") } };
         }
 
         return { matched: false, reason: `Missing required parameters: ${missingParams.join(", ")}` };
     }
 
-    private matchUrl(uri: string): RouteMatch
+    private matchUrl(path: string): RouteMatch
     {
-        const { path, hash, query } = this.parseUrl(uri);
-
         const normalizedPath = this.normalize(path);
 
         const match = this.pattern.exec(normalizedPath);
@@ -229,7 +223,7 @@ export default class Route
         {
             return {
                 matched:   true,
-                routeData: new RouteData(normalizedPath, this.collectParams(match), this.parseQuery(query), hash),
+                routeData: { parameters: this.collectParameters(match), path: normalizedPath },
             };
         }
 
@@ -241,42 +235,6 @@ export default class Route
         return (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "");
     }
 
-    private parseQuery(source: string): Indexer<string>
-    {
-        if (!source)
-        {
-            return { };
-        }
-
-        const entries = source.split("&")
-            .map
-            (
-                pair =>
-                {
-                    const [key, value] = pair.split("=");
-
-                    return [key, decodeURIComponent(value)] as const;
-                },
-            );
-
-        return Object.fromEntries(entries);
-    }
-
-    private parseUrl(source: string): { path: string, hash: string, query: string }
-    {
-        if (source.includes("?"))
-        {
-            const [path,  rest = ""] = source.split("?");
-            const [query, hash = ""] = rest.split("#");
-
-            return { hash, path, query };
-        }
-
-        const [path, hash = ""] = source.split("#");
-
-        return { hash, path, query: "" };
-    }
-
     public match(value: string | Indexer): RouteMatch
     {
         if (typeof value == "string")
@@ -284,6 +242,6 @@ export default class Route
             return this.matchUrl(value);
         }
 
-        return this.matchParams(value);
+        return this.matchParameters(value);
     }
 }
