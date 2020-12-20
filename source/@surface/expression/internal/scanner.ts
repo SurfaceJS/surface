@@ -144,20 +144,19 @@ export default class Scanner
     private getIdentifier(): string
     {
         const start = this.index;
+
         while (!this.eof())
         {
             const charCode = this.source.charCodeAt(this.index);
 
             if (charCode == BLACKSLASH)
             {
-                // Blackslash (U+005C) marks Unicode escape sequence.
                 this.setCursorAt(start);
 
                 return this.getComplexIdentifier();
             }
             else if (charCode >= HIGH_SURROGATE_AREA_BEGIN && charCode < LOW_SURROGATE_AREA_END)
             {
-                // Need to handle surrogate pairs.
                 this.setCursorAt(start);
 
                 return this.getComplexIdentifier();
@@ -183,7 +182,6 @@ export default class Scanner
 
         this.setCursorAt(this.index + id.length);
 
-        // '\u' (U+005C, U+0075) denotes an escaped character.
         if (codePoint == BLACKSLASH)
         {
             if (this.source.charCodeAt(this.index) != CHAR_LOWERCASE_U)
@@ -196,6 +194,7 @@ export default class Scanner
             if (this.source[this.index] == "{")
             {
                 this.advance();
+
                 id = this.scanUnicodeCodePointEscape();
             }
             else
@@ -217,11 +216,11 @@ export default class Scanner
             codePoint = this.source.codePointAt(this.index) as number;
 
             let char = String.fromCodePoint(codePoint);
+
             id += char;
 
             this.setCursorAt(this.index + char.length);
 
-            // '\u' (U+005C, U+0075) denotes an escaped character.
             if (codePoint == BLACKSLASH)
             {
                 id = id.substr(0, id.length - 1);
@@ -236,6 +235,7 @@ export default class Scanner
                 if (this.source[this.index] == "{")
                 {
                     this.advance();
+
                     char = this.scanUnicodeCodePointEscape();
                 }
                 else
@@ -372,6 +372,7 @@ export default class Scanner
             if (!this.eof() && Character.isHexDigit(this.source.charCodeAt(this.index)))
             {
                 code = code * 16 + this.hexValue(this.source[this.index]);
+
                 this.advance();
             }
             else
@@ -452,70 +453,41 @@ export default class Scanner
 
     private scanIdentifier(): Token
     {
-        let type: TokenType;
         const start = this.index;
+        const id    = this.source.charCodeAt(start) == BLACKSLASH ? this.getComplexIdentifier() : this.getIdentifier();
 
-        // Backslash (U+005C) starts an escaped character.
-        const id = this.source.charCodeAt(start) == BLACKSLASH ? this.getComplexIdentifier() : this.getIdentifier();
+        let type:  TokenType;
+        let value: unknown;
 
-        // There is no keyword or literal with only one character.
-        // Thus, it must be an identifier.
         if (id.length == 1)
         {
-            type = TokenType.Identifier;
+            type  = TokenType.Identifier;
+            value = id;
         }
         else if (this.isKeyword(id))
         {
-            type = TokenType.Keyword;
+            type  = TokenType.Keyword;
+            value = id;
         }
         else if (id == "null")
         {
-            const token: Token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.NullLiteral,
-                value:      null,
-            };
-
-            return token;
+            type  = TokenType.NullLiteral;
+            value = null;
         }
         else if (id == "undefined")
         {
-            const token: Token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.Identifier,
-                value:      undefined,
-            };
-
-            return token;
+            type  = TokenType.Identifier;
+            value = undefined;
         }
         else if (id == "true" || id == "false")
         {
-            const token: Token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.BooleanLiteral,
-                value:      id == "true",
-            };
-
-            return token;
+            type  = TokenType.BooleanLiteral;
+            value = id == "true";
         }
         else
         {
-            type = TokenType.Identifier;
+            type  = TokenType.Identifier;
+            value = id;
         }
 
         if (type != TokenType.Identifier && start + id.length != this.index)
@@ -532,7 +504,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type,
-            value:      id,
+            value,
         };
 
         return token;
@@ -789,29 +761,29 @@ export default class Scanner
     private scanStringLiteral(): Token
     {
         const start = this.index;
+        const quote = this.source[start];
 
-        const quote    = this.source[start];
         let terminated = false;
+        let isOctal    = false;
+        let value      = "";
 
         this.advance();
 
-        let isOctal = false;
-        let value = "";
-
         while (!this.eof())
         {
-            let char = this.source[this.index];
+            const char = this.source[this.index];
 
             this.advance();
 
             if (char == quote)
             {
                 terminated = true;
+
                 break;
             }
             else if (char == "\\")
             {
-                char = this.source[this.index];
+                const char = this.source[this.index];
 
                 this.advance();
 
@@ -823,6 +795,7 @@ export default class Scanner
                             if (this.source[this.index] == "{")
                             {
                                 this.advance();
+
                                 value += this.scanUnicodeCodePointEscape();
                             }
                             else
@@ -847,25 +820,37 @@ export default class Scanner
                             }
 
                             value += unescaped;
+
                             break;
                         }
                         case "n":
                             value += "\n";
+
                             break;
+
                         case "r":
                             value += "\r";
+
                             break;
+
                         case "t":
                             value += "\t";
+
                             break;
+
                         case "b":
                             value += "\b";
+
                             break;
+
                         case "f":
                             value += "\f";
+
                             break;
+
                         case "v":
                             value += "\x0B";
+
                             break;
 
                         default:
@@ -1074,19 +1059,20 @@ export default class Scanner
     // eslint-disable-next-line max-lines-per-function, max-statements
     private scanTemplate(): Token
     {
-        const start = this.index;
-        const isHead  = this.source[start] == "`";
+        const start  = this.index;
+        const isHead = this.source[start] == "`";
 
         let cooked     = "";
         let terminated = false;
-        let isTail       = false;
+        let isTail     = false;
         let offset     = 1;
 
         this.advance();
 
         while (!this.eof())
         {
-            let char = this.source[this.index];
+            const char = this.source[this.index];
+
             this.advance();
 
             if (char == "`")
@@ -1114,7 +1100,8 @@ export default class Scanner
             }
             else if (char == "\\")
             {
-                char = this.source[this.index];
+                const char = this.source[this.index];
+
                 this.advance();
 
                 if (!Character.isLineTerminator(char.charCodeAt(0)))
@@ -1123,13 +1110,19 @@ export default class Scanner
                     {
                         case "n":
                             cooked += "\n";
+
                             break;
+
                         case "r":
                             cooked += "\r";
+
                             break;
+
                         case "t":
                             cooked += "\t";
+
                             break;
+
                         case "u":
                             if (this.source[this.index] == "{")
                             {
@@ -1141,6 +1134,7 @@ export default class Scanner
                             {
                                 const restore       = this.index;
                                 const unescapedChar = this.scanHexEscape(char);
+
                                 if (unescapedChar !== null)
                                 {
                                     cooked += unescapedChar;
@@ -1152,7 +1146,9 @@ export default class Scanner
                                     cooked += "\\u";
                                 }
                             }
+
                             break;
+
                         case "x":
                             {
                                 const unescaped = this.scanHexEscape(char);
@@ -1166,14 +1162,20 @@ export default class Scanner
                             }
 
                             break;
+
                         case "b":
                             cooked += "\b";
+
                             break;
+
                         case "f":
                             cooked += "\f";
+
                             break;
+
                         case "v":
                             cooked += "\v";
+
                             break;
 
                         default:
@@ -1194,6 +1196,7 @@ export default class Scanner
                             {
                                 cooked += char;
                             }
+
                             break;
                     }
                 }
@@ -1390,7 +1393,6 @@ export default class Scanner
     {
         const start = this.index;
 
-        let char        = "";
         let pattern     = "";
         let classMarker = false;
         let terminated  = false;
@@ -1403,7 +1405,7 @@ export default class Scanner
             {
                 this.advance();
 
-                char = this.source[this.index];
+                const char = this.source[this.index];
 
                 pattern += char;
 
@@ -1413,7 +1415,7 @@ export default class Scanner
                     {
                         this.advance();
 
-                        char = this.source[this.index];
+                        const char = this.source[this.index];
 
                         if (Character.isLineTerminator(char.charCodeAt(0)))
                         {
@@ -1455,7 +1457,7 @@ export default class Scanner
 
         while (!this.eof())
         {
-            char = this.source[this.index];
+            const char = this.source[this.index];
 
             if (!Character.isIdentifierPart(char.charCodeAt(0)))
             {
