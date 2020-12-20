@@ -10,10 +10,10 @@ type Token =
     type:       TokenType,
     value:      unknown,
     flags?:     string,
-    head?:      boolean,
-    octal?:     boolean,
+    isHead?:    boolean,
+    isOctal?:   boolean,
     pattern?:   string,
-    tail?:      boolean,
+    isTail?:    boolean,
 };
 
 export default Token;

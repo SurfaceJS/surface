@@ -4,8 +4,8 @@ import ParenthesizedExpression                              from "../internal/ex
 import Parser                                               from "../internal/parser.js";
 import SyntaxError                                          from "../internal/syntax-error.js";
 import TypeGuard                                            from "../internal/type-guard.js";
-import type { InvalidParseExpectedSpec, ParseExpectedSpec } from "./expectations/parser-expected.js";
-import { invalidExpressions, validExpressions }             from "./expectations/parser-expected.js";
+import type { InvalidParseExpectedSpec, ParseExpectedSpec } from "./parser-expectations.js";
+import { invalidExpressions, validExpressions }             from "./parser-expectations.js";
 
 type RawSyntaxError = Pick<SyntaxError, "message" | "lineNumber" | "index" | "column"> | Pick<ReferenceError, "message">;
 

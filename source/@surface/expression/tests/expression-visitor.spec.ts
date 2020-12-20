@@ -2,7 +2,7 @@ import { batchTest, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
 import Expression                             from "../internal/expression.js";
 import RegExpLiteral                          from "../internal/expressions/reg-exp-literal.js";
-import { validVisitors }                      from "./expectations/expression-visitor-expected.js";
+import { validVisitors }                      from "./expression-visitor-expectations.js";
 import FixtureVisitor                         from "./fixtures/fixture-visitor.js";
 
 @suite

@@ -3,8 +3,8 @@ import chai                                                        from "chai";
 import Expression                                                  from "../internal/expression.js";
 import Messages                                                    from "../internal/messages.js";
 import NodeType                                                    from "../internal/node-type.js";
-import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expectations/expression-expected.js";
-import { evaluationsExpected, expressionFactoriesExpected }        from "./expectations/expression-expected.js";
+import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expression-expectations.js";
+import { evaluationsExpected, expressionFactoriesExpected }        from "./expression-expectations.js";
 
 @suite
 export default class ExpressionSpec

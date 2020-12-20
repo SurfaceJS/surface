@@ -645,7 +645,7 @@ export default class Parser
         // eslint-disable-next-line no-constant-condition
         while (true)
         {
-            if (this.lookahead.type == TokenType.Template && this.lookahead.head)
+            if (this.lookahead.type == TokenType.Template && this.lookahead.isHead)
             {
                 const quasi = this.inheritGrammar(this.templateLiteralExpression);
 
@@ -1180,15 +1180,15 @@ export default class Parser
         const expressions: IExpression[]     = [];
 
         let token = this.nextToken();
-        quasis.push(new TemplateElement(token.value as string, token.raw, !!token.tail));
+        quasis.push(new TemplateElement(token.value as string, token.raw, !!token.isTail));
 
-        while (!!!token.tail)
+        while (!!!token.isTail)
         {
             expressions.push(this.inheritGrammar(this.expression));
 
             token = this.nextToken();
 
-            quasis.push(new TemplateElement(token.value as string, token.raw, !!token.tail));
+            quasis.push(new TemplateElement(token.value as string, token.raw, !!token.isTail));
         }
 
         return new TemplateLiteral(quasis, expressions);

@@ -2,28 +2,28 @@
 /* eslint-disable max-lines */
 import type { Constructor, Indexer } from "@surface/core";
 import { format }                    from "@surface/core";
-import ArrayExpression               from "../../internal/expressions/array-expression.js";
-import ArrowFunctionExpression       from "../../internal/expressions/arrow-function-expression.js";
-import AssignmentExpression          from "../../internal/expressions/assignment-expression.js";
-import BinaryExpression              from "../../internal/expressions/binary-expression.js";
-import CallExpression                from "../../internal/expressions/call-expression.js";
-import CoalesceExpression            from "../../internal/expressions/coalesce-expression.js";
-import ConditionalExpression         from "../../internal/expressions/conditional-expression.js";
-import Identifier                    from "../../internal/expressions/identifier.js";
-import Literal                       from "../../internal/expressions/literal.js";
-import LogicalExpression             from "../../internal/expressions/logical-expression.js";
-import MemberExpression              from "../../internal/expressions/member-expression.js";
-import NewExpression                 from "../../internal/expressions/new-expression.js";
-import ObjectExpression              from "../../internal/expressions/object-expression.js";
-import SequenceExpression            from "../../internal/expressions/sequence-expression.js";
-import TaggedTemplateExpression      from "../../internal/expressions/tagged-template-expression.js";
-import TemplateLiteral               from "../../internal/expressions/template-literal.js";
-import ThisExpression                from "../../internal/expressions/this-expression.js";
-import UnaryExpression               from "../../internal/expressions/unary-expression.js";
-import UpdateExpression              from "../../internal/expressions/update-expression.js";
-import type IExpression              from "../../internal/interfaces/expression";
-import Messages                      from "../../internal/messages.js";
-import SyntaxError                   from "../../internal/syntax-error.js";
+import ArrayExpression               from "../internal/expressions/array-expression.js";
+import ArrowFunctionExpression       from "../internal/expressions/arrow-function-expression.js";
+import AssignmentExpression          from "../internal/expressions/assignment-expression.js";
+import BinaryExpression              from "../internal/expressions/binary-expression.js";
+import CallExpression                from "../internal/expressions/call-expression.js";
+import CoalesceExpression            from "../internal/expressions/coalesce-expression.js";
+import ConditionalExpression         from "../internal/expressions/conditional-expression.js";
+import Identifier                    from "../internal/expressions/identifier.js";
+import Literal                       from "../internal/expressions/literal.js";
+import LogicalExpression             from "../internal/expressions/logical-expression.js";
+import MemberExpression              from "../internal/expressions/member-expression.js";
+import NewExpression                 from "../internal/expressions/new-expression.js";
+import ObjectExpression              from "../internal/expressions/object-expression.js";
+import SequenceExpression            from "../internal/expressions/sequence-expression.js";
+import TaggedTemplateExpression      from "../internal/expressions/tagged-template-expression.js";
+import TemplateLiteral               from "../internal/expressions/template-literal.js";
+import ThisExpression                from "../internal/expressions/this-expression.js";
+import UnaryExpression               from "../internal/expressions/unary-expression.js";
+import UpdateExpression              from "../internal/expressions/update-expression.js";
+import type IExpression              from "../internal/interfaces/expression";
+import Messages                      from "../internal/messages.js";
+import SyntaxError                   from "../internal/syntax-error.js";
 
 const scope =
 {

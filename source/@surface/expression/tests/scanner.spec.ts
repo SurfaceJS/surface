@@ -4,8 +4,8 @@ import Messages                                           from "../internal/mess
 import Scanner                                            from "../internal/scanner.js";
 import SyntaxError                                        from "../internal/syntax-error.js";
 import TokenType                                          from "../internal/token-type.js";
-import type { ExpectedInvalidToken, ExpectedValidToken }  from "./expectations/scanner-expected.js";
-import { invalidTokens, validTokens }                     from "./expectations/scanner-expected.js";
+import type { ExpectedInvalidToken, ExpectedValidToken }  from "./scanner-expectations.js";
+import { invalidTokens, validTokens }                     from "./scanner-expectations.js";
 
 @suite
 export default class ScannerSpec
@@ -63,6 +63,34 @@ export default class ScannerSpec
         chai.assert.equal(scanner.index, 1);
     }
 
+    @test @shouldPass
+    public multiline(): void
+    {
+        const source =
+        `
+            x
+            +
+            y
+        `;
+
+        const scanner = new Scanner(source);
+
+        let token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "x");
+        chai.assert.equal(token.lineNumber, 2);
+
+        token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "+");
+        chai.assert.equal(token.lineNumber, 3);
+
+        token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "y");
+        chai.assert.equal(token.lineNumber, 4);
+    }
+
     @shouldFail @test
     public invalidRegex(): void
     {
@@ -76,6 +104,7 @@ export default class ScannerSpec
     public tokensShouldThrow(expected: ExpectedInvalidToken): void
     {
         const scanner = new Scanner(expected.token);
+
         chai.assert.throw(() => scanner.nextToken(), SyntaxError, expected.message);
     }
 }
