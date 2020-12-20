@@ -8,7 +8,7 @@ import ArrowFunctionExpression  from "../internal/expressions/arrow-function-exp
 import AssignmentExpression     from "../internal/expressions/assignment-expression.js";
 import BinaryExpression         from "../internal/expressions/binary-expression.js";
 import CallExpression           from "../internal/expressions/call-expression.js";
-import CoalesceExpression       from "../internal/expressions/coalesce-expression.js";
+import ChainExpression          from "../internal/expressions/chain-expression.js";
 import ConditionalExpression    from "../internal/expressions/conditional-expression.js";
 import Identifier               from "../internal/expressions/identifier.js";
 import Literal                  from "../internal/expressions/literal.js";
@@ -120,7 +120,7 @@ export const validVisitors: ValidVisitSpec[] =
         raw:   "x ?? y",
         value:
         [
-            CoalesceExpression.name,
+            LogicalExpression.name,
             Identifier.name,
             Identifier.name,
         ].join(" > "),
@@ -153,6 +153,35 @@ export const validVisitors: ValidVisitSpec[] =
             MemberExpression.name,
             Identifier.name,
             Identifier.name,
+        ].join(" > "),
+    },
+    {
+        raw:   "x['y']",
+        value:
+        [
+            MemberExpression.name,
+            Identifier.name,
+            Literal.name,
+        ].join(" > "),
+    },
+    {
+        raw:   "x?.y",
+        value:
+        [
+            ChainExpression.name,
+            MemberExpression.name,
+            Identifier.name,
+            Identifier.name,
+        ].join(" > "),
+    },
+    {
+        raw:   "x?.['y']",
+        value:
+        [
+            ChainExpression.name,
+            MemberExpression.name,
+            Identifier.name,
+            Literal.name,
         ].join(" > "),
     },
     {
@@ -210,6 +239,17 @@ export const validVisitors: ValidVisitSpec[] =
         raw:   "f(...x)",
         value:
         [
+            CallExpression.name,
+            Identifier.name,
+            SpreadElement.name,
+            Identifier.name,
+        ].join(" > "),
+    },
+    {
+        raw:   "f?.(...x)",
+        value:
+        [
+            ChainExpression.name,
             CallExpression.name,
             Identifier.name,
             SpreadElement.name,

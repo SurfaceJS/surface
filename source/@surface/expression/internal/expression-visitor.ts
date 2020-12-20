@@ -6,7 +6,7 @@ import type IAssignmentPattern        from "./interfaces/assignment-pattern";
 import type IAssignmentProperty       from "./interfaces/assignment-property";
 import type IBinaryExpression         from "./interfaces/binary-expression";
 import type ICallExpression           from "./interfaces/call-expression";
-import type ICoalesceExpression       from "./interfaces/coalesce-expression";
+import type IChainExpression          from "./interfaces/chain-expression";
 import type IConditionalExpression    from "./interfaces/conditional-expression";
 import type IIdentifier               from "./interfaces/identifier";
 import type ILiteral                  from "./interfaces/literal";
@@ -66,9 +66,9 @@ export default abstract class ExpressionVisitor
         {
             return this.visitCallExpression(node);
         }
-        else if (TypeGuard.isCoalesceExpression(node))
+        else if (TypeGuard.isChainExpression(node))
         {
-            return this.visitCoalesceExpression(node);
+            return this.visitChainExpression(node);
         }
         else if (TypeGuard.isConditionalExpression(node))
         {
@@ -236,10 +236,9 @@ export default abstract class ExpressionVisitor
         return node;
     }
 
-    protected visitCoalesceExpression(node: ICoalesceExpression): INode
+    protected visitChainExpression(node: IChainExpression): INode
     {
-        this.visit(node.left);
-        this.visit(node.right);
+        this.visit(node.expression);
 
         return node;
     }

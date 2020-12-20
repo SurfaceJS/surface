@@ -7,7 +7,7 @@ import ArrowFunctionExpression       from "../internal/expressions/arrow-functio
 import AssignmentExpression          from "../internal/expressions/assignment-expression.js";
 import BinaryExpression              from "../internal/expressions/binary-expression.js";
 import CallExpression                from "../internal/expressions/call-expression.js";
-import CoalesceExpression            from "../internal/expressions/coalesce-expression.js";
+import ChainExpression               from "../internal/expressions/chain-expression.js";
 import ConditionalExpression         from "../internal/expressions/conditional-expression.js";
 import Identifier                    from "../internal/expressions/identifier.js";
 import Literal                       from "../internal/expressions/literal.js";
@@ -666,14 +666,14 @@ export const validExpressions: ParseExpectedSpec[] =
         raw:      "fn?.()",
         scope:    { fn: (): unknown => true },
         toString: "fn?.()",
-        type:     CallExpression,
+        type:     ChainExpression,
         value:    true,
     },
     {
         raw:      "fn?.()",
         scope:    { fn: null },
         toString: "fn?.()",
-        type:     CallExpression,
+        type:     ChainExpression,
         value:    undefined,
     },
     {
@@ -883,42 +883,42 @@ export const validExpressions: ParseExpectedSpec[] =
         raw:      "id ?? 2",
         scope:    { id: 1 },
         toString: "id ?? 2",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    1,
     },
     {
         raw:      "id ?? 2",
         scope:    { id: null },
         toString: "id ?? 2",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    2,
     },
     {
         raw:      "id ?? 0 || lastId ?? 4",
         scope:    { id: 1, lastId: 2 },
         toString: "id ?? 0 || lastId ?? 4",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    1,
     },
     {
         raw:      "id ?? 0 || lastId ?? 4",
         scope:    { id: null, lastId: null },
         toString: "id ?? 0 || lastId ?? 4",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    4,
     },
     {
         raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
         scope,
         toString: "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    2,
     },
     {
         raw:      "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
         scope,
         toString: "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
-        type:     CoalesceExpression,
+        type:     LogicalExpression,
         value:    0,
     },
     {
@@ -1058,28 +1058,28 @@ export const validExpressions: ParseExpectedSpec[] =
         raw:      "this?.id",
         scope:    { this: { id: 1 } },
         toString: "this?.id",
-        type:     MemberExpression,
+        type:     ChainExpression,
         value:    1,
     },
     {
         raw:      "this?.id",
         scope:    { this: null },
         toString: "this?.id",
-        type:     MemberExpression,
+        type:     ChainExpression,
         value:    undefined,
     },
     {
         raw:      "this?.['id']",
         scope:    { this: { id: 1 } },
         toString: "this?.[\"id\"]",
-        type:     MemberExpression,
+        type:     ChainExpression,
         value:    1,
     },
     {
         raw:      "this?.['id']",
         scope:    { this: null },
         toString: "this?.[\"id\"]",
-        type:     MemberExpression,
+        type:     ChainExpression,
         value:    undefined,
     },
     {

@@ -8,7 +8,7 @@ import ArrowFunctionExpression        from "./expressions/arrow-function-express
 import AssignmentExpression           from "./expressions/assignment-expression.js";
 import BinaryExpression               from "./expressions/binary-expression.js";
 import CallExpression                 from "./expressions/call-expression.js";
-import CoalesceExpression             from "./expressions/coalesce-expression.js";
+import ChainExpression                from "./expressions/chain-expression.js";
 import ConditionalExpression          from "./expressions/conditional-expression.js";
 import Identifier                     from "./expressions/identifier.js";
 import Literal                        from "./expressions/literal.js";
@@ -32,7 +32,7 @@ import type IAssignmentPattern        from "./interfaces/assignment-pattern";
 import type IAssignmentProperty       from "./interfaces/assignment-property";
 import type IBinaryExpression         from "./interfaces/binary-expression";
 import type ICallExpression           from "./interfaces/call-expression";
-import type ICoalesceExpression       from "./interfaces/coalesce-expression";
+import type IChainExpression          from "./interfaces/chain-expression.js";
 import type IConditionalExpression    from "./interfaces/conditional-expression";
 import type IExpression               from "./interfaces/expression";
 import type IIdentifier               from "./interfaces/identifier";
@@ -133,9 +133,9 @@ export default abstract class Expression
         return new CallExpression(callee, $arguments ?? []);
     }
 
-    public static coalesce(left: IExpression, right: IExpression): ICoalesceExpression
+    public static chainExpression(expression: IExpression): IChainExpression
     {
-        return Expression.wrapParenthesis(new CoalesceExpression(left, right));
+        return new ChainExpression(expression);
     }
 
     public static conditional(condition: IExpression, alternate: IExpression, consequent: IExpression): IConditionalExpression
@@ -158,9 +158,9 @@ export default abstract class Expression
         return Expression.wrapParenthesis(new LogicalExpression(left, right, operator));
     }
 
-    public static member(object: IExpression, property: IExpression, computed: boolean): IMemberExpression
+    public static member(object: IExpression, property: IExpression, computed: boolean, optional: boolean): IMemberExpression
     {
-        return new MemberExpression(object, property, computed);
+        return new MemberExpression(object, property, computed, optional);
     }
 
     public static new(callee: IExpression, $arguments?: IExpression[]): INewExpression

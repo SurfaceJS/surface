@@ -10,6 +10,7 @@ type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCach
 const binaryFunctions: Record<LogicalOperator, Operation> =
 {
     "&&": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) && (right.evaluate(scope, useCache) as Object),
+    "??": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) ?? (right.evaluate(scope, useCache) as Object),
     "||": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) || (right.evaluate(scope, useCache) as Object),
 };
 

@@ -13,7 +13,7 @@ export default class ExpressionVisitorSpec
     public visitsShouldWork(spec: { raw: string, value: string }): void
     {
         const expression = Expression.parse(spec.raw);
-        const visitor  = new FixtureVisitor();
+        const visitor    = new FixtureVisitor();
 
         visitor.visit(expression);
 

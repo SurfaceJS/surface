@@ -11,7 +11,7 @@ import ArrowFunctionExpression     from "./expressions/arrow-function-expression
 import AssignmentExpression        from "./expressions/assignment-expression.js";
 import BinaryExpression            from "./expressions/binary-expression.js";
 import CallExpression              from "./expressions/call-expression.js";
-import CoalesceExpression          from "./expressions/coalesce-expression.js";
+import ChainExpression from "./expressions/chain-expression.js";
 import ConditionalExpression       from "./expressions/conditional-expression.js";
 import Identifier                  from "./expressions/identifier.js";
 import Literal                     from "./expressions/literal.js";
@@ -44,7 +44,6 @@ import type
 {
     AssignmentOperator,
     BinaryOperator,
-    CoalesceOperator,
     LiteralValue,
     LogicalOperator,
     UnaryOperator,
@@ -280,17 +279,15 @@ export default class Parser
                 {
                     right = stack.pop() as IExpression;
 
-                    const operator = stack.pop() as BinaryOperator | CoalesceOperator | LogicalOperator;
+                    const operator = stack.pop() as BinaryOperator | LogicalOperator;
 
                     left = stack.pop() as IExpression;
 
                     precedences.pop();
 
-                    expression = operator == "??"
-                        ? new CoalesceExpression(left, right)
-                        : operator == "&&" || operator == "||"
-                            ? new LogicalExpression(left, right, operator)
-                            : new BinaryExpression(left, right, operator);
+                    expression = operator == "&&" || operator == "||" || operator == "??"
+                        ? new LogicalExpression(left, right, operator)
+                        : new BinaryExpression(left, right, operator);
 
                     stack.push(expression);
                 }
@@ -308,16 +305,14 @@ export default class Parser
 
             while (i > 1)
             {
-                const operator = stack[i - 1] as BinaryOperator | CoalesceOperator | LogicalOperator;
+                const operator = stack[i - 1] as BinaryOperator | LogicalOperator;
 
                 left  = stack[i - 2] as IExpression;
                 right = expression;
 
-                expression = operator == "??"
-                    ? new CoalesceExpression(left, right)
-                    : operator == "&&" || operator == "||"
-                        ? new LogicalExpression(left, right, operator)
-                        : new BinaryExpression(left, right, operator);
+                expression = operator == "&&" || operator == "||" || operator == "??"
+                    ? new LogicalExpression(left, right, operator)
+                    : new BinaryExpression(left, right, operator);
 
                 i -= 2;
             }
@@ -640,7 +635,8 @@ export default class Parser
 
     private leftHandSideExpression(allowCall: boolean): IExpression
     {
-        let expression = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
+        let expression        = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
+        let isChainExpression = false;
 
         // eslint-disable-next-line no-constant-condition
         while (true)
@@ -657,7 +653,7 @@ export default class Parser
 
                 if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
-                    expression = new MemberExpression(expression, new Identifier(this.nextToken().raw), false);
+                    expression = new MemberExpression(expression, new Identifier(this.nextToken().raw), false, false);
                 }
                 else
                 {
@@ -670,6 +666,8 @@ export default class Parser
 
                 if (optional)
                 {
+                    isChainExpression = true;
+
                     this.nextToken();
                 }
 
@@ -710,7 +708,7 @@ export default class Parser
             }
         }
 
-        return expression;
+        return isChainExpression ? new ChainExpression(expression) : expression;
     }
 
     private objectPattern(): ObjectPattern

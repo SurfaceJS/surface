@@ -8,7 +8,6 @@ export type { default as IAssignmentPattern }        from "./internal/interfaces
 export type { default as IAssignmentProperty }       from "./internal/interfaces/assignment-property";
 export type { default as IBinaryExpression }         from "./internal/interfaces/binary-expression";
 export type { default as ICallExpression }           from "./internal/interfaces/call-expression";
-export type { default as ICoalesceExpression }       from "./internal/interfaces/coalesce-expression";
 export type { default as IConditionalExpression }    from "./internal/interfaces/conditional-expression";
 export type { default as IElement }                  from "./internal/interfaces/element";
 export type { default as IExpression }               from "./internal/interfaces/expression";

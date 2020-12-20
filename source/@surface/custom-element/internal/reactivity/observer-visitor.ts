@@ -6,9 +6,9 @@ import type
     IAssignmentPattern,
     IAssignmentProperty,
     ICallExpression,
-    ICoalesceExpression,
     IConditionalExpression,
     IIdentifier,
+    ILogicalExpression,
     IMemberExpression,
     INewExpression,
     INode,
@@ -129,9 +129,16 @@ export default class ObserverVisitor extends ExpressionVisitor
         return expression;
     }
 
-    protected visitCoalesceExpression(expression: ICoalesceExpression): INode
+    protected visitLogicalExpression(expression: ILogicalExpression): INode
     {
-        this.visit(expression.left);
+        if (expression.operator == "??")
+        {
+            this.visit(expression.left);
+        }
+        else
+        {
+            super.visitLogicalExpression(expression);
+        }
 
         return expression;
     }
