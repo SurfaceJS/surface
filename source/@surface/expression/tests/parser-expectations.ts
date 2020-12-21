@@ -894,32 +894,39 @@ export const validExpressions: ParseExpectedSpec[] =
         value:    2,
     },
     {
-        raw:      "id ?? 0 || lastId ?? 4",
-        scope:    { id: 1, lastId: 2 },
-        toString: "id ?? 0 || lastId ?? 4",
-        type:     LogicalExpression,
-        value:    1,
-    },
-    {
-        raw:      "id ?? 0 || lastId ?? 4",
-        scope:    { id: null, lastId: null },
-        toString: "id ?? 0 || lastId ?? 4",
-        type:     LogicalExpression,
-        value:    4,
-    },
-    {
-        raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
-        scope,
-        toString: "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1 ?? 0",
+        raw:      "(0 || id) ?? 2",
+        scope:    { id: null },
+        toString: "(0 || id) ?? 2",
         type:     LogicalExpression,
         value:    2,
     },
     {
-        raw:      "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
-        scope,
-        toString: "0 ?? 1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
+        raw:      "(id ?? 0) || (lastId ?? 4)",
+        scope:    { id: 1, lastId: 2 },
+        toString: "(id ?? 0) || (lastId ?? 4)",
         type:     LogicalExpression,
-        value:    0,
+        value:    1,
+    },
+    {
+        raw:      "(id ?? 0) || (lastId ?? 4)",
+        scope:    { id: null, lastId: null },
+        toString: "(id ?? 0) || (lastId ?? 4)",
+        type:     LogicalExpression,
+        value:    4,
+    },
+    {
+        raw:      "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1",
+        scope,
+        toString: "11 * 10 + 9 << 8 > 7 == 6 & 5 ^ 4 | 3 && 2 || 1",
+        type:     LogicalExpression,
+        value:    2,
+    },
+    {
+        raw:      "1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
+        scope,
+        toString: "1 || 2 && 3 | 4 ^ 5 & 6 == 7 > 8 << 9 + 10 * 11",
+        type:     LogicalExpression,
+        value:    1,
     },
     {
         raw:      "1 > 2 ? \"greater\" : \"smaller\"",
@@ -1331,6 +1338,22 @@ export const validExpressions: ParseExpectedSpec[] =
 
 export const invalidExpressions: InvalidParseExpectedSpec[] =
 [
+    {
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "||" }), 1, 13, 14),
+        raw:   "null ?? true || false",
+    },
+    {
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "||" }), 1, 15, 16),
+        raw:   "1 + 2 * 3 ?? 4 || 1 + 2 * 3 ?? 4 || false",
+    },
+    {
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "??" }), 1, 14, 15),
+        raw:   "false || null ?? true",
+    },
+    {
+        error: new SyntaxError(format(Messages.unexpectedToken, { token: "??" }), 1, 15, 16),
+        raw:   "1 + 2 * 3 || 4 ?? 1 + 2 * 3 || 4 ?? false",
+    },
     {
         error: new SyntaxError(Messages.invalidLeftHandSideInAssignment, 1, 0, 1),
         raw:   "(x || y) = 1",
