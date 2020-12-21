@@ -933,13 +933,16 @@ export default class Scanner
 
                     punctuator = "...";
                 }
+
                 break;
 
             case "}":
                 this.advance();
 
                 this.curlyStack.pop();
+
                 break;
+
             case ")":
             case ";":
             case ",":
@@ -948,7 +951,9 @@ export default class Scanner
             case ":":
             case "~":
                 this.advance();
+
                 break;
+
             case "?":
                 {
                     punctuator = "?";
@@ -969,6 +974,13 @@ export default class Scanner
                         punctuator = "??";
 
                         this.advance();
+
+                        if (this.source[this.index + 1] == "=")
+                        {
+                            punctuator = "??=";
+
+                            this.advance();
+                        }
                     }
 
                     this.advance();
@@ -986,6 +998,7 @@ export default class Scanner
                 else
                 {
                     punctuator = punctuator.substr(0, 3);
+
                     switch (punctuator)
                     {
                         case "===":
@@ -994,11 +1007,14 @@ export default class Scanner
                         case "<<=":
                         case ">>=":
                         case "**=":
+                        case "&&=":
+                        case "||=":
                             this.setCursorAt(this.index + 3);
 
                             break;
                         default:
                             punctuator = punctuator.substr(0, 2);
+
                             switch (punctuator)
                             {
                                 case "!=":
@@ -1022,7 +1038,9 @@ export default class Scanner
                                 case "|=":
                                 case "||":
                                     this.setCursorAt(this.index + 2);
+
                                     break;
+
                                 default:
                                     punctuator = this.source[this.index];
 

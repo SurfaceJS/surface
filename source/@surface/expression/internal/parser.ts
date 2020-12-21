@@ -220,7 +220,10 @@ export default class Parser
             || this.match(">>>=")
             || this.match("&=")
             || this.match("^=")
-            || this.match("|=");
+            || this.match("|=")
+            || this.match("&&=")
+            || this.match("||=")
+            || this.match("??=");
 
         if (isAssignment)
         {
@@ -351,13 +354,6 @@ export default class Parser
         {
             switch (operator)
             {
-                case ")":
-                case ";":
-                case ",":
-                case "=":
-                case "]":
-                    return 0;
-
                 case "??":
                     return 1;
 

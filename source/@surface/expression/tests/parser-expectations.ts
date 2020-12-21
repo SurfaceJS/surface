@@ -474,6 +474,27 @@ export const validExpressions: ParseExpectedSpec[] =
         value:    1,
     },
     {
+        raw:      "this.value &&= false",
+        scope,
+        toString: "this.value &&= false",
+        type:     AssignmentExpression,
+        value:    false,
+    },
+    {
+        raw:      "this.value ||= true",
+        scope,
+        toString: "this.value ||= true",
+        type:     AssignmentExpression,
+        value:    true,
+    },
+    {
+        raw:      "this.value ??= true",
+        scope,
+        toString: "this.value ??= true",
+        type:     AssignmentExpression,
+        value:    true,
+    },
+    {
         raw:      "x = y++",
         scope:    { x: 1, y: 2 },
         toString: "x = y++",

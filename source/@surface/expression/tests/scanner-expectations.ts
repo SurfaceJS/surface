@@ -1915,6 +1915,45 @@ export const validTokens: ExpectedValidToken[] =
         },
     },
     {
+        source: "&&=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "&&=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "&&=",
+        },
+    },
+    {
+        source: "||=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "||=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "||=",
+        },
+    },
+    {
+        source: "??=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "??=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "??=",
+        },
+    },
+    {
         source: "&&",
         token:
         {
