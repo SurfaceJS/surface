@@ -292,7 +292,7 @@ export default class Scanner
 
     private scanBinaryLiteral(start: number): Token
     {
-        let $number  = "";
+        let value  = "";
         let isBigInt = false;
 
         if (!this.eof())
@@ -308,7 +308,7 @@ export default class Scanner
 
                 if (this.isBinary(char))
                 {
-                    $number += char;
+                    value += char;
                 }
                 else if (char != "_")
                 {
@@ -319,7 +319,7 @@ export default class Scanner
             }
         }
 
-        if ($number.length == 0)
+        if (value.length == 0)
         {
             this.throwUnexpectedToken();
         }
@@ -355,7 +355,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      parser(`0b${$number.replaceAll("_", "")}`),
+            value:      parser(`0b${value}`),
         };
 
         return token;
@@ -386,7 +386,7 @@ export default class Scanner
 
     private scanHexLiteral(start: number): Token
     {
-        let $number  = "";
+        let value  = "";
         let isBigInt = false;
 
         if (!this.eof())
@@ -402,7 +402,7 @@ export default class Scanner
 
                 if (Character.isHexDigit(char.charCodeAt(0)))
                 {
-                    $number += char;
+                    value += char;
                 }
                 else if (char != "_")
                 {
@@ -413,7 +413,7 @@ export default class Scanner
             }
         }
 
-        if ($number.length == 0)
+        if (value.length == 0)
         {
             this.throwUnexpectedToken();
         }
@@ -445,7 +445,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      parser(`0x${$number.replaceAll("_", "")}`),
+            value:      parser(`0x${value}`),
         };
 
         return token;
@@ -517,17 +517,17 @@ export default class Scanner
         let isBigInt = false;
         let isFloat  = false;
 
-        let $number = "";
+        let value = "";
 
         if (this.source[this.index] != ".")
         {
-            $number = this.source[this.index];
+            value = this.source[this.index];
 
             this.advance();
 
             if (!this.eof())
             {
-                if ($number == "0")
+                if (value == "0")
                 {
                     const char = this.source[this.index];
 
@@ -572,7 +572,7 @@ export default class Scanner
 
                     if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                     {
-                        $number += char;
+                        value += char;
                     }
                     else if (char != "_")
                     {
@@ -593,7 +593,7 @@ export default class Scanner
         {
             isFloat = true;
 
-            $number += this.source[this.index];
+            value += this.source[this.index];
 
             this.advance();
 
@@ -610,7 +610,7 @@ export default class Scanner
 
                     if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                     {
-                        $number += char;
+                        value += char;
                     }
                     else if (char != "_")
                     {
@@ -625,13 +625,13 @@ export default class Scanner
 
         if (this.source[this.index] == "e" || this.source[this.index] == "E")
         {
-            $number += this.source[this.index];
+            value += this.source[this.index];
 
             this.advance();
 
             if (this.source[this.index] == "+" || this.source[this.index] == "-")
             {
-                $number += this.source[this.index];
+                value += this.source[this.index];
 
                 this.advance();
             }
@@ -640,7 +640,7 @@ export default class Scanner
             {
                 while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                 {
-                    $number += this.source[this.index];
+                    value += this.source[this.index];
 
                     this.advance();
                 }
@@ -683,7 +683,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      parser($number),
+            value:      parser(value),
         };
 
         return token;
