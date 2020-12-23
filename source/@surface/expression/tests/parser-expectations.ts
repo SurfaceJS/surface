@@ -1041,9 +1041,16 @@ export const validExpressions: ParseExpectedSpec[] =
         value:    true,
     },
     {
-        raw:      "false || true && !false",
+        raw:      "false && true || false && true",
         scope,
-        toString: "false || true && !false",
+        toString: "false && true || false && true",
+        type:     LogicalExpression,
+        value:    false,
+    },
+    {
+        raw:      "false || true && !false || !true",
+        scope,
+        toString: "false || true && !false || !true",
         type:     LogicalExpression,
         value:    true,
     },

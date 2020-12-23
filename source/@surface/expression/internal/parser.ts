@@ -280,7 +280,7 @@ export default class Parser
                 break;
             }
 
-            let lastToken: Token | undefined;
+            let previousToken: Token | undefined;
 
             while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
             {
@@ -295,7 +295,7 @@ export default class Parser
                 }
                 else if (right instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(right.operator, operator))
                 {
-                    throw this.unexpectedTokenError(lastToken!);
+                    throw this.unexpectedTokenError(previousToken!);
                 }
 
                 precedences.pop();
@@ -306,7 +306,7 @@ export default class Parser
 
                 stack.push(expression);
 
-                lastToken = token;
+                previousToken = token;
             }
 
             stack.push(this.nextToken());
@@ -316,7 +316,7 @@ export default class Parser
             stack.push(this.isolateGrammar(this.exponentiationExpression));
         }
 
-        let lastToken: Token | undefined;
+        let previousToken: Token | undefined;
 
         let currentExpression = stack.pop() as IExpression;
 
@@ -333,14 +333,14 @@ export default class Parser
             }
             else if (right instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(right.operator, operator))
             {
-                throw this.unexpectedTokenError(lastToken!);
+                throw this.unexpectedTokenError(previousToken!);
             }
 
             currentExpression = operator == "&&" || operator == "||" || operator == "??"
                 ? new LogicalExpression(left, right, operator)
                 : new BinaryExpression(left, right, operator);
 
-            lastToken = token;
+            previousToken = token;
         }
 
         return currentExpression;
