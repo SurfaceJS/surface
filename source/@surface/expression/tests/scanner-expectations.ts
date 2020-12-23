@@ -1,7 +1,9 @@
+/* eslint-disable no-loss-of-precision */
+/* eslint-disable @typescript-eslint/no-loss-of-precision */
 /* eslint-disable max-lines */
-import Messages   from "../../internal/messages.js";
-import TokenType  from "../../internal/token-type.js";
-import type Token from "../../internal/types/token.js";
+import Messages   from "../internal/messages.js";
+import TokenType  from "../internal/token-type.js";
+import type Token from "../internal/types/token.js";
 
 export type ExpectedInvalidToken = { token: string, message: string };
 export type ExpectedValidToken   = { source: string, token: Token };
@@ -169,9 +171,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        15,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "\"double quotes\"",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -183,9 +185,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\n'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -197,9 +199,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\r'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -211,9 +213,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\b'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -225,9 +227,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\t'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -239,9 +241,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\f'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -253,9 +255,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\v'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -267,9 +269,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        7,
+            isOctal:    true,
             lineNumber: 1,
             lineStart:  0,
-            octal:      true,
             raw:        "'\\1...'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -281,9 +283,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
+            isOctal:    true,
             lineNumber: 1,
             lineStart:  0,
-            octal:      true,
             raw:        "'\\11...'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -296,9 +298,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        9,
+            isOctal:    true,
             lineNumber: 1,
             lineStart:  0,
-            octal:      true,
             raw:        "'\\123...'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -310,9 +312,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\u{A9}'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -324,9 +326,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\u00A9'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -338,9 +340,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        6,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\xA9'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -352,9 +354,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'\\z'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -366,9 +368,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        15,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'single quotes'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -380,9 +382,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        11,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "\"quotes '`\"",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -394,9 +396,9 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        11,
+            isOctal:    false,
             lineNumber: 1,
             lineStart:  0,
-            octal:      false,
             raw:        "'quotes \"`'",
             start:      0,
             type:       TokenType.StringLiteral,
@@ -408,12 +410,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\n",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\n",
         },
@@ -423,12 +425,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\r",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\r",
         },
@@ -438,12 +440,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\b",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\b",
         },
@@ -453,12 +455,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\t",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\t",
         },
@@ -468,12 +470,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\f",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\f",
         },
@@ -483,12 +485,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\v",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\v",
         },
@@ -498,12 +500,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\u{A9}",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "©",
         },
@@ -513,12 +515,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\u00A9",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "©",
         },
@@ -528,12 +530,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        6,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\ujs",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\\ujs",
         },
@@ -543,12 +545,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        6,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\xA9",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "©",
         },
@@ -558,12 +560,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\z",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "z",
         },
@@ -573,12 +575,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 2,
             lineStart:  3,
             raw:        "\\\r",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\\\n",
         },
@@ -588,12 +590,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        5,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 2,
             lineStart:  4,
             raw:        "\\\r\n",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\\\n",
         },
@@ -603,12 +605,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 2,
             lineStart:  3,
             raw:        "\r\n",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\n",
         },
@@ -618,12 +620,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        5,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\0a",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "\0a",
         },
@@ -633,12 +635,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        9,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 2,
             lineStart:  5,
             raw:        "foo\nbar",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "foo\nbar",
         },
@@ -648,12 +650,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        9,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "foo$bar",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "foo$bar",
         },
@@ -663,12 +665,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        4,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "\\z",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "z",
         },
@@ -678,12 +680,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        8,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "string",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "string",
         },
@@ -693,12 +695,12 @@ export const validTokens: ExpectedValidToken[] =
         token:
         {
             end:        11,
-            head:       true,
+            isHead:     true,
+            isTail:     true,
             lineNumber: 1,
             lineStart:  0,
             raw:        "quotes \"'",
             start:      0,
-            tail:       true,
             type:       TokenType.Template,
             value:      "quotes \"'",
         },
@@ -778,7 +780,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "123_123",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      123123,
+            value:      123_123,
         },
     },
     {
@@ -791,7 +793,20 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "123_123.123",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      123123.123,
+            value:      123_123.123,
+        },
+    },
+    {
+        source: "123_123n",
+        token:
+        {
+            end:        8,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "123_123n",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      123_123n,
         },
     },
     {
@@ -804,7 +819,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        ".123_123",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      0.123123,
+            value:      0.123_123,
         },
     },
     {
@@ -817,7 +832,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "123e+1",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      1230,
+            value:      123e+1,
         },
     },
     {
@@ -830,7 +845,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "123e-1",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      12.3,
+            value:      123e-1,
         },
     },
     {
@@ -843,7 +858,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0x0123456789abcdef",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      81985529216486900,
+            value:      0x0123456789abcdef,
         },
     },
     {
@@ -856,7 +871,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0X0123456789ABCDEF",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      81985529216486900,
+            value:      0X0123456789ABCDEF,
         },
     },
     {
@@ -869,7 +884,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0x0123456789_abcdef",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      81985529216486900,
+            value:      0x0123456789_abcdef,
         },
     },
     {
@@ -882,7 +897,20 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0X0123456789_ABCDEF",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      81985529216486900,
+            value:      0X0123456789_ABCDEF,
+        },
+    },
+    {
+        source: "0X0123456789_ABCDEFn",
+        token:
+        {
+            end:        20,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "0X0123456789_ABCDEFn",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0X0123456789_ABCDEFn,
         },
     },
     {
@@ -895,7 +923,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0b0101",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      5,
+            value:      0b0101,
         },
     },
     {
@@ -908,7 +936,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0b0101",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      5,
+            value:      0b0101,
         },
     },
     {
@@ -921,7 +949,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0B0101",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      5,
+            value:      0B0101,
         },
     },
     {
@@ -934,7 +962,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0b0101_0101",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      85,
+            value:      0b0101_0101,
         },
     },
     {
@@ -947,7 +975,20 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0B0101_0101",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      85,
+            value:      0B0101_0101,
+        },
+    },
+    {
+        source: "0B0101_0101n",
+        token:
+        {
+            end:        12,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "0B0101_0101n",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0B0101_0101n,
         },
     },
     {
@@ -1003,19 +1044,6 @@ export const validTokens: ExpectedValidToken[] =
         },
     },
     {
-        source: "0_1234567",
-        token:
-        {
-            end:        9,
-            lineNumber: 1,
-            lineStart:  0,
-            raw:        "0_1234567",
-            start:      0,
-            type:       TokenType.NumericLiteral,
-            value:      342391,
-        },
-    },
-    {
         source: "0o1234567",
         token:
         {
@@ -1025,7 +1053,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0o1234567",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      342391,
+            value:      0o1234567,
         },
     },
     {
@@ -1038,7 +1066,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0O1234567",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      342391,
+            value:      0O1234567,
         },
     },
     {
@@ -1051,7 +1079,7 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0o1_234567",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      342391,
+            value:      0o1_234567,
         },
     },
     {
@@ -1064,7 +1092,20 @@ export const validTokens: ExpectedValidToken[] =
             raw:        "0O1_234567",
             start:      0,
             type:       TokenType.NumericLiteral,
-            value:      342391,
+            value:      0O1_234567,
+        },
+    },
+    {
+        source: "0O1234567n",
+        token:
+        {
+            end:        10,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "0O1234567n",
+            start:      0,
+            type:       TokenType.NumericLiteral,
+            value:      0O1234567n,
         },
     },
     {
@@ -1874,6 +1915,45 @@ export const validTokens: ExpectedValidToken[] =
         },
     },
     {
+        source: "&&=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "&&=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "&&=",
+        },
+    },
+    {
+        source: "||=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "||=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "||=",
+        },
+    },
+    {
+        source: "??=",
+        token:
+        {
+            end:        3,
+            lineNumber: 1,
+            lineStart:  0,
+            raw:        "??=",
+            start:      0,
+            type:       TokenType.Punctuator,
+            value:      "??=",
+        },
+    },
+    {
         source: "&&",
         token:
         {
@@ -2293,48 +2373,52 @@ export const validTokens: ExpectedValidToken[] =
 
 export const invalidTokens: ExpectedInvalidToken[] =
 [
-    { message: Messages.invalidOrUnexpectedToken,                    token: "𐏿" },
-    { message: Messages.invalidUnicodeEscapeSequence,                token: "\\u{}" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0.123e*1" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "¬" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "1i" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "\\xD800" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "\\uD800" },
-    { message: Messages.invalidUnicodeEscapeSequence,                token: "\\u{AH}" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "\\u{123}\\x" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "\\u{123}\\uD800" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "x\\z" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0x" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0xFFoo" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0xhij" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0b23" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "'\r'" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "'\\\r'" },
-    { message: Messages.invalidUnicodeEscapeSequence,                token: "'\\uA9'" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0b" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0B" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0B0a" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0B09" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0o8" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0O8" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0o1a" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "0O1a" },
-    { message: Messages.invalidOrUnexpectedToken,                    token: "`foo" },
-    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings, token: "`\\1`" },
-    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings, token: "`\\01`" },
-    { message: Messages.keywordMustNotContainEscapedCharacters,      token: "\\u{006E}\\u{0065}\\u{0077}" },
-    { message: Messages.invalidHexadecimalEscapeSequence,            token: "'\\xh'" },
-    { message: Messages.invalidHexadecimalEscapeSequence,            token: "`\\xh`" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1_.123" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1._123" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "1.123_" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0x_12" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0x12_" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0b_10" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0b10_" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0o_10" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0O_10" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0o10_" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "0O10_" },
-    { message: Messages.numericSerapatorsAreNotAllowedHere,          token: "010_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "'\\\r'" },
+    { message: Messages.invalidUnicodeEscapeSequence,                            token: "'\\uA9'" },
+    { message: Messages.invalidHexadecimalEscapeSequence,                        token: "'\\xh'" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "'\r'" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0.123e*1" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "010_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "010n" },
+    { message: Messages.numericSeparatorCanNotBeUsedAfterLeadingZero,            token: "0_1" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0b" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0B" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0B09" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0B0a" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "0b10_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0b23" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0b_10" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0o" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "0o10_" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "0O10_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0o1a" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0O1a" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0o8" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0O8" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0o_10" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0O_10" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0x" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "0x12_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0x_12" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0xFFoo" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "0xhij" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "1.123_" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "1.1n" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "1._123" },
+    { message: Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals, token: "1_.123" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "1i" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "\\uD800" },
+    { message: Messages.keywordMustNotContainEscapedCharacters,                  token: "\\u{006E}\\u{0065}\\u{0077}" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "\\u{123}\\uD800" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "\\u{123}\\x" },
+    { message: Messages.invalidUnicodeEscapeSequence,                            token: "\\u{AH}" },
+    { message: Messages.invalidUnicodeEscapeSequence,                            token: "\\u{}" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "\\xD800" },
+    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings,             token: "`\\01`" },
+    { message: Messages.octalLiteralsAreNotAllowedInTemplateStrings,             token: "`\\1`" },
+    { message: Messages.invalidHexadecimalEscapeSequence,                        token: "`\\xh`" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "`foo" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "x\\z" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "¬" },
+    { message: Messages.invalidOrUnexpectedToken,                                token: "𐏿" },
 ];

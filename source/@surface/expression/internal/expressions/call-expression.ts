@@ -1,12 +1,13 @@
 import { format, hasValue } from "@surface/core";
 import type ICallExpression from "../interfaces/call-expression";
+import type IChainElement   from "../interfaces/chain-element.js";
 import type IExpression     from "../interfaces/expression";
 import type ISpreadElement  from "../interfaces/spread-element";
 import Messages             from "../messages.js";
 import NodeType             from "../node-type.js";
 import TypeGuard            from "../type-guard.js";
 
-export default class CallExpression implements IExpression
+export default class CallExpression implements IExpression, IChainElement
 {
     private cache: unknown;
 

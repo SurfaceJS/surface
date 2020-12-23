@@ -11,6 +11,7 @@ import type { AssignmentOperator } from "../types/operators";
 const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string | number, unknown], unknown>> =
 {
     "%=":   (target, key, value) => (target[key] as number) %=   value as number,
+    "&&=":  (target, key, value) => target[key]             &&=  value,
     "&=":   (target, key, value) => (target[key] as number) &=   value as number,
     "**=":  (target, key, value) => (target[key] as number) **=  value as number,
     "*=":   (target, key, value) => (target[key] as number) *=   value as number,
@@ -21,8 +22,10 @@ const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string
     "=":    (target, key, value) => target[key]               =  value,
     ">>=":  (target, key, value) => (target[key] as number) >>=  value as number,
     ">>>=": (target, key, value) => (target[key] as number) >>>= value as number,
+    "??=":  (target, key, value) => target[key]             ??=  value,
     "^=":   (target, key, value) => (target[key] as number) ^=   value as number,
     "|=":   (target, key, value) => (target[key] as number) |=   value as number,
+    "||=":  (target, key, value) => target[key]             ||=  value,
 };
 
 export default class AssignmentExpression implements IExpression

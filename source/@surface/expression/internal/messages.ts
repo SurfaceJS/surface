@@ -15,7 +15,9 @@ export default class Messages
     public static readonly invalidUnicodeEscapeSequence                                  = "Invalid Unicode escape sequence";
     public static readonly keywordMustNotContainEscapedCharacters                        = "Keyword must not contain escaped characters";
     public static readonly malformedArrowFunctionParameterList                           = "Malformed arrow function parameter list";
-    public static readonly numericSerapatorsAreNotAllowedHere                            = "Numeric serapators are not allowed here.";
+    public static readonly numericSeparatorCanNotBeUsedAfterLeadingZero                  = "Numeric separator can not be used after leading 0";
+    public static readonly numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals       = "Numeric separators are not allowed at the end of numeric literals";
+    // public static readonly numericSerapatorsAreNotAllowedHere                            = "Numeric serapators are not allowed here.";
     public static readonly octalLiteralsAreNotAllowedInTemplateStrings                   = "Octal literals are not allowed in template strings.";
     public static readonly restOperatorMustBeFollowedByAnIdentifierInDeclarationContexts = "`...` must be followed by an identifier in declaration contexts";
     public static readonly restParameterMayNotHaveAdefaultInitializer                    = "Rest parameter may not have a default initializer";

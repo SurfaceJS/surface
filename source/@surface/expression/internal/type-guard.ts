@@ -6,7 +6,7 @@ import type IAssignmentPattern        from "./interfaces/assignment-pattern.js";
 import type IAssignmentProperty       from "./interfaces/assignment-property.js";
 import type IBinaryExpression         from "./interfaces/binary-expression.js";
 import type ICallExpression           from "./interfaces/call-expression.js";
-import type ICoalesceExpression       from "./interfaces/coalesce-expression.js";
+import type IChainExpression          from "./interfaces/chain-expression.js";
 import type IConditionalExpression    from "./interfaces/conditional-expression.js";
 import type IIdentifier               from "./interfaces/identifier.js";
 import type ILiteral                  from "./interfaces/literal.js";
@@ -72,9 +72,9 @@ export default class TypeGuard
         return node.type == NodeType.CallExpression;
     }
 
-    public static isCoalesceExpression(node: INode): node is ICoalesceExpression
+    public static isChainExpression(node: INode): node is IChainExpression
     {
-        return node.type == NodeType.CoalesceExpression;
+        return node.type == NodeType.ChainExpression;
     }
 
     public static isConditionalExpression(node: INode): node is IConditionalExpression

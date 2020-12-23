@@ -1,3 +1,6 @@
+/* eslint-disable complexity */
+/* eslint-disable max-statements */
+/* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 import Character   from "./character.js";
 import Messages    from "./messages.js";
@@ -113,10 +116,13 @@ export default class Scanner
         }
     }
 
+    private isBinary(value: string): boolean
+    {
+        return value == "0" || value == "1";
+    }
+
     private isImplicitOctalLiteral(): boolean
     {
-        // Implicit octal, unless there is a non-octal digit.
-        // (Annex B.1.1 on Numeric Literals)
         for (let i = this.index + 1; i < this.length; i++)
         {
             const char = this.source[i];
@@ -138,20 +144,19 @@ export default class Scanner
     private getIdentifier(): string
     {
         const start = this.index;
+
         while (!this.eof())
         {
             const charCode = this.source.charCodeAt(this.index);
 
             if (charCode == BLACKSLASH)
             {
-                // Blackslash (U+005C) marks Unicode escape sequence.
                 this.setCursorAt(start);
 
                 return this.getComplexIdentifier();
             }
             else if (charCode >= HIGH_SURROGATE_AREA_BEGIN && charCode < LOW_SURROGATE_AREA_END)
             {
-                // Need to handle surrogate pairs.
                 this.setCursorAt(start);
 
                 return this.getComplexIdentifier();
@@ -177,7 +182,6 @@ export default class Scanner
 
         this.setCursorAt(this.index + id.length);
 
-        // '\u' (U+005C, U+0075) denotes an escaped character.
         if (codePoint == BLACKSLASH)
         {
             if (this.source.charCodeAt(this.index) != CHAR_LOWERCASE_U)
@@ -190,6 +194,7 @@ export default class Scanner
             if (this.source[this.index] == "{")
             {
                 this.advance();
+
                 id = this.scanUnicodeCodePointEscape();
             }
             else
@@ -211,11 +216,11 @@ export default class Scanner
             codePoint = this.source.codePointAt(this.index) as number;
 
             let char = String.fromCodePoint(codePoint);
+
             id += char;
 
             this.setCursorAt(this.index + char.length);
 
-            // '\u' (U+005C, U+0075) denotes an escaped character.
             if (codePoint == BLACKSLASH)
             {
                 id = id.substr(0, id.length - 1);
@@ -230,6 +235,7 @@ export default class Scanner
                 if (this.source[this.index] == "{")
                 {
                     this.advance();
+
                     char = this.scanUnicodeCodePointEscape();
                 }
                 else
@@ -259,76 +265,77 @@ export default class Scanner
         return "0123456789abcdef".indexOf(char.toLowerCase());
     }
 
-    private octalValue(char: string): number
+    private octalToDecimal(char: string): { code: number, isOctal: boolean }
     {
-        return "01234567".indexOf(char);
-    }
+        let isOctal = char != "0";
 
-    private octalToDecimal(ch: string): { code: number, octal: boolean }
-    {
-        // \0 is not octal escape sequence
-        let octal = ch !== "0";
-        let code = this.octalValue(ch);
+        let code = Number(char);
 
         if (!this.eof() && Character.isOctalDigit(this.source.charCodeAt(this.index)))
         {
-            octal = true;
-            code = code * 8 + this.octalValue(this.source[this.index]);
+            isOctal = true;
+
+            code = code * 8 + Number(this.source[this.index]);
+
             this.advance();
 
-            // 3 digits are only allowed when string starts
-            // With 0, 1, 2, 3
-            if ("0123".includes(ch) && !this.eof() && Character.isOctalDigit(this.source.charCodeAt(this.index)))
+            if ("0123".includes(char) && !this.eof() && Character.isOctalDigit(this.source.charCodeAt(this.index)))
             {
-                code = code * 8 + this.octalValue(this.source[this.index]);
+                code = code * 8 + Number(this.source[this.index]);
+
                 this.advance();
             }
         }
 
-        return { code, octal };
+        return { code, isOctal };
     }
 
     private scanBinaryLiteral(start: number): Token
     {
-        let $number = "";
-        let char    = "";
+        let value  = "";
+        let isBigInt = false;
 
         if (!this.eof())
         {
-            if (this.source[this.index] == "_")
+            if (!this.isBinary(this.source[this.index]))
             {
-                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
+                this.throwUnexpectedToken();
             }
-
-            $number += this.source[this.index];
-            this.advance();
 
             while (!this.eof())
             {
-                char = this.source[this.index];
+                const char = this.source[this.index];
 
-                if (char != "0" && char != "1" && char != "_")
+                if (this.isBinary(char))
+                {
+                    value += char;
+                }
+                else if (char != "_")
                 {
                     break;
                 }
 
-                $number += this.source[this.index];
                 this.advance();
             }
         }
 
-        if ($number.length == 0)
+        if (value.length == 0)
         {
-            // Only 0b or 0B
             this.throwUnexpectedToken();
         }
 
-        if ($number.endsWith("_"))
+        if (this.source[this.index - 1] == "_")
         {
-            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
+            this.throwUnexpectedToken(Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals);
         }
 
-        if (!this.eof())
+        if (this.source[this.index] == "n")
+        {
+            isBigInt = true;
+
+            this.advance();
+        }
+        else if (!this.eof())
         {
             const codePoint = this.source.charCodeAt(this.index);
 
@@ -338,7 +345,9 @@ export default class Scanner
             }
         }
 
-        const token =
+        const parser = isBigInt ? BigInt : Number;
+
+        const token: Token =
         {
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -346,7 +355,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      Number.parseInt($number.replace(/_/g, ""), 2),
+            value:      parser(`0b${value}`),
         };
 
         return token;
@@ -363,6 +372,7 @@ export default class Scanner
             if (!this.eof() && Character.isHexDigit(this.source.charCodeAt(this.index)))
             {
                 code = code * 16 + this.hexValue(this.source[this.index]);
+
                 this.advance();
             }
             else
@@ -376,37 +386,48 @@ export default class Scanner
 
     private scanHexLiteral(start: number): Token
     {
-        let $number = "";
-        let char    = "";
+        let value  = "";
+        let isBigInt = false;
 
         if (!this.eof())
         {
-            if (this.source[this.index] == "_")
+            if (!Character.isHexDigit(this.source.charCodeAt(this.index)))
             {
-                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
+                this.throwUnexpectedToken();
             }
 
             while (!this.eof())
             {
-                char = this.source[this.index];
-                if (!Character.isHexDigit(this.source.charCodeAt(this.index)) && char != "_")
+                const char = this.source[this.index];
+
+                if (Character.isHexDigit(char.charCodeAt(0)))
+                {
+                    value += char;
+                }
+                else if (char != "_")
                 {
                     break;
                 }
 
-                $number += this.source[this.index];
                 this.advance();
             }
         }
 
-        if ($number.length == 0)
+        if (value.length == 0)
         {
             this.throwUnexpectedToken();
         }
 
-        if ($number.endsWith("_"))
+        if (this.source[this.index - 1] == "_")
         {
-            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
+            this.throwUnexpectedToken(Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals);
+        }
+
+        if (this.source[this.index] == "n")
+        {
+            isBigInt = true;
+
+            this.advance();
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -414,7 +435,9 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
-        const token =
+        const parser = isBigInt ? BigInt : Number;
+
+        const token: Token =
         {
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -422,7 +445,7 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      Number.parseInt(`0x${$number.replace(/_/g, "")}`, 16),
+            value:      parser(`0x${value}`),
         };
 
         return token;
@@ -430,70 +453,41 @@ export default class Scanner
 
     private scanIdentifier(): Token
     {
-        let type: TokenType;
         const start = this.index;
+        const id    = this.source.charCodeAt(start) == BLACKSLASH ? this.getComplexIdentifier() : this.getIdentifier();
 
-        // Backslash (U+005C) starts an escaped character.
-        const id = this.source.charCodeAt(start) == BLACKSLASH ? this.getComplexIdentifier() : this.getIdentifier();
+        let type:  TokenType;
+        let value: unknown;
 
-        // There is no keyword or literal with only one character.
-        // Thus, it must be an identifier.
         if (id.length == 1)
         {
-            type = TokenType.Identifier;
+            type  = TokenType.Identifier;
+            value = id;
         }
         else if (this.isKeyword(id))
         {
-            type = TokenType.Keyword;
+            type  = TokenType.Keyword;
+            value = id;
         }
         else if (id == "null")
         {
-            const token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.NullLiteral,
-                value:      null,
-            };
-
-            return token;
+            type  = TokenType.NullLiteral;
+            value = null;
         }
         else if (id == "undefined")
         {
-            const token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.Identifier,
-                value:      undefined,
-            };
-
-            return token;
+            type  = TokenType.Identifier;
+            value = undefined;
         }
         else if (id == "true" || id == "false")
         {
-            const token =
-            {
-                end:        this.index,
-                lineNumber: this.lineNumber,
-                lineStart:  this.lineStart,
-                raw:        id,
-                start,
-                type:       TokenType.BooleanLiteral,
-                value:      id == "true",
-            };
-
-            return token;
+            type  = TokenType.BooleanLiteral;
+            value = id == "true";
         }
         else
         {
-            type = TokenType.Identifier;
+            type  = TokenType.Identifier;
+            value = id;
         }
 
         if (type != TokenType.Identifier && start + id.length != this.index)
@@ -502,7 +496,7 @@ export default class Scanner
             this.throwUnexpectedToken(Messages.keywordMustNotContainEscapedCharacters);
         }
 
-        const token =
+        const token: Token =
         {
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -510,121 +504,135 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type,
-            value:      id,
+            value,
         };
 
         return token;
     }
 
-    // eslint-disable-next-line max-statements
     private scanNumericLiteral(): Token
     {
         const start = this.index;
-        let char = this.source[start];
 
-        let $number = "";
-        if (char != ".")
+        let isBigInt = false;
+        let isFloat  = false;
+
+        let value = "";
+
+        if (this.source[this.index] != ".")
         {
-            $number = this.source[this.index];
+            value = this.source[this.index];
+
             this.advance();
 
             if (!this.eof())
             {
-                char = this.source[this.index];
-                // Hex number starts with '0x'.
-                // Octal number starts with '0'.
-                // Octal number in ES6 starts with '0o'.
-                // Binary number in ES6 starts with '0b'.
-                if ($number == "0")
+                if (value == "0")
                 {
+                    const char = this.source[this.index];
+
+                    if (char == "_")
+                    {
+                        this.throwUnexpectedToken(Messages.numericSeparatorCanNotBeUsedAfterLeadingZero);
+                    }
+
                     if (char == "x" || char == "X")
                     {
                         this.advance();
+
                         return this.scanHexLiteral(start);
                     }
 
                     if (char == "b" || char == "B")
                     {
                         this.advance();
+
                         return this.scanBinaryLiteral(start);
                     }
 
                     if (char == "o" || char == "O")
                     {
-                        return this.scanOctalLiteral(char, start);
-                    }
-
-                    if (char == "_")
-                    {
                         this.advance();
-                        char = this.source[this.index];
+
+                        return this.scanOctalLiteral(start, false);
                     }
 
-                    if (char && Character.isOctalDigit(char.charCodeAt(0)))
+                    if (this.source[this.index] && Character.isOctalDigit(char.charCodeAt(0)))
                     {
                         if (this.isImplicitOctalLiteral())
                         {
-                            return this.scanOctalLiteral(char, start);
+                            return this.scanOctalLiteral(start, true);
                         }
                     }
                 }
 
-                char = this.source[this.index];
-
-                while (!this.eof() && Character.isDecimalDigit(this.source.charCodeAt(this.index)) || char == "_")
+                while (!this.eof())
                 {
-                    $number += this.source[this.index];
-                    this.advance();
+                    const char = this.source[this.index];
 
-                    char = this.source[this.index];
+                    if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
+                    {
+                        value += char;
+                    }
+                    else if (char != "_")
+                    {
+                        break;
+                    }
+
+                    this.advance();
                 }
             }
         }
 
-        if (char == ".")
+        if (this.source[this.index - 1] == "_")
         {
-            if ($number.endsWith("_"))
-            {
-                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
-            }
+            this.throwUnexpectedToken(Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals);
+        }
 
-            $number += this.source[this.index];
+        if (this.source[this.index] == ".")
+        {
+            isFloat = true;
+
+            value += this.source[this.index];
+
             this.advance();
-
-            char = this.source[this.index];
-
-            if (char == "_")
-            {
-                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
-            }
 
             if (!this.eof())
             {
-                $number += this.source[this.index];
-                this.advance();
-
-                char = this.source[this.index];
-
-                while (!this.eof() && Character.isDecimalDigit(this.source.charCodeAt(this.index)) || char == "_")
+                if (!Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                 {
-                    $number += this.source[this.index];
+                    this.throwUnexpectedToken();
+                }
+
+                while (!this.eof())
+                {
+                    const char = this.source[this.index];
+
+                    if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
+                    {
+                        value += char;
+                    }
+                    else if (char != "_")
+                    {
+                        break;
+                    }
+
                     this.advance();
-                    char = this.source[this.index];
                 }
             }
 
         }
 
-        if (char == "e" || char == "E")
+        if (this.source[this.index] == "e" || this.source[this.index] == "E")
         {
-            $number += this.source[this.index];
+            value += this.source[this.index];
+
             this.advance();
 
-            char = this.source[this.index];
-
-            if (char == "+" || char == "-")
+            if (this.source[this.index] == "+" || this.source[this.index] == "-")
             {
-                $number += this.source[this.index];
+                value += this.source[this.index];
+
                 this.advance();
             }
 
@@ -632,7 +640,8 @@ export default class Scanner
             {
                 while (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                 {
-                    $number += this.source[this.index];
+                    value += this.source[this.index];
+
                     this.advance();
                 }
             }
@@ -642,9 +651,21 @@ export default class Scanner
             }
         }
 
-        if ($number.endsWith("_"))
+        if (this.source[this.index - 1] == "_")
         {
-            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
+            this.throwUnexpectedToken(Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals);
+        }
+
+        if (this.source[this.index] == "n")
+        {
+            if (isFloat)
+            {
+                this.throwUnexpectedToken();
+            }
+
+            isBigInt = true;
+
+            this.advance();
         }
 
         if (Character.isIdentifierStart(this.source.charCodeAt(this.index)))
@@ -652,73 +673,9 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
-        const token =
-        {
-            end:        this.index,
-            lineNumber: this.lineNumber,
-            lineStart:  this.lineStart,
-            raw:        $number,
-            start,
-            type:       TokenType.NumericLiteral,
-            value:      Number.parseFloat($number.replace(/_/g, "")),
-        };
+        const parser = isBigInt ? BigInt : Number;
 
-        return token;
-    }
-
-    private scanOctalLiteral(prefix: string, start: number): Token
-    {
-        let $number = "";
-        let octal   = false;
-
-        if (Character.isOctalDigit(prefix.charCodeAt(0)))
-        {
-            octal = true;
-
-            this.advance();
-
-            $number = prefix + this.source[this.index];
-
-            this.advance();
-        }
-        else
-        {
-            this.advance();
-
-            if (this.source[this.index] == "_")
-            {
-                this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
-            }
-        }
-
-        while (!this.eof())
-        {
-            if (!Character.isOctalDigit(this.source.charCodeAt(this.index)) && this.source[this.index] != "_")
-            {
-                break;
-            }
-
-            $number += this.source[this.index];
-            this.advance();
-        }
-
-        if (!octal && $number.length == 0)
-        {
-            // Only 0o or 0O
-            this.throwUnexpectedToken();
-        }
-
-        if ($number.endsWith("_"))
-        {
-            this.throwUnexpectedToken(Messages.numericSerapatorsAreNotAllowedHere);
-        }
-
-        if (Character.isIdentifierStart(this.source.charCodeAt(this.index)) || Character.isDecimalDigit(this.source.charCodeAt(this.index)))
-        {
-            this.throwUnexpectedToken();
-        }
-
-        const token =
+        const token: Token =
         {
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -726,7 +683,76 @@ export default class Scanner
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.NumericLiteral,
-            value:      Number.parseInt($number.replace(/_/g, ""), 8),
+            value:      parser(value),
+        };
+
+        return token;
+    }
+
+    private scanOctalLiteral(start: number, implicit: boolean): Token
+    {
+        let value    = "";
+        let isBigInt = false;
+
+        if (!this.eof())
+        {
+            if (!Character.isOctalDigit(this.source.charCodeAt(this.index)))
+            {
+                this.throwUnexpectedToken();
+            }
+
+            while (!this.eof())
+            {
+                const char = this.source[this.index];
+
+                if (Character.isOctalDigit(char.charCodeAt(0)))
+                {
+                    value += char;
+                }
+                else if (char != "_")
+                {
+                    break;
+                }
+
+                this.advance();
+            }
+        }
+
+        if (!implicit && value.length == 0)
+        {
+            this.throwUnexpectedToken();
+        }
+
+        if (this.source[this.index - 1] == "_")
+        {
+            this.throwUnexpectedToken(Messages.numericSeparatorsAreNotAllowedAtTheEndOfNumericLiterals);
+        }
+
+        if (!implicit && this.source[this.index] == "n")
+        {
+            isBigInt = true;
+
+            this.advance();
+        }
+
+        const codePoint = this.source.charCodeAt(this.index);
+
+        if (Character.isIdentifierStart(codePoint) || Character.isDecimalDigit(codePoint))
+        {
+            this.throwUnexpectedToken();
+        }
+
+        const parser = isBigInt ? BigInt : Number;
+
+        const token: Token =
+        {
+            end:        this.index,
+            lineNumber: this.lineNumber,
+            lineStart:  this.lineStart,
+            raw:        this.source.substring(start, this.index),
+            start,
+            type:       TokenType.NumericLiteral,
+            value:      parser(`0o${value}`),
         };
 
         return token;
@@ -735,28 +761,30 @@ export default class Scanner
     private scanStringLiteral(): Token
     {
         const start = this.index;
+        const quote = this.source[start];
 
-        const quote    = this.source[start];
         let terminated = false;
+        let isOctal    = false;
+        let value      = "";
 
         this.advance();
 
-        let octal   = false;
-        let $string = "";
-
         while (!this.eof())
         {
-            let char = this.source[this.index];
+            const char = this.source[this.index];
+
             this.advance();
 
             if (char == quote)
             {
                 terminated = true;
+
                 break;
             }
             else if (char == "\\")
             {
-                char = this.source[this.index];
+                const char = this.source[this.index];
+
                 this.advance();
 
                 if (!Character.isLineTerminator(char.charCodeAt(0)))
@@ -767,7 +795,8 @@ export default class Scanner
                             if (this.source[this.index] == "{")
                             {
                                 this.advance();
-                                $string += this.scanUnicodeCodePointEscape();
+
+                                value += this.scanUnicodeCodePointEscape();
                             }
                             else
                             {
@@ -778,7 +807,7 @@ export default class Scanner
                                     this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
                                 }
 
-                                $string += unescapedChar;
+                                value += unescapedChar;
                             }
                             break;
                         case "x":
@@ -790,39 +819,52 @@ export default class Scanner
                                 this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                             }
 
-                            $string += unescaped;
+                            value += unescaped;
+
                             break;
                         }
                         case "n":
-                            $string += "\n";
+                            value += "\n";
+
                             break;
+
                         case "r":
-                            $string += "\r";
+                            value += "\r";
+
                             break;
+
                         case "t":
-                            $string += "\t";
+                            value += "\t";
+
                             break;
+
                         case "b":
-                            $string += "\b";
+                            value += "\b";
+
                             break;
+
                         case "f":
-                            $string += "\f";
+                            value += "\f";
+
                             break;
+
                         case "v":
-                            $string += "\x0B";
+                            value += "\x0B";
+
                             break;
 
                         default:
                             if (char && Character.isOctalDigit(char.charCodeAt(0)))
                             {
-                                const octToDec = this.octalToDecimal(char);
+                                const octalToDecimal = this.octalToDecimal(char);
 
-                                octal = octToDec.octal;
-                                $string += String.fromCharCode(octToDec.code);
+                                isOctal = octalToDecimal.isOctal;
+
+                                value += String.fromCharCode(octalToDecimal.code);
                             }
                             else
                             {
-                                $string += char;
+                                value += char;
                             }
                             break;
                     }
@@ -838,7 +880,7 @@ export default class Scanner
             }
             else
             {
-                $string += char;
+                value += char;
             }
         }
 
@@ -847,16 +889,16 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
-        const token =
+        const token: Token =
         {
             end:        this.index,
+            isOctal,
             lineNumber: this.lineNumber,
             lineStart:  this.lineStart,
-            octal,
             raw:        this.source.substring(start, this.index),
             start,
             type:       TokenType.StringLiteral,
-            value:      $string,
+            value,
         };
 
         return token;
@@ -867,8 +909,8 @@ export default class Scanner
     {
         const start = this.index;
 
-        // Check for most common single-character punctuators.
         let punctuator = this.source[this.index];
+
         switch (punctuator)
         {
             case "(":
@@ -877,23 +919,30 @@ export default class Scanner
                 {
                     this.curlyStack.push("{");
                 }
+
                 this.advance();
+
                 break;
 
             case ".":
                 this.advance();
+
                 if (this.source[this.index] == "." && this.source[this.index + 1] == ".")
                 {
-                    // Spread operator: ...
                     this.setCursorAt(this.index + 2);
+
                     punctuator = "...";
                 }
+
                 break;
 
             case "}":
                 this.advance();
+
                 this.curlyStack.pop();
+
                 break;
+
             case ")":
             case ";":
             case ",":
@@ -902,7 +951,9 @@ export default class Scanner
             case ":":
             case "~":
                 this.advance();
+
                 break;
+
             case "?":
                 {
                     punctuator = "?";
@@ -923,6 +974,13 @@ export default class Scanner
                         punctuator = "??";
 
                         this.advance();
+
+                        if (this.source[this.index + 1] == "=")
+                        {
+                            punctuator = "??=";
+
+                            this.advance();
+                        }
                     }
 
                     this.advance();
@@ -931,7 +989,6 @@ export default class Scanner
                 break;
 
             default:
-                // 4-character punctuator.
                 punctuator = this.source.substr(this.index, 4);
 
                 if (punctuator == ">>>=")
@@ -940,8 +997,8 @@ export default class Scanner
                 }
                 else
                 {
-                    // 3-character punctuators.
                     punctuator = punctuator.substr(0, 3);
+
                     switch (punctuator)
                     {
                         case "===":
@@ -950,11 +1007,14 @@ export default class Scanner
                         case "<<=":
                         case ">>=":
                         case "**=":
+                        case "&&=":
+                        case "||=":
                             this.setCursorAt(this.index + 3);
+
                             break;
                         default:
-                            // 2-character punctuators.
                             punctuator = punctuator.substr(0, 2);
+
                             switch (punctuator)
                             {
                                 case "!=":
@@ -978,14 +1038,17 @@ export default class Scanner
                                 case "|=":
                                 case "||":
                                     this.setCursorAt(this.index + 2);
+
                                     break;
+
                                 default:
-                                    // 1-character punctuators.
                                     punctuator = this.source[this.index];
+
                                     if ("<>=!+-*%&|^/".includes(punctuator))
                                     {
                                         this.advance();
                                     }
+
                                     break;
                             }
                     }
@@ -997,7 +1060,7 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
-        const token =
+        const token: Token =
         {
             end:        this.index,
             lineNumber: this.lineNumber,
@@ -1014,25 +1077,27 @@ export default class Scanner
     // eslint-disable-next-line max-lines-per-function, max-statements
     private scanTemplate(): Token
     {
-        const start = this.index;
-        const head  = this.source[start] == "`";
+        const start  = this.index;
+        const isHead = this.source[start] == "`";
 
         let cooked     = "";
         let terminated = false;
-        let tail       = false;
+        let isTail     = false;
         let offset     = 1;
 
         this.advance();
 
         while (!this.eof())
         {
-            let char = this.source[this.index];
+            const char = this.source[this.index];
+
             this.advance();
 
             if (char == "`")
             {
-                tail       = true;
+                isTail       = true;
                 terminated = true;
+
                 break;
             }
             else if (char == "$")
@@ -1053,7 +1118,8 @@ export default class Scanner
             }
             else if (char == "\\")
             {
-                char = this.source[this.index];
+                const char = this.source[this.index];
+
                 this.advance();
 
                 if (!Character.isLineTerminator(char.charCodeAt(0)))
@@ -1062,23 +1128,31 @@ export default class Scanner
                     {
                         case "n":
                             cooked += "\n";
+
                             break;
+
                         case "r":
                             cooked += "\r";
+
                             break;
+
                         case "t":
                             cooked += "\t";
+
                             break;
+
                         case "u":
                             if (this.source[this.index] == "{")
                             {
                                 this.advance();
+
                                 cooked += this.scanUnicodeCodePointEscape();
                             }
                             else
                             {
                                 const restore       = this.index;
                                 const unescapedChar = this.scanHexEscape(char);
+
                                 if (unescapedChar !== null)
                                 {
                                     cooked += unescapedChar;
@@ -1086,10 +1160,13 @@ export default class Scanner
                                 else
                                 {
                                     this.setCursorAt(restore);
+
                                     cooked += "\\u";
                                 }
                             }
+
                             break;
+
                         case "x":
                             {
                                 const unescaped = this.scanHexEscape(char);
@@ -1098,18 +1175,25 @@ export default class Scanner
                                 {
                                     this.throwUnexpectedToken(Messages.invalidHexadecimalEscapeSequence);
                                 }
+
                                 cooked += unescaped;
                             }
 
                             break;
+
                         case "b":
                             cooked += "\b";
+
                             break;
+
                         case "f":
                             cooked += "\f";
+
                             break;
+
                         case "v":
                             cooked += "\v";
+
                             break;
 
                         default:
@@ -1117,20 +1201,20 @@ export default class Scanner
                             {
                                 if (Character.isDecimalDigit(this.source.charCodeAt(this.index)))
                                 {
-                                    // Illegal: \01 \02 and so on
                                     this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                                 }
+
                                 cooked += "\0";
                             }
                             else if (Character.isOctalDigit(char.charCodeAt(0)))
                             {
-                                // Illegal: \1 \2
                                 this.throwUnexpectedToken(Messages.octalLiteralsAreNotAllowedInTemplateStrings);
                             }
                             else
                             {
                                 cooked += char;
                             }
+
                             break;
                     }
                 }
@@ -1144,6 +1228,7 @@ export default class Scanner
                     }
 
                     this.lineStart = this.index;
+
                     cooked += "\\\n";
                 }
             }
@@ -1157,6 +1242,7 @@ export default class Scanner
                 }
 
                 this.lineStart = this.index;
+
                 cooked += "\n";
             }
             else
@@ -1170,20 +1256,20 @@ export default class Scanner
             this.throwUnexpectedToken();
         }
 
-        if (!head)
+        if (!isHead)
         {
             this.curlyStack.pop();
         }
 
-        const token =
+        const token: Token =
         {
             end:        this.index,
-            head,
+            isHead,
+            isTail,
             lineNumber: this.lineNumber,
             lineStart:  this.lineStart,
             raw:        this.source.slice(start + 1, this.index - offset),
             start,
-            tail,
             type:       TokenType.Template,
             value:      cooked,
         };
@@ -1196,7 +1282,6 @@ export default class Scanner
         let char = this.source[this.index];
         let code = 0;
 
-        // At least, one hex digit is required.
         if (char == "}")
         {
             this.throwUnexpectedToken(Messages.invalidUnicodeEscapeSequence);
@@ -1243,7 +1328,7 @@ export default class Scanner
     {
         if (this.eof())
         {
-            const token =
+            const token: Token =
             {
                 end:        this.index,
                 lineNumber: this.lineNumber,
@@ -1311,7 +1396,6 @@ export default class Scanner
             return this.scanTemplate();
         }
 
-        // Possible identifier start in a surrogate pair.
         if (charCode >= HIGH_SURROGATE_AREA_BEGIN && charCode < LOW_SURROGATE_AREA_END)
         {
             if (Character.isIdentifierStart(this.source.codePointAt(this.index) as number))
@@ -1327,7 +1411,6 @@ export default class Scanner
     {
         const start = this.index;
 
-        let char        = "";
         let pattern     = "";
         let classMarker = false;
         let terminated  = false;
@@ -1339,7 +1422,9 @@ export default class Scanner
             while (!this.eof())
             {
                 this.advance();
-                char = this.source[this.index];
+
+                const char = this.source[this.index];
+
                 pattern += char;
 
                 if (char && !Character.isLineTerminator(char.charCodeAt(0)))
@@ -1347,7 +1432,8 @@ export default class Scanner
                     if (char == "\\")
                     {
                         this.advance();
-                        char = this.source[this.index];
+
+                        const char = this.source[this.index];
 
                         if (Character.isLineTerminator(char.charCodeAt(0)))
                         {
@@ -1389,7 +1475,7 @@ export default class Scanner
 
         while (!this.eof())
         {
-            char = this.source[this.index];
+            const char = this.source[this.index];
 
             if (!Character.isIdentifierPart(char.charCodeAt(0)))
             {
@@ -1397,12 +1483,13 @@ export default class Scanner
             }
 
             flags += char;
+
             this.advance();
         }
 
         pattern = pattern.substring(1, pattern.length - 1);
 
-        const token =
+        const token: Token =
         {
             end:        this.index,
             flags,

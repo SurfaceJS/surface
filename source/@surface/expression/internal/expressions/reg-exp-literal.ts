@@ -42,7 +42,7 @@ export default class RegExpLiteral implements ILiteral
         return null;
     }
 
-    /* c8 ignore next 4 */
+    /* c8 ignore next 2 */
     public set value(_: null)
     { /* Compatibility */ }
 

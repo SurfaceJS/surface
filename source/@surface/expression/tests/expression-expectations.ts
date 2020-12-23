@@ -2,10 +2,10 @@
 /* eslint-disable max-len */
 import type { Indexer } from "@surface/core";
 import { format }       from "@surface/core";
-import Expression       from "../../internal/expression.js";
-import type INode       from "../../internal/interfaces/node";
-import Messages         from "../../internal/messages.js";
-import NodeType         from "../../internal/node-type.js";
+import Expression       from "../internal/expression.js";
+import type INode       from "../internal/interfaces/node";
+import Messages         from "../internal/messages.js";
+import NodeType         from "../internal/node-type.js";
 
 export type ExpressionFactoryExpected = { method: string, toString: string, type: NodeType, factory: () => INode };
 export type EvaluationErrorExpected   = { error: Error, raw: string, scope: Indexer };
@@ -61,10 +61,10 @@ export const expressionFactoriesExpected: ExpressionFactoryExpected[] =
         type:     NodeType.CallExpression,
     },
     {
-        factory:  (): INode => Expression.coalesce(Expression.literal(null), Expression.literal(0)),
-        method:   Expression.coalesce.name,
-        toString: "(null ?? 0)",
-        type:     NodeType.CoalesceExpression,
+        factory:  (): INode => Expression.chainExpression(Expression.member(Expression.this(), Expression.identifier("value"), false, true)),
+        method:   Expression.chainExpression.name,
+        toString: "this?.value",
+        type:     NodeType.ChainExpression,
     },
     {
         factory:  (): INode => Expression.conditional(Expression.literal(true), Expression.literal(1), Expression.literal(2)),
@@ -91,7 +91,7 @@ export const expressionFactoriesExpected: ExpressionFactoryExpected[] =
         type:     NodeType.Identifier,
     },
     {
-        factory:  (): INode => Expression.member(Expression.this(), Expression.identifier("value"), false),
+        factory:  (): INode => Expression.member(Expression.this(), Expression.identifier("value"), false, false),
         method:   Expression.member.name,
         toString: "this.value",
         type:     NodeType.MemberExpression,

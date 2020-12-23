@@ -387,7 +387,6 @@
         "no-new-symbol": "warn",
         "no-new-wrappers": "warn",
         "no-obj-calls": "warn",
-        "no-octal": "warn",
         "no-octal-escape": "warn",
         "no-param-reassign": "warn",
         "no-proto": "warn",

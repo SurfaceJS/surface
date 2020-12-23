@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 
-import { format, tuple }           from "@surface/core";
+import { format }           from "@surface/core";
 import { hasDuplicated }           from "./common.js";
 import AssignmentProperty          from "./elements/assignment-property.js";
 import Property                    from "./elements/property.js";
@@ -11,7 +11,7 @@ import ArrowFunctionExpression     from "./expressions/arrow-function-expression
 import AssignmentExpression        from "./expressions/assignment-expression.js";
 import BinaryExpression            from "./expressions/binary-expression.js";
 import CallExpression              from "./expressions/call-expression.js";
-import CoalesceExpression          from "./expressions/coalesce-expression.js";
+import ChainExpression             from "./expressions/chain-expression.js";
 import ConditionalExpression       from "./expressions/conditional-expression.js";
 import Identifier                  from "./expressions/identifier.js";
 import Literal                     from "./expressions/literal.js";
@@ -44,7 +44,6 @@ import type
 {
     AssignmentOperator,
     BinaryOperator,
-    CoalesceOperator,
     LiteralValue,
     LogicalOperator,
     UnaryOperator,
@@ -221,7 +220,10 @@ export default class Parser
             || this.match(">>>=")
             || this.match("&=")
             || this.match("^=")
-            || this.match("|=");
+            || this.match("|=")
+            || this.match("&&=")
+            || this.match("||=")
+            || this.match("??=");
 
         if (isAssignment)
         {
@@ -242,88 +244,106 @@ export default class Parser
 
     private binaryExpression(): IExpression
     {
-        let expression = this.inheritGrammar(this.exponentiationExpression);
+        const expression = this.inheritGrammar(this.exponentiationExpression);
 
         let precedence = this.binaryPrecedence(this.lookahead);
 
-        if (precedence > 0)
+        if (precedence == 0)
         {
-            const token = this.nextToken();
-
-            let left  = expression;
-            let right = this.isolateGrammar(this.exponentiationExpression);
-
-            const stack = tuple(left, token.raw as BinaryOperator | LogicalOperator, right);
-            const precedences = [precedence];
-
-            // eslint-disable-next-line no-constant-condition
-            while (true)
-            {
-                if (this.match("="))
-                {
-                    throw this.syntaxError(this.lookahead, Messages.invalidLeftHandSideInAssignment);
-                }
-
-                if (this.match("=>"))
-                {
-                    throw this.syntaxError(this.lookahead, Messages.malformedArrowFunctionParameterList);
-                }
-
-                precedence = this.binaryPrecedence(this.lookahead);
-
-                if (precedence <= 0)
-                {
-                    break;
-                }
-
-                while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
-                {
-                    right = stack.pop() as IExpression;
-
-                    const operator = stack.pop() as BinaryOperator | CoalesceOperator | LogicalOperator;
-
-                    left = stack.pop() as IExpression;
-
-                    precedences.pop();
-
-                    expression = operator == "??"
-                        ? new CoalesceExpression(left, right)
-                        : operator == "&&" || operator == "||"
-                            ? new LogicalExpression(left, right, operator)
-                            : new BinaryExpression(left, right, operator);
-
-                    stack.push(expression);
-                }
-
-                stack.push(this.nextToken().raw as BinaryOperator | LogicalOperator);
-
-                precedences.push(precedence);
-
-                stack.push(this.isolateGrammar(this.exponentiationExpression));
-            }
-
-            let i = stack.length - 1;
-
-            expression = stack[i] as IExpression;
-
-            while (i > 1)
-            {
-                const operator = stack[i - 1] as BinaryOperator | CoalesceOperator | LogicalOperator;
-
-                left  = stack[i - 2] as IExpression;
-                right = expression;
-
-                expression = operator == "??"
-                    ? new CoalesceExpression(left, right)
-                    : operator == "&&" || operator == "||"
-                        ? new LogicalExpression(left, right, operator)
-                        : new BinaryExpression(left, right, operator);
-
-                i -= 2;
-            }
+            return expression;
         }
 
-        return expression;
+        const left  = expression;
+        const token = this.nextToken();
+        const right = this.isolateGrammar(this.exponentiationExpression);
+
+        const stack       = [left, token, right];
+        const precedences = [precedence];
+
+        // eslint-disable-next-line no-constant-condition
+        while (true)
+        {
+            if (this.match("="))
+            {
+                throw this.syntaxError(this.lookahead, Messages.invalidLeftHandSideInAssignment);
+            }
+
+            if (this.match("=>"))
+            {
+                throw this.syntaxError(this.lookahead, Messages.malformedArrowFunctionParameterList);
+            }
+
+            precedence = this.binaryPrecedence(this.lookahead);
+
+            if (precedence <= 0)
+            {
+                break;
+            }
+
+            let previousToken: Token | undefined;
+
+            while (stack.length > 2 && precedence <= precedences[precedences.length - 1])
+            {
+                const right    = stack.pop() as IExpression;
+                const token    = stack.pop() as Token;
+                const operator = token.raw as BinaryOperator | LogicalOperator;
+                const left     = stack.pop() as IExpression;
+
+                if (left instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(left.operator, operator))
+                {
+                    throw this.unexpectedTokenError(token);
+                }
+                else if (right instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(right.operator, operator))
+                {
+                    throw this.unexpectedTokenError(previousToken!);
+                }
+
+                precedences.pop();
+
+                const expression = operator == "&&" || operator == "||" || operator == "??"
+                    ? new LogicalExpression(left, right, operator)
+                    : new BinaryExpression(left, right, operator);
+
+                stack.push(expression);
+
+                previousToken = token;
+            }
+
+            stack.push(this.nextToken());
+
+            precedences.push(precedence);
+
+            stack.push(this.isolateGrammar(this.exponentiationExpression));
+        }
+
+        let previousToken: Token | undefined;
+
+        let currentExpression = stack.pop() as IExpression;
+
+        while (stack.length > 0)
+        {
+            const right    = currentExpression;
+            const token    = stack.pop() as Token;
+            const operator = token.raw as BinaryOperator | LogicalOperator;
+            const left     = stack.pop() as IExpression;
+
+            if (left instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(left.operator, operator))
+            {
+                throw this.unexpectedTokenError(token);
+            }
+            else if (right instanceof LogicalExpression && this.hasMixedCoalescingAndLogical(right.operator, operator))
+            {
+                throw this.unexpectedTokenError(previousToken!);
+            }
+
+            currentExpression = operator == "&&" || operator == "||" || operator == "??"
+                ? new LogicalExpression(left, right, operator)
+                : new BinaryExpression(left, right, operator);
+
+            previousToken = token;
+        }
+
+        return currentExpression;
     }
 
     private binaryPrecedence(token: Token): number
@@ -334,13 +354,6 @@ export default class Parser
         {
             switch (operator)
             {
-                case ")":
-                case ";":
-                case ",":
-                case "=":
-                case "]":
-                    return 0;
-
                 case "??":
                     return 1;
 
@@ -529,6 +542,11 @@ export default class Parser
         return expression;
     }
 
+    private hasMixedCoalescingAndLogical(previous: BinaryOperator | LogicalOperator, actual: BinaryOperator | LogicalOperator): boolean
+    {
+        return (previous == "&&" || previous == "||") && actual == "??" || (actual == "&&" || actual == "||") && previous == "??";
+    }
+
     private groupExpression(): IExpression
     {
         this.expect("(");
@@ -640,12 +658,13 @@ export default class Parser
 
     private leftHandSideExpression(allowCall: boolean): IExpression
     {
-        let expression = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
+        let expression        = this.inheritGrammar(this.matchKeyword("new") ? this.newPrimaryExpression : this.primaryExpression);
+        let isChainExpression = false;
 
         // eslint-disable-next-line no-constant-condition
         while (true)
         {
-            if (this.lookahead.type == TokenType.Template && this.lookahead.head)
+            if (this.lookahead.type == TokenType.Template && this.lookahead.isHead)
             {
                 const quasi = this.inheritGrammar(this.templateLiteralExpression);
 
@@ -657,7 +676,7 @@ export default class Parser
 
                 if (this.lookahead.type == TokenType.Identifier || this.lookahead.type == TokenType.Keyword)
                 {
-                    expression = new MemberExpression(expression, new Identifier(this.nextToken().raw), false);
+                    expression = new MemberExpression(expression, new Identifier(this.nextToken().raw), false, false);
                 }
                 else
                 {
@@ -670,6 +689,8 @@ export default class Parser
 
                 if (optional)
                 {
+                    isChainExpression = true;
+
                     this.nextToken();
                 }
 
@@ -710,7 +731,7 @@ export default class Parser
             }
         }
 
-        return expression;
+        return isChainExpression ? new ChainExpression(expression) : expression;
     }
 
     private objectPattern(): ObjectPattern
@@ -1180,15 +1201,15 @@ export default class Parser
         const expressions: IExpression[]     = [];
 
         let token = this.nextToken();
-        quasis.push(new TemplateElement(token.value as string, token.raw, !!token.tail));
+        quasis.push(new TemplateElement(token.value as string, token.raw, !!token.isTail));
 
-        while (!!!token.tail)
+        while (!!!token.isTail)
         {
             expressions.push(this.inheritGrammar(this.expression));
 
             token = this.nextToken();
 
-            quasis.push(new TemplateElement(token.value as string, token.raw, !!token.tail));
+            quasis.push(new TemplateElement(token.value as string, token.raw, !!token.isTail));
         }
 
         return new TemplateLiteral(quasis, expressions);

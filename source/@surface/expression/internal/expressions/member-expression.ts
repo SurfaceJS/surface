@@ -1,11 +1,12 @@
 import type { Indexer }       from "@surface/core";
 import { hasValue }           from "@surface/core";
+import type IChainElement     from "../interfaces/chain-element.js";
 import type IExpression       from "../interfaces/expression";
 import type IMemberExpression from "../interfaces/member-expression";
 import NodeType               from "../node-type.js";
 import TypeGuard              from "../type-guard.js";
 
-export default class MemberExpression implements IExpression
+export default class MemberExpression implements IExpression, IChainElement
 {
     private cache: unknown;
 
@@ -62,12 +63,12 @@ export default class MemberExpression implements IExpression
         return NodeType.MemberExpression;
     }
 
-    public constructor(object: IExpression, property: IExpression, computed: boolean, optional?: boolean)
+    public constructor(object: IExpression, property: IExpression, computed: boolean, optional: boolean)
     {
         this._object   = object;
         this._property = property;
         this._computed = computed;
-        this._optional = !!optional;
+        this._optional = optional;
     }
 
     public clone(): IMemberExpression
