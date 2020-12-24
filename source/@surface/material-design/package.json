@@ -41,5 +41,19 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "type": "module",
+    "exports":
+    {
+        ".": "./index.js",
+        "./components/app": "./components/app/index.js",
+        "./components/app-bar": "./components/app-bar/index.js",
+        "./components/app-toogle": "./components/app-toogle/index.js",
+        "./components/button": "./components/button/index.js",
+        "./components/content": "./components/content/index.js",
+        "./components/footer": "./components/footer/index.js",
+        "./components/icon": "./components/icon/index.js",
+        "./components/navigation-drawer": "./components/navigation-drawer/index.js",
+        "./components/switch": "./components/switch/index.js",
+        "./components/text-field": "./components/text-field/index.js"
+    },
     "version": "0.1.0-alpha.1"
 }

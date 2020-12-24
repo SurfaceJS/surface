@@ -1,6 +1,6 @@
 /* eslint-disable import/no-unassigned-import */
-import "../button.js";
-import "../icon.js";
+import "../button/index.js";
+import "../icon/index.js";
 
 import { mixer }                  from "@surface/core";
 import CustomElement, { element } from "@surface/custom-element";
