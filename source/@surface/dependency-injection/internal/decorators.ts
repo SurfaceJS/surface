@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable import/prefer-default-export */
-
 import type { Constructor } from "@surface/core";
 import StaticMetadata       from "./metadata.js";
 

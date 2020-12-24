@@ -72,10 +72,12 @@ export default class DependencyInjectionSpec
         const instance1 = container.inject(InjectableMock);
         const instance2 = container.resolve<InjectableMock>("injectable-mock");
 
-        chai.assert.notEqual(instance1, instance2, "instance1 notEqual instance2");
-        chai.assert.deepEqual(instance1.foo, instance2.foo, "instance1.foo deepEqual instance2.foo");
-        chai.assert.deepEqual(instance1.bar, instance2.bar, "instance1.bar deepEqual instance2.bar");
-        chai.assert.deepEqual(instance1.baz, instance2.baz, "instance1.baz deepEqual instance2.baz");
+        chai.assert.notEqual(instance1, instance2,                  "instance1 notEqual instance2");
+        chai.assert.deepEqual(instance1.foo, instance2.foo,         "instance1.foo deepEqual instance2.foo");
+        chai.assert.deepEqual(instance1.bar, instance2.foo.bar,     "instance1.bar deepEqual instance2.foo.bar");
+        chai.assert.deepEqual(instance1.baz, instance2.foo.bar.baz, "instance1.baz deepEqual instance2.foo.bar.baz");
+        chai.assert.deepEqual(instance1.bar, instance2.bar,         "instance1.bar deepEqual instance2.bar");
+        chai.assert.deepEqual(instance1.baz, instance2.baz,         "instance1.baz deepEqual instance2.baz");
     }
 
     @test @shouldPass
