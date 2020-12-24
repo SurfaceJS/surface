@@ -1,6 +1,6 @@
-import ILiteral         from "../interfaces/literal";
-import NodeType         from "../node-type";
-import { LiteralValue } from "../types/operators";
+import type ILiteral         from "../interfaces/literal";
+import NodeType              from "../node-type.js";
+import type { LiteralValue } from "../types/operators";
 
 export default class Literal implements ILiteral
 {
@@ -15,7 +15,7 @@ export default class Literal implements ILiteral
         return this._value;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set value(value: LiteralValue)
     {
         this._value = value;

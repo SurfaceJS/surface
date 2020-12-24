@@ -1,0 +1,35 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/mock": "file:../mock",
+        "@types/node": "14.14.10",
+        "tslib": "2.0.3"
+    },
+    "description": "Mock Loader library.",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.14",
+        "chai": "4.2.0"
+    },
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "surface",
+        "typescript",
+        "mock",
+        "loader"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/mock-loader",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "1.0.0-alpha.1"
+}

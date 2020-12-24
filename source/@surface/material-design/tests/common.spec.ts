@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import { generateTheme }           from "../internal/common";
+import chai                        from "chai";
+import { generateTheme }           from "../internal/common.js";
 
 @suite
 export default class ThemeGeneratorSpec
@@ -54,6 +54,6 @@ export default class ThemeGeneratorSpec
 
         const actual = generateTheme(raw);
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 }

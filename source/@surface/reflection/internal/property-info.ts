@@ -1,5 +1,5 @@
-import FieldInfo from "./field-info";
-import Type      from "./type";
+import FieldInfo from "./field-info.js";
+import type Type from "./type.js";
 
 export default class PropertyInfo extends FieldInfo
 {

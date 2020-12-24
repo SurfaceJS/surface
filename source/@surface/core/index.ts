@@ -38,18 +38,18 @@ export type
     ValuesOf,
 } from "./internal/types";
 
-export * from "./internal/common/array";
-export * from "./internal/common/generic";
-export * from "./internal/common/object";
-export * from "./internal/common/promises";
-export * from "./internal/common/string";
+export * from "./internal/common/array.js";
+export * from "./internal/common/generic.js";
+export * from "./internal/common/object.js";
+export * from "./internal/common/promises.js";
+export * from "./internal/common/string.js";
 
-export { default as CancellationTokenSource } from "./internal/cancellation-token-source";
-export { default as AggregateError }          from "./internal/errors/aggregate-error";
-export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error";
-export { default as TaskCanceledError }       from "./internal/errors/task-canceled-error";
-export { default as Hashcode }                from "./internal/hashcode";
-export { default as Hookable }                from "./internal/hookable";
-export { default as Lazy }                    from "./internal/lazy";
-export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata";
-export { default as DisposableMetadata }      from "./internal/metadata/disposable-metadata";
+export { default as CancellationTokenSource } from "./internal/cancellation-token-source.js";
+export { default as AggregateError }          from "./internal/errors/aggregate-error.js";
+export { default as ArgumentOutOfRangeError } from "./internal/errors/argument-out-of-range-error.js";
+export { default as TaskCanceledError }       from "./internal/errors/task-canceled-error.js";
+export { default as Hashcode }                from "./internal/hashcode.js";
+export { default as Hookable }                from "./internal/hookable.js";
+export { default as Lazy }                    from "./internal/lazy.js";
+export { default as HookableMetadata }        from "./internal/metadata/hookable-metadata.js";
+export { default as DisposableMetadata }      from "./internal/metadata/disposable-metadata.js";

@@ -1,15 +1,16 @@
-import fs                                       from "fs";
-import path                                     from "path";
-import { Stream }                               from "stream";
-import { promisify }                            from "util";
-import chalk                                    from "chalk";
-import glob                                     from "glob";
-import { Credential, IPackage, IPublishParams } from "npm-registry-client";
-import { ICreateOptions, create }               from "tar";
-import { filterPackages, log, paths }           from "./common";
-import Status                                   from "./enums/status";
-import NpmRepository                            from "./npm-repository";
-import Version                                  from "./version";
+import fs                                            from "fs";
+import path                                          from "path";
+import type { Stream }                               from "stream";
+import { promisify }                                 from "util";
+import chalk                                         from "chalk";
+import glob                                          from "glob";
+import type { Credential, IPackage, IPublishParams } from "npm-registry-client";
+import type { ICreateOptions }                       from "tar";
+import { create }                                    from "tar";
+import { filterPackages, log, paths }                from "./common.js";
+import Status                                        from "./enums/status.js";
+import NpmRepository                                 from "./npm-repository.js";
+import Version                                       from "./version.js";
 
 const globAsync     = promisify(glob);
 const readdirAsync  = promisify(fs.readdir);

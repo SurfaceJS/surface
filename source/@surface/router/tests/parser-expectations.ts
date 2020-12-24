@@ -1,10 +1,10 @@
-import AssignmentNode  from "../internal/nodes/assignment-node";
-import IdentifierNode  from "../internal/nodes/identifier-node";
-import LiteralNode     from "../internal/nodes/literal-node";
-import RestNode        from "../internal/nodes/rest-node";
-import SegmentNode     from "../internal/nodes/segment-node";
-import TransformerNode from "../internal/nodes/transformer-node";
-import WildcardNode    from "../internal/nodes/wildcard-node";
+import AssignmentNode  from "../internal/nodes/assignment-node.js";
+import IdentifierNode  from "../internal/nodes/identifier-node.js";
+import LiteralNode     from "../internal/nodes/literal-node.js";
+import RestNode        from "../internal/nodes/rest-node.js";
+import SegmentNode     from "../internal/nodes/segment-node.js";
+import TransformerNode from "../internal/nodes/transformer-node.js";
+import WildcardNode    from "../internal/nodes/wildcard-node.js";
 
 export type ParserValidExpectation =
 {

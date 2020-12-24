@@ -94,7 +94,7 @@
             "isBackground": true,
             "label": "Cover File",
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "presentation": {
                 "reveal": "always"
@@ -115,11 +115,11 @@
             "type": "shell"
         },
         {
-            "command": "tsc; node ${workspaceFolder}/node_modules/mocha/bin/mocha --ui tdd ${fileBasenameNoExtension}.js",
+            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
             "isBackground": true,
             "label": "Test File",
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "presentation": {
                 "reveal": "always"

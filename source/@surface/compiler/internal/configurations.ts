@@ -1,19 +1,21 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
-import os                                    from "os";
-import path                                  from "path";
-import { deepMergeCombine }                  from "@surface/core";
-import ForkTsCheckerWebpackPlugin            from "fork-ts-checker-webpack-plugin";
-import { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions";
-import HtmlWebpackPlugin                     from "html-webpack-plugin";
-import TerserWebpackPlugin                   from "terser-webpack-plugin";
-import webpack                               from "webpack";
-import { BundleAnalyzerPlugin }              from "webpack-bundle-analyzer";
-import { createOnlyDefinedProxy }            from "./common";
-import ForceTsResolvePlugin                  from "./plugins/force-ts-resolve-plugin";
-import AnalyzerOptions                       from "./types/analyzer-options";
-import BuildOptions                          from "./types/build-options";
-import Configuration                         from "./types/configuration";
+import os                                         from "os";
+import path                                       from "path";
+import { deepMergeCombine }                       from "@surface/core";
+import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
+import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
+import HtmlWebpackPlugin                          from "html-webpack-plugin";
+import TerserWebpackPlugin                        from "terser-webpack-plugin";
+import webpack                                    from "webpack";
+import { BundleAnalyzerPlugin }                   from "webpack-bundle-analyzer";
+import { createOnlyDefinedProxy }                 from "./common.js";
+import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
+import type AnalyzerOptions                       from "./types/analyzer-options";
+import type BuildOptions                          from "./types/build-options";
+import type Configuration                         from "./types/configuration";
+
+const __dirname = import.meta.url;
 
 type ClientOptions = { host: string, port: number, publicPath: string };
 

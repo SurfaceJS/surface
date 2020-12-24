@@ -1,12 +1,12 @@
 /* eslint-disable import/no-unassigned-import */
-import "../button";
-import "../icon";
+import "../button.js";
+import "../icon.js";
 
 import { mixer }                  from "@surface/core";
 import CustomElement, { element } from "@surface/custom-element";
-import colorable                  from "../../mixins/colorable";
-import elevatable                 from "../../mixins/elevatable";
-import themeable                  from "../../mixins/themeable";
+import colorable                  from "../../mixins/colorable/index.js";
+import elevatable                 from "../../mixins/elevatable/index.js";
+import themeable                  from "../../mixins/themeable/index.js";
 import template                   from "./index.html";
 import style                      from "./index.scss";
 

@@ -1,15 +1,15 @@
-import TokenType       from "./enums/token-type";
-import INode           from "./interfaces/node";
-import AssignmentNode  from "./nodes/assignment-node";
-import IdentifierNode  from "./nodes/identifier-node";
-import LiteralNode     from "./nodes/literal-node";
-import RestNode        from "./nodes/rest-node";
-import SegmentNode     from "./nodes/segment-node";
-import TransformerNode from "./nodes/transformer-node";
-import WildcardNode    from "./nodes/wildcard-node";
-import Scanner         from "./scanner";
-import TypeGuard       from "./type-guard";
-import Token           from "./types/token";
+import TokenType       from "./enums/token-type.js";
+import type INode      from "./interfaces/node";
+import AssignmentNode  from "./nodes/assignment-node.js";
+import IdentifierNode  from "./nodes/identifier-node.js";
+import LiteralNode     from "./nodes/literal-node.js";
+import RestNode        from "./nodes/rest-node.js";
+import SegmentNode     from "./nodes/segment-node.js";
+import TransformerNode from "./nodes/transformer-node.js";
+import WildcardNode    from "./nodes/wildcard-node.js";
+import Scanner         from "./scanner.js";
+import TypeGuard       from "./type-guard.js";
+import type Token      from "./types/token";
 
 export default class Parser
 {

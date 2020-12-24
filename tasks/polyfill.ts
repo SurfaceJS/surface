@@ -4,7 +4,7 @@
 /* eslint-disable func-name-matching */
 /* eslint-disable no-extend-native */
 
-import { Indexer } from "@surface/core";
+import type { Indexer } from "@surface/core";
 
 if (!Array.prototype.flat)
 {

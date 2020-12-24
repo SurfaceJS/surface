@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import DataBind                    from "../internal/data-bind";
-import { scheduler }               from "../internal/singletons";
+import chai                        from "chai";
+import DataBind                    from "../internal/reactivity/data-bind.js";
+import { scheduler }               from "../internal/singletons.js";
 
 @suite
 export default class DataBindSpec
@@ -22,7 +22,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(changed);
+        chai.assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -37,7 +37,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(true);
+        chai.assert.isTrue(true);
     }
 
     @test @shouldPass
@@ -67,7 +67,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(changed);
+        chai.assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -97,7 +97,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(changed);
+        chai.assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -115,7 +115,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(changed);
+        chai.assert.isTrue(changed);
     }
 
     @test @shouldPass
@@ -134,7 +134,7 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.equal(value, "2");
+        chai.assert.equal(value, "2");
     }
 
     @test @shouldPass
@@ -165,13 +165,13 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.equal(right.value, 2);
+        chai.assert.equal(right.value, 2);
 
         right.value = 3;
 
         await scheduler.whenDone();
 
-        assert.equal(left.value, 3);
+        chai.assert.equal(left.value, 3);
     }
 
     @test @shouldPass
@@ -185,6 +185,6 @@ export default class DataBindSpec
 
         await scheduler.whenDone();
 
-        assert.isTrue(observed);
+        chai.assert.isTrue(observed);
     }
 }

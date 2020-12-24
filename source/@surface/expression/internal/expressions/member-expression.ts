@@ -1,10 +1,12 @@
-import { Indexer, hasValue } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import IMemberExpression     from "../interfaces/member-expression";
-import NodeType              from "../node-type";
-import TypeGuard             from "../type-guard";
+import type { Indexer }       from "@surface/core";
+import { hasValue }           from "@surface/core";
+import type IChainElement     from "../interfaces/chain-element.js";
+import type IExpression       from "../interfaces/expression";
+import type IMemberExpression from "../interfaces/member-expression";
+import NodeType               from "../node-type.js";
+import TypeGuard              from "../type-guard.js";
 
-export default class MemberExpression implements IExpression
+export default class MemberExpression implements IExpression, IChainElement
 {
     private cache: unknown;
 
@@ -14,7 +16,7 @@ export default class MemberExpression implements IExpression
         return this._computed;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set computed(value: boolean)
     {
         this._computed = value;
@@ -26,7 +28,7 @@ export default class MemberExpression implements IExpression
         return this._property;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set property(value: IExpression)
     {
         this._property = value;
@@ -38,7 +40,7 @@ export default class MemberExpression implements IExpression
         return this._object;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set object(value: IExpression)
     {
         this._object = value;
@@ -50,7 +52,7 @@ export default class MemberExpression implements IExpression
         return this._optional;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set optional(value: boolean)
     {
         this._optional = value;
@@ -61,12 +63,12 @@ export default class MemberExpression implements IExpression
         return NodeType.MemberExpression;
     }
 
-    public constructor(object: IExpression, property: IExpression, computed: boolean, optional?: boolean)
+    public constructor(object: IExpression, property: IExpression, computed: boolean, optional: boolean)
     {
         this._object   = object;
         this._property = property;
         this._computed = computed;
-        this._optional = !!optional;
+        this._optional = optional;
     }
 
     public clone(): IMemberExpression

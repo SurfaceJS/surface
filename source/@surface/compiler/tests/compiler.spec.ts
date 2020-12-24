@@ -1,38 +1,47 @@
-/* eslint-disable import/no-namespace */
-import Mock, { It }                           from "@surface/mock";
-import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
-import { assert }                             from "chai";
-import type webpack                           from "webpack";
-import type WebpackDevServer                  from "webpack-dev-server";
-import * as commonNS                          from "../internal/common";
-import Compiler                               from "../internal/compiler";
-import * as configurationsNS                  from "../internal/configurations";
-import * as externalNS                        from "../internal/external";
-// import WebpackTypes                           from "../internal/types/webpack";
 
-type Common         = typeof commonNS;
-type Configurations = typeof configurationsNS;
-type External       = typeof externalNS;
+import type { Server }                                            from "http";
+import Mock, { It }                                               from "@surface/mock";
+import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
+import chai                                                       from "chai";
+import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
+import webpack                                                    from "webpack";
+import WebpackDevServer                                           from "webpack-dev-server";
+import { log }                                                    from "../internal/common.js";
+import Compiler                                                   from "../internal/compiler.js";
+import
+{
+    createAnalyzerConfiguration,
+    createBuildConfiguration,
+    createConfiguration,
+    createDevServerConfiguration,
+} from "../internal/configurations.js";
 
-const logMock = Mock.callable<Common["log"]>();
-logMock.call(It.any());
+type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
-const webpackDevServerConstructor = Mock.newable<typeof WebpackDevServer>();
-const webpackMock                 = Mock.callable<(options?: webpack.Configuration) => webpack.Compiler>();
+const createAnalyzerConfigurationMock  = Mock.of(createAnalyzerConfiguration)!;
+const createBuildConfigurationMock     = Mock.of(createBuildConfiguration)!;
+const createConfigurationMock          = Mock.of(createConfiguration)!;
+const createDevServerConfigurationMock = Mock.of(createDevServerConfiguration)!;
+const logMock                          = Mock.of(log)!;
+const webpackDevServerConstructor      = Mock.of(WebpackDevServer)!;
+const webpackMock                      = Mock.of<WebpackCall>(webpack)!;
 
 function setup(type: "ok" | "ko"): void
 {
     const error = type == "ko" ? new Error("Some goes wrong") : undefined;
 
-    const statsMock            = Mock.instance<webpack.Stats>();
-    const compilerWatchingMock = Mock.instance<ReturnType<webpack.Compiler["watch"]>>();
+    const statsMock = Mock.instance<Stats>();
+
+    statsMock.setupGet("toString").returns(() => "");
+
+    const compilerWatchingMock = Mock.instance<ReturnType<WebpackCompiler["watch"]>>();
 
     compilerWatchingMock
         .setup("close")
         .call(It.any())
         .callback(callback => callback());
 
-    const compilerMock = Mock.instance<webpack.Compiler>();
+    const compilerMock = Mock.instance<WebpackCompiler>();
 
     compilerMock
         .setup("run")
@@ -55,7 +64,7 @@ function setup(type: "ok" | "ko"): void
 
     WebpackDevServerMock
         .setup("listen")
-        .call<(port: number, hostname: string, callback?: (error?: Error | undefined) => void) => import("http").Server>(It.any(), It.any(), It.any())
+        .call<(port: number, hostname: string, callback?: (error?: Error | undefined) => void) => Server>(It.any(), It.any(), It.any())
         .callback((_1, _2, callback) => callback!(error));
 
     webpackDevServerConstructor
@@ -69,35 +78,32 @@ export default class CompilerSpec
     @beforeEach
     public beforeEach(): void
     {
-        const commonNSMock: Partial<Common> =
-        {
-            log: logMock.proxy,
-        };
+        logMock.lock();
+        logMock.call();
 
-        const configurationsNSMock: Partial<Configurations> =
-        {
-            createAnalyzerConfiguration:  () => ({ }),
-            createBuildConfiguration:     () => ({ }),
-            createDevServerConfiguration: () => ({ }),
-        };
+        createAnalyzerConfigurationMock.lock();
+        createAnalyzerConfigurationMock.call(It.any(), It.any());
 
-        const externalNSMock: Partial<External> =
-        {
-            WebpackDevServer: webpackDevServerConstructor.proxy,
-            webpack:          webpackMock.proxy as typeof webpack,
-        };
+        createBuildConfigurationMock.lock();
+        createBuildConfigurationMock.call(It.any(), It.any());
 
-        Mock.module(commonNS,         commonNSMock);
-        Mock.module(configurationsNS, configurationsNSMock);
-        Mock.module(externalNS,       externalNSMock);
+        createConfigurationMock.lock();
+        createConfigurationMock.call(It.any(), It.any());
+
+        createDevServerConfigurationMock.lock();
+        createDevServerConfigurationMock.call(It.any(), It.any());
     }
 
     @afterEach
     public afterEach(): void
     {
-        Mock.restore(commonNS);
-        Mock.restore(configurationsNS);
-        Mock.restore(externalNS);
+        logMock.release();
+        createAnalyzerConfigurationMock.release();
+        createBuildConfigurationMock.release();
+        createConfigurationMock.release();
+        createDevServerConfigurationMock.release();
+        webpackDevServerConstructor.release();
+        webpackMock.release();
     }
 
     @test
@@ -107,7 +113,7 @@ export default class CompilerSpec
 
         await Compiler.analyze({ }, { });
 
-        assert.isOk(true);
+        chai.assert.isOk(true);
     }
 
     @test
@@ -117,7 +123,7 @@ export default class CompilerSpec
 
         await Compiler.run({ }, { });
 
-        assert.isOk(true);
+        chai.assert.isOk(true);
     }
 
     @test
@@ -137,7 +143,7 @@ export default class CompilerSpec
 
         await signal.close();
 
-        assert.isOk(true);
+        chai.assert.isOk(true);
     }
 
     @test
@@ -149,7 +155,7 @@ export default class CompilerSpec
 
         await signal.close();
 
-        assert.isOk(true);
+        chai.assert.isOk(true);
     }
 
     @test
@@ -163,7 +169,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            assert.isOk(error);
+            chai.assert.isOk(error);
         }
     }
 
@@ -178,7 +184,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            assert.isOk(error);
+            chai.assert.isOk(error);
         }
     }
 
@@ -193,7 +199,7 @@ export default class CompilerSpec
         }
         catch (error)
         {
-            assert.isOk(error);
+            chai.assert.isOk(error);
         }
     }
 }

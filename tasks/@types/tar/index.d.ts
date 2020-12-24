@@ -1,8 +1,8 @@
 
 declare module "tar"
 {
-    import { Stream } from "stream";
-    import MiniPass   from "minipass";
+    import type { Stream } from "stream";
+    import MiniPass        from "minipass";
 
     export interface ICreateOptions
     {

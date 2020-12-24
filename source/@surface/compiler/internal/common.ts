@@ -1,10 +1,9 @@
-export const analyzerDefaultSizesPattern = /^parsed|stat|gzip$/i;
-export const analyzerLogLevelPattern     = /^info|warn|error|silent$/i;
-export const analyzerModePattern         = /^server|static|json|disabled$/i;
-export const booleanPattern              = /^true|false$/i;
-export const logLevelPattern             = /^errors-only|minimal|none|normal|verbose$/i;
-export const modePattern                 = /^development|none|production$/i;
-export const targetPattern               = /^node|web$/i;
+import fs                 from "fs";
+import { pathToFileURL }  from "url";
+import util               from "util";
+import { booleanPattern } from "./patterns.js";
+
+const readFileAsync = util.promisify(fs.readFile);
 
 export function normalizeUrlPath(path: string): string
 {
@@ -20,6 +19,21 @@ export function createOnlyDefinedProxy<T extends object>(target: T): T
     };
 
     return new Proxy(target, handler);
+}
+
+export async function loadModule(path: string): Promise<unknown>
+{
+    if (path.endsWith(".json"))
+    {
+        if (fs.existsSync(path))
+        {
+            return JSON.parse((await readFileAsync(path)).toString());
+        }
+
+        throw new Error(`Cannot find the file ${path}`);
+    }
+
+    return import(pathToFileURL(path).href);
 }
 
 export const parsePattern = (pattern: RegExp) =>

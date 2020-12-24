@@ -1,10 +1,11 @@
-import { batchTest, shouldFail, shouldPass, suite, test }                       from "@surface/test-suite";
-import { expect }                                                               from "chai";
-import Messages                                                                 from "../internal/messages";
-import Scanner                                                                  from "../internal/scanner";
-import SyntaxError                                                              from "../internal/syntax-error";
-import TokenType                                                                from "../internal/token-type";
-import { ExpectedInvalidToken, ExpectedValidToken, invalidTokens, validTokens } from "./expectations/scanner-expected";
+import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
+import chai                                               from "chai";
+import Messages                                           from "../internal/messages.js";
+import Scanner                                            from "../internal/scanner.js";
+import SyntaxError                                        from "../internal/syntax-error.js";
+import TokenType                                          from "../internal/token-type.js";
+import type { ExpectedInvalidToken, ExpectedValidToken }  from "./scanner-expectations.js";
+import { invalidTokens, validTokens }                     from "./scanner-expectations.js";
 
 @suite
 export default class ScannerSpec
@@ -13,17 +14,16 @@ export default class ScannerSpec
     @test
     public regexWithFlags(): void
     {
-        expect(new Scanner("/foo[123]bar()\\//").scanRegex())
-            .include({ pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//", type: TokenType.RegularExpression })
-            .and.not.have.key("flag");
+        const token = new Scanner("/foo[123]bar()\\//").scanRegex();
+        chai.assert.isFalse("flag" in token);
+        chai.assert.include(token, { pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//", type: TokenType.RegularExpression });
     }
 
     @shouldPass
     @test
     public regexWithoutFlags(): void
     {
-        expect(new Scanner("/foo[123]bar()\\//ig").scanRegex())
-            .include({ flags: "ig", pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//ig", type: TokenType.RegularExpression });
+        chai.assert.include(new Scanner("/foo[123]bar()\\//ig").scanRegex(), { flags: "ig", pattern: "foo[123]bar()\\/", raw: "/foo[123]bar()\\//ig", type: TokenType.RegularExpression });
     }
 
     @shouldPass
@@ -33,18 +33,18 @@ export default class ScannerSpec
         // eslint-disable-next-line no-template-curly-in-string
         const scanner = new Scanner("`start ${identifier} middle ${1} end`");
 
-        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: "start " });
-        expect(scanner.nextToken()).include({ raw: "identifier", type: TokenType.Identifier });
-        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: " middle " });
-        expect(scanner.nextToken()).include({ type: TokenType.NumericLiteral, value: 1 });
-        expect(scanner.nextToken()).include({ type: TokenType.Template,       value: " end" });
+        chai.assert.include(scanner.nextToken(), { type: TokenType.Template,       value: "start " });
+        chai.assert.include(scanner.nextToken(), { raw: "identifier", type: TokenType.Identifier });
+        chai.assert.include(scanner.nextToken(), { type: TokenType.Template,       value: " middle " });
+        chai.assert.include(scanner.nextToken(), { type: TokenType.NumericLiteral, value: 1 });
+        chai.assert.include(scanner.nextToken(), { type: TokenType.Template,       value: " end" });
     }
 
     @shouldPass
     @batchTest(validTokens, x => `token (${x.source}) should be ${TokenType[x.token.type]}`)
     public tokensShouldWork(expected: ExpectedValidToken): void
     {
-        expect(new Scanner(expected.source).nextToken()).to.deep.equal(expected.token);
+        chai.assert.deepEqual(new Scanner(expected.source).nextToken(), expected.token);
     }
 
     @test @shouldPass
@@ -52,30 +52,59 @@ export default class ScannerSpec
     {
         const scanner = new Scanner("x.y");
 
-        expect(scanner.index).to.equal(0);
-        expect(scanner.nextToken().raw).to.equal("x");
-        expect(scanner.index).to.equal(1);
+        chai.assert.equal(scanner.index, 0);
+        chai.assert.equal(scanner.nextToken().raw, "x");
+        chai.assert.equal(scanner.index, 1);
 
         scanner.backtrack(1);
 
-        expect(scanner.index).to.equal(0);
-        expect(scanner.nextToken().raw).to.equal("x");
-        expect(scanner.index).to.equal(1);
+        chai.assert.equal(scanner.index, 0);
+        chai.assert.equal(scanner.nextToken().raw, "x");
+        chai.assert.equal(scanner.index, 1);
+    }
+
+    @test @shouldPass
+    public multiline(): void
+    {
+        const source =
+        `
+            x
+            +
+            y
+        `;
+
+        const scanner = new Scanner(source);
+
+        let token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "x");
+        chai.assert.equal(token.lineNumber, 2);
+
+        token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "+");
+        chai.assert.equal(token.lineNumber, 3);
+
+        token = scanner.nextToken();
+
+        chai.assert.equal(token.raw, "y");
+        chai.assert.equal(token.lineNumber, 4);
     }
 
     @shouldFail @test
     public invalidRegex(): void
     {
-        expect(() => new Scanner("foo[123]bar()\\//").scanRegex()).to.throw(SyntaxError, Messages.invalidOrUnexpectedToken);
-        expect(() => new Scanner("/foo[123]bar()\\/").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);
-        expect(() => new Scanner("/foo/ig1/").scanRegex()).to.throw("Invalid flags supplied to RegExp constructor 'ig1'");
-        expect(() => new Scanner("/\\\r").scanRegex()).to.throw(SyntaxError, Messages.invalidRegularExpressionMissingToken);
+        chai.assert.throw(() => new Scanner("foo[123]bar()\\//").scanRegex(), SyntaxError, Messages.invalidOrUnexpectedToken);
+        chai.assert.throw(() => new Scanner("/foo[123]bar()\\/").scanRegex(), SyntaxError, Messages.invalidRegularExpressionMissingToken);
+        chai.assert.throw(() => new Scanner("/foo/ig1/").scanRegex(), "Invalid flags supplied to RegExp constructor 'ig1'");
+        chai.assert.throw(() => new Scanner("/\\\r").scanRegex(), SyntaxError, Messages.invalidRegularExpressionMissingToken);
     }
 
     @shouldFail @batchTest(invalidTokens, x => `token (${x.token}) should throw ${x.message}`)
     public tokensShouldThrow(expected: ExpectedInvalidToken): void
     {
         const scanner = new Scanner(expected.token);
-        expect(() => scanner.nextToken()).to.throw(SyntaxError, expected.message);
+
+        chai.assert.throw(() => scanner.nextToken(), SyntaxError, expected.message);
     }
 }

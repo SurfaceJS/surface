@@ -1,7 +1,7 @@
-import IArrayPattern from "../interfaces/array-pattern";
-import IPattern      from "../interfaces/pattern";
-import NodeType      from "../node-type";
-import { PATTERN }   from "../symbols";
+import type IArrayPattern from "../interfaces/array-pattern";
+import type IPattern      from "../interfaces/pattern";
+import NodeType           from "../node-type.js";
+import { PATTERN }        from "../symbols.js";
 
 export default class ArrayPattern implements IPattern
 {
@@ -14,7 +14,7 @@ export default class ArrayPattern implements IPattern
         return this._elements;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set elements(value: (IPattern | null)[])
     {
         this._elements = value;

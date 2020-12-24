@@ -1,6 +1,8 @@
-import { Constructor, typeGuard }       from "@surface/core";
-import CustomElement, { event, styles } from "@surface/custom-element";
-import style                            from "./index.scss";
+import type { Constructor } from "@surface/core";
+import { typeGuard }        from "@surface/core";
+import type CustomElement   from "@surface/custom-element";
+import { event, styles }    from "@surface/custom-element";
+import style                from "./index.scss";
 
 const ANIMATION_ENTER = "animation-enter";
 const ANIMATION_IN    = "animation-in";

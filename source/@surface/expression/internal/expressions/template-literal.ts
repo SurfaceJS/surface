@@ -1,8 +1,8 @@
-import { hasValue }     from "@surface/core";
-import IExpression      from "../interfaces/expression";
-import ITemplateElement from "../interfaces/template-element";
-import ITemplateLiteral from "../interfaces/template-literal";
-import NodeType         from "../node-type";
+import { hasValue }          from "@surface/core";
+import type IExpression      from "../interfaces/expression";
+import type ITemplateElement from "../interfaces/template-element";
+import type ITemplateLiteral from "../interfaces/template-literal";
+import NodeType              from "../node-type.js";
 
 export default class TemplateLiteral implements IExpression
 {
@@ -16,7 +16,7 @@ export default class TemplateLiteral implements IExpression
         return this._expressions;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set expressions(value: IExpression[])
     {
         this._expressions = value;
@@ -27,7 +27,7 @@ export default class TemplateLiteral implements IExpression
         return this._quasis;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set quasis(value: ITemplateElement[])
     {
         this._quasis = value;

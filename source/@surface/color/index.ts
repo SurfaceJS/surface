@@ -1,2 +1,2 @@
-export * from "./internal/converters";
-export * from "./internal/swatches";
+export * from "./internal/converters.js";
+export * from "./internal/swatches.js";

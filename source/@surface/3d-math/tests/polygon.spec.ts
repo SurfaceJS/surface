@@ -1,7 +1,7 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                  from "chai";
-import Polygon                     from "../polygon";
-import Vector3                     from "../vector-3";
+import chai                        from "chai";
+import Polygon                     from "../internal/polygon.js";
+import Vector3                     from "../internal/vector-3.js";
 
 @suite
 export default class PolygonSpec
@@ -30,7 +30,7 @@ export default class PolygonSpec
 
         const actual = Polygon.scale(poligon, new Vector3(0.2, 0.5, 0.9), 0.5);
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
@@ -57,6 +57,6 @@ export default class PolygonSpec
 
         const actual = Polygon.translate(poligon, new Vector3(0.2, 0.5, 0.9));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 }

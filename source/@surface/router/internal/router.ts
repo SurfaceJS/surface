@@ -1,8 +1,9 @@
-import { Delegate, Indexer, typeGuard } from "@surface/core";
-import ITransformer                     from "./interfaces/transformer";
-import Route                            from "./route";
-import RouteData                        from "./route-data";
-import RouterMatch                      from "./types/router-match";
+import type { Delegate, Indexer } from "@surface/core";
+import { typeGuard }              from "@surface/core";
+import type ITransformer          from "./interfaces/transformer";
+import Route                      from "./route.js";
+import type RouteData             from "./types/route-data.js";
+import type RouterMatch           from "./types/router-match";
 
 type Entry<T> =
     {
@@ -19,9 +20,9 @@ const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 
 export default class Router<T = RouteData>
 {
-    protected readonly entries:     Entry<T>[]                = [];
-    protected readonly namedEntries: Map<string, Entry<T>>    = new Map();
-    protected readonly tranformers: Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
+    protected readonly entries:      Entry<T>[]                = [];
+    protected readonly namedEntries: Map<string, Entry<T>>     = new Map();
+    protected readonly tranformers:  Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
 
     public map(pattern: string): this;
     public map(pattern: string, selector: Delegate<[RouteData], T>): this;
@@ -50,17 +51,22 @@ export default class Router<T = RouteData>
         return this;
     }
 
-    public match(uri: string): RouterMatch<T>;
+    public match(path: string): RouterMatch<T>;
     public match(name: string, parameters: Indexer): RouterMatch<T>;
     public match(...args: [string] | [string, Indexer]): RouterMatch<T>
     {
         if (args.length == 1)
         {
-            const uri = args[0];
+            const path = args[0];
+
+            if (path.includes("?") || path.includes("#"))
+            {
+                throw new Error(`"${path}" is not a valid url pathname`);
+            }
 
             for (const entry of this.entries)
             {
-                const match = entry.route.match(uri);
+                const match = entry.route.match(path);
 
                 if (match.matched)
                 {
@@ -68,7 +74,7 @@ export default class Router<T = RouteData>
                 }
             }
 
-            return { matched: false, reason: `No match found to the path: ${uri}` };
+            return { matched: false, reason: `No match found to the path: ${path}` };
         }
 
         const [name, parameters] = args;

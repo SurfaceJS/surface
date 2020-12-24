@@ -1,9 +1,9 @@
 import { assert, mixer }                                   from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
 import { computed }                                        from "@surface/reactive";
-import colorable                                           from "../../mixins/colorable";
-import lineRippleable                                      from "../../mixins/line-rippleable";
-import themeable                                           from "../../mixins/themeable";
+import colorable                                           from "../../mixins/colorable/index.js";
+import lineRippleable                                      from "../../mixins/line-rippleable/index.js";
+import themeable                                           from "../../mixins/themeable/index.js";
 import template                                            from "./index.html";
 import style                                               from "./index.scss";
 

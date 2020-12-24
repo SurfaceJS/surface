@@ -1,4 +1,4 @@
-import Palette from "./palette";
+import type Palette from "./palette";
 
 type Theme =
 {

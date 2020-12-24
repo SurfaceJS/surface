@@ -1,5 +1,5 @@
-import MemberInfo from "./member-info";
-import Type       from "./type";
+import MemberInfo from "./member-info.js";
+import type Type  from "./type.js";
 
 export default class FieldInfo extends MemberInfo
 {

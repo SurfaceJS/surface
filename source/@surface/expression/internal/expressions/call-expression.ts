@@ -1,12 +1,13 @@
 import { format, hasValue } from "@surface/core";
-import ICallExpression      from "../interfaces/call-expression";
-import IExpression          from "../interfaces/expression";
-import ISpreadElement       from "../interfaces/spread-element";
-import Messages             from "../messages";
-import NodeType             from "../node-type";
-import TypeGuard            from "../type-guard";
+import type ICallExpression from "../interfaces/call-expression";
+import type IChainElement   from "../interfaces/chain-element.js";
+import type IExpression     from "../interfaces/expression";
+import type ISpreadElement  from "../interfaces/spread-element";
+import Messages             from "../messages.js";
+import NodeType             from "../node-type.js";
+import TypeGuard            from "../type-guard.js";
 
-export default class CallExpression implements IExpression
+export default class CallExpression implements IExpression, IChainElement
 {
     private cache: unknown;
 
@@ -16,7 +17,7 @@ export default class CallExpression implements IExpression
         return this._arguments;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set arguments(value: (IExpression | ISpreadElement)[])
     {
         this._arguments = value;
@@ -28,7 +29,7 @@ export default class CallExpression implements IExpression
         return this._callee;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set callee(value: IExpression)
     {
         this._callee = value;
@@ -40,7 +41,7 @@ export default class CallExpression implements IExpression
         return this._optional;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set optional(value: boolean)
     {
         this._optional = value;

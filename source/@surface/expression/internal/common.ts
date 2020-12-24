@@ -1,6 +1,6 @@
-import IPattern  from "./interfaces/pattern";
-import TypeGuard from "./type-guard";
-import Token     from "./types/token";
+import type IPattern from "./interfaces/pattern";
+import TypeGuard     from "./type-guard.js";
+import type Token    from "./types/token";
 
 export function hasDuplicated(parameters: IPattern[]): boolean;
 export function hasDuplicated(parameters: IPattern[], lookeaheads: Token[]): { result: true, token: Token } | { result: false, token: null };

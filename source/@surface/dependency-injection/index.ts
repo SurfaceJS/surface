@@ -1,6 +1,5 @@
+import Container from "./internal/container.js";
 
-import Container from "./internal/container";
-
-export * from "./internal/decorators";
+export * from "./internal/decorators.js";
 
 export default Container;

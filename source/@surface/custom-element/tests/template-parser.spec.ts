@@ -1,16 +1,16 @@
 /* eslint-disable max-len */
 /* eslint-disable max-lines-per-function */
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
-import { Delegate }                                                      from "@surface/core";
-import { IIdentifier }                                                   from "@surface/expression";
+import type { Delegate }                                                 from "@surface/core";
+import type { IIdentifier }                                              from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
-import { assert }                                                        from "chai";
-import TemplateParseError                                                from "../internal/errors/template-parse-error";
-import ITemplateDescriptor                                               from "../internal/interfaces/template-descriptor";
-import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers";
-import TemplateParser                                                    from "../internal/template-parser";
+import chai                                                              from "chai";
+import TemplateParseError                                                from "../internal/errors/template-parse-error.js";
+import type ITemplateDescriptor                                          from "../internal/interfaces/template-descriptor";
+import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers/expression-parsers.js";
+import TemplateParser                                                    from "../internal/parsers/template-parser.js";
 
 TemplateParser.testEnviroment = true;
 
@@ -651,12 +651,12 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parseReference("x-component", template);
 
-        assert.deepEqual(actual.directives.injections,   expected.directives.injections,   "actual.directives deep Equal to expected.injections");
-        assert.deepEqual(actual.directives.logicals,     expected.directives.logicals,     "actual.logicals deep Equal to expected.logicals");
-        assert.deepEqual(actual.directives.loops,        expected.directives.loops,        "actual.loops deep Equal to expected.loops");
-        assert.deepEqual(actual.directives.placeholders, expected.directives.placeholders, "actual.directives deep Equal to expected.placeholders");
-        assert.deepEqual(actual.elements,                expected.elements,                "actual.elements deep Equal to expected.elements");
-        assert.deepEqual(actual.lookup,                  expected.lookup,                  "actual.lookup deep Equal to expected.lookup");
+        chai.assert.deepEqual(actual.directives.injections,   expected.directives.injections,   "actual.directives deep Equal to expected.injections");
+        chai.assert.deepEqual(actual.directives.logicals,     expected.directives.logicals,     "actual.logicals deep Equal to expected.logicals");
+        chai.assert.deepEqual(actual.directives.loops,        expected.directives.loops,        "actual.loops deep Equal to expected.loops");
+        chai.assert.deepEqual(actual.directives.placeholders, expected.directives.placeholders, "actual.directives deep Equal to expected.placeholders");
+        chai.assert.deepEqual(actual.elements,                expected.elements,                "actual.elements deep Equal to expected.elements");
+        chai.assert.deepEqual(actual.lookup,                  expected.lookup,                  "actual.lookup deep Equal to expected.lookup");
     }
 
     @shouldPass @test
@@ -668,7 +668,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -680,7 +680,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -692,7 +692,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -704,7 +704,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -716,7 +716,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -728,7 +728,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -740,7 +740,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -752,7 +752,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldPass @test
@@ -764,7 +764,7 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template)[0].innerHTML;
 
-        assert.equal(actual, expected);
+        chai.assert.equal(actual, expected);
     }
 
     @shouldFail @test
@@ -778,7 +778,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -792,7 +792,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -806,7 +806,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -820,7 +820,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -834,7 +834,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -848,7 +848,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -862,7 +862,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -876,7 +876,7 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @shouldFail @test
@@ -890,6 +890,6 @@ export default class TemplateParserSpec
         const actual   = tryAction(() => TemplateParser.parse("x-component", template));
         const expected = toRaw(new TemplateParseError(message, stack));
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 }

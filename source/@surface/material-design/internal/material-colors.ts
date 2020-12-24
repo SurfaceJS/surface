@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 const materialColors =
 {
     red:
@@ -66,7 +67,7 @@ const materialColors =
         "A100": "#b388ff",
         "A200": "#7c4dff",
         "A400": "#651fff",
-        "A700": "#6200ea"
+        "A700": "#6200ea",
     },
     indigo:
     {
@@ -100,7 +101,7 @@ const materialColors =
         "A100": "#82b1ff",
         "A200": "#448aff",
         "A400": "#2979ff",
-        "A700": "#2962ff"
+        "A700": "#2962ff",
     },
     lightBlue:
     {
@@ -134,7 +135,7 @@ const materialColors =
         "A100": "#84fffF",
         "A200": "#18fffF",
         "A400": "#00e5fF",
-        "A700": "#00b8d4"
+        "A700": "#00b8d4",
     },
     teal:
     {
@@ -151,7 +152,7 @@ const materialColors =
         "A100": "#a7ffeB",
         "A200": "#64ffdA",
         "A400": "#1de9b6",
-        "A700": "#00bfa5"
+        "A700": "#00bfa5",
     },
     green:
     {
@@ -168,7 +169,7 @@ const materialColors =
         "A100": "#b9f6cA",
         "A200": "#69f0aE",
         "A400": "#00e676",
-        "A700": "#00c853"
+        "A700": "#00c853",
     },
     lightGreen:
     {
@@ -312,7 +313,7 @@ const materialColors =
         "900": "#212121",
     },
     "black": "#000000",
-    "white": "#ffffff"
+    "white": "#ffffff",
 };
 
 export type MaterialColors = typeof materialColors;

@@ -1,8 +1,8 @@
-import IAssignmentPattern from "../interfaces/assignment-pattern";
-import IExpression        from "../interfaces/expression";
-import IPattern           from "../interfaces/pattern";
-import NodeType           from "../node-type";
-import { PATTERN }        from "../symbols";
+import type IAssignmentPattern from "../interfaces/assignment-pattern";
+import type IExpression        from "../interfaces/expression";
+import type IPattern           from "../interfaces/pattern";
+import NodeType                from "../node-type.js";
+import { PATTERN }             from "../symbols.js";
 
 export default class AssignmentPattern implements IPattern
 {
@@ -16,7 +16,7 @@ export default class AssignmentPattern implements IPattern
         return this._left;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set left(value: IPattern)
     {
         this._left = value;
@@ -27,7 +27,7 @@ export default class AssignmentPattern implements IPattern
         return this._right;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set right(value: IExpression)
     {
         this._right = value;

@@ -1,10 +1,11 @@
-import { Indexer, hasValue } from "@surface/core";
-import IExpression           from "../interfaces/expression";
-import IObjectExpression     from "../interfaces/object-expression";
-import IProperty             from "../interfaces/property";
-import ISpreadElement        from "../interfaces/spread-element";
-import NodeType              from "../node-type";
-import TypeGuard             from "../type-guard";
+import type { Indexer }       from "@surface/core";
+import { hasValue }           from "@surface/core";
+import type IExpression       from "../interfaces/expression";
+import type IObjectExpression from "../interfaces/object-expression";
+import type IProperty         from "../interfaces/property";
+import type ISpreadElement    from "../interfaces/spread-element";
+import NodeType               from "../node-type.js";
+import TypeGuard              from "../type-guard.js";
 
 export default class ObjectExpression implements IExpression
 {
@@ -16,7 +17,7 @@ export default class ObjectExpression implements IExpression
         return this._properties;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set properties(value: (IProperty | ISpreadElement)[])
     {
         this._properties = value;

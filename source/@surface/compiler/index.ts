@@ -1,4 +1,4 @@
-import Compiler from "./internal/compiler";
+import Compiler from "./internal/compiler.js";
 
 export type { default as AnalyzerOptions }  from "./internal/types/analyzer-options";
 export type { default as BuildOptions }     from "./internal/types/build-options";

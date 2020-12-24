@@ -1,13 +1,8 @@
-import { batchTest, shouldFail, shouldPass, suite } from "@surface/test-suite";
-import { assert }                                   from "chai";
-import Parser                                       from "../internal/parser";
-import
-{
-    ParserInvalidExpectation,
-    ParserValidExpectation,
-    invalidExpectations,
-    validExpectations,
-} from "./parser-expectations";
+import { batchTest, shouldFail, shouldPass, suite }              from "@surface/test-suite";
+import chai                                                      from "chai";
+import Parser                                                    from "../internal/parser.js";
+import type { ParserInvalidExpectation, ParserValidExpectation } from "./parser-expectations.js";
+import { invalidExpectations, validExpectations }                from "./parser-expectations.js";
 
 @suite
 export default class ParserSpec
@@ -18,13 +13,13 @@ export default class ParserSpec
     {
         const actual = Parser.parse(expected.pattern);
 
-        assert.deepEqual(actual, expected.expected);
+        chai.assert.deepEqual(actual, expected.expected);
     }
 
     @shouldFail
     @batchTest(invalidExpectations, x => `Pattern: "${x.pattern}" should throws: "${x.error.message}"`)
     public invalidParse(expected: ParserInvalidExpectation): void
     {
-        assert.throws(() => Parser.parse(expected.pattern), Error, expected.error.message);
+        chai.assert.throws(() => Parser.parse(expected.pattern), Error, expected.error.message);
     }
 }

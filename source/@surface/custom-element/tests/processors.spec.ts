@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unassigned-import
-import "./fixtures/dom";
+import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import { processTemplate }                                from "../internal/processors";
-import { scheduler }                                      from "../internal/singletons";
+import chai                        from "chai";
+import processTemplate             from "../internal/processors/process-template.js";
+import { scheduler }               from "../internal/singletons.js";
 
 @suite
 export default class ProcessorsSpec
@@ -14,11 +14,11 @@ export default class ProcessorsSpec
     {
         const [content] = processTemplate("Hello {message} !!!", { message: "World" });
 
-        assert.equal(content.childNodes[0].textContent, "Hello World !!!");
+        chai.assert.equal(content.childNodes[0].textContent, "Hello World !!!");
 
         const [cached] = processTemplate("Hello {message} !!!", { message: "World" });
 
-        assert.equal(cached.childNodes[0].textContent, "Hello World !!!");
+        chai.assert.equal(cached.childNodes[0].textContent, "Hello World !!!");
     }
 
     @test @shouldPass
@@ -30,24 +30,24 @@ export default class ProcessorsSpec
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "#open");
-        assert.equal(content.childNodes[1].textContent, "Hello World !!!");
-        assert.equal(content.childNodes[2].textContent, "#close");
+        chai.assert.equal(content.childNodes[0].textContent, "#open");
+        chai.assert.equal(content.childNodes[1].textContent, "Hello World !!!");
+        chai.assert.equal(content.childNodes[2].textContent, "#close");
 
         scope.host.visible = false;
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "#open");
-        assert.equal(content.childNodes[1].textContent, "#close");
+        chai.assert.equal(content.childNodes[0].textContent, "#open");
+        chai.assert.equal(content.childNodes[1].textContent, "#close");
 
         scope.host.visible = true;
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "#open");
-        assert.equal(content.childNodes[1].textContent, "Hello World !!!");
-        assert.equal(content.childNodes[2].textContent, "#close");
+        chai.assert.equal(content.childNodes[0].textContent, "#open");
+        chai.assert.equal(content.childNodes[1].textContent, "Hello World !!!");
+        chai.assert.equal(content.childNodes[2].textContent, "#close");
     }
 
     @test @shouldPass
@@ -57,22 +57,22 @@ export default class ProcessorsSpec
 
         const [content] = processTemplate("<span #for='item of items'>Item: {item}</span>", scope);
 
-        assert.equal(content.childNodes[0].textContent, "#open");
-        assert.equal(content.childNodes[1].textContent, "#close");
+        chai.assert.equal(content.childNodes[0].textContent, "#open");
+        chai.assert.equal(content.childNodes[1].textContent, "#close");
 
         scope.items = [1, 2, 3];
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "#open");
-        assert.equal(content.childNodes[1].textContent, "Item: 1");
-        assert.equal(content.childNodes[2].textContent, "#close");
-        assert.equal(content.childNodes[3].textContent, "#open");
-        assert.equal(content.childNodes[4].textContent, "Item: 2");
-        assert.equal(content.childNodes[5].textContent, "#close");
-        assert.equal(content.childNodes[6].textContent, "#open");
-        assert.equal(content.childNodes[7].textContent, "Item: 3");
-        assert.equal(content.childNodes[8].textContent, "#close");
+        chai.assert.equal(content.childNodes[0].textContent, "#open");
+        chai.assert.equal(content.childNodes[1].textContent, "Item: 1");
+        chai.assert.equal(content.childNodes[2].textContent, "#close");
+        chai.assert.equal(content.childNodes[3].textContent, "#open");
+        chai.assert.equal(content.childNodes[4].textContent, "Item: 2");
+        chai.assert.equal(content.childNodes[5].textContent, "#close");
+        chai.assert.equal(content.childNodes[6].textContent, "#open");
+        chai.assert.equal(content.childNodes[7].textContent, "Item: 3");
+        chai.assert.equal(content.childNodes[8].textContent, "#close");
     }
 
     @test @shouldPass
@@ -82,13 +82,13 @@ export default class ProcessorsSpec
 
         const [content, disposeable] = processTemplate("Hello {host.message} !!!", scope);
 
-        assert.equal(content.childNodes[0].textContent, "Hello World !!!");
+        chai.assert.equal(content.childNodes[0].textContent, "Hello World !!!");
 
         scope.host.message = "Web";
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
+        chai.assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
 
         disposeable.dispose();
 
@@ -96,6 +96,6 @@ export default class ProcessorsSpec
 
         await scheduler.whenDone();
 
-        assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
+        chai.assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
     }
 }

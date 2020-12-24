@@ -1,1 +1,1 @@
-export * from "./internal/decorators";
+export * from "./internal/decorators.js";

@@ -1,4 +1,4 @@
-import { METADATA } from "../symbols";
+export const METADATA = Symbol("custom-element:metadata");
 
 export default class Metadata
 {

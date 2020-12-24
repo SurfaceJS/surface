@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
-import { expect }                  from "chai";
-import Group                       from "../internal/group";
+import chai                        from "chai";
+import Group                       from "../internal/group.js";
 
 @suite
 export default class GroupSpec
@@ -9,9 +9,9 @@ export default class GroupSpec
     public create(): void
     {
         const group = new Group<string, number>(1, "key");
-        expect(group.hash,  "group.hash").to.equal(1);
-        expect(group.key,   "group.key").to.equal("key");
-        expect(group.count, "group.count").to.equal(0);
+        chai.assert.equal(group.hash,  1,     "group.hash");
+        chai.assert.equal(group.key,   "key", "group.key");
+        chai.assert.equal(group.count, 0,     "group.count");
     }
 
     @test @shouldPass
@@ -20,8 +20,8 @@ export default class GroupSpec
         const group = new Group<string, number>(1, "key");
         group.add(1);
         group.add(2);
-        expect(group.count,    "group.count").to.equal(2);
-        expect(group.elements, "group.elements").to.deep.equal([1, 2]);
+        chai.assert.equal(group.count, 2, "group.count");
+        chai.assert.deepEqual(group.elements, [1, 2], "group.elements");
     }
 
     @test @shouldPass
@@ -31,7 +31,7 @@ export default class GroupSpec
         const next = new Group<string, number>(1, "key-2");
         group.next = next;
 
-        expect(group.next).to.deep.equal(next);
+        chai.assert.deepEqual(group.next, next);
     }
 
     @test @shouldPass
@@ -41,6 +41,6 @@ export default class GroupSpec
         const hashNext = new Group<string, number>(2, "key-2");
         group.hashNext = hashNext;
 
-        expect(group.hashNext).to.deep.equal(hashNext);
+        chai.assert.deepEqual(group.hashNext, hashNext);
     }
 }

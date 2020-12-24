@@ -1,7 +1,8 @@
-import { Delegate, Hashcode } from "@surface/core";
-import Group                  from "./group";
-import IComparer              from "./interfaces/comparer";
-import ILookup                from "./interfaces/lookup";
+import type { Delegate } from "@surface/core";
+import { Hashcode }      from "@surface/core";
+import Group             from "./group.js";
+import type IComparer    from "./interfaces/comparer.js";
+import type ILookup      from "./interfaces/lookup.js";
 
 export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TElement>
 {

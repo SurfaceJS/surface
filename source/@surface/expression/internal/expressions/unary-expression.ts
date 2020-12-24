@@ -1,8 +1,9 @@
-import { Delegate, Indexer, hasValue } from "@surface/core";
-import IExpression                     from "../interfaces/expression";
-import IUnaryExpression                from "../interfaces/unary-expression";
-import NodeType                        from "../node-type";
-import { UnaryOperator }               from "../types/operators";
+import type { Delegate, Indexer } from "@surface/core";
+import { hasValue }               from "@surface/core";
+import type IExpression           from "../interfaces/expression";
+import type IUnaryExpression      from "../interfaces/unary-expression";
+import NodeType                   from "../node-type.js";
+import type { UnaryOperator }     from "../types/operators";
 
 type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
 
@@ -25,7 +26,7 @@ export default class UnaryExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IExpression)
     {
         this._argument = value;
@@ -39,7 +40,7 @@ export default class UnaryExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: UnaryOperator)
     {
         this._operator = value;

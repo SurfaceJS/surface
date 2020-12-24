@@ -1,12 +1,15 @@
-import CustomElement from "./internal/custom-element";
+import CustomElement from "./internal/custom-element.js";
 
 export type { default as ICustomElement }   from "./internal/interfaces/custom-element";
 export type { default as ICustomDirective } from "./internal/interfaces/custom-directive";
 
-export * from "./internal/custom-element";
-export * from "./internal/decorators";
-export * from "./internal/processors";
-export * from "./internal/singletons";
-
-export { default as DirectiveHandler } from "./internal/directives/handlers";
+export { scheduler }                   from "./internal/singletons.js";
+export { default as processTemplate }  from "./internal/processors/process-template.js";
+export { default as attribute }        from "./internal/decorators/attribute.js";
+export { default as define }           from "./internal/decorators/define.js";
+export { default as element }          from "./internal/decorators/element.js";
+export { default as event }            from "./internal/decorators/event.js";
+export { query, queryAll }             from "./internal/decorators/query.js";
+export { default as styles }           from "./internal/decorators/styles.js";
+export { default as DirectiveHandler } from "./internal/directives/handlers/directive-handler.js";
 export default CustomElement;

@@ -1,5 +1,6 @@
-import { Constructor, typeGuard } from "@surface/core";
-import StaticMetadata             from "./metadata";
+import type { Constructor } from "@surface/core";
+import { typeGuard }        from "@surface/core";
+import StaticMetadata       from "./metadata.js";
 
 type Factory     = (container: Pick<Container, "resolve" | "inject">) => object;
 type Key         = string | symbol | Constructor;

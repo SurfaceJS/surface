@@ -1,10 +1,11 @@
 /* eslint-disable max-len */
-import { exec }       from "child_process";
-import fs             from "fs";
-import path           from "path";
-import { promisify }  from "util";
-import chalk          from "chalk";
-import { Credential } from "npm-registry-client";
+import { exec }            from "child_process";
+import fs                  from "fs";
+import path                from "path";
+import { fileURLToPath }   from "url";
+import { promisify }       from "util";
+import chalk               from "chalk";
+import type { Credential } from "npm-registry-client";
 import
 {
     backupFile,
@@ -16,18 +17,19 @@ import
     paths,
     removePathAsync,
     restoreBackup,
-} from "./common";
-import Depsync       from "./depsync";
-import StrategyType  from "./enums/strategy-type";
-import NpmRepository from "./npm-repository";
-import patterns      from "./patterns";
-import Publisher     from "./publisher";
+} from "./common.js";
+import Depsync       from "./depsync.js";
+import StrategyType  from "./enums/strategy-type.js";
+import NpmRepository from "./npm-repository.js";
+import patterns      from "./patterns.js";
+import Publisher     from "./publisher.js";
 
 const execAsync      = promisify(exec);
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
-const tsc = path.resolve(__dirname, "../../node_modules/.bin/tsc");
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+const tsc     = path.resolve(dirname, "../../node_modules/.bin/tsc");
 
 type PublishOptions =
 {
@@ -121,18 +123,22 @@ export default class Tasks
 
     public static async cover(filepath: string): Promise<void>
     {
-        const bin = path.resolve(__dirname, "../../node_modules/.bin");
+        const bin   = path.resolve(dirname, "../../node_modules/.bin");
+        const mocha = path.join(bin, "mocha");
+        const c8    = path.join(bin, "c8");
 
         const file = path.parse(filepath);
 
         const target = file.name.replace(".spec", "");
 
-        await execute(`cover ${chalk.bold.blue(file.name)} tests`, `${path.join(bin, "nyc")} --include **/${target}.js --include **/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${path.join(bin, "mocha")} --ui tdd ${file.name}.js`);
+        const command = `${c8} --include **/@surface/**/${target}.js --include **/@surface/**/${target}.ts --exclude=**/tests --extension .js --extension .ts --reporter=text ${mocha} --loader=@surface/mock-loader --ui=tdd ${path.join(file.dir, file.name)}.js`;
+
+        await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
     }
 
     public static async publish(registry: string, options: PublishOptions): Promise<void>
     {
-        const exclude = (await readFileAsync(path.join(__dirname, "../.publishignore")))
+        const exclude = (await readFileAsync(path.join(dirname, "../.publishignore")))
             .toString()
             .split("\n")
             .map(x => x.trim());
@@ -156,7 +162,6 @@ export default class Tasks
             }
             else
             {
-
                 const timestamp = new Date().toISOString()
                     .replace(/[-T:]/g, "")
                     .substring(0, 12);

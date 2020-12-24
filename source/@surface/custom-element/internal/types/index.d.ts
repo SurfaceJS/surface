@@ -1,6 +1,6 @@
-import DirectiveHandler from "../directives/handlers";
-import ICustomDirective from "../interfaces/custom-directive";
-import IInjectDirective from "../interfaces/inject-directive";
+import type DirectiveHandler from "../directives/handlers/directive-handler.js";
+import type ICustomDirective from "../interfaces/custom-directive";
+import type IInjectDirective from "../interfaces/inject-directive";
 
 export type DirectiveHandlerConstructor = (new (scope: object, element: HTMLElement, directive: ICustomDirective) => DirectiveHandler);
 export type DirectiveHandlerFactory     = (scope: object, element: HTMLElement, directive: ICustomDirective) => DirectiveHandler;

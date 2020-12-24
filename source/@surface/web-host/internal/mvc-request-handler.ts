@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-import { Constructor, Indexer } from "@surface/core";
-import Enumerable               from "@surface/enumerable";
-import { Type }                 from "@surface/reflection";
-import Router                   from "@surface/router";
-import ActionResult             from "./action-result";
-import Controller               from "./controller";
-import HttpContext              from "./http-context";
-import RequestHandler           from "./request-handler";
+import { URL, pathToFileURL }        from "url";
+import type { Constructor, Indexer } from "@surface/core";
+import Enumerable                    from "@surface/enumerable";
+import { Type }                      from "@surface/reflection";
+import type Router                   from "@surface/router";
+import type ActionResult             from "./action-result.js";
+import Controller                    from "./controller.js";
+import type HttpContext              from "./http-context.js";
+import RequestHandler                from "./request-handler.js";
 
 export default class MvcRequestHandler extends RequestHandler
 {
@@ -23,10 +23,10 @@ export default class MvcRequestHandler extends RequestHandler
         this._router = router;
     }
 
-    private getController(controller: string, filepath: string): Constructor<Controller>
+    private async getController(controller: string, filepath: string): Promise<Constructor<Controller>>
     {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const esmodule = require(filepath) as Indexer<Constructor<Controller> | null>;
+        const esmodule = await import(pathToFileURL(filepath).href) as Indexer<Constructor<Controller> | null>;
 
         let constructor: Constructor<Controller> | null | undefined;
 
@@ -77,7 +77,9 @@ export default class MvcRequestHandler extends RequestHandler
     {
         if (httpContext.request.url)
         {
-            const match = this.router.match(httpContext.request.url);
+            const url = new URL(httpContext.request.url, "http:localhost");
+
+            const match = this.router.match(url.pathname);
 
             if (match.matched)
             {
@@ -98,7 +100,7 @@ export default class MvcRequestHandler extends RequestHandler
 
                     if (filepath)
                     {
-                        const constructor = this.getController(controller, filepath);
+                        const constructor = await this.getController(controller, filepath);
 
                         const targetController = new constructor(httpContext);
 
@@ -109,7 +111,7 @@ export default class MvcRequestHandler extends RequestHandler
                         {
                             const postData = await this.parseBody(httpContext);
 
-                            const inbound = { ...routeData.query, ...postData } as Indexer;
+                            const inbound = { ...Object.fromEntries(url.searchParams.entries()), ...postData } as Indexer;
 
                             if (id)
                             {

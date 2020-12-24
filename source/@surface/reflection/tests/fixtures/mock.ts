@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BaseMock                                                                 from "./base-mock";
-import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators";
+import BaseMock                                                                 from "./base-mock.js";
+import { classMetadata, methodMetadata, parameterMetadata, propertyMedatadata } from "./decorators.js";
 
 @classMetadata
 class Mock extends BaseMock

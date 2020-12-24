@@ -1,10 +1,11 @@
-import { Indexer, format, hasValue } from "@surface/core";
-import IExpression                   from "../interfaces/expression";
-import IIdentifier                   from "../interfaces/identifier";
-import IPattern                      from "../interfaces/pattern";
-import Messages                      from "../messages";
-import NodeType                      from "../node-type";
-import { PATTERN }                   from "../symbols";
+import type { Indexer }     from "@surface/core";
+import { format, hasValue } from "@surface/core";
+import type IExpression     from "../interfaces/expression";
+import type IIdentifier     from "../interfaces/identifier";
+import type IPattern        from "../interfaces/pattern";
+import Messages             from "../messages.js";
+import NodeType             from "../node-type.js";
+import { PATTERN }          from "../symbols.js";
 
 export default class Identifier implements IExpression, IPattern
 {
@@ -18,7 +19,7 @@ export default class Identifier implements IExpression, IPattern
         return this._name;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set name(value: string)
     {
         this._name = value;

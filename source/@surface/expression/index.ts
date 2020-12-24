@@ -1,4 +1,4 @@
-import Expression from "./internal/expression";
+import Expression from "./internal/expression.js";
 
 export type { default as IArrayExpression }          from "./internal/interfaces/array-expression";
 export type { default as IArrayPattern }             from "./internal/interfaces/array-pattern";
@@ -8,7 +8,6 @@ export type { default as IAssignmentPattern }        from "./internal/interfaces
 export type { default as IAssignmentProperty }       from "./internal/interfaces/assignment-property";
 export type { default as IBinaryExpression }         from "./internal/interfaces/binary-expression";
 export type { default as ICallExpression }           from "./internal/interfaces/call-expression";
-export type { default as ICoalesceExpression }       from "./internal/interfaces/coalesce-expression";
 export type { default as IConditionalExpression }    from "./internal/interfaces/conditional-expression";
 export type { default as IElement }                  from "./internal/interfaces/element";
 export type { default as IExpression }               from "./internal/interfaces/expression";
@@ -34,10 +33,10 @@ export type { default as IThisExpression }           from "./internal/interfaces
 export type { default as IUnaryExpression }          from "./internal/interfaces/unary-expression";
 export type { default as IUpdateExpression }         from "./internal/interfaces/update-expression";
 
-export { default as Evaluate }          from "./internal/evaluate";
-export { default as ExpressionVisitor } from "./internal/expression-visitor";
-export { default as NodeType }          from "./internal/node-type";
-export { default as SyntaxError }       from "./internal/syntax-error";
-export { default as TypeGuard }         from "./internal/type-guard";
+export { default as Evaluate }          from "./internal/evaluate.js";
+export { default as ExpressionVisitor } from "./internal/expression-visitor.js";
+export { default as NodeType }          from "./internal/node-type.js";
+export { default as SyntaxError }       from "./internal/syntax-error.js";
+export { default as TypeGuard }         from "./internal/type-guard.js";
 
 export default Expression;

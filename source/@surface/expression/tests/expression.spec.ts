@@ -1,15 +1,10 @@
-import { batchTest, shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                                         from "chai";
-import Expression                                         from "..";
-import Messages                                           from "../internal/messages";
-import NodeType                                           from "../internal/node-type";
-import
-{
-    EvaluationErrorExpected,
-    ExpressionFactoryExpected,
-    evaluationsExpected,
-    expressionFactoriesExpected,
-} from "./expectations/expression-expected";
+import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
+import chai                                                        from "chai";
+import Expression                                                  from "../internal/expression.js";
+import Messages                                                    from "../internal/messages.js";
+import NodeType                                                    from "../internal/node-type.js";
+import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expression-expectations.js";
+import { evaluationsExpected, expressionFactoriesExpected }        from "./expression-expectations.js";
 
 @suite
 export default class ExpressionSpec
@@ -20,8 +15,8 @@ export default class ExpressionSpec
     {
         const expression = expressionFactoryExpected.factory();
 
-        assert.equal(expression.type, expressionFactoryExpected.type);
-        assert.equal(expression.toString(), expressionFactoryExpected.toString);
+        chai.assert.equal(expression.type, expressionFactoryExpected.type);
+        chai.assert.equal(expression.toString(), expressionFactoryExpected.toString);
 
         const clone = expression.clone();
 
@@ -31,7 +26,7 @@ export default class ExpressionSpec
             clone.toString = expression.toString;
         }
 
-        assert.deepEqual(expression, clone);
+        chai.assert.deepEqual(expression, clone);
     }
 
     @test @shouldPass
@@ -39,7 +34,7 @@ export default class ExpressionSpec
     {
         const expression = Expression.parse("this");
 
-        assert.equal(expression.type, NodeType.ThisExpression);
+        chai.assert.equal(expression.type, NodeType.ThisExpression);
     }
 
     @test @shouldPass
@@ -47,12 +42,12 @@ export default class ExpressionSpec
     {
         const expression = Expression.regex("foo", "gi");
 
-        assert.equal(expression.pattern, "foo", "pattern");
-        assert.equal(expression.flags, "gi", "flags");
-        assert.equal(expression.value, null, "value");
-        assert.deepEqual(expression.evaluate(), /foo/gi, "evaluate");
-        assert.deepEqual(expression.evaluate(void 0, true), /foo/gi, "evaluate with cache");
-        assert.deepEqual(expression.toString(), "/foo/gi", "toString");
+        chai.assert.equal(expression.pattern, "foo", "pattern");
+        chai.assert.equal(expression.flags, "gi", "flags");
+        chai.assert.equal(expression.value, null, "value");
+        chai.assert.deepEqual(expression.evaluate(), /foo/gi, "evaluate");
+        chai.assert.deepEqual(expression.evaluate(void 0, true), /foo/gi, "evaluate with cache");
+        chai.assert.deepEqual(expression.toString(), "/foo/gi", "toString");
     }
 
     @shouldFail
@@ -67,7 +62,7 @@ export default class ExpressionSpec
         }
         catch (error)
         {
-            assert.equal(error.message, evaluationErrorExpected.error.message);
+            chai.assert.equal(error.message, evaluationErrorExpected.error.message);
         }
     }
 
@@ -77,7 +72,7 @@ export default class ExpressionSpec
         const parameters = [Expression.identifier("a"), Expression.identifier("a")];
         const body       = Expression.identifier("x");
 
-        assert.throws(() => Expression.arrowFunction(parameters, body), Messages.duplicateParameterNameNotAllowedInThisContext);
+        chai.assert.throws(() => Expression.arrowFunction(parameters, body), Messages.duplicateParameterNameNotAllowedInThisContext);
     }
 
     @test @shouldFail
@@ -87,6 +82,6 @@ export default class ExpressionSpec
         const body          = Expression.identifier("x");
         const arrowFunction = Expression.arrowFunction(parameters, body);
 
-        assert.throws(arrowFunction.evaluate({ }) as () => void, Messages.illegalPropertyInDeclarationContext);
+        chai.assert.throws(arrowFunction.evaluate({ }) as () => void, Messages.illegalPropertyInDeclarationContext);
     }
 }

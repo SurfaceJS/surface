@@ -1,13 +1,14 @@
-import { Indexer }         from "@surface/core";
-import ITemplateDescriptor from "../interfaces/template-descriptor";
-import { STATIC_METADATA } from "../symbols";
+import type { Indexer }         from "@surface/core";
+import type ITemplateDescriptor from "../interfaces/template-descriptor";
+
+export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 
 export default class StaticMetadata
 {
-    public converters:         Indexer<(target: Indexer, value: string) => void>     = { };
-    public shadowRootInit:     ShadowRootInit                                        = { mode: "open" };
-    public observedAttributes: string[]                                              = [];
-    public styles:             CSSStyleSheet[]                                       = [];
+    public converters:         Indexer<(target: Indexer, value: string) => void> = { };
+    public shadowRootInit:     ShadowRootInit                                    = { mode: "open" };
+    public observedAttributes: string[]                                          = [];
+    public styles:             CSSStyleSheet[]                                   = [];
 
     public template!:   HTMLTemplateElement;
     public descriptor!: ITemplateDescriptor;

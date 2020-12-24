@@ -1,5 +1,6 @@
-import { Constructor }              from "@surface/core";
-import CustomElement, { attribute } from "@surface/custom-element";
+import type { Constructor } from "@surface/core";
+import type CustomElement   from "@surface/custom-element";
+import { attribute }        from "@surface/custom-element";
 
 const CSS_COLORS_PATTERN = /^(#[a-f0-9]{6}|((rgba?|hsla?)\([^)]*)\))$/i;
 

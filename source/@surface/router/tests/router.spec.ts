@@ -1,12 +1,12 @@
-import { suite, test } from "@surface/test-suite";
-import { assert }      from "chai";
-import Router          from "../internal/router";
-import RouterMatch     from "../internal/types/router-match";
+import { shouldFail, shouldPass, suite, test }  from "@surface/test-suite";
+import chai             from "chai";
+import Router           from "../internal/router.js";
+import type RouterMatch from "../internal/types/router-match";
 
 @suite
 export default class RouterSpec
 {
-    @test
+    @test @shouldPass
     public unmatch(): void
     {
         const expected: RouterMatch =
@@ -19,10 +19,10 @@ export default class RouterSpec
             .map("/path", x => x)
             .match("/path1");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public match(): void
     {
         const expected: RouterMatch =
@@ -30,10 +30,8 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "",
                     parameters: {  },
                     path:       "/path",
-                    query:      { },
                 },
             };
 
@@ -41,10 +39,10 @@ export default class RouterSpec
             .map("/path")
             .match("/path");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public unmatchNamed(): void
     {
         const expected: RouterMatch =
@@ -57,10 +55,10 @@ export default class RouterSpec
             .map("default", "/path", x => x)
             .match("default1", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public matchNamed(): void
     {
         const expected: RouterMatch =
@@ -68,10 +66,8 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "",
                     parameters: {  },
                     path:       "/path",
-                    query:      { },
                 },
             };
 
@@ -79,10 +75,10 @@ export default class RouterSpec
             .map("default", "/path")
             .match("default", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public unmatchNamedWithParams(): void
     {
         const expected: RouterMatch =
@@ -95,10 +91,10 @@ export default class RouterSpec
             .map("default", "/path/{value}")
             .match("default", { });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public matchNamedWithParams(): void
     {
         const expected: RouterMatch =
@@ -106,10 +102,8 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "",
                     parameters: { value: "path" },
                     path:       "/path/path",
-                    query:      { },
                 },
             };
 
@@ -117,10 +111,10 @@ export default class RouterSpec
             .map("default", "/path/{value}")
             .match("default", { value: "path" });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public matchNamedWithParamsTranformers(): void
     {
         const expected: RouterMatch =
@@ -128,15 +122,13 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "",
                     parameters:
                     {
                         boolean: true,
                         date:    new Date("2020-01-01"),
                         number:  1,
                     },
-                    path:   "/path/true/2020-01-01/1",
-                    query:  { },
+                    path: "/path/true/2020-01-01/1",
                 },
             };
 
@@ -144,20 +136,20 @@ export default class RouterSpec
             .map("default", "/path/{boolean:Boolean}/{date:Date}/{number:Number}")
             .match("default", { boolean: true, date: new Date("2020-01-01"), number: 1 });
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public dontMatch(): void
     {
         const actual = new Router()
             .map("/path")
             .match("/path1");
 
-        assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
+        chai.assert.deepEqual(actual, { matched: false, reason: "No match found to the path: /path1" });
     }
 
-    @test
+    @test @shouldPass
     public matchWithRouteData(): void
     {
         const expected: RouterMatch =
@@ -165,21 +157,19 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "example",
                     parameters: { value: "path" },
                     path:       "/path/path",
-                    query:      { value: "1" },
                 },
             };
 
         const actual = new Router()
             .map("/path/{value}")
-            .match("/path/path?value=1#example");
+            .match("/path/path");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
     }
 
-    @test
+    @test @shouldPass
     public matchWithDefaultTranformers(): void
     {
         const expected: RouterMatch =
@@ -187,15 +177,13 @@ export default class RouterSpec
                 matched: true,
                 value:
                 {
-                    hash:       "",
                     parameters:
                     {
                         boolean: true,
                         date:    new Date("2020-01-01"),
                         number:  1,
                     },
-                    path:   "/path/true/2020-01-01/1",
-                    query:  { },
+                    path: "/path/true/2020-01-01/1",
                 },
             };
 
@@ -203,6 +191,13 @@ export default class RouterSpec
             .map("/path/{boolean:Boolean}/{date:Date}/{number:Number}")
             .match("/path/true/2020-01-01/1");
 
-        assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldFail
+    public invalidPath(): void
+    {
+        chai.assert.throws(() => new Router().match("foo?bar"), Error, "\"foo?bar\" is not a valid url pathname");
+        chai.assert.throws(() => new Router().match("foo#bar"), Error, "\"foo#bar\" is not a valid url pathname");
     }
 }

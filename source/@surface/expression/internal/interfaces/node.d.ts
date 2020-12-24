@@ -1,4 +1,4 @@
-import NodeType from "../node-type";
+import type NodeType from "../node-type.js";
 
 export default interface INode
 {

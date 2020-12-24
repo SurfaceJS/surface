@@ -1,7 +1,7 @@
-import { inject } from "../..";
-import Bar        from "./bar";
-import Baz        from "./baz";
-import Foo        from "./foo";
+import { inject } from "../../internal/decorators.js";
+import type Bar   from "./bar.js";
+import type Baz   from "./baz.js";
+import type Foo   from "./foo.js";
 
 export default class InjectableMock
 {

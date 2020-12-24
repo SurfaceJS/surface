@@ -1,11 +1,11 @@
 import { mixer }                                           from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
 import { computed, observe }                               from "@surface/reactive";
-import colorable                                           from "../../mixins/colorable";
-import disableable                                         from "../../mixins/disableable";
-import elevatable                                          from "../../mixins/elevatable";
-import rippleable                                          from "../../mixins/rippleable";
-import themeable                                           from "../../mixins/themeable";
+import colorable                                           from "../../mixins/colorable/index.js";
+import disableable                                         from "../../mixins/disableable/index.js";
+import elevatable                                          from "../../mixins/elevatable/index.js";
+import rippleable                                          from "../../mixins/rippleable/index.js";
+import themeable                                           from "../../mixins/themeable/index.js";
 import template                                            from "./index.html";
 import style                                               from "./index.scss";
 

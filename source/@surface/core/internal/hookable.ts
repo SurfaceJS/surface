@@ -1,5 +1,5 @@
-import HookableMetadata from "./metadata/hookable-metadata";
-import { Constructor }  from "./types";
+import HookableMetadata     from "./metadata/hookable-metadata.js";
+import type { Constructor } from "./types";
 
 export default class Hookable
 {
@@ -23,7 +23,7 @@ export default class Hookable
         };
     }
 
-    public static inject<T extends Constructor>(target: T): T
+    public static finisher<T extends Constructor>(target: T): T
     {
         const metadata = HookableMetadata.from(target);
 

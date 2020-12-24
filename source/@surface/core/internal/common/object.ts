@@ -1,5 +1,5 @@
-import { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                                                        from "./generic";
+import type { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
+import { assert, typeGuard }                                                                             from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");
 
@@ -229,90 +229,6 @@ export function objectFactory(keys: [string, unknown][], target: Indexer = { }):
         }
     }
     return target;
-}
-
-// eslint-disable-next-line max-len
-export function overrideProperty<T extends object>(target: T & { [PRIVATES]?: Indexer }, property: string | symbol, action: (instance: T, newValue: unknown, oldValue: unknown) => void, descriptor?: PropertyDescriptor | null, beforeSetter?: boolean): PropertyDescriptor
-{
-    let propertyDescriptor: PropertyDescriptor;
-
-    const currentDescriptor = descriptor ?? Object.getOwnPropertyDescriptor(target, property);
-
-    if (currentDescriptor?.set)
-    {
-        propertyDescriptor =
-        {
-            configurable: currentDescriptor.configurable,
-            enumerable:   currentDescriptor.enumerable,
-            get:          currentDescriptor.get,
-            set:          beforeSetter
-                ? function(this: T, value: unknown)
-                {
-                    const oldValue = currentDescriptor.get?.call(this);
-
-                    if (!Object.is(value, oldValue))
-                    {
-                        action(this, value, oldValue);
-
-                        currentDescriptor.set!.call(this, value);
-                    }
-
-                }
-                : function(this: T, value: unknown)
-                {
-                    const oldValue = currentDescriptor.get?.call(this);
-
-                    if (!Object.is(value, oldValue))
-                    {
-                        currentDescriptor.set!.call(this, value);
-
-                        action(this, value, oldValue);
-                    }
-                },
-        };
-    }
-    else
-    {
-        const privates = privatesFrom(target);
-
-        privates[property as string] = target[property as keyof T];
-
-        propertyDescriptor =
-        {
-            configurable: true,
-            get(this: T & Indexer)
-            {
-                return privates[property as string];
-            },
-            set: beforeSetter
-                ? function(this: T & Indexer, value: unknown)
-                {
-                    const oldValue = privates[property as string];
-
-                    if (!Object.is(value, oldValue))
-                    {
-                        action(this, value, oldValue);
-
-                        privates[property as string] = value;
-                    }
-                }
-                : function(this: T & Indexer, value: unknown)
-                {
-                    const oldValue = privates[property as string];
-
-                    if (!Object.is(value, oldValue))
-                    {
-                        privates[property as string] = value;
-
-                        action(this, value, oldValue);
-                    }
-                },
-        };
-    }
-
-    Reflect.defineProperty(target, property, propertyDescriptor);
-
-    return propertyDescriptor;
 }
 
 export function pathfy(source: object, options?: { keySeparator?: string, keyTranform?: Delegate<[string], string>, valueSeparator?: string }): string[]

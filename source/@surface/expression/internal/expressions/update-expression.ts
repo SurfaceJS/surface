@@ -1,11 +1,11 @@
-import { hasValue }       from "@surface/core";
-import IExpression        from "../interfaces/expression";
-import IIdentifier        from "../interfaces/identifier";
-import IMemberExpression  from "../interfaces/member-expression";
-import IUpdateExpression  from "../interfaces/update-expression";
-import NodeType           from "../node-type";
-import TypeGuard          from "../type-guard";
-import { UpdateOperator } from "../types/operators";
+import { hasValue }            from "@surface/core";
+import type IExpression        from "../interfaces/expression";
+import type IIdentifier        from "../interfaces/identifier";
+import type IMemberExpression  from "../interfaces/member-expression";
+import type IUpdateExpression  from "../interfaces/update-expression";
+import NodeType                from "../node-type.js";
+import TypeGuard               from "../type-guard.js";
+import type { UpdateOperator } from "../types/operators";
 
 type Operation = (object: Record<string | number, number>, property: string | number) => number;
 type Operators = "++*" | "--*" | "*++" | "*--";
@@ -33,7 +33,7 @@ export default class UpdateExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IIdentifier | IMemberExpression)
     {
         this._argument = value;
@@ -44,7 +44,7 @@ export default class UpdateExpression implements IExpression
         return this._operator;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set operator(value: UpdateOperator)
     {
         this._operator = value;
@@ -55,7 +55,7 @@ export default class UpdateExpression implements IExpression
         return this._prefix;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set prefix(value: boolean)
     {
         this._prefix = value;

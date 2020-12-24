@@ -1,25 +1,27 @@
-import { Delegate, IDisposable, Indexer, assert } from "@surface/core";
-import { Evaluate, IExpression, IPattern }        from "@surface/expression";
-import { Subscription }                           from "@surface/reactive";
-import DataBind                                   from "./data-bind";
-import TemplateEvaluationError                    from "./errors/template-evaluation-error";
-import TemplateObservationError                   from "./errors/template-observation-error";
-import TemplateParseError                         from "./errors/template-parse-error";
-import IKeyValueObservable                        from "./interfaces/key-value-observable";
-import IKeyValueTraceable                         from "./interfaces/key-value-traceable";
-import IObservable                                from "./interfaces/observable";
-import ITraceable                                 from "./interfaces/traceable";
-import { Observables, StackTrace }                from "./types";
+import type { Delegate, IDisposable, Indexer } from "@surface/core";
+import { assert }                              from "@surface/core";
+import type { IExpression, IPattern }          from "@surface/expression";
+import { Evaluate }                            from "@surface/expression";
+import type { Subscription }                   from "@surface/reactive";
+import TemplateEvaluationError                 from "./errors/template-evaluation-error.js";
+import TemplateObservationError                from "./errors/template-observation-error.js";
+import TemplateParseError                      from "./errors/template-parse-error.js";
+import type IKeyValueObservable                from "./interfaces/key-value-observable";
+import type IKeyValueTraceable                 from "./interfaces/key-value-traceable";
+import type IObservable                        from "./interfaces/observable";
+import type ITraceable                         from "./interfaces/traceable";
+import DataBind                                from "./reactivity/data-bind.js";
+import type { Observables, StackTrace }        from "./types";
 
 // eslint-disable-next-line object-shorthand
-const wrapper = { "Window": /* istanbul ignore next */ function () { /* */ } }.Window as object as typeof Window;
+const wrapper = { "Window": /* c8 ignore next */ function () { /* */ } }.Window as object as typeof Window;
 
 wrapper.prototype = window;
 wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
-function buildStackTrace(stackTrace: StackTrace): string
+export function buildStackTrace(stackTrace: StackTrace): string
 {
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
 }
@@ -64,6 +66,16 @@ export function classMap(classes: Record<string, boolean>): string
 export function scapeBrackets(value: string): string
 {
     return value.replace(/(?<!\\)\\{/g, "{").replace(/\\\\{/g, "\\");
+}
+
+export function stringToCSSStyleSheet(source: string): CSSStyleSheet
+{
+    const sheet = new CSSStyleSheet() as CSSStyleSheet & { replaceSync: (source: string) => void };
+
+    sheet.replaceSync(source);
+    sheet.toString = () => source;
+
+    return sheet;
 }
 
 export function styleMap(rules: Record<string, boolean>): string

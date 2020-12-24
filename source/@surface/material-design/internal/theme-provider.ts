@@ -1,10 +1,10 @@
 import { merge }                               from "@surface/core";
-import RawPalette                              from "../types/raw-palette";
-import RawTheme                                from "../types/raw-theme";
-import Theme                                   from "../types/theme";
-import { generateCssVariables, generateTheme } from "./common";
-import defaultTheme                            from "./default-theme";
-import materialColors                          from "./material-colors";
+import type RawPalette                         from "../types/raw-palette";
+import type RawTheme                           from "../types/raw-theme";
+import type Theme                              from "../types/theme";
+import { generateCssVariables, generateTheme } from "./common.js";
+import defaultTheme                            from "./default-theme.js";
+import materialColors                          from "./material-colors.js";
 
 export default class ThemeProvider
 {

@@ -1,4 +1,4 @@
-import Group from "../group";
+import type Group from "../group.js";
 
 export default interface ILookup<TKey, TElement> extends Iterable<Group<TKey, TElement>>
 {

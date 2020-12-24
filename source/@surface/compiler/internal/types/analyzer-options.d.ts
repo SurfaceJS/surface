@@ -1,5 +1,5 @@
-import webpack                  from "webpack";
-import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
+import type webpack                  from "webpack";
+import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 
 type AnalyzerOptions =
 {

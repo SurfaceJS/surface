@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
+import type { Command } from "commander";
+import
+{
+    parsePattern,
+    toArray,
+    toBoolean,
+} from "../internal/common.js";
 import
 {
     analyzerDefaultSizesPattern,
     analyzerLogLevelPattern,
     analyzerModePattern,
     modePattern,
-    parsePattern,
-    toArray,
-    toBoolean,
-} from "../internal/common";
-import Tasks         from "../internal/tasks";
-import createProgram from ".";
+} from "../internal/patterns.js";
+import Tasks         from "../internal/tasks.js";
+import createProgram from "./create-program.js";
 
 const program = createProgram()
     .option("--analyzer-mode     <n>", "Analyzer Mode: server, static, json, disabled.", parsePattern(analyzerModePattern))

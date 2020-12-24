@@ -1,67 +1,67 @@
-import { hasDuplicated }         from "./common";
-import AssignmentProperty        from "./elements/assignment-property";
-import Property                  from "./elements/property";
-import SpreadElement             from "./elements/spread-element";
-import TemplateElement           from "./elements/template-element";
-import ArrayExpression           from "./expressions/array-expression";
-import ArrowFunctionExpression   from "./expressions/arrow-function-expression";
-import AssignmentExpression      from "./expressions/assignment-expression";
-import BinaryExpression          from "./expressions/binary-expression";
-import CallExpression            from "./expressions/call-expression";
-import CoalesceExpression        from "./expressions/coalesce-expression";
-import ConditionalExpression     from "./expressions/conditional-expression";
-import Identifier                from "./expressions/identifier";
-import Literal                   from "./expressions/literal";
-import LogicalExpression         from "./expressions/logical-expression";
-import MemberExpression          from "./expressions/member-expression";
-import NewExpression             from "./expressions/new-expression";
-import ObjectExpression          from "./expressions/object-expression";
-import ParenthesizedExpression   from "./expressions/parenthesized-expression";
-import RegExpLiteral             from "./expressions/reg-exp-literal";
-import SequenceExpression        from "./expressions/sequence-expression";
-import TaggedTemplateExpression  from "./expressions/tagged-template-expression";
-import TemplateLiteral           from "./expressions/template-literal";
-import ThisExpression            from "./expressions/this-expression";
-import UnaryExpression           from "./expressions/unary-expression";
-import UpdateExpression          from "./expressions/update-expression";
-import IArrayExpression          from "./interfaces/array-expression";
-import IArrayPattern             from "./interfaces/array-pattern";
-import IArrowFunctionExpression  from "./interfaces/arrow-function-expression";
-import IAssignmentExpression     from "./interfaces/assignment-expression";
-import IAssignmentPattern        from "./interfaces/assignment-pattern";
-import IAssignmentProperty       from "./interfaces/assignment-property";
-import IBinaryExpression         from "./interfaces/binary-expression";
-import ICallExpression           from "./interfaces/call-expression";
-import ICoalesceExpression       from "./interfaces/coalesce-expression";
-import IConditionalExpression    from "./interfaces/conditional-expression";
-import IExpression               from "./interfaces/expression";
-import IIdentifier               from "./interfaces/identifier";
-import ILiteral                  from "./interfaces/literal";
-import ILogicalExpression        from "./interfaces/logical-expression";
-import IMemberExpression         from "./interfaces/member-expression";
-import INewExpression            from "./interfaces/new-expression";
-import IObjectExpression         from "./interfaces/object-expression";
-import IObjectPattern            from "./interfaces/object-pattern";
-import IParenthesizedExpression  from "./interfaces/parenthesized-expression";
-import IPattern                  from "./interfaces/pattern";
-import IProperty                 from "./interfaces/property";
-import IRegExpLiteral            from "./interfaces/reg-exp-literal";
-import IRestElement              from "./interfaces/rest-element";
-import ISequenceExpression       from "./interfaces/sequence-expression";
-import ISpreadElement            from "./interfaces/spread-element";
-import ITaggedTemplateExpression from "./interfaces/tagged-template-expression";
-import ITemplateElement          from "./interfaces/template-element";
-import ITemplateLiteral          from "./interfaces/template-literal";
-import IThisExpression           from "./interfaces/this-expression";
-import IUnaryExpression          from "./interfaces/unary-expression";
-import IUpdateExpression         from "./interfaces/update-expression";
-import Messages                  from "./messages";
-import Parser                    from "./parser";
-import ArrayPattern              from "./patterns/array-pattern";
-import AssignmentPattern         from "./patterns/assignment-pattern";
-import ObjectPattern             from "./patterns/object-pattern";
-import RestElement               from "./patterns/rest-element";
-import
+import { hasDuplicated }              from "./common.js";
+import AssignmentProperty             from "./elements/assignment-property.js";
+import Property                       from "./elements/property.js";
+import SpreadElement                  from "./elements/spread-element.js";
+import TemplateElement                from "./elements/template-element.js";
+import ArrayExpression                from "./expressions/array-expression.js";
+import ArrowFunctionExpression        from "./expressions/arrow-function-expression.js";
+import AssignmentExpression           from "./expressions/assignment-expression.js";
+import BinaryExpression               from "./expressions/binary-expression.js";
+import CallExpression                 from "./expressions/call-expression.js";
+import ChainExpression                from "./expressions/chain-expression.js";
+import ConditionalExpression          from "./expressions/conditional-expression.js";
+import Identifier                     from "./expressions/identifier.js";
+import Literal                        from "./expressions/literal.js";
+import LogicalExpression              from "./expressions/logical-expression.js";
+import MemberExpression               from "./expressions/member-expression.js";
+import NewExpression                  from "./expressions/new-expression.js";
+import ObjectExpression               from "./expressions/object-expression.js";
+import ParenthesizedExpression        from "./expressions/parenthesized-expression.js";
+import RegExpLiteral                  from "./expressions/reg-exp-literal.js";
+import SequenceExpression             from "./expressions/sequence-expression.js";
+import TaggedTemplateExpression       from "./expressions/tagged-template-expression.js";
+import TemplateLiteral                from "./expressions/template-literal.js";
+import ThisExpression                 from "./expressions/this-expression.js";
+import UnaryExpression                from "./expressions/unary-expression.js";
+import UpdateExpression               from "./expressions/update-expression.js";
+import type IArrayExpression          from "./interfaces/array-expression";
+import type IArrayPattern             from "./interfaces/array-pattern";
+import type IArrowFunctionExpression  from "./interfaces/arrow-function-expression";
+import type IAssignmentExpression     from "./interfaces/assignment-expression";
+import type IAssignmentPattern        from "./interfaces/assignment-pattern";
+import type IAssignmentProperty       from "./interfaces/assignment-property";
+import type IBinaryExpression         from "./interfaces/binary-expression";
+import type ICallExpression           from "./interfaces/call-expression";
+import type IChainExpression          from "./interfaces/chain-expression.js";
+import type IConditionalExpression    from "./interfaces/conditional-expression";
+import type IExpression               from "./interfaces/expression";
+import type IIdentifier               from "./interfaces/identifier";
+import type ILiteral                  from "./interfaces/literal";
+import type ILogicalExpression        from "./interfaces/logical-expression";
+import type IMemberExpression         from "./interfaces/member-expression";
+import type INewExpression            from "./interfaces/new-expression";
+import type IObjectExpression         from "./interfaces/object-expression";
+import type IObjectPattern            from "./interfaces/object-pattern";
+import type IParenthesizedExpression  from "./interfaces/parenthesized-expression";
+import type IPattern                  from "./interfaces/pattern";
+import type IProperty                 from "./interfaces/property";
+import type IRegExpLiteral            from "./interfaces/reg-exp-literal";
+import type IRestElement              from "./interfaces/rest-element";
+import type ISequenceExpression       from "./interfaces/sequence-expression";
+import type ISpreadElement            from "./interfaces/spread-element";
+import type ITaggedTemplateExpression from "./interfaces/tagged-template-expression";
+import type ITemplateElement          from "./interfaces/template-element";
+import type ITemplateLiteral          from "./interfaces/template-literal";
+import type IThisExpression           from "./interfaces/this-expression";
+import type IUnaryExpression          from "./interfaces/unary-expression";
+import type IUpdateExpression         from "./interfaces/update-expression";
+import Messages                       from "./messages.js";
+import Parser                         from "./parser.js";
+import ArrayPattern                   from "./patterns/array-pattern.js";
+import AssignmentPattern              from "./patterns/assignment-pattern.js";
+import ObjectPattern                  from "./patterns/object-pattern.js";
+import RestElement                    from "./patterns/rest-element.js";
+import type
 {
     AssignmentOperator,
     BinaryOperator,
@@ -133,9 +133,9 @@ export default abstract class Expression
         return new CallExpression(callee, $arguments ?? []);
     }
 
-    public static coalesce(left: IExpression, right: IExpression): ICoalesceExpression
+    public static chainExpression(expression: IExpression): IChainExpression
     {
-        return Expression.wrapParenthesis(new CoalesceExpression(left, right));
+        return new ChainExpression(expression);
     }
 
     public static conditional(condition: IExpression, alternate: IExpression, consequent: IExpression): IConditionalExpression
@@ -158,9 +158,9 @@ export default abstract class Expression
         return Expression.wrapParenthesis(new LogicalExpression(left, right, operator));
     }
 
-    public static member(object: IExpression, property: IExpression, computed: boolean): IMemberExpression
+    public static member(object: IExpression, property: IExpression, computed: boolean, optional: boolean): IMemberExpression
     {
-        return new MemberExpression(object, property, computed);
+        return new MemberExpression(object, property, computed, optional);
     }
 
     public static new(callee: IExpression, $arguments?: IExpression[]): INewExpression

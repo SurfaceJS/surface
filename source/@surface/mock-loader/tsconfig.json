@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "types": [
+            "node",
+        ],
+        "typeRoots": [
+            "./tests"
+        ]
+    },
+    "extends": "../../../tsconfig.json",
+    "files": [
+        "./index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
+}

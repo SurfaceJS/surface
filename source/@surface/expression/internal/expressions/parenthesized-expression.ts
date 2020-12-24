@@ -1,7 +1,7 @@
-import { hasValue }             from "@surface/core";
-import IExpression              from "../interfaces/expression";
-import IParenthesizedExpression from "../interfaces/parenthesized-expression";
-import NodeType                 from "../node-type";
+import { hasValue }                  from "@surface/core";
+import type IExpression              from "../interfaces/expression";
+import type IParenthesizedExpression from "../interfaces/parenthesized-expression";
+import NodeType                      from "../node-type.js";
 
 export default class ParenthesizedExpression implements IExpression
 {
@@ -13,7 +13,7 @@ export default class ParenthesizedExpression implements IExpression
         return this._argument;
     }
 
-    /* istanbul ignore next */
+    /* c8 ignore next 4 */
     public set argument(value: IExpression)
     {
         this._argument = value;

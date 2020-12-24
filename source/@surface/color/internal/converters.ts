@@ -1,30 +1,24 @@
+/* eslint-disable sort-keys */
+/* eslint-disable no-param-reassign */
+/* eslint-disable max-statements-per-line */
 // Reference: https://www.easyrgb.com/en/math.php
-
-export type HSL  = { h: number, s: number, l: number };
-export type HSLA = HSL & { a: number };
-export type HSV  = { h: number, s: number, v: number };
-export type HSVA = HSV & { a: number };
-export type LAB  = { l: number, a: number, b: number };
-export type RGB  = { r: number, g: number, b: number };
-export type RGBA = RGB & { a: number };
-export type XYZ  = { x: number, y: number, z: number };
 
 const ILLUMINANT_D65 = { X: 95.047, Y: 100, Z: 108.883 };
 
-const deltaChannel      = (chroma: number, max: number) => (channel: number) => (((max - channel) / 6) + (chroma / 2)) / chroma;
-const labToXyzTransform = (channel: number) => channel ** 3 > 0.008856 ? channel ** 3 : (channel - 16 / 116) / 7.787;
-const rgbToXyzTransform = (channel: number) => (channel > 0.04045 ? ((channel + 0.055) / 1.055) ** 2.4 : channel / 12.92) * 100;
-const xyzToLabTransform = (channel: number) => channel > 0.008856 ? channel ** (1 / 3) : (channel * 7.787) + (16 / 116);
-const xyzToRgbTransform = (channel: number) => channel > 0.0031308 ? (channel ** (1 / 2.4)) * 1.055 - 0.055 : channel / 12.92;
+const deltaChannel      = (chroma: number, max: number) => (channel: number) => ((max - channel) / 6 + chroma / 2) / chroma;
+const labToXyzTransform = (channel: number): number => channel ** 3 > 0.008856 ? channel ** 3 : (channel - 16 / 116) / 7.787;
+const rgbToXyzTransform = (channel: number): number => (channel > 0.04045 ? ((channel + 0.055) / 1.055) ** 2.4 : channel / 12.92) * 100;
+const xyzToLabTransform = (channel: number): number => channel > 0.008856 ? channel ** (1 / 3) : channel * 7.787 + 16 / 116;
+const xyzToRgbTransform = (channel: number): number => channel > 0.0031308 ? channel ** (1 / 2.4) * 1.055 - 0.055 : channel / 12.92;
 
 function hueToRgb(v1: number, v2: number, h: number): number
 {
     if (h < 0) { h += 1; }
     if (h > 1) { h -= 1; }
 
-    if ((h * 6) < 1) { return v1 + (v2 - v1) * 6 * h; }
-    if ((h * 2) < 1) { return v2; }
-    if ((h * 3) < 2) { return v1 + ( v2 - v1 ) * ( ( 2 / 3 ) - h ) * 6; }
+    if (h * 6 < 1) { return v1 + (v2 - v1) * 6 * h; }
+    if (h * 2 < 1) { return v2; }
+    if (h * 3 < 2) { return v1 + (v2 - v1) * (2 / 3  - h) * 6; }
 
     return v1;
 }
@@ -41,9 +35,9 @@ function rgbToHue(r: number, g: number, b: number, chroma: number, max: number):
     const h = r == max
         ? delta(b) - delta(g)
         : g == max
-            ? (1 / 3) + delta(r) - delta(b)
+            ? 1 / 3 + delta(r) - delta(b)
             : b == max
-                ? (2 / 3) + delta(g) - delta(r)
+                ? 2 / 3 + delta(g) - delta(r)
                 : 0;
 
     return h < 0
@@ -53,12 +47,20 @@ function rgbToHue(r: number, g: number, b: number, chroma: number, max: number):
             : h;
 }
 
-
 /** returns the value to a fixed number of digits */
 function toFixed(value: number, digits?: number): number
 {
     return Number.parseFloat(value.toFixed(digits ?? 0));
 }
+
+export type HSL  = { h: number, s: number, l: number };
+export type HSLA = HSL & { a: number };
+export type HSV  = { h: number, s: number, v: number };
+export type HSVA = HSV & { a: number };
+export type LAB  = { l: number, a: number, b: number };
+export type RGB  = { r: number, g: number, b: number };
+export type RGBA = RGB & { a: number };
+export type XYZ  = { x: number, y: number, z: number };
 
 export function hexToHsla(hex: string): HSLA
 {
@@ -91,13 +93,13 @@ export function hslaToHex(hsla: HSLA): string
 
 export function hslaToHsva(hsla: HSLA): HSVA
 {
-    const s = hsla.s * hsla.l <.5? hsla.l : 1- hsla.l;
+    const s = hsla.s * hsla.l < 0.5 ? hsla.l : 1 - hsla.l;
 
     return {
         h: hsla.h,
-        s: s * 2 / (hsla.l +s),
+        s: s * 2 / (hsla.l + s),
         v: hsla.l + s,
-        a: hsla.a
+        a: hsla.a,
     };
 }
 
@@ -118,9 +120,9 @@ export function hslaToRgba(hsla: HSLA): RGBA
     const v2 = l <= 0.5 ? l * (s + 1) : l + s - l * s;
     const v1 = l * 2 - v2;
 
-    const r = toFixed(hueToRgb(v1, v2, h + (1 / 3)) * 255, 0);
+    const r = toFixed(hueToRgb(v1, v2, h + 1 / 3) * 255, 0);
     const g = toFixed(hueToRgb(v1, v2, h) * 255, 0);
-    const b = toFixed(hueToRgb(v1, v2, h - (1 / 3)) * 255, 0);
+    const b = toFixed(hueToRgb(v1, v2, h - 1 / 3) * 255, 0);
 
     return { r, g, b, a };
 }
@@ -136,9 +138,9 @@ export function hsvaToHsl(hsva: HSVA): HSLA
 
     return {
         h: hsva.h,
-        s: hsva.s * hsva.v / ( h < 1 ? h : 2 - h),
+        s: hsva.s * hsva.v / (h < 1 ? h : 2 - h),
         l: hsva.h / 2,
-        a: hsva.a
+        a: hsva.a,
     };
 }
 
@@ -155,39 +157,37 @@ export function hsvaToRgba(hsva: HSVA): RGBA
 
         return { r: value, g: value, b: value, a };
     }
-    else
+
+    let hue = h * 6;
+
+    if (hue == 6)
     {
-        let hue = h * 6;
-
-        if (hue == 6)
-        {
-            hue = 0;
-        }
-
-        let i = Math.floor(hue);
-
-        const v0 = toFixed(v * 255);
-        const v1 = toFixed(v * (1 - s) * 255);
-        const v2 = toFixed(v * (1 - s * (hue - i)) * 255);
-        const v3 = toFixed(v * (1 - s * (1 - (hue - i))) * 255);
-
-
-        switch (i)
-        {
-            case 0:
-                return { r: v0, g: v3, b: v1, a };
-            case 1:
-                return { r: v2, g: v0, b: v1, a };
-            case 2:
-                return { r: v1, g: v0, b: v3, a };
-            case 3:
-                return { r: v1, g: v2, b: v0, a };
-            case 4:
-                return { r: v3, g: v1, b: v0, a };
-            default:
-                return { r: v0, g: v1, b: v2, a };
-        }
+        hue = 0;
     }
+
+    const i = Math.floor(hue);
+
+    const v0 = toFixed(v * 255);
+    const v1 = toFixed(v * (1 - s) * 255);
+    const v2 = toFixed(v * (1 - s * (hue - i)) * 255);
+    const v3 = toFixed(v * (1 - s * (1 - (hue - i))) * 255);
+
+    switch (i)
+    {
+        case 0:
+            return { r: v0, g: v3, b: v1, a };
+        case 1:
+            return { r: v2, g: v0, b: v1, a };
+        case 2:
+            return { r: v1, g: v0, b: v3, a };
+        case 3:
+            return { r: v1, g: v2, b: v0, a };
+        case 4:
+            return { r: v3, g: v1, b: v0, a };
+        default:
+            return { r: v0, g: v1, b: v2, a };
+    }
+
 }
 
 export function labToXyz(lab: LAB): XYZ
@@ -205,12 +205,12 @@ export function labToXyz(lab: LAB): XYZ
 
 export function rgbToHex(rgb: RGB): string
 {
-    return "#" + [rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, "0")).join("");
+    return `#${[rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, "0")).join("")}`;
 }
 
 export function rgbaToHex(rgba: RGBA): string
 {
-    return "#" + [rgba.r, rgba.g, rgba.b, rgba.a].map(x => x.toString(16).padStart(2, "0")).join("");
+    return `#${[rgba.r, rgba.g, rgba.b, rgba.a].map(x => x.toString(16).padStart(2, "0")).join("")}`;
 }
 
 export function rgbaToHsla(rgba: RGBA): HSLA
@@ -231,14 +231,13 @@ export function rgbaToHsla(rgba: RGBA): HSLA
     {
         return { h: 0, s: 0, l, a };
     }
-    else
-    {
-        const s = l < 0.5 ? chroma / (max + min) : chroma / (2 - max - min);
 
-        const h = rgbToHue(r, g, b, chroma, max);
+    const s = l < 0.5 ? chroma / (max + min) : chroma / (2 - max - min);
 
-        return { h, s, l, a };
-    }
+    const h = rgbToHue(r, g, b, chroma, max);
+
+    return { h, s, l, a };
+
 }
 
 export function rgbaToHsva(rgba: RGBA): HSVA
@@ -259,14 +258,13 @@ export function rgbaToHsva(rgba: RGBA): HSVA
     {
         return { h: 0, s: 0, v, a };
     }
-    else
-    {
-        const s = chroma / max;
 
-        const h = rgbToHue(r, g, b, chroma, max);
+    const s = chroma / max;
 
-        return { h, s, v, a };
-    }
+    const h = rgbToHue(r, g, b, chroma, max);
+
+    return { h, s, v, a };
+
 }
 
 export function rgbToXyz(rgb: RGB): XYZ
@@ -289,7 +287,7 @@ export function xyzToLab(xyz: XYZ): LAB
     const z = xyzToLabTransform(xyz.z / ILLUMINANT_D65.Z);
 
     return {
-        l: (y * 116) - 16,
+        l: y * 116 - 16,
         a: (x - y) * 500,
         b: (y - z) * 200,
     };

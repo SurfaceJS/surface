@@ -1,12 +1,12 @@
 /* eslint-disable max-lines */
 /* eslint-disable max-len */
-import { Delegate }     from "@surface/core";
-import Comparer         from "./comparer";
-import EnumerableSorter from "./enumerable-sorter";
-import HashSet          from "./hash-set";
-import IComparer        from "./interfaces/comparer";
-import ILookup          from "./interfaces/lookup";
-import Lookup           from "./lookup";
+import type { Delegate } from "@surface/core";
+import Comparer          from "./comparer.js";
+import EnumerableSorter  from "./enumerable-sorter.js";
+import HashSet           from "./hash-set.js";
+import type IComparer    from "./interfaces/comparer";
+import type ILookup      from "./interfaces/lookup";
+import Lookup            from "./lookup.js";
 
 abstract class Enumerable<TSource> implements Iterable<TSource>
 {
@@ -31,11 +31,6 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public static range(start: number, end: number): Enumerable<number>
     {
-        if (start > end)
-        {
-            throw new TypeError("Start cannot be greater than end");
-        }
-
         return new RangeIterator(start, end);
     }
 
@@ -1097,9 +1092,19 @@ class RangeIterator extends Enumerable<number>
 
     public *[Symbol.iterator](): Iterator<number>
     {
-        for (let i = this.start; i <= this.end; i++)
+        if (this.start < this.end)
         {
-            yield i;
+            for (let i = this.start; i <= this.end; i++)
+            {
+                yield i;
+            }
+        }
+        else
+        {
+            for (let i = this.start; i >= this.end; i--)
+            {
+                yield i;
+            }
         }
     }
 }

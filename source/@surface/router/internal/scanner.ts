@@ -1,5 +1,5 @@
-import TokenType from "./enums/token-type";
-import Token     from "./types/token";
+import TokenType  from "./enums/token-type.js";
+import type Token from "./types/token";
 
 export default class Scanner
 {

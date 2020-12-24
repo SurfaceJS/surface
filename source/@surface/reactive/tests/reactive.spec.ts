@@ -1,7 +1,9 @@
+import { Hookable }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import { assert }                              from "chai";
-import { computed, notify }                    from "../internal/decorators";
-import Reactive                                from "../internal/reactive";
+import chai                                    from "chai";
+import computed                                from "../internal/decorators/computed.js";
+import notify                                  from "../internal/decorators/notify.js";
+import Reactive                                from "../internal/reactive.js";
 
 @suite
 export default class ReactiveSpec
@@ -17,7 +19,7 @@ export default class ReactiveSpec
 
         target.value = 2;
 
-        assert.equal(target.value, receiver);
+        chai.assert.equal(target.value, receiver);
     }
 
     @test @shouldPass
@@ -30,7 +32,7 @@ export default class ReactiveSpec
 
         target.a.b.c.value = 1;
 
-        assert.equal(target.a.b.c.value, receiver);
+        chai.assert.equal(target.a.b.c.value, receiver);
 
         const c = target.a.b.c;
 
@@ -38,8 +40,8 @@ export default class ReactiveSpec
 
         c.value = 3;
 
-        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #1");
-        assert.notEqual(c.value, receiver, "c.value not equal receiver");
+        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #1");
+        chai.assert.notEqual(c.value, receiver, "c.value not equal receiver");
 
         const b = target.a.b;
 
@@ -47,8 +49,8 @@ export default class ReactiveSpec
 
         b.c = { value: 5 };
 
-        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #2");
-        assert.notEqual(b.c.value, receiver, "b.c.value not equal receiver");
+        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #2");
+        chai.assert.notEqual(b.c.value, receiver, "b.c.value not equal receiver");
 
         const a = target.a;
 
@@ -56,8 +58,8 @@ export default class ReactiveSpec
 
         a.b = { c: { value: 7 } };
 
-        assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #3");
-        assert.notEqual(a.b.c.value, receiver, "a.b.c.value not equal receiver");
+        chai.assert.equal(target.a.b.c.value, receiver, "target.a.b.c.value equal to receiver #3");
+        chai.assert.notEqual(a.b.c.value, receiver, "a.b.c.value not equal receiver");
     }
 
     @test @shouldPass
@@ -70,7 +72,7 @@ export default class ReactiveSpec
 
         target.value = "Hello World!!!";
 
-        assert.equal(target.value.length, receiver);
+        chai.assert.equal(target.value.length, receiver);
     }
 
     @test @shouldPass
@@ -86,13 +88,13 @@ export default class ReactiveSpec
 
         target.a.value = 2;
 
-        assert.equal(target.a.value, receiver1);
-        assert.equal(target.a.value, receiver2);
+        chai.assert.equal(target.a.value, receiver1);
+        chai.assert.equal(target.a.value, receiver2);
 
         target.a = { value: 1 };
 
-        assert.equal(target.a.value, receiver1);
-        assert.equal(target.a.value, receiver2);
+        chai.assert.equal(target.a.value, receiver1);
+        chai.assert.equal(target.a.value, receiver2);
     }
 
     @test @shouldPass
@@ -110,14 +112,14 @@ export default class ReactiveSpec
 
         target.a.b = { c: { value: 1 } };
 
-        assert.equal(target.a.b.c.value, valueReceiver);
-        assert.equal(target.a.b, bReceiver);
+        chai.assert.equal(target.a.b.c.value, valueReceiver);
+        chai.assert.equal(target.a.b, bReceiver);
 
         target.a = { b: { c: { value: 1 } } };
 
-        assert.equal(target.a.b.c.value, valueReceiver);
-        assert.equal(target.a.b,         bReceiver);
-        assert.equal(target.a,           aReceiver);
+        chai.assert.equal(target.a.b.c.value, valueReceiver);
+        chai.assert.equal(target.a.b,         bReceiver);
+        chai.assert.equal(target.a,           aReceiver);
     }
 
     @test @shouldPass
@@ -134,16 +136,16 @@ export default class ReactiveSpec
 
         target.a.b.c.value = 1;
 
-        assert.equal(target.a.b.c.value, abcValueReceiver);
-        assert.equal(cValueReceiver, c.value);
+        chai.assert.equal(target.a.b.c.value, abcValueReceiver);
+        chai.assert.equal(cValueReceiver, c.value);
 
         target.a.b.c = { value: 2 };
 
         c.value = 3;
 
-        assert.equal(target.a.b.c.value, abcValueReceiver);
-        assert.equal(cValueReceiver, c.value);
-        assert.notEqual(target.a.b.c.value, c.value);
+        chai.assert.equal(target.a.b.c.value, abcValueReceiver);
+        chai.assert.equal(cValueReceiver, c.value);
+        chai.assert.notEqual(target.a.b.c.value, c.value);
     }
 
     @test @shouldPass
@@ -162,45 +164,45 @@ export default class ReactiveSpec
         target[0] = 3;
         target[1] = 4;
 
-        assert.equal(target[0], receiver0);
-        assert.equal(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.equal(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target.unshift(5);
 
-        assert.equal(target[0], receiver0);
-        assert.equal(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.equal(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target.pop();
 
-        assert.equal(target[0], receiver0);
-        assert.equal(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.equal(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target.pop();
 
-        assert.equal(target[0], receiver0);
-        assert.notEqual(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.notEqual(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target.push(6);
 
-        assert.equal(target[0], receiver0);
-        assert.notEqual(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.notEqual(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target[1] = 7;
 
-        assert.equal(target[0], receiver0);
-        assert.notEqual(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.notEqual(target[1], receiver1);
+        chai.assert.equal(target.length, length);
 
         target.reverse();
 
-        assert.equal(target[0], receiver0);
-        assert.notEqual(target[1], receiver1);
-        assert.equal(target.length, length);
+        chai.assert.equal(target[0], receiver0);
+        chai.assert.notEqual(target[1], receiver1);
+        chai.assert.equal(target.length, length);
     }
 
     @test @shouldPass
@@ -212,15 +214,15 @@ export default class ReactiveSpec
 
         Reactive.from(target, ["0", "value"]).subscribe(x => receiver = x as number);
 
-        assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0].value, receiver);
 
         target.unshift({ value: 2 });
 
-        assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0].value, receiver);
 
         target.shift();
 
-        assert.equal(target[0].value, receiver);
+        chai.assert.equal(target[0].value, receiver);
     }
 
     @test @shouldPass
@@ -232,11 +234,11 @@ export default class ReactiveSpec
 
         Reactive.from(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
 
-        assert.equal(target.value, receiver);
+        chai.assert.equal(target.value, receiver);
 
         target.value = 2;
 
-        assert.equal(target.value, receiver);
+        chai.assert.equal(target.value, receiver);
 
         const newTarget = { ...target };
 
@@ -244,13 +246,13 @@ export default class ReactiveSpec
 
         newTarget.value = 3;
 
-        assert.notEqual(newTarget.value, receiver);
+        chai.assert.notEqual(newTarget.value, receiver);
 
         Reactive.from(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
 
         newTarget.value = 4;
 
-        assert.equal(newTarget.value, newReceiver);
+        chai.assert.equal(newTarget.value, newReceiver);
     }
 
     @test @shouldPass
@@ -269,18 +271,19 @@ export default class ReactiveSpec
         Reactive.notify(target, ["a"]);
         Reactive.notify(target, ["c"]); // Coverage
 
-        assert.equal(target.a, aReceiver);
-        assert.notEqual(target.b, bReceiver);
+        chai.assert.equal(target.a, aReceiver);
+        chai.assert.notEqual(target.b, bReceiver);
 
         Reactive.notify(target);
 
-        assert.equal(target.a, aReceiver);
-        assert.equal(target.b, bReceiver);
+        chai.assert.equal(target.a, aReceiver);
+        chai.assert.equal(target.b, bReceiver);
     }
 
     @test @shouldPass
     public decoratorComputed(): void
     {
+        @Hookable.finisher
         class Target
         {
             private a: number = 0;
@@ -307,12 +310,13 @@ export default class ReactiveSpec
 
         target.recalculate();
 
-        assert.equal(target.sum, receiver);
+        chai.assert.equal(target.sum, receiver);
     }
 
     @test @shouldPass
     public decoratorNotify(): void
     {
+        @Hookable.finisher
         class Target
         {
             @notify("sum")
@@ -341,7 +345,7 @@ export default class ReactiveSpec
 
         target.recalculate();
 
-        assert.equal(target.sum, receiver);
+        chai.assert.equal(target.sum, receiver);
     }
 
     @test @shouldFail
@@ -349,12 +353,12 @@ export default class ReactiveSpec
     {
         const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
 
-        assert.throws(() => Reactive.from(target, ["a", "b", "c", "value"]));
+        chai.assert.throws(() => Reactive.from(target, ["a", "b", "c", "value"]));
 
         target.a = { b: { c: { value: 1 } } };
 
         Reactive.from(target, ["a", "b", "c", "value"]);
 
-        assert.throws(() => target.a = { });
+        chai.assert.throws(() => target.a = { });
     }
 }

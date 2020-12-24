@@ -1,11 +1,11 @@
-import Vector4  from "@surface/3d-math/vector-4";
-import { HSVA } from "./converters";
+/* eslint-disable sort-keys */
+/* eslint-disable no-param-reassign */
+import { Vector4 }   from "@surface/3d-math";
+import type { HSVA } from "./converters.js";
 
 const MAX_DISTANCE = 0.707107;
 
-export type Swatch = { index: number, color: HSVA };
-
-function average(...values: Array<number>): number
+function average(...values: number[]): number
 {
     return values.reduce((a, b) => a + b) / values.length;
 }
@@ -15,9 +15,9 @@ function colorFromVector(vector: Vector4): HSVA
     return { h: vector.z, s: vector.x, v: vector.y, a: vector.w };
 }
 
-function* enumerateInterpolation(swatches: Array<Swatch>, range?: { start: number, end: number }): IterableIterator<Swatch>
+function *enumerateInterpolation(swatches: Swatch[], range?: { start: number, end: number }): IterableIterator<Swatch>
 {
-    if (swatches.length == 0 || (swatches.length < 2 && !range))
+    if (swatches.length == 0 || swatches.length < 2 && !range)
     {
         throw new Error("Expected at least two swatches when not using range");
     }
@@ -73,7 +73,7 @@ function* enumerateInterpolation(swatches: Array<Swatch>, range?: { start: numbe
     }
 }
 
-function* enumerateIntervals(index: number, targetIndex: number, target: Vector4, origin: Vector4): IterableIterator<Swatch>
+function *enumerateIntervals(index: number, targetIndex: number, target: Vector4, origin: Vector4): IterableIterator<Swatch>
 {
     if (Vector4.equals(target, origin))
     {
@@ -117,12 +117,14 @@ function vectorFromColor(color: HSVA): Vector4
     return new Vector4(color.s, color.v, color.h, color.a);
 }
 
-export function interpolateSwatches(swatches: Array<Swatch>, range?: { start: number, end: number }): Array<Swatch>
+export type Swatch = { index: number, color: HSVA };
+
+export function interpolateSwatches(swatches: Swatch[], range?: { start: number, end: number }): Swatch[]
 {
     return Array.from(enumerateInterpolation(swatches, range));
 }
 
-export function scaleSwatches(swatches: Array<Swatch>, factor: number): Array<Swatch>
+export function scaleSwatches(swatches: Swatch[], factor: number): Swatch[]
 {
     const vertices = swatches.map(x => vectorFromColor(x.color));
 
@@ -142,6 +144,6 @@ export function scaleSwatches(swatches: Array<Swatch>, factor: number): Array<Sw
             const color = colorFromVector(Vector4.add(origin, Vector4.multiply(normalized, distance)));
 
             return { index: swatches[index].index, color };
-        }
+        },
     );
 }

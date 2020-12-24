@@ -1,5 +1,6 @@
-import { ArgumentOutOfRangeError, Delegate } from "@surface/core";
-import Enumerable                            from "@surface/enumerable";
+import type { Delegate }           from "@surface/core";
+import { ArgumentOutOfRangeError } from "@surface/core";
+import Enumerable                  from "@surface/enumerable";
 
 const SOURCE = Symbol("list:source");
 
@@ -72,6 +73,7 @@ export default class List<T> extends Enumerable<T>
             },
         };
 
+        /* c8 ignore next 2 */ // c8 can't handle constructor return's
         return new Proxy(this, handler);
     }
 

@@ -1,5 +1,5 @@
-import http    from "http";
-import WebHost from "./web-host";
+import type http    from "http";
+import type WebHost from "./web-host.js";
 
 export default class HttpContext
 {

@@ -1,6 +1,6 @@
-import HtmlWebpackPlugin from "html-webpack-plugin";
-import WebpackDevServer  from "webpack-dev-server";
-import WebpackTypes      from "./webpack";
+import type HtmlWebpackPlugin from "html-webpack-plugin";
+import type WebpackDevServer  from "webpack-dev-server";
+import type WebpackTypes      from "./webpack";
 
 type Configuration =
 {
