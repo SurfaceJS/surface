@@ -49,9 +49,9 @@ export default class WebRouter
     {
         this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
 
-        this.baseUrl        = options.baseUrl     ?? /* c8 ignore next */ "";
-        this.container      = options.container   ?? /* c8 ignore next */ new Container();
-        this.middlewares    = options.middlewares ?? /* c8 ignore next */ [];
+        this.baseUrl     = options.baseUrl      ?? /* c8 ignore next */ "";
+        this.container   = options.container    ?? /* c8 ignore next */ new Container();
+        this.middlewares = (options.middlewares ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
 
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(routes))
@@ -114,7 +114,7 @@ export default class WebRouter
         }
         else
         {
-            throw new Error(`Cannot find outlet by provided selector "${outletSelector}${key == "default" ? "" : `[name="${key}"]`}"`);
+            throw new Error(`Cannot find outlet by provided selector "${outletSelector}${key == "default" ? "" : `[name=${key}]`}"`);
         }
     }
 
@@ -268,7 +268,7 @@ export default class WebRouter
 
         for (const middleware of this.middlewares)
         {
-            middleware.onEnter?.(to, from, next);
+            middleware.execute(to, from, next);
 
             if (handled)
             {

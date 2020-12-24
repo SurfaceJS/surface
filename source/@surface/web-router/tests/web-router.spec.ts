@@ -8,6 +8,7 @@ import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IMiddleware                        from "../internal/interfaces/middleware";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
+import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
 import WebRouter                               from "../internal/web-router.js";
@@ -107,9 +108,14 @@ export default class WebRouterSpec
                         path:       "index",
                     },
                     {
-                        components: { default: HomeIndexView },
-                        path:       "no-outlet",
-                        selector:   "#no-outlet",
+                        components: { "non-default": HomeIndexView },
+                        path:       "no-outlet-non-default",
+                        selector:   "#no-outlet-non-default",
+                    },
+                    {
+                        component: HomeIndexView,
+                        path:      "no-outlet",
+                        selector:  "#no-outlet",
                     },
                 ],
                 component: async () => Promise.resolve({ default: HomeView }),
@@ -139,18 +145,18 @@ export default class WebRouterSpec
             },
         ];
 
-        const middleware: IMiddleware =
+        class Middleware implements IMiddleware
         {
-            onEnter: (to, _, next) =>
+            public execute(to: Route, _: Route | undefined, next: (route: string | NamedRoute) => void): void
             {
                 if (to.meta.requireAuth)
                 {
                     next("/home");
                 }
-            },
-        };
+            }
+        }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [{ execute: () => void 0 },  Middleware] });
 
         CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
 
@@ -388,5 +394,6 @@ export default class WebRouterSpec
     public async cannotFindOutlet(): Promise<void>
     {
         await chai.assert.isRejected(this.router.push("/home/no-outlet"), Error, "Cannot find outlet by provided selector \"#no-outlet\"");
+        await chai.assert.isRejected(this.router.push("/home/no-outlet-non-default"), Error, "Cannot find outlet by provided selector \"#no-outlet-non-default[name=non-default]\"");
     }
 }
