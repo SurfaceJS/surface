@@ -1,20 +1,22 @@
 /* eslint-disable @typescript-eslint/indent */
-import type { Delegate }                                 from "@surface/core";
-import chalk                                             from "chalk";
-import webpack                                           from "webpack";
-import WebpackDevServer                                  from "webpack-dev-server";
-import { createOnlyDefinedProxy, log, normalizeUrlPath } from "./common.js";
+import { URL }                         from "url";
+import type { Delegate }               from "@surface/core";
+import { joinPaths }                   from "@surface/core";
+import chalk                           from "chalk";
+import webpack                         from "webpack";
+import WebpackDevServer                from "webpack-dev-server";
+import { createOnlyDefinedProxy, log } from "./common.js";
 import
 {
     createAnalyzerConfiguration,
     createBuildConfiguration,
     createDevServerConfiguration,
 } from "./configurations.js";
-import type AnalyzerOptions          from "./types/analyzer-options";
-import type BuildOptions             from "./types/build-options";
-import type CompilerSignal           from "./types/compiler-signal";
-import type Configuration            from "./types/configuration";
-import type DevServerOptions         from "./types/dev-serve-options";
+import type AnalyzerOptions  from "./types/analyzer-options";
+import type BuildOptions     from "./types/build-options";
+import type CompilerSignal   from "./types/compiler-signal";
+import type Configuration    from "./types/configuration";
+import type DevServerOptions from "./types/dev-serve-options";
 
 const DEFAULT_STATS_OPTIONS =
 {
@@ -74,21 +76,25 @@ export default class Compiler
     {
         const
         {
-            host                  = "localhost",
+            host                  = "http://localhost",
             logLevel: statOptions = DEFAULT_STATS_OPTIONS,
             port                  = 8080,
         } = options;
 
-        const publicPath           = typeof configuration.publicPath == "string" ? normalizeUrlPath(configuration.publicPath) : "";
-        const webpackConfiguration = createDevServerConfiguration(configuration, { host, port, publicPath });
+        const url = new URL(host);
+
+        url.port     = port.toString();
+        url.pathname = configuration.publicPath ?? "/";
+
+        const webpackConfiguration = createDevServerConfiguration(configuration, url);
         const webpackCompiler      = webpack(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
-            historyApiFallback: { index: `${publicPath}/index.html` },
+            historyApiFallback: { index: joinPaths(url.pathname, "index.html") },
             hot:                options.hot,
             inline:             true,
-            publicPath,
+            publicPath:         url.pathname,
             stats:              statOptions,
             ...configuration.devServer,
         });
@@ -98,7 +104,7 @@ export default class Compiler
         const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
             (error?: Error) => error ? reject(error) : resolve();
 
-        await new Promise<void>((resolve, reject) => server.listen(port, host, handlerAsync(resolve, reject)));
+        await new Promise<void>((resolve, reject) => server.listen(port, url.hostname, handlerAsync(resolve, reject)));
 
         return { close: async () => Promise.resolve(server.close()) };
     }

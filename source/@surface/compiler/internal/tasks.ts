@@ -36,6 +36,7 @@ export default class Tasks
         const configuration: Configuration = createOnlyDefinedProxy
         ({
             context:       options.context,
+            copyFiles:     options.copyFiles,
             entry:         options.entry,
             eslintrc:      options.eslintrc,
             filename:      options.filename,
@@ -44,6 +45,7 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
+            useWorkbox:    options.useWorkbox,
             webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
@@ -129,9 +131,28 @@ export default class Tasks
         Tasks.resolvePath(configuration, "output",       root);
         Tasks.resolvePath(configuration, "tsconfig",     root);
 
+        // if (Array.isArray(configuration.copyFiles))
+        // {
+        //     configuration.copyFiles.forEach
+        //     (
+        //         (element, index, source) =>
+        //         {
+        //             if (typeof element == "string")
+        //             {
+        //                 Tasks.resolvePath(source, index, root);
+        //             }
+        //             else
+        //             {
+        //                 Tasks.resolvePath(element, "from", root);
+        //                 Tasks.resolvePath(element, "to",   root);
+        //             }
+        //         },
+        //     );
+        // }
+
         if (Array.isArray(configuration.forceTs))
         {
-            configuration.forceTs.forEach((_, i, e) => Tasks.resolvePath(e, i, root));
+            configuration.forceTs.forEach((_, index, source) => Tasks.resolvePath(source, index, root));
         }
     }
 

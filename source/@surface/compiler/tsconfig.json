@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
         "types": [
-            "node"
+            "node",
+            "copy-webpack-plugin",
+            "workbox-webpack-plugin"
         ],
     },
     "extends": "../../../tsconfig.json",

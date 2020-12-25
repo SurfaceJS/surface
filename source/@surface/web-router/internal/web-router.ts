@@ -1,25 +1,24 @@
-import { Stack }                         from "@surface/collection";
-import type { Constructor }              from "@surface/core";
-import { Lazy, assertGet, typeGuard }    from "@surface/core";
-import type { DirectiveHandlerRegistry } from "@surface/custom-element/internal/types";
-import Container                         from "@surface/dependency-injection";
-import Router                            from "@surface/router";
-import type { RouteData }                from "@surface/router";
-import type IMiddleware                  from "./interfaces/middleware";
-import type IRouteableElement            from "./interfaces/routeable-element";
-import Metadata                          from "./metadata.js";
-import NavigationDirectiveHandler        from "./navigation-directive-handler.js";
-import RouteConfigurator                 from "./route-configurator.js";
-import type Component                    from "./types/component";
-import type Module                       from "./types/module";
-import type NamedRoute                   from "./types/named-route";
-import type Route                        from "./types/route";
-import type RouteConfiguration           from "./types/route-configuration";
-import type RouteDefinition              from "./types/route-definition";
-import type ViewRouterOptions            from "./types/view-router-options";
+import { Stack }                                 from "@surface/collection";
+import type { Constructor }                      from "@surface/core";
+import { Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import type { DirectiveHandlerRegistry }         from "@surface/custom-element/internal/types";
+import Container                                 from "@surface/dependency-injection";
+import Router                                    from "@surface/router";
+import type { RouteData }                        from "@surface/router";
+import type IMiddleware                          from "./interfaces/middleware";
+import type IRouteableElement                    from "./interfaces/routeable-element";
+import Metadata                                  from "./metadata.js";
+import NavigationDirectiveHandler                from "./navigation-directive-handler.js";
+import RouteConfigurator                         from "./route-configurator.js";
+import type Component                            from "./types/component";
+import type Module                               from "./types/module";
+import type NamedRoute                           from "./types/named-route";
+import type Route                                from "./types/route";
+import type RouteConfiguration                   from "./types/route-configuration";
+import type RouteDefinition                      from "./types/route-definition";
+import type ViewRouterOptions                    from "./types/view-router-options";
 
-const NO_SLASH_PATTERN_PATTERN = /(^\/)?([^\/]+)(\/$)?/;
-const LEADING_SLASH_PATTERN    = /^\//;
+const LEADING_SLASH_PATTERN = /^\//;
 
 export default class WebRouter
 {
@@ -58,11 +57,11 @@ export default class WebRouter
         {
             if (definition.name)
             {
-                this.router.map(definition.name, this.joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
+                this.router.map(definition.name, joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
             }
             else
             {
-                this.router.map(this.joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
+                this.router.map(joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
             }
         }
     }
@@ -279,14 +278,9 @@ export default class WebRouter
         return handled;
     }
 
-    private joinPaths(...paths: string[]): string
-    {
-        return paths.filter(x => !!x).map(x => x.replace(NO_SLASH_PATTERN_PATTERN, "$2")).join("/");
-    }
-
     private resolvePath(path: string): URL
     {
-        return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${this.joinPaths(window.location.origin, this.baseUrl)}/`);
+        return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${joinPaths(window.location.origin, this.baseUrl)}/`);
     }
 
     public async back(): Promise<void>
@@ -340,7 +334,7 @@ export default class WebRouter
             {
                 const [routeConfig, routeData] = match.value;
 
-                const url = new URL(this.joinPaths(window.location.origin, routeData.path));
+                const url = new URL(joinPaths(window.location.origin, routeData.path));
 
                 url.hash = route.hash ?? "";
 

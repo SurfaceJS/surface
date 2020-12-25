@@ -1,83 +1,29 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
-import os                                         from "os";
 import path                                       from "path";
+import type { URL }                               from "url";
+import { fileURLToPath }                          from "url";
 import { deepMergeCombine }                       from "@surface/core";
+import CopyPlugin                                 from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
 import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
 import HtmlWebpackPlugin                          from "html-webpack-plugin";
 import TerserWebpackPlugin                        from "terser-webpack-plugin";
 import webpack                                    from "webpack";
 import { BundleAnalyzerPlugin }                   from "webpack-bundle-analyzer";
+import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
+import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
 import type AnalyzerOptions                       from "./types/analyzer-options";
 import type BuildOptions                          from "./types/build-options";
 import type Configuration                         from "./types/configuration";
 
-const __dirname = import.meta.url;
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-type ClientOptions = { host: string, port: number, publicPath: string };
-
-const loaders =
+function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): webpack.Entry | undefined
 {
-    css:     { loader: "css-loader", options: { esModule: false, sourceMap: true } },
-    extract: { loader: "extract-loader" },
-    file:
-    {
-        loader:  "file-loader",
-        options: { name: "[hash].[ext]", outputPath: "resources" },
-    },
-    fileCss:
-    {
-        loader:  "file-loader",
-        options: { esModule: false, name: "[hash].css", outputPath: "resources" },
-    },
-    html:
-    {
-        loader:  "html-loader",
-        options:
-        {
-            attributes: true,
-            esModule:   true,
-            minimize:   true,
-        },
-    },
-    resolveUrl:
-    {
-        loader:  "resolve-url-loader",
-        options:
-        {
-            removeCR: true,
-        },
-    },
-    sass:   { loader: "sass-loader" },
-    style:  { loader: "style-loader" },
-    thread:
-    {
-        loader:  "thread-loader",
-        options:
-        {
-            workers: os.cpus().length - 1,
-        },
-    },
-    toString: { loader: "to-string-loader" },
-    ts:
-    {
-        loader:  "ts-loader",
-        options:
-        {
-            configFile:              "tsconfig.json",
-            happyPackMode:           true,
-            onlyCompileBundledFiles: true,
-            transpileOnly:           true,
-        },
-    },
-};
-
-function configureDevServerEntry(entry: webpack.Entry | undefined, clientOptions: ClientOptions): webpack.Entry | undefined
-{
-    const webpackDevServerClient = `webpack-dev-server/client?http://${clientOptions.host}:${clientOptions.port}${clientOptions.publicPath}`;
+    const webpackDevServerClient = `webpack-dev-server/client?${url}`;
     const webpackHotDevServer    = "webpack/hot/dev-server";
 
     return Array.isArray(entry)
@@ -112,7 +58,7 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
     return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
 
-export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration, library: boolean = false): webpack.Configuration
+export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): webpack.Configuration
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -147,13 +93,38 @@ export function createConfiguration(configuration: Configuration, extendedConfig
     plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
-    if (!library)
-    {
-        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-            ? { template: configuration.htmlTemplate }
-            : configuration.htmlTemplate;
+    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+        ? { template: configuration.htmlTemplate }
+        : configuration.htmlTemplate;
 
-        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+
+    if (configuration.copyFiles)
+    {
+        const patterns = configuration.copyFiles
+            .map
+            (
+                pattern =>
+                {
+                    if (typeof pattern == "string")
+                    {
+                        const [from, to = configuration.output!] = pattern.split(":");
+
+                        return { from, to };
+                    }
+
+                    return pattern;
+                },
+            );
+
+        const copyPlugin = new CopyPlugin({ patterns });
+
+        plugins.push(copyPlugin);
+    }
+
+    if (configuration.useWorkbox)
+    {
+        plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true }));
     }
 
     const isProduction = extendedConfiguration.mode == "production";
@@ -184,6 +155,14 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         {
             rules:
             [
+                {
+                    test: /\.webmanifest$/,
+                    use:
+                    [
+                        loaders.file,
+                        loaders.appManifest,
+                    ],
+                },
                 {
                     test: /\.(png|jpe?g|svg|ttf|woff2?|eot)$/,
                     use:  loaders.file,
@@ -280,7 +259,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         },
         resolveLoader:
         {
-            modules: ["node_modules", path.resolve(__dirname, "./loaders")],
+            modules: ["node_modules", path.resolve(dirname, "./loaders")],
         },
     };
 
@@ -292,11 +271,11 @@ export function createBuildConfiguration(configuration: Configuration, options: 
     return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
 }
 
-export function createDevServerConfiguration(configuration: Configuration, options: ClientOptions): webpack.Configuration
+export function createDevServerConfiguration(configuration: Configuration, url: URL): webpack.Configuration
 {
     const extendedConfiguration: webpack.Configuration =
     {
-        entry:   configureDevServerEntry(configuration.entry, options),
+        entry:   configureDevServerEntry(configuration.entry, url),
         mode:    "development",
         plugins: [new webpack.HotModuleReplacementPlugin()],
     };

@@ -40,6 +40,7 @@ export default class BinSpec
             "",                  "",
             "--analyzer-mode",   "server",
             "--context",         ".",
+            "--copy-files",      "**/foo/*.js,**/bar/*.js",
             "--default-sizes",   "parsed",
             "--entry",           ".",
             "--eslintrc",        ".",
@@ -57,6 +58,7 @@ export default class BinSpec
             "--public-path",     ".",
             "--report-filename", ".",
             "--tsconfig",        ".",
+            "--use-workbox",     "true",
             "--webpack-config",  ".",
         ];
 
@@ -66,6 +68,7 @@ export default class BinSpec
         {
             analyzerMode:   "server",
             context:        ".",
+            copyFiles:      ["**/foo/*.js", "**/bar/*.js"],
             defaultSizes:   "parsed",
             entry:          ["."],
             eslintrc:       ".",
@@ -83,6 +86,7 @@ export default class BinSpec
             publicPath:     ".",
             reportFilename: ".",
             tsconfig:       ".",
+            useWorkbox:     true,
             webpackConfig:  ".",
         };
 
@@ -103,6 +107,7 @@ export default class BinSpec
         [
             "",                 "",
             "--context",        ".",
+            "--copy-files",     "**/foo/*.js,**/bar/*.js",
             "--entry",          ".",
             "--eslintrc",       ".",
             "--filename",       ".",
@@ -115,6 +120,7 @@ export default class BinSpec
             "--public-path",    ".",
             "--tsconfig",       ".",
             "--watch",          "true",
+            "--use-workbox",    "true",
             "--webpack-config", ".",
         ];
 
@@ -123,6 +129,7 @@ export default class BinSpec
         const expected: Required<Options & BuildOptions> =
         {
             context:       ".",
+            copyFiles:     ["**/foo/*.js", "**/bar/*.js"],
             entry:         ["."],
             eslintrc:      ".",
             filename:      ".",
@@ -134,6 +141,7 @@ export default class BinSpec
             project:       ".",
             publicPath:    ".",
             tsconfig:      ".",
+            useWorkbox:    true,
             watch:         true,
             webpackConfig: ".",
         };
@@ -155,6 +163,7 @@ export default class BinSpec
         [
             "",                 "",
             "--context",        ".",
+            "--copy-files",     "**/foo/*.js,**/bar/*.js",
             "--entry",          ".",
             "--eslintrc",       ".",
             "--filename",       ".",
@@ -168,6 +177,7 @@ export default class BinSpec
             "--project",        ".",
             "--public-path",    ".",
             "--tsconfig",       ".",
+            "--use-workbox",    "true",
             "--webpack-config", ".",
         ];
 
@@ -176,6 +186,7 @@ export default class BinSpec
         const expected: Required<Omit<Options, "mode"> & DevServerOptions> =
         {
             context:       ".",
+            copyFiles:     ["**/foo/*.js", "**/bar/*.js"],
             entry:         ["."],
             eslintrc:      ".",
             filename:      ".",
@@ -189,6 +200,7 @@ export default class BinSpec
             project:       ".",
             publicPath:    ".",
             tsconfig:      ".",
+            useWorkbox:    true,
             webpackConfig: ".",
         };
 
