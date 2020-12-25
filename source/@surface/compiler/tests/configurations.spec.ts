@@ -1,3 +1,4 @@
+import { URL }         from "url";
 import { suite, test } from "@surface/test-suite";
 import chai            from "chai";
 import
@@ -7,6 +8,7 @@ import
     createConfiguration,
     createDevServerConfiguration,
 } from "../internal/configurations.js";
+import type Configuration from "../internal/types/configuration";
 
 @suite
 export default class ConfigurationsSpec
@@ -31,17 +33,36 @@ export default class ConfigurationsSpec
     public createConfiguration(): void
     {
         chai.assert.isOk(createConfiguration({ }, { }));
-        chai.assert.isOk(createConfiguration({ forceTs: true, htmlTemplate: ".", publicPath: "path" }, { mode: "development" }, true));
-        chai.assert.isOk(createConfiguration({ forceTs: ["foo", "bar"], htmlTemplate: { template: "." }, publicPath: "/path", webpackConfig: { context: "." } }, { mode: "production", target: "node" }, false));
+
+        const configuration2: Configuration =
+        {
+            forceTs:      true,
+            htmlTemplate: ".",
+            publicPath:   "path",
+        };
+
+        chai.assert.isOk(createConfiguration(configuration2, { mode: "development" }));
+
+        const configuration3: Configuration =
+        {
+            copyFiles:     ["**/foo", { from: "**/bar", to: "**/baz" }],
+            forceTs:       ["foo", "bar"],
+            htmlTemplate:  { template: "." },
+            publicPath:    "/path",
+            useWorkbox:    true,
+            webpackConfig: { context: "." },
+        };
+
+        chai.assert.isOk(createConfiguration(configuration3, { mode: "production", target: "node" }));
     }
 
     @test
     public createDevServerConfiguration(): void
     {
-        chai.assert.isOk(createDevServerConfiguration({ },                       { host: "localhost", port: 8080, publicPath: "" }));
-        chai.assert.isOk(createDevServerConfiguration({ },                       { host: "localhost", port: 8080, publicPath: "" }));
-        chai.assert.isOk(createDevServerConfiguration({ entry: ["."] },          { host: "localhost", port: 8080, publicPath: "" }));
-        chai.assert.isOk(createDevServerConfiguration({ entry: { index: "." } }, { host: "localhost", port: 8080, publicPath: "" }));
-        chai.assert.isOk(createDevServerConfiguration({ entry: "." },            { host: "localhost", port: 8080, publicPath: "" }));
+        chai.assert.isOk(createDevServerConfiguration({ },                       new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ },                       new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: ["."] },          new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: { index: "." } }, new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: "." },            new URL("http://localhost:8080")));
     }
 }

@@ -1,5 +1,7 @@
 import type { Indexer } from "../types";
 
+const NO_SLASH_PATTERN_PATTERN = /(^\/)?([^\/]+)(\/$)?/;
+
 export function camelToText(value: string): string
 {
     return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join(" ").toLowerCase();
@@ -69,6 +71,11 @@ export function dashedToTitle(value: string): string
 export function format(pattern: string, source: Indexer): string
 {
     return pattern.replace(/\$\{([^}]*)\}/g, (_, key) => `${source[key]}`);
+}
+
+export function joinPaths(...paths: string[]): string
+{
+    return paths.filter(x => !!x).map(x => x.replace(NO_SLASH_PATTERN_PATTERN, "$2")).join("/");
 }
 
 export function toTitle(value: string): string

@@ -5,6 +5,7 @@ import type WebpackTypes      from "./webpack";
 type Configuration =
 {
     context?:       string,
+    copyFiles?:     (string | { from: string, to: string })[],
     devServer?:     WebpackDevServer.Configuration,
     entry?:         WebpackTypes.Configuration["entry"],
     eslintrc?:      string,
@@ -14,6 +15,7 @@ type Configuration =
     output?:        string,
     publicPath?:    string,
     tsconfig?:      string,
+    useWorkbox?:    boolean,
     webpackConfig?: WebpackTypes.Configuration,
 };
 

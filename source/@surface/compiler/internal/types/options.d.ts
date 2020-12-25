@@ -3,6 +3,7 @@ import type webpack from "webpack";
 type Options =
 {
     context?:       string,
+    copyFiles?:     (string | { from: string, to: string })[],
     entry?:         [string, ...string[]],
     eslintrc?:      string,
     filename?:      string,
@@ -13,6 +14,7 @@ type Options =
     project?:       string,
     publicPath?:    string,
     tsconfig?:      string,
+    useWorkbox?:    boolean,
     webpackConfig?: string,
 };
 
