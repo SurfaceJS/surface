@@ -316,6 +316,4 @@ const materialColors =
     "white": "#ffffff",
 };
 
-export type MaterialColors = typeof materialColors;
-
 export default materialColors;

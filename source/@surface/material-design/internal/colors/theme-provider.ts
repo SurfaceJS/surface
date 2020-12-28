@@ -1,8 +1,8 @@
 import { merge }                               from "@surface/core";
+import { generateCssVariables, generateTheme } from "../common.js";
 import type RawPalette                         from "../types/raw-palette";
 import type RawTheme                           from "../types/raw-theme";
 import type Theme                              from "../types/theme";
-import { generateCssVariables, generateTheme } from "./common.js";
 import defaultTheme                            from "./default-theme.js";
 import materialColors                          from "./material-colors.js";
 

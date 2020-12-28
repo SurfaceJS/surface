@@ -1,32 +1,16 @@
-import materialColors  from "./internal/material-colors.js";
-import ThemeProvider   from "./internal/theme-provider.js";
-import type RawPalette from "./types/raw-palette";
-import type RawTheme   from "./types/raw-theme";
+import MaterialDesign from "./internal/material-design.js";
 
-export default class MaterialDesign
-{
-    private static readonly themeProvider = new ThemeProvider();
+export { default as App }              from "./internal/components/app/index.js";
+export { default as AppBar }           from "./internal/components/app-bar/index.js";
+export { default as AppToogle }        from "./internal/components/app-toogle/index.js";
+export { default as Button }           from "./internal/components/button/index.js";
+export { default as Content }          from "./internal/components/content/index.js";
+export { default as Footer }           from "./internal/components/footer/index.js";
+export { default as Icon }             from "./internal/components/icon/index.js";
+export { default as NavigationDrawer } from "./internal/components/navigation-drawer/index.js";
+export { default as Switch }           from "./internal/components/switch/index.js";
+export { default as TextField }        from "./internal/components/text-field/index.js";
 
-    public static readonly colors = materialColors;
+export * from "./internal/colors/converters.js";
 
-    public static useDark(): typeof MaterialDesign
-    {
-        this.themeProvider.dark = true;
-
-        return this;
-    }
-
-    public static useLight(): typeof MaterialDesign
-    {
-        this.themeProvider.dark = false;
-
-        return this;
-    }
-
-    public static useTheme(theme: RawPalette|RawTheme): typeof MaterialDesign
-    {
-        this.themeProvider.use(theme);
-
-        return this;
-    }
-}
+export default MaterialDesign;

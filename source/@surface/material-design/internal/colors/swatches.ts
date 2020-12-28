@@ -1,7 +1,8 @@
 /* eslint-disable sort-keys */
 /* eslint-disable no-param-reassign */
-import { Vector4 }   from "@surface/3d-math";
-import type { HSVA } from "./converters.js";
+import type HSVA   from "../types/hsva";
+import type Swatch from "../types/swatch";
+import Vector4     from "./vector-4.js";
 
 const MAX_DISTANCE = 0.707107;
 
@@ -116,8 +117,6 @@ function vectorFromColor(color: HSVA): Vector4
 {
     return new Vector4(color.s, color.v, color.h, color.a);
 }
-
-export type Swatch = { index: number, color: HSVA };
 
 export function interpolateSwatches(swatches: Swatch[], range?: { start: number, end: number }): Swatch[]
 {

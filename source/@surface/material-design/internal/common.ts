@@ -1,11 +1,12 @@
 /* eslint-disable sort-keys */
-import type { Swatch }                                              from "@surface/color";
-import { hexToHsva, hsvaToHex, interpolateSwatches, scaleSwatches } from "@surface/color";
-import type { Indexer }                                             from "@surface/core";
-import { camelToDashed, objectFactory, pathfy, typeGuard }          from "@surface/core";
-import type RawPalette                                              from "../types/raw-palette";
-import type RawTheme                                                from "../types/raw-theme";
-import type Shades                                                  from "../types/shades";
+import type { Indexer }                                    from "@surface/core";
+import { camelToDashed, objectFactory, pathfy, typeGuard } from "@surface/core";
+import { hexToHsva, hsvaToHex }                            from "./colors/converters.js";
+import { interpolateSwatches, scaleSwatches }              from "./colors/swatches.js";
+import type RawPalette                                     from "./types/raw-palette";
+import type RawTheme                                       from "./types/raw-theme";
+import type Shades                                         from "./types/shades";
+import type Swatch                                         from "./types/swatch";
 
 type Theme<T extends RawPalette | RawTheme> =
     T extends RawPalette

@@ -1,8 +1,8 @@
 /* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
-import type { Swatch }                         from "../internal/swatches.js";
-import { interpolateSwatches, scaleSwatches }  from "../internal/swatches.js";
+import { interpolateSwatches, scaleSwatches }  from "../internal/colors/swatches.js";
+import type Swatch                             from "../internal/types/swatch";
 
 @suite
 export default class SwatchesSpec

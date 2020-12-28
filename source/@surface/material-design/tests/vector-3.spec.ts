@@ -1,6 +1,6 @@
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import Vector3                     from "../internal/vector-3.js";
+import Vector3                     from "../internal/colors/vector-3.js";
 
 @suite
 export default class Vector3Spec

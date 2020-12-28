@@ -2,7 +2,7 @@ import { mixer }                         from "@surface/core";
 import CustomElement, { element, query } from "@surface/custom-element";
 import { computed }                      from "@surface/reactive";
 import colorable                         from "../../mixins/colorable/index.js";
-import elevationable                     from "../../mixins/elevatable/index.js";
+import elevatable                        from "../../mixins/elevatable/index.js";
 import themeable                         from "../../mixins/themeable/index.js";
 import template                          from "./index.html";
 import style                             from "./index.scss";
@@ -17,7 +17,7 @@ declare global
 }
 
 @element("smd-app-bar", template, style)
-export default class AppBar extends mixer(CustomElement, [colorable, elevationable, themeable])
+export default class AppBar extends mixer(CustomElement, [colorable, elevatable, themeable])
 {
     @query("#root")
     protected colorable!: HTMLElement;

@@ -17,7 +17,7 @@ import
     rgbaToHsva,
     xyzToLab,
     xyzToRgb,
-} from "../internal/converters.js";
+} from "../internal/colors/converters.js";
 
 @suite
 export default class ColorConvertersSpec
