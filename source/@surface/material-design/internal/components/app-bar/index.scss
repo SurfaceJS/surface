@@ -1,0 +1,22 @@
+@import "../../styles/mixins.scss";
+
+:host
+{
+    @include host-defaults;
+
+    height:   64px;
+    left:     0;
+    position: fixed;
+    top:      0;
+    width:    100%;
+    z-index:  1;
+
+    #root
+    {
+        @include root-defaults;
+
+        align-items: center;
+
+        @include background-color("primary");
+    }
+}

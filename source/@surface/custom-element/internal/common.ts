@@ -21,7 +21,7 @@ wrapper.prototype.constructor = wrapper;
 
 const windowWrapper = wrapper.prototype;
 
-function buildStackTrace(stackTrace: StackTrace): string
+export function buildStackTrace(stackTrace: StackTrace): string
 {
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
 }

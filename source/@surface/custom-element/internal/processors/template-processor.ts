@@ -4,6 +4,7 @@ import type { Subscription }                   from "@surface/reactive";
 import { FieldInfo, Type }                     from "@surface/reflection";
 import
 {
+    buildStackTrace,
     classMap,
     createScope,
     styleMap,
@@ -22,7 +23,6 @@ import type IDirectivesDescriptor       from "../interfaces/directives-descripto
 import type IEventDirective             from "../interfaces/event-directive";
 import type ITemplateDescriptor         from "../interfaces/template-descriptor";
 import type ITextNodeDescriptor         from "../interfaces/text-node-descriptor";
-import type ITraceable                  from "../interfaces/traceable";
 import DataBind                         from "../reactivity/data-bind.js";
 import { directiveRegistry }            from "../singletons.js";
 import type { DirectiveHandlerFactory } from "../types";
@@ -90,11 +90,6 @@ export default class TemplateProcessor
         return lookup;
     }
 
-    private buildStack(traceable: ITraceable): string
-    {
-        return traceable.stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
-    }
-
     private findElement(node: Node, indexes: number[]): Node
     {
         const [index, ...remaining] = indexes;
@@ -157,7 +152,7 @@ export default class TemplateProcessor
                     {
                         const message = `Binding error in ${descriptor.rawExpression}: Property "${descriptor.key}" of <${element.nodeName.toLowerCase()}> is readonly`;
 
-                        throw new TemplateProcessError(message, this.buildStack(descriptor));
+                        throw new TemplateProcessError(message, buildStackTrace(descriptor.stackTrace));
                     }
 
                     if (descriptor.type == "oneway")
@@ -196,7 +191,7 @@ export default class TemplateProcessor
                                 ? `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" of ${right.constructor.name} is readonly`
                                 : `Binding error in ${descriptor.rawExpression}: Property "${rightKey}" does not exists on type ${right.constructor.name}`;
 
-                            throw new TemplateProcessError(message, this.buildStack(descriptor));
+                            throw new TemplateProcessError(message, buildStackTrace(descriptor.stackTrace));
                         }
 
                         subscriptions.push(...DataBind.twoWay(element, [descriptor.key], scope, path));
@@ -239,7 +234,7 @@ export default class TemplateProcessor
 
             if (!handlerConstructor)
             {
-                throw new TemplateProcessError(`Unregistered directive #${directive.name}.`, this.buildStack(directive));
+                throw new TemplateProcessError(`Unregistered directive #${directive.name}.`, buildStackTrace(directive.stackTrace));
             }
 
             if (typeGuard<DirectiveHandlerFactory>(handlerConstructor, !handlerConstructor.prototype))

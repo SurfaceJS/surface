@@ -1,0 +1,148 @@
+@import "./functions.scss";
+@import "./variables.scss";
+
+@mixin background-color($color, $root: "#root")
+{
+    $light-value: get-variable("this-color", "light", $color);
+    $dark-value:  get-variable("this-color", "dark",  $color);
+
+    @include set-property("background-color", $light-value, $dark-value, $root);
+    @include set-property("border-color",     $light-value, $dark-value, $root);
+}
+
+@mixin elevation($elevation)
+{
+    box-shadow: map-get($shadow-key-umbra, $elevation), map-get($shadow-key-penumbra, $elevation), map-get($shadow-key-ambient, $elevation);
+}
+
+@mixin flex
+{
+    box-sizing:  border-box;
+    display:     inline-flex;
+    flex:        0 0 auto;
+    outline:     0;
+    position:    relative;
+    will-change: box-shadow;
+}
+
+@mixin host-defaults
+{
+    -webkit-tap-highlight-color: transparent;
+
+    box-sizing:     border-box;
+    caret-color:    currentColor;
+    display:        inline-flex;
+    flex:           0 0 auto;
+    font-family:    "Roboto", "sans-serif";
+    font-size:      14px;
+    outline:        0;
+    vertical-align: middle;
+}
+
+@mixin hover-before
+{
+    &::before
+    {
+        opacity: 0.2;
+    }
+}
+
+@mixin hoverable-before
+{
+    &::before
+    {
+        background-color: currentColor;
+        border-radius:    inherit;
+        bottom:           0;
+        color:            inherit;
+        content:          "";
+        left:             0;
+        opacity:          0;
+        pointer-events:   none;
+        position:         absolute;
+        right:            0;
+        top:              0;
+        transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+    }
+}
+
+@mixin inherits-boundary
+{
+    height: inherit;
+    width:  inherit;
+
+    max-height: inherit;
+    max-width:  inherit;
+
+    min-height: inherit;
+    min-width:  inherit;
+
+    z-index:  inherit;
+}
+
+@mixin root-defaults
+{
+    @include inherits-boundary;
+    @include flex;
+}
+
+@mixin set-property($property, $light-value, $dark-value, $root: "#root")
+{
+    &
+    {
+        #{$property}: #{$light-value};
+    }
+
+    @each $selector in &
+    {
+        @if ($root == "*")
+        {
+            @at-root
+            :host-context(body.light):host
+            {
+                #{$property}: #{$light-value};
+            }
+
+            @at-root
+            :host-context(body.dark):host
+            {
+                #{$property}: #{$dark-value};
+            }
+        }
+        @else
+        {
+            @at-root
+            #{":host-context(body.light)#{$selector}"},
+            #{":host-context(body.dark)#{str-replace(#{$selector}, $root, '#{$root}.light')}"},
+            #{str-replace(#{$selector}, $root, "#{$root}.light")}
+            {
+                #{$property}: #{$light-value};
+            }
+
+            @at-root
+            #{":host-context(body.dark)#{$selector}"},
+            #{":host-context(body.light)#{str-replace(#{$selector}, $root, '#{$root}.dark')}"},
+            #{str-replace(#{$selector}, $root, "#{$root}.dark")}
+            {
+                #{$property}: #{$dark-value};
+            }
+        }
+    }
+}
+
+@mixin set-color($property, $color, $variable: "this-color", $root: "#root")
+{
+    $light-value: get-variable($variable, "light", $color);
+    $dark-value:  get-variable($variable, "dark",  $color);
+
+    @include set-property($property, $light-value, $dark-value, $root);
+}
+
+@mixin text-color($color: "text", $root: "#root")
+{
+    $light-value: get-variable("this-text-color", "light", $color);
+    $dark-value:  get-variable("this-text-color", "dark",  $color);
+
+    @include set-property("color",       $light-value, $dark-value, $root);
+    @include set-property("caret-color", $light-value, $dark-value, $root);
+}

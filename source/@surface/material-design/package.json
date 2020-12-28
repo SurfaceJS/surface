@@ -1,0 +1,59 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/collection": "file:../collection",
+        "@surface/color": "file:../color",
+        "@surface/core": "file:../core",
+        "@surface/custom-element": "file:../custom-element",
+        "@surface/enumerable": "file:../enumerable",
+        "@surface/expression": "file:../expression",
+        "@surface/reactive": "file:../reactive",
+        "@surface/reflection": "file:../reflection",
+        "material-design-icons-iconfont": "5.0.1",
+        "resize-observer-polyfill": "1.5.1",
+        "tslib": "2.0.3"
+    },
+    "description": "Surface web material design",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@types/jsdom": "16.2.5",
+        "chai": "4.2.0",
+        "jsdom": "16.4.0"
+    },
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "material-design",
+        "surface",
+        "typescript",
+        "webcomponents"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/material-design",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "type": "module",
+    "exports":
+    {
+        ".": "./index.js",
+        "./components/app": "./internal/components/app/index.js",
+        "./components/app-bar": "./internal/components/app-bar/index.js",
+        "./components/app-toogle": "./internal/components/app-toogle/index.js",
+        "./components/button": "./internal/components/button/index.js",
+        "./components/content": "./internal/components/content/index.js",
+        "./components/footer": "./internal/components/footer/index.js",
+        "./components/icon": "./internal/components/icon/index.js",
+        "./components/navigation-drawer": "./internal/components/navigation-drawer/index.js",
+        "./components/switch": "./internal/components/switch/index.js",
+        "./components/text-field": "./internal/components/text-field/index.js"
+    },
+    "version": "0.1.0-alpha.1"
+}

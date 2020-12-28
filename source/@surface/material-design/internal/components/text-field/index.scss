@@ -1,0 +1,341 @@
+@import "../../styles/mixins.scss";
+
+$interval: 0.2s;
+
+$transition:
+    $interval linear;
+
+:host
+{
+    @include host-defaults;
+
+    font-size:   16px;
+    font-weight: 400;
+    min-width:   100px;
+
+    vertical-align: top;
+
+    #root
+    {
+        @include inherits-boundary;
+        @include root-defaults;
+
+        flex-direction: column;
+
+        #inputable
+        {
+            display:    flex;
+            height:     inherit;
+            min-height: 52px;
+            overflow:   visible;
+            position:   relative;
+            width:      100%;
+
+            #frame
+            {
+                display:        flex;
+                flex-direction: column;
+                min-height:     52px;
+                position:       relative;
+                width:          100%;
+
+                #hidden-label
+                {
+                    height:      0;
+                    color:       transparent;
+                    overflow:    hidden;
+                    white-space: nowrap;
+                }
+
+                #input
+                {
+                    display:       flex;
+                    margin:        16px 0 0 0;
+                    min-width:     30px;
+                    outline:       none;
+                    overflow:      hidden;
+                    text-overflow: ellipsis;
+                    white-space:   nowrap;
+
+                    @include   set-property("color", "var(--this-text-color, black)", "var(--this-text-color, white)");
+                }
+            }
+
+        }
+        #label,
+        #placeholder
+        {
+            font-weight:      600;
+            overflow:         hidden;
+            pointer-events:   none;
+            position:         absolute;
+            text-overflow:    ellipsis;
+            transform-origin: 0 0;
+            transition:       $transition;
+            white-space:      nowrap;
+
+            @include text-color;
+        }
+
+        #placeholder
+        {
+            opacity:    0;
+            transition: none;
+        }
+
+        #footer
+        {
+            display:       flex;
+            flex-grow:     0;
+            overflow:      hidden;
+            position:      relative;
+            text-overflow: ellipsis;
+            width:         100%;
+
+            #hint
+            {
+                flex:             1 1 auto;
+                font-size:        12px;
+                font-weight:      400;
+                max-height:       0;
+                min-width:        1px;
+                opacity:          0;
+                overflow-wrap:    break-word;
+                position:         relative;
+                transform-origin: 50% 0;
+                transform:        scaleY(0);
+                transition:       $transition;
+            }
+
+            #counter
+            {
+                display:     none;
+                flex:        0 1 auto;
+                font-size:   12px;
+                font-weight: 400;
+                line-height: 12px;
+                margin:      4px 0 4px 8px;
+                min-height:  14px;
+                position:    relative;
+                white-space: nowrap;
+            }
+        }
+
+        &.filled,
+        &.outlined
+        {
+            #footer
+            {
+                margin-left:  12px;
+                margin-right: 12px;
+                width:        calc(100% - 24px);
+            }
+        }
+
+        &:not(.outlined)
+        {
+            #inputable #frame
+            {
+                &::before
+                {
+                    bottom:   0;
+                    content:  "";
+                    height:   1px;
+                    position: absolute;
+                    width:    100%;
+
+                    @include set-color("background-color", "text");
+                }
+            }
+        }
+
+        &:not(.filled):not(.outlined)
+        {
+            #inputable
+            {
+                #frame
+                {
+                    #input
+                    {
+                        padding: 8px 0;
+                    }
+                }
+            }
+
+            #label,
+            #placeholder
+            {
+                width:     100%;
+                transform: translate(0, 24px);
+            }
+
+            &.active-label:not(.single-line)
+            {
+                #label
+                {
+                    width: calc(100% + 30px);
+                    transform:
+                        translate(0, 4px)
+                        scale(0.75);
+                }
+            }
+        }
+
+        &.filled
+        {
+            #inputable
+            {
+                #frame
+                {
+                    @include background-color("surface");
+
+                    #input
+                    {
+                        display: flex;
+                        margin:  16px 12px 0 12px;
+                        padding: 8px 0;
+                        width:   calc(100% - 24px);
+                    }
+                }
+            }
+
+            #label,
+            #placeholder
+            {
+                width:     calc(100% - 24px);
+                transform: translate(12px, 24px);
+            }
+
+            &.active-label:not(.single-line)
+            {
+                #label
+                {
+                    transform:
+                        translate(12px, 4px)
+                        scale(0.75);
+                }
+            }
+        }
+
+        &.outlined
+        {
+            #inputable
+            {
+                #frame
+                {
+                    border-radius: 5px;
+                    border-style:  solid;
+                    box-sizing:    border-box;
+                    min-height:    56px;
+                    min-width:     inherit;
+                    padding:       0;
+                    transition:    $transition;
+                    width:         inherit;
+
+                    @include set-color("border-color", "text-300");
+
+                    #hidden-legend
+                    {
+                        color:       transparent;
+                        font-size:   12px;
+                        line-height: 0;
+                        margin-left: 8px;
+                        overflow:    hidden;
+                        padding:     0;
+                        transition:  $transition;
+                        white-space: nowrap;
+                        width:       0;
+                    }
+
+                    #input
+                    {
+                        margin: 16px 12px;
+                    }
+                }
+            }
+
+            #label,
+            #placeholder
+            {
+                width:     calc(100% - 30px);
+                transform: translate(14px, 17.5px);
+            }
+
+            &.active-label:not(.single-line)
+            {
+                #inputable #frame #hidden-legend
+                {
+                    max-width: calc(100% - 24px);
+                    padding:   0 4px;
+                    width:     auto;
+                }
+
+                #label
+                {
+                    transform:
+                        translate(16px, -6px)
+                        scale(0.75);
+                }
+            }
+
+            &.active #inputable #frame
+            {
+                @include set-color("border-color", "secondary");
+            }
+        }
+
+        &.single-line #label
+        {
+            transition: none;
+        }
+
+        &.active
+        {
+            #inputable
+            {
+                .ripple
+                {
+                    @include set-color("color", "secondary");
+                }
+
+                #frame
+                {
+                    @include text-color("secondary");
+                }
+            }
+
+            &:not(.single-line) #label
+            {
+                @include text-color("primary");
+            }
+        }
+
+        &.active-value.single-line #label
+        {
+            opacity: 0;
+        }
+
+        &.active-label:not(.single-line) #label
+        {
+            width: 100%;
+        }
+
+        &.active-placeholder #placeholder
+        {
+            opacity: 0.5;
+        }
+
+        &.active-counter #footer #counter
+        {
+            display: block;
+        }
+
+        &.active-hint #footer #hint
+        {
+            margin:     4px 0 4px 0;
+            max-height: 56px;
+            opacity:    1;
+            transform:  scaleY(1);
+        }
+    }
+}

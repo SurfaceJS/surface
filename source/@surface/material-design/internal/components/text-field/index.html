@@ -1,0 +1,36 @@
+<span id="root" :class="host.classes">
+    <span id="inputable" class="rippleable">
+        <fieldset #if="host.outlined" id="frame" >
+            <legend id="hidden-legend">{host.label}</legend>
+            <span id="hidden-label">{host.label}</span>
+            <span
+                id             ="input"
+                contenteditable="true"
+                @bind         ="host.input = this"
+                @input        ="host.handleInput"
+                @paste        ="host.handlePaste"
+                :text-content ="host.value"
+            >
+            </span>
+        </fieldset>
+        <span #else id="frame">
+            <span id="hidden-label">{host.label}</span>
+            <span
+                id             ="input"
+                contenteditable="true"
+                @bind         ="host.input = this"
+                @input        ="host.handleInput"
+                @paste        ="host.handlePaste"
+                :text-content ="host.value"
+            >
+            </span>
+        </span>
+    </span>
+    <span id="footer">
+        <span id="hint">{host.hint}</span>
+        <span #if="host.maxLenght > 0" id="counter">{host.value.length} / {host.maxLenght}</span>
+        <span #else id="counter">{host.value.length}</span>
+    </span>
+    <span id="label">{host.label}</span>
+    <span id="placeholder">{host.placeholder}</span>
+</span>

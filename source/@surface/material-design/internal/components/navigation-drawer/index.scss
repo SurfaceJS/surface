@@ -1,0 +1,31 @@
+@import "../../styles/mixins.scss";
+
+:host
+{
+    box-shadow:
+        0px 2px 4px -1px rgba(0, 0, 0, 0.2),
+        0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+    height:     100vh;
+    left:       0;
+    max-height: calc(100% - 32px);
+    position:   fixed;
+    top:        64px;
+    width:      256px;
+    z-index:    0;
+
+    #root
+    {
+        @include root-defaults;
+        @include background-color("background");
+
+        display:        flex;
+        flex-direction: column;
+
+        #surface
+        {
+            @include inherits-boundary;
+            @include background-color("surface");
+        }
+    }
+}

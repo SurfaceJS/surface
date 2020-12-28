@@ -1,0 +1,183 @@
+import { assert, mixer }                                   from "@surface/core";
+import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
+import { computed }                                        from "@surface/reactive";
+import colorable                                           from "../../mixins/colorable/index.js";
+import lineRippleable                                      from "../../mixins/line-rippleable/index.js";
+import themeable                                           from "../../mixins/themeable/index.js";
+import template                                            from "./index.html";
+import style                                               from "./index.scss";
+
+declare global
+{
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface HTMLElementTagNameMap
+    {
+        "smd-text-field": TextField;
+    }
+}
+
+@element("smd-text-field", template, style)
+export default class TextField extends mixer(CustomElement, [colorable, lineRippleable, themeable])
+{
+    private _selectionEnd:   number = 0;
+    private _selectionStart: number = 0;
+
+    @query("#root")
+    protected colorable!: HTMLElement;
+
+    @query("#inputable")
+    protected inputable!: HTMLElement;
+
+    @query(".rippleable")
+    protected rippleable!: HTMLElement;
+
+    protected get noRipple(): boolean
+    {
+        return this.outlined;
+    }
+
+    protected input!: HTMLElement;
+
+    @attribute
+    public counter: boolean = false;
+
+    @attribute
+    public filled: boolean = false;
+
+    @attribute
+    public hint: string = "";
+
+    @attribute
+    public inline: boolean = false;
+
+    @attribute
+    public label: string = "";
+
+    @attribute
+    public maxLenght: number = 0;
+
+    @attribute
+    public outlined: boolean = false;
+
+    @attribute
+    public persistentHint: boolean = false;
+
+    @attribute
+    public placeholder: string = "";
+
+    @attribute
+    public singleLine: boolean = false;
+
+    @attribute
+    public value: string = "";
+
+    public active: boolean = false;
+
+    public get selectionEnd(): number
+    {
+        return this._selectionEnd;
+    }
+
+    public get selectionStart(): number
+    {
+        return this._selectionStart;
+    }
+
+    @computed("active", "counter", "inline", "filled", "label", "outlined", "persistentHint", "placeholder", "singleLine", "value")
+    public get classes(): Record<string, boolean>
+    {
+        return {
+            "active":             this.active,
+            "active-counter":     this.counter,
+            "active-hint":        !!this.hint && (this.active || this.persistentHint),
+            "active-label":       !!this.label && (this.active || !!this.value || !!this.placeholder),
+            "active-placeholder": !!this.placeholder && !this.value,
+            "active-value":       !!this.value,
+            "filled":             this.filled,
+            "inline":             this.inline,
+            "outlined":           this.outlined,
+            "single-line":        this.singleLine,
+        };
+    }
+
+    public constructor()
+    {
+        super();
+
+        this.inputable.addEventListener("click", () => this.input.focus());
+        this.addEventListener("focus", () => this.active = true);
+        this.addEventListener("focusout", () => this.active = false);
+    }
+
+    @event("input")
+    protected handleInput(event: InputEvent): void
+    {
+        event.preventDefault();
+
+        const value = this.input.textContent?.replace(/&nbsp;/g, "") ?? "";
+
+        const remaining = this.maxLenght > 0 ? this.maxLenght - value.length : value.length;
+
+        if (remaining > 0)
+        {
+            this.value = value;
+        }
+        else
+        {
+            this.value = this.input.textContent = value.slice(0, this.maxLenght);
+
+            this.setCaret(this.maxLenght);
+        }
+    }
+
+    @event("keypress")
+    protected handleKeypress(event: KeyboardEvent): void
+    {
+        if (event.key == "Enter")
+        {
+            event.preventDefault();
+        }
+    }
+
+    @event("paste")
+    protected handlePaste(event: ClipboardEvent): void
+    {
+        event.preventDefault();
+
+        this.value = event.clipboardData?.getData("Text") ?? "";
+    }
+
+    @event("mousedown")
+    @event("mouseup")
+    @event("keydown")
+    @event("keyup")
+    protected handleCaret(): void
+    {
+        const selection = super.shadowRoot.getSelection();
+
+        assert(selection);
+
+        this._selectionStart = selection.anchorOffset;
+        this._selectionEnd   = selection.focusOffset;
+    }
+
+    public setCaret(position: number): void
+    {
+        this.setSelection(position, position);
+    }
+
+    public setSelection(start: number, end: number): void
+    {
+        if (this.input.firstChild)
+        {
+            const selection = super.shadowRoot.getSelection();
+
+            assert(selection);
+
+            selection.setBaseAndExtent(this.input.firstChild, start, this.input.firstChild, end);
+
+            this._selectionStart = start;
+            this._selectionEnd   = end;
+        }
+    }
+}

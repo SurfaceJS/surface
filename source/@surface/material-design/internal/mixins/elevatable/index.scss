@@ -1,0 +1,16 @@
+@import "../../styles/mixins.scss";
+
+:host
+{
+    $i: 0;
+    @while $i < 25
+    {
+
+        #{".elevation-#{$i}"}
+        {
+            @include elevation($i);
+        }
+
+        $i: $i + 1;
+    }
+}
