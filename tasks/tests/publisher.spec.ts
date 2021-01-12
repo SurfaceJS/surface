@@ -1,4 +1,4 @@
-import { suite, test } from "../../source/@surface/test-suite/index.js";
+import { suite, test } from "../../packages/@surface/test-suite/index.js";
 import NpmRepository   from "../internal/npm-repository.js";
 import Publisher       from "../internal/publisher.js";
 

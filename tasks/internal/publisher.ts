@@ -66,7 +66,7 @@ export default class Publisher
 
     private async createBody(packageName: string): Promise<Stream>
     {
-        const folderpath = path.join(paths.source.root, packageName);
+        const folderpath = path.join(paths.packages.root, packageName);
         const files      = (await this.collectFiles(folderpath)).map(x => x.replace("@", "./@"));
 
         log(`Collected files:\n    ${chalk.bold.blue(packageName)}\n${files.map(x => `        |--/${x}`).join("\n")}`);

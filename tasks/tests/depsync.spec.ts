@@ -1,7 +1,7 @@
 import chai                                    from "chai";
 import type { IGetData, IPackage }             from "npm-registry-client";
-import Mock, { It }                            from "../../source/@surface/mock/index.js";
-import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite/index.js";
+import Mock, { It }                            from "../../packages/@surface/mock/index.js";
+import { shouldFail, shouldPass, suite, test } from "../../packages/@surface/test-suite/index.js";
 import type { IOptions }                       from "../internal/depsync.js";
 import Depsync                                 from "../internal/depsync.js";
 import StrategyType                            from "../internal/enums/strategy-type.js";

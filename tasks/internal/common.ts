@@ -202,15 +202,15 @@ export function typeGuard<T>(target: unknown, condition: boolean): target is T
 
 export const paths =
 {
-    root:   path.resolve(dirname, "../.."),
-    source:
+    packages:
     {
-        root:    path.resolve(dirname, "../../source"),
-        surface: path.resolve(dirname, "../../source/@surface"),
+        root:    path.resolve(dirname, "../../packages"),
+        surface: path.resolve(dirname, "../../packages/@surface"),
     },
+    root: path.resolve(dirname, "../.."),
 };
 
-export const lookup = buildLookup(paths.source.surface);
+export const lookup = buildLookup(paths.packages.surface);
 
 export const parsePattern = (pattern: RegExp) =>
     (value: string = ""): string =>

@@ -1,5 +1,5 @@
 import chai                                            from "chai";
-import { batchTest, shouldPass, suite }                from "../../source/@surface/test-suite/index.js";
+import { batchTest, shouldPass, suite }                from "../../packages/@surface/test-suite/index.js";
 import { parsePatternPath }                            from "../internal/common.js";
 import type { CommonParsePatternPathValidExpectation } from "./common-expectations.js";
 import { validExpectations }                           from "./common-expectations.js";
