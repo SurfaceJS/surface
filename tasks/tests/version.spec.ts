@@ -1,5 +1,5 @@
 import chai                                    from "chai";
-import { shouldFail, shouldPass, suite, test } from "../../source/@surface/test-suite/index.js";
+import { shouldFail, shouldPass, suite, test } from "../../packages/@surface/test-suite/index.js";
 import Version                                 from "../internal/version.js";
 
 @suite

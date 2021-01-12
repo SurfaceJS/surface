@@ -56,7 +56,7 @@ export default class Tasks
 
         for (const $package of syncedPackages)
         {
-            const filepath = path.join(paths.source.root, $package.name, "package.json");
+            const filepath = path.join(paths.packages.root, $package.name, "package.json");
 
             await writeFileAsync(filepath, JSON.stringify($package, null, 4));
 
@@ -70,7 +70,7 @@ export default class Tasks
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
-            const manifest = path.normalize(path.resolve(paths.source.root, $package.name, "package.json"));
+            const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
 
             commands.push(backupFile(manifest));
 
@@ -88,7 +88,7 @@ export default class Tasks
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
-            const source = path.normalize(path.resolve(paths.source.root, $package.name));
+            const source = path.normalize(path.resolve(paths.packages.root, $package.name));
 
             commands.push(execute(`Building ${chalk.bold.blue($package.name)}`, `${tsc} -p ${source} --declaration ${declaration}`));
         }
@@ -104,7 +104,7 @@ export default class Tasks
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
-            const source = path.normalize(path.resolve(paths.source.root, $package.name));
+            const source = path.normalize(path.resolve(paths.packages.root, $package.name));
 
             log(`Cleaning ${chalk.bold.blue($package.name)}`);
 
@@ -189,7 +189,7 @@ export default class Tasks
 
         for (const $package of filterPackages(lookup.values(), modules))
         {
-            const manifest = path.normalize(path.resolve(paths.source.root, $package.name, "package.json"));
+            const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
 
             commands.push(restoreBackup(manifest));
 

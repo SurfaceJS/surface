@@ -2,7 +2,7 @@
     "all": false,
     "branches": 90,
     "exclude": [
-        "**/source/@surface/*/index.js",
+        "**/packages/@surface/*/index.js",
         "**/tests"
     ],
     "extension": [
@@ -11,8 +11,8 @@
     ],
     "functions": 90,
     "include": [
-        "source/@surface/**/*.js",
-        "source/@surface/**/*.ts"
+        "packages/@surface/**/*.js",
+        "packages/@surface/**/*.ts"
     ],
     "lines": 90,
     "reporter": [
