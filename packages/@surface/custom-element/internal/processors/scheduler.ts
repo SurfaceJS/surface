@@ -50,6 +50,7 @@ export default class Scheduler
                 try
                 {
                     resolve(task());
+
                 }
                 catch (error)
                 {
@@ -90,7 +91,7 @@ export default class Scheduler
 
         this.running = true;
 
-        this.execution = runAsync(this.execute.bind(this)).then(this.stop.bind(this));
+        this.execution = runAsync(async () => (await this.execute(), this.stop()));
     }
 
     private stop(): void
@@ -103,8 +104,8 @@ export default class Scheduler
         }
     }
 
-    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low"): Promise<ReturnType<T>>
-    public async enqueue<T extends Delegate>(task: T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<ReturnType<T> | undefined>
+    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low"): Promise<T>
+    public async enqueue<T>(task: () => T, priority: "high" | "normal" | "low", cancellationToken: CancellationToken): Promise<T | undefined>
     public async enqueue(task: Delegate, priority: "high" | "normal" | "low", cancellationToken?: CancellationToken): Promise<unknown>
     {
         if (!this.running)

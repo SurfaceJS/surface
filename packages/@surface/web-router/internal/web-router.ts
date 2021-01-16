@@ -1,7 +1,7 @@
 import { Stack }                                 from "@surface/collection";
 import type { Constructor }                      from "@surface/core";
 import { Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import type { DirectiveHandlerRegistry }         from "@surface/custom-element/internal/types";
+import type { DirectiveHandlerRegistry }         from "@surface/custom-element";
 import Container                                 from "@surface/dependency-injection";
 import Router                                    from "@surface/router";
 import type { RouteData }                        from "@surface/router";

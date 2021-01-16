@@ -2,6 +2,7 @@ import CustomElement from "./internal/custom-element.js";
 
 export type { default as ICustomElement }   from "./internal/interfaces/custom-element";
 export type { default as ICustomDirective } from "./internal/interfaces/custom-directive";
+export type { DirectiveHandlerRegistry }    from "./internal/types";
 
 export { scheduler }                   from "./internal/singletons.js";
 export { default as processTemplate }  from "./internal/processors/process-template.js";

@@ -24,7 +24,7 @@ import type IEventDirective             from "../interfaces/event-directive";
 import type ITemplateDescriptor         from "../interfaces/template-descriptor";
 import type ITextNodeDescriptor         from "../interfaces/text-node-descriptor";
 import DataBind                         from "../reactivity/data-bind.js";
-import { directiveRegistry }            from "../singletons.js";
+import { directiveRegistry, disposeTree }            from "../singletons.js";
 import type { DirectiveHandlerFactory } from "../types";
 
 interface ITemplateProcessorData
@@ -50,11 +50,13 @@ export default class TemplateProcessor
     private readonly descriptor: ITemplateDescriptor;
     private readonly host:       Node;
     private readonly lookup:     Record<string, Node>;
+    private readonly root:       Node;
 
     private constructor(data: ITemplateProcessorData)
     {
         this.host       = data.host;
         this.descriptor = data.descriptor;
+        this.root       = data.root;
 
         this.lookup = this.buildLookup(data.root, data.descriptor.lookup);
     }
@@ -124,7 +126,7 @@ export default class TemplateProcessor
 
         disposables.push(this.processTemplateDirectives({ context, directives: this.descriptor.directives, scope: createScope(scope) }));
 
-        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose(), disposeTree(this.root)) };
     }
 
     private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): IDisposable
