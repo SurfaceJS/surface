@@ -23,6 +23,8 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private currentDisposable: IDisposable | null = null;
     private disposed: boolean                     = false;
 
+    private currentChoice?: Choice;
+
     public constructor(scope: object, context: Node, host: Node, templates: HTMLTemplateElement[], branches: IChoiceBranchDirective[])
     {
         super(scope, context, host);
@@ -52,24 +54,34 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
     private task(): void
     {
-        this.currentDisposable?.dispose();
-        this.currentDisposable = null;
-
-        this.templateBlock.clear();
-
         for (const choice of this.choices)
         {
             if (tryEvaluateExpression(this.scope, choice.branche.expression, choice.branche.rawExpression, choice.branche.stackTrace))
             {
-                const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
+                if (choice != this.currentChoice)
+                {
+                    this.currentChoice = choice;
 
-                this.currentDisposable = disposable;
+                    this.currentDisposable?.dispose();
 
-                this.templateBlock.setContent(content);
+                    this.templateBlock.clear();
+
+                    const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
+
+                    this.templateBlock.setContent(content);
+
+                    this.currentDisposable = disposable;
+                }
 
                 return;
             }
         }
+
+        this.currentDisposable?.dispose();
+
+        this.templateBlock.clear();
+
+        this.currentChoice = undefined;
     }
 
     public dispose(): void
