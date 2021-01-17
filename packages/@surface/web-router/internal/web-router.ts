@@ -64,6 +64,8 @@ export default class WebRouter
                 this.router.map(joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
             }
         }
+
+        this.container.registerSingleton(WebRouter, this as WebRouter);
     }
 
     public static createDirectiveRegistry(router: WebRouter): DirectiveHandlerRegistry
@@ -124,11 +126,13 @@ export default class WebRouter
 
         if (!this.invokeMiddleware(to, from))
         {
-            const hasUpdate = definition == this.current?.definition;
+            const previous  = this.current;
+            const hasUpdate = definition == previous?.definition;
+            const cache     = this.cache.slice(0, definition.stack.length);
+
+            this.current = { definition, route: to };
 
             let parent = this.root.value as IRouteableElement;
-
-            const cache = this.cache.slice(0, definition.stack.length);
 
             for (let index = 0; index < definition.stack.length; index++)
             {
@@ -138,7 +142,7 @@ export default class WebRouter
 
                 this.disconnectFromOutlets(parent, keys, to, from);
 
-                if (entry == this.current?.definition?.stack[index])
+                if (entry == previous?.definition?.stack[index])
                 {
                     const next = cache[index].default ?? cache[index][keys.values().next().value];
 
@@ -181,19 +185,12 @@ export default class WebRouter
 
             this.cache = cache;
 
-            if (this.current && this.current.route != to)
-            {
-                Object.assign(this.current.route, to);
-            }
-
             if (!fromHistory)
             {
                 this.history.push([url, definition, routeData]);
 
                 this.index = this.history.length - 1;
             }
-
-            this.current = { definition, route: to };
         }
     }
 

@@ -202,15 +202,12 @@ export default class WebRouterSpec
             url:        new URL("http://localhost.com/base/path/data/post/1?query=1#hash"),
         };
 
-        const actual = this.router.route;
-
-        chai.assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(this.router.route, expected);
 
         await this.router.push("/data/post/2?query=1#hash");
 
         chai.assert.equal(dataView, slot.firstElementChild, "dataView equal slot.firstElementChild");
-        chai.assert.equal(actual.parameters.id, 2, "routeData.parameters.id equal 2");
-        chai.assert.notEqual(this.router.route, actual, "dataView.routeData equal routeData");
+        chai.assert.equal(this.router.route.parameters.id, 2, "routeData.parameters.id equal 2");
     }
 
     @test @shouldPass
