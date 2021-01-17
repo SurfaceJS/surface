@@ -143,8 +143,8 @@ export default class Tasks
             .split("\n")
             .map(x => x.trim());
 
+        await Tasks.clean();
         await Tasks.build({ declaration: true });
-
         await Tasks.backup();
 
         try
