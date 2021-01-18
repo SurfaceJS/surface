@@ -94,13 +94,11 @@ export default class WebRouter
         {
             outlets.set(key, outlet);
 
-            element.onEnter?.(to, from);
-
             const oldElement = outlet.firstElementChild as IRouteableElement | null;
 
             if (oldElement)
             {
-                oldElement.onLeave?.(to, from);
+                oldElement.onRouteLeave?.(to, from);
 
                 oldElement.dispose?.();
 
@@ -110,6 +108,8 @@ export default class WebRouter
             {
                 outlet.appendChild(element);
             }
+
+            element.onRouteEnter?.(to, from);
 
             this.connectedElements.push(element);
         }
@@ -148,11 +148,11 @@ export default class WebRouter
 
                     if (hasUpdate)
                     {
-                        next.onUpdate?.(to, from);
+                        next.onRouteUpdate?.(to, from);
                     }
                     else
                     {
-                        next.onEnter?.(to, from);
+                        next.onRouteEnter?.(to, from);
                     }
 
                     parent = next!;
@@ -223,7 +223,7 @@ export default class WebRouter
 
                 if (typeGuard<IRouteableElement>(instance, !!instance))
                 {
-                    instance.onLeave?.(to, from);
+                    instance.onRouteLeave?.(to, from);
 
                     instance.dispose?.();
 
