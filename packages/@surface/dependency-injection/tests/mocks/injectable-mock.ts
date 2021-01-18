@@ -2,33 +2,34 @@ import { inject } from "../../internal/decorators.js";
 import type Bar   from "./bar.js";
 import type Baz   from "./baz.js";
 import type Foo   from "./foo.js";
+import type Qux   from "./qux.js";
 
 export default class InjectableMock
 {
-    private _bar!: Bar;
-    private readonly _baz!: Baz;
+    private readonly _bar!: Bar;
+    private _baz!: Baz;
 
-    @inject("foo")
-    public foo!: Foo;
+    @inject("qux")
+    public qux!: Qux;
 
-    @inject("bar")
     public get bar(): Bar
     {
         return this._bar;
     }
 
-    public set bar(value: Bar)
-    {
-        this._bar = value;
-    }
-
+    @inject("baz")
     public get baz(): Baz
     {
         return this._baz;
     }
 
-    public constructor(@inject("baz") baz: Baz)
+    public set baz(value: Baz)
     {
-        this._baz = baz;
+        this._baz = value;
+    }
+
+    public constructor(@inject("foo") public foo: Foo, @inject("bar") bar: Bar)
+    {
+        this._bar = bar;
     }
 }

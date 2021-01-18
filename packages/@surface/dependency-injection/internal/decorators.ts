@@ -15,7 +15,7 @@ export function inject(key: string | symbol | Constructor): any
 
         if (typeof args[2] == "number")
         {
-            metadata.parameters.push(key);
+            metadata.parameters[args[2]] = key;
         }
         else
         {

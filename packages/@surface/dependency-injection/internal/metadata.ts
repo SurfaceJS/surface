@@ -7,8 +7,26 @@ export default class StaticMetadata
     public readonly parameters: (string | symbol | Constructor)[]                  = [];
     public readonly properties: [string | symbol, string | symbol | Constructor][] = [];
 
-    public static from(target: Function & { [METADATA]?: StaticMetadata }): StaticMetadata
+    public static from(target: Function): StaticMetadata
     {
-        return target[METADATA] = target[METADATA] ?? new StaticMetadata();
+        if (!Reflect.has(target, METADATA))
+        {
+            Reflect.defineProperty(target, METADATA, { value: new StaticMetadata() });
+        }
+        else if (!target.hasOwnProperty(METADATA))
+        {
+            Reflect.defineProperty(target, METADATA, { value: (Reflect.get(target, METADATA) as StaticMetadata).inherit() });
+        }
+
+        return Reflect.get(target, METADATA) as StaticMetadata;
+    }
+
+    public inherit(): StaticMetadata
+    {
+        const clone = new StaticMetadata();
+
+        clone.properties.push(...this.properties);
+
+        return clone;
     }
 }
