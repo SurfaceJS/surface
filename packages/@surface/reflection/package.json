@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "reflect-metadata": "0.1.13",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
     "description": "Module for reflection capability.",
     "devDependencies": {

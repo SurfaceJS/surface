@@ -4,7 +4,7 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
     "description": "Types and core modules of @surface projects.",
     "devDependencies": {

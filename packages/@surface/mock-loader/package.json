@@ -6,8 +6,8 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/mock": "file:../mock",
-        "@types/node": "14.14.10",
-        "tslib": "2.0.3"
+        "@types/node": "14.14.22",
+        "tslib": "2.1.0"
     },
     "description": "Mock Loader library.",
     "devDependencies": {

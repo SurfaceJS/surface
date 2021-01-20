@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/reflection": "file:../reflection",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
     "description": "Dependency Injection module.",
     "devDependencies": {
