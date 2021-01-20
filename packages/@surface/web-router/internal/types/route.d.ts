@@ -1,11 +1,11 @@
-import type { Indexer }   from "@surface/core";
+import type { Indexer } from "@surface/core";
 
 type Route =
 {
-    url:        URL,
-    parameters: Indexer,
     meta:       Indexer,
-    name?:      string,
+    name:       string,
+    parameters: Indexer,
+    url:        URL,
 };
 
 export default Route;

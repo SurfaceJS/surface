@@ -1,22 +1,22 @@
-import { Stack }                                 from "@surface/collection";
-import type { Constructor }                      from "@surface/core";
-import { Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import type { DirectiveHandlerRegistry }         from "@surface/custom-element";
-import Container                                 from "@surface/dependency-injection";
-import Router                                    from "@surface/router";
-import type { RouteData }                        from "@surface/router";
-import type IMiddleware                          from "./interfaces/middleware";
-import type IRouteableElement                    from "./interfaces/routeable-element";
-import Metadata                                  from "./metadata.js";
-import NavigationDirectiveHandler                from "./navigation-directive-handler.js";
-import RouteConfigurator                         from "./route-configurator.js";
-import type Component                            from "./types/component";
-import type Module                               from "./types/module";
-import type NamedRoute                           from "./types/named-route";
-import type Route                                from "./types/route";
-import type RouteConfiguration                   from "./types/route-configuration";
-import type RouteDefinition                      from "./types/route-definition";
-import type ViewRouterOptions                    from "./types/view-router-options";
+import { Stack }                                        from "@surface/collection";
+import type { Constructor, IDisposable }                from "@surface/core";
+import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import type { DirectiveHandlerRegistry }                from "@surface/custom-element";
+import Container                                        from "@surface/dependency-injection";
+import Router                                           from "@surface/router";
+import type { RouteData }                               from "@surface/router";
+import type IMiddleware                                 from "./interfaces/middleware";
+import type IRouteableElement                           from "./interfaces/routeable-element";
+import Metadata                                         from "./metadata.js";
+import NavigationDirectiveHandler                       from "./navigation-directive-handler.js";
+import RouteConfigurator                                from "./route-configurator.js";
+import type Component                                   from "./types/component";
+import type Module                                      from "./types/module";
+import type NamedRoute                                  from "./types/named-route";
+import type Route                                       from "./types/route";
+import type RouteConfiguration                          from "./types/route-configuration";
+import type RouteDefinition                             from "./types/route-definition";
+import type ViewRouterOptions                           from "./types/view-router-options";
 
 const LEADING_SLASH_PATTERN = /^\//;
 
@@ -34,14 +34,17 @@ export default class WebRouter
     private index:    number  = 0;
     private current?: { definition: RouteDefinition, route: Route };
 
+    public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
+
     public get route(): Route
     {
-        if (this.current)
-        {
-            return this.current.route;
-        }
-
-        throw new Error("Router stack is empty");
+        return this.current?.route
+        ?? {
+            meta:       { },
+            name:       "",
+            parameters: { },
+            url:        new URL(window.location.href),
+        };
     }
 
     public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
@@ -73,13 +76,13 @@ export default class WebRouter
         return { handler: (...args) => new NavigationDirectiveHandler(router, ...args), name: "to" };
     }
 
-    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletSelector = "router-outlet"): void
+    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletSelector = "router-outlet", reconnect = false): void
     {
         const outlets = Metadata.from(parent).outlets;
 
         let outlet = outlets.get(key) ?? null;
 
-        if (!outlet)
+        if (!outlet || !outlet.isConnected)
         {
             if (!parent.shadowRoot)
             {
@@ -92,6 +95,16 @@ export default class WebRouter
         // istanbul ignore else
         if (outlet)
         {
+            (outlet as Partial<IDisposable>).dispose = () =>
+            {
+                if (this.current?.route == to)
+                {
+                    element.remove();
+
+                    this.connectToOutlet(parent, element, key, to, from, outletSelector, true);
+                }
+            };
+
             outlets.set(key, outlet);
 
             const oldElement = outlet.firstElementChild as IRouteableElement | null;
@@ -109,7 +122,10 @@ export default class WebRouter
                 outlet.appendChild(element);
             }
 
-            element.onRouteEnter?.(to, from);
+            if (!reconnect)
+            {
+                element.onRouteEnter?.(to, from);
+            }
 
             this.connectedElements.push(element);
         }
@@ -124,7 +140,7 @@ export default class WebRouter
         const to   = this.createRoute(url, definition, routeData);
         const from = this.current?.route;
 
-        if (!this.invokeMiddleware(to, from))
+        if (!await this.invokeMiddleware(to, from))
         {
             const previous  = this.current;
             const hasUpdate = definition == previous?.definition;
@@ -191,6 +207,8 @@ export default class WebRouter
 
                 this.index = this.history.length - 1;
             }
+
+            this.routeChangeEvent.notify({ from, to });
         }
     }
 
@@ -198,7 +216,7 @@ export default class WebRouter
     {
         return {
             meta:       definition.meta,
-            name:       definition.name,
+            name:       definition.name ?? "",
             parameters: routeData.parameters,
             url,
         };
@@ -255,16 +273,20 @@ export default class WebRouter
         return this.resolveModule(component);
     }
 
-    private invokeMiddleware(to: Route, from?: Route): boolean
+    private async invokeMiddleware(to: Route, from?: Route): Promise<boolean>
     {
         let handled = false;
 
-        const next = (location: string | NamedRoute): boolean =>
-            (this.push(location), handled = true);
+        const next = async (location: string | NamedRoute): Promise<void> =>
+        {
+            await this.push(location);
+
+            handled = true;
+        };
 
         for (const middleware of this.middlewares)
         {
-            middleware.execute(to, from, next);
+            await middleware.execute(next, to, from);
 
             if (handled)
             {
@@ -316,7 +338,7 @@ export default class WebRouter
             {
                 await this.create(url, ...match.value);
 
-                window.history.pushState(null, "", url.href);
+                window.history.pushState(null, "", this.route.url.href);
             }
             else
             {
@@ -349,7 +371,7 @@ export default class WebRouter
 
                 await this.create(url, routeConfig, routeData);
 
-                window.history.pushState(null, "", url.href);
+                window.history.pushState(null, "", this.route.url.href);
             }
             else
             {

@@ -65,12 +65,12 @@ export function classMap(classes: Record<string, boolean>): string
 
 export function disposeTree(node: Node & Partial<IDisposable>): void
 {
+    node.dispose?.();
+
     for (const child of Array.from(node.childNodes) as (Node & Partial<IDisposable>)[])
     {
         disposeTree(child);
     }
-
-    node.dispose?.();
 }
 
 export function scapeBrackets(value: string): string

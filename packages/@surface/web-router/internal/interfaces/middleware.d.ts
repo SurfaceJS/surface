@@ -3,5 +3,5 @@ import type Route    from "../types/route";
 
 export default interface IMiddleware
 {
-    execute(to: Route, from: Route | undefined, next: (route: string | NamedRoute) => void): void;
+    execute(next: (route: string | NamedRoute) => Promise<void>, to: Route, from: Route | undefined): Promise<void>;
 }

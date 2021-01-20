@@ -232,7 +232,7 @@ export default class Route
 
     private normalize(path: string): string
     {
-        return (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "");
+        return path == "/" ? path : (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "");
     }
 
     public match(value: string | Indexer): RouteMatch

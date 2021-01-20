@@ -1,6 +1,6 @@
 import type { Indexer } from "../types";
 
-const NO_SLASH_PATTERN_PATTERN = /(^\/)?([^\/]+)(\/$)?/;
+const NO_SLASH_PATTERN_PATTERN = /(^\/)?([^\/]*)(\/$)?/;
 
 export function camelToText(value: string): string
 {

@@ -23,6 +23,13 @@ export const validExpectations: ParserValidExpectation[] =
     {
         expected:
         [
+            new SegmentNode([], false),
+        ],
+        pattern:  "/",
+    },
+    {
+        expected:
+        [
             new SegmentNode([new LiteralNode("path")], false),
         ],
         pattern:  "/path",
