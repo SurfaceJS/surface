@@ -1,6 +1,5 @@
-import type { Delegate } from "@surface/core";
-import { getValue }      from "@surface/core";
-import type Subscription from "./types/subscription";
+import type { Delegate, Subscription } from "@surface/core";
+import { getValue }                    from "@surface/core";
 
 export default class Observer<TValue = unknown>
 {

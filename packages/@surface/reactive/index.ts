@@ -1,6 +1,6 @@
 import Reactive from "./internal/reactive.js";
 
-export type { default as Subscription } from "./internal/types/subscription";
+export type { Subscription } from "@surface/core";
 
 export { default as computed } from "./internal/decorators/computed.js";
 export { default as notify }   from "./internal/decorators/notify.js";

@@ -1,7 +1,7 @@
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import Container                               from "../internal/container.js";
-import { inject }                              from "../internal/decorators.js";
+import inject                                  from "../internal/decorators/inject.js";
 import Bar                                     from "./mocks/bar.js";
 import Baz                                     from "./mocks/baz.js";
 import Foo                                     from "./mocks/foo.js";

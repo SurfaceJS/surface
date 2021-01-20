@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable import/prefer-default-export */
 import type { Constructor } from "@surface/core";
-import StaticMetadata       from "./metadata.js";
+import StaticMetadata       from "../metadata.js";
 
-export function inject(key: string | symbol | Constructor): any
+export default function inject(key: string | symbol | Constructor): any
 {
     return (...args: [object, string | symbol, number] | [object, string | symbol, PropertyDescriptor]) =>
     {

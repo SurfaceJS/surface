@@ -1,5 +1,5 @@
-import { inject } from "../../internal/decorators.js";
-import type Qux   from "./qux.js";
+import inject   from "../../internal/decorators/inject.js";
+import type Qux from "./qux.js";
 
 export default class Baz
 {
