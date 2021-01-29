@@ -23,11 +23,6 @@ export default class HookableMetadata<T extends Constructor>
         return Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>;
     }
 
-    public static in<T extends Constructor>(target: T): boolean
-    {
-        return Reflect.has(target, HOOKABLE_METADATA);
-    }
-
     public clone(): HookableMetadata<T>
     {
         const metadata = new HookableMetadata<T>();

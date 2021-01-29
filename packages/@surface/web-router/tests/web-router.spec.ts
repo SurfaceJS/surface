@@ -6,8 +6,8 @@ import CustomElement, { define, element }      from "@surface/custom-element";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import type IMiddleware                        from "../internal/interfaces/middleware";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
+import type IRouterMiddleware                  from "../internal/interfaces/router-middleware";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
@@ -160,7 +160,7 @@ export default class WebRouterSpec
             },
         ];
 
-        class Middleware implements IMiddleware
+        class Middleware implements IRouterMiddleware
         {
             public async execute(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
             {

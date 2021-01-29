@@ -5,8 +5,8 @@ import type { DirectiveHandlerRegistry }                from "@surface/custom-el
 import Container                                        from "@surface/dependency-injection";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
-import type IMiddleware                                 from "./interfaces/middleware";
 import type IRouteableElement                           from "./interfaces/routeable-element";
+import type IRouterMiddleware                           from "./interfaces/router-middleware";
 import Metadata                                         from "./metadata.js";
 import NavigationDirectiveHandler                       from "./navigation-directive-handler.js";
 import RouteConfigurator                                from "./route-configurator.js";
@@ -26,11 +26,11 @@ export default class WebRouter
     private readonly connectedElements: Stack<IRouteableElement> = new Stack();
     private readonly container:         Container;
     private readonly history:           [URL, RouteDefinition, RouteData][] = [];
-    private readonly middlewares:       IMiddleware[];
+    private readonly middlewares:       IRouterMiddleware[];
     private readonly root:              Lazy<HTMLElement>;
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
-    private cache:    Record<string, IRouteableElement>[] = [];
+    private cache: Record<string, IRouteableElement>[] = [];
     private index:    number  = 0;
     private current?: { definition: RouteDefinition, route: Route };
 
@@ -69,6 +69,8 @@ export default class WebRouter
         }
 
         this.container.registerSingleton(WebRouter, this as WebRouter);
+
+        window.addEventListener("popstate", () => void this.pushCurrentLocation());
     }
 
     public static createDirectiveRegistry(router: WebRouter): DirectiveHandlerRegistry
@@ -203,6 +205,8 @@ export default class WebRouter
 
             if (!fromHistory)
             {
+                this.history.splice(this.index + 1, Infinity);
+
                 this.history.push([url, definition, routeData]);
 
                 this.index = this.history.length - 1;
@@ -321,6 +325,8 @@ export default class WebRouter
             const [url, routeItem, routeData] = this.history[index];
 
             await this.create(url, routeItem, routeData, true);
+
+            window.history.replaceState(null, "", url.href);
 
             this.index = index;
         }

@@ -1,10 +1,10 @@
 import type { Constructor } from "@surface/core";
 import type Container       from "@surface/dependency-injection";
-import type IMiddleware     from "../interfaces/middleware.js";
+import type IRouterMiddleware     from "../interfaces/router-middleware.js";
 
 type ViewRouterOptions =
 {
-    middlewares?: (Constructor<IMiddleware> | IMiddleware)[],
+    middlewares?: (Constructor<IRouterMiddleware> | IRouterMiddleware)[],
     container?:   Container,
     baseUrl?:     string,
 };
