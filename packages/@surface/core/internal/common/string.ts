@@ -75,7 +75,10 @@ export function format(pattern: string, source: Indexer): string
 
 export function joinPaths(...paths: string[]): string
 {
-    return paths.filter(x => !!x).map(x => x.replace(NO_SLASH_PATTERN_PATTERN, "$2")).join("/");
+    return paths
+        .filter(x => !!x)
+        .map(x => x.replace(NO_SLASH_PATTERN_PATTERN, "$2"))
+        .join("/");
 }
 
 export function toTitle(value: string): string

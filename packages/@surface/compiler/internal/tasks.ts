@@ -12,14 +12,15 @@ import type Options                            from "./types/options";
 
 export default class Tasks
 {
-    private static createDefaults(): Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">>
+    private static createDefaults(): Required<Pick<Configuration, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">>
     {
         return {
-            context:  ".",
-            entry:    "./source/index.ts",
-            filename: "[name].js",
-            output:   "./build",
-            tsconfig: "./tsconfig.json",
+            context:    ".",
+            entry:      "./source/index.ts",
+            filename:   "[name].js",
+            output:     "./build",
+            publicPath: "/",
+            tsconfig:   "./tsconfig.json",
         };
     }
 
@@ -130,25 +131,6 @@ export default class Tasks
         Tasks.resolvePath(configuration, "htmlTemplate", root);
         Tasks.resolvePath(configuration, "output",       root);
         Tasks.resolvePath(configuration, "tsconfig",     root);
-
-        // if (Array.isArray(configuration.copyFiles))
-        // {
-        //     configuration.copyFiles.forEach
-        //     (
-        //         (element, index, source) =>
-        //         {
-        //             if (typeof element == "string")
-        //             {
-        //                 Tasks.resolvePath(source, index, root);
-        //             }
-        //             else
-        //             {
-        //                 Tasks.resolvePath(element, "from", root);
-        //                 Tasks.resolvePath(element, "to",   root);
-        //             }
-        //         },
-        //     );
-        // }
 
         if (Array.isArray(configuration.forceTs))
         {

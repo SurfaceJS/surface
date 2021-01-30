@@ -12,7 +12,10 @@ export default class EnumerableSpec
     @test @shouldPass
     public from(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3])), [1, 2, 3]);
+        const enumerable = Enumerable.from([1, 2, 3]);
+
+        chai.assert.deepEqual(Array.from(enumerable), [1, 2, 3]);
+        chai.assert.deepEqual(enumerable.toArray(), [1, 2, 3]);
     }
 
     @test @shouldPass

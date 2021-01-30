@@ -121,10 +121,10 @@ export default class Reactive
                         {
                             const oldValue = member.descriptor.get?.call(this);
 
+                            member.descriptor.set!.call(this, value);
+
                             if (!Object.is(value, oldValue))
                             {
-                                member.descriptor.set!.call(this, value);
-
                                 action(this, value, oldValue);
                             }
                         },
@@ -152,10 +152,10 @@ export default class Reactive
                         {
                             const oldValue = privates[key as string];
 
+                            privates[key as string] = value;
+
                             if (!Object.is(value, oldValue))
                             {
-                                privates[key as string] = value;
-
                                 action(this, value, oldValue);
                             }
                         },

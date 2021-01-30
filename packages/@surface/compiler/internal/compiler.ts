@@ -92,8 +92,10 @@ export default class Compiler
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
             historyApiFallback: { index: joinPaths(url.pathname, "index.html") },
+            host:               url.hostname,
             hot:                options.hot,
             inline:             true,
+            port,
             publicPath:         url.pathname,
             stats:              statOptions,
             ...configuration.devServer,
