@@ -13,6 +13,6 @@ export { query, queryAll }             from "./internal/decorators/query.js";
 export { default as styles }           from "./internal/decorators/styles.js";
 export { default as DirectiveHandler } from "./internal/directives/handlers/directive-handler.js";
 export { default as processTemplate }  from "./internal/processors/process-template.js";
-export { scheduler }                   from "./internal/singletons.js";
+export { paintingDone, scheduler }     from "./internal/singletons.js";
 
 export default CustomElement;

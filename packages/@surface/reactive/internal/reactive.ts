@@ -195,6 +195,7 @@ export default class Reactive
             this.observe(root, path, observer = new Observer(root, path));
 
             metadata.observers.set(key, observer);
+            metadata.disposables.push({ dispose: () => this.unobserve(root, path, observer!) });
         }
 
         return observer;

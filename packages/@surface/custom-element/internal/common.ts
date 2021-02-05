@@ -31,7 +31,7 @@ export function createHostScope(host: HTMLElement): object
     return { $class: classMap, $style: styleMap, host };
 }
 
-export function createScope(scope: object): object
+export function inheritScope(scope: object): object
 {
     const handler: ProxyHandler<Indexer> =
     {

@@ -4,6 +4,7 @@ import type ICustomElement                                     from "../interfac
 import Metadata                                                from "../metadata/metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";
 import AsyncReactive                                           from "../reactivity/async-reactive.js";
+import { scheduler } from "../singletons.js";
 
 function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
 function attribute(target: ICustomElement, propertyKey: string): void;
@@ -81,7 +82,7 @@ function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, str
                 metadata.reflectingAttribute.delete(attributeName);
             };
 
-            const subscription = AsyncReactive.from(instance, [propertyKey]).subscribe(action);
+            const subscription = AsyncReactive.from(instance, [propertyKey], scheduler).subscribe(action);
 
             DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };

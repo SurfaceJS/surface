@@ -1,7 +1,8 @@
-import { CancellationTokenSource } from "@surface/core";
-import type { Subscription }       from "@surface/reactive";
+import { CancellationTokenSource, DisposableMetadata } from "@surface/core";
+import type { Subscription }                           from "@surface/reactive";
 import
 {
+    inheritScope,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
@@ -25,7 +26,7 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
     public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective)
     {
-        super(scope, context, host);
+        super(inheritScope(scope), context, host);
 
         this.template  = template;
         this.directive = directive;
@@ -35,8 +36,8 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, listener, true);
-        this.subscription    = tryObserveByObservable(scope, directive,    listener, true);
+        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, listener, true);
+        this.subscription    = tryObserveByObservable(this.scope, directive,    listener, true);
 
         this.task();
     }
@@ -75,6 +76,8 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
             this.keySubscription.unsubscribe();
             this.subscription.unsubscribe();
+
+            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

@@ -1,12 +1,12 @@
-import type { Delegate, IDisposable, Indexer } from "@surface/core";
-import { assert, getValue, typeGuard }         from "@surface/core";
-import type { Subscription }                   from "@surface/reactive";
-import { FieldInfo, Type }                     from "@surface/reflection";
+import type { Delegate, IDisposable, Indexer }             from "@surface/core";
+import { DisposableMetadata, assert, getValue, typeGuard } from "@surface/core";
+import type { Subscription }                               from "@surface/reactive";
+import { FieldInfo, Type }                                 from "@surface/reflection";
 import
 {
     buildStackTrace,
     classMap,
-    createScope,
+    inheritScope,
     styleMap,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
@@ -114,19 +114,26 @@ export default class TemplateProcessor
         {
             const element = this.lookup[descriptor.path] as HTMLElement & Partial<IDisposable>;
 
-            const localScope = createScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
+            const localScope = inheritScope({ this: element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && context ? context : element, ...scope });
 
             disposables.push(this.processAttributes(localScope, element, descriptor.attributes));
             disposables.push(this.processEvents(localScope, element, descriptor.events));
             disposables.push(this.processElementDirectives(localScope, element, descriptor.directives));
             disposables.push(this.processTextNode(localScope, descriptor.textNodes));
+            disposables.push(DisposableMetadata.from(localScope));
 
             element.dispatchEvent(new Event("bind"));
         }
 
-        disposables.push(this.processTemplateDirectives({ context, directives: this.descriptor.directives, scope: createScope(scope) }));
+        disposables.push(this.processTemplateDirectives({ context, directives: this.descriptor.directives, scope }));
 
-        return { dispose: () => disposables.splice(0).forEach(x => x.dispose(), disposeTree(this.root)) };
+        return {
+            dispose: () =>
+            {
+                disposables.splice(0).forEach(x => x.dispose());
+                disposeTree(this.root);
+            },
+        };
     }
 
     private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): IDisposable

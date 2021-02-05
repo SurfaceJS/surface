@@ -1,11 +1,11 @@
-import type { IDisposable }                              from "@surface/core";
-import { CancellationTokenSource, assert }               from "@surface/core";
-import type { Subscription }                             from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
-import type IChoiceBranchDirective                       from "../../interfaces/choice-branch-directive";
-import { scheduler }                                     from "../../singletons.js";
-import TemplateBlock                                     from "../template-block.js";
-import TemplateDirectiveHandler                          from "./template-directive-handler.js";
+import type { IDisposable }                                           from "@surface/core";
+import { CancellationTokenSource, DisposableMetadata, assert }        from "@surface/core";
+import type { Subscription }                                          from "@surface/reactive";
+import { inheritScope, tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
+import type IChoiceBranchDirective                                    from "../../interfaces/choice-branch-directive";
+import { scheduler }                                                  from "../../singletons.js";
+import TemplateBlock                                                  from "../template-block.js";
+import TemplateDirectiveHandler                                       from "./template-directive-handler.js";
 
 type Choice =
 {
@@ -27,7 +27,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
     public constructor(scope: object, context: Node, host: Node, templates: HTMLTemplateElement[], branches: IChoiceBranchDirective[])
     {
-        super(scope, context, host);
+        super(inheritScope(scope), context, host);
 
         assert(templates[0].parentNode);
 
@@ -42,7 +42,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             const branche  = branches[index];
             const template = templates[index];
 
-            this.subscriptions.push(tryObserveByObservable(scope, branche, listener, true));
+            this.subscriptions.push(tryObserveByObservable(this.scope, branche, listener, true));
 
             this.choices.push({ branche, template });
 
@@ -66,7 +66,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
                     this.templateBlock.clear();
 
-                    const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
+                    const [content, disposable] = this.processTemplate({ ...this.scope }, this.context, this.host, choice.template, choice.branche.descriptor);
 
                     this.templateBlock.setContent(content);
 
@@ -95,6 +95,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
             this.templateBlock.clear();
             this.templateBlock.dispose();
+            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

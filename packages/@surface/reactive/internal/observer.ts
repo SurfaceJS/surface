@@ -9,8 +9,8 @@ export default class Observer<TValue = unknown>
 
     public constructor(root: object, path: string[])
     {
-        this.root = root;
-        this.path = path;
+        this.root     = root;
+        this.path     = path;
     }
 
     public subscribe(listerner: Delegate<[TValue]>): Subscription

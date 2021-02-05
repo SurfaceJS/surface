@@ -10,3 +10,8 @@ export function disposeTree(node: Node & Partial<IDisposable>): void
 {
     void scheduler.enqueue(() => disposeTreeSync(node), "low");
 }
+
+export async function paintingDone(): Promise<void>
+{
+    return scheduler.whenDone();
+}
