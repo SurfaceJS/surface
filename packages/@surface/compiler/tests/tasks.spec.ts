@@ -39,13 +39,14 @@ const CWD_PROJECT_TSCONFIG_JSON             = path.join(CWD, "project", "tsconfi
 const CWD_PROJECT_WEBPACK_CONFIG_JS         = path.join(CWD, "project", "webpack.config.js");
 const CWD_TSCONFIG_JSON                     = path.join(CWD, "tsconfig.json");
 
-const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">> =
+const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">> =
 {
-    context:  CWD,
-    entry:    "./source/index.ts",
-    filename: "[name].js",
-    output:   CWD_BUILD,
-    tsconfig: CWD_TSCONFIG_JSON,
+    context:    CWD,
+    entry:      "./source/index.ts",
+    filename:   "[name].js",
+    output:     CWD_BUILD,
+    publicPath: "/",
+    tsconfig:   CWD_TSCONFIG_JSON,
 };
 
 @suite
@@ -175,11 +176,11 @@ export default class TasksSpec
         [
             {
                 ...DEFAULTS,
-                context:  CWD_PROJECT,
-                eslintrc: CWD_PROJECT_ESLINTRC_JSON,
-                forceTs:  true,
-                output:   CWD_PROJECT_BUILD,
-                tsconfig: CWD_PROJECT_TSCONFIG_JSON,
+                context:    CWD_PROJECT,
+                eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
+                forceTs:    true,
+                output:     CWD_PROJECT_BUILD,
+                tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
             },
             { },
         ];
@@ -222,6 +223,7 @@ export default class TasksSpec
         const expectedWatch: Args =
         [
             {
+                ...DEFAULTS,
                 context:  CWD_PROJECT,
                 entry:    "./source/index.ts",
                 eslintrc: CWD_PROJECT_ESLINTRC_JSON,
@@ -261,6 +263,7 @@ export default class TasksSpec
                 filename:      "[name].js",
                 forceTs:       [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
                 output:        CWD_PROJECT_BUILD,
+                publicPath:    "/",
                 tsconfig:      CWD_PROJECT_TSCONFIG_JSON,
                 webpackConfig: { },
             },

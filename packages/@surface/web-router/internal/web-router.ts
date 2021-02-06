@@ -54,7 +54,6 @@ export default class WebRouter
         this.baseUrl     = options.baseUrl      ?? /* c8 ignore next */ "";
         this.container   = options.container    ?? /* c8 ignore next */ new Container();
         this.middlewares = (options.middlewares ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
-
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(routes))
         {
