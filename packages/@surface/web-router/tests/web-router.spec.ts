@@ -7,7 +7,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
-import type IRouterMiddleware                  from "../internal/interfaces/router-middleware";
+import type IRouterInterceptor                  from "../internal/interfaces/router-interceptor";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
@@ -160,9 +160,9 @@ export default class WebRouterSpec
             },
         ];
 
-        class Middleware implements IRouterMiddleware
+        class Middleware implements IRouterInterceptor
         {
-            public async execute(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
+            public async intercept(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
             {
                 if (to.meta.requireAuth)
                 {
@@ -171,7 +171,7 @@ export default class WebRouterSpec
             }
         }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [{ execute: async () => Promise.resolve() },  Middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
 
         CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
 

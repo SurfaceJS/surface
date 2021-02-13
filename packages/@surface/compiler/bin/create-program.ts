@@ -11,7 +11,7 @@ export default function createProgram(): commander.Command
         .option("-o, --output        <n>", "The output directory.")
         .option("-p, --project       <n>", "Path to project file.")
         .option("-t, --html-template <n>", "Path to html template file.")
-        .option("--copy-files        <n>", "Patterns to copy to output path.", toArray)
+        .option("--copy-files        <n>", "File patterns to copy to output path.", toArray)
         .option("--eslintrc          <n>", "Path to eslintrc file.")
         .option("--force-ts          [n]", "Force resolve to the ts file when next to the transpiled js file.", toBooleanOrStringArray)
         .option("--public-path       <n>", "The output path from the view of the Javascript / HTML page.")

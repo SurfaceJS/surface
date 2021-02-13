@@ -8,8 +8,8 @@ import createProgram               from "./create-program.js";
 
 const program = createProgram()
     .option("--host              <n>", "Dev server hostname.")
-    .option("--hot               [n]", "Dev server port.", toBoolean)
-    .option("--log-level         <n>", "Dev server port.", parsePattern(logLevelPattern))
+    .option("--hot               [n]", "Enable hot reload.", toBoolean)
+    .option("--log-level         <n>", "Output verbosity level. Can be 'none', 'summary', 'errors-only', 'errors-warnings', 'minimal', 'normal', 'detailed', 'verbose'.", parsePattern(logLevelPattern))
     .option("--port              <n>", "Dev server port.", Number)
     .action((command: Command) => void Tasks.serve(command.opts()));
 

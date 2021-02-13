@@ -1,12 +1,12 @@
 import type { Constructor } from "@surface/core";
 import type Container       from "@surface/dependency-injection";
-import type IRouterMiddleware     from "../interfaces/router-middleware.js";
+import type IRouterInterceptor     from "../interfaces/router-interceptor.js";
 
 type ViewRouterOptions =
 {
-    middlewares?: (Constructor<IRouterMiddleware> | IRouterMiddleware)[],
-    container?:   Container,
-    baseUrl?:     string,
+    interceptors?: (Constructor<IRouterInterceptor> | IRouterInterceptor)[],
+    container?:    Container,
+    baseUrl?:      string,
 };
 
 export default ViewRouterOptions;

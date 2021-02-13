@@ -6,7 +6,7 @@ import Container                                        from "@surface/dependenc
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
 import type IRouteableElement                           from "./interfaces/routeable-element";
-import type IRouterMiddleware                           from "./interfaces/router-middleware";
+import type IRouterMiddleware                           from "./interfaces/router-interceptor";
 import Metadata                                         from "./metadata.js";
 import NavigationDirectiveHandler                       from "./navigation-directive-handler.js";
 import RouteConfigurator                                from "./route-configurator.js";
@@ -26,7 +26,7 @@ export default class WebRouter
     private readonly connectedElements: Stack<IRouteableElement> = new Stack();
     private readonly container:         Container;
     private readonly history:           [URL, RouteDefinition, RouteData][] = [];
-    private readonly middlewares:       IRouterMiddleware[];
+    private readonly interceptors:      IRouterMiddleware[];
     private readonly root:              Lazy<HTMLElement>;
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
@@ -51,9 +51,9 @@ export default class WebRouter
     {
         this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
 
-        this.baseUrl     = options.baseUrl      ?? /* c8 ignore next */ "";
-        this.container   = options.container    ?? /* c8 ignore next */ new Container();
-        this.middlewares = (options.middlewares ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
+        this.baseUrl      = options.baseUrl       ?? /* c8 ignore next */ "";
+        this.container    = options.container     ?? /* c8 ignore next */ new Container();
+        this.interceptors = (options.interceptors ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(routes))
         {
@@ -278,26 +278,26 @@ export default class WebRouter
 
     private async invokeMiddleware(to: Route, from?: Route): Promise<boolean>
     {
-        let handled = false;
+        let intercepted = false;
 
         const next = async (location: string | NamedRoute): Promise<void> =>
         {
             await this.push(location);
 
-            handled = true;
+            intercepted = true;
         };
 
-        for (const middleware of this.middlewares)
+        for (const interceptor of this.interceptors)
         {
-            await middleware.execute(next, to, from);
+            await interceptor.intercept(next, to, from);
 
-            if (handled)
+            if (intercepted)
             {
                 break;
             }
         }
 
-        return handled;
+        return intercepted;
     }
 
     private resolvePath(path: string): URL
