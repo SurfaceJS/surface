@@ -1,0 +1,105 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://github.com/SurfaceJS/modules/blob/master/packages/%40surface/compiler/schema.json",
+    "title": "Surface's compiler options",
+    "description": "Surface's compiler options",
+    "type": "object",
+    "properties": {
+        "context": {
+            "description": "The base directory for resolving the entry option",
+            "type": "string"
+        },
+        "copyFiles": {
+            "description": "File patterns to copy to output path",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "from": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ]
+            },
+            "type": "array"
+        },
+        "entry": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            ],
+            "description": "Entry points"
+        },
+        "eslintrc": {
+            "description": "Path to eslintrc file",
+            "type": "string"
+        },
+        "filename": {
+            "description": "The filename of the entry chunk as relative path inside the output path directory",
+            "type": "string"
+        },
+        "forceTs": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            ],
+            "description": "Force resolve to the ts file when next to the transpiled js file"
+        },
+        "htmlTemplate": {
+            "description": "Path to html template file",
+            "type": "string"
+        },
+        "logLevel": {
+            "enum": [
+                "none",
+                "summary",
+                "errors-only",
+                "errors-warnings",
+                "minimal",
+                "normal",
+                "detailed",
+                "verbose"
+            ],
+            "description": "Log level",
+            "type": "string"
+        },
+        "output": {
+            "description": "The output directory",
+            "type": "string"
+        },
+        "publicPath": {
+            "description": "The output path from the view of the Javascript / HTML page",
+            "type": "string"
+        },
+        "tsconfig": {
+            "description": "Path to tsconfig file",
+            "type": "string"
+        },
+        "webpackConfig": {
+            "description": "Path to webpack-config file",
+            "type": "string"
+        }
+    }
+}
