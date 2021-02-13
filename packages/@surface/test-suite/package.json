@@ -9,8 +9,8 @@
     },
     "description": "Oriented object test suite powered by mocha.",
     "devDependencies": {
-        "@types/chai": "4.2.14",
-        "chai": "4.2.0"
+        "@types/chai": "4.2.15",
+        "chai": "4.3.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -23,7 +23,7 @@
     "main": "index.js",
     "name": "@surface/test-suite",
     "peerDependencies": {
-        "mocha": "8.2.1"
+        "mocha": "8.3.0"
     },
     "repository": {
         "type": "git",

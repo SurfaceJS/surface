@@ -20,7 +20,7 @@
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/jsdom": "16.2.6",
-        "chai": "4.2.0",
+        "chai": "4.3.0",
         "jsdom": "16.4.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",

@@ -10,8 +10,8 @@
     "description": "Provides an tree representation of javascript expressions.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.14",
-        "chai": "4.2.0"
+        "@types/chai": "4.2.15",
+        "chai": "4.3.0"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
