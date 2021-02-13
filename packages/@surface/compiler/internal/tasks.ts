@@ -1,5 +1,5 @@
 import path                                    from "path";
-import { typeGuard }                           from "@surface/core";
+import { deepMergeCombine, typeGuard }                           from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
 import { createOnlyDefinedProxy, loadModule }  from "./common.js";
@@ -34,7 +34,7 @@ export default class Tasks
                 ? options.project
                 : path.resolve(cwd, options.project);
 
-        const configuration: Configuration = createOnlyDefinedProxy
+        const cliConfiguration: Configuration = createOnlyDefinedProxy
         ({
             context:       options.context,
             copyFiles:     options.copyFiles,
@@ -50,7 +50,7 @@ export default class Tasks
             webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
-        Tasks.resolvePaths(configuration, cwd);
+        Tasks.resolvePaths(cliConfiguration, cwd);
 
         const projectPath = isFile(project)
             ? project
@@ -70,17 +70,34 @@ export default class Tasks
 
             const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
-            if (projectPath.endsWith(".json"))
+            const isJson = projectPath.endsWith(".json");
+
+            if (isJson)
             {
                 Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
-            return { ...defaults, ...projectConfiguration, ...configuration };
+            const configuration = { ...defaults, ...projectConfiguration, ...cliConfiguration };
+
+            if (configuration.compilations)
+            {
+                for (const compilation of configuration.compilations)
+                {
+                    if (isJson)
+                    {
+                        Tasks.resolvePaths(compilation, path.dirname(projectPath));
+                    }
+
+                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { configurations: undefined });
+                }
+            }
+
+            return configuration;
         }
 
         Tasks.resolvePaths(defaults, cwd);
 
-        return { ...defaults, ...configuration };
+        return { ...defaults, ...cliConfiguration };
     }
 
     private static resolveModule(module: unknown): unknown

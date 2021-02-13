@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import type { Command } from "commander";
 import
 {
     parsePattern,
@@ -27,6 +26,6 @@ const program = createProgram()
     .option("--open              <n>", "Automatically open report in default browser.", toBoolean)
     .option("--port              <n>", "Port that will be used in server mode to start HTTP server.", x => x == "auto" ? x : Number(x))
     .option("--report-filename   <n>", "Path to bundle report file that will be generated in static mode.")
-    .action((command: Command) => void Tasks.analyze(command.opts()));
+    .action(Tasks.analyze);
 
 program.parse(process.argv);

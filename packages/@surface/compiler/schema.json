@@ -3,103 +3,139 @@
     "$id": "https://github.com/SurfaceJS/modules/blob/master/packages/%40surface/compiler/schema.json",
     "title": "Surface's compiler options",
     "description": "Surface's compiler options",
-    "type": "object",
-    "properties": {
-        "context": {
-            "description": "The base directory for resolving the entry option",
-            "type": "string"
-        },
-        "copyFiles": {
-            "description": "File patterns to copy to output path",
-            "items": {
-                "anyOf": [
-                    {
-                        "type": "string"
-                    },
-                    {
-                        "type": "object",
-                        "properties": {
-                            "from": {
-                                "type": "string"
-                            },
-                            "to": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ]
-            },
-            "type": "array"
-        },
-        "entry": {
-            "anyOf": [
-                {
+    "definitions": {
+        "compilations": {
+            "properties": {
+                "context": {
+                    "description": "The base directory for resolving the entry option",
                     "type": "string"
                 },
-                {
+                "copyFiles": {
+                    "description": "File patterns to copy to output path",
                     "items": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "from": {
+                                        "type": "string"
+                                    },
+                                    "to": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        ]
                     },
                     "type": "array"
-                }
-            ],
-            "description": "Entry points"
-        },
-        "eslintrc": {
-            "description": "Path to eslintrc file",
-            "type": "string"
-        },
-        "filename": {
-            "description": "The filename of the entry chunk as relative path inside the output path directory",
-            "type": "string"
-        },
-        "forceTs": {
-            "anyOf": [
-                {
-                    "type": "boolean"
                 },
-                {
+                "entry": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        {
+                            "additionalProperties": {
+                                "anyOf": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                ]
+                            },
+                            "type": "object"
+                        }
+                    ],
+                    "description": "Entry points"
+                },
+                "eslintrc": {
+                    "description": "Path to eslintrc file",
+                    "type": "string"
+                },
+                "filename": {
+                    "description": "The filename of the entry chunk as relative path inside the output path directory",
+                    "type": "string"
+                },
+                "forceTs": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "description": "Force resolve to the ts file when next to the transpiled js file"
+                },
+                "htmlTemplate": {
+                    "description": "Path to html template file",
+                    "type": "string"
+                },
+                "logLevel": {
+                    "enum": [
+                        "none",
+                        "summary",
+                        "errors-only",
+                        "errors-warnings",
+                        "minimal",
+                        "normal",
+                        "detailed",
+                        "verbose"
+                    ],
+                    "description": "Log level",
+                    "type": "string"
+                },
+                "output": {
+                    "description": "The output directory",
+                    "type": "string"
+                },
+                "publicPath": {
+                    "description": "The output path from the view of the Javascript / HTML page",
+                    "type": "string"
+                },
+                "tsconfig": {
+                    "description": "Path to tsconfig file",
+                    "type": "string"
+                },
+                "webpackConfig": {
+                    "description": "Path to webpack-config file",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/compilations"
+        },
+        {
+            "properties": {
+                "compilations": {
+                    "description": "Configuration used by multicompiler. All root configuration will merge with it",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/compilations"
                     },
                     "type": "array"
                 }
-            ],
-            "description": "Force resolve to the ts file when next to the transpiled js file"
-        },
-        "htmlTemplate": {
-            "description": "Path to html template file",
-            "type": "string"
-        },
-        "logLevel": {
-            "enum": [
-                "none",
-                "summary",
-                "errors-only",
-                "errors-warnings",
-                "minimal",
-                "normal",
-                "detailed",
-                "verbose"
-            ],
-            "description": "Log level",
-            "type": "string"
-        },
-        "output": {
-            "description": "The output directory",
-            "type": "string"
-        },
-        "publicPath": {
-            "description": "The output path from the view of the Javascript / HTML page",
-            "type": "string"
-        },
-        "tsconfig": {
-            "description": "Path to tsconfig file",
-            "type": "string"
-        },
-        "webpackConfig": {
-            "description": "Path to webpack-config file",
-            "type": "string"
+            }
         }
-    }
+    ]
 }

@@ -35,7 +35,7 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export function createAnalyzerConfiguration(configuration: Configuration, options: AnalyzerOptions): webpack.Configuration
+export function createAnalyzerConfiguration(configuration: Configuration, options: AnalyzerOptions): webpack.Configuration | webpack.Configuration[]
 {
     const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
     {
@@ -54,6 +54,11 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
         mode:    options.mode,
         plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(bundleAnalyzerPluginOptions))],
     };
+
+    if (configuration.compilations)
+    {
+        return configuration.compilations.map(x => createConfiguration(x, createOnlyDefinedProxy(extendedConfiguration)));
+    }
 
     return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
@@ -80,6 +85,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             options: createOnlyDefinedProxy
             ({
                 configFile: configuration.eslintrc,
+                cwd:        configuration.context,
             }),
         },
         typescript: createOnlyDefinedProxy
@@ -266,12 +272,17 @@ export function createConfiguration(configuration: Configuration, extendedConfig
     return deepMergeCombine(webpackConfiguration, extendedConfiguration, configuration.webpackConfig ?? { });
 }
 
-export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration
+export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration | webpack.Configuration[]
 {
+    if (configuration.compilations)
+    {
+        return configuration.compilations.map(x => createConfiguration(x, createOnlyDefinedProxy({ mode: options.mode })));
+    }
+
     return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
 }
 
-export function createDevServerConfiguration(configuration: Configuration, url: URL): webpack.Configuration
+export function createDevServerConfiguration(configuration: Configuration, url: URL): webpack.Configuration | webpack.Configuration[]
 {
     const extendedConfiguration: webpack.Configuration =
     {
@@ -279,6 +290,11 @@ export function createDevServerConfiguration(configuration: Configuration, url: 
         mode:    "development",
         plugins: [new webpack.HotModuleReplacementPlugin()],
     };
+
+    if (configuration.compilations)
+    {
+        return configuration.compilations.map(x => createConfiguration(x, extendedConfiguration));
+    }
 
     return createConfiguration(configuration, extendedConfiguration);
 }

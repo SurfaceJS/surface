@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/indent */
 import { URL }                         from "url";
 import type { Delegate }               from "@surface/core";
@@ -36,15 +37,40 @@ export default class Compiler
         return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
+    private static createMultiHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: any) => unknown
     {
-        const webpackCompiler = webpack(webpackConfiguration);
-
-        await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
+        return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    private static async runInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
     {
+        if (Array.isArray(webpackConfiguration))
+        {
+            const webpackCompiler = webpack(webpackConfiguration);
+
+            await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createMultiHandler(resolve, reject, statOptions)));
+        }
+        else
+        {
+            const webpackCompiler = webpack(webpackConfiguration);
+
+            await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
+        }
+    }
+
+    private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    {
+        if (Array.isArray(webpackConfiguration))
+        {
+            const webpackCompiler = webpack(webpackConfiguration);
+
+            let watching: ReturnType<webpack.MultiCompiler["watch"]>;
+
+            await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createMultiHandler(resolve, reject, statOptions)));
+
+            return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
+        }
+
         const webpackCompiler = webpack(webpackConfiguration);
 
         let watching: ReturnType<webpack.Compiler["watch"]>;
@@ -87,7 +113,9 @@ export default class Compiler
         url.pathname = configuration.publicPath ?? "/";
 
         const webpackConfiguration = createDevServerConfiguration(configuration, url);
-        const webpackCompiler      = webpack(webpackConfiguration);
+        const webpackCompiler      = Array.isArray(webpackConfiguration)
+            ? webpack(webpackConfiguration)
+            : webpack(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
