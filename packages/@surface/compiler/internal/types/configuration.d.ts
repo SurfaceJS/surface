@@ -4,7 +4,7 @@ import type WebpackTypes      from "./webpack";
 
 type Configuration =
 {
-    compilations?:   (Omit<Configuration, "compilations">)[],
+    compilations?:   Configuration[],
     context?:        string,
     copyFiles?:      (string | { from: string, to: string })[],
     devServer?:      WebpackDevServer.Configuration,

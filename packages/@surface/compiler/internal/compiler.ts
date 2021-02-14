@@ -28,52 +28,28 @@ const DEFAULT_STATS_OPTIONS =
     warnings: true,
 };
 
-type StatOptions = string | boolean | object;
+type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
+type StatOptions     = string | boolean | object;
 
 export default class Compiler
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats) => unknown
-    {
-        return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
-    }
-
-    private static createMultiHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: any) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats | any) => unknown
     {
         return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
     }
 
     private static async runInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
     {
-        if (Array.isArray(webpackConfiguration))
-        {
-            const webpackCompiler = webpack(webpackConfiguration);
+        const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
 
-            await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createMultiHandler(resolve, reject, statOptions)));
-        }
-        else
-        {
-            const webpackCompiler = webpack(webpackConfiguration);
-
-            await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
-        }
+        await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
     }
 
     private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
     {
-        if (Array.isArray(webpackConfiguration))
-        {
-            const webpackCompiler = webpack(webpackConfiguration);
+        const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
 
-            let watching: ReturnType<webpack.MultiCompiler["watch"]>;
-
-            await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createMultiHandler(resolve, reject, statOptions)));
-
-            return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
-        }
-
-        const webpackCompiler = webpack(webpackConfiguration);
-
-        let watching: ReturnType<webpack.Compiler["watch"]>;
+        let watching: ReturnType<webpack.Compiler["watch"] | webpack.MultiCompiler["watch"]>;
 
         await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
 
@@ -113,9 +89,7 @@ export default class Compiler
         url.pathname = configuration.publicPath ?? "/";
 
         const webpackConfiguration = createDevServerConfiguration(configuration, url);
-        const webpackCompiler      = Array.isArray(webpackConfiguration)
-            ? webpack(webpackConfiguration)
-            : webpack(webpackConfiguration);
+        const webpackCompiler      = (webpack as WebpackOverload)(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({

@@ -1,5 +1,3 @@
-import type webpack from "webpack";
-
 type Options =
 {
     context?:       string,
@@ -9,7 +7,7 @@ type Options =
     filename?:      string,
     forceTs?:       boolean | string[],
     htmlTemplate?:  string,
-    logLevel?:      webpack.Stats.ToStringOptions,
+    logLevel?:      "detailed" | "errors-only" | "errors-warnings" | "minimal" | "none" | "normal" | "summary" | "verbose",
     output?:        string,
     project?:       string,
     publicPath?:    string,

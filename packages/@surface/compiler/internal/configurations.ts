@@ -98,11 +98,14 @@ export function createConfiguration(configuration: Configuration, extendedConfig
     plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
-    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-        ? { template: configuration.htmlTemplate }
-        : configuration.htmlTemplate;
+    if (configuration.htmlTemplate)
+    {
+        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+            ? { template: configuration.htmlTemplate }
+            : configuration.htmlTemplate;
 
-    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+    }
 
     if (configuration.copyFiles)
     {

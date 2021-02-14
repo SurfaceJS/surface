@@ -63,7 +63,7 @@ export default class BinSpec
 
         await import("../bin/analyze.js");
 
-        const expected: Required<Options & AnalyzerOptions> =
+        const expected: Required<Omit<Options, "logLevel"> & AnalyzerOptions> =
         {
             analyzerMode:   "server",
             context:        ".",

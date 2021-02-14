@@ -87,7 +87,7 @@ export default class Tasks
                         Tasks.resolvePaths(compilation, path.dirname(projectPath));
                     }
 
-                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { configurations: undefined });
+                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { compilations: undefined });
                 }
             }
 

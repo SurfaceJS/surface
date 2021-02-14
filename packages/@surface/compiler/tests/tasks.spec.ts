@@ -20,24 +20,28 @@ const removePathAsyncMock = Mock.of(removePathAsync)!;
 const compilerCtorMock    = Mock.of(Compiler)!;
 const loadModuleMock      = Mock.of(loadModule)!;
 
-const CWD_BUILD                             = path.join(CWD, "build");
-const CWD_PROJECT                           = path.join(CWD, "project");
-const CWD_PROJECT_BUILD                     = path.join(CWD, "project", "build");
-const CWD_PROJECT_ESLINTRC_JS               = path.join(CWD, "project", ".eslintrc.js");
-const CWD_PROJECT_ESLINTRC_JSON             = path.join(CWD, "project", ".eslintrc.json");
-const CWD_PROJECT_ESLINTRC_YAML             = path.join(CWD, "project", ".eslintrc.yaml");
-const CWD_PROJECT_ESLINTRC_YML              = path.join(CWD, "project", ".eslintrc.yml");
-const CWD_PROJECT_NO_ESLINTRC               = path.join(CWD, "project-no-eslintrc");
-const CWD_PROJECT_NO_ESLINTRC_BUILD         = path.join(CWD, "project-no-eslintrc", "build");
-const CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON  = path.join(CWD, "project-no-eslintrc", "surface.json");
-const CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON = path.join(CWD, "project-no-eslintrc", "tsconfig.json");
-const CWD_PROJECT_SURFACE_DEVELOPMENT_JS    = path.join(CWD, "project", "surface.development.js");
-const CWD_PROJECT_SURFACE_DEVELOPMENT_JSON  = path.join(CWD, "project", "surface.development.json");
-const CWD_PROJECT_SURFACE_JS                = path.join(CWD, "project", "surface.js");
-const CWD_PROJECT_SURFACE_JSON              = path.join(CWD, "project", "surface.json");
-const CWD_PROJECT_TSCONFIG_JSON             = path.join(CWD, "project", "tsconfig.json");
-const CWD_PROJECT_WEBPACK_CONFIG_JS         = path.join(CWD, "project", "webpack.config.js");
-const CWD_TSCONFIG_JSON                     = path.join(CWD, "tsconfig.json");
+const CWD_BUILD                                   = path.join(CWD, "build");
+const CWD_PROJECT                                 = path.join(CWD, "project");
+const CWD_PROJECT_BUILD                           = path.join(CWD, "project", "build");
+const CWD_PROJECT_ESLINTRC_JS                     = path.join(CWD, "project", ".eslintrc.js");
+const CWD_PROJECT_ESLINTRC_JSON                   = path.join(CWD, "project", ".eslintrc.json");
+const CWD_PROJECT_ESLINTRC_YAML                   = path.join(CWD, "project", ".eslintrc.yaml");
+const CWD_PROJECT_ESLINTRC_YML                    = path.join(CWD, "project", ".eslintrc.yml");
+const CWD_PROJECT_NO_ESLINTRC                     = path.join(CWD, "project-no-eslintrc");
+const CWD_PROJECT_NO_ESLINTRC_BUILD               = path.join(CWD, "project-no-eslintrc", "build");
+const CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON        = path.join(CWD, "project-no-eslintrc", "surface.json");
+const CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON       = path.join(CWD, "project-no-eslintrc", "tsconfig.json");
+const CWD_PROJECT_SURFACE_DEVELOPMENT_JS          = path.join(CWD, "project", "surface.development.js");
+const CWD_PROJECT_SURFACE_DEVELOPMENT_JSON        = path.join(CWD, "project", "surface.development.json");
+const CWD_PROJECT_SURFACE_JS                      = path.join(CWD, "project", "surface.js");
+const CWD_PROJECT_SURFACE_JSON                    = path.join(CWD, "project", "surface.json");
+const CWD_PROJECT_TSCONFIG_JSON                   = path.join(CWD, "project", "tsconfig.json");
+const CWD_PROJECT_WEBPACK_CONFIG_JS               = path.join(CWD, "project", "webpack.config.js");
+const CWD_PROJECT_WITH_COMPILATIONS               = path.join(CWD, "project-with-compilations");
+const CWD_PROJECT_WITH_COMPILATIONS_BUILD         = path.join(CWD, "project-with-compilations", "build");
+const CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON  = path.join(CWD, "project-with-compilations", "surface.json");
+const CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON = path.join(CWD, "project-with-compilations", "tsconfig.json");
+const CWD_TSCONFIG_JSON                           = path.join(CWD, "tsconfig.json");
 
 const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">> =
 {
@@ -65,6 +69,7 @@ export default class TasksSpec
         isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_JS).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_JSON).returns(true);
+        isFileMock.call(CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON).returns(true);
 
         lookupFileMock
             .call
@@ -115,6 +120,10 @@ export default class TasksSpec
         loadModuleMock
             .call(CWD_PROJECT_WEBPACK_CONFIG_JS)
             .returns(Promise.resolve({ default: { } }));
+
+        loadModuleMock
+            .call(CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON)
+            .returns(Promise.resolve({ default: { compilations: [{ entry: "file-1.js" }, { entry: "file-2.js" }] } }));
 
         removePathAsyncMock.call(It.any());
     }
@@ -219,6 +228,48 @@ export default class TasksSpec
         await Tasks.build({ project: CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON }),
 
         chai.assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
+
+        const expectedRunWithCompilations: Args =
+        [
+            {
+                ...DEFAULTS,
+                compilations:
+                [
+                    {
+                        ...DEFAULTS,
+                        compilations: undefined,
+                        context:      CWD_PROJECT_WITH_COMPILATIONS,
+                        entry:        "file-1.js",
+                        output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+                        tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+                    },
+                    {
+                        ...DEFAULTS,
+                        compilations: undefined,
+                        context:      CWD_PROJECT_WITH_COMPILATIONS,
+                        entry:        "file-2.js",
+                        output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+                        tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+                    },
+                ],
+                context:  CWD_PROJECT_WITH_COMPILATIONS,
+                output:   CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+                tsconfig: CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+            },
+            { },
+        ];
+
+        let actualRunWithCompilations: Args;
+
+        compilerCtorMock
+            .setup("run")
+            .call(It.any(), It.any())
+            .callback((...x) => actualRunWithCompilations = x)
+            .returns(Promise.resolve());
+
+        await Tasks.build({ project: CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON }),
+
+        chai.assert.deepEqual(actualRunWithCompilations!, expectedRunWithCompilations, "actualRunWithNoEsLintProject deep equal to expectedRunWithCompilations");
 
         const expectedWatch: Args =
         [
