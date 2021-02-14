@@ -10,6 +10,6 @@ const program = createProgram()
     .option("--hot               [n]", "Enable hot reload.", toBoolean)
     .option("--log-level         <n>", "Output verbosity level. Can be 'none', 'summary', 'errors-only', 'errors-warnings', 'minimal', 'normal', 'detailed', 'verbose'.", parsePattern(logLevelPattern))
     .option("--port              <n>", "Dev server port.", Number)
-    .action(Tasks.serve);
+    .action(x => void Tasks.serve(x));
 
 program.parse(process.argv);

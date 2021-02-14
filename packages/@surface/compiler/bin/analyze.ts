@@ -26,6 +26,6 @@ const program = createProgram()
     .option("--open              <n>", "Automatically open report in default browser.", toBoolean)
     .option("--port              <n>", "Port that will be used in server mode to start HTTP server.", x => x == "auto" ? x : Number(x))
     .option("--report-filename   <n>", "Path to bundle report file that will be generated in static mode.")
-    .action(Tasks.analyze);
+    .action(x => void Tasks.analyze(x));
 
 program.parse(process.argv);

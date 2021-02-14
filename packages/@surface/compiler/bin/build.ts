@@ -9,6 +9,6 @@ const program = createProgram()
     .option("--log-level         <n>", "Output verbosity level. Can be 'none', 'summary', 'errors-only', 'errors-warnings', 'minimal', 'normal', 'detailed', 'verbose'.", parsePattern(logLevelPattern))
     .option("--mode              <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
     .option("--watch             [n]", "Enable Watch mode compilation.", toBoolean)
-    .action(Tasks.build);
+    .action(x => void Tasks.build(x));
 
 program.parse(process.argv);

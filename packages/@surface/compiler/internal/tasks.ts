@@ -46,7 +46,6 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
-            useWorkbox:    options.useWorkbox,
             webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 

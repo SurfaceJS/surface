@@ -58,7 +58,6 @@ export default class BinSpec
             "--public-path",     ".",
             "--report-filename", ".",
             "--tsconfig",        ".",
-            "--use-workbox",     "true",
             "--webpack-config",  ".",
         ];
 
@@ -86,7 +85,6 @@ export default class BinSpec
             publicPath:     ".",
             reportFilename: ".",
             tsconfig:       ".",
-            useWorkbox:     true,
             webpackConfig:  ".",
         };
 
@@ -120,7 +118,6 @@ export default class BinSpec
             "--public-path",    ".",
             "--tsconfig",       ".",
             "--watch",          "true",
-            "--use-workbox",    "true",
             "--webpack-config", ".",
         ];
 
@@ -141,7 +138,6 @@ export default class BinSpec
             project:       ".",
             publicPath:    ".",
             tsconfig:      ".",
-            useWorkbox:    true,
             watch:         true,
             webpackConfig: ".",
         };
@@ -177,7 +173,6 @@ export default class BinSpec
             "--project",        ".",
             "--public-path",    ".",
             "--tsconfig",       ".",
-            "--use-workbox",    "true",
             "--webpack-config", ".",
         ];
 
@@ -200,7 +195,6 @@ export default class BinSpec
             project:       ".",
             publicPath:    ".",
             tsconfig:      ".",
-            useWorkbox:    true,
             webpackConfig: ".",
         };
 

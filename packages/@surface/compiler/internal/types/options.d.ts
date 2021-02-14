@@ -14,7 +14,6 @@ type Options =
     project?:       string,
     publicPath?:    string,
     tsconfig?:      string,
-    useWorkbox?:    boolean,
     webpackConfig?: string,
 };
 

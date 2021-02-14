@@ -16,7 +16,6 @@ type Configuration =
     output?:         string,
     publicPath?:     string,
     tsconfig?:       string,
-    useWorkbox?:     boolean,
     webpackConfig?:  WebpackTypes.Configuration,
 };
 

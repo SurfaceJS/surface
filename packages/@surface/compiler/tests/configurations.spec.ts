@@ -49,7 +49,6 @@ export default class ConfigurationsSpec
             forceTs:       ["foo", "bar"],
             htmlTemplate:  { template: "." },
             publicPath:    "/path",
-            useWorkbox:    true,
             webpackConfig: { context: "." },
         };
 

@@ -1,5 +1,5 @@
-import commander                                      from "commander";
-import { toArray, toBoolean, toBooleanOrStringArray } from "../internal/common.js";
+import commander                           from "commander";
+import { toArray, toBooleanOrStringArray } from "../internal/common.js";
 
 export default function createProgram(): commander.Command
 {
@@ -16,6 +16,5 @@ export default function createProgram(): commander.Command
         .option("--force-ts          [n]", "Force resolve to the ts file when next to the transpiled js file.", toBooleanOrStringArray)
         .option("--public-path       <n>", "The output path from the view of the Javascript / HTML page.")
         .option("--tsconfig          <n>", "Path to tsconfig file.")
-        .option("--use-workbox       [n]", "Use workbox to handle service workers.", toBoolean)
         .option("--webpack-config    <n>", "Path to webpack-config file.") as commander.Command;
 }

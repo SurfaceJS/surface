@@ -11,7 +11,6 @@ import HtmlWebpackPlugin                          from "html-webpack-plugin";
 import TerserWebpackPlugin                        from "terser-webpack-plugin";
 import webpack                                    from "webpack";
 import { BundleAnalyzerPlugin }                   from "webpack-bundle-analyzer";
-import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
@@ -126,11 +125,6 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         const copyPlugin = new CopyPlugin({ patterns });
 
         plugins.push(copyPlugin);
-    }
-
-    if (configuration.useWorkbox)
-    {
-        plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true }));
     }
 
     const isProduction = extendedConfiguration.mode == "production";
