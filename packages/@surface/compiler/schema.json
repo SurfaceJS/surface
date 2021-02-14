@@ -114,6 +114,10 @@
                     "description": "Path to tsconfig file",
                     "type": "string"
                 },
+                "useWorkbox": {
+                    "description": "Uses Workbox to offline cache handling",
+                    "type": "boolean"
+                },
                 "webpackConfig": {
                     "description": "Path to webpack-config file",
                     "type": "string"

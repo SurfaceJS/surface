@@ -1,3 +1,5 @@
+import type webpack from "webpack";
+
 type Options =
 {
     context?:       string,
@@ -12,6 +14,7 @@ type Options =
     project?:       string,
     publicPath?:    string,
     tsconfig?:      string,
+    useWorkbox?:    boolean,
     webpackConfig?: string,
 };
 

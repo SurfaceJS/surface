@@ -17,7 +17,7 @@ export default class ConfigurationsSpec
     public createAnalyzerConfiguration(): void
     {
         chai.assert.isOk(createAnalyzerConfiguration({ }, { }));
-        chai.assert.isOk(createAnalyzerConfiguration({ compilations: [{ entry: "index.ts" }] }, { analyzerMode: "server", mode: "production" }));
+        chai.assert.isOk(createAnalyzerConfiguration({ }, { analyzerMode: "server", mode: "production" }));
     }
 
     @test
@@ -26,7 +26,7 @@ export default class ConfigurationsSpec
         process.env.SURFACE_ENVIRONMENT = "development";
 
         chai.assert.isOk(createBuildConfiguration({ }, { }));
-        chai.assert.isOk(createBuildConfiguration({ compilations: [{ entry: "index.ts" }] }, { mode: "development" }));
+        chai.assert.isOk(createBuildConfiguration({ }, { mode: "development" }));
     }
 
     @test
@@ -34,34 +34,35 @@ export default class ConfigurationsSpec
     {
         chai.assert.isOk(createConfiguration({ }, { }));
 
-        const configuration1: Configuration =
+        const configuration2: Configuration =
         {
             forceTs:      true,
             htmlTemplate: ".",
             publicPath:   "path",
         };
 
-        chai.assert.isOk(createConfiguration(configuration1, { mode: "development" }));
+        chai.assert.isOk(createConfiguration(configuration2, { mode: "development" }));
 
-        const configuration2: Configuration =
+        const configuration3: Configuration =
         {
             copyFiles:     ["**/foo", { from: "**/bar", to: "**/baz" }],
             forceTs:       ["foo", "bar"],
             htmlTemplate:  { template: "." },
             publicPath:    "/path",
+            useWorkbox:    true,
             webpackConfig: { context: "." },
         };
 
-        chai.assert.isOk(createConfiguration(configuration2, { mode: "production", target: "node" }));
+        chai.assert.isOk(createConfiguration(configuration3, { mode: "production", target: "node" }));
     }
 
     @test
     public createDevServerConfiguration(): void
     {
-        chai.assert.isOk(createDevServerConfiguration({ },                                       new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ compilations: [{ entry: "index.ts" }] }, new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: ["."] },                          new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: { index: "." } },                 new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: "." },                            new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ },                       new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ },                       new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: ["."] },          new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: { index: "." } }, new URL("http://localhost:8080")));
+        chai.assert.isOk(createDevServerConfiguration({ entry: "." },            new URL("http://localhost:8080")));
     }
 }

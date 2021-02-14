@@ -46,6 +46,7 @@ export default class Tasks
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
+            useWorkbox:    options.useWorkbox,
             webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
         });
 
@@ -87,7 +88,7 @@ export default class Tasks
                         Tasks.resolvePaths(compilation, path.dirname(projectPath));
                     }
 
-                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { compilations: undefined });
+                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { configurations: undefined });
                 }
             }
 
