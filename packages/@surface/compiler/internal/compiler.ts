@@ -18,40 +18,56 @@ import type BuildOptions     from "./types/build-options";
 import type CompilerSignal   from "./types/compiler-signal";
 import type Configuration    from "./types/configuration";
 import type DevServerOptions from "./types/dev-serve-options";
-
-const DEFAULT_STATS_OPTIONS =
-{
-    assets:   true,
-    colors:   true,
-    errors:   true,
-    version:  true,
-    warnings: true,
-};
+import type Logging          from "./types/logging.js";
 
 type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
-type StatOptions     = string | boolean | object;
 
 export default class Compiler
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats | any) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: Logging): (err?: Error, result?: webpack.Stats | any) => unknown
     {
-        return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
+        return (error, stats) => error ? reject(error) : (log(stats?.toString(this.createStats(logging))), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
+    private static createStats(logging: Logging = true): webpack.Configuration["stats"]
+    {
+        if (logging && logging != "none")
+        {
+            return {
+                assets:   logging == true,
+                colors:   true,
+                errors:   logging != "info",
+                logging:  logging == true ? "info" : logging,
+                modules:  logging == true || logging == "log" || logging == "verbose",
+                version:  logging == true || logging == "log" || logging == "verbose",
+                warnings: logging != "info",
+            };
+        }
+
+        return {
+            assets:   false,
+            colors:   true,
+            errors:   false,
+            logging:  "none",
+            modules:  false,
+            warnings: false,
+        };
+    }
+
+    private static async runInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], logging?: Logging): Promise<void>
     {
         const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
 
-        await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
+        await new Promise<void>((resolve, reject) => webpackCompiler.run(this.createHandler(resolve, reject, logging)));
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], logging?: Logging): Promise<CompilerSignal>
     {
         const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
 
         let watching: ReturnType<webpack.Compiler["watch"] | webpack.MultiCompiler["watch"]>;
 
-        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
+        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, this.createHandler(resolve, reject, logging)));
 
         return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
@@ -62,7 +78,7 @@ export default class Compiler
 
         log(`Starting ${chalk.bold.green("analyzer...")}`);
 
-        await Compiler.runInternal(webpackConfiguration);
+        await this.runInternal(webpackConfiguration, options.logging);
     }
 
     public static async run(configuration: Configuration, options: BuildOptions): Promise<void>
@@ -71,16 +87,16 @@ export default class Compiler
 
         log(`Running using ${chalk.bold.green(options.mode ?? "development")} configuration...`);
 
-        await Compiler.runInternal(webpackConfiguration, options.logLevel);
+        await this.runInternal(webpackConfiguration, options.logging);
     }
 
     public static async serve(configuration: Configuration, options: DevServerOptions): Promise<CompilerSignal>
     {
         const
         {
-            host                  = "http://localhost",
-            logLevel: statOptions = DEFAULT_STATS_OPTIONS,
-            port                  = 8080,
+            host    = "http://localhost",
+            logging = "info",
+            port    = 8080,
         } = options;
 
         const url = new URL(host);
@@ -99,7 +115,7 @@ export default class Compiler
             inline:             true,
             port,
             publicPath:         url.pathname,
-            stats:              statOptions,
+            stats:              this.createStats(logging),
             ...configuration.devServer,
         });
 
@@ -119,6 +135,6 @@ export default class Compiler
 
         log(`Watching using ${chalk.bold.green(options.mode)} configuration.`);
 
-        return Compiler.watchInternal(webpackConfiguration, options.logLevel);
+        return this.watchInternal(webpackConfiguration, options.logging);
     }
 }

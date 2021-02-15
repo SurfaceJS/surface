@@ -88,20 +88,6 @@
                     "description": "Path to html template file",
                     "type": "string"
                 },
-                "logLevel": {
-                    "enum": [
-                        "none",
-                        "summary",
-                        "errors-only",
-                        "errors-warnings",
-                        "minimal",
-                        "normal",
-                        "detailed",
-                        "verbose"
-                    ],
-                    "description": "Log level",
-                    "type": "string"
-                },
                 "output": {
                     "description": "The output directory",
                     "type": "string"
@@ -138,6 +124,25 @@
                         "$ref": "#/definitions/compilations"
                     },
                     "type": "array"
+                },
+                "logging": {
+                    "description": "Log level",
+                    "oneOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "enum": [
+                                "none",
+                                "verbose",
+                                "error",
+                                "warn",
+                                "info",
+                                "log"
+                            ],
+                            "type": "string"
+                        }
+                    ]
                 }
             }
         }

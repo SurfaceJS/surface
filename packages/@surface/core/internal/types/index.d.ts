@@ -139,8 +139,8 @@ export type ArrayPathOfValue<T, P> =
                             : never
                         : unknown;
 
-export type AsyncDelegate<TArgs extends unknown[] = [], TResult = void> = (...args: TArgs) => Promise<TResult>;
 export type AsyncCallable                                               = (...args: any[]) => Promise<any>;
+export type AsyncDelegate<TArgs extends unknown[] = [], TResult = void> = (...args: TArgs) => Promise<TResult>;
 export type Callable                                                    = (...args: any[]) => any;
 export type Cast<T, U>                                                  = T extends U ? T : never;
 export type ClassDecoratorOf<T>                                         = (target: Constructor<T>) => Constructor<T> | void;
@@ -171,5 +171,6 @@ export type ParameterOverloads<T extends Callable>                      = Callea
 export type PropertyType<T extends object, K>                           = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                 = { [K in keyof T]-?: NonNullable<T[K]> };
 export type TypesOf<T>                                                  = T[keyof T];
+export type UnionOfType<T, U>                                           = { [K in T as string]: K extends U ? K : never } extends infer O ? O[keyof O] : never;
 export type UnionToIntersection<U>                                      = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 export type ValuesOf<T extends any[]>                                   = T[number];

@@ -47,6 +47,22 @@ export const parsePattern = (pattern: RegExp) =>
         throw new Error(`'${value}' dont match the pattern ${pattern}`);
     };
 
+export const toBooleanOrParsePattern = (pattern: RegExp) =>
+    (value: string = ""): string | boolean =>
+    {
+        if (value)
+        {
+            if (value == "true" || value == "false")
+            {
+                return value == "true";
+            }
+
+            return parsePattern(pattern)(value);
+        }
+
+        return false;
+    };
+
 export function toArray(value: string = ""): string[]
 {
     return value.split(",");

@@ -1,4 +1,4 @@
-import type webpack from "webpack";
+import type Logging from "./logging";
 
 type Options =
 {
@@ -9,7 +9,7 @@ type Options =
     filename?:      string,
     forceTs?:       boolean | string[],
     htmlTemplate?:  string,
-    logLevel?:      "detailed" | "errors-only" | "errors-warnings" | "minimal" | "none" | "normal" | "summary" | "verbose",
+    logging?:       Logging,
     output?:        string,
     project?:       string,
     publicPath?:    string,

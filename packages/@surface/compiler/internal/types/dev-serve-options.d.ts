@@ -1,11 +1,11 @@
-import type webpack from "webpack";
+import type Logging from "./logging";
 
 type DevServerOptions =
 {
-    host?:     string,
-    hot?:      boolean,
-    logLevel?: webpack.Stats.ToStringOptions,
-    port?:     number,
+    host?:    string,
+    hot?:     boolean,
+    logging?: Logging,
+    port?:    number,
 };
 
 export default DevServerOptions;

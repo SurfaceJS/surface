@@ -1,10 +1,11 @@
-import type webpack from "webpack";
+import type webpack     from "webpack";
+import type Logging from "./logging";
 
 type BuildOptions =
 {
-    logLevel?: webpack.Stats.ToStringOptions,
-    mode?:     webpack.Configuration["mode"],
-    watch?:    boolean,
+    logging?: Logging,
+    mode?:    webpack.Configuration["mode"],
+    watch?:   boolean,
 };
 
 export default BuildOptions;

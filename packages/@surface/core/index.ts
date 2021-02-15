@@ -14,6 +14,7 @@ export type
     DeepPartial,
     DeepRequired,
     Delegate,
+    UnionOfType as ExtractFromUnion,
     FieldsOf,
     IgnoreKeysOfType,
     IgnoreOfType,

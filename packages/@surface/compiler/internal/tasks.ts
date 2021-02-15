@@ -85,6 +85,11 @@ export default class Tasks
                 {
                     if (isJson)
                     {
+                        if (typeof compilation.webpackConfig == "string")
+                        {
+                            compilation.webpackConfig = Tasks.resolveModule(await loadModule(compilation.webpackConfig));
+                        }
+
                         Tasks.resolvePaths(compilation, path.dirname(projectPath));
                     }
 
@@ -166,6 +171,7 @@ export default class Tasks
             exclude:        options.exclude,
             host:           options.host,
             logLevel:       options.logLevel,
+            logging:        options.logging,
             mode:           options.mode,
             open:           options.open,
             port:           options.port,
@@ -183,9 +189,9 @@ export default class Tasks
 
         const buildOptions: BuildOptions =
         {
-            logLevel: options.logLevel,
-            mode:     options.mode,
-            watch:    options.watch,
+            logging: options.logging,
+            mode:    options.mode,
+            watch:   options.watch,
         };
 
         await removePathAsync(configuration.output!);
@@ -201,10 +207,10 @@ export default class Tasks
 
         const devServerOptions: DevServerOptions =
         {
-            host:     options.host,
-            hot:      options.hot,
-            logLevel: options.logLevel,
-            port:     options.port,
+            host:    options.host,
+            hot:     options.hot,
+            logging: options.logging,
+            port:    options.port,
         };
 
         await removePathAsync(configuration.output!);
