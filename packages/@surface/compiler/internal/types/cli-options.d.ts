@@ -1,6 +1,6 @@
 import type Logging from "./logging";
 
-type Options =
+type CliOptions =
 {
     context?:       string,
     copyFiles?:     (string | { from: string, to: string })[],
@@ -18,4 +18,4 @@ type Options =
     webpackConfig?: string,
 };
 
-export default Options;
+export default CliOptions;

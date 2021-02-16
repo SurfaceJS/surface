@@ -13,12 +13,12 @@ import
     createBuildConfiguration,
     createDevServerConfiguration,
 } from "./configurations.js";
-import type AnalyzerOptions  from "./types/analyzer-options";
-import type BuildOptions     from "./types/build-options";
-import type CompilerSignal   from "./types/compiler-signal";
-import type Configuration    from "./types/configuration";
-import type DevServerOptions from "./types/dev-serve-options";
-import type Logging          from "./types/logging.js";
+import type CliAnalyzerOptions  from "./types/cli-analyzer-options";
+import type CliBuildOptions     from "./types/cli-build-options";
+import type CliDevServerOptions from "./types/cli-dev-serve-options";
+import type CompilerSignal      from "./types/compiler-signal";
+import type Configuration       from "./types/configuration";
+import type Logging             from "./types/logging.js";
 
 type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
 
@@ -72,7 +72,7 @@ export default class Compiler
         return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
 
-    public static async analyze(configuration: Configuration, options: AnalyzerOptions): Promise<void>
+    public static async analyze(configuration: Configuration, options: CliAnalyzerOptions): Promise<void>
     {
         const webpackConfiguration = createAnalyzerConfiguration(configuration, options);
 
@@ -81,7 +81,7 @@ export default class Compiler
         await this.runInternal(webpackConfiguration, options.logging);
     }
 
-    public static async run(configuration: Configuration, options: BuildOptions): Promise<void>
+    public static async run(configuration: Configuration, options: CliBuildOptions): Promise<void>
     {
         const webpackConfiguration = createBuildConfiguration(configuration, options);
 
@@ -90,12 +90,12 @@ export default class Compiler
         await this.runInternal(webpackConfiguration, options.logging);
     }
 
-    public static async serve(configuration: Configuration, options: DevServerOptions): Promise<CompilerSignal>
+    public static async serve(configuration: Configuration, options: CliDevServerOptions): Promise<CompilerSignal>
     {
         const
         {
             host    = "http://localhost",
-            logging = "info",
+            logging,
             port    = 8080,
         } = options;
 
@@ -112,7 +112,6 @@ export default class Compiler
             historyApiFallback: { index: joinPaths(url.pathname, "index.html") },
             host:               url.hostname,
             hot:                options.hot,
-            inline:             true,
             port,
             publicPath:         url.pathname,
             stats:              this.createStats(logging),
@@ -124,12 +123,12 @@ export default class Compiler
         const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
             (error?: Error) => error ? reject(error) : resolve();
 
-        await new Promise<void>((resolve, reject) => server.listen(port, url.hostname, handlerAsync(resolve, reject)));
+        await new Promise<void>((resolve, reject) => server.listen(webpackDevServerConfiguration.port!, webpackDevServerConfiguration.host!, handlerAsync(resolve, reject)));
 
         return { close: async () => Promise.resolve(server.close()) };
     }
 
-    public static async watch(configuration: Configuration, options: BuildOptions): Promise<CompilerSignal>
+    public static async watch(configuration: Configuration, options: CliBuildOptions): Promise<CompilerSignal>
     {
         const webpackConfiguration = createBuildConfiguration(configuration, options);
 

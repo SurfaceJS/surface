@@ -151,6 +151,7 @@ export type ConstructorParameterOverloads<T extends Newable>            = Newabl
 export type DeepPartial<T>                                              = { [K in keyof T]?: T[K] extends T[K] | undefined ? DeepPartial<T[K]> : Partial<T[K]> };
 export type DeepRequired<T>                                             = { [K in keyof T]-?: T[K] extends T[K] | undefined ? DeepRequired<T[K]> : Required<T[K]> };
 export type Delegate<TArgs extends unknown[] = [], TResult = void>      = (...args: TArgs) => TResult;
+export type ExtractFromUnion<T, U>                                      = { [K in T as string]: K extends U ? K : never } extends infer O ? O[keyof O] : never;
 export type FieldsOf<T>                                                 = { [K in keyof T]: T[K] };
 export type IgnoreKeysOfType<T extends object, U>                       = { [K in keyof T]: T[K] extends U ? never : K }[keyof T];
 export type IgnoreOfType<T extends object, U>                           = { [K in IgnoreKeysOfType<T, U>]: T[K] };
@@ -170,7 +171,7 @@ export type Overwrite<T, U>                                             = { [K i
 export type ParameterOverloads<T extends Callable>                      = CalleableOverloads<T>[0];
 export type PropertyType<T extends object, K>                           = K extends keyof T ? T[K] : unknown;
 export type Required<T>                                                 = { [K in keyof T]-?: NonNullable<T[K]> };
+export type RequiredProperties<T>                                       = { [K in keyof Required<T>]: (T[K] | undefined) };
 export type TypesOf<T>                                                  = T[keyof T];
-export type UnionOfType<T, U>                                           = { [K in T as string]: K extends U ? K : never } extends infer O ? O[keyof O] : never;
 export type UnionToIntersection<U>                                      = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
 export type ValuesOf<T extends any[]>                                   = T[number];

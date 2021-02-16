@@ -52,15 +52,15 @@ export const toBooleanOrParsePattern = (pattern: RegExp) =>
     {
         if (value)
         {
-            if (value == "true" || value == "false")
+            if (booleanPattern.test(value))
             {
-                return value == "true";
+                return value == value.toLowerCase();
             }
 
             return parsePattern(pattern)(value);
         }
 
-        return false;
+        return true;
     };
 
 export function toArray(value: string = ""): string[]
@@ -70,11 +70,17 @@ export function toArray(value: string = ""): string[]
 
 export function toBoolean(value: string = ""): boolean
 {
-    return !value
-        ? false
-        : booleanPattern.test(value)
-            ? value.toLowerCase() == "true"
-            : false;
+    return booleanPattern.test(value) ? value.toLowerCase() == "true" : false;
+}
+
+export function toNumberOrBooleanOrStringArray(value: string = ""): boolean | string[] | number
+{
+    if (!Number.isNaN(Number(value)))
+    {
+        return Number(value);
+    }
+
+    return toBooleanOrStringArray(value);
 }
 
 export function toBooleanOrStringArray(value: string): boolean | string[]

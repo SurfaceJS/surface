@@ -122,6 +122,10 @@ export default class CompilerSpec
         setup("ok");
 
         await Compiler.run({ }, { });
+        await Compiler.run({ }, { logging: true });
+        await Compiler.run({ }, { logging: "none" });
+        await Compiler.run({ }, { logging: "log" });
+        await Compiler.run({ }, { logging: "verbose" });
 
         chai.assert.isOk(true);
     }

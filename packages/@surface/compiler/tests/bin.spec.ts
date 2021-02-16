@@ -3,10 +3,10 @@ import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
 import Tasks                                  from "../internal/tasks.js";
-import type AnalyzerOptions                   from "../internal/types/analyzer-options";
-import type BuildOptions                      from "../internal/types/build-options";
-import type DevServerOptions                  from "../internal/types/dev-serve-options";
-import type Options                           from "../internal/types/options";
+import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options";
+import type CliBuildOptions                   from "../internal/types/cli-build-options";
+import type CliDevServerOptions               from "../internal/types/cli-dev-serve-options";
+import type CliOptions                        from "../internal/types/cli-options";
 
 const tasksMock = Mock.of(Tasks)!;
 
@@ -28,67 +28,69 @@ export default class BinSpec
     @test
     public async analyze(): Promise<void>
     {
-        let actual: Required<Options & AnalyzerOptions>;
+        let actual: Required<CliOptions & CliAnalyzerOptions>;
 
         tasksMock
             .setup("analyze")
             .call(It.any())
-            .callback(x => actual = x as Required<Options & AnalyzerOptions>);
+            .callback(x => actual = x as Required<CliOptions & CliAnalyzerOptions>);
 
         process.argv =
         [
-            "",                  "",
-            "--analyzer-mode",   "server",
-            "--context",         ".",
-            "--copy-files",      "**/foo/*.js,**/bar/*.js",
-            "--default-sizes",   "parsed",
-            "--entry",           ".",
-            "--eslintrc",        ".",
-            "--exclude",         ".",
-            "--filename",        ".",
-            "--force-ts",        "true",
-            "--host",            ".",
-            "--html-template",   ".",
-            "--mode",            "development",
-            "--open",            ".",
-            "--output",          ".",
-            "--port",            "auto",
-            "--project",         ".",
-            "--public-path",     ".",
-            "--report-filename", ".",
-            "--stats",           "info",
-            "--tsconfig",        ".",
-            "--use-workbox",     "true",
-            "--webpack-config",  ".",
+            "",
+            "",
+            "--analyzer-host=analyzerHost",
+            "--analyzer-mode=server",
+            "--analyzer-port=auto",
+            "--context=context",
+            "--copy-files=**/foo/*.js,**/bar/*.js",
+            "--default-sizes=parsed",
+            "--entry=entry",
+            "--eslintrc=eslintrc",
+            "--exclude-assets=excludeAssets",
+            "--filename=filename",
+            "--force-ts=true",
+            "--html-template=htmlTemplate",
+            "--logging=info",
+            "--mode=development",
+            "--open-analyzer=true",
+            "--output=output",
+            "--project=project",
+            "--public-path=publicPath",
+            "--report-filename=reportFilename",
+            "--report-title=reportTitle",
+            "--tsconfig=tsconfig",
+            "--use-workbox=true",
+            "--webpack-config=webpackConfig",
         ];
 
         await import("../bin/analyze.js");
 
-        const expected: Required<Options & AnalyzerOptions> =
+        const expected: Required<CliOptions & CliAnalyzerOptions> =
         {
+            analyzerHost:   "analyzerHost",
             analyzerMode:   "server",
-            context:        ".",
+            analyzerPort:   "auto",
+            context:        "context",
             copyFiles:      ["**/foo/*.js", "**/bar/*.js"],
             defaultSizes:   "parsed",
-            entry:          ["."],
-            eslintrc:       ".",
-            exclude:        ["."],
-            filename:       ".",
+            entry:          ["entry"],
+            eslintrc:       "eslintrc",
+            excludeAssets:  ["excludeAssets"],
+            filename:       "filename",
             forceTs:        true,
-            host:           ".",
-            htmlTemplate:   ".",
-            logLevel:       "info",
+            htmlTemplate:   "htmlTemplate",
             logging:        "info",
             mode:           "development",
-            open:           false,
-            output:         ".",
-            port:           "auto",
-            project:        ".",
-            publicPath:     ".",
-            reportFilename: ".",
-            tsconfig:       ".",
+            openAnalyzer:   true,
+            output:         "output",
+            project:        "project",
+            publicPath:     "publicPath",
+            reportFilename: "reportFilename",
+            reportTitle:    "reportTitle",
+            tsconfig:       "tsconfig",
             useWorkbox:     true,
-            webpackConfig:  ".",
+            webpackConfig:  "webpackConfig",
         };
 
         chai.assert.deepEqual(actual!, expected);
@@ -97,54 +99,55 @@ export default class BinSpec
     @test
     public async build(): Promise<void>
     {
-        let actual: Required<Options & BuildOptions>;
+        let actual: Required<CliOptions & CliBuildOptions>;
 
         tasksMock
             .setup("build")
             .call(It.any())
-            .callback(x => actual = x as Required<Options & BuildOptions>);
+            .callback(x => actual = x as Required<CliOptions & CliBuildOptions>);
 
         process.argv =
         [
-            "",                 "",
-            "--context",        ".",
-            "--copy-files",     "**/foo/*.js,**/bar/*.js",
-            "--entry",          ".",
-            "--eslintrc",       ".",
-            "--filename",       ".",
-            "--force-ts",       "true",
-            "--html-template",  ".",
-            "--mode",           "development",
-            "--output",         ".",
-            "--project",        ".",
-            "--public-path",    ".",
-            "--stats",          "errors-only",
-            "--tsconfig",       ".",
-            "--use-workbox",    "true",
-            "--watch",          "true",
-            "--webpack-config", ".",
+            "",
+            "",
+            "--context=context",
+            "--copy-files=**/foo/*.js,**/bar/*.js",
+            "--entry=entry",
+            "--eslintrc=eslintrc",
+            "--filename=filename",
+            "--force-ts=true",
+            "--html-template=htmlTemplate",
+            "--logging=info",
+            "--mode=development",
+            "--output=output",
+            "--project=project",
+            "--public-path=publicPath",
+            "--tsconfig=tsconfig",
+            "--use-workbox=true",
+            "--watch=true",
+            "--webpack-config=webpackConfig",
         ];
 
         await import("../bin/build.js");
 
-        const expected: Required<Options & BuildOptions> =
+        const expected: Required<CliOptions & CliBuildOptions> =
         {
-            context:       ".",
+            context:       "context",
             copyFiles:     ["**/foo/*.js", "**/bar/*.js"],
-            entry:         ["."],
-            eslintrc:      ".",
-            filename:      ".",
+            entry:         ["entry"],
+            eslintrc:      "eslintrc",
+            filename:      "filename",
             forceTs:       true,
-            htmlTemplate:  ".",
+            htmlTemplate:  "htmlTemplate",
             logging:       "info",
             mode:          "development",
-            output:        ".",
-            project:       ".",
-            publicPath:    ".",
-            tsconfig:      ".",
+            output:        "output",
+            project:       "project",
+            publicPath:    "publicPath",
+            tsconfig:      "tsconfig",
             useWorkbox:    true,
             watch:         true,
-            webpackConfig: ".",
+            webpackConfig: "webpackConfig",
         };
 
         chai.assert.deepEqual(actual!, expected);
@@ -153,56 +156,85 @@ export default class BinSpec
     @test
     public async serve(): Promise<void>
     {
-        let actual: Required<Options & DevServerOptions>;
+        let actual: Required<CliOptions & CliDevServerOptions>;
 
         tasksMock
             .setup("serve")
             .call(It.any())
-            .callback(x => actual = x as Required<Options & DevServerOptions>);
+            .callback(x => actual = x as Required<CliOptions & CliDevServerOptions>);
 
         process.argv =
         [
-            "",                 "",
-            "--context",        ".",
-            "--copy-files",     "**/foo/*.js,**/bar/*.js",
-            "--entry",          ".",
-            "--eslintrc",       ".",
-            "--filename",       ".",
-            "--force-ts",       "true",
-            "--host",           "localhost",
-            "--hot",            "true",
-            "--html-template",  ".",
-            "--output",         ".",
-            "--port",           "8080",
-            "--project",        ".",
-            "--public-path",    ".",
-            "--stats",          "errors-only",
-            "--tsconfig",       ".",
-            "--use-workbox",    "true",
-            "--webpack-config", ".",
+            "",
+            "",
+            "--compress",
+            "--content-base-public-path=contentBasePublicPath",
+            "--content-base=contentBase",
+            "--context=context",
+            "--copy-files=**/foo/*.js,**/bar/*.js",
+            "--entry=entry",
+            "--eslintrc=eslintrc",
+            "--filename=filename",
+            "--force-ts",
+            "--host=localhost",
+            "--hot",
+            "--hot-only",
+            "--html-template=htmlTemplate",
+            "--index=index",
+            "--lazy",
+            "--live-reload",
+            "--logging=info",
+            "--open",
+            "--open-page=/",
+            "--output=output",
+            "--port=8080",
+            "--project=project",
+            "--public-path=publicPath",
+            "--public=public",
+            "--quiet",
+            "--tsconfig=tsconfig",
+            "--use-local-ip",
+            "--use-workbox",
+            "--watch-content-base",
+            "--webpack-config=webpackConfig",
+            "--write-to-disk",
         ];
 
         await import("../bin/serve.js");
 
-        const expected: Required<Omit<Options, "mode"> & DevServerOptions> =
+        const expected: Required<Omit<CliOptions, "mode"> & CliDevServerOptions> =
         {
-            context:       ".",
-            copyFiles:     ["**/foo/*.js", "**/bar/*.js"],
-            entry:         ["."],
-            eslintrc:      ".",
-            filename:      ".",
-            forceTs:       true,
-            host:          "localhost",
-            hot:           true,
-            htmlTemplate:  ".",
-            logging:       "info",
-            output:        ".",
-            port:          8080,
-            project:       ".",
-            publicPath:    ".",
-            tsconfig:      ".",
-            useWorkbox:    true,
-            webpackConfig: ".",
+            compress:              true,
+            contentBase:           ["contentBase"],
+            contentBasePublicPath: ["contentBasePublicPath"],
+            context:               "context",
+            copyFiles:             ["**/foo/*.js", "**/bar/*.js"],
+            entry:                 ["entry"],
+            eslintrc:              "eslintrc",
+            filename:              "filename",
+            forceTs:               true,
+            host:                  "localhost",
+            hot:                   true,
+            hotOnly:               true,
+            htmlTemplate:          "htmlTemplate",
+            index:                 "index",
+            lazy:                  true,
+            liveReload:            true,
+            logging:               "info",
+            open:                  true,
+            openPage:              ["/"],
+            output:                "output",
+            port:                  8080,
+            project:               "project",
+            public:                "public",
+            publicPath:            "publicPath",
+            quiet:                 true,
+            tsconfig:              "tsconfig",
+            useLocalIp:            true,
+            useWorkbox:            true,
+            watchContentBase:      true,
+            webpackConfig:         "webpackConfig",
+            writeToDisk:           true,
         };
 
         chai.assert.deepEqual(actual!, expected);

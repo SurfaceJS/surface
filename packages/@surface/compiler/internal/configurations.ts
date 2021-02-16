@@ -15,8 +15,8 @@ import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
-import type AnalyzerOptions                       from "./types/analyzer-options";
-import type BuildOptions                          from "./types/build-options";
+import type CliAnalyzerOptions                       from "./types/cli-analyzer-options";
+import type CliBuildOptions                          from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -35,17 +35,31 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export function createAnalyzerConfiguration(configuration: Configuration, options: AnalyzerOptions): webpack.Configuration | webpack.Configuration[]
+export function createAnalyzerConfiguration(configuration: Configuration, options: CliAnalyzerOptions): webpack.Configuration | webpack.Configuration[]
 {
+    const logging = !options.logging
+        ? "none"
+        : options.logging == true
+            ? "info"
+            : options.logging;
+
+    const logLevel: BundleAnalyzerPlugin.Options["logLevel"] =
+        logging == "none"
+            ? "silent"
+            : logging == "verbose" || logging == "log"
+                ? "info"
+                :  logging;
+
     const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
     {
-        analyzerHost:   options.host,
+        ...configuration.bundlerAnalyzer,
+        analyzerHost:   options.analyzerHost,
         analyzerMode:   options.analyzerMode ?? "static",
-        analyzerPort:   options.port,
+        analyzerPort:   options.analyzerPort,
         defaultSizes:   options.defaultSizes,
-        excludeAssets:  options.exclude,
-        logLevel:       options.logLevel,
-        openAnalyzer:   options.open,
+        excludeAssets:  options.excludeAssets,
+        logLevel,
+        openAnalyzer:   options.openAnalyzer,
         reportFilename: options.reportFilename,
     };
 
@@ -275,7 +289,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
     return deepMergeCombine(webpackConfiguration, extendedConfiguration, configuration.webpackConfig ?? { });
 }
 
-export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration | webpack.Configuration[]
+export function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): webpack.Configuration | webpack.Configuration[]
 {
     if (configuration.compilations)
     {

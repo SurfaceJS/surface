@@ -2,18 +2,18 @@ import type webpack                  from "webpack";
 import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import type Logging                  from "./logging";
 
-type AnalyzerOptions =
+type CliAnalyzerOptions =
 {
     analyzerMode?:   BundleAnalyzerPlugin.Options["analyzerMode"],
     defaultSizes?:   BundleAnalyzerPlugin.Options["defaultSizes"],
-    exclude?:        string | string[],
-    host?:           string,
+    excludeAssets?:  string | string[],
+    analyzerHost?:   string,
     logging?:        Logging,
-    logLevel?:       BundleAnalyzerPlugin.Options["logLevel"],
     mode?:           webpack.Configuration["mode"],
-    open?:           boolean,
-    port?:           number | "auto",
+    openAnalyzer?:   boolean,
+    analyzerPort?:   number | "auto",
     reportFilename?: string,
+    reportTitle?:    string,
 };
 
-export default AnalyzerOptions;
+export default CliAnalyzerOptions;

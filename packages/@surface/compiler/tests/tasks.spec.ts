@@ -6,11 +6,11 @@ import chai                                    from "chai";
 import { loadModule }                          from "../internal/common.js";
 import Compiler                                from "../internal/compiler.js";
 import Tasks                                   from "../internal/tasks.js";
-import type AnalyzerOptions                    from "../internal/types/analyzer-options";
-import type BuildOptions                       from "../internal/types/build-options";
+import type CliAnalyzerOptions                 from "../internal/types/cli-analyzer-options";
+import type CliBuildOptions                    from "../internal/types/cli-build-options";
+import type CliDevServerOptions                from "../internal/types/cli-dev-serve-options";
+import type CliOptions                         from "../internal/types/cli-options";
 import type Configuration                      from "../internal/types/configuration";
-import type DevServerOptions                   from "../internal/types/dev-serve-options";
-import type Options                            from "../internal/types/options";
 
 const CWD = process.cwd();
 
@@ -141,7 +141,7 @@ export default class TasksSpec
     @test
     public async analyze(): Promise<void>
     {
-        type Args = [Configuration, AnalyzerOptions];
+        type Args = [Configuration, CliAnalyzerOptions];
 
         const expected: Args = [DEFAULTS, { }];
 
@@ -161,7 +161,7 @@ export default class TasksSpec
     @test
     public async build(): Promise<void>
     {
-        type Args = [Configuration, BuildOptions];
+        type Args = [Configuration, CliBuildOptions];
 
         const expectedRun: Args =
         [
@@ -303,7 +303,7 @@ export default class TasksSpec
     @test
     public async serve(): Promise<void>
     {
-        type Args = [Configuration, DevServerOptions];
+        type Args = [Configuration, CliDevServerOptions];
 
         const expected: Args =
         [
@@ -329,7 +329,7 @@ export default class TasksSpec
             .callback((...x) => actual = x)
             .returns(Promise.resolve({ close: async () => Promise.resolve() }));
 
-        const configuration: Options & DevServerOptions =
+        const configuration: CliOptions & CliDevServerOptions =
         {
             eslintrc:      CWD_PROJECT_ESLINTRC_JSON,
             project:       "project",

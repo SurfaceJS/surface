@@ -1,14 +1,15 @@
 import path                                    from "path";
-import { deepMergeCombine, typeGuard }                           from "@surface/core";
+import { deepMergeCombine, typeGuard }         from "@surface/core";
+import type { RequiredProperties }             from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
 import { createOnlyDefinedProxy, loadModule }  from "./common.js";
 import Compiler                                from "./compiler.js";
-import type AnalyzerOptions                    from "./types/analyzer-options";
-import type BuildOptions                       from "./types/build-options";
+import type CliAnalyzerOptions                 from "./types/cli-analyzer-options";
+import type CliBuildOptions                    from "./types/cli-build-options";
+import type CliDevServerOptions                from "./types/cli-dev-serve-options";
+import type CliOptions                         from "./types/cli-options";
 import type Configuration                      from "./types/configuration";
-import type DevServerOptions                   from "./types/dev-serve-options";
-import type Options                            from "./types/options";
 
 export default class Tasks
 {
@@ -24,7 +25,7 @@ export default class Tasks
         };
     }
 
-    private static async optionsToConfiguration(options: Options & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
+    private static async optionsToConfiguration(options: CliOptions & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
     {
         const cwd = process.cwd();
 
@@ -87,13 +88,13 @@ export default class Tasks
                     {
                         if (typeof compilation.webpackConfig == "string")
                         {
-                            compilation.webpackConfig = Tasks.resolveModule(await loadModule(compilation.webpackConfig));
+                            compilation.webpackConfig = (compilation.webpackConfig && Tasks.resolveModule(await loadModule(compilation.webpackConfig))) as webpack.Configuration | undefined;
                         }
 
                         Tasks.resolvePaths(compilation, path.dirname(projectPath));
                     }
 
-                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { configurations: undefined });
+                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { compilations: undefined } as Configuration);
                 }
             }
 
@@ -160,22 +161,22 @@ export default class Tasks
         }
     }
 
-    public static async analyze(options: Options & AnalyzerOptions): Promise<void>
+    public static async analyze(options: CliOptions & CliAnalyzerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const analyzerOptions: AnalyzerOptions =
+        const analyzerOptions: RequiredProperties<CliAnalyzerOptions> =
         {
+            analyzerHost:   options.analyzerHost,
             analyzerMode:   options.analyzerMode,
+            analyzerPort:   options.analyzerPort,
             defaultSizes:   options.defaultSizes,
-            exclude:        options.exclude,
-            host:           options.host,
-            logLevel:       options.logLevel,
+            excludeAssets:  options.excludeAssets,
             logging:        options.logging,
             mode:           options.mode,
-            open:           options.open,
-            port:           options.port,
+            openAnalyzer:   options.openAnalyzer,
             reportFilename: options.reportFilename,
+            reportTitle:    options.reportTitle,
         };
 
         await removePathAsync(configuration.output!);
@@ -183,11 +184,11 @@ export default class Tasks
         await Compiler.analyze(configuration, createOnlyDefinedProxy(analyzerOptions));
     }
 
-    public static async build(options: Options & BuildOptions): Promise<void>
+    public static async build(options: CliOptions & CliBuildOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const buildOptions: BuildOptions =
+        const buildOptions: RequiredProperties<CliBuildOptions> =
         {
             logging: options.logging,
             mode:    options.mode,
@@ -201,16 +202,30 @@ export default class Tasks
             : await Compiler.run(configuration, createOnlyDefinedProxy(buildOptions));
     }
 
-    public static async serve(options: Options & DevServerOptions): Promise<void>
+    public static async serve(options: CliOptions & CliDevServerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const devServerOptions: DevServerOptions =
+        const devServerOptions: RequiredProperties<CliDevServerOptions> =
         {
-            host:    options.host,
-            hot:     options.hot,
-            logging: options.logging,
-            port:    options.port,
+            compress:              options.compress,
+            contentBase:           options.contentBase,
+            contentBasePublicPath: options.contentBasePublicPath,
+            host:                  options.host,
+            hot:                   options.hot,
+            hotOnly:               options.hotOnly,
+            index:                 options.index,
+            lazy:                  options.lazy,
+            liveReload:            options.liveReload,
+            logging:               options.logging,
+            open:                  options.open,
+            openPage:              options.openPage,
+            port:                  options.port,
+            public:                options.public,
+            quiet:                 options.quiet,
+            useLocalIp:            options.useLocalIp,
+            watchContentBase:      options.watchContentBase,
+            writeToDisk:           options.writeToDisk,
         };
 
         await removePathAsync(configuration.output!);

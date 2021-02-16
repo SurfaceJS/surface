@@ -2,16 +2,81 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://github.com/SurfaceJS/modules/blob/master/packages/%40surface/compiler/schema.json",
     "title": "Surface's compiler options",
-    "description": "Surface's compiler options",
+    "description": "Surface's compiler options.",
     "definitions": {
-        "compilations": {
+        "bundlerAnalyzer": {
+            "properties": {
+                "analyzerHost": {
+                    "description": "Host that will be used in `server` mode to start HTTP server.",
+                    "type": "string"
+                },
+                "analyzerMode": {
+                    "description": "Can be 'server', 'static' or 'disabled'. In 'server' mode analyzer will start HTTP server to show bundle report. In 'static' mode single HTML file with bundle report will be generated. In 'json' mode single JSON file with bundle report will be generated In 'disabled' mode you can use this plugin to just generate Webpack Stats JSON file by setting 'generateStatsFile' to true. Defaults to 'server'.",
+                    "enum": [
+                        "server",
+                        "static",
+                        "json",
+                        "disabled"
+                    ]
+                },
+                "analyzerPort": {
+                    "description": "Port that will be used in `server` mode to start HTTP server.",
+                    "oneOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "enum": [
+                                "auto"
+                            ]
+                        }
+                    ]
+                },
+                "defaultSizes": {
+                    "description": "Module sizes to show in report by default. Should be one of 'stat', 'parsed' or 'gzip'.",
+                    "enum": [
+                        "parsed",
+                        "stat",
+                        "gzip"
+                    ]
+                },
+                "excludeAssets": {
+                    "description": "Patterns that will be used to match against asset names to exclude them from the report.",
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                },
+                "openAnalyzer": {
+                    "description": "Automatically open report in default browser.",
+                    "type": "boolean"
+                },
+                "reportFilename": {
+                    "description": "Path to bundle report file that will be generated in 'static' mode. Relative to bundles output directory.",
+                    "type": "string"
+                },
+                "reportTitle": {
+                    "description": "Content of the HTML title element.",
+                    "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "configuration": {
             "properties": {
                 "context": {
-                    "description": "The base directory for resolving the entry option",
+                    "description": "The base directory for resolving the entry option.",
                     "type": "string"
                 },
                 "copyFiles": {
-                    "description": "File patterns to copy to output path",
+                    "description": "File patterns to copy to output path.",
                     "items": {
                         "anyOf": [
                             {
@@ -60,14 +125,14 @@
                             "type": "object"
                         }
                     ],
-                    "description": "Entry points"
+                    "description": "Entry point.s"
                 },
                 "eslintrc": {
-                    "description": "Path to eslintrc file",
+                    "description": "Path to eslintrc file.",
                     "type": "string"
                 },
                 "filename": {
-                    "description": "The filename of the entry chunk as relative path inside the output path directory",
+                    "description": "The filename of the entry chunk as relative path inside the output path directory.",
                     "type": "string"
                 },
                 "forceTs": {
@@ -82,31 +147,151 @@
                             "type": "array"
                         }
                     ],
-                    "description": "Force resolve to the ts file when next to the transpiled js file"
+                    "description": "Force resolve to the ts file when next to the transpiled js file."
                 },
                 "htmlTemplate": {
-                    "description": "Path to html template file",
+                    "description": "Path to html template file.",
                     "type": "string"
                 },
                 "output": {
-                    "description": "The output directory",
+                    "description": "The output directory.",
                     "type": "string"
                 },
                 "publicPath": {
-                    "description": "The output path from the view of the Javascript / HTML page",
+                    "description": "The output path from the view of the Javascript / HTML page.",
                     "type": "string"
                 },
                 "tsconfig": {
-                    "description": "Path to tsconfig file",
+                    "description": "Path to tsconfig file.",
                     "type": "string"
                 },
                 "useWorkbox": {
-                    "description": "Uses Workbox to offline cache handling",
+                    "description": "Uses Workbox to offline cache handling.",
                     "type": "boolean"
                 },
                 "webpackConfig": {
-                    "description": "Path to webpack-config file",
+                    "description": "Path to webpack-config file.",
                     "type": "string"
+                }
+            },
+            "type": "object"
+        },
+        "devServer": {
+            "properties": {
+                "compress": {
+                    "description": "Enable gzip compression for everything served.",
+                    "type": "boolean"
+                },
+                "contentBase": {
+                    "description": "Tell the server where to serve content from. This is only necessary if you want to serve static files. devServer.publicPath will be used to determine where the bundles should be served from, and takes precedence.",
+                    "oneOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ]
+                },
+                "contentBasePublicPath": {
+                    "description": "Tell the server at what URL to serve `devServer.contentBase`. If there was a file `assets/manifest.json`, it would be served at `/serve-content-base-at-this-url/manifest.json`.",
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ]
+                },
+                "index": {
+                    "description": "The filename that is considered the index file.",
+                    "type": "string"
+                },
+                "host": {
+                    "description": "Specify a host to use. By default this is localhost.",
+                    "type": "number"
+                },
+                "hot": {
+                    "description": "Enable webpack's Hot Module Replacement feature.",
+                    "type": "boolean"
+                },
+                "hotOnly": {
+                    "description": "Enables Hot Module Replacement (see devServer.hot) without page refresh as fallback in case of build failures.",
+                    "type": "boolean"
+                },
+                "lazy": {
+                    "description": "When lazy is enabled, the dev-server will only compile the bundle when it gets requested.",
+                    "type": "boolean"
+                },
+                "liveReload": {
+                    "description": "By default, the dev-server will reload/refresh the page when file changes are detected. devServer.hot option must be disabled or devServer.watchContentBase option must be enabled in order for liveReload to take effect. Disable devServer.liveReload by setting it to false.",
+                    "type": "boolean"
+                },
+                "open": {
+                    "description": "When open is enabled, the dev server will open the browser.",
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "boolean"
+                        }
+                    ]
+                },
+                "openPage": {
+                    "description": "Specify a page to navigate to when opening the browser.",
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ]
+                },
+                "port": {
+                    "description": "Specify a port number to listen for requests on.",
+                    "type": "number"
+                },
+                "public": {
+                    "description": "When using inline mode and you're proxying dev-server, the inline client script does not always know where to connect to.  It will try to guess the URL of the server based on window.location, but if that fails you'll need to use this.",
+                    "type": "string"
+                },
+                "publicPath": {
+                    "description": "The bundled files will be available in the browser under this path. default is '/'.",
+                    "type": "string"
+                },
+                "quiet": {
+                    "description": "With quiet enabled, nothing except the initial startup information will be written to the console.  This also means that errors or warnings from webpack are not visible.",
+                    "type": "boolean"
+                },
+                "useLocalIp": {
+                    "description": "This option lets the browser open with your local IP.",
+                    "type": "boolean"
+                },
+                "watchContentBase": {
+                    "description": "Tell the server to watch the files served by the devServer.contentBase option. File changes will trigger a full page reload.",
+                    "type": "boolean"
+                },
+                "writeToDisk": {
+                    "description": "Tells devServer to write generated assets to the disk.",
+                    "type": "boolean"
                 }
             },
             "type": "object"
@@ -114,37 +299,44 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/compilations"
-        },
-        {
-            "properties": {
-                "compilations": {
-                    "description": "Configuration used by multicompiler. All root configuration will merge with it",
-                    "items": {
-                        "$ref": "#/definitions/compilations"
-                    },
-                    "type": "array"
-                },
-                "logging": {
-                    "description": "Log level",
-                    "oneOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "enum": [
-                                "none",
-                                "verbose",
-                                "error",
-                                "warn",
-                                "info",
-                                "log"
-                            ],
-                            "type": "string"
-                        }
-                    ]
-                }
-            }
+            "$ref": "#/definitions/configuration"
         }
-    ]
+    ],
+    "properties": {
+        "bundlerAnalyzer":
+        {
+            "description": "Bundler analyzer configuration.",
+            "$ref": "#/definitions/bundlerAnalyzer"
+        },
+        "compilations": {
+            "description": "Configurations used by multicompiler. When specified, all root configuration will merge with it.",
+            "items": {
+                "$ref": "#/definitions/configuration"
+            },
+            "type": "array"
+        },
+        "devServer": {
+            "description": "Dev Server configuration.",
+            "$ref": "#/definitions/devServer"
+        },
+        "logging": {
+            "description": "Log level.",
+            "oneOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "enum": [
+                        "none",
+                        "verbose",
+                        "error",
+                        "warn",
+                        "info",
+                        "log"
+                    ],
+                    "type": "string"
+                }
+            ]
+        }
+    }
 }

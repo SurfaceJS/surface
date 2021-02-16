@@ -1,11 +1,11 @@
 import type webpack     from "webpack";
 import type Logging from "./logging";
 
-type BuildOptions =
+type CliBuildOptions =
 {
     logging?: Logging,
     mode?:    webpack.Configuration["mode"],
     watch?:   boolean,
 };
 
-export default BuildOptions;
+export default CliBuildOptions;

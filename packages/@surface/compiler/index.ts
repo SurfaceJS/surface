@@ -1,9 +1,9 @@
 import Compiler from "./internal/compiler.js";
 
-export type { default as AnalyzerOptions }  from "./internal/types/analyzer-options";
-export type { default as BuildOptions }     from "./internal/types/build-options";
+export type { default as CliAnalyzerOptions }  from "./internal/types/cli-analyzer-options";
+export type { default as CliBuildOptions }     from "./internal/types/cli-build-options";
 export type { default as Configuration }    from "./internal/types/configuration";
-export type { default as DevServerOptions } from "./internal/types/dev-serve-options";
-export type { default as Options }          from "./internal/types/options";
+export type { default as CliDevServerOptions } from "./internal/types/cli-dev-serve-options";
+export type { default as CliOptions }          from "./internal/types/cli-options";
 
 export default Compiler;
