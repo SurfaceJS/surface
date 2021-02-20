@@ -34,13 +34,15 @@ export default class Compiler
         if (logging && logging != "none")
         {
             return {
-                assets:   logging == true,
-                colors:   true,
-                errors:   logging != "info",
-                logging:  logging == true ? "info" : logging,
-                modules:  logging == true || logging == "log" || logging == "verbose",
-                version:  logging == true || logging == "log" || logging == "verbose",
-                warnings: logging != "info",
+                assets:       logging == true,
+                children:     logging == true,
+                colors:       true,
+                errorDetails: logging == true,
+                errors:       logging != "info",
+                logging:      logging == true ? "info" : logging,
+                modules:      logging == true || logging == "log" || logging == "verbose",
+                version:      logging == true || logging == "log" || logging == "verbose",
+                warnings:     logging != "info",
             };
         }
 

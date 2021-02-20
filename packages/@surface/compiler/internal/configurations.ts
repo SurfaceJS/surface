@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
-import path                                       from "path";
 import type { URL }                               from "url";
-import { fileURLToPath }                          from "url";
 import { deepMergeCombine }                       from "@surface/core";
 import CopyPlugin                                 from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
@@ -15,11 +13,9 @@ import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
-import type CliAnalyzerOptions                       from "./types/cli-analyzer-options";
-import type CliBuildOptions                          from "./types/cli-build-options";
+import type CliAnalyzerOptions                    from "./types/cli-analyzer-options";
+import type CliBuildOptions                       from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
-
-const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): webpack.Entry | undefined
 {
@@ -279,10 +275,6 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         {
             extensions: [".ts", ".js"],
             plugins:    resolvePlugins,
-        },
-        resolveLoader:
-        {
-            modules: ["node_modules", path.resolve(dirname, "./loaders")],
         },
     };
 
