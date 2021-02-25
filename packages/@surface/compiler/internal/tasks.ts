@@ -78,6 +78,11 @@ export default class Tasks
                 Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
+            if (typeof projectConfiguration.webpackConfig == "string")
+            {
+                projectConfiguration.webpackConfig = (Tasks.resolveModule(await loadModule(projectConfiguration.webpackConfig))) as webpack.Configuration | undefined;
+            }
+
             const configuration = { ...defaults, ...projectConfiguration, ...cliConfiguration };
 
             if (configuration.compilations)
@@ -108,9 +113,12 @@ export default class Tasks
 
     private static resolveModule(module: unknown): unknown
     {
-        if (module && typeof module == "object" && typeGuard<{ default: unknown }>(module, "default" in module))
+        if (module)
         {
-            return module.default;
+            if (typeGuard<{ default: unknown }>(module, typeof module == "object" && "default" in module! || Reflect.get(module as Object, Symbol.toStringTag) == "Module"))
+            {
+                return module.default;
+            }
         }
 
         return module;
@@ -150,10 +158,11 @@ export default class Tasks
             Tasks.resolvePath(configuration, "eslintrc", root);
         }
 
-        Tasks.resolvePath(configuration, "context",      root);
-        Tasks.resolvePath(configuration, "htmlTemplate", root);
-        Tasks.resolvePath(configuration, "output",       root);
-        Tasks.resolvePath(configuration, "tsconfig",     root);
+        Tasks.resolvePath(configuration, "context",       root);
+        Tasks.resolvePath(configuration, "htmlTemplate",  root);
+        Tasks.resolvePath(configuration, "output",        root);
+        Tasks.resolvePath(configuration, "tsconfig",      root);
+        Tasks.resolvePath(configuration, "webpackConfig", root);
 
         if (Array.isArray(configuration.forceTs))
         {

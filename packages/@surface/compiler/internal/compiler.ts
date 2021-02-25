@@ -37,7 +37,7 @@ export default class Compiler
                 assets:       logging == true,
                 children:     logging == true,
                 colors:       true,
-                errorDetails: logging == true,
+                errorDetails: logging == "verbose",
                 errors:       logging != "info",
                 logging:      logging == true ? "info" : logging,
                 modules:      logging == true || logging == "log" || logging == "verbose",

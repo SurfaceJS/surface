@@ -47,7 +47,7 @@ type Configuration =
     useWorkbox?: boolean,
 
     /** Webpack configuration used to extend defaults. */
-    webpackConfig?: webpack.Configuration,
+    webpackConfig?: string | webpack.Configuration,
 };
 
 export default Configuration;

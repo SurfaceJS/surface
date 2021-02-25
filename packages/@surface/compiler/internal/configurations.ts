@@ -273,12 +273,17 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         plugins,
         resolve:
         {
-            extensions: [".ts", ".js"],
-            plugins:    resolvePlugins,
+            extensions:     [".ts", ".js", ".json", ".wasm"],
+            plugins:        resolvePlugins,
+            preferRelative: true,
+        },
+        resolveLoader:
+        {
+            preferRelative: true,
         },
     };
 
-    return deepMergeCombine(webpackConfiguration, extendedConfiguration, configuration.webpackConfig ?? { });
+    return deepMergeCombine(webpackConfiguration, extendedConfiguration, (configuration.webpackConfig as webpack.Configuration | undefined) ?? { });
 }
 
 export function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): webpack.Configuration | webpack.Configuration[]
