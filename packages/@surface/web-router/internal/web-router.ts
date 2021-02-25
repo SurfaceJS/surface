@@ -2,6 +2,7 @@ import { Stack }                                        from "@surface/collectio
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
 import type { DirectiveHandlerRegistry }                from "@surface/custom-element";
+import { observe }                                      from "@surface/custom-element";
 import Container                                        from "@surface/dependency-injection";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
@@ -13,7 +14,7 @@ import RouteConfigurator                                from "./route-configurat
 import type Component                                   from "./types/component";
 import type Module                                      from "./types/module";
 import type NamedRoute                                  from "./types/named-route";
-import type Route                                       from "./types/route";
+import Route                                            from "./types/route";
 import type RouteConfiguration                          from "./types/route-configuration";
 import type RouteDefinition                             from "./types/route-definition";
 import type ViewRouterOptions                           from "./types/view-router-options";
@@ -36,6 +37,7 @@ export default class WebRouter
 
     public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
 
+    @observe("current")
     public get route(): Route
     {
         return this.current?.route

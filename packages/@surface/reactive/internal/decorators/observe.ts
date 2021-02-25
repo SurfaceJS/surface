@@ -2,7 +2,7 @@ import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
 import Reactive                                 from "../reactive.js";
 
-export default function observe<T extends object>(...properties: (keyof T | string)[]): <U extends T>(target: U, propertyKey: string, descriptor?: PropertyDescriptor) => void
+export default function observe(...properties: string[]): (target: object, propertyKey: string, descriptor?: PropertyDescriptor) => void
 {
     return (target, propertyKey) =>
     {
