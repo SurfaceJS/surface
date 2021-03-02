@@ -12,7 +12,7 @@
         "@surface/reflection": "file:../reflection",
         "tslib": "2.1.0"
     },
-    "description": "Base class used to define custom elements.",
+    "description": "Provides support of directives and data binding on custom elements.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",

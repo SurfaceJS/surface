@@ -1,14 +1,17 @@
 {
     "author": "HitalloExiled",
+    "bin": {
+        "surface": "./cli.js"
+    },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@surface/reflection": "file:../reflection",
+        "@surface/io": "file:../io",
         "tslib": "2.1.0"
     },
-    "description": "Provides dependency injection capabilities.",
+    "description": "Provides command line interface for scaffolding surface projects.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",
@@ -16,18 +19,18 @@
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "dependency-injection",
         "surface",
-        "typescript"
+        "typescript",
+        "cli"
     ],
     "license": "MIT",
-    "main": "index.js",
-    "name": "@surface/dependency-injection",
+    "main": "cli.js",
+    "name": "@surface/cli",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "sideEffects": false,
     "type": "module",
-    "version": "1.0.0-alpha.1"
+    "version": "0.1.0-alpha.1"
 }

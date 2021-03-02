@@ -16,7 +16,7 @@
         "resize-observer-polyfill": "1.5.1",
         "tslib": "2.1.0"
     },
-    "description": "Surface web material design",
+    "description": "Provides surface implementation of Material Design.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/jsdom": "16.2.6",

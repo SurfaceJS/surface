@@ -11,7 +11,7 @@
         "@surface/router": "file:../router",
         "tslib": "2.1.0"
     },
-    "description": "Web component router.",
+    "description": "Web Router compatible with @surface/custom-element.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",

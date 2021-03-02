@@ -1,0 +1,1 @@
+Provides dependency injection capabilities.

@@ -7,7 +7,7 @@
         "@surface/core": "file:../core",
         "tslib": "2.1.0"
     },
-    "description": "Provides an tree representation of javascript expressions.",
+    "description": "Provides expression parser, visitor and evaluator capabilities.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",

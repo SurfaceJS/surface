@@ -1,1 +1,1 @@
-## Collection modules.
+Provides many collection types.

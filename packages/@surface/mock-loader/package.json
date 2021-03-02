@@ -9,7 +9,7 @@
         "@types/node": "14.14.27",
         "tslib": "2.1.0"
     },
-    "description": "Mock Loader library.",
+    "description": "Provides mocking module import capability.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",

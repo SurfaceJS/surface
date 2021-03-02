@@ -7,7 +7,7 @@
         "@surface/core": "file:../core",
         "tslib": "2.1.0"
     },
-    "description": "Enumerable module the provides many methods to iterate through of collections.",
+    "description": "Provides many methods to iterate through of collections.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "4.2.15",

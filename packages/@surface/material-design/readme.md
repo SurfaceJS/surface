@@ -1,1 +1,1 @@
-## Surface web components.
+Provides surface implementation of Material Design.

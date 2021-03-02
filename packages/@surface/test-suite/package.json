@@ -7,7 +7,7 @@
         "@surface/core": "file:../core",
         "tslib": "2.1.0"
     },
-    "description": "Oriented object test suite powered by mocha.",
+    "description": "Provides decorators for testing with mocha using the OOP approach.",
     "devDependencies": {
         "@types/chai": "4.2.15",
         "chai": "4.3.0"

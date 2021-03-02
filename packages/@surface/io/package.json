@@ -8,7 +8,7 @@
         "@types/node": "14.14.22",
         "tslib": "2.1.0"
     },
-    "description": "IO modules.",
+    "description": "Provides io functionality.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
