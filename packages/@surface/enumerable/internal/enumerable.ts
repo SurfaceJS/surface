@@ -560,7 +560,33 @@ abstract class Enumerable<TSource> implements Iterable<TSource>
      */
     public sequenceEqual(second: Enumerable<TSource>, comparer: IComparer<TSource | null> = new Comparer()): boolean
     {
-        return this.fullJoin(second, x => x, x => x, (outter, inner) => ({ inner, outter }), comparer).all(x => comparer.equals(x.inner, x.outter));
+        const sourceIterator = this[Symbol.iterator]();
+        const secondIterator = second[Symbol.iterator]();
+
+        let hasNext = true;
+        let isEqual = true;
+
+        do
+        {
+            const nextSource = sourceIterator.next();
+            const nextSecond = secondIterator.next();
+
+            if (!nextSource.done && !nextSecond.done)
+            {
+                if (!comparer.equals(nextSource.value, nextSecond.value))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                hasNext = false;
+                isEqual = nextSource.done == nextSecond.done;
+            }
+        }
+        while (hasNext);
+
+        return isEqual;
     }
 
     /**
