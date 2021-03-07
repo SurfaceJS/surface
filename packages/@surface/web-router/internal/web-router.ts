@@ -14,7 +14,8 @@ import RouteConfigurator                                from "./route-configurat
 import type Component                                   from "./types/component";
 import type Module                                      from "./types/module";
 import type NamedRoute                                  from "./types/named-route";
-import Route                                            from "./types/route";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type Route                                       from "./types/route";
 import type RouteConfiguration                          from "./types/route-configuration";
 import type RouteDefinition                             from "./types/route-definition";
 import type ViewRouterOptions                           from "./types/view-router-options";

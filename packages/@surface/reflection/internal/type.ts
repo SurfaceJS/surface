@@ -21,7 +21,7 @@ export default class Type
     {
         if (!this._baseType && this.prototype.constructor != Object)
         {
-            this._baseType = new Type(Reflect.getPrototypeOf(this.prototype).constructor.prototype) as Type | null;
+            this._baseType = new Type(Reflect.getPrototypeOf(this.prototype)!.constructor.prototype) as Type | null;
         }
 
         return this._baseType;
@@ -89,10 +89,10 @@ export default class Type
             {
                 if (!key.startsWith("_"))
                 {
-                    yield { declaringType: type, descriptor, isOwn: this.isOwn(key, prototype), isStatic: false, key };
+                    yield { declaringType: type, descriptor, isOwn: this.isOwn(key, prototype!), isStatic: false, key };
                 }
             }
-        } while ((prototype = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
+        } while (((prototype as object | null) = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
     }
 
     private *enumerateStaticMembers(): IterableIterator<Member>
@@ -211,7 +211,7 @@ export default class Type
             {
                 return this.getMemberType({ declaringType: type, descriptor, isOwn: this.isOwn(key, prototype), isStatic: false, key });
             }
-        } while ((prototype = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
+        } while (((prototype as object | null) = Reflect.getPrototypeOf(prototype)) && (type = Type.from(prototype)));
 
         return null;
     }
