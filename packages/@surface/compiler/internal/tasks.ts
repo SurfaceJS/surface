@@ -1,5 +1,5 @@
 import path                                    from "path";
-import { deepMergeCombine, typeGuard }         from "@surface/core";
+import { deepMerge, typeGuard }                from "@surface/core";
 import type { RequiredProperties }             from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
@@ -99,7 +99,7 @@ export default class Tasks
                         Tasks.resolvePaths(compilation, path.dirname(projectPath));
                     }
 
-                    Object.assign(compilation, deepMergeCombine(configuration, compilation), { compilations: undefined } as Configuration);
+                    Object.assign(compilation, deepMerge(configuration, compilation), { compilations: undefined } as Configuration);
                 }
             }
 

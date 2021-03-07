@@ -1,44 +1,117 @@
-import type { ArrayPathOf, ArrayPathOfValue, Combine, Constructor, Delegate, Indexer, MergeList, Mixer } from "../types";
-import { assert, typeGuard }                                                                             from "./generic.js";
+/* eslint-disable max-depth */
+import type
+{
+    ArrayPathOf,
+    ArrayPathOfValue,
+    Cast,
+    Constructor,
+    Delegate,
+    Indexer,
+    Intersect,
+    Mixer,
+} from "../types";
+import type MergeRule        from "../types/merge-rule";
+import type MergeRules       from "../types/merge-rules";
+import { assert, typeGuard } from "./generic.js";
 
 const PRIVATES = Symbol("core:privates");
 
-function internalDeepMerge(sources: Indexer[], combineArrays: boolean): Indexer
+type Value = string | boolean | number | Object;
+
+function applyRule(left: unknown, right: unknown, rule?: MergeRule<Value>): unknown
 {
-    const target: Indexer = { };
-
-    for (const current of sources)
+    if (rule)
     {
-        for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(current)))
+        if (rule == "protected")
         {
-            const targetValue  = target[key];
-            const currentValue = current[key];
-
-            if (typeGuard<Indexer>(targetValue, targetValue instanceof Object))
+            return left;
+        }
+        else if (typeof rule == "function")
+        {
+            return rule(left as Value, right as Value);
+        }
+        else if (left instanceof Object)
+        {
+            if (Array.isArray(left) && Array.isArray(right))
             {
-                if (Array.isArray(targetValue) && Array.isArray(currentValue) && combineArrays)
-                {
-                    Reflect.defineProperty(target, key, { ...descriptor, value: [...targetValue, ...currentValue] });
-                }
-                else if (typeGuard<Indexer>(currentValue, currentValue instanceof Object))
-                {
-                    const value = internalDeepMerge([targetValue, currentValue], combineArrays);
-
-                    Reflect.defineProperty(target, key, { ...descriptor, value });
-                }
-                else
-                {
-                    Reflect.defineProperty(target, key, descriptor);
-                }
+                return mergeArray(left, right, rule);
             }
-            else
+            else if (rule == "merge" && right instanceof Object)
             {
-                Reflect.defineProperty(target, key, descriptor);
+                return { ...left, ...right };
+            }
+            else if (rule instanceof Object && right instanceof Object)
+            {
+                return merge([left, right], rule);
             }
         }
     }
 
-    return target;
+    return right;
+}
+
+function match(left: unknown, right: unknown): boolean
+{
+    return left instanceof RegExp && right instanceof RegExp
+        ? left.source == right.source
+        : Object.is(left, right);
+}
+
+function mergeArray(left: unknown[], right: unknown[], rule: MergeRule<Value | Value[]>): unknown[]
+{
+    if (Array.isArray(rule))
+    {
+        const result = [...left];
+
+        const matches = Object.entries(rule)
+            .filter(([_, value]) => value == "match")
+            .every(([key]) => match((left as Indexer)[key], (right as Indexer)[key]));
+
+        if (matches)
+        {
+            for (const index of Object.keys(right))
+            {
+                const itemRule = rule[index as unknown as number] as MergeRule<Value> | undefined;
+
+                const leftItem  = left[index as keyof []];
+                const rightItem = right[index as keyof []];
+
+                result[index as unknown as number] = applyRule(leftItem, rightItem, itemRule);
+            }
+        }
+
+        return result;
+    }
+    else if (rule == "...merge" || rule instanceof Object)
+    {
+        const result = [...left];
+
+        for (const index of Object.keys(right))
+        {
+            const leftItem  = left[index as unknown as number];
+            const rightItem = right[index as unknown as number];
+
+            result[index as unknown as number] =
+                rule instanceof Object && leftItem instanceof Object && rightItem instanceof Object
+                    ? merge([leftItem, rightItem], rule as MergeRules<object>)
+                    : rule == "...merge" && leftItem instanceof Object && rightItem instanceof Object
+                        ? { ...leftItem, ...rightItem }
+                        : rightItem;
+        }
+
+        return result;
+    }
+
+    switch (rule)
+    {
+        case "prepend":
+            return right.concat(left);
+        case "append":
+            return left.concat(right);
+        case "merge":
+        default:
+            return Object.values({ ...left, ...right });
+    }
 }
 
 export function clone<T extends object>(source: T): T;
@@ -159,37 +232,87 @@ export function setValue(value: unknown, root: object, ...path: string[]): void
  * Deeply merges two or more objects.
  * @param sources Objects to merge.
  */
-export function deepMerge<TSources extends object[]>(...sources: TSources): Combine<TSources>
+export function deepMerge<TSources extends object[]>(...sources: TSources): Intersect<TSources>
 {
-    return internalDeepMerge(sources as Indexer[], false) as Combine<TSources>;
-}
+    const result: Indexer = { };
 
-/**
- * Deeply merges two or more objects and arrays.
- * @param sources Objects to merge.
- */
-export function deepMergeCombine<TSources extends object[]>(...sources: TSources): Combine<TSources>
-{
-    return internalDeepMerge(sources as Indexer[], true) as Combine<TSources>;
-}
-
-/**
- * Merges two or more objects.
- * @param sources objects to merge
- * */
-export function merge<T extends object[]>(...sources: T): MergeList<T>
-{
-    const target: Indexer = { };
-
-    for (const source of sources)
+    for (const current of sources)
     {
-        for (const key of Reflect.ownKeys(source))
+        for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(current)))
         {
-            Reflect.defineProperty(target, key, Reflect.getOwnPropertyDescriptor(source, key)!);
+            const leftValue  = result[key];
+            const rightValue = (current as Indexer)[key];
+
+            let resultDescriptor = descriptor;
+
+            if (typeGuard<Indexer>(leftValue, leftValue instanceof Object))
+            {
+                if (Array.isArray(leftValue) && Array.isArray(rightValue))
+                {
+                    const elements = [...leftValue];
+
+                    for (const [index, rightItem] of Object.entries(rightValue))
+                    {
+                        const leftItem = elements[index as keyof unknown[]];
+
+                        elements[index as keyof unknown[]] = leftItem instanceof Object && rightItem instanceof Object
+                            ? deepMerge(leftItem, rightItem)
+                            : rightItem;
+                    }
+
+                    resultDescriptor = { ...descriptor, value: elements };
+                }
+                else if (typeGuard<Indexer>(rightValue, rightValue instanceof Object))
+                {
+                    const value = deepMerge(leftValue, rightValue);
+
+                    resultDescriptor = { ...descriptor, value };
+                }
+            }
+
+            Reflect.defineProperty(result, key, resultDescriptor);
         }
     }
 
-    return target as MergeList<T>;
+    return result as Intersect<TSources>;
+}
+
+/**
+ * Merges two or more objects using optional rules.
+ * @param sources objects to merge
+ * @param rules   rules used to control merge
+ * */
+
+export function merge<TSources extends [object, ...object[]]>(sources: TSources, rules: MergeRules<Cast<Intersect<TSources>, object>> = { }): Intersect<TSources>
+{
+    const [first, ...remaining] = sources;
+
+    const result: Indexer = { ...first };
+
+    const matchKeys = Object.entries(rules).filter(x => x[1] == "match").map(x => x[0]);
+
+    for (const current of remaining)
+    {
+        const hasMatch = matchKeys
+            .every(key => match(result[key], (current as Indexer)[key]));
+
+        if (hasMatch)
+        {
+            for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(current)))
+            {
+                const leftValue  = (result as Indexer)[key];
+                const rightValue = (current as Indexer)[key];
+                const rule       = (rules as Indexer)[key] as MergeRule<Value> | undefined;
+
+                if (rule != "protected")
+                {
+                    Reflect.defineProperty(result, key, { ...descriptor, value: applyRule(leftValue, rightValue, rule) });
+                }
+            }
+        }
+    }
+
+    return result as Intersect<TSources>;
 }
 
 export function mixer<TConstructor extends Constructor, TMixins extends ((superClass: TConstructor) => Constructor)[], TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
@@ -262,7 +385,7 @@ export function privatesFrom<T extends { [PRIVATES]?: Indexer }>(target: T): Ind
     return target[PRIVATES]!;
 }
 
-export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Combine<TInstances>;
+export function proxyFrom<TInstances extends object[]>(...instances: TInstances): Intersect<TInstances>;
 export function proxyFrom(...instances: Indexer[]): Indexer
 {
     const handler: ProxyHandler<Indexer> =
@@ -319,7 +442,8 @@ export function proxyFrom(...instances: Indexer[]): Indexer
 
 export function *enumerateKeys(target: object): IterableIterator<string | number | symbol>
 {
-    let prototype = target;
+    let prototype: object | null = target;
+
     do
     {
         for (const key of Reflect.ownKeys(prototype))

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
 import type { URL }                               from "url";
-import { deepMergeCombine }                       from "@surface/core";
+import { merge }                                  from "@surface/core";
+import type MergeRules                            from "@surface/core/internal/types/merge-rules";
 import CopyPlugin                                 from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
 import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
@@ -16,6 +17,39 @@ import ForceTsResolvePlugin                       from "./plugins/force-ts-resol
 import type CliAnalyzerOptions                    from "./types/cli-analyzer-options";
 import type CliBuildOptions                       from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
+
+const mergeRules: MergeRules<webpack.Configuration> =
+{
+    module:
+    {
+        rules:
+        // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+        // @ts-ignore
+        {
+            oneOf:
+            {
+                test: "match",
+                use:
+                {
+                    loader:  "match",
+                    options: "merge",
+                },
+            },
+            test: "match",
+            use:
+            {
+                loader:  "match",
+                options: "merge",
+            },
+        },
+    },
+    plugins: "append",
+    resolve:
+    {
+        extensions: "append",
+        plugins:    "append",
+    },
+};
 
 function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): webpack.Entry | undefined
 {
@@ -111,11 +145,11 @@ export function createConfiguration(configuration: Configuration, extendedConfig
 
     if (configuration.htmlTemplate)
     {
-    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-        ? { template: configuration.htmlTemplate }
-        : configuration.htmlTemplate;
+        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+            ? { template: configuration.htmlTemplate }
+            : configuration.htmlTemplate;
 
-    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
     }
 
     if (configuration.copyFiles)
@@ -254,7 +288,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             flagIncludedChunks:   isProduction,
             mergeDuplicateChunks: isProduction,
             minimize:             isProduction,
-            minimizer:            [tersePlugin as webpack.WebpackPluginInstance],
+            minimizer:            [tersePlugin],
             moduleIds:            isProduction ? "size" : "named",
             providedExports:      true,
             usedExports:          isProduction,
@@ -283,7 +317,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         },
     };
 
-    return deepMergeCombine(webpackConfiguration, extendedConfiguration, (configuration.webpackConfig as webpack.Configuration | undefined) ?? { });
+    return merge([webpackConfiguration, extendedConfiguration, (configuration.webpackConfig as webpack.Configuration | undefined) ?? { }], mergeRules);
 }
 
 export function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): webpack.Configuration | webpack.Configuration[]

@@ -7,7 +7,6 @@ export type
     Callable,
     Cast,
     ClassDecoratorOf,
-    Combine,
     Constructor,
     ConstructorOverload,
     ConstructorParameterOverloads,
@@ -20,6 +19,7 @@ export type
     IgnoreOfType,
     Indexer,
     IndexesOf,
+    Intersect,
     KeysOfType,
     KeyValue,
     Merge,
@@ -36,10 +36,10 @@ export type
     RequiredProperties,
     TypesOf,
     UnionToIntersection,
-    ValuesOf,
 } from "./internal/types";
 
 export type { default as CancellationToken } from "./internal/types/cancellation-token";
+export type { default as MergeRules }        from "./internal/types/merge-rules";
 export type { default as Subscription }      from "./internal/types/subscription";
 
 export { default as CancellationTokenSource } from "./internal/cancellation-token-source.js";

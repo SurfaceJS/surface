@@ -14,7 +14,7 @@ export function createOnlyDefinedProxy<T extends object>(target: T): T
 {
     const handler: ProxyHandler<T> =
     {
-        has:     (target, key: keyof T) => key in target && !Object.is(target[key], undefined),
+        has:     (target, key) => key in target && !Object.is(target[key as keyof T], undefined),
         ownKeys: target => Object.entries(target).filter(x => !Object.is(x[1], undefined)).map(x => x[0]),
     };
 

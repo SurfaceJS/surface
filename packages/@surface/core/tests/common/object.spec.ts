@@ -1,10 +1,11 @@
+/* eslint-disable array-bracket-spacing */
+/* eslint-disable sort-keys */
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import
 {
     deepEqual,
     deepMerge,
-    deepMergeCombine,
     merge,
     objectFactory,
     pathfy,
@@ -69,78 +70,233 @@ export default class CommonObjectSpec
     @test @shouldPass
     public merge(): void
     {
-        const source1 = { a: 1, b: 2, e: true as boolean | undefined  };
-        const source2 = { c: null, d: undefined, e: undefined };
+        type Source = { a?: number, b?: number, c?: null, d?: string, e?: boolean };
+
+        const left:  Source = { a: 1, b: 2, e: true };
+        const right: Source = { c: null, d: undefined, e: undefined };
 
         const expected = { a: 1, b: 2, c: null, d: undefined, e: undefined };
 
-        const actual = merge(source1, source2);
+        const actual = merge([left, right]);
 
         chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
-    public mergeAndCompareDescriptors(): void
+    public mergeWithProtectedRules(): void
     {
-        const source1: Indexer = { };
-        const source2: Indexer = { };
+        type Source = { a?: number, b?: number, c?: null, d?: string, e?: boolean };
 
-        Object.defineProperties
-        (
-            source1,
-            {
-                a: { enumerable: false, value: 1, writable: false },
-                b: { get: () => 1 },
-            },
-        );
+        const left:  Source = { a: 1, b: 2, e: true };
+        const right: Source = { c: null, d: undefined, e: undefined };
 
-        Object.defineProperties
-        (
-            source2,
-            {
-                c: { enumerable: true, value: {  }, writable: true },
-                d:
-                {
-                    get value()
-                    {
-                        return source2._value as string;
-                    },
-                    set value(value: string)
-                    {
-                        source2._value = value;
-                    },
-                },
-            },
-        );
+        const expected = { a: 1, b: 2, c: null, d: undefined, e: true };
 
-        const actual = Object.getOwnPropertyDescriptors(merge(source1, source2)) as { [x: string]: PropertyDescriptor };
+        const actual = merge([left, right], { e: "protected" });
 
-        chai.assert.deepEqual(actual.a, Object.getOwnPropertyDescriptors(source1).a);
-        chai.assert.deepEqual(actual.b, Object.getOwnPropertyDescriptors(source1).b);
-        chai.assert.deepEqual(actual.c, Object.getOwnPropertyDescriptors(source2).c);
-        chai.assert.deepEqual(actual.d, Object.getOwnPropertyDescriptors(source2).d);
+        chai.assert.deepEqual(actual, expected);
     }
 
     @test @shouldPass
-    public deepMergeObjects(): void
+    public mergeArrayProperty(): void
     {
-        const target = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { } as object | undefined };
-        const source = { c: { b: true, c: { a: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+        type Source = { a: (number | undefined)[], b: { a?: number, b?: number }[] };
 
-        const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+        const left:  Source = { a: [1,  , 0,  , 5],    b: [{ a: 1 }, { b: 1 }] };
+        const right: Source = { a: [ , 2, 3, 4,  , 6], b: [{ b: 2 }, { a: 2 }] };
 
-        const actual = deepMerge(target, source);
+        const expect: Source = { a: [ , 2, 3, 4,  , 6], b: [{ b: 2 }, { a: 2 }] };
+
+        const actual = merge([left, right]);
 
         chai.assert.deepEqual(actual, expect);
     }
 
     @test @shouldPass
-    public deepMergeCombine(): void
+    public mergeArrayPropertyWithProtectedRules(): void
     {
-        const first  = { values: [1, 2, 3] };
-        const second = { values: [4, 5, 6] };
+        type Source = { a: (number | undefined)[], b: { a?: number, b?: number }[], c: { a?: number, b?: number }[] };
 
-        const actual = deepMergeCombine(first, second);
+        const left:  Source = { a: [1,  , 0,  , 5],    b: [{ a: 1 }, { b: 1 }], c: [{ a: 1 }, { b: 1 }] };
+        const right: Source = { a: [ , 2, 3, 4,  , 6], b: [{ b: 2 }, { a: 2 }], c: [{ b: 2 }, { a: 2 }] };
+
+        const expect: Source = { a: [1, 2, 0, 4, 5, 6], b: [{ a: 1 }, { b: 1 }], c: [{ a: 1 }, { b: 1, a: 2 }] };
+
+        const actual = merge([left, right], { a: [, , "protected"], b: "protected", c: ["protected", "merge"] });
+
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public mergeArrayPropertyWithMergeRules(): void
+    {
+        type Source = { a: (number | undefined)[], b: { a?: number, b?: number }[], c: { a?: number, b?: number }[] };
+
+        const left:  Source = { a: [1,  , 0,  , 5],    b: [{ a: 1 }, { b: 1 }], c: [{ a: 1 }, { b: 1 }] };
+        const right: Source = { a: [ , 2, 3, 4,  , 6], b: [{ b: 2 }, { a: 2 }], c: [{ b: 2 }, { a: 2 }] };
+
+        const expect: Source = { a: [1, 2, 3, 4, 5, 6], b: [{ a: 1, b: 2 }, { a: 2, b: 1 }], c: [{ b: 2 }, { b: 1, a: 2 }] };
+
+        const actual = merge([left, right], { a: "merge", b: "...merge", c: [ , "merge"] });
+
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public mergeArrayPropertyWithAppendRules(): void
+    {
+        type Source = { a: number[]  };
+
+        const left:  Source = { a: [1] };
+        const right: Source = { a: [2] };
+
+        const expected: Source = { a: [1, 2] };
+
+        const actual = merge([left, right], { a: "append" });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeArrayPropertyWithPrependRules(): void
+    {
+        type Source = { a: number[]  };
+
+        const left:  Source = { a: [1] };
+        const right: Source = { a: [2] };
+
+        const expected: Source = { a: [2, 1] };
+
+        const actual = merge([left, right], { a: "prepend" });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeArrayPropertyWithMatchRules(): void
+    {
+        type Source = { a: number[], b: { id: number, a?: number, b?: number }[], c: { id: number, a?: number, b?: number }[] };
+
+        const left:  Source = { a: [1, 5, 3], b: [{ id: 1, a: 1 }], c: [{ id: 1, a: 1 }, { id: 2, a: 1 }, { id: 3, a: 1 }] };
+        const right: Source = { a: [4, 5, 6], b: [{ id: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, b: 2 }, { id: 3, b: 2 }] };
+
+        const expected: Source = { a: [4, 5, 6], b: [{ id: 1, a: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, a: 1, b: 2 }, { id: 3, b: 2 }] };
+
+        const actual = merge([left, right], { a: [ , "match"], b: { id: "match" }, c: [, { id: "match" }, (a, b) => a.id == b.id ? b : a] });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeArrayPropertyWithUnrelatedMatchRules(): void
+    {
+        type Source = { a: number[], b: ({ id: number, a?: number, b?: number } | null)[], c: { id: number, a?: number, b?: number }[] };
+
+        const left:  Source = { a: [1, 2, 3], b: [{ id: 1, a: 1 }], c: [{ id: 1, a: 1 }, { id: 2, a: 1 }, { id: 3, a: 1 }] };
+        const right: Source = { a: [4, 5, 6], b: [{ id: 2, b: 2 }, null], c: [{ id: 2, a: 2 }, { id: 3, b: 2 }, { id: 4, b: 2 }] };
+
+        const expected: Source = { a: [1, 2, 3], b: [{ id: 1, a: 1 }, null], c: [{ id: 2, a: 2 }, { id: 2, a: 1 }, { id: 3, a: 1 }] };
+
+        const actual = merge([left, right], { a: [ , "match"], b: { id: "match" }, c: [, { id: "match" }, (a, b) => a?.id == 0 ? b : a] });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeObjectPropertyWithMatchRules(): void
+    {
+        type Source = { a: string, b: number };
+
+        const left:  Source = { a: "key", b: 1 };
+        const right: Source = { a: "key", b: 2 };
+
+        const expected: Source = { a: "key", b: 2 };
+
+        const actual = merge([left, right], { a: "match" });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeObjectPropertyWithUnrelatedMatchRules(): void
+    {
+        type Source = { a: string, b: number };
+
+        const left:  Source = { a: "key-1", b: 1 };
+        const right: Source = { a: "key-2", b: 2 };
+
+        const expected: Source = { a: "key-1", b: 1 };
+
+        const actual = merge([left, right], { a: "match" });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public mergeObjectPropertyWithNestedMatchRules(): void
+    {
+        type Source = { a: string, b: { c: string, d: number } };
+
+        const left:  Source = { a: "key", b: { c: "key", d: 1 } };
+        const right: Source = { a: "key", b: { c: "key", d: 2 } };
+
+        const expected: Source = { a: "key", b: { c: "key", d: 2 } };
+
+        const actual = merge([left, right], { a: "match", b: { c: "match" } });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    // @test @shouldPass
+    // public mergeWithNestedReplaceRules(): void
+    // {
+    //     type Source = { a: { aa: { aaa?: number, aab?: number }, ab: { aba?: number, abb?: number } } };
+
+    //     const left:  Source = { a: { aa: { aaa: 1 }, ab: { aba: 1 } } };
+    //     const right: Source = { a: { aa: { aab: 2 }, ab: { abb: 2 } } };
+
+    //     const expected: Source = { a: { aa: { aab: 2 }, ab: { aba: 1, abb: 2 } } };
+
+    //     const actual = merge([left, right], { a: { aa: "replace" } });
+
+    //     chai.assert.deepEqual(actual, expected);
+    // }
+
+    @test @shouldPass
+    public mergeWithNestedWithUnrelatedMatchRules(): void
+    {
+        type Source = { a: string, b: { c: string, d: number } };
+
+        const left:  Source = { a: "key-1", b: { c: "key-1", d: 1 } };
+        const right: Source = { a: "key-2", b: { c: "key-2", d: 2 } };
+
+        const expected: Source = { a: "key-2", b: { c: "key-1", d: 1 } };
+
+        const actual = merge([left, right], { b: { c: "match" } });
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @test @shouldPass
+    public deepMergeObjects(): void
+    {
+        const left  = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { } as object | undefined };
+        const right = { c: { b: true, c: { a: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+
+        const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+
+        const actual = deepMerge(left, right);
+
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public deepMergeArrays(): void
+    {
+        const left  = { values: [1,  , 2, 3, 5] };
+        const right = { values: [ , 2, 3, 4, , 6] };
+
+        const actual = deepMerge(left, right);
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
@@ -148,13 +304,28 @@ export default class CommonObjectSpec
     }
 
     @test @shouldPass
-    public deepMergeCombineMutiplesObjects(): void
+    public deepMergeArraysOfObjects(): void
+    {
+        const first  = { values: [, { one: 1 }, { four: 4 }] as const };
+        const second = { values: [, { two: 2 }, { five: 5 }] as const };
+        const third  = { values: [{ zero: 0 }, { three: 3 }, { six: 6 }] as const };
+
+        const actual = deepMerge(first, second, third);
+
+        // eslint-disable-next-line sort-keys
+        const expect = { values: [{ zero: 0 }, { one: 1, two: 2, three: 3 }, { four: 4, five: 5, six: 6 }] };
+
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public deepMergeMutiplesObjects(): void
     {
         const first  = { a: 1, b: "2", c: { d: 3 } };
         const second = { c: { e: true } };
         const third  = { f: [1], g: { } };
 
-        const actual = deepMergeCombine(first, second, third);
+        const actual = deepMerge(first, second, third);
 
         const expect = { a: 1, b: "2", c: { d: 3, e: true }, f: [1], g: { } };
 
