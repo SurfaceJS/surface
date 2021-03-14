@@ -1,0 +1,7 @@
+<div id="root">
+    <fieldset>
+        <legend>{host.label}</legend>
+        <input type="{host.type}" @click="host.error = ''" ::value="host.value">
+    </fieldset>
+    <label id="error" #if="host.error">* {host.error}</label>
+</div>

@@ -1,0 +1,16 @@
+{
+    "addANewTaskHere":   "Adicione uma nova tarefa aqui...",
+    "cancel":            "Cancelar",
+    "confirmPassword":   "Confirmação de senha",
+    "createAccount":     "Criar conta",
+    "editProfile":       "Editar perfil",
+    "email":             "Email",
+    "enter":             "Entrar",
+    "loading":           "Carregando",
+    "name":              "Nome",
+    "password":          "Senha",
+    "requiredField":     "Campo requirido",
+    "save":              "Salvar",
+    "showAll":           "Exibir todas",
+    "showOnlyCompleted": "Exibir concluídas"
+}

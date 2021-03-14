@@ -1,0 +1,46 @@
+@import "../../styles/colors.scss";
+@import "../../styles/mixins.scss";
+
+:host
+{
+    @include host-defaults;
+
+    #root
+    {
+        @include root-defaults;
+
+        flex-direction: column;
+        width: 100%;
+
+        h1
+        {
+            margin: auto;
+            color:  $primary;
+        }
+
+        #inputs
+        {
+            display:        flex;
+            flex-direction: column;
+            margin:         auto;
+
+            *
+            {
+                margin-top: 5px;
+                width:      100%;
+            }
+        }
+
+        #buttons
+        {
+            display:         flex;
+            flex-direction:  column;
+
+            *
+            {
+                margin-top: 5px;
+                width:      100%;
+            }
+        }
+    }
+}

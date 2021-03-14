@@ -1,0 +1,14 @@
+<div id="root">
+    <h1>{host.localization.createAccount}</h1>
+    <div id="inputs">
+        <app-image-pick ::value="host.model.image"></app-image-pick>
+        <app-text-input :label="host.localization.name"                            ::error="host.errors.name"            ::value="host.model.name"></app-text-input>
+        <app-text-input :label="host.localization.email"                           ::error="host.errors.email"           ::value="host.model.email"></app-text-input>
+        <app-text-input :label="host.localization.password"        type="password" ::error="host.errors.password"        ::value="host.model.password"></app-text-input>
+        <app-text-input :label="host.localization.confirmPassword" type="password" ::error="host.errors.confirmPassword" ::value="host.confirmPassword"></app-text-input>
+    </div>
+    <div id="buttons">
+        <app-button @click="host.save">{host.localization.save}</app-button>
+        <app-button text #to="{ name: 'login' }">{host.localization.cancel}</app-icon></app-button>
+    </div>
+</div>

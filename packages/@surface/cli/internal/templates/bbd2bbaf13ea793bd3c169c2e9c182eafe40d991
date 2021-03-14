@@ -1,0 +1,9 @@
+<div id="root">
+    <span id="title">{host.title}</span>
+    <div id="separator"></div>
+    <span id="message">{host.message}</span>
+    <div id="inputs">
+        <app-button text @click="host.close">OK</app-button>
+    </div>
+</div>
+<div id="overlay" @click="host.close"></div>

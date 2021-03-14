@@ -1,0 +1,12 @@
+<div id="root" :class="host.classes">
+    <template #if="host.isEditing">
+        <input ::value="host.value">
+        <app-button icon @click="host.save"><app-icon name="done"></app-icon></app-button>
+        <app-button icon @click="host.close"><app-icon name="close"></app-icon></app-button>
+    </template>
+    <template #else>
+        <span>{host.value}</span>
+        <app-button icon @click="host.edit"><app-icon name="edit"></app-icon></app-button>
+    </template>
+</div>
+<div #if="host.isEditing" id="overlay"></div>

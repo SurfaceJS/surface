@@ -1,0 +1,107 @@
+@import "../../styles/colors.scss";
+@import "../../styles/mixins.scss";
+@import "../../styles/functions.scss";
+
+$button-size:       32px;
+$icon--button-size: 40px;
+
+:host
+{
+    @include host-defaults;
+
+    align-items:      center;
+    background-color: $primary;
+    border:           none;
+    color:            white;
+    cursor:           pointer;
+    display:          flex;
+    font-size:        14px;
+    font-weight:      500;
+    height:           $button-size;
+    justify-content:  center;
+    text-transform:   uppercase;
+    user-select:      none;
+
+    #root
+    {
+        @include root-defaults;
+        @include hoverable;
+
+        align-items:     center;
+        border-radius:   inherit;
+        height:          inherit;
+        justify-content: center;
+        position:        relative;
+        width:           inherit;
+    }
+
+    @at-root
+    #{host(":active")}
+    {
+        background-color: $primary-300;
+    }
+
+    @at-root
+    #{host("[disabled]")}
+    {
+        background-color: gray;
+    }
+
+    @at-root
+    #{host("[fab]")},
+    #{host("[icon]")}
+    {
+        font-size:        24px;
+        width:            $icon--button-size;
+        height:           $icon--button-size;
+        border-radius:    90px;
+    }
+
+    @at-root
+    #{host("[icon]")}
+    {
+        background-color: transparent;
+        color:            $primary;
+
+        @at-root
+        #{host(":active")}
+        {
+            color: $primary-300;
+        }
+
+        @at-root
+        #{host("[disabled]")}
+        {
+            color: gray;
+        }
+    }
+
+    @at-root
+    #{host("[text]")}
+    {
+        background-color: transparent;
+        color:            $primary;
+        margin-right:     auto;
+        position:         relative;
+        font-weight:      500;
+        text-transform:   uppercase;
+        color:            $primary;
+
+        #root
+        {
+            padding: 5px;
+        }
+
+        @at-root
+        #{host(":active")}
+        {
+            color: $primary-300;
+        }
+
+        @at-root
+        #{host("[disabled]")}
+        {
+            color: gray;
+        }
+    }
+}

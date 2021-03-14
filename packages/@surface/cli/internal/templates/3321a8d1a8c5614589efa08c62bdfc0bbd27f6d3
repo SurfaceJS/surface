@@ -1,0 +1,26 @@
+<div id="root">
+    <app-button text @click="host.showOnlyComplete()" #if="host.showingAll">{host.localization.showOnlyCompleted}</app-button>
+    <app-button text @click="host.showAll()" #else>{host.localization.showAll}</app-button>
+    <div id="separator"></div>
+    <div id="list">
+        <table>
+            <tr #for="item of host.items" :item="item">
+                <td>
+                    <div><input type="checkbox" ::checked="item.complete" @change="host.save"></div>
+                </td>
+                <td>
+                    <app-input ::value="item.description" @change="host.save"></app-input>
+                </td>
+                <td>
+                    <app-button icon @click="host.removeItem(item)"><app-icon name="delete"></app-icon></app-button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="separator"></div>
+    <div id="inputs">
+        <input ::value="host.task" placeholder="{host.localization.addANewTaskHere}" #keypress="{ 'Enter': () => host.task && host.add() }" >
+        <app-button fab #if="host.task" @click="host.add"><app-icon name="add"></app-icon></app-button>
+        <app-button fab #else disabled><app-icon name="add"></app-icon></app-button>
+    </div>
+</div>

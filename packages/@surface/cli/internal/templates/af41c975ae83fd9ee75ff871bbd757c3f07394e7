@@ -1,0 +1,24 @@
+@import "../../styles/mixins.scss";
+
+:host
+{
+    @include host-defaults;
+
+    border-radius: 90px;
+    height:        auto;
+
+    img
+    {
+        border-radius: inherit;
+        cursor:        pointer;
+        height:        100px;
+        margin:        auto;
+        width:         100px;
+        object-fit: cover;
+    }
+
+    input
+    {
+        display: none;
+    }
+}

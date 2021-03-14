@@ -1,0 +1,16 @@
+<template #if="host.store.profile.authenticated">
+    <div id="header">
+        <img #if="host.store.profile.user.image" #to="{ name: 'account-edit', parameters: { id: host.store.profile.user.id } }" :src="host.store.profile.user.image">
+        <img #else                               #to="{ name: 'account-edit', parameters: { id: host.store.profile.user.id } }" src="../assets/profile-placeholder.png">
+        <div id="info">
+            <span id="name">{host.store.profile.user.name}</span>
+            <span id="email">{host.store.profile.user.email}</span>
+        </div>
+        <app-button icon #to="{ name: 'account-edit', parameters: { id: host.store.profile.user.id } }"><app-icon name="settings"></app-icon></app-button>
+        <app-button icon @click="host.logout"><app-icon name="logout"></app-icon></app-button>
+    </div>
+    <router-outlet></router-outlet>
+</template>
+<template #else>
+    <router-outlet></router-outlet>
+</template>

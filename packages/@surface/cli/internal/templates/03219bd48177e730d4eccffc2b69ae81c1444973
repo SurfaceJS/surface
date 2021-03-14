@@ -1,0 +1,73 @@
+@import "../../styles/colors.scss";
+@import "../../styles/mixins.scss";
+@import "../../styles/functions.scss";
+
+:host
+{
+    @include host-defaults;
+
+    height:           100vh;
+    left:             0;
+    position:         fixed;
+    top:              0;
+    width:            100vw;
+    z-index:          99;
+    display:          flex;
+
+    #root
+    {
+        background-color: white;
+        display:          flex;
+        flex-direction:   column;
+        margin:           auto;
+        opacity:          1;
+        padding:          10px;
+        z-index:          100;
+
+        box-shadow:
+            rgba(0, 0, 0, 0.2)  0px 4px 1px -1px,
+            rgba(0, 0, 0, 0.14) 0px 1px 1px 1px,
+            rgba(0, 0, 0, 0.12) 0px 2px 3px 1px;
+
+        #title
+        {
+            color:          $primary;
+            font-size:      16px;
+            font-weight:    500;
+            text-transform: uppercase;
+        }
+
+        #message
+        {
+            color: $text;
+        }
+
+        #separator
+        {
+            background-color: $secondary;
+            height:           1px;
+            margin:           10px 0;
+        }
+
+        #inputs
+        {
+            display: flex;
+
+            app-button
+            {
+                margin-left:  auto;
+                margin-right: 0;
+                width:        100px;
+            }
+        }
+    }
+
+    #overlay
+    {
+        background-color: black;
+        opacity:          0.075;
+        position:         fixed;
+        height:           100vh;
+        width:            100vw;
+    }
+}

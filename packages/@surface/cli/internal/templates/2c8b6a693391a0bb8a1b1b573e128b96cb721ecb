@@ -1,0 +1,34 @@
+{
+    "author": "HitalloExiled",
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/workbench/issues"
+    },
+    "dependencies": {
+        "@surface/compiler": "latest",
+        "@surface/custom-element": "latest",
+        "tslib": "2.1.0"
+    },
+    "description": "Basic client to development and testing.",
+    "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "4.15.2",
+        "@typescript-eslint/parser": "4.15.2",
+        "eslint": "7.20.0",
+        "eslint-plugin-import": "2.22.1",
+        "typescript": "4.2.2"
+    },
+    "homepage": "https://github.com/SurfaceJS/workbench#readme",
+    "license": "MIT",
+    "name": "surface-simple-app",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/workbench.git"
+    },
+    "scripts": {
+        "build": "sfcc build --mode=production",
+        "start": "sfcc serve --hot --open",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "sideEffects": true,
+    "type": "module",
+    "version": "0.0.0"
+}

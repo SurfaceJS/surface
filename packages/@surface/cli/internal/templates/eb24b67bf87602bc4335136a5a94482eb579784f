@@ -1,0 +1,14 @@
+<div id="root">
+    <div id="spinner">
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+        <div class="circles"></div>
+   </div>
+    <span id="title">Loading...</span>
+</div>
+<div id="overlay"></div>
