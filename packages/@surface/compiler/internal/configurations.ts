@@ -18,7 +18,7 @@ import type CliAnalyzerOptions                    from "./types/cli-analyzer-opt
 import type CliBuildOptions                       from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
 
-const mergeRules: MergeRules<webpack.Configuration> =
+const DEFAULT_MERGE_RULES: MergeRules<webpack.Configuration> =
 {
     module:
     {
@@ -65,7 +65,7 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export function createAnalyzerConfiguration(configuration: Configuration, options: CliAnalyzerOptions): webpack.Configuration | webpack.Configuration[]
+export async function createAnalyzerConfiguration(configuration: Configuration, options: CliAnalyzerOptions): Promise<webpack.Configuration | webpack.Configuration[]>
 {
     const logging = !options.logging
         ? "none"
@@ -101,13 +101,13 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
 
     if (configuration.compilations)
     {
-        return configuration.compilations.map(x => createConfiguration(x, createOnlyDefinedProxy(extendedConfiguration)));
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy(extendedConfiguration))));
     }
 
     return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
 
-export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): webpack.Configuration
+export async function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): Promise<webpack.Configuration>
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -317,20 +317,24 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         },
     };
 
-    return merge([webpackConfiguration, extendedConfiguration, (configuration.webpackConfig as webpack.Configuration | undefined) ?? { }], mergeRules);
+    const mergedConfiguration = merge([webpackConfiguration, extendedConfiguration, (configuration.webpack?.configuration as webpack.Configuration | undefined) ?? { }], configuration.webpack?.mergeRules ?? DEFAULT_MERGE_RULES);
+
+    return typeof configuration.webpack?.postConfiguration == "function"
+        ? await configuration.webpack.postConfiguration(mergedConfiguration)
+        : mergedConfiguration;
 }
 
-export function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): webpack.Configuration | webpack.Configuration[]
+export async function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): Promise<webpack.Configuration | webpack.Configuration[]>
 {
     if (configuration.compilations)
     {
-        return configuration.compilations.map(x => createConfiguration(x, createOnlyDefinedProxy({ mode: options.mode })));
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy({ mode: options.mode }))));
     }
 
     return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
 }
 
-export function createDevServerConfiguration(configuration: Configuration, url: URL): webpack.Configuration | webpack.Configuration[]
+export async function createDevServerConfiguration(configuration: Configuration, url: URL): Promise<webpack.Configuration | webpack.Configuration[]>
 {
     const extendedConfiguration: webpack.Configuration =
     {
@@ -341,7 +345,7 @@ export function createDevServerConfiguration(configuration: Configuration, url: 
 
     if (configuration.compilations)
     {
-        return configuration.compilations.map(x => createConfiguration(x, extendedConfiguration));
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, extendedConfiguration)));
     }
 
     return createConfiguration(configuration, extendedConfiguration);

@@ -76,7 +76,7 @@ export default class Compiler
 
     public static async analyze(configuration: Configuration, options: CliAnalyzerOptions): Promise<void>
     {
-        const webpackConfiguration = createAnalyzerConfiguration(configuration, options);
+        const webpackConfiguration = await createAnalyzerConfiguration(configuration, options);
 
         log(`Starting ${chalk.bold.green("analyzer...")}`);
 
@@ -85,7 +85,7 @@ export default class Compiler
 
     public static async run(configuration: Configuration, options: CliBuildOptions): Promise<void>
     {
-        const webpackConfiguration = createBuildConfiguration(configuration, options);
+        const webpackConfiguration = await createBuildConfiguration(configuration, options);
 
         log(`Running using ${chalk.bold.green(options.mode ?? "development")} configuration...`);
 
@@ -106,7 +106,7 @@ export default class Compiler
         url.port     = port.toString();
         url.pathname = configuration.publicPath ?? "/";
 
-        const webpackConfiguration = createDevServerConfiguration(configuration, url);
+        const webpackConfiguration = await createDevServerConfiguration(configuration, url);
         const webpackCompiler      = (webpack as WebpackOverload)(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
@@ -132,7 +132,7 @@ export default class Compiler
 
     public static async watch(configuration: Configuration, options: CliBuildOptions): Promise<CompilerSignal>
     {
-        const webpackConfiguration = createBuildConfiguration(configuration, options);
+        const webpackConfiguration = await createBuildConfiguration(configuration, options);
 
         log(`Watching using ${chalk.bold.green(options.mode)} configuration.`);
 

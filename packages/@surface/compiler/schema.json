@@ -1,8 +1,11 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "https://github.com/SurfaceJS/modules/blob/master/packages/%40surface/compiler/schema.json",
-    "title": "Surface's compiler options",
-    "description": "Surface's compiler options.",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "allOf": [
+        {
+            "$ref": "#/definitions/configuration"
+        }
+    ],
     "definitions": {
         "bundlerAnalyzer": {
             "properties": {
@@ -47,10 +50,10 @@
                             "type": "string"
                         },
                         {
-                            "type": "array",
                             "items": {
                                 "type": "string"
-                            }
+                            },
+                            "type": "array"
                         }
                     ]
                 },
@@ -83,7 +86,6 @@
                                 "type": "string"
                             },
                             {
-                                "type": "object",
                                 "properties": {
                                     "from": {
                                         "type": "string"
@@ -91,7 +93,8 @@
                                     "to": {
                                         "type": "string"
                                     }
-                                }
+                                },
+                                "type": "object"
                             }
                         ]
                     },
@@ -103,10 +106,10 @@
                             "type": "string"
                         },
                         {
-                            "type": "array",
                             "items": {
                                 "type": "string"
-                            }
+                            },
+                            "type": "array"
                         },
                         {
                             "additionalProperties": {
@@ -115,10 +118,10 @@
                                         "type": "string"
                                     },
                                     {
-                                        "type": "array",
                                         "items": {
                                             "type": "string"
-                                        }
+                                        },
+                                        "type": "array"
                                     }
                                 ]
                             },
@@ -169,9 +172,26 @@
                     "description": "Uses Workbox to offline cache handling.",
                     "type": "boolean"
                 },
-                "webpackConfig": {
-                    "description": "Path to webpack-config file.",
-                    "type": "string"
+                "webpack": {
+                    "description": "Webpack configuration",
+                    "properties": {
+                        "configuration": {
+                            "description": "Path to webpack configuration file..",
+                            "type": "string"
+                        },
+                        "mergeRules": {
+                            "additionalProperties": {
+                                "$ref": "#definitions/mergeRule"
+                            },
+                            "description": "Rules used to merge webpack.configuration.",
+                            "type": "object"
+                        },
+                        "postConfiguration": {
+                            "description": "Path to webpack post configuration hook file.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
                 }
             },
             "type": "object"
@@ -216,10 +236,6 @@
                         }
                     ]
                 },
-                "index": {
-                    "description": "The filename that is considered the index file.",
-                    "type": "string"
-                },
                 "host": {
                     "description": "Specify a host to use. By default this is localhost.",
                     "type": "number"
@@ -231,6 +247,10 @@
                 "hotOnly": {
                     "description": "Enables Hot Module Replacement (see devServer.hot) without page refresh as fallback in case of build failures.",
                     "type": "boolean"
+                },
+                "index": {
+                    "description": "The filename that is considered the index file.",
+                    "type": "string"
                 },
                 "lazy": {
                     "description": "When lazy is enabled, the dev-server will only compile the bundle when it gets requested.",
@@ -295,18 +315,41 @@
                 }
             },
             "type": "object"
+        },
+        "mergeRule": {
+            "description": "Rule used to merge this property on source object.",
+            "oneOf": [
+                {
+                    "items": {
+                        "$ref": "#definitions/mergeRule"
+                    },
+                    "type": "array"
+                },
+                {
+                    "additionalProperties": {
+                        "$ref": "#definitions/mergeRule"
+                    },
+                    "type": "object"
+                },
+                {
+                    "enum": [
+                        "...merge",
+                        "append",
+                        "match",
+                        "merge",
+                        "prepend",
+                        "protected"
+                    ],
+                    "type": "string"
+                }
+            ]
         }
     },
-    "allOf": [
-        {
-            "$ref": "#/definitions/configuration"
-        }
-    ],
+    "description": "Surface's compiler options.",
     "properties": {
-        "bundlerAnalyzer":
-        {
-            "description": "Bundler analyzer configuration.",
-            "$ref": "#/definitions/bundlerAnalyzer"
+        "bundlerAnalyzer": {
+            "$ref": "#/definitions/bundlerAnalyzer",
+            "description": "Bundler analyzer configuration."
         },
         "compilations": {
             "description": "Configurations used by multicompiler. When specified, all root configuration will merge with it.",
@@ -316,8 +359,8 @@
             "type": "array"
         },
         "devServer": {
-            "description": "Dev Server configuration.",
-            "$ref": "#/definitions/devServer"
+            "$ref": "#/definitions/devServer",
+            "description": "Dev Server configuration."
         },
         "logging": {
             "description": "Log level.",
@@ -338,5 +381,6 @@
                 }
             ]
         }
-    }
+    },
+    "title": "Surface's compiler options"
 }

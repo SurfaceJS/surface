@@ -1,5 +1,5 @@
 import path                                    from "path";
-import { deepMerge, typeGuard }                from "@surface/core";
+import { deepMerge, isEsm }                    from "@surface/core";
 import type { RequiredProperties }             from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
@@ -10,6 +10,7 @@ import type CliBuildOptions                    from "./types/cli-build-options";
 import type CliDevServerOptions                from "./types/cli-dev-serve-options";
 import type CliOptions                         from "./types/cli-options";
 import type Configuration                      from "./types/configuration";
+import type WebpackExtension                   from "./types/webpack-extension.js";
 
 export default class Tasks
 {
@@ -48,7 +49,11 @@ export default class Tasks
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
             useWorkbox:    options.useWorkbox,
-            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
+            webpack:       options.webpackConfiguration || options.webpackPostConfiguration
+                ? createOnlyDefinedProxy({
+                    configuration:     options.webpackConfiguration     ? Tasks.resolveModule(await loadModule(options.webpackConfiguration)) : undefined,
+                    postConfiguration: options.webpackPostConfiguration ? Tasks.resolveModule(await loadModule(options.webpackPostConfiguration)) : undefined,
+                }) as WebpackExtension : undefined,
         });
 
         Tasks.resolvePaths(cliConfiguration, cwd);
@@ -78,29 +83,39 @@ export default class Tasks
                 Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
-            if (typeof projectConfiguration.webpackConfig == "string")
-            {
-                projectConfiguration.webpackConfig = (Tasks.resolveModule(await loadModule(projectConfiguration.webpackConfig))) as webpack.Configuration | undefined;
-            }
-
-            const configuration = { ...defaults, ...projectConfiguration, ...cliConfiguration };
+            const configuration = { ...defaults, ...projectConfiguration, ...cliConfiguration, webpack: { ...projectConfiguration.webpack, ...cliConfiguration.webpack } };
 
             if (configuration.compilations)
             {
                 for (const compilation of configuration.compilations)
                 {
+                    Object.assign(compilation, deepMerge(configuration, compilation), { compilations: undefined } as Configuration);
+
                     if (isJson)
                     {
-                        if (typeof compilation.webpackConfig == "string")
+                        Tasks.resolvePaths(compilation, path.dirname(projectPath));
+
+                        if (typeof compilation.webpack?.configuration == "string")
                         {
-                            compilation.webpackConfig = (compilation.webpackConfig && Tasks.resolveModule(await loadModule(compilation.webpackConfig))) as webpack.Configuration | undefined;
+                            compilation.webpack.configuration = (Tasks.resolveModule(await loadModule(compilation.webpack.configuration))) as WebpackExtension["configuration"];
                         }
 
-                        Tasks.resolvePaths(compilation, path.dirname(projectPath));
+                        if (typeof compilation.webpack?.postConfiguration == "string")
+                        {
+                            compilation.webpack.postConfiguration = (Tasks.resolveModule(await loadModule(compilation.webpack.postConfiguration))) as WebpackExtension["postConfiguration"];
+                        }
                     }
-
-                    Object.assign(compilation, deepMerge(configuration, compilation), { compilations: undefined } as Configuration);
                 }
+            }
+
+            if (typeof configuration.webpack?.configuration == "string")
+            {
+                configuration.webpack.configuration = (Tasks.resolveModule(await loadModule(configuration.webpack.configuration))) as webpack.Configuration;
+            }
+
+            if (typeof configuration.webpack?.postConfiguration == "string")
+            {
+                configuration.webpack.postConfiguration = (Tasks.resolveModule(await loadModule(configuration.webpack.postConfiguration))) as WebpackExtension["postConfiguration"];
             }
 
             return configuration;
@@ -113,12 +128,9 @@ export default class Tasks
 
     private static resolveModule(module: unknown): unknown
     {
-        if (module)
+        if (isEsm(module) && Reflect.has(module, "default"))
         {
-            if (typeGuard<{ default: unknown }>(module, typeof module == "object" && "default" in module! || Reflect.get(module as Object, Symbol.toStringTag) == "Module"))
-            {
-                return module.default;
-            }
+            return Reflect.get(module, "default");
         }
 
         return module;
@@ -162,7 +174,12 @@ export default class Tasks
         Tasks.resolvePath(configuration, "htmlTemplate",  root);
         Tasks.resolvePath(configuration, "output",        root);
         Tasks.resolvePath(configuration, "tsconfig",      root);
-        Tasks.resolvePath(configuration, "webpackConfig", root);
+
+        if (configuration.webpack)
+        {
+            Tasks.resolvePath(configuration.webpack, "configuration", root);
+            Tasks.resolvePath(configuration.webpack, "postConfiguration", root);
+        }
 
         if (Array.isArray(configuration.forceTs))
         {

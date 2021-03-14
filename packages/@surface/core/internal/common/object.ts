@@ -191,6 +191,11 @@ export function freeze(target: Indexer): Indexer
     return Object.freeze(target);
 }
 
+export function isEsm(module: unknown): module is object
+{
+    return typeof module == "object" && module !== null && (!!Reflect.get(module, "__esModule") || Reflect.get(module as Object, Symbol.toStringTag) == "Module");
+}
+
 export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
 export function getValue(root: object, ...path: string[]): unknown
 {

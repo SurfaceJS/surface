@@ -2,6 +2,7 @@ import type HtmlWebpackPlugin        from "html-webpack-plugin";
 import type webpack                  from "webpack";
 import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import type WebpackDevServer         from "webpack-dev-server";
+import type WebpackExtension         from "./webpack-extension";
 
 type Configuration =
 {
@@ -47,7 +48,7 @@ type Configuration =
     useWorkbox?: boolean,
 
     /** Webpack configuration used to extend defaults. */
-    webpackConfig?: string | webpack.Configuration,
+    webpack?: WebpackExtension,
 };
 
 export default Configuration;

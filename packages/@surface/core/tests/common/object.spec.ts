@@ -175,12 +175,12 @@ export default class CommonObjectSpec
     @test @shouldPass
     public mergeArrayPropertyWithMatchRules(): void
     {
-        type Source = { a: number[], b: { id: number, a?: number, b?: number }[], c: { id: number, a?: number, b?: number }[] };
+        type Source = { a: RegExp[], b: { id: number, a?: number, b?: number }[], c: { id: number, a?: number, b?: number }[] };
 
-        const left:  Source = { a: [1, 5, 3], b: [{ id: 1, a: 1 }], c: [{ id: 1, a: 1 }, { id: 2, a: 1 }, { id: 3, a: 1 }] };
-        const right: Source = { a: [4, 5, 6], b: [{ id: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, b: 2 }, { id: 3, b: 2 }] };
+        const left:  Source = { a: [/1/, /5/, /3/], b: [{ id: 1, a: 1 }], c: [{ id: 1, a: 1 }, { id: 2, a: 1 }, { id: 3, a: 1 }] };
+        const right: Source = { a: [/4/, /5/, /6/], b: [{ id: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, b: 2 }, { id: 3, b: 2 }] };
 
-        const expected: Source = { a: [4, 5, 6], b: [{ id: 1, a: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, a: 1, b: 2 }, { id: 3, b: 2 }] };
+        const expected: Source = { a: [/4/, /5/, /6/], b: [{ id: 1, a: 1, b: 2 }], c: [{ id: 1, b: 2 }, { id: 2, a: 1, b: 2 }, { id: 3, b: 2 }] };
 
         const actual = merge([left, right], { a: [ , "match"], b: { id: "match" }, c: [, { id: "match" }, (a, b) => a.id == b.id ? b : a] });
 

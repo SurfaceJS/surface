@@ -1,6 +1,7 @@
 import { URL }         from "url";
 import { suite, test } from "@surface/test-suite";
 import chai            from "chai";
+import chaiAsPromised  from "chai-as-promised";
 import
 {
     createAnalyzerConfiguration,
@@ -10,19 +11,21 @@ import
 } from "../internal/configurations.js";
 import type Configuration from "../internal/types/configuration";
 
+chai.use(chaiAsPromised);
+
 @suite
 export default class ConfigurationsSpec
 {
     @test
     public createAnalyzerConfiguration(): void
     {
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { }));
-        chai.assert.isOk(createAnalyzerConfiguration({ compilations: [{ }] }, { }));
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { logging: true }));
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { logging: "none" }));
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { logging: "verbose" }));
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { logging: "log" }));
-        chai.assert.isOk(createAnalyzerConfiguration({ }, { analyzerMode: "server", mode: "production" }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ compilations: [{ }] }, { }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: true }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "none" }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "verbose" }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "log" }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { analyzerMode: "server", mode: "production" }));
     }
 
     @test
@@ -30,15 +33,15 @@ export default class ConfigurationsSpec
     {
         process.env.SURFACE_ENVIRONMENT = "development";
 
-        chai.assert.isOk(createBuildConfiguration({ }, { }));
-        chai.assert.isOk(createBuildConfiguration({ compilations: [{ }] }, { }));
-        chai.assert.isOk(createBuildConfiguration({ }, { mode: "development" }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ }, { }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ compilations: [{ }] }, { }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ }, { mode: "development" }));
     }
 
     @test
     public createConfiguration(): void
     {
-        chai.assert.isOk(createConfiguration({ }, { }));
+        void chai.assert.isFulfilled(createConfiguration({ }, { }));
 
         const configuration2: Configuration =
         {
@@ -47,7 +50,7 @@ export default class ConfigurationsSpec
             publicPath:   "path",
         };
 
-        chai.assert.isOk(createConfiguration(configuration2, { mode: "development" }));
+        void chai.assert.isFulfilled(createConfiguration(configuration2, { mode: "development" }));
 
         const configuration3: Configuration =
         {
@@ -56,10 +59,10 @@ export default class ConfigurationsSpec
             htmlTemplate:  { template: "." },
             publicPath:    "/path",
             useWorkbox:    true,
-            webpackConfig: { context: "." },
+            webpack:      { configuration: { context: "." } },
         };
 
-        chai.assert.isOk(createConfiguration(configuration3, { mode: "production", target: "node" }));
+        void chai.assert.isFulfilled(createConfiguration(configuration3, { mode: "production", target: "node" }));
 
         const configuration4: Configuration =
         {
@@ -69,23 +72,23 @@ export default class ConfigurationsSpec
                     htmlTemplate:  { template: "." },
                     publicPath:    "/path",
                     useWorkbox:    true,
-                    webpackConfig: { context: "." },
+                    webpack:      { configuration: { context: "." } },
                 },
             ],
             copyFiles: ["**/foo", { from: "**/bar", to: "**/baz" }],
             forceTs:   ["foo", "bar"],
         };
 
-        chai.assert.isOk(createConfiguration(configuration4, { mode: "production", target: "node" }));
+        void chai.assert.isFulfilled(createConfiguration(configuration4, { mode: "production", target: "node" }));
     }
 
     @test
     public createDevServerConfiguration(): void
     {
-        chai.assert.isOk(createDevServerConfiguration({ },                                new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ compilations: [{ entry: "." }] }, new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: "." },                     new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: ["."] },                   new URL("http://localhost:8080")));
-        chai.assert.isOk(createDevServerConfiguration({ entry: { index: "." } },          new URL("http://localhost:8080")));
+        void chai.assert.isFulfilled(createDevServerConfiguration({ },                                new URL("http://localhost:8080")));
+        void chai.assert.isFulfilled(createDevServerConfiguration({ compilations: [{ entry: "." }] }, new URL("http://localhost:8080")));
+        void chai.assert.isFulfilled(createDevServerConfiguration({ entry: "." },                     new URL("http://localhost:8080")));
+        void chai.assert.isFulfilled(createDevServerConfiguration({ entry: ["."] },                   new URL("http://localhost:8080")));
+        void chai.assert.isFulfilled(createDevServerConfiguration({ entry: { index: "." } },          new URL("http://localhost:8080")));
     }
 }
