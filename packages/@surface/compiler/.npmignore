@@ -1,5 +1,5 @@
 **/!(*.d).ts
-*.js.map
+**/*.js.map
 .cache/**
 @types/**
 tests/**
