@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import commander from "commander";
 import Tasks from "./internal/tasks.js";
 const program = new commander.Command();

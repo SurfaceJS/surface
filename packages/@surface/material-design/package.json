@@ -5,7 +5,6 @@
     },
     "dependencies": {
         "@surface/collection": "file:../collection",
-        "@surface/color": "file:../color",
         "@surface/core": "file:../core",
         "@surface/custom-element": "file:../custom-element",
         "@surface/enumerable": "file:../enumerable",
@@ -19,9 +18,9 @@
     "description": "Provides surface implementation of Material Design.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/jsdom": "16.2.6",
-        "chai": "4.3.0",
-        "jsdom": "16.4.0"
+        "@types/jsdom": "16.2.7",
+        "chai": "4.3.4",
+        "jsdom": "16.5.1"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

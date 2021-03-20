@@ -10,7 +10,7 @@
     "description": "Provides decorators for testing with mocha using the OOP approach.",
     "devDependencies": {
         "@types/chai": "4.2.15",
-        "chai": "4.3.0"
+        "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -23,7 +23,7 @@
     "main": "index.js",
     "name": "@surface/test-suite",
     "peerDependencies": {
-        "mocha": "8.3.0"
+        "mocha": "^8.3.2"
     },
     "repository": {
         "type": "git",

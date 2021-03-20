@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 import child_process                                               from "child_process";
 import { copyFile, existsSync, readFile, readFileSync, writeFile } from "fs";
+import os                                                          from "os";
 import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
 import { createPathAsync }                                         from "@surface/io";
 import inquirer                                                    from "inquirer";
-import os                                                          from "os";
 
 type TemplateIndex = typeof import("./templates/index.json");
-type Package = { author: string, name: string, dependencies: Record<string, string> };
+type Package = { author: string, name: string };
 
 const copyFileAsync  = util.promisify(copyFile);
 const readFileAsync  = util.promisify(readFile);
