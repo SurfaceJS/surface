@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "surface": "./cli.js"
+        "surface": "./index.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"

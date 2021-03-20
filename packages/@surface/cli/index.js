@@ -6,4 +6,4 @@ program
     .command("new")
     .action(Tasks.new);
 program.parse(process.argv);
-//# sourceMappingURL=cli.js.map
+//# sourceMappingURL=index.js.map
