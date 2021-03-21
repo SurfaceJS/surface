@@ -6,7 +6,7 @@ import path                                                        from "path";
 import { fileURLToPath }                                           from "url";
 import util                                                        from "util";
 import { createPathAsync }                                         from "@surface/io";
-import inquirer                                                    from "inquirer";
+import inquirer, { QuestionCollection }                            from "inquirer";
 
 type TemplateIndex = typeof import("./templates/index.json");
 type Package = { author: string, name: string };
@@ -20,18 +20,22 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const templateIndex = JSON.parse(readFileSync(path.resolve(dirname, "./templates/index.json")).toString()) as TemplateIndex;
 
+const periodPattern      = /\.$/;
+const windowsPathPattern = /^((((\w\:)?[\\\/])|((\.[\\\/])?(\.\.[\\\/])*))([^\\\/:*?"<>|]+[\\\/]?)*)$/;
+const linuxPathPattern   = /^((((\.[\/])?(\.\.[\/])*)|\/)([^\/]+[\/]?)*)$/;
+
 export default class Tasks
 {
-    private static async generate(template: string, name: string, output: string): Promise<void>
+    private static async generate(template: keyof TemplateIndex, name: string, output: string): Promise<void>
     {
-        console.log("Copying files...");
+        console.log("Generating files...");
 
-        const entries = templateIndex[template as keyof TemplateIndex];
+        const entry = templateIndex[template];
 
-        for (const entry of entries)
+        for (const file of entry.files)
         {
-            const source = path.join(dirname, "./templates", entry.name);
-            const target = path.join(output, entry.path);
+            const source = path.join(dirname, "./templates", file.name);
+            const target = path.join(output, file.path);
 
             const folder = path.dirname(target);
 
@@ -66,40 +70,54 @@ export default class Tasks
             console.log(stderr);
         }
 
-        console.log("Done!");
+        console.log(`Done! Open "${output}" and happy coding 😃`);
     }
 
     public static async new(): Promise<void>
     {
-        const templateQuestion =
+        const transformerName = (x: string): string => x.normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-")
+            .replace(/[^\w-]+/g, "")
+            .toLocaleLowerCase();
+
+        const choices = Object.entries(templateIndex)
+            .map(([key, value]) => ({ name: value.description.replace(periodPattern, ""), value: key }));
+
+        const templateQuestion: QuestionCollection<{ template: keyof TemplateIndex }> =
         {
-            choices: Object.keys(templateIndex),
+            choices,
+            message: "Choose a template:",
             name:    "template",
             type:    "list",
         };
 
-        const templateAnswer = await inquirer.prompt([templateQuestion]) as { template: string };
+        const template = (await inquirer.prompt([templateQuestion])).template;
 
-        const nameQuestion =
+        const nameQuestion: QuestionCollection<{ name: string }> =
         {
-            default: templateAnswer.template,
-            name:    "name",
+            default:     transformerName(templateIndex[template].description.replace(periodPattern, "")),
+            message:     "Name:",
+            name:        "name",
+            transformer: transformerName,
         };
 
-        const nameAnswer = await inquirer.prompt([nameQuestion]) as { name: string };
+        const name = transformerName((await inquirer.prompt([nameQuestion])).name);
 
-        const outputQuestion =
+        const outputQuestion: QuestionCollection<{ output: string }> =
         {
-            default: path.join(process.cwd(), encodeURIComponent(nameAnswer.name as string)),
-            name:    "output",
+            default:  path.join(process.cwd(), name),
+            message:  "Output:",
+            name:     "output",
+            validate: (value: string) => process.platform == "win32" ? windowsPathPattern.test(value) : linuxPathPattern.test(value),
         };
 
-        const outputAnswer = await inquirer.prompt([outputQuestion]) as { output: string };
+        const outputAnswer = await inquirer.prompt([outputQuestion]);
 
         const output = path.isAbsolute(outputAnswer.output)
             ? outputAnswer.output
-            : path.join(process.cwd(), encodeURIComponent(outputAnswer.output as string));
+            : path.join(process.cwd(), outputAnswer.output);
 
-        await Tasks.generate(templateAnswer.template, nameAnswer.name, output);
+        await Tasks.generate(template, name, output);
     }
 }
