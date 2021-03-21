@@ -21,6 +21,9 @@
         "@types/chai": "4.2.15",
         "chai": "4.3.4"
     },
+    "engines": {
+        "node": ">=13.2.0"
+    },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
         "surface",
