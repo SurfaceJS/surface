@@ -14,7 +14,7 @@ type Package = { author: string, name: string };
 const copyFileAsync  = util.promisify(copyFile);
 const readFileAsync  = util.promisify(readFile);
 const writeFileAsync = util.promisify(writeFile);
-const execAsync      = util.promisify(child_process.exec);
+// const execAsync      = util.promisify(child_process.exec);
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,7 +28,7 @@ export default class Tasks
 {
     private static async generate(template: keyof TemplateIndex, name: string, output: string): Promise<void>
     {
-        console.log("Generating files...");
+        console.info("Generating files...");
 
         const entry = templateIndex[template];
 
@@ -61,16 +61,29 @@ export default class Tasks
 
         await writeFileAsync(packagePath, JSON.stringify($package, null, 4));
 
-        console.log("Installing dependencies...");
+        console.info("Installing dependencies...");
 
-        const { stderr } = await execAsync(`cd ${output} && npm install`);
-
-        if (stderr)
+        try
         {
-            console.log(stderr);
-        }
+            await new Promise
+            (
+                (resolve, reject) =>
+                {
+                    const childProcess = child_process.exec("npm install", { cwd: output }, reject);
 
-        console.log(`Done! Open "${output}" and happy coding 😃`);
+                    childProcess.stdout?.on("data", console.info);
+                    childProcess.stderr?.on("data", console.warn);
+
+                    childProcess.on("exit", resolve);
+                },
+            );
+
+            console.info(`Done! Open "${output}" and happy coding 😃`);
+        }
+        catch (error)
+        {
+            console.error(error.message);
+        }
     }
 
     public static async new(): Promise<void>
