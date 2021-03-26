@@ -1,29 +1,32 @@
 import path                                    from "path";
-import { typeGuard }                           from "@surface/core";
+import { deepMerge, isEsm }                    from "@surface/core";
+import type { RequiredProperties }             from "@surface/core";
 import { isFile, lookupFile, removePathAsync } from "@surface/io";
 import type webpack                            from "webpack";
 import { createOnlyDefinedProxy, loadModule }  from "./common.js";
 import Compiler                                from "./compiler.js";
-import type AnalyzerOptions                    from "./types/analyzer-options";
-import type BuildOptions                       from "./types/build-options";
+import type CliAnalyzerOptions                 from "./types/cli-analyzer-options";
+import type CliBuildOptions                    from "./types/cli-build-options";
+import type CliDevServerOptions                from "./types/cli-dev-serve-options";
+import type CliOptions                         from "./types/cli-options";
 import type Configuration                      from "./types/configuration";
-import type DevServerOptions                   from "./types/dev-serve-options";
-import type Options                            from "./types/options";
+import type WebpackExtension                   from "./types/webpack-extension.js";
 
 export default class Tasks
 {
-    private static createDefaults(): Required<Pick<Configuration, "context" | "entry" | "filename" | "output" | "tsconfig">>
+    private static createDefaults(): Required<Pick<Configuration, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">>
     {
         return {
-            context:  ".",
-            entry:    "./source/index.ts",
-            filename: "[name].js",
-            output:   "./build",
-            tsconfig: "./tsconfig.json",
+            context:    ".",
+            entry:      "./source/index.ts",
+            filename:   "[name].js",
+            output:     "./build",
+            publicPath: "/",
+            tsconfig:   "./tsconfig.json",
         };
     }
 
-    private static async optionsToConfiguration(options: Options & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
+    private static async optionsToConfiguration(options: CliOptions & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
     {
         const cwd = process.cwd();
 
@@ -33,7 +36,7 @@ export default class Tasks
                 ? options.project
                 : path.resolve(cwd, options.project);
 
-        const configuration: Configuration = createOnlyDefinedProxy
+        const cliConfiguration: Configuration = createOnlyDefinedProxy
         ({
             context:       options.context,
             copyFiles:     options.copyFiles,
@@ -46,10 +49,14 @@ export default class Tasks
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
             useWorkbox:    options.useWorkbox,
-            webpackConfig: (options.webpackConfig && Tasks.resolveModule(await loadModule(options.webpackConfig))) as webpack.Configuration | undefined,
+            webpack:       options.webpackConfiguration || options.webpackPostConfiguration
+                ? createOnlyDefinedProxy({
+                    configuration:     options.webpackConfiguration     ? Tasks.resolveModule(await loadModule(options.webpackConfiguration)) : undefined,
+                    postConfiguration: options.webpackPostConfiguration ? Tasks.resolveModule(await loadModule(options.webpackPostConfiguration)) : undefined,
+                }) as WebpackExtension : undefined,
         });
 
-        Tasks.resolvePaths(configuration, cwd);
+        Tasks.resolvePaths(cliConfiguration, cwd);
 
         const projectPath = isFile(project)
             ? project
@@ -69,24 +76,61 @@ export default class Tasks
 
             const projectConfiguration = Tasks.resolveModule(await loadModule(projectPath)) as Configuration;
 
-            if (projectPath.endsWith(".json"))
+            const isJson = projectPath.endsWith(".json");
+
+            if (isJson)
             {
                 Tasks.resolvePaths(projectConfiguration, path.dirname(projectPath));
             }
 
-            return { ...defaults, ...projectConfiguration, ...configuration };
+            const configuration = { ...defaults, ...projectConfiguration, ...cliConfiguration, webpack: { ...projectConfiguration.webpack, ...cliConfiguration.webpack } };
+
+            if (configuration.compilations)
+            {
+                for (const compilation of configuration.compilations)
+                {
+                    Object.assign(compilation, deepMerge(configuration, compilation), { compilations: undefined } as Configuration);
+
+                    if (isJson)
+                    {
+                        Tasks.resolvePaths(compilation, path.dirname(projectPath));
+
+                        if (typeof compilation.webpack?.configuration == "string")
+                        {
+                            compilation.webpack.configuration = (Tasks.resolveModule(await loadModule(compilation.webpack.configuration))) as WebpackExtension["configuration"];
+                        }
+
+                        if (typeof compilation.webpack?.postConfiguration == "string")
+                        {
+                            compilation.webpack.postConfiguration = (Tasks.resolveModule(await loadModule(compilation.webpack.postConfiguration))) as WebpackExtension["postConfiguration"];
+                        }
+                    }
+                }
+            }
+
+            if (typeof configuration.webpack?.configuration == "string")
+            {
+                configuration.webpack.configuration = (Tasks.resolveModule(await loadModule(configuration.webpack.configuration))) as webpack.Configuration;
+            }
+
+            if (typeof configuration.webpack?.postConfiguration == "string")
+            {
+                configuration.webpack.postConfiguration = (Tasks.resolveModule(await loadModule(configuration.webpack.postConfiguration))) as WebpackExtension["postConfiguration"];
+            }
+
+            return configuration;
         }
 
         Tasks.resolvePaths(defaults, cwd);
 
-        return { ...defaults, ...configuration };
+        return { ...defaults, ...cliConfiguration };
     }
 
     private static resolveModule(module: unknown): unknown
     {
-        if (module && typeof module == "object" && typeGuard<{ default: unknown }>(module, "default" in module))
+        if (isEsm(module) && Reflect.has(module, "default"))
         {
-            return module.default;
+            return Reflect.get(module, "default");
         }
 
         return module;
@@ -126,29 +170,16 @@ export default class Tasks
             Tasks.resolvePath(configuration, "eslintrc", root);
         }
 
-        Tasks.resolvePath(configuration, "context",      root);
-        Tasks.resolvePath(configuration, "htmlTemplate", root);
-        Tasks.resolvePath(configuration, "output",       root);
-        Tasks.resolvePath(configuration, "tsconfig",     root);
+        Tasks.resolvePath(configuration, "context",       root);
+        Tasks.resolvePath(configuration, "htmlTemplate",  root);
+        Tasks.resolvePath(configuration, "output",        root);
+        Tasks.resolvePath(configuration, "tsconfig",      root);
 
-        // if (Array.isArray(configuration.copyFiles))
-        // {
-        //     configuration.copyFiles.forEach
-        //     (
-        //         (element, index, source) =>
-        //         {
-        //             if (typeof element == "string")
-        //             {
-        //                 Tasks.resolvePath(source, index, root);
-        //             }
-        //             else
-        //             {
-        //                 Tasks.resolvePath(element, "from", root);
-        //                 Tasks.resolvePath(element, "to",   root);
-        //             }
-        //         },
-        //     );
-        // }
+        if (configuration.webpack)
+        {
+            Tasks.resolvePath(configuration.webpack, "configuration", root);
+            Tasks.resolvePath(configuration.webpack, "postConfiguration", root);
+        }
 
         if (Array.isArray(configuration.forceTs))
         {
@@ -156,21 +187,22 @@ export default class Tasks
         }
     }
 
-    public static async analyze(options: Options & AnalyzerOptions): Promise<void>
+    public static async analyze(options: CliOptions & CliAnalyzerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const analyzerOptions: AnalyzerOptions =
+        const analyzerOptions: RequiredProperties<CliAnalyzerOptions> =
         {
+            analyzerHost:   options.analyzerHost,
             analyzerMode:   options.analyzerMode,
+            analyzerPort:   options.analyzerPort,
             defaultSizes:   options.defaultSizes,
-            exclude:        options.exclude,
-            host:           options.host,
-            logLevel:       options.logLevel,
+            excludeAssets:  options.excludeAssets,
+            logging:        options.logging,
             mode:           options.mode,
-            open:           options.open,
-            port:           options.port,
+            openAnalyzer:   options.openAnalyzer,
             reportFilename: options.reportFilename,
+            reportTitle:    options.reportTitle,
         };
 
         await removePathAsync(configuration.output!);
@@ -178,15 +210,15 @@ export default class Tasks
         await Compiler.analyze(configuration, createOnlyDefinedProxy(analyzerOptions));
     }
 
-    public static async build(options: Options & BuildOptions): Promise<void>
+    public static async build(options: CliOptions & CliBuildOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const buildOptions: BuildOptions =
+        const buildOptions: RequiredProperties<CliBuildOptions> =
         {
-            logLevel: options.logLevel,
-            mode:     options.mode,
-            watch:    options.watch,
+            logging: options.logging,
+            mode:    options.mode,
+            watch:   options.watch,
         };
 
         await removePathAsync(configuration.output!);
@@ -196,16 +228,30 @@ export default class Tasks
             : await Compiler.run(configuration, createOnlyDefinedProxy(buildOptions));
     }
 
-    public static async serve(options: Options & DevServerOptions): Promise<void>
+    public static async serve(options: CliOptions & CliDevServerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const devServerOptions: DevServerOptions =
+        const devServerOptions: RequiredProperties<CliDevServerOptions> =
         {
-            host:     options.host,
-            hot:      options.hot,
-            logLevel: options.logLevel,
-            port:     options.port,
+            compress:              options.compress,
+            contentBase:           options.contentBase,
+            contentBasePublicPath: options.contentBasePublicPath,
+            host:                  options.host,
+            hot:                   options.hot,
+            hotOnly:               options.hotOnly,
+            index:                 options.index,
+            lazy:                  options.lazy,
+            liveReload:            options.liveReload,
+            logging:               options.logging,
+            open:                  options.open,
+            openPage:              options.openPage,
+            port:                  options.port,
+            public:                options.public,
+            quiet:                 options.quiet,
+            useLocalIp:            options.useLocalIp,
+            watchContentBase:      options.watchContentBase,
+            writeToDisk:           options.writeToDisk,
         };
 
         await removePathAsync(configuration.output!);

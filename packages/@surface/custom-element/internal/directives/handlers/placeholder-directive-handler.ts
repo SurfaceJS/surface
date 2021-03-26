@@ -1,9 +1,10 @@
-import type { IDisposable, Indexer }       from "@surface/core";
-import { CancellationTokenSource, assert } from "@surface/core";
-import { TypeGuard }                       from "@surface/expression";
-import type { Subscription }               from "@surface/reactive";
+import type { IDisposable, Indexer }                           from "@surface/core";
+import { CancellationTokenSource, DisposableMetadata, assert } from "@surface/core";
+import { TypeGuard }                                           from "@surface/expression";
+import type { Subscription }                                   from "@surface/reactive";
 import
 {
+    inheritScope,
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryEvaluatePatternByTraceable,
@@ -36,7 +37,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
     {
-        super(scope, context, host);
+        super(inheritScope(scope), context, host);
 
         this.template  = template;
         this.directive = directive;
@@ -161,6 +162,8 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             this.metadata.placeholders.delete(this.key);
 
             this.templateBlock.dispose();
+
+            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

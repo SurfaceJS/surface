@@ -670,7 +670,7 @@ export default class TemplateProcessorSpec
 
         host.order = 1;
 
-        host.shadowRoot.innerHTML = "<template #if=\"host.order == 1\"><span>First</span></template><template>Ignore me</template>>";
+        host.shadowRoot.innerHTML = "<template #if=\"host.order == 1\"><span>First</span></template><template>Ignore me</template>";
 
         process(host, host.shadowRoot);
 
@@ -717,6 +717,40 @@ export default class TemplateProcessorSpec
         await scheduler.whenDone();
 
         chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
+    }
+
+    @test @shouldPass
+    public async templateWithReusedConditionalDirective(): Promise<void>
+    {
+        const host = getHost<{ description?: string }>();
+
+        host.description = "";
+
+        host.shadowRoot.innerHTML = "<span #if=\"host.description\">Text</span>";
+
+        process(host, host.shadowRoot);
+
+        await scheduler.whenDone();
+
+        chai.assert.equal(host.shadowRoot.firstElementChild, null);
+
+        host.description = "Not Empty";
+
+        await scheduler.whenDone();
+
+        chai.assert.equal(host.shadowRoot.firstElementChild!.textContent, "Text");
+
+        host.description = "Still Not Empty";
+
+        await scheduler.whenDone();
+
+        chai.assert.equal(host.shadowRoot.firstElementChild!.textContent, "Text");
+
+        host.description = "";
+
+        await scheduler.whenDone();
+
+        chai.assert.equal(host.shadowRoot.firstElementChild, null);
     }
 
     @test @shouldPass

@@ -1,0 +1,1 @@
+Provides mocking module import capability.

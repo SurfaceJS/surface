@@ -8,7 +8,6 @@ import PrototypeMetadata                          from "../metadata/prototype-me
 import StaticMetadata                             from "../metadata/static-metadata.js";
 import TemplateParser                             from "../parsers/template-parser.js";
 import TemplateProcessor                          from "../processors/template-processor.js";
-import { scheduler }                              from "../singletons.js";
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
@@ -25,45 +24,7 @@ function wraperPrototype(prototype: ICustomElement): void
         }
     };
 
-    const connectedCallback = (callback?: ICustomElement["connectedCallback"]): ICustomElement["connectedCallback"] => function (this: ICustomElement)
-    {
-        const action = (): void =>
-        {
-            const root = this.getRootNode();
-
-            if (root instanceof ShadowRoot)
-            {
-                const metadata = Metadata.from(this);
-
-                if (root.host != metadata.host)
-                {
-                    metadata.host = root.host;
-
-                    DisposableMetadata.from(root.host).add(this);
-                }
-            }
-        };
-
-        void scheduler.enqueue(action, "high");
-
-        callback?.call(this);
-    };
-
-    const disconnectedCallback = (callback?: ICustomElement["disconnectedCallback"]): ICustomElement["disconnectedCallback"] => function (this: ICustomElement)
-    {
-        const host = Metadata.from(this).host;
-
-        if (host)
-        {
-            DisposableMetadata.from(host).remove(this);
-        }
-
-        callback?.call(this);
-    };
-
     wraperLifecycle(prototype, "attributeChangedCallback", attributeChangedCallback);
-    wraperLifecycle(prototype, "connectedCallback", connectedCallback);
-    wraperLifecycle(prototype, "disconnectedCallback", disconnectedCallback);
 }
 
 function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomElement, key: K, action: Delegate<[ICustomElement[K]], ICustomElement[K]>): void

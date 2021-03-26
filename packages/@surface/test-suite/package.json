@@ -5,12 +5,12 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
-    "description": "Oriented object test suite powered by mocha.",
+    "description": "Provides decorators for testing with mocha using the OOP approach.",
     "devDependencies": {
-        "@types/chai": "4.2.14",
-        "chai": "4.2.0"
+        "@types/chai": "4.2.15",
+        "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
@@ -23,7 +23,7 @@
     "main": "index.js",
     "name": "@surface/test-suite",
     "peerDependencies": {
-        "mocha": "8.2.1"
+        "mocha": "^8.3.2"
     },
     "repository": {
         "type": "git",

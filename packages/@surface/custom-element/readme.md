@@ -1,1 +1,1 @@
-## Base class used to define custom elements. ##
+Provides support of directives and data binding on custom elements.

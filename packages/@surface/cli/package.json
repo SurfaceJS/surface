@@ -1,0 +1,43 @@
+{
+    "author": "HitalloExiled",
+    "bin": {
+        "surface": "./index.js"
+    },
+    "bugs": {
+        "url": "https://github.com/SurfaceJS/modules/issues"
+    },
+    "dependencies": {
+        "@surface/core": "file:../core",
+        "@surface/io": "file:../io",
+        "@types/inquirer": "7.3.1",
+        "@types/node": "14.14.35",
+        "commander": "7.1.0",
+        "inquirer": "8.0.0",
+        "tslib": "2.1.0"
+    },
+    "description": "Provides command line interface for scaffolding surface projects.",
+    "devDependencies": {
+        "@surface/test-suite": "file:../test-suite",
+        "@types/chai": "4.2.15",
+        "chai": "4.3.4"
+    },
+    "engines": {
+        "node": ">=13.2.0"
+    },
+    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "keywords": [
+        "surface",
+        "typescript",
+        "cli"
+    ],
+    "license": "MIT",
+    "main": "index.js",
+    "name": "@surface/cli",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SurfaceJS/modules.git"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "version": "0.1.0-alpha.1"
+}

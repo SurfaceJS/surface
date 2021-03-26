@@ -14,7 +14,7 @@ export function createOnlyDefinedProxy<T extends object>(target: T): T
 {
     const handler: ProxyHandler<T> =
     {
-        has:     (target, key: keyof T) => key in target && !Object.is(target[key], undefined),
+        has:     (target, key) => key in target && !Object.is(target[key as keyof T], undefined),
         ownKeys: target => Object.entries(target).filter(x => !Object.is(x[1], undefined)).map(x => x[0]),
     };
 
@@ -47,6 +47,22 @@ export const parsePattern = (pattern: RegExp) =>
         throw new Error(`'${value}' dont match the pattern ${pattern}`);
     };
 
+export const toBooleanOrParsePattern = (pattern: RegExp) =>
+    (value: string = ""): string | boolean =>
+    {
+        if (value)
+        {
+            if (booleanPattern.test(value))
+            {
+                return value == value.toLowerCase();
+            }
+
+            return parsePattern(pattern)(value);
+        }
+
+        return true;
+    };
+
 export function toArray(value: string = ""): string[]
 {
     return value.split(",");
@@ -54,11 +70,17 @@ export function toArray(value: string = ""): string[]
 
 export function toBoolean(value: string = ""): boolean
 {
-    return !value
-        ? false
-        : booleanPattern.test(value)
-            ? value.toLowerCase() == "true"
-            : false;
+    return booleanPattern.test(value) ? value.toLowerCase() == "true" : false;
+}
+
+export function toNumberOrBooleanOrStringArray(value: string = ""): boolean | string[] | number
+{
+    if (!Number.isNaN(Number(value)))
+    {
+        return Number(value);
+    }
+
+    return toBooleanOrStringArray(value);
 }
 
 export function toBooleanOrStringArray(value: string): boolean | string[]

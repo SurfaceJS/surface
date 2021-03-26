@@ -1,0 +1,3 @@
+<img #if="host.value" @click="host.fileInput.click()" :src="host.value">
+<img #else            @click="host.fileInput.click()" src="../../assets/profile-placeholder.png">
+<input id="fileInput" type="file">

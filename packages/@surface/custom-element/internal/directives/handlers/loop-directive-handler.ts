@@ -1,12 +1,12 @@
-import type { Delegate, IDisposable }                                        from "@surface/core";
-import { CancellationTokenSource }                                           from "@surface/core";
-import { TypeGuard }                                                         from "@surface/expression";
-import type { Subscription }                                                 from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
-import type ILoopDirective                                                   from "../../interfaces/loop-directive";
-import { scheduler }                                                         from "../../singletons.js";
-import TemplateBlock                                                         from "../template-block.js";
-import TemplateDirectiveHandler                                              from "./template-directive-handler.js";
+import type { Delegate, IDisposable }                                                      from "@surface/core";
+import { CancellationTokenSource, DisposableMetadata }                                     from "@surface/core";
+import { TypeGuard }                                                                       from "@surface/expression";
+import type { Subscription }                                                               from "@surface/reactive";
+import { inheritScope, tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
+import type ILoopDirective                                                                 from "../../interfaces/loop-directive";
+import { scheduler }                                                                       from "../../singletons.js";
+import TemplateBlock                                                                       from "../template-block.js";
+import TemplateDirectiveHandler                                                            from "./template-directive-handler.js";
 
 export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 {
@@ -23,7 +23,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
     {
-        super(scope, context, host);
+        super(inheritScope(scope), context, host);
 
         this.template  = template;
         this.directive = directive;
@@ -37,7 +37,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(scope, directive, listener, true);
+        this.subscription = tryObserveByObservable(this.scope, directive, listener, true);
 
         listener();
     }
@@ -117,6 +117,8 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
             this.subscription.unsubscribe();
             this.templateBlock.dispose();
+
+            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

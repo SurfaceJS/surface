@@ -1,0 +1,56 @@
+@import "../../styles/colors.scss";
+@import "../../styles/mixins.scss";
+
+:host
+{
+    @include host-defaults;
+
+    #root
+    {
+        @include root-defaults;
+
+        flex-direction: row;
+        padding:        4px;
+
+        span, input
+        {
+            overflow:      hidden;
+            text-overflow: ellipsis;
+            white-space:   nowrap;
+            width:         100%;
+        }
+
+        input
+        {
+            border:        none;
+            border-bottom: solid 1px $primary;
+            outline:       0;
+            width:         100%;
+        }
+
+        span
+        {
+            margin: auto 0;
+        }
+
+        &.is-editing
+        {
+            z-index:          100;
+            background-color: white;
+            border-radius:    5px;
+
+        }
+    }
+
+    #overlay
+    {
+        background-color: black;
+        height:           100vh;
+        left:             0;
+        opacity:          0.05;
+        position:         fixed;
+        top:              0;
+        width:            100vw;
+        z-index:          99;
+    }
+}

@@ -22,19 +22,32 @@ export const routeValidExpectations: RouteValidExpectation[] =
             pattern:  "/path",
             value:    "",
         },
-        // {
-        //     expected:
-        //     {
-        //         matched:   true,
-        //         routeData:
-        //         {
-        //             parameters: { },
-        //             path:       "/",
-        //         },
-        //     },
-        //     pattern: "",
-        //     value:   "?",
-        // },
+        {
+            expected:
+            {
+                matched:   true,
+                routeData:
+                {
+                    parameters: { },
+                    path:       "/",
+                },
+            },
+            pattern: "",
+            value:   "",
+        },
+        {
+            expected:
+            {
+                matched:   true,
+                routeData:
+                {
+                    parameters: { },
+                    path:       "/",
+                },
+            },
+            pattern: "/",
+            value:   "",
+        },
         {
             expected:
             {
@@ -48,32 +61,6 @@ export const routeValidExpectations: RouteValidExpectation[] =
             pattern: "/path",
             value:   "/path",
         },
-        // {
-        //     expected:
-        //     {
-        //         matched:   true,
-        //         routeData:
-        //         {
-        //             parameters: { },
-        //             path:       "/path",
-        //         },
-        //     },
-        //     pattern: "/path",
-        //     value:   "/path#example",
-        // },
-        // {
-        //     expected:
-        //     {
-        //         matched:   true,
-        //         routeData:
-        //         {
-        //             parameters: { },
-        //             path:       "/path",
-        //         },
-        //     },
-        //     pattern: "/path",
-        //     value:   "/path?value1=1&value2=2",
-        // },
         {
             expected:
             {

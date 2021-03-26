@@ -1,0 +1,16 @@
+{
+    "$schema":     "http://json.schemastore.org/web-manifest",
+    "description": "Surface Todo List",
+    "dir":         "rtl",
+    "display":     "standalone",
+    "icons":
+    [
+        { "sizes": "200x200", "src": "./source/assets/app-icon.png" }
+    ],
+    "lang":          "pt-BR",
+    "name":          "Todo List",
+    "orientation":   "portrait-primary",
+    "serviceworker": { "src": "/service-worker.js" },
+    "short_name":    "Todo",
+    "start_url":     "/"
+}

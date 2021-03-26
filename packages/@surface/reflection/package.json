@@ -6,13 +6,13 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "reflect-metadata": "0.1.13",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
-    "description": "Module for reflection capability.",
+    "description": "Provides reflection capability.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.14",
-        "chai": "4.2.0"
+        "@types/chai": "4.2.15",
+        "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

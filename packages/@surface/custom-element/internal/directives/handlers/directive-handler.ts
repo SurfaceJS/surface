@@ -1,7 +1,9 @@
-import type { IDisposable }  from "@surface/core";
-import type { Subscription } from "@surface/reactive";
+import type { IDisposable }   from "@surface/core";
+import { DisposableMetadata } from "@surface/core";
+import type { Subscription }  from "@surface/reactive";
 import
 {
+    inheritScope,
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
@@ -22,14 +24,14 @@ export default abstract class DirectiveHandler implements IDisposable
 
     public constructor(scope: object, element: HTMLElement, directive: ICustomDirective)
     {
-        this.scope      = scope;
+        this.scope      = inheritScope(scope);
         this.element    = element;
         this.directive  = directive;
 
         this.onBeforeBind?.();
 
-        this.keySubscription = tryObserveKeyByObservable(scope, directive, this.keyNotify.bind(this), true);
-        this.subscription    = tryObserveByObservable(scope, directive,    this.valueNotify.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, this.keyNotify.bind(this), true);
+        this.subscription    = tryObserveByObservable(this.scope, directive,    this.valueNotify.bind(this), true);
 
         this.keyNotify();
         this.valueNotify();
@@ -70,6 +72,8 @@ export default abstract class DirectiveHandler implements IDisposable
 
         this.keySubscription.unsubscribe();
         this.subscription.unsubscribe();
+
+        DisposableMetadata.from(this.scope).dispose();
 
         this.onAfterUnbind?.();
     }

@@ -1,0 +1,73 @@
+@mixin flex
+{
+    box-sizing:     border-box;
+    display:        inline-flex;
+    flex-direction: column;
+    flex:           0 0 auto;
+    outline:        0;
+    position:       relative;
+    will-change:    box-shadow;
+}
+
+@mixin inherits-boundary
+{
+    height: inherit;
+    width:  inherit;
+
+    max-height: inherit;
+    max-width:  inherit;
+
+    min-height: inherit;
+    min-width:  inherit;
+
+    z-index:  inherit;
+}
+
+@mixin host-defaults
+{
+    -webkit-tap-highlight-color: transparent;
+
+    box-sizing:     border-box;
+    caret-color:    currentColor;
+    display:        inline-flex;
+    flex:           0 0 auto;
+    font-family:    "Roboto", "sans-serif";
+    font-size:      14px;
+    outline:        0;
+    vertical-align: middle;
+}
+
+@mixin hoverable
+{
+    &::before
+    {
+        background-color: currentColor;
+        border-radius:    inherit;
+        bottom:           0;
+        color:            inherit;
+        content:          "";
+        left:             0;
+        opacity:          0;
+        pointer-events:   none;
+        position:         absolute;
+        right:            0;
+        top:              0;
+        transition:       opacity 0.2s cubic-bezier(0.4, 0, 0.6, 1);
+    }
+
+    &:active::before
+    {
+        opacity: 0.5;
+    }
+
+    &:hover::before
+    {
+        opacity: 0.2;
+    }
+}
+
+@mixin root-defaults
+{
+    @include inherits-boundary;
+    @include flex;
+}

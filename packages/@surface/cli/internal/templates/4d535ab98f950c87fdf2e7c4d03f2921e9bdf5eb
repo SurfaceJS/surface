@@ -1,0 +1,28 @@
+@import "../../styles/mixins.scss";
+
+:host
+{
+    @include host-defaults;
+
+    font-size: inherit;
+
+    i
+    {
+        -webkit-font-smoothing: antialiased;
+
+        direction:             ltr;
+        display:               inline-block;
+        font-display:          block;
+        font-family:           'Material Icons';
+        font-feature-settings: 'liga';
+        font-size:             inherit;
+        font-style:            normal;
+        font-weight:           normal;
+        letter-spacing:        normal;
+        pointer-events:        none;
+        text-rendering:        optimizeLegibility;
+        text-transform:        none;
+        white-space:           nowrap;
+        word-wrap:             normal;
+    }
+}

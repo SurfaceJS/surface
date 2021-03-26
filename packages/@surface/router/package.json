@@ -7,13 +7,13 @@
         "@surface/collection": "file:../collection",
         "@surface/core": "file:../core",
         "@surface/enumerable": "file:../enumerable",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
-    "description": "Client/Server Side Router.",
+    "description": "Generic router for extension purposes.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.14",
-        "chai": "4.2.0"
+        "@types/chai": "4.2.15",
+        "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

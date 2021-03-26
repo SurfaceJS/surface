@@ -1,8 +1,9 @@
-import { Hookable }                            from "@surface/core";
+import { DisposableMetadata, Hookable }                            from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import computed                                from "../internal/decorators/computed.js";
 import notify                                  from "../internal/decorators/notify.js";
+import Metadata from "../internal/metadata.js";
 import Reactive                                from "../internal/reactive.js";
 
 @suite
@@ -346,6 +347,27 @@ export default class ReactiveSpec
         target.recalculate();
 
         chai.assert.equal(target.sum, receiver);
+    }
+
+    @test @shouldPass
+    public dispose(): void
+    {
+        const property = { a: { value: 1 } };
+
+        const target1 = { property };
+
+        Reactive.from(target1, ["property", "a", "value"]);
+
+        const propertyMetadata  = Metadata.from(target1.property);
+        const propertyAMetadata = Metadata.from(target1.property.a);
+
+        chai.assert.equal(propertyMetadata.subjects.get("a")!.size, 1);
+        chai.assert.equal(propertyAMetadata.subjects.get("value")!.size, 1);
+
+        DisposableMetadata.from(target1).dispose();
+
+        chai.assert.equal(propertyMetadata.subjects.get("a")!.size, 0);
+        chai.assert.equal(propertyAMetadata.subjects.get("value")!.size, 0);
     }
 
     @test @shouldFail

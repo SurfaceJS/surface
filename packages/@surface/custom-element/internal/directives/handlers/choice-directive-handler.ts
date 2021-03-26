@@ -1,11 +1,11 @@
-import type { IDisposable }                              from "@surface/core";
-import { CancellationTokenSource, assert }               from "@surface/core";
-import type { Subscription }                             from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
-import type IChoiceBranchDirective                       from "../../interfaces/choice-branch-directive";
-import { scheduler }                                     from "../../singletons.js";
-import TemplateBlock                                     from "../template-block.js";
-import TemplateDirectiveHandler                          from "./template-directive-handler.js";
+import type { IDisposable }                                           from "@surface/core";
+import { CancellationTokenSource, DisposableMetadata, assert }        from "@surface/core";
+import type { Subscription }                                          from "@surface/reactive";
+import { inheritScope, tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
+import type IChoiceBranchDirective                                    from "../../interfaces/choice-branch-directive";
+import { scheduler }                                                  from "../../singletons.js";
+import TemplateBlock                                                  from "../template-block.js";
+import TemplateDirectiveHandler                                       from "./template-directive-handler.js";
 
 type Choice =
 {
@@ -23,9 +23,11 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
     private currentDisposable: IDisposable | null = null;
     private disposed: boolean                     = false;
 
+    private currentChoice?: Choice;
+
     public constructor(scope: object, context: Node, host: Node, templates: HTMLTemplateElement[], branches: IChoiceBranchDirective[])
     {
-        super(scope, context, host);
+        super(inheritScope(scope), context, host);
 
         assert(templates[0].parentNode);
 
@@ -40,7 +42,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
             const branche  = branches[index];
             const template = templates[index];
 
-            this.subscriptions.push(tryObserveByObservable(scope, branche, listener, true));
+            this.subscriptions.push(tryObserveByObservable(this.scope, branche, listener, true));
 
             this.choices.push({ branche, template });
 
@@ -52,24 +54,34 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
     private task(): void
     {
-        this.currentDisposable?.dispose();
-        this.currentDisposable = null;
-
-        this.templateBlock.clear();
-
         for (const choice of this.choices)
         {
             if (tryEvaluateExpression(this.scope, choice.branche.expression, choice.branche.rawExpression, choice.branche.stackTrace))
             {
-                const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, choice.template, choice.branche.descriptor);
+                if (choice != this.currentChoice)
+                {
+                    this.currentChoice = choice;
 
-                this.currentDisposable = disposable;
+                    this.currentDisposable?.dispose();
 
-                this.templateBlock.setContent(content);
+                    this.templateBlock.clear();
+
+                    const [content, disposable] = this.processTemplate({ ...this.scope }, this.context, this.host, choice.template, choice.branche.descriptor);
+
+                    this.templateBlock.setContent(content);
+
+                    this.currentDisposable = disposable;
+                }
 
                 return;
             }
         }
+
+        this.currentDisposable?.dispose();
+
+        this.templateBlock.clear();
+
+        this.currentChoice = undefined;
     }
 
     public dispose(): void
@@ -83,6 +95,7 @@ export default class ChoiceDirectiveHandler extends TemplateDirectiveHandler
 
             this.templateBlock.clear();
             this.templateBlock.dispose();
+            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

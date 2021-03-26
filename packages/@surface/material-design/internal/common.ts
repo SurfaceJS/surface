@@ -1,12 +1,12 @@
 /* eslint-disable sort-keys */
-import type { Indexer }                                    from "@surface/core";
-import { camelToDashed, objectFactory, pathfy, typeGuard } from "@surface/core";
-import { hexToHsva, hsvaToHex }                            from "./colors/converters.js";
-import { interpolateSwatches, scaleSwatches }              from "./colors/swatches.js";
-import type RawPalette                                     from "./types/raw-palette";
-import type RawTheme                                       from "./types/raw-theme";
-import type Shades                                         from "./types/shades";
-import type Swatch                                         from "./types/swatch";
+import type { Indexer }                       from "@surface/core";
+import { camelToDashed, pathfy, typeGuard }   from "@surface/core";
+import { hexToHsva, hsvaToHex }               from "./colors/converters.js";
+import { interpolateSwatches, scaleSwatches } from "./colors/swatches.js";
+import type RawPalette                        from "./types/raw-palette";
+import type RawTheme                          from "./types/raw-theme";
+import type Shades                            from "./types/shades";
+import type Swatch                            from "./types/swatch";
 
 type Theme<T extends RawPalette | RawTheme> =
     T extends RawPalette
@@ -15,7 +15,7 @@ type Theme<T extends RawPalette | RawTheme> =
             ? { [K in keyof T]-?: { [K1 in keyof T[K]]: Shades } }
             : never;
 
-function interpolate(color: string|Shades): [string, string][]
+function interpolate(color: string | Shades): [string, string][]
 {
     const entries = typeof color == "string" ? [["500", color]] : Object.entries(color) as [string, string][];
 
@@ -69,7 +69,7 @@ export function generateTheme<T extends RawPalette|RawTheme>(raw: T): Theme<T>
 
             for (const [name, color] of Object.entries(themeValue) as [string, string|Shades][])
             {
-                theme[name] = objectFactory(interpolate(color));
+                theme[name] = Object.fromEntries(interpolate(color));
             }
         }
     }
@@ -79,7 +79,7 @@ export function generateTheme<T extends RawPalette|RawTheme>(raw: T): Theme<T>
 
         for (const [name, color] of Object.entries(raw))
         {
-            theme[name] = objectFactory(interpolate(color));
+            theme[name] = Object.fromEntries(interpolate(color));
         }
     }
 

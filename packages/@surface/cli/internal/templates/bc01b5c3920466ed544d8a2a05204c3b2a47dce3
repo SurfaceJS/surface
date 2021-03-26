@@ -1,0 +1,89 @@
+@import "../../styles/colors.scss";
+@import "../../styles/mixins.scss";
+@import "../../styles/functions.scss";
+
+:host
+{
+    @include host-defaults;
+
+    height:           100vh;
+    left:             0;
+    position:         fixed;
+    top:              0;
+    width:            100vw;
+    z-index:          99;
+    display:          flex;
+
+    #root
+    {
+        background-color: transparent;
+        display:          flex;
+        flex-direction:   column;
+        margin:           auto;
+        padding:          10px 20px;
+        z-index:          100;
+
+
+        @keyframes rotateit
+        {
+            from
+            {
+                transform: rotate(360deg);
+            }
+            to
+            {
+                transform: rotate(0deg);
+            }
+        }
+
+        #spinner
+        {
+            margin:    auto;
+            animation: rotateit 1.3s linear infinite;
+            height:    100px;
+            position:  relative;
+            width:     100px;
+
+            .circles
+            {
+                background:    $primary;
+                border-radius: 50%;
+                height:        20px;
+                left:          45px;
+                position:      absolute;
+                top:           35px;
+                width:         20px;
+
+                @for $index from 1 to 9
+                {
+                    $value: 1 - ((10 / 8 * 0.1) * $index);
+
+                    &:nth-child(#{$index})
+                    {
+                        transform: rotate(#{$index * 45}deg) translate(0, -35px) scale($value);
+                        opacity:   $value;
+                    }
+                }
+            }
+        }
+
+
+        #title
+        {
+            margin:         10px auto auto auto;
+            color:          $primary;
+            font-size:      16px;
+            font-weight:    500;
+            text-transform: uppercase;
+        }
+    }
+
+    #overlay
+    {
+        background-color: white;
+        opacity:          0.75;
+        position:         fixed;
+        height:           100vh;
+        width:            100vw;
+    }
+}

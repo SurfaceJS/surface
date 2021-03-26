@@ -1,22 +1,24 @@
-import { Stack }                                 from "@surface/collection";
-import type { Constructor }                      from "@surface/core";
-import { Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import type { DirectiveHandlerRegistry }         from "@surface/custom-element/internal/types";
-import Container                                 from "@surface/dependency-injection";
-import Router                                    from "@surface/router";
-import type { RouteData }                        from "@surface/router";
-import type IMiddleware                          from "./interfaces/middleware";
-import type IRouteableElement                    from "./interfaces/routeable-element";
-import Metadata                                  from "./metadata.js";
-import NavigationDirectiveHandler                from "./navigation-directive-handler.js";
-import RouteConfigurator                         from "./route-configurator.js";
-import type Component                            from "./types/component";
-import type Module                               from "./types/module";
-import type NamedRoute                           from "./types/named-route";
-import type Route                                from "./types/route";
-import type RouteConfiguration                   from "./types/route-configuration";
-import type RouteDefinition                      from "./types/route-definition";
-import type ViewRouterOptions                    from "./types/view-router-options";
+import { Stack }                                        from "@surface/collection";
+import type { Constructor, IDisposable }                from "@surface/core";
+import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import type { DirectiveHandlerRegistry }                from "@surface/custom-element";
+import { observe }                                      from "@surface/custom-element";
+import Container                                        from "@surface/dependency-injection";
+import Router                                           from "@surface/router";
+import type { RouteData }                               from "@surface/router";
+import type IRouteableElement                           from "./interfaces/routeable-element";
+import type IRouterMiddleware                           from "./interfaces/router-interceptor";
+import Metadata                                         from "./metadata.js";
+import NavigationDirectiveHandler                       from "./navigation-directive-handler.js";
+import RouteConfigurator                                from "./route-configurator.js";
+import type Component                                   from "./types/component";
+import type Module                                      from "./types/module";
+import type NamedRoute                                  from "./types/named-route";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type Route                                       from "./types/route";
+import type RouteConfiguration                          from "./types/route-configuration";
+import type RouteDefinition                             from "./types/route-definition";
+import type ViewRouterOptions                           from "./types/view-router-options";
 
 const LEADING_SLASH_PATTERN = /^\//;
 
@@ -26,32 +28,35 @@ export default class WebRouter
     private readonly connectedElements: Stack<IRouteableElement> = new Stack();
     private readonly container:         Container;
     private readonly history:           [URL, RouteDefinition, RouteData][] = [];
-    private readonly middlewares:       IMiddleware[];
+    private readonly interceptors:      IRouterMiddleware[];
     private readonly root:              Lazy<HTMLElement>;
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
-    private cache:    Record<string, IRouteableElement>[] = [];
+    private cache: Record<string, IRouteableElement>[] = [];
     private index:    number  = 0;
     private current?: { definition: RouteDefinition, route: Route };
 
+    public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
+
+    @observe("current")
     public get route(): Route
     {
-        if (this.current)
-        {
-            return this.current.route;
-        }
-
-        throw new Error("Router stack is empty");
+        return this.current?.route
+        ?? {
+            meta:       { },
+            name:       "",
+            parameters: { },
+            url:        new URL(window.location.href),
+        };
     }
 
     public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
     {
         this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
 
-        this.baseUrl     = options.baseUrl      ?? /* c8 ignore next */ "";
-        this.container   = options.container    ?? /* c8 ignore next */ new Container();
-        this.middlewares = (options.middlewares ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
-
+        this.baseUrl      = options.baseUrl       ?? /* c8 ignore next */ "";
+        this.container    = options.container     ?? /* c8 ignore next */ new Container();
+        this.interceptors = (options.interceptors ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(routes))
         {
@@ -64,6 +69,10 @@ export default class WebRouter
                 this.router.map(joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
             }
         }
+
+        this.container.registerSingleton(WebRouter, this as WebRouter);
+
+        window.addEventListener("popstate", () => void this.pushCurrentLocation());
     }
 
     public static createDirectiveRegistry(router: WebRouter): DirectiveHandlerRegistry
@@ -71,13 +80,13 @@ export default class WebRouter
         return { handler: (...args) => new NavigationDirectiveHandler(router, ...args), name: "to" };
     }
 
-    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletSelector = "router-outlet"): void
+    private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletSelector = "router-outlet", reconnect = false): void
     {
         const outlets = Metadata.from(parent).outlets;
 
         let outlet = outlets.get(key) ?? null;
 
-        if (!outlet)
+        if (!outlet || !outlet.isConnected)
         {
             if (!parent.shadowRoot)
             {
@@ -90,15 +99,23 @@ export default class WebRouter
         // istanbul ignore else
         if (outlet)
         {
-            outlets.set(key, outlet);
+            (outlet as Partial<IDisposable>).dispose = () =>
+            {
+                if (this.current?.route == to)
+                {
+                    element.remove();
 
-            element.onEnter?.(to, from);
+                    this.connectToOutlet(parent, element, key, to, from, outletSelector, true);
+                }
+            };
+
+            outlets.set(key, outlet);
 
             const oldElement = outlet.firstElementChild as IRouteableElement | null;
 
             if (oldElement)
             {
-                oldElement.onLeave?.(to, from);
+                oldElement.onRouteLeave?.(to, from);
 
                 oldElement.dispose?.();
 
@@ -107,6 +124,11 @@ export default class WebRouter
             else
             {
                 outlet.appendChild(element);
+            }
+
+            if (!reconnect)
+            {
+                element.onRouteEnter?.(to, from);
             }
 
             this.connectedElements.push(element);
@@ -122,13 +144,15 @@ export default class WebRouter
         const to   = this.createRoute(url, definition, routeData);
         const from = this.current?.route;
 
-        if (!this.invokeMiddleware(to, from))
+        if (!await this.invokeMiddleware(to, from))
         {
-            const hasUpdate = definition == this.current?.definition;
+            const previous  = this.current;
+            const hasUpdate = definition == previous?.definition;
+            const cache     = this.cache.slice(0, definition.stack.length);
+
+            this.current = { definition, route: to };
 
             let parent = this.root.value as IRouteableElement;
-
-            const cache = this.cache.slice(0, definition.stack.length);
 
             for (let index = 0; index < definition.stack.length; index++)
             {
@@ -138,17 +162,17 @@ export default class WebRouter
 
                 this.disconnectFromOutlets(parent, keys, to, from);
 
-                if (entry == this.current?.definition?.stack[index])
+                if (entry == previous?.definition?.stack[index])
                 {
                     const next = cache[index].default ?? cache[index][keys.values().next().value];
 
                     if (hasUpdate)
                     {
-                        next.onUpdate?.(to, from);
+                        next.onRouteUpdate?.(to, from);
                     }
                     else
                     {
-                        next.onEnter?.(to, from);
+                        next.onRouteEnter?.(to, from);
                     }
 
                     parent = next!;
@@ -181,19 +205,16 @@ export default class WebRouter
 
             this.cache = cache;
 
-            if (this.current && this.current.route != to)
-            {
-                Object.assign(this.current.route, to);
-            }
-
             if (!fromHistory)
             {
+                this.history.splice(this.index + 1, Infinity);
+
                 this.history.push([url, definition, routeData]);
 
                 this.index = this.history.length - 1;
             }
 
-            this.current = { definition, route: to };
+            this.routeChangeEvent.notify({ from, to });
         }
     }
 
@@ -201,7 +222,7 @@ export default class WebRouter
     {
         return {
             meta:       definition.meta,
-            name:       definition.name,
+            name:       definition.name ?? "",
             parameters: routeData.parameters,
             url,
         };
@@ -226,7 +247,7 @@ export default class WebRouter
 
                 if (typeGuard<IRouteableElement>(instance, !!instance))
                 {
-                    instance.onLeave?.(to, from);
+                    instance.onRouteLeave?.(to, from);
 
                     instance.dispose?.();
 
@@ -258,24 +279,28 @@ export default class WebRouter
         return this.resolveModule(component);
     }
 
-    private invokeMiddleware(to: Route, from?: Route): boolean
+    private async invokeMiddleware(to: Route, from?: Route): Promise<boolean>
     {
-        let handled = false;
+        let intercepted = false;
 
-        const next = (location: string | NamedRoute): boolean =>
-            (this.push(location), handled = true);
-
-        for (const middleware of this.middlewares)
+        const next = async (location: string | NamedRoute): Promise<void> =>
         {
-            middleware.execute(to, from, next);
+            await this.push(location);
 
-            if (handled)
+            intercepted = true;
+        };
+
+        for (const interceptor of this.interceptors)
+        {
+            await interceptor.intercept(next, to, from);
+
+            if (intercepted)
             {
                 break;
             }
         }
 
-        return handled;
+        return intercepted;
     }
 
     private resolvePath(path: string): URL
@@ -303,6 +328,8 @@ export default class WebRouter
 
             await this.create(url, routeItem, routeData, true);
 
+            window.history.replaceState(null, "", url.href);
+
             this.index = index;
         }
     }
@@ -319,7 +346,7 @@ export default class WebRouter
             {
                 await this.create(url, ...match.value);
 
-                window.history.pushState(null, "", url.href);
+                window.history.pushState(null, "", this.route.url.href);
             }
             else
             {
@@ -352,7 +379,7 @@ export default class WebRouter
 
                 await this.create(url, routeConfig, routeData);
 
-                window.history.pushState(null, "", url.href);
+                window.history.pushState(null, "", this.route.url.href);
             }
             else
             {

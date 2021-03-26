@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "types": [
+            "node"
+        ]
+    },
+    "extends": "../../../tsconfig.json",
+    "files": [
+        "index.ts"
+    ],
+    "include": [
+        "./internal",
+        "./tests"
+    ]
+}

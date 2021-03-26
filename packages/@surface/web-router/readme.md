@@ -1,1 +1,1 @@
-## Web component view manager.
+Web Router compatible with @surface/custom-element.

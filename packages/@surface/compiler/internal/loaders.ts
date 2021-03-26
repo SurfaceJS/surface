@@ -2,27 +2,32 @@ import os from "os";
 
 const loaders =
 {
-    appManifest: { loader: "app-manifest-loader" },
+    appManifest: { loader: "app-manifest-loader", options: { esModule: false } },
     css:         { loader: "css-loader", options: { esModule: false, sourceMap: true } },
     extract:     { loader: "extract-loader" },
     file:
     {
         loader:  "file-loader",
-        options: { name: "[hash].[ext]", outputPath: "resources" },
+        options: { esModule: false, name: "[hash].[ext]" },
     },
-    fileCss:
+    fileAssets:
     {
         loader:  "file-loader",
-        options: { esModule: false, name: "[hash].css", outputPath: "resources" },
+        options: { esModule: false, name: "[hash].[ext]", outputPath: "assets" },
+    },
+    fileAssetsCss:
+    {
+        loader:  "file-loader",
+        options: { esModule: false, name: "[hash].css", outputPath: "assets" },
     },
     html:
     {
         loader:  "html-loader",
         options:
         {
-            attributes: true,
-            esModule:   true,
-            minimize:   true,
+            esModule: false,
+            minimize: true,
+            sources:  true,
         },
     },
     resolveUrl:

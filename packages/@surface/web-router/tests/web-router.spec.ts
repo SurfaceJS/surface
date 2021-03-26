@@ -6,8 +6,8 @@ import CustomElement, { define, element }      from "@surface/custom-element";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
-import type IMiddleware                        from "../internal/interfaces/middleware";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
+import type IRouterInterceptor                  from "../internal/interfaces/router-interceptor";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
@@ -18,6 +18,8 @@ chai.use(chaiAsPromised);
 @element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
 class HomeView extends CustomElement
 {
+    public fullscreen: boolean = false;
+
     public onEnter(): void
     {
         // Coverage
@@ -64,19 +66,32 @@ class AboutView extends HTMLElement
 
 const template =
     `
-        <a #to="'/home'"></a>
-        <a #to="'/about'"></a>
-        <router-outlet></router-outlet>
+        <template #if="host.fullscreen">
+            <a #to="'/home'"></a>
+            <a #to="'/about'"></a>
+            <router-outlet></router-outlet>
+        </template>
+        <template #else="host.fullscreen">
+            <div>
+                Header
+            </div>
+            <a #to="'/home'"></a>
+            <a #to="'/about'"></a>
+            <router-outlet></router-outlet>
+        </template>
     `;
 
 @element("app-root", template)
 class AppRoot extends CustomElement
-{ }
+{
+    public fullscreen: boolean = false;
+}
 
 @suite
 export default class WebRouterSpec
 {
-    private readonly router: WebRouter;
+    private readonly appRoot: AppRoot;
+    private readonly router:  WebRouter;
 
     public constructor()
     {
@@ -145,42 +160,56 @@ export default class WebRouterSpec
             },
         ];
 
-        class Middleware implements IMiddleware
+        class Middleware implements IRouterInterceptor
         {
-            public execute(to: Route, _: Route | undefined, next: (route: string | NamedRoute) => void): void
+            public async intercept(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
             {
                 if (to.meta.requireAuth)
                 {
-                    next("/home");
+                    await next("/home");
                 }
             }
         }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", middlewares: [{ execute: () => void 0 },  Middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
 
         CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
 
-        document.body.appendChild(new AppRoot());
+        this.appRoot = document.body.appendChild(new AppRoot());
     }
 
     @test @shouldPass
     public async push(): Promise<void>
     {
+        chai.assert.deepEqual(this.router.route, { meta: { }, name: "", parameters: {}, url: new URL(window.location.href) });
+
         await this.router.pushCurrentLocation();
 
-        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
+        const outlet1 = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
 
-        chai.assert.instanceOf(slot, HTMLElement);
+        chai.assert.instanceOf(outlet1, HTMLElement);
 
         await this.router.push("/home");
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
-        chai.assert.instanceOf(slot.firstElementChild, HomeView, "routerView.firstElementChild instanceOf HomeView");
+        chai.assert.instanceOf(outlet1.firstElementChild, HomeView, "routerView.firstElementChild instanceOf HomeView");
+
+        this.appRoot.fullscreen = true;
+
+        await new Promise(x => setTimeout(x));
+
+        const outlet2 = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
+
+        chai.assert.isFalse(outlet1.isConnected);
+        chai.assert.notEqual(outlet1, outlet2);
+
+        chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
+        chai.assert.instanceOf(outlet2.firstElementChild, HomeView, "routerView.firstElementChild instanceOf HomeView");
 
         await this.router.push("/path1");
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
-        chai.assert.equal(slot.firstElementChild, null, "routerView.firstElementChild instanceOf null");
+        chai.assert.equal(outlet2.firstElementChild, null, "routerView.firstElementChild instanceOf null");
     }
 
     @test @shouldPass
@@ -202,15 +231,12 @@ export default class WebRouterSpec
             url:        new URL("http://localhost.com/base/path/data/post/1?query=1#hash"),
         };
 
-        const actual = this.router.route;
-
-        chai.assert.deepEqual(actual, expected);
+        chai.assert.deepEqual(this.router.route, expected);
 
         await this.router.push("/data/post/2?query=1#hash");
 
         chai.assert.equal(dataView, slot.firstElementChild, "dataView equal slot.firstElementChild");
-        chai.assert.equal(actual.parameters.id, 2, "routeData.parameters.id equal 2");
-        chai.assert.notEqual(this.router.route, actual, "dataView.routeData equal routeData");
+        chai.assert.equal(this.router.route.parameters.id, 2, "routeData.parameters.id equal 2");
     }
 
     @test @shouldPass
@@ -295,8 +321,6 @@ export default class WebRouterSpec
 
         await this.router.push("/forbidden");
 
-        await new Promise(x => window.setTimeout(x));
-
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "slot.firstElementChild to HomeView");
     }
@@ -376,12 +400,6 @@ export default class WebRouterSpec
         chai.assert.equal(windows.length, 2);
 
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "click #to='/home': slot.firstElementChild instanceOf HomeView");
-    }
-
-    @test @shouldFail
-    public emptyStack(): void
-    {
-        chai.assert.throw(() => new WebRouter("app", []).route, Error, "Router stack is empty");
     }
 
     @test @shouldFail

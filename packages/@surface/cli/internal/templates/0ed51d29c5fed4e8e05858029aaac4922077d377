@@ -1,0 +1,3 @@
+<div id="root">
+    <slot></slot>
+</div>

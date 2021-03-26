@@ -1,1 +1,1 @@
-## Simple web host for @surface projects.
+Simple web host for @surface projects.

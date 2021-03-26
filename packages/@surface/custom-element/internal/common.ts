@@ -31,7 +31,7 @@ export function createHostScope(host: HTMLElement): object
     return { $class: classMap, $style: styleMap, host };
 }
 
-export function createScope(scope: object): object
+export function inheritScope(scope: object): object
 {
     const handler: ProxyHandler<Indexer> =
     {
@@ -61,6 +61,16 @@ export function classMap(classes: Record<string, boolean>): string
         .filter(x => x[1])
         .map(x => x[0])
         .join(" ");
+}
+
+export function disposeTree(node: Node & Partial<IDisposable>): void
+{
+    node.dispose?.();
+
+    for (const child of Array.from(node.childNodes) as (Node & Partial<IDisposable>)[])
+    {
+        disposeTree(child);
+    }
 }
 
 export function scapeBrackets(value: string): string

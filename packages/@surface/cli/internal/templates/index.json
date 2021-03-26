@@ -1,0 +1,662 @@
+{
+    "hello-world": {
+        "description": "Simple Hello World application.",
+        "files": [
+            {
+                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "path": ".eslintrc.json"
+            },
+            {
+                "name": "2e2be856f854532f59b0c049f76b8cceaa557311",
+                "path": "package.json"
+            },
+            {
+                "name": "84df6d7d3833c63aeab59570813f0db0cd1b4e0d",
+                "path": "README.md"
+            },
+            {
+                "name": "10f069b09d4c1eceb930a997ebb61fd77746578f",
+                "path": "source/index.ts"
+            },
+            {
+                "name": "88a6ada27c3ea915f5864ce60e87785dbec00515",
+                "path": "surface.json"
+            },
+            {
+                "name": "6b2961317c3169feae2500246b76fee54a3f472e",
+                "path": "template.html"
+            },
+            {
+                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "path": "tsconfig.json"
+            }
+        ]
+    },
+    "hello-world-router": {
+        "description": "Simple Hello World application using router.",
+        "files": [
+            {
+                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "path": ".eslintrc.json"
+            },
+            {
+                "name": "4b68e9148edb6351da267ce9755497f11fab3335",
+                "path": "package.json"
+            },
+            {
+                "name": "3c802da4caa19d08d629f2662c9ef83498657ced",
+                "path": "README.md"
+            },
+            {
+                "name": "2a8076090f8a25bd1dfd73eb9c9b96d3476085d4",
+                "path": "source/app/index.html"
+            },
+            {
+                "name": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+                "path": "source/app/index.scss"
+            },
+            {
+                "name": "00bd762031fec73bb00fc838af7fa75e71ede7c4",
+                "path": "source/app/index.ts"
+            },
+            {
+                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
+                "path": "source/environment.d.ts"
+            },
+            {
+                "name": "2748ea6af9022401729b0e40a799e82f2c0b7dba",
+                "path": "source/index.ts"
+            },
+            {
+                "name": "6b2825b8dc7d97d4dbfcf06e9139f899772f810f",
+                "path": "source/views/hello/index.html"
+            },
+            {
+                "name": "e4d2343bcc10ae77a880434a4fb13eec95495af7",
+                "path": "source/views/hello/index.scss"
+            },
+            {
+                "name": "423097743ade51808752a35d89edcd049dd99e01",
+                "path": "source/views/hello/index.ts"
+            },
+            {
+                "name": "7329ef621492272d4e9d120559d75d4869f59420",
+                "path": "source/views/world/index.html"
+            },
+            {
+                "name": "a09b62dbeb673031bc3094f1d9de7b388d593eb7",
+                "path": "source/views/world/index.scss"
+            },
+            {
+                "name": "aef35e3b0100e27819b29d75583da607c25acd3a",
+                "path": "source/views/world/index.ts"
+            },
+            {
+                "name": "88a6ada27c3ea915f5864ce60e87785dbec00515",
+                "path": "surface.json"
+            },
+            {
+                "name": "8ff8b723737c7954676a470017f01a36112742a0",
+                "path": "template.html"
+            },
+            {
+                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "path": "tsconfig.json"
+            }
+        ]
+    },
+    "pwa": {
+        "description": "PWA Todo application.",
+        "files": [
+            {
+                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "path": ".eslintrc.json"
+            },
+            {
+                "name": "30e3795c13f7adb778f6dd1edce3a1211a93ffe9",
+                "path": "manifest.webmanifest"
+            },
+            {
+                "name": "c783bca687f3a31b4a5882e657ec0d4f5a055fa8",
+                "path": "package.json"
+            },
+            {
+                "name": "d61a65ca1201b740eee33b453120e22f4fc42571",
+                "path": "README.md"
+            },
+            {
+                "name": "6274d015c44c3e3ab7260b473ff31b915be717ac",
+                "path": "source/app/index.html"
+            },
+            {
+                "name": "d365bcfaa2e3d6fedec7ecb8a61a921f19a01072",
+                "path": "source/app/index.scss"
+            },
+            {
+                "name": "8cb580fd74098924e2e113b3c95a23d64712bdf9",
+                "path": "source/app/index.ts"
+            },
+            {
+                "name": "d24cf11c58995c7131a35e511c5be702bb743dd3",
+                "path": "source/assets/app-icon.png"
+            },
+            {
+                "name": "9ec434d120183557c6175c4e86e6e11057ddbdb6",
+                "path": "source/assets/profile-placeholder.png"
+            },
+            {
+                "name": "0ed51d29c5fed4e8e05858029aaac4922077d377",
+                "path": "source/components/app-button/index.html"
+            },
+            {
+                "name": "3c746aabd6c42e8deb98788a7ef66e79c1bc070b",
+                "path": "source/components/app-button/index.scss"
+            },
+            {
+                "name": "e5402d31f7274858022372f490bc5ecc5dd33ac2",
+                "path": "source/components/app-button/index.ts"
+            },
+            {
+                "name": "57116074bcaaff49e9f9dfc83de8436bae41ad62",
+                "path": "source/components/app-icon/font-face.scss"
+            },
+            {
+                "name": "1576657c4237ccc35765ad79a9861cdb8b72d206",
+                "path": "source/components/app-icon/index.html"
+            },
+            {
+                "name": "4d535ab98f950c87fdf2e7c4d03f2921e9bdf5eb",
+                "path": "source/components/app-icon/index.scss"
+            },
+            {
+                "name": "f68ea38d23dd9eaffd87a55a718c0235dbfe5fa6",
+                "path": "source/components/app-icon/index.ts"
+            },
+            {
+                "name": "427893328ea94514140e46a2b9dc52eee0c988b2",
+                "path": "source/components/app-image-pick/index.html"
+            },
+            {
+                "name": "af41c975ae83fd9ee75ff871bbd757c3f07394e7",
+                "path": "source/components/app-image-pick/index.scss"
+            },
+            {
+                "name": "251206a46768bcc0d72efc8dd2b3dfa1d69dd454",
+                "path": "source/components/app-image-pick/index.ts"
+            },
+            {
+                "name": "b9f29962142ae9a71ef6e6ff36b059f512619260",
+                "path": "source/components/app-input/index.html"
+            },
+            {
+                "name": "6f252e5dc56c8823867c16ece2d87c642d01a475",
+                "path": "source/components/app-input/index.scss"
+            },
+            {
+                "name": "d90cb1a30c1bb8ad8822e4b524c35ea263350dc6",
+                "path": "source/components/app-input/index.ts"
+            },
+            {
+                "name": "eb24b67bf87602bc4335136a5a94482eb579784f",
+                "path": "source/components/app-loading/index.html"
+            },
+            {
+                "name": "bc01b5c3920466ed544d8a2a05204c3b2a47dce3",
+                "path": "source/components/app-loading/index.scss"
+            },
+            {
+                "name": "677e3761a291392012935153a26617f02d666043",
+                "path": "source/components/app-loading/index.ts"
+            },
+            {
+                "name": "bbd2bbaf13ea793bd3c169c2e9c182eafe40d991",
+                "path": "source/components/app-message-dialog/index.html"
+            },
+            {
+                "name": "03219bd48177e730d4eccffc2b69ae81c1444973",
+                "path": "source/components/app-message-dialog/index.scss"
+            },
+            {
+                "name": "3c057eefc0b22a549cfe84f451a11d7ca01a0415",
+                "path": "source/components/app-message-dialog/index.ts"
+            },
+            {
+                "name": "cb238e46c7c783a46ccce658a25dbd407880661a",
+                "path": "source/components/app-text-input/index.html"
+            },
+            {
+                "name": "23de7b151cacbfef49d26466e92034fc8124ac5e",
+                "path": "source/components/app-text-input/index.scss"
+            },
+            {
+                "name": "f656b037e448a14b0ecabb5cb0056778fbeaa413",
+                "path": "source/components/app-text-input/index.ts"
+            },
+            {
+                "name": "4ee323bd6869fc95d5af1ea892c2bdea2a4e337b",
+                "path": "source/context/connection.ts"
+            },
+            {
+                "name": "7b8fa937790c4cd0fe517ef325d00d2ea861861a",
+                "path": "source/context/database.ts"
+            },
+            {
+                "name": "6636ce57177a51aca6274826e059087cb49b8f7c",
+                "path": "source/context/store.ts"
+            },
+            {
+                "name": "8e9350fa4379c610c99da509828ace3e85b8ab34",
+                "path": "source/directives/key-press-directive-handler.ts"
+            },
+            {
+                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
+                "path": "source/environment.d.ts"
+            },
+            {
+                "name": "df36e03288a8aa3bb0a0e487f47d7cb1e433d93d",
+                "path": "source/index.ts"
+            },
+            {
+                "name": "2ac018d311c66e340cf2406a9b0fd7c158752bea",
+                "path": "source/interceptors/auth-router-interceptor.ts"
+            },
+            {
+                "name": "814b7be5741dd6f5c048c1b1d11e31da7a03cc07",
+                "path": "source/locales/en-us.json"
+            },
+            {
+                "name": "c6d79a5462b2c018c4f16de9b582e7df3c3c3f3c",
+                "path": "source/locales/localization.ts"
+            },
+            {
+                "name": "76cad4246821906138d4ccbd2e8ae6d6f0cf2076",
+                "path": "source/locales/pt-br.json"
+            },
+            {
+                "name": "7e5d32d7c563c11b3bda45bb07244be4c8249407",
+                "path": "source/repositories/repository.ts"
+            },
+            {
+                "name": "571a26a32d10945aed0af86f89eda5116ae4ce2e",
+                "path": "source/repositories/todo-repository.ts"
+            },
+            {
+                "name": "41bafcb18fd9beaf59db6aa4c087365532cbc2e4",
+                "path": "source/repositories/user-repository.ts"
+            },
+            {
+                "name": "c43f46e126794f581f79a51f5fb5d1be07779d07",
+                "path": "source/routes.ts"
+            },
+            {
+                "name": "a081a4f69c3a9c31f50f0b4225f5315acd46e21f",
+                "path": "source/services/auth-service.ts"
+            },
+            {
+                "name": "28598423560f893c0b1cadb07dcbd02dab3b4db9",
+                "path": "source/store.ts"
+            },
+            {
+                "name": "24b70c2cc3cddd0c2561157bfc9083c7bee5981b",
+                "path": "source/styles/colors.scss"
+            },
+            {
+                "name": "8618ef1485e80cd6aaad0d866e5ffac75132e865",
+                "path": "source/styles/functions.scss"
+            },
+            {
+                "name": "96f26bd8fa6ef5f06cd642a1da57d3fe4c2321b2",
+                "path": "source/styles/mixins.scss"
+            },
+            {
+                "name": "b3d8f07bb54357543e2c0844a65168f04ffcedf5",
+                "path": "source/types/item.d.ts"
+            },
+            {
+                "name": "ec94379de7c23914dc569e990f1dcc175fd1b06b",
+                "path": "source/types/profile.d.ts"
+            },
+            {
+                "name": "916c6767683f8c19508352e19614cccbea6ab74c",
+                "path": "source/types/todo.d.ts"
+            },
+            {
+                "name": "2eca2b94bdf93cc1bcabddb6282aa08ff87ac789",
+                "path": "source/types/user.d.ts"
+            },
+            {
+                "name": "77cb0c3a7268f1bfdb35b2a5f4f2d68bdf635a31",
+                "path": "source/views/account-create/index.html"
+            },
+            {
+                "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
+                "path": "source/views/account-create/index.scss"
+            },
+            {
+                "name": "ae098aa8781421f77dfd8eda55bcbf717d6dc6cf",
+                "path": "source/views/account-create/index.ts"
+            },
+            {
+                "name": "deeed476189c785f8743cdcdb3ad214322219376",
+                "path": "source/views/account-edit/index.html"
+            },
+            {
+                "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
+                "path": "source/views/account-edit/index.scss"
+            },
+            {
+                "name": "4db945978f4bd345645e20af1a2012ead750e773",
+                "path": "source/views/account-edit/index.ts"
+            },
+            {
+                "name": "3321a8d1a8c5614589efa08c62bdfc0bbd27f6d3",
+                "path": "source/views/home/index.html"
+            },
+            {
+                "name": "d56f976a9c7179f8893434a4338b3691aa032663",
+                "path": "source/views/home/index.scss"
+            },
+            {
+                "name": "4536760e5fbb01e735ca6592a74b5ba677f84e7a",
+                "path": "source/views/home/index.ts"
+            },
+            {
+                "name": "22e6e94e204fa2a50a4cba1aa91fe201dfd874cc",
+                "path": "source/views/login/index.html"
+            },
+            {
+                "name": "7f7fc828af0357ff6d7f14b9286cafa52f437cc8",
+                "path": "source/views/login/index.scss"
+            },
+            {
+                "name": "605964061830bf47a009ad0a0210f757f59a6a88",
+                "path": "source/views/login/index.ts"
+            },
+            {
+                "name": "88a6ada27c3ea915f5864ce60e87785dbec00515",
+                "path": "surface.json"
+            },
+            {
+                "name": "bdc8c8eef22b9261f75a91ebe81e8540f539f6e5",
+                "path": "template.html"
+            },
+            {
+                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "path": "tsconfig.json"
+            }
+        ]
+    },
+    "spa": {
+        "description": "SPA Todo application.",
+        "files": [
+            {
+                "name": "e0e5b986d9b301f390284e8cbbf523e2c70f7328",
+                "path": ".eslintrc.json"
+            },
+            {
+                "name": "f94935c3eec068646a29a7fd325c2a74ceb6644d",
+                "path": "package.json"
+            },
+            {
+                "name": "a1c972493637aeaa1e6560cf45ba3fcc47b26c95",
+                "path": "README.md"
+            },
+            {
+                "name": "6274d015c44c3e3ab7260b473ff31b915be717ac",
+                "path": "source/app/index.html"
+            },
+            {
+                "name": "d365bcfaa2e3d6fedec7ecb8a61a921f19a01072",
+                "path": "source/app/index.scss"
+            },
+            {
+                "name": "8cb580fd74098924e2e113b3c95a23d64712bdf9",
+                "path": "source/app/index.ts"
+            },
+            {
+                "name": "9ec434d120183557c6175c4e86e6e11057ddbdb6",
+                "path": "source/assets/profile-placeholder.png"
+            },
+            {
+                "name": "0ed51d29c5fed4e8e05858029aaac4922077d377",
+                "path": "source/components/app-button/index.html"
+            },
+            {
+                "name": "3c746aabd6c42e8deb98788a7ef66e79c1bc070b",
+                "path": "source/components/app-button/index.scss"
+            },
+            {
+                "name": "e5402d31f7274858022372f490bc5ecc5dd33ac2",
+                "path": "source/components/app-button/index.ts"
+            },
+            {
+                "name": "57116074bcaaff49e9f9dfc83de8436bae41ad62",
+                "path": "source/components/app-icon/font-face.scss"
+            },
+            {
+                "name": "1576657c4237ccc35765ad79a9861cdb8b72d206",
+                "path": "source/components/app-icon/index.html"
+            },
+            {
+                "name": "4d535ab98f950c87fdf2e7c4d03f2921e9bdf5eb",
+                "path": "source/components/app-icon/index.scss"
+            },
+            {
+                "name": "f68ea38d23dd9eaffd87a55a718c0235dbfe5fa6",
+                "path": "source/components/app-icon/index.ts"
+            },
+            {
+                "name": "427893328ea94514140e46a2b9dc52eee0c988b2",
+                "path": "source/components/app-image-pick/index.html"
+            },
+            {
+                "name": "af41c975ae83fd9ee75ff871bbd757c3f07394e7",
+                "path": "source/components/app-image-pick/index.scss"
+            },
+            {
+                "name": "251206a46768bcc0d72efc8dd2b3dfa1d69dd454",
+                "path": "source/components/app-image-pick/index.ts"
+            },
+            {
+                "name": "b9f29962142ae9a71ef6e6ff36b059f512619260",
+                "path": "source/components/app-input/index.html"
+            },
+            {
+                "name": "6f252e5dc56c8823867c16ece2d87c642d01a475",
+                "path": "source/components/app-input/index.scss"
+            },
+            {
+                "name": "d90cb1a30c1bb8ad8822e4b524c35ea263350dc6",
+                "path": "source/components/app-input/index.ts"
+            },
+            {
+                "name": "eb24b67bf87602bc4335136a5a94482eb579784f",
+                "path": "source/components/app-loading/index.html"
+            },
+            {
+                "name": "bc01b5c3920466ed544d8a2a05204c3b2a47dce3",
+                "path": "source/components/app-loading/index.scss"
+            },
+            {
+                "name": "677e3761a291392012935153a26617f02d666043",
+                "path": "source/components/app-loading/index.ts"
+            },
+            {
+                "name": "bbd2bbaf13ea793bd3c169c2e9c182eafe40d991",
+                "path": "source/components/app-message-dialog/index.html"
+            },
+            {
+                "name": "03219bd48177e730d4eccffc2b69ae81c1444973",
+                "path": "source/components/app-message-dialog/index.scss"
+            },
+            {
+                "name": "3c057eefc0b22a549cfe84f451a11d7ca01a0415",
+                "path": "source/components/app-message-dialog/index.ts"
+            },
+            {
+                "name": "cb238e46c7c783a46ccce658a25dbd407880661a",
+                "path": "source/components/app-text-input/index.html"
+            },
+            {
+                "name": "23de7b151cacbfef49d26466e92034fc8124ac5e",
+                "path": "source/components/app-text-input/index.scss"
+            },
+            {
+                "name": "f656b037e448a14b0ecabb5cb0056778fbeaa413",
+                "path": "source/components/app-text-input/index.ts"
+            },
+            {
+                "name": "4ee323bd6869fc95d5af1ea892c2bdea2a4e337b",
+                "path": "source/context/connection.ts"
+            },
+            {
+                "name": "7b8fa937790c4cd0fe517ef325d00d2ea861861a",
+                "path": "source/context/database.ts"
+            },
+            {
+                "name": "6636ce57177a51aca6274826e059087cb49b8f7c",
+                "path": "source/context/store.ts"
+            },
+            {
+                "name": "8e9350fa4379c610c99da509828ace3e85b8ab34",
+                "path": "source/directives/key-press-directive-handler.ts"
+            },
+            {
+                "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
+                "path": "source/environment.d.ts"
+            },
+            {
+                "name": "df36e03288a8aa3bb0a0e487f47d7cb1e433d93d",
+                "path": "source/index.ts"
+            },
+            {
+                "name": "2ac018d311c66e340cf2406a9b0fd7c158752bea",
+                "path": "source/interceptors/auth-router-interceptor.ts"
+            },
+            {
+                "name": "814b7be5741dd6f5c048c1b1d11e31da7a03cc07",
+                "path": "source/locales/en-us.json"
+            },
+            {
+                "name": "c6d79a5462b2c018c4f16de9b582e7df3c3c3f3c",
+                "path": "source/locales/localization.ts"
+            },
+            {
+                "name": "76cad4246821906138d4ccbd2e8ae6d6f0cf2076",
+                "path": "source/locales/pt-br.json"
+            },
+            {
+                "name": "7e5d32d7c563c11b3bda45bb07244be4c8249407",
+                "path": "source/repositories/repository.ts"
+            },
+            {
+                "name": "571a26a32d10945aed0af86f89eda5116ae4ce2e",
+                "path": "source/repositories/todo-repository.ts"
+            },
+            {
+                "name": "41bafcb18fd9beaf59db6aa4c087365532cbc2e4",
+                "path": "source/repositories/user-repository.ts"
+            },
+            {
+                "name": "c43f46e126794f581f79a51f5fb5d1be07779d07",
+                "path": "source/routes.ts"
+            },
+            {
+                "name": "a081a4f69c3a9c31f50f0b4225f5315acd46e21f",
+                "path": "source/services/auth-service.ts"
+            },
+            {
+                "name": "28598423560f893c0b1cadb07dcbd02dab3b4db9",
+                "path": "source/store.ts"
+            },
+            {
+                "name": "24b70c2cc3cddd0c2561157bfc9083c7bee5981b",
+                "path": "source/styles/colors.scss"
+            },
+            {
+                "name": "8618ef1485e80cd6aaad0d866e5ffac75132e865",
+                "path": "source/styles/functions.scss"
+            },
+            {
+                "name": "96f26bd8fa6ef5f06cd642a1da57d3fe4c2321b2",
+                "path": "source/styles/mixins.scss"
+            },
+            {
+                "name": "b3d8f07bb54357543e2c0844a65168f04ffcedf5",
+                "path": "source/types/item.d.ts"
+            },
+            {
+                "name": "ec94379de7c23914dc569e990f1dcc175fd1b06b",
+                "path": "source/types/profile.d.ts"
+            },
+            {
+                "name": "916c6767683f8c19508352e19614cccbea6ab74c",
+                "path": "source/types/todo.d.ts"
+            },
+            {
+                "name": "2eca2b94bdf93cc1bcabddb6282aa08ff87ac789",
+                "path": "source/types/user.d.ts"
+            },
+            {
+                "name": "77cb0c3a7268f1bfdb35b2a5f4f2d68bdf635a31",
+                "path": "source/views/account-create/index.html"
+            },
+            {
+                "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
+                "path": "source/views/account-create/index.scss"
+            },
+            {
+                "name": "ae098aa8781421f77dfd8eda55bcbf717d6dc6cf",
+                "path": "source/views/account-create/index.ts"
+            },
+            {
+                "name": "deeed476189c785f8743cdcdb3ad214322219376",
+                "path": "source/views/account-edit/index.html"
+            },
+            {
+                "name": "b9d63d0f65a1e923ee4c3d1e0fbcfd4f05bf739e",
+                "path": "source/views/account-edit/index.scss"
+            },
+            {
+                "name": "4db945978f4bd345645e20af1a2012ead750e773",
+                "path": "source/views/account-edit/index.ts"
+            },
+            {
+                "name": "3321a8d1a8c5614589efa08c62bdfc0bbd27f6d3",
+                "path": "source/views/home/index.html"
+            },
+            {
+                "name": "d56f976a9c7179f8893434a4338b3691aa032663",
+                "path": "source/views/home/index.scss"
+            },
+            {
+                "name": "4536760e5fbb01e735ca6592a74b5ba677f84e7a",
+                "path": "source/views/home/index.ts"
+            },
+            {
+                "name": "22e6e94e204fa2a50a4cba1aa91fe201dfd874cc",
+                "path": "source/views/login/index.html"
+            },
+            {
+                "name": "7f7fc828af0357ff6d7f14b9286cafa52f437cc8",
+                "path": "source/views/login/index.scss"
+            },
+            {
+                "name": "605964061830bf47a009ad0a0210f757f59a6a88",
+                "path": "source/views/login/index.ts"
+            },
+            {
+                "name": "88a6ada27c3ea915f5864ce60e87785dbec00515",
+                "path": "surface.json"
+            },
+            {
+                "name": "041537447022a4202fd64f164da07a5312df4091",
+                "path": "template.html"
+            },
+            {
+                "name": "e22e8df3fcecfcd31d9634699286b2ace8aa0f7b",
+                "path": "tsconfig.json"
+            }
+        ]
+    }
+}

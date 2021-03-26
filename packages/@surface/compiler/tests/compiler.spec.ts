@@ -28,7 +28,7 @@ const webpackMock                      = Mock.of<WebpackCall>(webpack)!;
 
 function setup(type: "ok" | "ko"): void
 {
-    const error = type == "ko" ? new Error("Some goes wrong") : undefined;
+    const error = type == "ko" ? new Error("Something goes wrong") : undefined;
 
     const statsMock = Mock.instance<Stats>();
 
@@ -39,7 +39,7 @@ function setup(type: "ok" | "ko"): void
     compilerWatchingMock
         .setup("close")
         .call(It.any())
-        .callback(callback => callback());
+        .callback(callback => callback(error));
 
     const compilerMock = Mock.instance<WebpackCompiler>();
 
@@ -51,7 +51,7 @@ function setup(type: "ok" | "ko"): void
     compilerMock
         .setup("watch")
         .call(It.any(), It.any())
-        .callback((_, handler) => handler(error!, statsMock.proxy))
+        .callback((_, handler) => handler(undefined, statsMock.proxy))
         .returns(compilerWatchingMock.proxy);
 
     webpackMock
@@ -122,6 +122,10 @@ export default class CompilerSpec
         setup("ok");
 
         await Compiler.run({ }, { });
+        await Compiler.run({ }, { logging: true });
+        await Compiler.run({ }, { logging: "none" });
+        await Compiler.run({ }, { logging: "log" });
+        await Compiler.run({ }, { logging: "verbose" });
 
         chai.assert.isOk(true);
     }
@@ -195,7 +199,9 @@ export default class CompilerSpec
 
         try
         {
-            await Compiler.run({ }, { });
+            const signal = await Compiler.watch({ }, { });
+
+            await signal.close();
         }
         catch (error)
         {

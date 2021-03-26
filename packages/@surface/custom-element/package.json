@@ -10,17 +10,17 @@
         "@surface/expression": "file:../expression",
         "@surface/reactive": "file:../reactive",
         "@surface/reflection": "file:../reflection",
-        "tslib": "2.0.3"
+        "tslib": "2.1.0"
     },
-    "description": "Base class used to define custom elements.",
+    "description": "Provides support of directives and data binding on custom elements.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.14",
+        "@types/chai": "4.2.15",
         "@types/chai-as-promised": "7.1.3",
-        "@types/jsdom": "16.2.5",
-        "chai": "4.2.0",
+        "@types/jsdom": "16.2.7",
+        "chai": "4.3.4",
         "chai-as-promised": "7.1.1",
-        "jsdom": "16.4.0"
+        "jsdom": "16.5.1"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [

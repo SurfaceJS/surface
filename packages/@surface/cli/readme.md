@@ -1,0 +1,1 @@
+Provides command line interface for scaffolding surface projects.

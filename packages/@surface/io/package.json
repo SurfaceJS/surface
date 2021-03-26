@@ -5,16 +5,16 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "@types/node": "14.11.8",
-        "tslib": "2.0.3"
+        "@types/node": "14.14.22",
+        "tslib": "2.1.0"
     },
-    "description": "IO modules.",
+    "description": "Provides io functionality.",
     "devDependencies": {
         "@surface/mock": "file:../mock",
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.14",
+        "@types/chai": "4.2.15",
         "@types/chai-as-promised": "7.1.3",
-        "chai": "4.2.0",
+        "chai": "4.3.4",
         "chai-as-promised": "7.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",

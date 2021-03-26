@@ -1,1 +1,1 @@
-## Middleware responsible for managing the compilation of typescript, scss/sass and packaging with webpack. ##
+Provides middleware responsible for managing the compilation of typescript, scss/sass and packaging with webpack.

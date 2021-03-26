@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/indent */
 import { URL }                         from "url";
 import type { Delegate }               from "@surface/core";
@@ -12,73 +13,92 @@ import
     createBuildConfiguration,
     createDevServerConfiguration,
 } from "./configurations.js";
-import type AnalyzerOptions  from "./types/analyzer-options";
-import type BuildOptions     from "./types/build-options";
-import type CompilerSignal   from "./types/compiler-signal";
-import type Configuration    from "./types/configuration";
-import type DevServerOptions from "./types/dev-serve-options";
+import type CliAnalyzerOptions  from "./types/cli-analyzer-options";
+import type CliBuildOptions     from "./types/cli-build-options";
+import type CliDevServerOptions from "./types/cli-dev-serve-options";
+import type CompilerSignal      from "./types/compiler-signal";
+import type Configuration       from "./types/configuration";
+import type Logging             from "./types/logging.js";
 
-const DEFAULT_STATS_OPTIONS =
-{
-    assets:   true,
-    colors:   true,
-    errors:   true,
-    version:  true,
-    warnings: true,
-};
-
-type StatOptions = string | boolean | object;
+type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
 
 export default class Compiler
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, statOptions: StatOptions): (err?: Error, result?: webpack.Stats) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: Logging): (err?: Error, result?: webpack.Stats | any) => unknown
     {
-        return (error, stats) => error ? reject(error) : (log(stats?.toString(statOptions)), resolve());
+        return (error, stats) => error ? reject(error) : (log(stats?.toString(this.createStats(logging))), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<void>
+    private static createStats(logging: Logging = true): webpack.Configuration["stats"]
     {
-        const webpackCompiler = webpack(webpackConfiguration);
+        if (logging && logging != "none")
+        {
+            return {
+                assets:       logging == true,
+                children:     logging == true,
+                colors:       true,
+                errorDetails: logging == "verbose",
+                errors:       logging != "info",
+                logging:      logging == true ? "info" : logging,
+                modules:      logging == true || logging == "log" || logging == "verbose",
+                version:      logging == true || logging == "log" || logging == "verbose",
+                warnings:     logging != "info",
+            };
+        }
 
-        await new Promise<void>((resolve, reject) => webpackCompiler.run(Compiler.createHandler(resolve, reject, statOptions)));
+        return {
+            assets:   false,
+            colors:   true,
+            errors:   false,
+            logging:  "none",
+            modules:  false,
+            warnings: false,
+        };
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration, statOptions: StatOptions = DEFAULT_STATS_OPTIONS): Promise<CompilerSignal>
+    private static async runInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], logging?: Logging): Promise<void>
     {
-        const webpackCompiler = webpack(webpackConfiguration);
+        const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
 
-        let watching: ReturnType<webpack.Compiler["watch"]>;
+        await new Promise<void>((resolve, reject) => webpackCompiler.run(this.createHandler(resolve, reject, logging)));
+    }
 
-        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, Compiler.createHandler(resolve, reject, statOptions)));
+    private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], logging?: Logging): Promise<CompilerSignal>
+    {
+        const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
+
+        let watching: ReturnType<webpack.Compiler["watch"] | webpack.MultiCompiler["watch"]>;
+
+        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, this.createHandler(resolve, reject, logging)));
 
         return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
 
-    public static async analyze(configuration: Configuration, options: AnalyzerOptions): Promise<void>
+    public static async analyze(configuration: Configuration, options: CliAnalyzerOptions): Promise<void>
     {
-        const webpackConfiguration = createAnalyzerConfiguration(configuration, options);
+        const webpackConfiguration = await createAnalyzerConfiguration(configuration, options);
 
         log(`Starting ${chalk.bold.green("analyzer...")}`);
 
-        await Compiler.runInternal(webpackConfiguration);
+        await this.runInternal(webpackConfiguration, options.logging);
     }
 
-    public static async run(configuration: Configuration, options: BuildOptions): Promise<void>
+    public static async run(configuration: Configuration, options: CliBuildOptions): Promise<void>
     {
-        const webpackConfiguration = createBuildConfiguration(configuration, options);
+        const webpackConfiguration = await createBuildConfiguration(configuration, options);
 
         log(`Running using ${chalk.bold.green(options.mode ?? "development")} configuration...`);
 
-        await Compiler.runInternal(webpackConfiguration, options.logLevel);
+        await this.runInternal(webpackConfiguration, options.logging);
     }
 
-    public static async serve(configuration: Configuration, options: DevServerOptions): Promise<CompilerSignal>
+    public static async serve(configuration: Configuration, options: CliDevServerOptions): Promise<CompilerSignal>
     {
         const
         {
-            host                  = "http://localhost",
-            logLevel: statOptions = DEFAULT_STATS_OPTIONS,
-            port                  = 8080,
+            host    = "http://localhost",
+            logging,
+            port    = 8080,
         } = options;
 
         const url = new URL(host);
@@ -86,16 +106,17 @@ export default class Compiler
         url.port     = port.toString();
         url.pathname = configuration.publicPath ?? "/";
 
-        const webpackConfiguration = createDevServerConfiguration(configuration, url);
-        const webpackCompiler      = webpack(webpackConfiguration);
+        const webpackConfiguration = await createDevServerConfiguration(configuration, url);
+        const webpackCompiler      = (webpack as WebpackOverload)(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
             historyApiFallback: { index: joinPaths(url.pathname, "index.html") },
+            host:               url.hostname,
             hot:                options.hot,
-            inline:             true,
+            port,
             publicPath:         url.pathname,
-            stats:              statOptions,
+            stats:              this.createStats(logging),
             ...configuration.devServer,
         });
 
@@ -104,17 +125,17 @@ export default class Compiler
         const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
             (error?: Error) => error ? reject(error) : resolve();
 
-        await new Promise<void>((resolve, reject) => server.listen(port, url.hostname, handlerAsync(resolve, reject)));
+        await new Promise<void>((resolve, reject) => server.listen(webpackDevServerConfiguration.port!, webpackDevServerConfiguration.host!, handlerAsync(resolve, reject)));
 
         return { close: async () => Promise.resolve(server.close()) };
     }
 
-    public static async watch(configuration: Configuration, options: BuildOptions): Promise<CompilerSignal>
+    public static async watch(configuration: Configuration, options: CliBuildOptions): Promise<CompilerSignal>
     {
-        const webpackConfiguration = createBuildConfiguration(configuration, options);
+        const webpackConfiguration = await createBuildConfiguration(configuration, options);
 
         log(`Watching using ${chalk.bold.green(options.mode)} configuration.`);
 
-        return Compiler.watchInternal(webpackConfiguration, options.logLevel);
+        return this.watchInternal(webpackConfiguration, options.logging);
     }
 }

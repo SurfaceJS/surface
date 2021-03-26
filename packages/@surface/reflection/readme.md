@@ -1,1 +1,1 @@
-## Module for reflection capability.
+Provides reflection capability.

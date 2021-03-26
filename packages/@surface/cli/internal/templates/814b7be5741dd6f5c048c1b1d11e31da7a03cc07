@@ -1,0 +1,16 @@
+{
+    "addANewTaskHere":   "Add a new task here...",
+    "cancel":            "Cancel",
+    "confirmPassword":   "Confirm password",
+    "createAccount":     "Create Account",
+    "editProfile":       "Edit profile",
+    "email":             "Email",
+    "enter":             "Enter",
+    "loading":           "Loading",
+    "name":              "Name",
+    "password":          "Password",
+    "requiredField":     "Required field",
+    "save":              "Save",
+    "showAll":           "Show all",
+    "showOnlyCompleted": "Show only completed"
+}

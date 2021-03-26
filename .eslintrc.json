@@ -401,7 +401,6 @@
         "no-self-compare": "warn",
         "no-setter-return": "warn",
         "no-shadow-restricted-names": "warn",
-        "no-sparse-arrays": "warn",
         "no-tabs": "warn",
         "no-this-before-super": "warn",
         "no-throw-literal": "warn",

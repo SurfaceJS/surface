@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/prefer-readonly */
 import type { IDisposable } from "@surface/core";
 import { enumerateRange }   from "../common.js";
+import { disposeTree }      from "../singletons.js";
 
 const BLOCKS = Symbol("custom-element:template-blocks");
 
@@ -8,6 +9,7 @@ type Anchor = Comment & { [BLOCKS]: Set<TemplateBlock> };
 
 export default class TemplateBlock implements IDisposable
 {
+
     private close:    Anchor;
     private disposed: boolean = false;
     private open:     Anchor;
@@ -94,9 +96,9 @@ export default class TemplateBlock implements IDisposable
     {
         for (const element of enumerateRange(this.open, this.close))
         {
-            element.dispose?.();
-
             element.remove();
+
+            disposeTree(element);
         }
     }
 

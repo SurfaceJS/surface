@@ -66,6 +66,7 @@ export default class AsyncReactive extends Reactive
                 this.observe(root, path, observer = new AsyncObserver(root, path, scheduler));
 
                 metadata.observers.set(key, observer);
+                metadata.disposables.push({ dispose: () => this.unobserve(root, path, observer!) });
             }
 
             return observer;

@@ -12,7 +12,10 @@ export default class EnumerableSpec
     @test @shouldPass
     public from(): void
     {
-        chai.assert.deepEqual(Array.from(Enumerable.from([1, 2, 3])), [1, 2, 3]);
+        const enumerable = Enumerable.from([1, 2, 3]);
+
+        chai.assert.deepEqual(Array.from(enumerable), [1, 2, 3]);
+        chai.assert.deepEqual(enumerable.toArray(), [1, 2, 3]);
     }
 
     @test @shouldPass
@@ -685,12 +688,15 @@ export default class EnumerableSpec
     @test @shouldPass
     public sequenceEqual(): void
     {
+        chai.assert.equal(Enumerable.from([]).sequenceEqual(Enumerable.from([])), true);
         chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2, 3])), true);
     }
 
     @test @shouldPass
     public notSequenceEqual(): void
     {
+        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 2])), false);
+        chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([2, 1])), false);
         chai.assert.equal(Enumerable.from([1, 2, 3]).sequenceEqual(Enumerable.from([1, 3])), false);
     }
 

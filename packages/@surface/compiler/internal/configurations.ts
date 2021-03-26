@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
-import path                                       from "path";
 import type { URL }                               from "url";
-import { fileURLToPath }                          from "url";
-import { deepMergeCombine }                       from "@surface/core";
+import { merge }                                  from "@surface/core";
+import type MergeRules                            from "@surface/core/internal/types/merge-rules";
 import CopyPlugin                                 from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
 import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
@@ -15,11 +14,42 @@ import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
-import type AnalyzerOptions                       from "./types/analyzer-options";
-import type BuildOptions                          from "./types/build-options";
+import type CliAnalyzerOptions                    from "./types/cli-analyzer-options";
+import type CliBuildOptions                       from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
+const DEFAULT_MERGE_RULES: MergeRules<webpack.Configuration> =
+{
+    module:
+    {
+        rules:
+        // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
+        // @ts-ignore
+        {
+            oneOf:
+            {
+                test: "match",
+                use:
+                {
+                    loader:  "match",
+                    options: "merge",
+                },
+            },
+            test: "match",
+            use:
+            {
+                loader:  "match",
+                options: "merge",
+            },
+        },
+    },
+    plugins: "append",
+    resolve:
+    {
+        extensions: "append",
+        plugins:    "append",
+    },
+};
 
 function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): webpack.Entry | undefined
 {
@@ -35,17 +65,31 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export function createAnalyzerConfiguration(configuration: Configuration, options: AnalyzerOptions): webpack.Configuration
+export async function createAnalyzerConfiguration(configuration: Configuration, options: CliAnalyzerOptions): Promise<webpack.Configuration | webpack.Configuration[]>
 {
+    const logging = !options.logging
+        ? "none"
+        : options.logging == true
+            ? "info"
+            : options.logging;
+
+    const logLevel: BundleAnalyzerPlugin.Options["logLevel"] =
+        logging == "none"
+            ? "silent"
+            : logging == "verbose" || logging == "log"
+                ? "info"
+                :  logging;
+
     const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
     {
-        analyzerHost:   options.host,
+        ...configuration.bundlerAnalyzer,
+        analyzerHost:   options.analyzerHost,
         analyzerMode:   options.analyzerMode ?? "static",
-        analyzerPort:   options.port,
+        analyzerPort:   options.analyzerPort,
         defaultSizes:   options.defaultSizes,
-        excludeAssets:  options.exclude,
-        logLevel:       options.logLevel,
-        openAnalyzer:   options.open,
+        excludeAssets:  options.excludeAssets,
+        logLevel,
+        openAnalyzer:   options.openAnalyzer,
         reportFilename: options.reportFilename,
     };
 
@@ -55,10 +99,15 @@ export function createAnalyzerConfiguration(configuration: Configuration, option
         plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(bundleAnalyzerPluginOptions))],
     };
 
+    if (configuration.compilations)
+    {
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy(extendedConfiguration))));
+    }
+
     return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
 
-export function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): webpack.Configuration
+export async function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): Promise<webpack.Configuration>
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -80,6 +129,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             options: createOnlyDefinedProxy
             ({
                 configFile: configuration.eslintrc,
+                cwd:        configuration.context,
             }),
         },
         typescript: createOnlyDefinedProxy
@@ -93,11 +143,14 @@ export function createConfiguration(configuration: Configuration, extendedConfig
     plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
-    const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-        ? { template: configuration.htmlTemplate }
-        : configuration.htmlTemplate;
+    if (configuration.htmlTemplate)
+    {
+        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
+            ? { template: configuration.htmlTemplate }
+            : configuration.htmlTemplate;
 
-    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+    }
 
     if (configuration.copyFiles)
     {
@@ -156,7 +209,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             rules:
             [
                 {
-                    test: /\.webmanifest$/,
+                    test: /(manifest\.webmanifest|browserconfig\.xml)$/,
                     use:
                     [
                         loaders.file,
@@ -165,7 +218,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
                 },
                 {
                     test: /\.(png|jpe?g|svg|ttf|woff2?|eot)$/,
-                    use:  loaders.file,
+                    use:  loaders.fileAssets,
                 },
                 {
                     oneOf:
@@ -194,7 +247,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
                             resourceQuery: /file/,
                             use:
                             [
-                                loaders.fileCss,
+                                loaders.fileAssetsCss,
                                 loaders.extract,
                                 loaders.css,
                                 loaders.resolveUrl,
@@ -235,7 +288,7 @@ export function createConfiguration(configuration: Configuration, extendedConfig
             flagIncludedChunks:   isProduction,
             mergeDuplicateChunks: isProduction,
             minimize:             isProduction,
-            minimizer:            [tersePlugin as webpack.WebpackPluginInstance],
+            minimizer:            [tersePlugin],
             moduleIds:            isProduction ? "size" : "named",
             providedExports:      true,
             usedExports:          isProduction,
@@ -254,24 +307,34 @@ export function createConfiguration(configuration: Configuration, extendedConfig
         plugins,
         resolve:
         {
-            extensions: [".ts", ".js"],
-            plugins:    resolvePlugins,
+            extensions:     [".ts", ".js", ".json", ".wasm"],
+            plugins:        resolvePlugins,
+            preferRelative: true,
         },
         resolveLoader:
         {
-            modules: ["node_modules", path.resolve(dirname, "./loaders")],
+            preferRelative: true,
         },
     };
 
-    return deepMergeCombine(webpackConfiguration, extendedConfiguration, configuration.webpackConfig ?? { });
+    const mergedConfiguration = merge([webpackConfiguration, extendedConfiguration, (configuration.webpack?.configuration as webpack.Configuration | undefined) ?? { }], configuration.webpack?.mergeRules ?? DEFAULT_MERGE_RULES);
+
+    return typeof configuration.webpack?.postConfiguration == "function"
+        ? await configuration.webpack.postConfiguration(mergedConfiguration)
+        : mergedConfiguration;
 }
 
-export function createBuildConfiguration(configuration: Configuration, options: BuildOptions): webpack.Configuration
+export async function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): Promise<webpack.Configuration | webpack.Configuration[]>
 {
+    if (configuration.compilations)
+    {
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy({ mode: options.mode }))));
+    }
+
     return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
 }
 
-export function createDevServerConfiguration(configuration: Configuration, url: URL): webpack.Configuration
+export async function createDevServerConfiguration(configuration: Configuration, url: URL): Promise<webpack.Configuration | webpack.Configuration[]>
 {
     const extendedConfiguration: webpack.Configuration =
     {
@@ -279,6 +342,11 @@ export function createDevServerConfiguration(configuration: Configuration, url: 
         mode:    "development",
         plugins: [new webpack.HotModuleReplacementPlugin()],
     };
+
+    if (configuration.compilations)
+    {
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, extendedConfiguration)));
+    }
 
     return createConfiguration(configuration, extendedConfiguration);
 }

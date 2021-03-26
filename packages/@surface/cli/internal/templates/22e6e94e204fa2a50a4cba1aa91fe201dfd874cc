@@ -1,0 +1,11 @@
+<div id="root">
+    <h1>Login</h1>
+    <div id="inputs">
+        <app-text-input :label="host.localization.email" ::error="host.errors.email" ::value="host.model.email"></app-text-input>
+        <app-text-input :label="host.localization.password" type="password" ::error="host.errors.password" ::value="host.model.password"></app-text-input>
+    </div>
+    <div id="buttons">
+        <app-button @click="host.login">{host.localization.enter}</app-button>
+        <app-button text #to="{ name: 'account-create' }">{host.localization.createAccount}</app-button>
+    </span>
+</div>
