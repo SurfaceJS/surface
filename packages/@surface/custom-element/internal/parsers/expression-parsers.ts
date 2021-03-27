@@ -12,7 +12,15 @@ import Expression, { SyntaxError, TypeGuard } from "@surface/expression";
 import InterpolatedExpression                 from "./interpolated-expression.js";
 import { forExpression }                      from "./patterns.js";
 
-const cache: Record<string, INode> = { };
+const expressionCache:       Record<string, INode> = { };
+const forLoopStatementCache: Record<string, ForLoopStatement> = { };
+
+type ForLoopStatement =
+{
+    left:     IPattern | IIdentifier,
+    operator: "of" | "in",
+    right:    IExpression,
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseStatement<TParser extends (expression: string) => any>(parser: TParser, statement: string, expression: string): ReturnType<TParser>
@@ -41,36 +49,36 @@ export function getOffsetSyntaxError(statement: string, expression: string, erro
 
 export function parseExpression(expression: string): IExpression
 {
-    if (expression in cache)
+    if (expression in expressionCache)
     {
-        return cache[expression].clone() as IExpression;
+        return expressionCache[expression] as IExpression;
     }
 
-    return cache[expression] = Expression.parse(expression);
+    return expressionCache[expression] = Expression.parse(expression);
 }
 
 export function parseInterpolation(expression: string): IArrayExpression
 {
-    if (expression in cache)
+    if (expression in expressionCache)
     {
-        return cache[expression].clone() as IArrayExpression;
+        return expressionCache[expression] as IArrayExpression;
     }
 
-    return cache[expression] = InterpolatedExpression.parse(expression);
+    return expressionCache[expression] = InterpolatedExpression.parse(expression);
 }
 
 export function parseDestructuredPattern(expression: string): IPattern
 {
     const arrowExpression = `(${expression}) => 0`;
 
-    if (arrowExpression in cache)
+    if (arrowExpression in expressionCache)
     {
-        return cache[arrowExpression].clone() as IPattern;
+        return expressionCache[arrowExpression] as IPattern;
     }
 
     try
     {
-        return cache[arrowExpression] = (parseExpression(arrowExpression) as IArrowFunctionExpression).parameters[0];
+        return expressionCache[arrowExpression] = (parseExpression(arrowExpression) as IArrowFunctionExpression).parameters[0];
     }
     catch (error)
     {
@@ -84,8 +92,13 @@ export function parseDestructuredPattern(expression: string): IPattern
     }
 }
 
-export function parseForLoopStatement(expression: string): { operator: "of" | "in", left: IPattern | IIdentifier, right: IExpression }
+export function parseForLoopStatement(expression: string): ForLoopStatement
 {
+    if (expression in forLoopStatementCache)
+    {
+        return forLoopStatementCache[expression];
+    }
+
     if (!forExpression.test(expression))
     {
         throw new Error("Invalid for-loop statement");
@@ -103,5 +116,5 @@ export function parseForLoopStatement(expression: string): { operator: "of" | "i
         throw getOffsetSyntaxError(expression, rawLeft, new SyntaxError("Invalid left-hand side in for-loop", 1, 0, 1));
     }
 
-    return { left, operator, right };
+    return forLoopStatementCache[expression] = { left, operator, right };
 }
