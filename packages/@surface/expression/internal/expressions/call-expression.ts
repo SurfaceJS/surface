@@ -1,4 +1,5 @@
 import { format, hasValue } from "@surface/core";
+import { getThisArg }       from "../common.js";
 import type ICallExpression from "../interfaces/call-expression";
 import type IChainElement   from "../interfaces/chain-element.js";
 import type IExpression     from "../interfaces/expression";
@@ -9,8 +10,6 @@ import TypeGuard            from "../type-guard.js";
 
 export default class CallExpression implements IExpression, IChainElement
 {
-    private cache: unknown;
-
     private _arguments: (IExpression | ISpreadElement)[];
     public get arguments(): (IExpression | ISpreadElement)[]
     {
@@ -64,14 +63,9 @@ export default class CallExpression implements IExpression, IChainElement
         return new CallExpression(this.callee.clone(), this.arguments.map(x => x.clone()), this.optional);
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        const fn = this.callee.evaluate(scope, useCache) as Function | null | undefined;
+        const [thisArg, fn] = getThisArg(this.callee, scope);
 
         if (this.optional && !hasValue(fn))
         {
@@ -93,17 +87,15 @@ export default class CallExpression implements IExpression, IChainElement
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate(scope, useCache) as unknown[]);
+                $arguments.push(...argument.argument.evaluate(scope) as unknown[]);
             }
             else
             {
-                $arguments.push(argument.evaluate(scope, useCache));
+                $arguments.push(argument.evaluate(scope));
             }
         }
 
-        const thisArg = TypeGuard.isMemberExpression(this.callee) ? this.callee.object.evaluate(scope, true) : null;
-
-        return this.cache = fn.apply(thisArg, $arguments);
+        return fn.apply(thisArg, $arguments);
     }
 
     public toString(): string

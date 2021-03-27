@@ -8,8 +8,6 @@ import TypeGuard              from "../type-guard.js";
 
 export default class MemberExpression implements IExpression, IChainElement
 {
-    private cache: unknown;
-
     private _computed: boolean;
     public get computed(): boolean
     {
@@ -76,23 +74,18 @@ export default class MemberExpression implements IExpression, IChainElement
         return new MemberExpression(this.object.clone(), this.property.clone(), this.computed, this.optional);
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
+        const object = this.object.evaluate(scope) as Indexer | null;
 
-        const object = this.object.evaluate(scope, useCache) as Indexer | null;
-
-        const key = TypeGuard.isIdentifier(this.property) && !this.computed ?  this.property.name : `${this.property.evaluate(scope, useCache)}`;
+        const key = TypeGuard.isIdentifier(this.property) && !this.computed ?  this.property.name : `${this.property.evaluate(scope)}`;
 
         if (this.optional)
         {
-            return this.cache = hasValue(object) ? object[key] : undefined;
+            return hasValue(object) ? object[key] : undefined;
         }
 
-        return this.cache = object![key];
+        return object![key];
     }
 
     public toString(): string

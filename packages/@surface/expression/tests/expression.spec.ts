@@ -3,6 +3,7 @@ import chai                                                        from "chai";
 import Expression                                                  from "../internal/expression.js";
 import Messages                                                    from "../internal/messages.js";
 import NodeType                                                    from "../internal/node-type.js";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { EvaluationErrorExpected, ExpressionFactoryExpected } from "./expression-expectations.js";
 import { evaluationsExpected, expressionFactoriesExpected }        from "./expression-expectations.js";
 
@@ -46,7 +47,7 @@ export default class ExpressionSpec
         chai.assert.equal(expression.flags, "gi", "flags");
         chai.assert.equal(expression.value, null, "value");
         chai.assert.deepEqual(expression.evaluate(), /foo/gi, "evaluate");
-        chai.assert.deepEqual(expression.evaluate(void 0, true), /foo/gi, "evaluate with cache");
+        chai.assert.deepEqual(expression.evaluate(), /foo/gi, "evaluate with cache");
         chai.assert.deepEqual(expression.toString(), "/foo/gi", "toString");
     }
 

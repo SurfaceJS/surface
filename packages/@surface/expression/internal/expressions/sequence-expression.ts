@@ -1,12 +1,9 @@
-import { hasValue }             from "@surface/core";
 import type IExpression         from "../interfaces/expression";
 import type ISequenceExpression from "../interfaces/sequence-expression";
 import NodeType                 from "../node-type.js";
 
 export default class SequenceExpression implements IExpression
 {
-    private cache: unknown;
-
     private _expressions: IExpression[];
     public get expressions(): IExpression[]
     {
@@ -34,21 +31,16 @@ export default class SequenceExpression implements IExpression
         return new SequenceExpression(this.expressions.map(x => x.clone()));
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         let value: unknown;
 
         for (const expression of this.expressions)
         {
-            value = expression.evaluate(scope, useCache);
+            value = expression.evaluate(scope);
         }
 
-        return this.cache = value;
+        return value;
     }
 
     public toString(): string

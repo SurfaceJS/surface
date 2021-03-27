@@ -1,24 +1,21 @@
 import type { Indexer }         from "@surface/core";
-import { hasValue }             from "@surface/core";
 import type IExpression         from "../interfaces/expression";
 import type ILogicalExpression  from "../interfaces/logical-expression";
 import NodeType                 from "../node-type.js";
 import type { LogicalOperator } from "../types/operators";
 
-type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
+type Operation = (left: IExpression, right: IExpression, scope: Indexer) => unknown;
 
 const binaryFunctions: Record<LogicalOperator, Operation> =
 {
-    "&&": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) && (right.evaluate(scope, useCache) as Object),
-    "??": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) ?? (right.evaluate(scope, useCache) as Object),
-    "||": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object) || (right.evaluate(scope, useCache) as Object),
+    "&&": (left, right, scope) => (left.evaluate(scope) as Object) && (right.evaluate(scope) as Object),
+    "??": (left, right, scope) => (left.evaluate(scope) as Object) ?? (right.evaluate(scope) as Object),
+    "||": (left, right, scope) => (left.evaluate(scope) as Object) || (right.evaluate(scope) as Object),
 };
 
 export default class LogicalExpression implements IExpression
 {
     private readonly operation: Operation;
-
-    private cache: unknown;
 
     private _left: IExpression;
     public get left(): IExpression
@@ -74,14 +71,9 @@ export default class LogicalExpression implements IExpression
         return new LogicalExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        return this.cache = this.operation(this.left, this.right, scope as Indexer, !!useCache);
+        return this.operation(this.left, this.right, scope as Indexer);
     }
 
     public toString(): string

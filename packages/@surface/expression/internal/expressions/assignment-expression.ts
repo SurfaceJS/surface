@@ -1,5 +1,4 @@
 import type { Delegate, Indexer }  from "@surface/core";
-import { hasValue }                from "@surface/core";
 import type IAssignmentExpression  from "../interfaces/assignment-expression";
 import type IExpression            from "../interfaces/expression";
 import type IIdentifier            from "../interfaces/identifier";
@@ -31,8 +30,6 @@ const assignmentOperations: Record<AssignmentOperator, Delegate<[Indexer, string
 export default class AssignmentExpression implements IExpression
 {
     private readonly operation: Delegate<[Indexer, string | number, unknown], unknown>;
-
-    private cache: unknown;
 
     private _left:     IIdentifier | IMemberExpression;
     public get left(): IIdentifier | IMemberExpression
@@ -89,22 +86,17 @@ export default class AssignmentExpression implements IExpression
         return new AssignmentExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         if (TypeGuard.isIdentifier(this.left))
         {
-            return this.cache = this.operation(scope as Indexer, this.left.name, this.right.evaluate(scope, useCache));
+            return this.operation(scope as Indexer, this.left.name, this.right.evaluate(scope));
         }
 
-        const object   = this.left.object.evaluate(scope, useCache) as Indexer;
-        const property = TypeGuard.isIdentifier(this.left.property) && !this.left.computed ? this.left.property.name : this.left.property.evaluate(scope, useCache) as string | number;
+        const object   = this.left.object.evaluate(scope) as Indexer;
+        const property = TypeGuard.isIdentifier(this.left.property) && !this.left.computed ? this.left.property.name : this.left.property.evaluate(scope) as string | number;
 
-        return this.cache = this.operation(object, property, this.right.evaluate(scope, useCache));
+        return this.operation(object, property, this.right.evaluate(scope));
     }
 
     public toString(): string

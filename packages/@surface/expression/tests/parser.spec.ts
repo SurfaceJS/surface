@@ -4,6 +4,7 @@ import ParenthesizedExpression                              from "../internal/ex
 import Parser                                               from "../internal/parser.js";
 import SyntaxError                                          from "../internal/syntax-error.js";
 import TypeGuard                                            from "../internal/type-guard.js";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { InvalidParseExpectedSpec, ParseExpectedSpec } from "./parser-expectations.js";
 import { invalidExpressions, validExpressions }             from "./parser-expectations.js";
 
@@ -82,12 +83,10 @@ export default class ParserSpec
         if (parseExpectedSpec.value instanceof Function)
         {
             chai.assert.equal((expression.evaluate(parseExpectedSpec.scope) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate");
-            chai.assert.equal((expression.evaluate(parseExpectedSpec.scope, true) as Function).toString(), parseExpectedSpec.value.toString(), "evaluate using cache");
         }
         else
         {
             chai.assert.deepEqual(expression.evaluate(parseExpectedSpec.scope), parseExpectedSpec.value, "evaluate");
-            chai.assert.deepEqual(expression.evaluate(parseExpectedSpec.scope, true), parseExpectedSpec.value, "evaluate using cache");
         }
 
         chai.assert.instanceOf(expression, parseExpectedSpec.type, "instanceof");
@@ -103,7 +102,6 @@ export default class ParserSpec
         const expression = Parser.parse("((a && b) || x && y)");
 
         chai.assert.equal(expression.evaluate(scope), false, "evaluate");
-        chai.assert.equal(expression.evaluate(scope, true), false, "evaluate using cache");
         chai.assert.instanceOf(expression, ParenthesizedExpression, "instanceof");
         chai.assert.equal(expression.toString(), "((a && b) || x && y)", "toString");
     }

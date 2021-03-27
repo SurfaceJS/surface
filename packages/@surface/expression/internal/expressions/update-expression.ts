@@ -1,4 +1,3 @@
-import { hasValue }            from "@surface/core";
 import type IExpression        from "../interfaces/expression";
 import type IIdentifier        from "../interfaces/identifier";
 import type IMemberExpression  from "../interfaces/member-expression";
@@ -25,8 +24,6 @@ export default class UpdateExpression implements IExpression
     private _argument: IIdentifier | IMemberExpression;
     private _operator: UpdateOperator;
     private _prefix: boolean;
-
-    private cache: number | null = null;
 
     public get argument(): IIdentifier | IMemberExpression
     {
@@ -79,22 +76,17 @@ export default class UpdateExpression implements IExpression
         return new UpdateExpression(this.argument.clone(), this.operator, this.prefix);
     }
 
-    public evaluate(scope: object, useCache?: boolean): number
+    public evaluate(scope: object): number
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         if (TypeGuard.isIdentifier(this.argument))
         {
-            return this.cache = this.operation(scope as Record<string | number, number>, this.argument.name);
+            return this.operation(scope as Record<string | number, number>, this.argument.name);
         }
 
-        const object   = this.argument.object.evaluate(scope, useCache) as Record<string | number, number>;
-        const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope, useCache) as string | number;
+        const object   = this.argument.object.evaluate(scope) as Record<string | number, number>;
+        const property = TypeGuard.isIdentifier(this.argument.property) && !this.argument.computed ? this.argument.property.name : this.argument.property.evaluate(scope) as string | number;
 
-        return this.cache = this.operation(object, property);
+        return this.operation(object, property);
     }
 
     public toString(): string

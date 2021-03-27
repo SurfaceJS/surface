@@ -1,25 +1,22 @@
 import type { Delegate, Indexer } from "@surface/core";
-import { hasValue }               from "@surface/core";
 import type IExpression           from "../interfaces/expression";
 import type IUnaryExpression      from "../interfaces/unary-expression";
 import NodeType                   from "../node-type.js";
 import type { UnaryOperator }     from "../types/operators";
 
-type Operation = (value: IExpression, scope: Indexer, useCache: boolean) => Object;
+type Operation = (value: IExpression, scope: Indexer) => Object;
 
 const unaryFunctions: Record<UnaryOperator, Operation> =
 {
-    "!":      (expression, scope, useCache) => !expression.evaluate(scope, useCache),
-    "+":      (expression, scope, useCache) => +(expression.evaluate(scope, useCache) as Object),
-    "-":      (expression, scope, useCache) => -(expression.evaluate(scope, useCache) as Object),
-    "typeof": (expression, scope, useCache) => typeof expression.evaluate(scope, useCache),
-    "~":      (expression, scope, useCache) => ~(expression.evaluate(scope, useCache) as Object),
+    "!":      (expression, scope) => !expression.evaluate(scope),
+    "+":      (expression, scope) => +(expression.evaluate(scope) as Object),
+    "-":      (expression, scope) => -(expression.evaluate(scope) as Object),
+    "typeof": (expression, scope) => typeof expression.evaluate(scope),
+    "~":      (expression, scope) => ~(expression.evaluate(scope) as Object),
 };
 
 export default class UnaryExpression implements IExpression
 {
-    private cache: Object | null = null;
-
     private _argument: IExpression;
     public get argument(): IExpression
     {
@@ -63,14 +60,9 @@ export default class UnaryExpression implements IExpression
         return new UnaryExpression(this.argument.clone(), this.operator);
     }
 
-    public evaluate(scope: object, useCache?: boolean): Object
+    public evaluate(scope: object): Object
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        return this.cache = this.operation(this.argument, scope as Indexer, !!useCache);
+        return this.operation(this.argument, scope as Indexer);
     }
 
     public toString(): string

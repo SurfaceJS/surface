@@ -1,4 +1,3 @@
-import { hasValue }          from "@surface/core";
 import type IArrayExpression from "../interfaces/array-expression";
 import type IExpression      from "../interfaces/expression";
 import type ISpreadElement   from "../interfaces/spread-element";
@@ -7,8 +6,6 @@ import TypeGuard             from "../type-guard.js";
 
 export default class ArrayExpression implements IExpression
 {
-    private cache: unknown[] | null = null;
-
     private _elements: (IExpression | ISpreadElement | null)[];
     public get elements(): (IExpression | ISpreadElement | null)[]
     {
@@ -36,13 +33,8 @@ export default class ArrayExpression implements IExpression
         return new ArrayExpression(this.elements.map(x => x?.clone() ?? null));
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown[]
+    public evaluate(scope: object): unknown[]
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         const evaluation: unknown[] = [];
 
         for (const element of this.elements)
@@ -51,11 +43,11 @@ export default class ArrayExpression implements IExpression
             {
                 if (TypeGuard.isSpreadElement(element))
                 {
-                    evaluation.push(...element.argument.evaluate(scope, useCache) as unknown[]);
+                    evaluation.push(...element.argument.evaluate(scope) as unknown[]);
                 }
                 else
                 {
-                    evaluation.push(element.evaluate(scope, useCache));
+                    evaluation.push(element.evaluate(scope));
                 }
             }
             else
@@ -64,7 +56,7 @@ export default class ArrayExpression implements IExpression
             }
         }
 
-        return this.cache = evaluation;
+        return evaluation;
     }
 
     public toString(): string

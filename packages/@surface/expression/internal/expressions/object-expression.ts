@@ -1,5 +1,4 @@
 import type { Indexer }       from "@surface/core";
-import { hasValue }           from "@surface/core";
 import type IExpression       from "../interfaces/expression";
 import type IObjectExpression from "../interfaces/object-expression";
 import type IProperty         from "../interfaces/property";
@@ -9,8 +8,6 @@ import TypeGuard              from "../type-guard.js";
 
 export default class ObjectExpression implements IExpression
 {
-    private cache: Indexer | null = null;
-
     private _properties: (IProperty | ISpreadElement)[];
     public get properties(): (IProperty | ISpreadElement)[]
     {
@@ -38,30 +35,25 @@ export default class ObjectExpression implements IExpression
         return new ObjectExpression(this.properties.map(x => x.clone()));
     }
 
-    public evaluate(scope: object, useCache?: boolean): Indexer
+    public evaluate(scope: object): Indexer
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         const evaluation: Indexer = { };
 
         for (const property of this.properties)
         {
             if (TypeGuard.isProperty(property))
             {
-                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope, useCache) as string | number;
+                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : property.key.evaluate(scope) as string | number;
 
-                evaluation[key] = property.value.evaluate(scope, useCache);
+                evaluation[key] = property.value.evaluate(scope);
             }
             else
             {
-                Object.assign(evaluation, property.argument.evaluate(scope, useCache));
+                Object.assign(evaluation, property.argument.evaluate(scope));
             }
         }
 
-        return this.cache = evaluation;
+        return evaluation;
     }
 
     public toString(): string
