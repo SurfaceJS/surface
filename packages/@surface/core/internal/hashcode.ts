@@ -1,84 +1,212 @@
-import { hasValue, isIterable } from "./common/generic.js";
-import { enumerateKeys }        from "./common/object.js";
-import type { Indexer }         from "./types";
+import { isIterable }    from "./common/generic.js";
+import { enumerateKeys } from "./common/object.js";
+import type { Indexer }  from "./types";
 
 export default class Hashcode
 {
-    private readonly cache:      Map<object, string> = new Map();
-    private readonly references: Set<object>         = new Set();
+    private readonly cache:      Map<object, string>           = new Map();
+    private readonly references: Set<object>                   = new Set();
+    private readonly stack:      (string | number | symbol)[]  = ["$root"];
 
     public static encode(source: unknown): number
     {
         return new Hashcode().encode(source);
     }
 
-    private encode(source: unknown): number
+    private buildPath(): string
     {
-        const initialValue = 7;
-        const max          = 0x7FFFFFFF;
-        const bits         = 32;
+        const iterator = this.stack[Symbol.iterator]();
 
-        const signature = this.getSignature(source);
+        let path = "";
 
-        return signature.split("").reduce((previous, current) => previous * bits * current.charCodeAt(0) % max, initialValue);
+        let next = iterator.next();
+
+        if (!next.done)
+        {
+            do
+            {
+                path += typeof next.value == "string" ? next.value as string : `[${String(next.value)}]`;
+
+                next = iterator.next();
+
+                if (!next.done)
+                {
+                    path += typeof next.value == "string" ? "." : "";
+                }
+
+            } while (!next.done);
+        }
+
+        return path;
     }
 
-    private getSignature(source: unknown): string
+    private encode(source: unknown): number
     {
-        let signature = "";
+        let hash = 0;
 
+        for (const token of this.getTokens(source))
+        {
+            for (const char of token)
+            {
+                hash = (hash << 5) - hash + char.charCodeAt(0) | 0;
+            }
+        }
+
+        return 0x7FFFFFFF ^ Math.abs(hash);
+    }
+
+    private *enumerateArrayTokens(source: Iterable<unknown>): Iterable<string>
+    {
+        const cache = this.cache.get(source);
+
+        if (cache)
+        {
+            yield "{";
+            yield "\"$ref\"";
+            yield ":";
+            yield `"${cache}"`;
+            yield "}";
+
+            return;
+        }
+
+        this.cache.set(source, this.buildPath());
+
+        yield "[";
+
+        const iterator = source[Symbol.iterator]();
+
+        let next = iterator.next();
+
+        if (!next.done)
+        {
+            let index = 0;
+
+            do
+            {
+                this.stack.push(index);
+
+                for (const token of this.getTokens(next.value))
+                {
+                    yield token;
+                }
+
+                this.stack.pop();
+
+                next = iterator.next();
+
+                if (!next.done)
+                {
+                    index++;
+
+                    yield ",";
+                }
+
+            } while (!next.done);
+        }
+
+        yield "]";
+    }
+
+    private *enumerateObjectTokens(source: object): Iterable<string>
+    {
+        const cache = this.cache.get(source);
+
+        if (cache)
+        {
+            yield "{";
+            yield "\"$ref\"";
+            yield ":";
+            yield `"${cache}"`;
+            yield "}";
+
+            return;
+        }
+
+        this.cache.set(source, this.buildPath());
+
+        yield "{";
+
+        yield "\"$type\"";
+        yield ":";
+        yield `"${source.constructor.name}"`;
+
+        const iterator = enumerateKeys(source);
+
+        let next = iterator.next();
+
+        if (!next.done)
+        {
+            yield ",";
+
+            do
+            {
+                yield `"${String(next.value)}"`;
+                yield ":";
+
+                this.stack.push(next.value);
+
+                for (const token of this.getTokens((source as Indexer)[next.value as string | number]))
+                {
+                    yield token;
+                }
+
+                this.stack.pop();
+
+                next = iterator.next();
+
+                if (!next.done)
+                {
+                    yield ",";
+                }
+
+            } while (!next.done);
+        }
+
+        yield "}";
+    }
+
+    private *getTokens(source: unknown): Iterable<string>
+    {
         if (typeof source == "object" && source)
         {
-            const cache = this.cache.get(source);
-
-            if (cache)
+            if (this.references.has(source))
             {
-                return cache;
+                yield "{";
+                yield "\"$ref\"";
+                yield ":";
+                yield `"${this.cache.get(source)}"`;
+                yield "}";
+
+                return;
             }
+
+            this.references.add(source);
 
             if (isIterable(source))
             {
-                let index = 0;
-                for (const element of source)
+                for (const token of this.enumerateArrayTokens(source))
                 {
-                    signature = signature ? `${signature},${index}:${this.getSignature(element)}` : `${index}:${this.getSignature(element)}`;
-                    index++;
+                    yield token;
                 }
-
-                signature = `[${signature}][${source.constructor.name}]`;
             }
             else
             {
-                if (this.references.has(source))
+                for (const token of this.enumerateObjectTokens(source))
                 {
-                    return `[circular][${source.constructor.name}]`;
+                    yield token;
                 }
-
-                this.references.add(source);
-
-                for (const key of enumerateKeys(source))
-                {
-                    const value = (source as Indexer)[String(key)];
-
-                    signature = signature ? `${signature},${String(key)}:${this.getSignature(value)}` : `${String(key)}:${this.getSignature(value)}`;
-                }
-
-                this.references.delete(source);
-
-                signature = `{${signature}}[${source.constructor.name}]`;
             }
 
-            this.cache.set(source, signature);
+            this.references.delete(source);
         }
-        else if (hasValue(source))
+        else if (typeof source == "string" || typeof source == "function")
         {
-            signature = `${source.toString()}#${source.constructor.name}`;
+            yield `"${source}"`;
         }
         else
         {
-            signature = `${source}#?`;
+            yield String(source);
         }
-
-        return signature;
     }
 }
