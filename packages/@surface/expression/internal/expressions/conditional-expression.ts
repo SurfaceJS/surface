@@ -1,12 +1,9 @@
-import { hasValue }                from "@surface/core";
 import type IConditionalExpression from "../interfaces/conditional-expression";
 import type IExpression            from "../interfaces/expression";
 import NodeType                    from "../node-type.js";
 
 export default class ConditionalExpression implements IExpression
 {
-    private cache: unknown;
-
     private _alternate: IExpression;
     public get alternate(): IExpression
     {
@@ -60,14 +57,9 @@ export default class ConditionalExpression implements IExpression
         return new ConditionalExpression(this.test.clone(), this.alternate.clone(), this.consequent.clone());
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        return this.cache = this.test.evaluate(scope, useCache) ? this.alternate.evaluate(scope, useCache) : this.consequent.evaluate(scope, useCache);
+        return this.test.evaluate(scope) ? this.alternate.evaluate(scope) : this.consequent.evaluate(scope);
     }
 
     public toString(): string

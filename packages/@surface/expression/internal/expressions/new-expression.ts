@@ -1,15 +1,13 @@
-import { format, hasValue } from "@surface/core";
-import type IExpression     from "../interfaces/expression";
-import type INewExpression  from "../interfaces/new-expression";
-import type ISpreadElement  from "../interfaces/spread-element";
-import Messages             from "../messages.js";
-import NodeType             from "../node-type.js";
-import TypeGuard            from "../type-guard.js";
+import { format }          from "@surface/core";
+import type IExpression    from "../interfaces/expression";
+import type INewExpression from "../interfaces/new-expression";
+import type ISpreadElement from "../interfaces/spread-element";
+import Messages            from "../messages.js";
+import NodeType            from "../node-type.js";
+import TypeGuard           from "../type-guard.js";
 
 export default class NewExpression implements IExpression
 {
-    private cache: unknown;
-
     private _arguments: (IExpression | ISpreadElement)[];
     public get arguments(): (IExpression | ISpreadElement)[]
     {
@@ -50,14 +48,9 @@ export default class NewExpression implements IExpression
         return new NewExpression(this.callee.clone(), this.arguments.map(x => x.clone()));
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        const fn = this.callee.evaluate(scope, useCache) as Function;
+        const fn = this.callee.evaluate(scope) as Function;
 
         if (!fn)
         {
@@ -74,15 +67,15 @@ export default class NewExpression implements IExpression
         {
             if (TypeGuard.isSpreadElement(argument))
             {
-                $arguments.push(...argument.argument.evaluate(scope, useCache) as unknown[]);
+                $arguments.push(...argument.argument.evaluate(scope) as unknown[]);
             }
             else
             {
-                $arguments.push(argument.evaluate(scope, useCache));
+                $arguments.push(argument.evaluate(scope));
             }
         }
 
-        return this.cache = Reflect.construct(fn, $arguments, fn);
+        return Reflect.construct(fn, $arguments, fn);
     }
 
     public toString(): string

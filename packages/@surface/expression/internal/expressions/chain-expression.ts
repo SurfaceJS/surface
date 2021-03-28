@@ -20,9 +20,9 @@ export default class ChainExpression implements IExpression
         this._expression = expression;
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        return this._expression.evaluate(scope, useCache);
+        return this._expression.evaluate(scope);
     }
 
     public clone(): IExpression

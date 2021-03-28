@@ -1,43 +1,40 @@
 import type { Indexer }        from "@surface/core";
-import { hasValue }            from "@surface/core";
 import type IBinaryExpression  from "../interfaces/binary-expression";
 import type IExpression        from "../interfaces/expression";
 import NodeType                from "../node-type.js";
 import type { BinaryOperator } from "../types/operators";
 
-type Operation = (left: IExpression, right: IExpression, scope: Indexer, useCache: boolean) => unknown;
+type Operation = (left: IExpression, right: IExpression, scope: Indexer) => unknown;
 
 const binaryFunctions: Record<BinaryOperator, Operation> =
 {
-    "!=":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  !=         (right.evaluate(scope, useCache) as Object),
-    "!==":        (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  !==        (right.evaluate(scope, useCache) as Object),
-    "%":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  %          (right.evaluate(scope, useCache) as number),
-    "&":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  &          (right.evaluate(scope, useCache) as number),
-    "*":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  *          (right.evaluate(scope, useCache) as number),
-    "**":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  **         (right.evaluate(scope, useCache) as number),
-    "+":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  +          (right.evaluate(scope, useCache) as number),
-    "-":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  -          (right.evaluate(scope, useCache) as number),
-    "/":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  /          (right.evaluate(scope, useCache) as number),
-    "<":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  <          (right.evaluate(scope, useCache) as Object),
-    "<<":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  <<         (right.evaluate(scope, useCache) as number),
-    "<=":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  <=         (right.evaluate(scope, useCache) as Object),
-    "==":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  ==         (right.evaluate(scope, useCache) as Object),
-    "===":        (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  ===        (right.evaluate(scope, useCache) as Object),
-    ">":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  >          (right.evaluate(scope, useCache) as Object),
-    ">=":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  >=         (right.evaluate(scope, useCache) as Object),
-    ">>":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  >>         (right.evaluate(scope, useCache) as number),
-    ">>>":        (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  >>>        (right.evaluate(scope, useCache) as number),
-    "^":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  ^          (right.evaluate(scope, useCache) as number),
-    "in":         (left, right, scope, useCache) => (left.evaluate(scope, useCache) as string)  in         (right.evaluate(scope, useCache) as Function),
-    "instanceof": (left, right, scope, useCache) => (left.evaluate(scope, useCache) as Object)  instanceof (right.evaluate(scope, useCache) as Function),
-    "|":          (left, right, scope, useCache) => (left.evaluate(scope, useCache) as number)  |          (right.evaluate(scope, useCache) as number),
+    "!=":         (left, right, scope) => (left.evaluate(scope) as Object)  !=         (right.evaluate(scope) as Object),
+    "!==":        (left, right, scope) => (left.evaluate(scope) as Object)  !==        (right.evaluate(scope) as Object),
+    "%":          (left, right, scope) => (left.evaluate(scope) as number)  %          (right.evaluate(scope) as number),
+    "&":          (left, right, scope) => (left.evaluate(scope) as number)  &          (right.evaluate(scope) as number),
+    "*":          (left, right, scope) => (left.evaluate(scope) as number)  *          (right.evaluate(scope) as number),
+    "**":         (left, right, scope) => (left.evaluate(scope) as number)  **         (right.evaluate(scope) as number),
+    "+":          (left, right, scope) => (left.evaluate(scope) as number)  +          (right.evaluate(scope) as number),
+    "-":          (left, right, scope) => (left.evaluate(scope) as number)  -          (right.evaluate(scope) as number),
+    "/":          (left, right, scope) => (left.evaluate(scope) as number)  /          (right.evaluate(scope) as number),
+    "<":          (left, right, scope) => (left.evaluate(scope) as Object)  <          (right.evaluate(scope) as Object),
+    "<<":         (left, right, scope) => (left.evaluate(scope) as number)  <<         (right.evaluate(scope) as number),
+    "<=":         (left, right, scope) => (left.evaluate(scope) as Object)  <=         (right.evaluate(scope) as Object),
+    "==":         (left, right, scope) => (left.evaluate(scope) as Object)  ==         (right.evaluate(scope) as Object),
+    "===":        (left, right, scope) => (left.evaluate(scope) as Object)  ===        (right.evaluate(scope) as Object),
+    ">":          (left, right, scope) => (left.evaluate(scope) as Object)  >          (right.evaluate(scope) as Object),
+    ">=":         (left, right, scope) => (left.evaluate(scope) as Object)  >=         (right.evaluate(scope) as Object),
+    ">>":         (left, right, scope) => (left.evaluate(scope) as number)  >>         (right.evaluate(scope) as number),
+    ">>>":        (left, right, scope) => (left.evaluate(scope) as number)  >>>        (right.evaluate(scope) as number),
+    "^":          (left, right, scope) => (left.evaluate(scope) as number)  ^          (right.evaluate(scope) as number),
+    "in":         (left, right, scope) => (left.evaluate(scope) as string)  in         (right.evaluate(scope) as Function),
+    "instanceof": (left, right, scope) => (left.evaluate(scope) as Object)  instanceof (right.evaluate(scope) as Function),
+    "|":          (left, right, scope) => (left.evaluate(scope) as number)  |          (right.evaluate(scope) as number),
 };
 
 export default class BinaryExpression implements IExpression
 {
     private readonly operation: Operation;
-
-    private cache: unknown;
 
     private _left: IExpression;
     public get left(): IExpression
@@ -93,14 +90,9 @@ export default class BinaryExpression implements IExpression
         return new BinaryExpression(this.left.clone(), this.right.clone(), this.operator);
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        return this.cache = this.operation(this.left, this.right, scope as Indexer, !!useCache);
+        return this.operation(this.left, this.right, scope as Indexer);
     }
 
     public toString(): string

@@ -1,15 +1,13 @@
-import { format, hasValue }           from "@surface/core";
+import { format }                     from "@surface/core";
+import { getThisArg }                 from "../common.js";
 import type IExpression               from "../interfaces/expression";
 import type ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
 import Messages                       from "../messages.js";
 import NodeType                       from "../node-type.js";
-import TypeGuard                      from "../type-guard.js";
 import type TemplateLiteral           from "./template-literal.js";
 
 export default class TaggedTemplateExpression implements IExpression
 {
-    private cache: unknown;
-
     private _callee: IExpression;
     public get callee(): IExpression
     {
@@ -50,14 +48,9 @@ export default class TaggedTemplateExpression implements IExpression
         return new TaggedTemplateExpression(this.callee.clone(), this.quasi.clone());
     }
 
-    public evaluate(scope: object, useCache?: boolean): unknown
+    public evaluate(scope: object): unknown
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        const fn = this.callee.evaluate(scope, useCache) as Function | undefined;
+        const [thisArg, fn] = getThisArg(this.callee, scope);
 
         if (!fn)
         {
@@ -69,11 +62,10 @@ export default class TaggedTemplateExpression implements IExpression
         }
 
         const cooked = this.quasi.quasis.map(x => x.cooked);
+
         Object.defineProperty(cooked, "raw", { value: this.quasi.quasis.map(x => x.raw) });
 
-        const thisArg = TypeGuard.isMemberExpression(this.callee) ? this.callee.object.evaluate(scope, true) : null;
-
-        return this.cache = fn.apply(thisArg, [cooked, ...this.quasi.expressions.map(x => x.evaluate(scope, useCache))]);
+        return fn.apply(thisArg, [cooked, ...this.quasi.expressions.map(x => x.evaluate(scope))]);
     }
 
     public toString(): string

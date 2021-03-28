@@ -9,7 +9,7 @@ import TypeGuard           from "./type-guard.js";
 
 export default class Evaluate
 {
-    private static arrayPattern(scope: object, arrayPattern: IArrayPattern, value: unknown[], useCache: boolean): Indexer
+    private static arrayPattern(scope: object, arrayPattern: IArrayPattern, value: unknown[]): Indexer
     {
         const currentScope: Indexer = { };
 
@@ -19,7 +19,7 @@ export default class Evaluate
         {
             if (element)
             {
-                Object.assign(currentScope, Evaluate.pattern(scope, element, value[index], value.slice(index), useCache));
+                Object.assign(currentScope, Evaluate.pattern(scope, element, value[index], value.slice(index)));
             }
 
             index++;
@@ -28,7 +28,7 @@ export default class Evaluate
         return currentScope;
     }
 
-    private static objectPattern(scope: object, objectPattern: IObjectPattern, value: Indexer, useCache: boolean): Indexer
+    private static objectPattern(scope: object, objectPattern: IObjectPattern, value: Indexer): Indexer
     {
         const aliases:      string[] = [];
         const currentScope: Indexer  = { };
@@ -37,22 +37,22 @@ export default class Evaluate
         {
             if (TypeGuard.isAssignmentProperty(property))
             {
-                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : `${property.key.evaluate(scope, useCache)}`;
+                const key = TypeGuard.isIdentifier(property.key) && !property.computed ? property.key.name : `${property.key.evaluate(scope)}`;
 
                 if (TypeGuard.isObjectPattern(property.value))
                 {
-                    return Evaluate.objectPattern(scope, property.value, value[key] as Indexer, useCache);
+                    return Evaluate.objectPattern(scope, property.value, value[key] as Indexer);
                 }
                 else if (TypeGuard.isArrayPattern(property.value))
                 {
-                    return Evaluate.arrayPattern(scope, property.value, value[key] as unknown[], useCache);
+                    return Evaluate.arrayPattern(scope, property.value, value[key] as unknown[]);
                 }
 
                 const alias      = `${TypeGuard.isAssignmentPattern(property.value) ? (property.value.left as IIdentifier).name : (property.value as IIdentifier).name}`;
                 const aliasOrKey = property.shorthand ? alias : key;
 
                 currentScope[alias] = TypeGuard.isAssignmentPattern(property.value)
-                    ? property.value.right.evaluate(scope, useCache)
+                    ? property.value.right.evaluate(scope)
                     : currentScope[alias] = value[aliasOrKey];
 
                 aliases.push(alias);
@@ -64,24 +64,24 @@ export default class Evaluate
                     Reflect.deleteProperty(value, alias);
                 }
 
-                Object.assign(currentScope, Evaluate.restElement(scope, property, value, useCache));
+                Object.assign(currentScope, Evaluate.restElement(scope, property, value));
             }
         }
 
         return currentScope;
     }
 
-    private static restElement(scope: object, restElement: IRestElement, elements: unknown[] | Indexer, useCache: boolean): Indexer
+    private static restElement(scope: object, restElement: IRestElement, elements: unknown[] | Indexer): Indexer
     {
         if (TypeGuard.isIdentifier(restElement.argument))
         {
             return { [restElement.argument.name]: elements };
         }
 
-        return Evaluate.pattern(scope, restElement.argument, elements, [], useCache);
+        return Evaluate.pattern(scope, restElement.argument, elements, []);
     }
 
-    public static pattern(scope: object, pattern: IPattern, value: unknown, rest: unknown[] = [], useCache: boolean = false): Indexer
+    public static pattern(scope: object, pattern: IPattern, value: unknown, rest: unknown[] = []): Indexer
     {
         if (TypeGuard.isIdentifier(pattern))
         {
@@ -91,22 +91,22 @@ export default class Evaluate
         {
             if (TypeGuard.isIdentifier(pattern.left))
             {
-                return { [pattern.left.name]: value ?? pattern.right.evaluate(scope, useCache) };
+                return { [pattern.left.name]: value ?? pattern.right.evaluate(scope) };
             }
 
             throw new Error(Messages.illegalPropertyInDeclarationContext);
         }
         else if (TypeGuard.isArrayPattern(pattern))
         {
-            return Evaluate.arrayPattern(scope, pattern, value as unknown[], useCache);
+            return Evaluate.arrayPattern(scope, pattern, value as unknown[]);
         }
         else if (TypeGuard.isObjectPattern(pattern))
         {
-            return Evaluate.objectPattern(scope, pattern, value as Indexer, useCache);
+            return Evaluate.objectPattern(scope, pattern, value as Indexer);
         }
         else if (TypeGuard.isRestElement(pattern))
         {
-            return Evaluate.restElement(scope, pattern, rest, useCache);
+            return Evaluate.restElement(scope, pattern, rest);
         } /* c8 ignore next 3 */
 
         throw new Error("Invalid pattern");

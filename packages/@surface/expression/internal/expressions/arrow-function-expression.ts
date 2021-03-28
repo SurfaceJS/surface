@@ -1,5 +1,5 @@
 import type { Indexer }              from "@surface/core";
-import { hasValue, proxyFrom }       from "@surface/core";
+import { proxyFrom }                 from "@surface/core";
 import Evaluate                      from "../evaluate.js";
 import type IArrowFunctionExpression from "../interfaces/arrow-function-expression";
 import type IExpression              from "../interfaces/expression";
@@ -8,8 +8,6 @@ import NodeType                      from "../node-type.js";
 
 export default class ArrowFunctionExpression implements IExpression
 {
-    private cache: Function | null = null;
-
     private _body: IExpression;
     public get body(): IExpression
     {
@@ -45,14 +43,14 @@ export default class ArrowFunctionExpression implements IExpression
         this._body       = body;
     }
 
-    private resolveParameters(scope: object, $arguments: unknown[], useCache: boolean): Indexer
+    private resolveParameters(scope: object, $arguments: unknown[]): Indexer
     {
         const currentScope: Indexer = { };
 
         let index = 0;
         for (const parameter of this.parameters)
         {
-            Object.assign(currentScope, Evaluate.pattern(scope, parameter, $arguments[index], $arguments.slice(index), useCache));
+            Object.assign(currentScope, Evaluate.pattern(scope, parameter, $arguments[index], $arguments.slice(index)));
 
             index++;
         }
@@ -65,18 +63,13 @@ export default class ArrowFunctionExpression implements IExpression
         return new ArrowFunctionExpression(this.parameters.map(x => x.clone()), this.body.clone());
     }
 
-    public evaluate(scope: object, useCache?: boolean): Function
+    public evaluate(scope: object): Function
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        const fn = (...args: unknown[]): unknown => this.body.evaluate(proxyFrom(this.resolveParameters(scope, args, !!useCache), scope), useCache);
+        const fn = (...args: unknown[]): unknown => this.body.evaluate(proxyFrom(this.resolveParameters(scope, args), scope));
 
         fn.toString = () => this.toString();
 
-        return this.cache = fn;
+        return fn;
     }
 
     public toString(): string

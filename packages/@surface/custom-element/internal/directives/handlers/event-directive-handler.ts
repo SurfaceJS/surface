@@ -1,5 +1,6 @@
-import type { Delegate, IDisposable } from "@surface/core";
-import { TypeGuard }                  from "@surface/expression";
+import type { Delegate, IDisposable, Indexer } from "@surface/core";
+import { assert }                              from "@surface/core";
+import { TypeGuard }                           from "@surface/expression";
 import
 {
     throwTemplateEvaluationError,
@@ -30,14 +31,29 @@ export default class EventDirectiveHandler implements IDisposable
         }
         else if (TypeGuard.isMemberExpression(directive.expression))
         {
-            const action = tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace) as Function;
+            const key = TypeGuard.isIdentifier(directive.expression.property) && !directive.expression.computed ?  directive.expression.property.name : `${directive.expression.property.evaluate(scope)}`;
+
+            const thisArg = directive.expression.object.evaluate(scope) as Indexer;
+
+            let action: Function | undefined;
+
+            try
+            {
+                action = thisArg[key] as Function | undefined;
+            }
+            catch (error)
+            {
+                assert(error instanceof Error);
+
+                throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${error.message}`, directive.stackTrace);
+            }
 
             if (!action)
             {
                 throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${directive.expression} is not defined`, directive.stackTrace);
             }
 
-            return action.bind(directive.expression.object.evaluate(scope, true)) as Delegate<[Event]>;
+            return action.bind(thisArg) as Delegate<[Event]>;
         }
 
         return () => tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);

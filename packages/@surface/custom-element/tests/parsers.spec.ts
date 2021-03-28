@@ -46,7 +46,7 @@ export default class ParsersSpec
 
         chai.assert.isTrue(TypeGuard.isBinaryExpression(actual));
 
-        chai.assert.notEqual(actual, parseExpression(expression));
+        chai.assert.equal(actual, parseExpression(expression));
     }
 
     @test @shouldPass
@@ -58,7 +58,7 @@ export default class ParsersSpec
 
         chai.assert.isTrue(TypeGuard.isArrayPattern(actual));
 
-        chai.assert.notEqual(actual, parseDestructuredPattern(expression));
+        chai.assert.equal(actual, parseDestructuredPattern(expression));
     }
 
     @test @shouldPass
@@ -70,7 +70,7 @@ export default class ParsersSpec
 
         chai.assert.isTrue(TypeGuard.isObjectPattern(actual));
 
-        chai.assert.notEqual(actual, parseDestructuredPattern(expression));
+        chai.assert.equal(actual, parseDestructuredPattern(expression));
     }
 
     @test @shouldPass
@@ -84,7 +84,7 @@ export default class ParsersSpec
         chai.assert.isTrue(TypeGuard.isIdentifier(actual.right));
         chai.assert.equal(actual.operator, "in");
 
-        chai.assert.notEqual(actual, parseForLoopStatement(expression));
+        chai.assert.equal(actual, parseForLoopStatement(expression));
     }
 
     @test @shouldPass
@@ -98,7 +98,7 @@ export default class ParsersSpec
         chai.assert.isTrue(TypeGuard.isIdentifier(actual.right));
         chai.assert.equal(actual.operator, "of");
 
-        chai.assert.notEqual(actual, parseForLoopStatement(expression));
+        chai.assert.equal(actual, parseForLoopStatement(expression));
     }
 
     @test @shouldPass
@@ -112,7 +112,7 @@ export default class ParsersSpec
         chai.assert.isTrue(TypeGuard.isIdentifier(actual.right));
         chai.assert.equal(actual.operator, "of");
 
-        chai.assert.notEqual(actual, parseForLoopStatement(expression));
+        chai.assert.equal(actual, parseForLoopStatement(expression));
     }
 
     @test @shouldFail

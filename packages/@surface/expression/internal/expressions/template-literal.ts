@@ -1,4 +1,3 @@
-import { hasValue }          from "@surface/core";
 import type IExpression      from "../interfaces/expression";
 import type ITemplateElement from "../interfaces/template-element";
 import type ITemplateLiteral from "../interfaces/template-literal";
@@ -8,8 +7,6 @@ export default class TemplateLiteral implements IExpression
 {
     private _expressions: IExpression[];
     private _quasis:      ITemplateElement[];
-
-    private cache: string | null = null;
 
     public get expressions(): IExpression[]
     {
@@ -49,21 +46,16 @@ export default class TemplateLiteral implements IExpression
         return new TemplateLiteral(this.quasis.map(x => x.clone()), this.expressions.map(x => x.clone()));
     }
 
-    public evaluate(scope: object, useCache?: boolean): string
+    public evaluate(scope: object): string
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
         let result = "";
 
         for (let i = 0; i < this.expressions.length; i++)
         {
-            result = `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope, useCache)}`;
+            result = `${this.quasis[i].cooked}${this.expressions[i].evaluate(scope)}`;
         }
 
-        return this.cache = result + this.quasis[this.quasis.length - 1].cooked;
+        return result + this.quasis[this.quasis.length - 1].cooked;
     }
 
     public toString(): string

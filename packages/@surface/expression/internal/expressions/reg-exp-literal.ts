@@ -1,12 +1,9 @@
-import { hasValue }        from "@surface/core";
 import type ILiteral       from "../interfaces/literal";
 import type IRegExpLiteral from "../interfaces/reg-exp-literal";
 import NodeType            from "../node-type.js";
 
 export default class RegExpLiteral implements ILiteral
 {
-    private cache: RegExp | null = null;
-
     private _flags: string;
     public get flags(): string
     {
@@ -57,14 +54,9 @@ export default class RegExpLiteral implements ILiteral
         return new RegExpLiteral(this.pattern, this.flags);
     }
 
-    public evaluate(_?: object, useCache?: boolean): RegExp
+    public evaluate(): RegExp
     {
-        if (useCache && hasValue(this.cache))
-        {
-            return this.cache;
-        }
-
-        return this.cache = new RegExp(this.pattern, this.flags);
+        return new RegExp(this.pattern, this.flags);
     }
 
     public toString(): string
