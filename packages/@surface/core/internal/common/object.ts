@@ -445,15 +445,22 @@ export function proxyFrom(...instances: Indexer[]): Indexer
     return new Proxy(instances[0], handler);
 }
 
-export function *enumerateKeys(target: object): IterableIterator<string | number | symbol>
+export function *enumerateKeys(target: object): IterableIterator<PropertyKey>
 {
+    const set = new Set<PropertyKey>();
+
     let prototype: object | null = target;
 
     do
     {
         for (const key of Reflect.ownKeys(prototype))
         {
-            yield key;
+            if (!set.has(key))
+            {
+                set.add(key);
+
+                yield key;
+            }
         }
     } while ((prototype = Reflect.getPrototypeOf(prototype)) && prototype.constructor != Object);
 }

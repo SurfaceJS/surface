@@ -1,9 +1,9 @@
-import type { Constructor }                     from "@surface/core";
-import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import type ICustomElement                      from "./interfaces/custom-element";
-import StaticMetadata                           from "./metadata/static-metadata.js";
-import { directiveRegistry }                    from "./singletons.js";
-import type { DirectiveHandlerRegistry }        from "./types";
+import type { Constructor }                                          from "@surface/core";
+import { DisposableMetadata, HookableMetadata }                      from "@surface/core";
+import type ICustomElement                                           from "./interfaces/custom-element";
+import StaticMetadata                                                from "./metadata/static-metadata.js";
+import { directiveRegistry }                                         from "./singletons.js";
+import type { DirectiveHandlerConstructor, DirectiveHandlerFactory } from "./types";
 
 const CUSTOM_ELEMENT = Symbol("custom-element:instance");
 
@@ -64,12 +64,9 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         };
     }
 
-    public static registerDirective(...registries: DirectiveHandlerRegistry[]): void
+    public static registerDirective(name: string, handler: DirectiveHandlerConstructor | DirectiveHandlerFactory): void
     {
-        for (const registry of registries)
-        {
-            directiveRegistry.set(registry.name, registry.handler);
-        }
+        directiveRegistry.set(name, handler);
     }
 
     public dispose(): void

@@ -7,7 +7,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
-import type IRouterInterceptor                  from "../internal/interfaces/router-interceptor";
+import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
@@ -173,7 +173,7 @@ export default class WebRouterSpec
 
         this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
 
-        CustomElement.registerDirective(WebRouter.createDirectiveRegistry(this.router));
+        CustomElement.registerDirective("to", this.router.asDirectiveHandler());
 
         this.appRoot = document.body.appendChild(new AppRoot());
     }
