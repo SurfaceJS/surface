@@ -13,7 +13,7 @@ export default class DisposableMetadata implements IDisposable
     {
         if (!Reflect.has(target, DISPOSABLE_METADATA))
         {
-            Reflect.defineProperty(target, DISPOSABLE_METADATA, { value: new DisposableMetadata() });
+            Reflect.defineProperty(target, DISPOSABLE_METADATA, { configurable: false, enumerable: false, value: new DisposableMetadata() });
         }
 
         return Reflect.get(target, DISPOSABLE_METADATA) as DisposableMetadata;

@@ -11,11 +11,11 @@ export default class StaticMetadata
     {
         if (!Reflect.has(target, METADATA))
         {
-            Reflect.defineProperty(target, METADATA, { value: new StaticMetadata() });
+            Reflect.defineProperty(target, METADATA, { configurable: false, enumerable: false, value: new StaticMetadata() });
         }
         else if (!target.hasOwnProperty(METADATA))
         {
-            Reflect.defineProperty(target, METADATA, { value: (Reflect.get(target, METADATA) as StaticMetadata).inherit() });
+            Reflect.defineProperty(target, METADATA, { configurable: false, enumerable: false, value: (Reflect.get(target, METADATA) as StaticMetadata).inherit() });
         }
 
         return Reflect.get(target, METADATA) as StaticMetadata;

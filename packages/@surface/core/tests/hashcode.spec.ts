@@ -57,7 +57,7 @@ export default class HashcodeSpec
     @test @shouldPass
     public getHashFromObject(): void
     {
-        chai.expect(Hashcode.encode({ [Symbol("ignore-me")]: "ignore-me", bar: 2, foo: 1 })).to.equal(2069065848);
+        chai.expect(Hashcode.encode({ bar: 2, foo: 1 })).to.equal(2069065848);
     }
 
     @test @shouldPass

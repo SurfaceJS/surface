@@ -10,7 +10,7 @@ export default class Metadata
     {
         if (!Reflect.has(target, METADATA))
         {
-            Reflect.defineProperty(target, METADATA, { value: new Metadata() });
+            Reflect.defineProperty(target, METADATA, { configurable: false, enumerable: false, value: new Metadata() });
         }
 
         return Reflect.get(target, METADATA);

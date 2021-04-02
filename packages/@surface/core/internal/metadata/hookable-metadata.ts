@@ -13,11 +13,11 @@ export default class HookableMetadata<T extends Constructor>
     {
         if (!Reflect.has(target, HOOKABLE_METADATA))
         {
-            Reflect.defineProperty(target, HOOKABLE_METADATA, { value: new HookableMetadata() });
+            Reflect.defineProperty(target, HOOKABLE_METADATA, { configurable: false, enumerable: false, value: new HookableMetadata() });
         }
         else if (!target.hasOwnProperty(HOOKABLE_METADATA))
         {
-            Reflect.defineProperty(target, HOOKABLE_METADATA, { value: (Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>).clone() });
+            Reflect.defineProperty(target, HOOKABLE_METADATA, { configurable: false, enumerable: false, value: (Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>).clone() });
         }
 
         return Reflect.get(target, HOOKABLE_METADATA) as HookableMetadata<T>;
