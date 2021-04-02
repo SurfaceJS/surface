@@ -18,7 +18,7 @@ export default class Metadata implements IDisposable
         {
             const metadata = new Metadata();
 
-            Reflect.defineProperty(target, METADATA, { value: metadata });
+            Reflect.defineProperty(target, METADATA, { configurable: false, enumerable: false, value: metadata });
 
             DisposableMetadata.from(target).add(metadata);
         }

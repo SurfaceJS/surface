@@ -13,7 +13,7 @@ export default class TemplateMetadata
     {
         if (!Reflect.has(target, TEMPLATE_METADATA))
         {
-            Reflect.defineProperty(target, TEMPLATE_METADATA, { value: new TemplateMetadata() });
+            Reflect.defineProperty(target, TEMPLATE_METADATA, { configurable: false, enumerable: false, value: new TemplateMetadata() });
         }
 
         return Reflect.get(target, TEMPLATE_METADATA);

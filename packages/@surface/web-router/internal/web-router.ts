@@ -1,8 +1,8 @@
 import { Stack }                                        from "@surface/collection";
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import type { DirectiveHandlerRegistry }                from "@surface/custom-element";
 import { observe }                                      from "@surface/custom-element";
+import type { DirectiveHandlerFactory }                 from "@surface/custom-element";
 import Container                                        from "@surface/dependency-injection";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
@@ -73,11 +73,6 @@ export default class WebRouter
         this.container.registerSingleton(WebRouter, this as WebRouter);
 
         window.addEventListener("popstate", () => void this.pushCurrentLocation());
-    }
-
-    public static createDirectiveRegistry(router: WebRouter): DirectiveHandlerRegistry
-    {
-        return { handler: (...args) => new NavigationDirectiveHandler(router, ...args), name: "to" };
     }
 
     private connectToOutlet(parent: HTMLElement, element: IRouteableElement, key: string, to: Route, from?: Route, outletSelector = "router-outlet", reconnect = false): void
@@ -306,6 +301,11 @@ export default class WebRouter
     private resolvePath(path: string): URL
     {
         return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${joinPaths(window.location.origin, this.baseUrl)}/`);
+    }
+
+    public asDirectiveHandler(): DirectiveHandlerFactory
+    {
+        return (...args) => new NavigationDirectiveHandler(this, ...args);
     }
 
     public async back(): Promise<void>

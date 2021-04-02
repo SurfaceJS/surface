@@ -22,8 +22,8 @@ container.registerSingleton(UserRepository);
 
 const router = new WebRouter("app-root", routes, { container, interceptors: [AuthRouterInterceptor] });
 
-CustomElement.registerDirective(WebRouter.createDirectiveRegistry(router));
-CustomElement.registerDirective({ handler: KeyPressDirectiveHandler, name: "keypress" });
+CustomElement.registerDirective("to", router.asDirectiveHandler());
+CustomElement.registerDirective("keypress", KeyPressDirectiveHandler);
 
 void import("./app")
     .then(x => document.body.appendChild(container.inject(x.default)))

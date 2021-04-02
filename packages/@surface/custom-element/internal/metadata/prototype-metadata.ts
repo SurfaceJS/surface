@@ -14,11 +14,11 @@ export default class PrototypeMetadata
     {
         if (!Reflect.has(target, PROTOTYPE_METADATA))
         {
-            Reflect.defineProperty(target, PROTOTYPE_METADATA, { value: new PrototypeMetadata() });
+            Reflect.defineProperty(target, PROTOTYPE_METADATA, { configurable: false, enumerable: false, value: new PrototypeMetadata() });
         }
         else if (!target.hasOwnProperty(PROTOTYPE_METADATA))
         {
-            Reflect.defineProperty(target, PROTOTYPE_METADATA, { value: (Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata).inherit() });
+            Reflect.defineProperty(target, PROTOTYPE_METADATA, { configurable: false, enumerable: false, value: (Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata).inherit() });
         }
 
         return Reflect.get(target, PROTOTYPE_METADATA) as PrototypeMetadata;

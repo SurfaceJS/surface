@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/indent */
 import CustomElement from "./internal/custom-element.js";
 
 export type { default as ICustomElement }   from "./internal/interfaces/custom-element";
 export type { default as ICustomDirective } from "./internal/interfaces/custom-directive";
-export type { DirectiveHandlerRegistry }    from "./internal/types";
+
+export type
+{
+    DirectiveHandlerConstructor,
+    DirectiveHandlerFactory,
+} from "./internal/types";
 
 export { computed, notify, observe }   from "@surface/reactive";
 export { default as attribute }        from "./internal/decorators/attribute.js";

@@ -9,6 +9,6 @@ const routes: RouteConfiguration[] =
 
 const router = new WebRouter("app-root", routes);
 
-CustomElement.registerDirective(WebRouter.createDirectiveRegistry(router));
+CustomElement.registerDirective("to", router.asDirectiveHandler());
 
 void import("./app");

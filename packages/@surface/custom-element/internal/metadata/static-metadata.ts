@@ -17,11 +17,11 @@ export default class StaticMetadata
     {
         if (!Reflect.has(target, STATIC_METADATA))
         {
-            Reflect.defineProperty(target, STATIC_METADATA, { value: new StaticMetadata() });
+            Reflect.defineProperty(target, STATIC_METADATA, { configurable: false, enumerable: false, value: new StaticMetadata() });
         }
         else if (!target.hasOwnProperty(STATIC_METADATA))
         {
-            Reflect.defineProperty(target, STATIC_METADATA, { value: (Reflect.get(target, STATIC_METADATA) as StaticMetadata).inherit() });
+            Reflect.defineProperty(target, STATIC_METADATA, { configurable: false, enumerable: false, value: (Reflect.get(target, STATIC_METADATA) as StaticMetadata).inherit() });
         }
 
         return Reflect.get(target, STATIC_METADATA) as StaticMetadata;
