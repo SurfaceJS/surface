@@ -141,23 +141,30 @@ export default class Hashcode
 
             do
             {
-                yield `"${String(next.value)}"`;
-                yield ":";
-
-                this.stack.push(next.value);
-
-                for (const token of this.getTokens((source as Indexer)[next.value as string | number]))
+                if (typeof next.value != "symbol")
                 {
-                    yield token;
+                    yield `"${String(next.value)}"`;
+                    yield ":";
+
+                    this.stack.push(next.value);
+
+                    for (const token of this.getTokens((source as Indexer)[next.value as string | number]))
+                    {
+                        yield token;
+                    }
+
+                    this.stack.pop();
+
+                    next = iterator.next();
+
+                    if (!next.done && typeof next.value != "symbol")
+                    {
+                        yield ",";
+                    }
                 }
-
-                this.stack.pop();
-
-                next = iterator.next();
-
-                if (!next.done)
+                else
                 {
-                    yield ",";
+                    next = iterator.next();
                 }
 
             } while (!next.done);
