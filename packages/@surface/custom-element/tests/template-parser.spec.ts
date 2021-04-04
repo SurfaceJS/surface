@@ -8,9 +8,9 @@ import type { IIdentifier }                                              from "@
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import chai                                                              from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error.js";
-import type ITemplateDescriptor                                          from "../internal/interfaces/template-descriptor";
 import { parseDestructuredPattern, parseExpression, parseInterpolation } from "../internal/parsers/expression-parsers.js";
 import TemplateParser                                                    from "../internal/parsers/template-parser.js";
+import type TemplateDescriptor                                           from "../internal/types/template-descriptor";
 
 TemplateParser.testEnviroment = true;
 
@@ -81,7 +81,7 @@ export default class TemplateParserSpec
             "<!---->",
         ].join("");
 
-        const expected: ITemplateDescriptor =
+        const expected: TemplateDescriptor =
         {
             directives:
             {

@@ -1,8 +1,8 @@
-import type { DirectiveHandlerEntry } from ".";
+import type { DirectiveEntry } from ".";
 
 type TemplateDirectiveContext =
 {
-    customDirectives: Map<string, DirectiveHandlerEntry>,
+    customDirectives: Map<string, DirectiveEntry>,
     host:             Node,
     parentNode:       Node,
     scope:            object,

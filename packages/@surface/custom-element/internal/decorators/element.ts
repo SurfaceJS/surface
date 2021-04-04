@@ -9,10 +9,10 @@ import StaticMetadata                             from "../metadata/static-metad
 import TemplateParser                             from "../parsers/template-parser.js";
 import TemplateProcessor                          from "../processors/template-processor.js";
 import { globalCustomDirectives }                 from "../singletons.js";
-import type { DirectiveHandlerEntry }             from "../types/index.js";
+import type { DirectiveEntry }                    from "../types/index.js";
 import type TemplateProcessorContext              from "../types/template-processor-context.js";
 
-type CustomElementDefinitionOptions = ElementDefinitionOptions & { directives?: Record<string, DirectiveHandlerEntry> };
+type CustomElementDefinitionOptions = ElementDefinitionOptions & { directives?: Record<string, DirectiveEntry> };
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
@@ -80,11 +80,11 @@ export default function element(tagname: `${string}-${string}`, template?: strin
 
                     const context: TemplateProcessorContext =
                     {
-                        customDirectives: new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
-                        descriptor:       StaticMetadata.from(target).descriptor,
-                        host:             instance,
-                        root:             instance.shadowRoot,
-                        scope:            createHostScope(instance),
+                        customDirectives:   new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
+                        host:               instance,
+                        root:               instance.shadowRoot,
+                        scope:              createHostScope(instance),
+                        templateDescriptor: StaticMetadata.from(target).descriptor,
                     };
 
                     const disposable = TemplateProcessor.process(context);

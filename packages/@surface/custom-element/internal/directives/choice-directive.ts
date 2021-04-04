@@ -1,22 +1,22 @@
 import type { IDisposable }                              from "@surface/core";
 import { CancellationTokenSource, assert }               from "@surface/core";
 import type { Subscription }                             from "@surface/reactive";
-import { tryEvaluateExpression, tryObserveByObservable } from "../../common.js";
-import type IChoiceBranchDirective                       from "../../interfaces/choice-branch-directive";
-import type IChoiceDirective                             from "../../interfaces/choice-directive";
-import TemplateProcessor                                 from "../../processors/template-processor.js";
-import { scheduler }                                     from "../../singletons.js";
-import type TemplateDirectiveContext                     from "../../types/template-directive-context";
-import type TemplateProcessorContext                     from "../../types/template-processor-context";
-import TemplateBlock                                     from "../template-block.js";
+import { tryEvaluateExpression, tryObserveByObservable } from "../common.js";
+import TemplateProcessor                                 from "../processors/template-processor.js";
+import { scheduler }                                     from "../singletons.js";
+import type ChoiceBranchDirectiveDescriptor              from "../types/choice-branch-directive-descriptor";
+import type ChoiceDirectiveDescriptor                    from "../types/choice-directive-descriptor";
+import type TemplateDirectiveContext                     from "../types/template-directive-context";
+import type TemplateProcessorContext                     from "../types/template-processor-context";
+import TemplateBlock                                     from "./template-block.js";
 
 type Choice =
 {
-    branche:  IChoiceBranchDirective,
+    branche:  ChoiceBranchDirectiveDescriptor,
     template: HTMLTemplateElement,
 };
 
-export default class ChoiceDirectiveHandler implements IDisposable
+export default class ChoiceDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
@@ -29,7 +29,7 @@ export default class ChoiceDirectiveHandler implements IDisposable
 
     private currentChoice?: Choice;
 
-    public constructor(templates: HTMLTemplateElement[], directive: IChoiceDirective, context: TemplateDirectiveContext)
+    public constructor(templates: HTMLTemplateElement[], descriptor: ChoiceDirectiveDescriptor, context: TemplateDirectiveContext)
     {
         this.context = context;
 
@@ -41,9 +41,9 @@ export default class ChoiceDirectiveHandler implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        for (let index = 0; index < directive.branches.length; index++)
+        for (let index = 0; index < descriptor.branches.length; index++)
         {
-            const branche  = directive.branches[index];
+            const branche  = descriptor.branches[index];
             const template = templates[index];
 
             this.subscriptions.push(tryObserveByObservable(context.scope, branche, listener, true));
@@ -74,12 +74,12 @@ export default class ChoiceDirectiveHandler implements IDisposable
 
                     const context: TemplateProcessorContext =
                     {
-                        customDirectives: this.context.customDirectives,
-                        descriptor:       choice.branche.descriptor,
-                        host:             this.context.host,
-                        parentNode:       this.context.parentNode,
-                        root:             content,
-                        scope:            { ...this.context.scope },
+                        customDirectives:   this.context.customDirectives,
+                        host:               this.context.host,
+                        parentNode:         this.context.parentNode,
+                        root:               content,
+                        scope:              { ...this.context.scope },
+                        templateDescriptor: choice.branche.descriptor,
                     };
 
                     const disposable = TemplateProcessor.process(context);

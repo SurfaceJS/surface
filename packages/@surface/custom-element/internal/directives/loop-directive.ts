@@ -2,19 +2,19 @@ import type { Delegate, IDisposable }                                        fro
 import { CancellationTokenSource }                                           from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
 import type { Subscription }                                                 from "@surface/reactive";
-import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
-import type ILoopDirective                                                   from "../../interfaces/loop-directive";
-import TemplateProcessor                                                     from "../../processors/template-processor.js";
-import { scheduler }                                                         from "../../singletons.js";
-import type TemplateDirectiveContext                                         from "../../types/template-directive-context";
-import type TemplateProcessorContext                                         from "../../types/template-processor-context";
-import TemplateBlock                                                         from "../template-block.js";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../common.js";
+import TemplateProcessor                                                     from "../processors/template-processor.js";
+import { scheduler }                                                         from "../singletons.js";
+import type LoopDirectiveDescriptor                                          from "../types/loop-directive-descriptor";
+import type TemplateDirectiveContext                                         from "../types/template-directive-context";
+import type TemplateProcessorContext                                         from "../types/template-processor-context";
+import TemplateBlock                                                         from "./template-block.js";
 
-export default class LoopDirectiveHandler implements IDisposable
+export default class LoopDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
-    private readonly directive:               ILoopDirective;
+    private readonly descriptor:              LoopDirectiveDescriptor;
     private readonly disposables:             IDisposable[] = [];
     private readonly iterator:                (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
     private readonly subscription:            Subscription;
@@ -24,14 +24,14 @@ export default class LoopDirectiveHandler implements IDisposable
 
     private disposed: boolean = false;
 
-    public constructor(template: HTMLTemplateElement, directive: ILoopDirective, context: TemplateDirectiveContext)
+    public constructor(template: HTMLTemplateElement, descriptor: LoopDirectiveDescriptor, context: TemplateDirectiveContext)
     {
-        this.template  = template;
-        this.directive = directive;
-        this.context   = context;
-        this.tree      = document.createDocumentFragment();
+        this.template   = template;
+        this.descriptor = descriptor;
+        this.context    = context;
+        this.tree       = document.createDocumentFragment();
 
-        this.iterator = directive.operator == "in" ? this.forInIterator : this.forOfIterator;
+        this.iterator = descriptor.operator == "in" ? this.forInIterator : this.forOfIterator;
 
         const parent = this.template.parentNode!;
 
@@ -39,27 +39,27 @@ export default class LoopDirectiveHandler implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(context.scope, directive, listener, true);
+        this.subscription = tryObserveByObservable(context.scope, descriptor, listener, true);
 
         listener();
     }
 
     private action(value: unknown, index: number): void
     {
-        const mergedScope = TypeGuard.isIdentifier(this.directive.left)
-            ? { ...this.context.scope, [this.directive.left.name]: value }
-            : { ...this.context.scope, ...tryEvaluatePattern(this.context.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
+        const mergedScope = TypeGuard.isIdentifier(this.descriptor.left)
+            ? { ...this.context.scope, [this.descriptor.left.name]: value }
+            : { ...this.context.scope, ...tryEvaluatePattern(this.context.scope, this.descriptor.left, value, this.descriptor.rawExpression, this.descriptor.stackTrace) };
 
         const content =  this.template.content.cloneNode(true);
 
         const context: TemplateProcessorContext =
         {
-            customDirectives: this.context.customDirectives,
-            descriptor:       this.directive.descriptor,
-            host:             this.context!.host,
-            parentNode:       this.context.parentNode,
-            root:             content,
-            scope:            mergedScope,
+            customDirectives:   this.context.customDirectives,
+            host:               this.context!.host,
+            parentNode:         this.context.parentNode,
+            root:               content,
+            scope:              mergedScope,
+            templateDescriptor: this.descriptor.descriptor,
         };
 
         const disposable = TemplateProcessor.process(context);
@@ -114,7 +114,7 @@ export default class LoopDirectiveHandler implements IDisposable
 
         this.disposables.splice(0).forEach(x => x.dispose());
 
-        const elements = tryEvaluateExpression(this.context.scope, this.directive.right, this.directive.rawExpression, this.directive.stackTrace) as Iterable<unknown>;
+        const elements = tryEvaluateExpression(this.context.scope, this.descriptor.right, this.descriptor.rawExpression, this.descriptor.stackTrace) as Iterable<unknown>;
 
         this.iterator(elements, this.action);
 

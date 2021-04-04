@@ -1,7 +1,7 @@
-import type ITemplateDescriptor from "./template-descriptor";
+import type TemplateDescriptor from "../types/template-descriptor";
 
 export default interface IDescribeable
 {
-    descriptor: ITemplateDescriptor;
+    descriptor: TemplateDescriptor;
     path:       string;
 }

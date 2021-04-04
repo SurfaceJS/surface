@@ -8,18 +8,18 @@ import Enumerable                                                               
 import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
 import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                               from "../common.js";
-import type IAttributeDirective                                                                 from "../interfaces/attribute-directive";
-import type IChoiceBranchDirective                                                              from "../interfaces/choice-branch-directive";
-import type ICustomDirective                                                                    from "../interfaces/custom-directive";
-import type IElementDescriptor                                                                  from "../interfaces/element-descriptor";
-import type IEventDirective                                                                     from "../interfaces/event-directive";
-import type IInjectDirective                                                                    from "../interfaces/inject-directive";
-import type ILoopDirective                                                                      from "../interfaces/loop-directive";
-import type IPlaceholderDirective                                                               from "../interfaces/placeholder-directive";
-import type ITemplateDescriptor                                                                 from "../interfaces/template-descriptor";
-import type ITextNodeDescriptor                                                                 from "../interfaces/text-node-descriptor";
 import ObserverVisitor                                                                          from "../reactivity/observer-visitor.js";
 import type { StackTrace }                                                                      from "../types";
+import type AttributeDirectiveDescriptor                                                        from "../types/attribute-directive-descriptor";
+import type ChoiceBranchDirectiveDescriptor                                                     from "../types/choice-branch-directive-descriptor";
+import type DirectiveDescriptor                                                                 from "../types/directive-descriptor";
+import type ElementDescriptor                                                                   from "../types/element-descriptor";
+import type EventDirectiveDescriptor                                                            from "../types/event-directive-descriptor";
+import type InjectDirectiveDescriptor                                                           from "../types/inject-directive-descriptor";
+import type LoopDirectiveDescriptor                                                             from "../types/loop-directive-descriptor";
+import type PlaceholderDirectiveDescriptor                                                      from "../types/placeholder-directive-descriptor";
+import type TemplateDescriptor                                                                  from "../types/template-descriptor";
+import type TextNodeDescriptor                                                                  from "../types/text-node-descriptor";
 import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parseInterpolation } from "./expression-parsers.js";
 import nativeEvents                                                                             from "./native-events.js";
 import { interpolation }                                                                        from "./patterns.js";
@@ -58,7 +58,7 @@ export default class TemplateParser
     private readonly indexStack: number[] = [];
     private readonly name:       string;
     private readonly stackTrace: StackTrace;
-    private readonly templateDescriptor: ITemplateDescriptor =
+    private readonly templateDescriptor: TemplateDescriptor =
     {
         directives:
         {
@@ -80,12 +80,12 @@ export default class TemplateParser
         this.stackTrace = stackTrace ? [...stackTrace] : [[`<${name}>`], ["#shadow-root"]];
     }
 
-    private static internalParse(name: string, template: HTMLTemplateElement, stackTrace: StackTrace): ITemplateDescriptor
+    private static internalParse(name: string, template: HTMLTemplateElement, stackTrace: StackTrace): TemplateDescriptor
     {
         return new TemplateParser(name, stackTrace).parse(template);
     }
 
-    public static parse(name: string, template: string): [HTMLTemplateElement, ITemplateDescriptor]
+    public static parse(name: string, template: string): [HTMLTemplateElement, TemplateDescriptor]
     {
         const templateElement = document.createElement("template");
         templateElement.innerHTML = template;
@@ -95,7 +95,7 @@ export default class TemplateParser
         return [templateElement, descriptor];
     }
 
-    public static parseReference(name: string, template: HTMLTemplateElement): ITemplateDescriptor
+    public static parseReference(name: string, template: HTMLTemplateElement): TemplateDescriptor
     {
         return new TemplateParser(name).parse(template);
     }
@@ -286,7 +286,7 @@ export default class TemplateParser
         template.content.appendChild(decomposed);
     }
 
-    private parse(template: HTMLTemplateElement): ITemplateDescriptor
+    private parse(template: HTMLTemplateElement): TemplateDescriptor
     {
         this.trimContent(template.content);
 
@@ -297,7 +297,7 @@ export default class TemplateParser
 
     private parseAttributes(element: Element & { [DIRECTIVE]?: Directive }): void
     {
-        const elementDescriptor: IElementDescriptor =
+        const elementDescriptor: ElementDescriptor =
         {
             attributes: [],
             directives: [],
@@ -317,7 +317,7 @@ export default class TemplateParser
                 const expression     = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
                 const observables    = ObserverVisitor.observe(expression);
 
-                const descriptor: IEventDirective =
+                const descriptor: EventDirectiveDescriptor =
                 {
                     expression,
                     name,
@@ -351,7 +351,7 @@ export default class TemplateParser
                     const keyObservables = ObserverVisitor.observe(keyExpression);
                     const observables    = ObserverVisitor.observe(expression);
 
-                    const descriptor: ICustomDirective =
+                    const descriptor: DirectiveDescriptor =
                     {
                         expression,
                         keyExpression,
@@ -401,7 +401,7 @@ export default class TemplateParser
                     element.removeAttributeNode(attribute);
                 }
 
-                const attributeDescriptor: IAttributeDirective =
+                const attributeDescriptor: AttributeDirectiveDescriptor =
                 {
                     expression,
                     key,
@@ -434,12 +434,12 @@ export default class TemplateParser
 
         if (directive.type == DirectiveType.If)
         {
-            const branches: IChoiceBranchDirective[] = [];
+            const branches: ChoiceBranchDirectiveDescriptor[] = [];
 
             const expression = this.tryParseExpression(parseExpression, directive.value, directive.raw);
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const conditionalBranchDescriptor: IChoiceBranchDirective =
+            const conditionalBranchDescriptor: ChoiceBranchDirectiveDescriptor =
             {
                 descriptor,
                 expression,
@@ -486,7 +486,7 @@ export default class TemplateParser
                 const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
                 const descriptor = TemplateParser.internalParse(this.name, simblingTemplate, this.stackTrace);
 
-                const conditionalBranchDescriptor: IChoiceBranchDirective =
+                const conditionalBranchDescriptor: ChoiceBranchDirectiveDescriptor =
                 {
                     descriptor,
                     expression,
@@ -522,7 +522,7 @@ export default class TemplateParser
             const descriptor  = TemplateParser.internalParse(this.name, template, this.stackTrace);
             const observables = ObserverVisitor.observe(right);
 
-            const loopDescriptor: ILoopDirective =
+            const loopDescriptor: LoopDirectiveDescriptor =
             {
                 descriptor,
                 left,
@@ -548,7 +548,7 @@ export default class TemplateParser
             const observables    = ObserverVisitor.observe(expression);
             const descriptor     = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const placeholderDirective: IPlaceholderDirective =
+            const placeholderDirective: PlaceholderDirectiveDescriptor =
             {
                 descriptor,
                 expression,
@@ -578,7 +578,7 @@ export default class TemplateParser
 
             const descriptor = TemplateParser.internalParse(this.name, template, this.stackTrace);
 
-            const injectionDescriptor: IInjectDirective =
+            const injectionDescriptor: InjectDirectiveDescriptor =
             {
                 descriptor,
                 keyExpression,
@@ -616,7 +616,7 @@ export default class TemplateParser
             const observables = ObserverVisitor.observe(expression);
             const path        = this.indexStack.join("-");
 
-            const textNodeDescriptor: ITextNodeDescriptor =
+            const textNodeDescriptor: TextNodeDescriptor =
             {
                 expression,
                 observables,

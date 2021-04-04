@@ -1,10 +1,10 @@
-import type IInjectDirective          from "../interfaces/inject-directive";
-import type { DirectiveHandlerEntry } from ".";
+import type InjectDirectiveDescriptor from "./inject-directive-descriptor";
+import type { DirectiveEntry }        from ".";
 
 type InjectionContext =
 {
-    directive:        IInjectDirective,
-    customDirectives: Map<string, DirectiveHandlerEntry>,
+    descriptor:       InjectDirectiveDescriptor,
+    customDirectives: Map<string, DirectiveEntry>,
     host:             Node,
     parentNode:       Node,
     scope:            object,

@@ -1,5 +1,5 @@
-import type { Indexer }         from "@surface/core";
-import type ITemplateDescriptor from "../interfaces/template-descriptor";
+import type { Indexer }        from "@surface/core";
+import type TemplateDescriptor from "../types/template-descriptor";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 
@@ -11,7 +11,7 @@ export default class StaticMetadata
     public styles:             CSSStyleSheet[]                                   = [];
 
     public template!:   HTMLTemplateElement;
-    public descriptor!: ITemplateDescriptor;
+    public descriptor!: TemplateDescriptor;
 
     public static from(target: Function): StaticMetadata
     {

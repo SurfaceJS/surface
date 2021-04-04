@@ -6,18 +6,18 @@ import
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common.js";
-import type IInjectDirective         from "../../interfaces/inject-directive";
-import TemplateMetadata              from "../../metadata/template-metadata.js";
-import { scheduler }                 from "../../singletons.js";
-import type InjectionContext         from "../../types/injection-context";
-import type TemplateDirectiveContext from "../../types/template-directive-context";
+} from "../common.js";
+import TemplateMetadata               from "../metadata/template-metadata.js";
+import { scheduler }                  from "../singletons.js";
+import type InjectDirectiveDescriptor from "../types/inject-directive-descriptor";
+import type InjectionContext          from "../types/injection-context";
+import type TemplateDirectiveContext  from "../types/template-directive-context";
 
-export default class InjectDirectiveHandler implements IDisposable
+export default class InjectDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
-    private readonly directive:               IInjectDirective;
+    private readonly descriptor:              InjectDirectiveDescriptor;
     private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
     private readonly subscription:            Subscription;
@@ -26,19 +26,19 @@ export default class InjectDirectiveHandler implements IDisposable
     private disposed: boolean = false;
     private key:      string  = "";
 
-    public constructor(template: HTMLTemplateElement, directive: IInjectDirective, context: TemplateDirectiveContext)
+    public constructor(template: HTMLTemplateElement, descriptor: InjectDirectiveDescriptor, context: TemplateDirectiveContext)
     {
-        this.template  = template;
-        this.directive = directive;
-        this.context   = context;
-        this.metadata  = TemplateMetadata.from(context.parentNode);
+        this.template   = template;
+        this.descriptor = descriptor;
+        this.context    = context;
+        this.metadata   = TemplateMetadata.from(context.parentNode);
 
         template.remove();
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.keySubscription = tryObserveKeyByObservable(context.scope, directive, listener, true);
-        this.subscription    = tryObserveByObservable(context.scope, directive,    listener, true);
+        this.keySubscription = tryObserveKeyByObservable(context.scope, descriptor, listener, true);
+        this.subscription    = tryObserveByObservable(context.scope, descriptor,    listener, true);
 
         this.task();
     }
@@ -47,12 +47,12 @@ export default class InjectDirectiveHandler implements IDisposable
     {
         this.disposeCurrentInjection();
 
-        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.directive)}`;
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.descriptor)}`;
 
         const injectionContext: InjectionContext =
         {
             customDirectives: this.context.customDirectives,
-            directive:        this.directive,
+            descriptor:       this.descriptor,
             host:             this.context.host,
             parentNode:       this.context.parentNode,
             scope:            this.context.scope,

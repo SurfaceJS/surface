@@ -9,21 +9,21 @@ import
     tryEvaluatePatternByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common.js";
-import type IPlaceholderDirective    from "../../interfaces/placeholder-directive";
-import TemplateMetadata              from "../../metadata/template-metadata.js";
-import TemplateProcessor             from "../../processors/template-processor.js";
-import { scheduler }                 from "../../singletons.js";
-import type InjectionContext         from "../../types/injection-context";
-import type TemplateDirectiveContext from "../../types/template-directive-context.js";
-import type TemplateProcessorContext from "../../types/template-processor-context.js";
-import TemplateBlock                 from "../template-block.js";
+} from "../common.js";
+import TemplateMetadata                    from "../metadata/template-metadata.js";
+import TemplateProcessor                   from "../processors/template-processor.js";
+import { scheduler }                       from "../singletons.js";
+import type InjectionContext               from "../types/injection-context";
+import type PlaceholderDirectiveDescriptor from "../types/placeholder-directive-descriptor";
+import type TemplateDirectiveContext       from "../types/template-directive-context.js";
+import type TemplateProcessorContext       from "../types/template-processor-context.js";
+import TemplateBlock                       from "./template-block.js";
 
-export default class PlaceholderDirectiveHandler implements IDisposable
+export default class PlaceholderDirective implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
-    private readonly directive:               IPlaceholderDirective;
+    private readonly descriptor:              PlaceholderDirectiveDescriptor;
     private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
     private readonly template:                HTMLTemplateElement;
@@ -37,12 +37,12 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
     private injectionContext?: InjectionContext;
 
-    public constructor(template: HTMLTemplateElement, directive: IPlaceholderDirective, context: TemplateDirectiveContext)
+    public constructor(template: HTMLTemplateElement, descriptor: PlaceholderDirectiveDescriptor, context: TemplateDirectiveContext)
     {
-        this.template  = template;
-        this.directive = directive;
-        this.context   = context;
-        this.metadata  = TemplateMetadata.from(context.host);
+        this.template   = template;
+        this.descriptor = descriptor;
+        this.context    = context;
+        this.metadata   = TemplateMetadata.from(context.host);
 
         assert(template.parentNode);
 
@@ -50,7 +50,7 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         this.templateBlock.insertAt(parent, template);
 
-        this.keySubscription = tryObserveKeyByObservable(context.scope, directive, this.onKeyChange.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(context.scope, descriptor, this.onKeyChange.bind(this), true);
 
         this.onKeyChange();
     }
@@ -85,7 +85,7 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(this.context.scope, this.directive, listener, true);
+        this.subscription = tryObserveByObservable(this.context.scope, this.descriptor, listener, true);
 
         listener();
     }
@@ -98,7 +98,7 @@ export default class PlaceholderDirectiveHandler implements IDisposable
             this.metadata.placeholders.delete(this.key);
         }
 
-        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.directive)}`;
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.descriptor)}`;
 
         this.metadata.defaults.set(this.key, this.applyLazyInjection.bind(this));
         this.metadata.placeholders.set(this.key, this.inject.bind(this));
@@ -123,9 +123,9 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         let destructured = false;
 
-        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injectionContext.directive.pattern))
-            ? { elementScope: tryEvaluatePatternByTraceable(this.context.scope, tryEvaluateExpressionByTraceable(this.context.scope, this.directive), this.injectionContext.directive), scopeAlias: "__scope__" }
-            : { elementScope: tryEvaluateExpressionByTraceable(this.context.scope, this.directive) as Indexer, scopeAlias: this.injectionContext.directive.pattern.name };
+        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injectionContext.descriptor.pattern))
+            ? { elementScope: tryEvaluatePatternByTraceable(this.context.scope, tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor), this.injectionContext.descriptor), scopeAlias: "__scope__" }
+            : { elementScope: tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor) as Indexer, scopeAlias: this.injectionContext.descriptor.pattern.name };
 
         const mergedScope = destructured
             ? { ...elementScope, ...this.injectionContext.scope }
@@ -135,12 +135,12 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            customDirectives: this.injectionContext.customDirectives,
-            descriptor:       this.injectionContext.directive.descriptor,
-            host:             this.injectionContext.host,
-            parentNode:       this.injectionContext.parentNode,
-            root:             content,
-            scope:            mergedScope,
+            customDirectives:   this.injectionContext.customDirectives,
+            host:               this.injectionContext.host,
+            parentNode:         this.injectionContext.parentNode,
+            root:               content,
+            scope:              mergedScope,
+            templateDescriptor: this.injectionContext.descriptor.descriptor,
         };
 
         const disposable = TemplateProcessor.process(context);
@@ -160,12 +160,12 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            customDirectives: this.context.customDirectives,
-            descriptor:       this.directive.descriptor,
-            host:             this.context!.host,
-            parentNode:       this.context.parentNode,
-            root:             content,
-            scope:            this.context.scope,
+            customDirectives:   this.context.customDirectives,
+            host:               this.context!.host,
+            parentNode:         this.context.parentNode,
+            root:               content,
+            scope:              this.context.scope,
+            templateDescriptor: this.descriptor.descriptor,
         };
 
         const disposable = TemplateProcessor.process(context);

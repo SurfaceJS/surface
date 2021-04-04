@@ -11,22 +11,22 @@ import
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
 } from "../common.js";
-import ChoiceDirectiveHandler                   from "../directives/handlers/choice-directive-handler.js";
-import EventDirectiveHandler                    from "../directives/handlers/event-directive-handler.js";
-import InjectDirectiveHandler                   from "../directives/handlers/inject-directive-handler.js";
-import LoopDirectiveHandler                     from "../directives/handlers/loop-directive-handler.js";
-import PlaceholderDirectiveHandler              from "../directives/handlers/placeholder-directive-handler.js";
-import TemplateProcessError                     from "../errors/template-process-error.js";
-import type IAttributeDirective                 from "../interfaces/attribute-directive";
-import type ICustomDirective                    from "../interfaces/custom-directive";
-import type IDirectivesDescriptor               from "../interfaces/directives-descriptor";
-import type IEventDirective                     from "../interfaces/event-directive";
-import type ITextNodeDescriptor                 from "../interfaces/text-node-descriptor";
-import DataBind                                 from "../reactivity/data-bind.js";
-import { disposeTree }                          from "../singletons.js";
-import type { DirectiveHandlerFactory }         from "../types";
-import type TemplateDirectiveContext            from "../types/template-directive-context.js";
-import type TemplateProcessorContext            from "../types/template-processor-context.js";
+import ChoiceDirective                    from "../directives/choice-directive.js";
+import EventDirective                     from "../directives/event-directive.js";
+import InjectDirective                    from "../directives/inject-directive.js";
+import LoopDirective                      from "../directives/loop-directive.js";
+import PlaceholderDirective               from "../directives/placeholder-directive.js";
+import TemplateProcessError               from "../errors/template-process-error.js";
+import DataBind                           from "../reactivity/data-bind.js";
+import { disposeTree }                    from "../singletons.js";
+import type { DirectiveFactory }          from "../types";
+import type AttributeDirectiveDescriptor  from "../types/attribute-directive-descriptor";
+import type DirectiveDescriptor           from "../types/directive-descriptor";
+import type EventDirectiveDescriptor      from "../types/event-directive-descriptor";
+import type TemplateDirectiveContext      from "../types/template-directive-context";
+import type TemplateDirectivesDescriptor  from "../types/template-directives-descriptor";
+import type TemplateProcessorContext      from "../types/template-processor-context";
+import type TextNodeDescriptor            from "../types/text-node-descriptor";
 
 export default class TemplateProcessor
 {
@@ -39,7 +39,7 @@ export default class TemplateProcessor
     {
         this.context = context;
 
-        this.lookup = this.buildLookup(context.root, context.descriptor.lookup);
+        this.lookup = this.buildLookup(context.root, context.templateDescriptor.lookup);
     }
 
     public static process(context: TemplateProcessorContext): IDisposable
@@ -91,7 +91,7 @@ export default class TemplateProcessor
     {
         const disposables: IDisposable[] = [];
 
-        for (const descriptor of this.context.descriptor.elements)
+        for (const descriptor of this.context.templateDescriptor.elements)
         {
             const element = this.lookup[descriptor.path] as HTMLElement & Partial<IDisposable>;
 
@@ -108,7 +108,7 @@ export default class TemplateProcessor
             element.dispatchEvent(new Event("bind"));
         }
 
-        disposables.push(this.processTemplateDirectives(this.context.descriptor.directives));
+        disposables.push(this.processTemplateDirectives(this.context.templateDescriptor.directives));
 
         return {
             dispose: () =>
@@ -119,7 +119,7 @@ export default class TemplateProcessor
         };
     }
 
-    private processAttributes(scope: object, element: Element, attributeDescriptors: IAttributeDirective[]): IDisposable
+    private processAttributes(scope: object, element: Element, attributeDescriptors: AttributeDirectiveDescriptor[]): IDisposable
     {
         const constructor = window.customElements.get(element.localName);
 
@@ -214,51 +214,51 @@ export default class TemplateProcessor
         return { dispose: () => subscriptions.splice(0).forEach(x => x.unsubscribe()) };
     }
 
-    private processElementDirectives(scope: object, element: HTMLElement, directives: ICustomDirective[]): IDisposable
+    private processElementDirectives(scope: object, element: HTMLElement, descriptors: DirectiveDescriptor[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
-        for (const directive of directives)
+        for (const descriptor of descriptors)
         {
-            const handlerConstructor = this.context.customDirectives.get(directive.name);
+            const handlerConstructor = this.context.customDirectives.get(descriptor.name);
 
             if (!handlerConstructor)
             {
-                throw new TemplateProcessError(`Unregistered directive #${directive.name}.`, buildStackTrace(directive.stackTrace));
+                throw new TemplateProcessError(`Unregistered directive #${descriptor.name}.`, buildStackTrace(descriptor.stackTrace));
             }
 
-            if (typeGuard<DirectiveHandlerFactory>(handlerConstructor, !handlerConstructor.prototype))
+            if (typeGuard<DirectiveFactory>(handlerConstructor, !handlerConstructor.prototype))
             {
-                disposables.push(handlerConstructor(scope, element, directive));
+                disposables.push(handlerConstructor(scope, element, descriptor));
             }
             else
             {
-                disposables.push(new handlerConstructor(scope, element, directive));
+                disposables.push(new handlerConstructor(scope, element, descriptor));
             }
         }
 
         return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processEvents(localScope: object, element: HTMLElement, events: IEventDirective[]): IDisposable
+    private processEvents(localScope: object, element: HTMLElement, events: EventDirectiveDescriptor[]): IDisposable
     {
         const disposables: IDisposable[] = [];
 
         for (const directive of events)
         {
-            disposables.push(new EventDirectiveHandler(localScope, element, directive));
+            disposables.push(new EventDirective(localScope, element, directive));
         }
 
         return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
-    private processTemplateDirectives(directives: IDirectivesDescriptor): IDisposable
+    private processTemplateDirectives(templateDirectivesDescriptor: TemplateDirectivesDescriptor): IDisposable
     {
         const disposables: IDisposable[] = [];
 
-        for (const directive of directives.injections)
+        for (const descriptor of templateDirectivesDescriptor.injections)
         {
-            const template = this.lookup[directive.path] as HTMLTemplateElement;
+            const template = this.lookup[descriptor.path] as HTMLTemplateElement;
 
             assert(template.parentNode);
 
@@ -270,13 +270,13 @@ export default class TemplateProcessor
                 scope:             inheritScope(this.context.scope),
             };
 
-            disposables.push(new InjectDirectiveHandler(template, directive, context));
+            disposables.push(new InjectDirective(template, descriptor, context));
             disposables.push(DisposableMetadata.from(context.scope));
         }
 
-        for (const directive of directives.logicals)
+        for (const descriptor of templateDirectivesDescriptor.logicals)
         {
-            const templates = directive.branches.map(x => this.lookup[x.path]) as HTMLTemplateElement[];
+            const templates = descriptor.branches.map(x => this.lookup[x.path]) as HTMLTemplateElement[];
 
             assert(templates[0].parentNode);
 
@@ -288,13 +288,13 @@ export default class TemplateProcessor
                 scope:             inheritScope(this.context.scope),
             };
 
-            disposables.push(new ChoiceDirectiveHandler(templates, directive, context));
+            disposables.push(new ChoiceDirective(templates, descriptor, context));
             disposables.push(DisposableMetadata.from(context.scope));
         }
 
-        for (const directive of directives.loops)
+        for (const descriptor of templateDirectivesDescriptor.loops)
         {
-            const template = this.lookup[directive.path] as HTMLTemplateElement;
+            const template = this.lookup[descriptor.path] as HTMLTemplateElement;
 
             assert(template.parentNode);
 
@@ -306,13 +306,13 @@ export default class TemplateProcessor
                 scope:             inheritScope(this.context.scope),
             };
 
-            disposables.push(new LoopDirectiveHandler(template, directive, context));
+            disposables.push(new LoopDirective(template, descriptor, context));
             disposables.push(DisposableMetadata.from(context.scope));
         }
 
-        for (const directive of directives.placeholders)
+        for (const descriptor of templateDirectivesDescriptor.placeholders)
         {
-            const template = this.lookup[directive.path] as HTMLTemplateElement;
+            const template = this.lookup[descriptor.path] as HTMLTemplateElement;
 
             assert(template.parentNode);
 
@@ -324,14 +324,14 @@ export default class TemplateProcessor
                 scope:             inheritScope(this.context.scope),
             };
 
-            disposables.push(new PlaceholderDirectiveHandler(template, directive, context));
+            disposables.push(new PlaceholderDirective(template, descriptor, context));
             disposables.push(DisposableMetadata.from(context.scope));
         }
 
         return { dispose: () => disposables.splice(0).forEach(disposable => disposable.dispose()) };
     }
 
-    private processTextNode(scope: object, descriptors: ITextNodeDescriptor[]): IDisposable
+    private processTextNode(scope: object, descriptors: TextNodeDescriptor[]): IDisposable
     {
         const subscriptions: Subscription[] = [];
 
