@@ -1,9 +1,8 @@
-import type DirectiveHandler from "../directives/handlers/directive-handler.js";
-import type ICustomDirective from "../interfaces/custom-directive";
-import type IInjectDirective from "../interfaces/inject-directive";
+import type Directive            from "../directives/handlers/directive.js";
+import type IDirectiveDescriptor from "../interfaces/directive-descriptor";
 
-export type DirectiveHandlerConstructor = (new (scope: object, element: HTMLElement, directive: ICustomDirective) => DirectiveHandler);
-export type DirectiveHandlerFactory     = (scope: object, element: HTMLElement, directive: ICustomDirective) => DirectiveHandler;
-export type Injection                   = { scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective };
-export type Observables                 = string[][];
-export type StackTrace                  = string[][];
+export type DirectiveConstructor = (new (scope: object, element: HTMLElement, directive: IDirectiveDescriptor) => Directive);
+export type DirectiveEntry       = DirectiveConstructor | DirectiveFactory;
+export type DirectiveFactory     = (scope: object, element: HTMLElement, directive: IDirectiveDescriptor) => Directive;
+export type Observables          = string[][];
+export type StackTrace           = string[][];

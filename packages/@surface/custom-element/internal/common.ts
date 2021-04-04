@@ -36,18 +36,10 @@ export function inheritScope(scope: object): object
     const handler: ProxyHandler<Indexer> =
     {
         get:                      (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
-        getOwnPropertyDescriptor: (target, key) =>
-            Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key),
-        has: (target, key) => key in target || key in windowWrapper,
-        set: (target, key, value) =>
+        getOwnPropertyDescriptor: (target, key) => Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key),
+        has:                      (target, key) => key in target || key in windowWrapper,
+        set:                      (_target, key) =>
         {
-            if (typeof key == "symbol")
-            {
-                target[key as unknown as string] = value;
-
-                return true;
-            }
-
             throw new ReferenceError(`Assignment to constant variable "${String(key)}"`);
         },
     };

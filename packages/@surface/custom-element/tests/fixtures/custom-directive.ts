@@ -1,6 +1,6 @@
-import DirectiveHandler from "../../internal/directives/handlers/directive-handler.js";
+import Directive from "../../internal/directives/directive.js";
 
-export default class CustomDirectiveHandler extends DirectiveHandler
+export default class CustomDirectiveHandler extends Directive
 {
     protected onValueChange(value: string): void
     {

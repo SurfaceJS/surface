@@ -1,13 +1,13 @@
-import type { Delegate }  from "@surface/core";
-import type { Injection } from "../types";
+import type { Delegate }     from "@surface/core";
+import type InjectionContext from "../types/injection-context";
 
 export const TEMPLATE_METADATA  = Symbol("custom-element:template-metadata");
 
 export default class TemplateMetadata
 {
-    public defaults:     Map<string, Delegate>              = new Map();
-    public injections:   Map<string, Injection>             = new Map();
-    public placeholders: Map<string, Delegate<[Injection]>> = new Map();
+    public defaults:     Map<string, Delegate>                     = new Map();
+    public injections:   Map<string, InjectionContext>             = new Map();
+    public placeholders: Map<string, Delegate<[InjectionContext]>> = new Map();
 
     public static from(target: object): TemplateMetadata
     {

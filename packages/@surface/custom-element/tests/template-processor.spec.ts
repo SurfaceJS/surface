@@ -12,7 +12,8 @@ import CustomStackError                        from "../internal/errors/custom-s
 import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error.js";
 import TemplateParser                          from "../internal/parsers/template-parser.js";
 import TemplateProcessor                       from "../internal/processors/template-processor.js";
-import { directiveRegistry, scheduler }        from "../internal/singletons.js";
+import { globalCustomDirectives, scheduler }   from "../internal/singletons.js";
+import type TemplateProcessorContext           from "../internal/types/template-processor-context";
 import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
 import CustomDirectiveHandler                  from "./fixtures/custom-directive.js";
 
@@ -22,8 +23,8 @@ class XComponent extends HTMLElement { }
 
 window.customElements.define("x-component", XComponent);
 
-directiveRegistry.set("custom", CustomDirectiveHandler);
-directiveRegistry.set("custom-factory", customDirectiveFactory);
+globalCustomDirectives.set("custom", CustomDirectiveHandler);
+globalCustomDirectives.set("custom-factory", customDirectiveFactory);
 
 function tryAction(action: Delegate): RawError
 {
@@ -99,7 +100,16 @@ function process(host: Element, root: Node, scope?: Indexer): void
         root.appendChild(child);
     }
 
-    TemplateProcessor.process({ descriptor, host, root, scope: scope ?? { host } });
+    const context: TemplateProcessorContext =
+    {
+        customDirectives:   globalCustomDirectives,
+        host,
+        root,
+        scope:              scope ?? { host },
+        templateDescriptor: descriptor,
+    };
+
+    TemplateProcessor.process(context);
 }
 
 @suite
@@ -1308,9 +1318,9 @@ export default class TemplateProcessorSpec
 
         document.body.appendChild(host);
 
-        const DUMMY_CHILD  = `dummy-child-${uuidv4()}`;
-        const DUMMY_PARENT = `dummy-parent-${uuidv4()}`;
-        const X_ELEMENT    = `x-element-${uuidv4()}`;
+        const DUMMY_CHILD  = `dummy-child-${uuidv4()}`  as `${string}-${string}`;
+        const DUMMY_PARENT = `dummy-parent-${uuidv4()}` as `${string}-${string}`;
+        const X_ELEMENT    = `x-element-${uuidv4()}`    as `${string}-${string}`;
 
         @element(DUMMY_CHILD)
         class DummyChild extends CustomElement

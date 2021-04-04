@@ -1,4 +1,4 @@
-export function assert(condition: unknown, message?: string): asserts condition
+export function assert(condition: unknown, message: string = "Assertion failed."): asserts condition
 {
     if (!condition)
     {

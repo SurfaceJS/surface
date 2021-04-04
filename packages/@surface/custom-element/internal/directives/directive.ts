@@ -8,12 +8,12 @@ import
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
-} from "../../common.js";
-import type ICustomDirective from "../../interfaces/custom-directive";
+} from "../common.js";
+import type DirectiveDescriptor from "../types/directive-descriptor";
 
-export default abstract class DirectiveHandler implements IDisposable
+export default abstract class Directive implements IDisposable
 {
-    protected readonly directive:       ICustomDirective;
+    protected readonly descriptor:      DirectiveDescriptor;
     protected readonly element:         HTMLElement;
     protected readonly scope:           object;
     protected readonly subscription:    Subscription;
@@ -22,16 +22,16 @@ export default abstract class DirectiveHandler implements IDisposable
     protected key!: string;
     protected value: unknown;
 
-    public constructor(scope: object, element: HTMLElement, directive: ICustomDirective)
+    public constructor(scope: object, element: HTMLElement, descriptor: DirectiveDescriptor)
     {
         this.scope      = inheritScope(scope);
         this.element    = element;
-        this.directive  = directive;
+        this.descriptor = descriptor;
 
         this.onBeforeBind?.();
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, this.keyNotify.bind(this), true);
-        this.subscription    = tryObserveByObservable(this.scope, directive,    this.valueNotify.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(this.scope, descriptor, this.keyNotify.bind(this), true);
+        this.subscription    = tryObserveByObservable(this.scope, descriptor,    this.valueNotify.bind(this), true);
 
         this.keyNotify();
         this.valueNotify();
@@ -42,7 +42,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private keyNotify(): void
     {
         const oldKey = this.key;
-        const newKey = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
+        const newKey = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.descriptor)}`;
 
         this.key = newKey;
 
@@ -52,7 +52,7 @@ export default abstract class DirectiveHandler implements IDisposable
     private valueNotify(): void
     {
         const oldValue = this.value;
-        const newValue = tryEvaluateExpressionByTraceable(this.scope, this.directive);
+        const newValue = tryEvaluateExpressionByTraceable(this.scope, this.descriptor);
 
         this.value = newValue;
 

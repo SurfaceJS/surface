@@ -5,6 +5,7 @@ import Expression                                         from "@surface/express
 import { batchTest, suite }                               from "@surface/test-suite";
 import chai                                               from "chai";
 import ObserverVisitor                                    from "../internal/reactivity/observer-visitor.js";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { ObservableExpression }                      from "./observer-visitor-expected.js";
 import { observableExpressions, unobservableExpressions } from "./observer-visitor-expected.js";
 

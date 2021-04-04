@@ -5,25 +5,25 @@ import
 {
     throwTemplateEvaluationError,
     tryEvaluateExpression,
-} from "../../common.js";
-import type IEventDirective from "../../interfaces/event-directive";
+} from "../common.js";
+import type EventDirectiveDescriptor from "../types/event-directive-descriptor";
 
-export default class EventDirectiveHandler implements IDisposable
+export default class EventDirective implements IDisposable
 {
     private readonly action:  Delegate<[Event]>;
     private readonly element: Element;
     private readonly name:    string;
 
-    public constructor(scope: object, element: Element, directive: IEventDirective)
+    public constructor(scope: object, element: Element, descriptor: EventDirectiveDescriptor)
     {
-        this.name    = directive.name;
+        this.name    = descriptor.name;
         this.element = element;
-        this.action  = this.evaluate(scope, directive);
+        this.action  = this.evaluate(scope, descriptor);
 
         this.element.addEventListener(this.name, this.action);
     }
 
-    private evaluate(scope: object, directive: IEventDirective): Delegate<[Event]>
+    private evaluate(scope: object, directive: EventDirectiveDescriptor): Delegate<[Event]>
     {
         if (TypeGuard.isArrowFunctionExpression(directive.expression) || TypeGuard.isIdentifier(directive.expression))
         {

@@ -173,7 +173,7 @@ export default class WebRouterSpec
 
         this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
 
-        CustomElement.registerDirective("to", this.router.asDirectiveHandler());
+        CustomElement.registerDirective("to", this.router.asDirective());
 
         this.appRoot = document.body.appendChild(new AppRoot());
     }

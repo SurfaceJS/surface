@@ -7,6 +7,7 @@ import chai                        from "chai";
 import CustomElement               from "../internal/custom-element.js";
 import attribute                   from "../internal/decorators/attribute.js";
 import element                     from "../internal/decorators/element.js";
+import CustomDirectiveHandler from "./fixtures/custom-directive.js";
 
 @suite
 export default class DecoratorsSpec
@@ -14,7 +15,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHtmlElementWithObservedAttibute(): void
     {
-        @element(`mock-${uuidv4()}`)
+        @element(`mock-${uuidv4()}` as `${string}-${string}`)
         class Mock extends CustomElement
         {
             public static observedAttributes?: string[];
@@ -45,7 +46,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
     {
-        @element(`mock-${uuidv4()}`)
+        @element(`mock-${uuidv4()}` as `${string}-${string}`)
         class Mock extends CustomElement
         {
             public static observedAttributes?: string[];
@@ -89,7 +90,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElement(): void
     {
-        @element(`mock-${uuidv4()}`)
+        @element(`mock-${uuidv4()}` as `${string}-${string}`)
         class Mock extends CustomElement
         {
             public constructor()
@@ -104,7 +105,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplate(): void
     {
-        @element(`mock-${uuidv4()}`, "<div>Template</div>")
+        @element(`mock-${uuidv4()}` as `${string}-${string}`, "<div>Template</div>")
         class Mock extends CustomElement
         {
             public constructor()
@@ -119,7 +120,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyle(): void
     {
-        @element(`mock-${uuidv4()}`, "<div>Template</div>", "div { color: red; }")
+        @element(`mock-${uuidv4()}` as `${string}-${string}`, "<div>Template</div>", "div { color: red; }")
         class Mock extends CustomElement
         {
             public constructor()
@@ -134,7 +135,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyleAndOptions(): void
     {
-        @element(`mock-${uuidv4()}`, "<div>Template</div>", "div { color: red; }", { extends: "div" })
+        @element(`mock-${uuidv4()}` as `${string}-${string}`, "<div #custom>Template</div>", "div { color: red; }", { directives: { custom: CustomDirectiveHandler }, extends: "div" })
         class Mock extends CustomElement.as(HTMLDivElement)
         {
             public constructor()

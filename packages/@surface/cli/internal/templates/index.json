@@ -40,7 +40,7 @@
                 "path": ".eslintrc.json"
             },
             {
-                "name": "deb720081daa0acc3772f7af6052646f3303b926",
+                "name": "92c01db0492aac1af7c0e2359959cc3c9f9e0ea0",
                 "path": "package.json"
             },
             {
@@ -64,7 +64,7 @@
                 "path": "source/environment.d.ts"
             },
             {
-                "name": "5619c2ca101b9c0af6911a83b091bf896d0637fc",
+                "name": "60da18af2afd37c195a444dcd281a63585ca60f3",
                 "path": "source/index.ts"
             },
             {
@@ -117,7 +117,7 @@
                 "path": "manifest.webmanifest"
             },
             {
-                "name": "e7bbecd69f3f869accbf9ea5610f6c53c189ee1a",
+                "name": "5a3384f52510b402a122621c1b6a28be8b1a056e",
                 "path": "package.json"
             },
             {
@@ -245,15 +245,15 @@
                 "path": "source/context/store.ts"
             },
             {
-                "name": "8e9350fa4379c610c99da509828ace3e85b8ab34",
-                "path": "source/directives/key-press-directive-handler.ts"
+                "name": "ab1f2b2deeecd726b8ed822d8bf31c856bd2152c",
+                "path": "source/directives/key-press-directive.ts"
             },
             {
                 "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
                 "path": "source/environment.d.ts"
             },
             {
-                "name": "f68f7ca93df1380a3fbddcd65bfc6e28d1155458",
+                "name": "22bf0f7f75a279ef148c915920abbf4b754e58fa",
                 "path": "source/index.ts"
             },
             {
@@ -394,7 +394,7 @@
                 "path": ".eslintrc.json"
             },
             {
-                "name": "e7bbecd69f3f869accbf9ea5610f6c53c189ee1a",
+                "name": "5a3384f52510b402a122621c1b6a28be8b1a056e",
                 "path": "package.json"
             },
             {
@@ -518,15 +518,15 @@
                 "path": "source/context/store.ts"
             },
             {
-                "name": "8e9350fa4379c610c99da509828ace3e85b8ab34",
-                "path": "source/directives/key-press-directive-handler.ts"
+                "name": "14100fd5d40939fc134c1771f479bcb24e6bec69",
+                "path": "source/directives/key-press-directive.ts"
             },
             {
                 "name": "98bc319dd0629f29396b9a5f0f7fe7084da42c6d",
                 "path": "source/environment.d.ts"
             },
             {
-                "name": "f68f7ca93df1380a3fbddcd65bfc6e28d1155458",
+                "name": "22bf0f7f75a279ef148c915920abbf4b754e58fa",
                 "path": "source/index.ts"
             },
             {

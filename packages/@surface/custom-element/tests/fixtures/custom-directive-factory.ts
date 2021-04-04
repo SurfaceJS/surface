@@ -1,8 +1,8 @@
-import type DirectiveHandler  from "../../internal/directives/handlers/directive-handler.js";
-import type ICustomDirective  from "../../internal/interfaces/custom-directive";
-import CustomDirectiveHandler from "./custom-directive.js";
+import type Directive           from "../../internal/directives/directive.js";
+import type DirectiveDescriptor from "../../internal/types/directive-descriptor";
+import CustomDirectiveHandler   from "./custom-directive.js";
 
-const customDirectiveFactory = (scope: object, element: HTMLElement, directive: ICustomDirective): DirectiveHandler =>
-    new CustomDirectiveHandler(scope, element, directive);
+const customDirectiveFactory = (scope: object, element: HTMLElement, descriptor: DirectiveDescriptor): Directive =>
+    new CustomDirectiveHandler(scope, element, descriptor);
 
 export default customDirectiveFactory;
