@@ -8,6 +8,11 @@ import PrototypeMetadata                          from "../metadata/prototype-me
 import StaticMetadata                             from "../metadata/static-metadata.js";
 import TemplateParser                             from "../parsers/template-parser.js";
 import TemplateProcessor                          from "../processors/template-processor.js";
+import { globalCustomDirectives }                 from "../singletons.js";
+import type { DirectiveHandlerEntry }             from "../types/index.js";
+import type TemplateProcessorContext              from "../types/template-processor-context.js";
+
+type CustomElementDefinitionOptions = ElementDefinitionOptions & { directives?: Record<string, DirectiveHandlerEntry> };
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
@@ -41,7 +46,7 @@ function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomEleme
     }
 }
 
-export default function element(tagname: string, template?: string, style?: string, options?: ElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
+export default function element(tagname: `${string}-${string}`, template?: string, style?: string, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
     return <T extends Constructor<ICustomElement>>(target: T) =>
     {
@@ -73,7 +78,16 @@ export default function element(tagname: string, template?: string, style?: stri
 
                     HookableMetadata.from(target).finish(instance);
 
-                    const disposable = TemplateProcessor.process({ descriptor: StaticMetadata.from(target).descriptor, host: instance, root: instance.shadowRoot, scope: createHostScope(instance) });
+                    const context: TemplateProcessorContext =
+                    {
+                        customDirectives: new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
+                        descriptor:       StaticMetadata.from(target).descriptor,
+                        host:             instance,
+                        root:             instance.shadowRoot,
+                        scope:            createHostScope(instance),
+                    };
+
+                    const disposable = TemplateProcessor.process(context);
 
                     DisposableMetadata.from(instance).add(disposable);
 

@@ -2,7 +2,7 @@ import type { Constructor }                                          from "@surf
 import { DisposableMetadata, HookableMetadata }                      from "@surface/core";
 import type ICustomElement                                           from "./interfaces/custom-element";
 import StaticMetadata                                                from "./metadata/static-metadata.js";
-import { directiveRegistry }                                         from "./singletons.js";
+import { globalCustomDirectives }                                         from "./singletons.js";
 import type { DirectiveHandlerConstructor, DirectiveHandlerFactory } from "./types";
 
 const CUSTOM_ELEMENT = Symbol("custom-element:instance");
@@ -66,7 +66,7 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
     public static registerDirective(name: string, handler: DirectiveHandlerConstructor | DirectiveHandlerFactory): void
     {
-        directiveRegistry.set(name, handler);
+        globalCustomDirectives.set(name, handler);
     }
 
     public dispose(): void

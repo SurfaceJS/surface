@@ -51,11 +51,12 @@ export default class InjectDirectiveHandler implements IDisposable
 
         const injectionContext: InjectionContext =
         {
-            directive:  this.directive,
-            host:       this.context.host,
-            parentNode: this.context.parentNode,
-            scope:      this.context.scope,
-            template:   this.template,
+            customDirectives: this.context.customDirectives,
+            directive:        this.directive,
+            host:             this.context.host,
+            parentNode:       this.context.parentNode,
+            scope:            this.context.scope,
+            template:         this.template,
         };
 
         this.metadata.injections.set(this.key, injectionContext);

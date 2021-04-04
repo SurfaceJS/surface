@@ -135,11 +135,12 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            descriptor: this.injectionContext.directive.descriptor,
-            host:       this.injectionContext.host,
-            parentNode: this.injectionContext.parentNode,
-            root:       content,
-            scope:      mergedScope,
+            customDirectives: this.injectionContext.customDirectives,
+            descriptor:       this.injectionContext.directive.descriptor,
+            host:             this.injectionContext.host,
+            parentNode:       this.injectionContext.parentNode,
+            root:             content,
+            scope:            mergedScope,
         };
 
         const disposable = TemplateProcessor.process(context);
@@ -159,11 +160,12 @@ export default class PlaceholderDirectiveHandler implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            descriptor: this.directive.descriptor,
-            host:       this.context!.host,
-            parentNode: this.context.parentNode,
-            root:       content,
-            scope:      this.context.scope,
+            customDirectives: this.context.customDirectives,
+            descriptor:       this.directive.descriptor,
+            host:             this.context!.host,
+            parentNode:       this.context.parentNode,
+            root:             content,
+            scope:            this.context.scope,
         };
 
         const disposable = TemplateProcessor.process(context);

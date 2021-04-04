@@ -11,22 +11,22 @@ import
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
 } from "../common.js";
-import ChoiceDirectiveHandler             from "../directives/handlers/choice-directive-handler.js";
-import EventDirectiveHandler              from "../directives/handlers/event-directive-handler.js";
-import InjectDirectiveHandler             from "../directives/handlers/inject-directive-handler.js";
-import LoopDirectiveHandler               from "../directives/handlers/loop-directive-handler.js";
-import PlaceholderDirectiveHandler        from "../directives/handlers/placeholder-directive-handler.js";
-import TemplateProcessError               from "../errors/template-process-error.js";
-import type IAttributeDirective           from "../interfaces/attribute-directive";
-import type ICustomDirective              from "../interfaces/custom-directive";
-import type IDirectivesDescriptor         from "../interfaces/directives-descriptor";
-import type IEventDirective               from "../interfaces/event-directive";
-import type ITextNodeDescriptor           from "../interfaces/text-node-descriptor";
-import DataBind                           from "../reactivity/data-bind.js";
-import { directiveRegistry, disposeTree } from "../singletons.js";
-import type { DirectiveHandlerFactory }   from "../types";
-import type TemplateDirectiveContext      from "../types/template-directive-context.js";
-import type TemplateProcessorContext      from "../types/template-processor-context.js";
+import ChoiceDirectiveHandler                   from "../directives/handlers/choice-directive-handler.js";
+import EventDirectiveHandler                    from "../directives/handlers/event-directive-handler.js";
+import InjectDirectiveHandler                   from "../directives/handlers/inject-directive-handler.js";
+import LoopDirectiveHandler                     from "../directives/handlers/loop-directive-handler.js";
+import PlaceholderDirectiveHandler              from "../directives/handlers/placeholder-directive-handler.js";
+import TemplateProcessError                     from "../errors/template-process-error.js";
+import type IAttributeDirective                 from "../interfaces/attribute-directive";
+import type ICustomDirective                    from "../interfaces/custom-directive";
+import type IDirectivesDescriptor               from "../interfaces/directives-descriptor";
+import type IEventDirective                     from "../interfaces/event-directive";
+import type ITextNodeDescriptor                 from "../interfaces/text-node-descriptor";
+import DataBind                                 from "../reactivity/data-bind.js";
+import { disposeTree }                          from "../singletons.js";
+import type { DirectiveHandlerFactory }         from "../types";
+import type TemplateDirectiveContext            from "../types/template-directive-context.js";
+import type TemplateProcessorContext            from "../types/template-processor-context.js";
 
 export default class TemplateProcessor
 {
@@ -220,7 +220,7 @@ export default class TemplateProcessor
 
         for (const directive of directives)
         {
-            const handlerConstructor = directiveRegistry.get(directive.name);
+            const handlerConstructor = this.context.customDirectives.get(directive.name);
 
             if (!handlerConstructor)
             {
@@ -264,9 +264,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                host:       this.context.host,
-                parentNode: template.parentNode,
-                scope:      inheritScope(this.context.scope),
+                customDirectives: this.context.customDirectives,
+                host:              this.context.host,
+                parentNode:        template.parentNode,
+                scope:             inheritScope(this.context.scope),
             };
 
             disposables.push(new InjectDirectiveHandler(template, directive, context));
@@ -281,9 +282,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                host:       this.context.host,
-                parentNode: this.context.parentNode ?? templates[0].parentNode,
-                scope:      inheritScope(this.context.scope),
+                customDirectives: this.context.customDirectives,
+                host:              this.context.host,
+                parentNode:        this.context.parentNode ?? templates[0].parentNode,
+                scope:             inheritScope(this.context.scope),
             };
 
             disposables.push(new ChoiceDirectiveHandler(templates, directive, context));
@@ -298,9 +300,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                host:       this.context.host,
-                parentNode: this.context.parentNode ?? template.parentNode,
-                scope:      inheritScope(this.context.scope),
+                customDirectives: this.context.customDirectives,
+                host:              this.context.host,
+                parentNode:        this.context.parentNode ?? template.parentNode,
+                scope:             inheritScope(this.context.scope),
             };
 
             disposables.push(new LoopDirectiveHandler(template, directive, context));
@@ -315,9 +318,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                host:       this.context.host,
-                parentNode: this.context.parentNode ?? template.parentNode,
-                scope:      inheritScope(this.context.scope),
+                customDirectives: this.context.customDirectives,
+                host:              this.context.host,
+                parentNode:        this.context.parentNode ?? template.parentNode,
+                scope:             inheritScope(this.context.scope),
             };
 
             disposables.push(new PlaceholderDirectiveHandler(template, directive, context));

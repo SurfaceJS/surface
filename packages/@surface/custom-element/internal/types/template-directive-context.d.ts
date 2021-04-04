@@ -1,8 +1,11 @@
+import type { DirectiveHandlerEntry } from ".";
+
 type TemplateDirectiveContext =
 {
-    parentNode: Node,
-    host:       Node,
-    scope:      object,
+    customDirectives: Map<string, DirectiveHandlerEntry>,
+    host:             Node,
+    parentNode:       Node,
+    scope:            object,
 };
 
 export default TemplateDirectiveContext;

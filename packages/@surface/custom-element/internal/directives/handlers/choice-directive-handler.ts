@@ -74,11 +74,12 @@ export default class ChoiceDirectiveHandler implements IDisposable
 
                     const context: TemplateProcessorContext =
                     {
-                        descriptor: choice.branche.descriptor,
-                        host:       this.context.host,
-                        parentNode:    this.context.parentNode,
-                        root:       content,
-                        scope:      { ...this.context.scope },
+                        customDirectives: this.context.customDirectives,
+                        descriptor:       choice.branche.descriptor,
+                        host:             this.context.host,
+                        parentNode:       this.context.parentNode,
+                        root:             content,
+                        scope:            { ...this.context.scope },
                     };
 
                     const disposable = TemplateProcessor.process(context);
