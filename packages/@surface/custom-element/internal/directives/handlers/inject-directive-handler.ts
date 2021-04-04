@@ -1,20 +1,22 @@
-import { CancellationTokenSource, DisposableMetadata } from "@surface/core";
-import type { Subscription }                           from "@surface/reactive";
+import type { IDisposable }        from "@surface/core";
+import { CancellationTokenSource } from "@surface/core";
+import type { Subscription }       from "@surface/reactive";
 import
 {
-    inheritScope,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
 } from "../../common.js";
-import type IInjectDirective    from "../../interfaces/inject-directive";
-import TemplateMetadata         from "../../metadata/template-metadata.js";
-import { scheduler }            from "../../singletons.js";
-import TemplateDirectiveHandler from "./template-directive-handler.js";
+import type IInjectDirective         from "../../interfaces/inject-directive";
+import TemplateMetadata              from "../../metadata/template-metadata.js";
+import { scheduler }                 from "../../singletons.js";
+import type InjectionContext         from "../../types/injection-context";
+import type TemplateDirectiveContext from "../../types/template-directive-context";
 
-export default class InjectDirectiveHandler extends TemplateDirectiveHandler
+export default class InjectDirectiveHandler implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly context:                 TemplateDirectiveContext;
     private readonly directive:               IInjectDirective;
     private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
@@ -24,20 +26,19 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
     private disposed: boolean = false;
     private key:      string  = "";
 
-    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IInjectDirective)
+    public constructor(template: HTMLTemplateElement, directive: IInjectDirective, context: TemplateDirectiveContext)
     {
-        super(inheritScope(scope), context, host);
-
         this.template  = template;
         this.directive = directive;
-        this.metadata  = TemplateMetadata.from(context);
+        this.context   = context;
+        this.metadata  = TemplateMetadata.from(context.parentNode);
 
         template.remove();
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, listener, true);
-        this.subscription    = tryObserveByObservable(this.scope, directive,    listener, true);
+        this.keySubscription = tryObserveKeyByObservable(context.scope, directive, listener, true);
+        this.subscription    = tryObserveByObservable(context.scope, directive,    listener, true);
 
         this.task();
     }
@@ -46,15 +47,24 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
     {
         this.disposeCurrentInjection();
 
-        this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.directive)}`;
 
-        this.metadata.injections.set(this.key, { context: this.context, directive: this.directive, host: this.host, scope: this.scope, template: this.template });
+        const injectionContext: InjectionContext =
+        {
+            directive:  this.directive,
+            host:       this.context.host,
+            parentNode: this.context.parentNode,
+            scope:      this.context.scope,
+            template:   this.template,
+        };
+
+        this.metadata.injections.set(this.key, injectionContext);
 
         const action = this.metadata.placeholders.get(this.key);
 
         if (action)
         {
-            action({ context: this.context, directive: this.directive, host: this.host, scope: this.scope, template: this.template });
+            action(injectionContext);
         }
     }
 
@@ -76,8 +86,6 @@ export default class InjectDirectiveHandler extends TemplateDirectiveHandler
 
             this.keySubscription.unsubscribe();
             this.subscription.unsubscribe();
-
-            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

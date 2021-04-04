@@ -1,10 +1,9 @@
-import type { IDisposable, Indexer }                           from "@surface/core";
-import { CancellationTokenSource, DisposableMetadata, assert } from "@surface/core";
-import { TypeGuard }                                           from "@surface/expression";
-import type { Subscription }                                   from "@surface/reactive";
+import type { IDisposable, Indexer }       from "@surface/core";
+import { CancellationTokenSource, assert } from "@surface/core";
+import { TypeGuard }                       from "@surface/expression";
+import type { Subscription }               from "@surface/reactive";
 import
 {
-    inheritScope,
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryEvaluatePatternByTraceable,
@@ -13,14 +12,17 @@ import
 } from "../../common.js";
 import type IPlaceholderDirective    from "../../interfaces/placeholder-directive";
 import TemplateMetadata              from "../../metadata/template-metadata.js";
+import TemplateProcessor             from "../../processors/template-processor.js";
 import { scheduler }                 from "../../singletons.js";
-import type { Injection }            from "../../types";
+import type InjectionContext         from "../../types/injection-context";
+import type TemplateDirectiveContext from "../../types/template-directive-context.js";
+import type TemplateProcessorContext from "../../types/template-processor-context.js";
 import TemplateBlock                 from "../template-block.js";
-import TemplateDirectiveHandler      from "./template-directive-handler.js";
 
-export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandler
+export default class PlaceholderDirectiveHandler implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly context:                 TemplateDirectiveContext;
     private readonly directive:               IPlaceholderDirective;
     private readonly keySubscription:         Subscription;
     private readonly metadata:                TemplateMetadata;
@@ -33,15 +35,14 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
     private lazyInjectionCancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private subscription:                         Subscription | null     = null;
 
-    private injection?: Injection;
+    private injectionContext?: InjectionContext;
 
-    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: IPlaceholderDirective)
+    public constructor(template: HTMLTemplateElement, directive: IPlaceholderDirective, context: TemplateDirectiveContext)
     {
-        super(inheritScope(scope), context, host);
-
         this.template  = template;
         this.directive = directive;
-        this.metadata  = TemplateMetadata.from(this.host);
+        this.context   = context;
+        this.metadata  = TemplateMetadata.from(context.host);
 
         assert(template.parentNode);
 
@@ -49,7 +50,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.templateBlock.insertAt(parent, template);
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, directive, this.onKeyChange.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(context.scope, directive, this.onKeyChange.bind(this), true);
 
         this.onKeyChange();
     }
@@ -68,7 +69,7 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         void scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
     }
 
-    private inject(injection?: Injection): void
+    private inject(injection?: InjectionContext): void
     {
         this.lazyInjectionCancellationTokenSource.cancel();
 
@@ -78,13 +79,13 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
         this.subscription?.unsubscribe();
         this.subscription = null;
 
-        const task = (this.injection = injection)
+        const task = (this.injectionContext = injection)
             ? this.task.bind(this)
             : this.defaultTask.bind(this);
 
         const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(this.scope, this.directive, listener, true);
+        this.subscription = tryObserveByObservable(this.context.scope, this.directive, listener, true);
 
         listener();
     }
@@ -97,12 +98,12 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             this.metadata.placeholders.delete(this.key);
         }
 
-        this.key = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.directive)}`;
+        this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.directive)}`;
 
         this.metadata.defaults.set(this.key, this.applyLazyInjection.bind(this));
         this.metadata.placeholders.set(this.key, this.inject.bind(this));
 
-        if (this.host.isConnected)
+        if (this.context.host.isConnected)
         {
             this.applyInjection();
         }
@@ -114,21 +115,34 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
     private task(): void
     {
+        assert(this.injectionContext);
+
         this.currentDisposable?.dispose();
 
         this.templateBlock.clear();
 
         let destructured = false;
 
-        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injection!.directive.pattern))
-            ? { elementScope: tryEvaluatePatternByTraceable(this.scope, tryEvaluateExpressionByTraceable(this.scope, this.directive), this.injection!.directive), scopeAlias: "__scope__" }
-            : { elementScope: tryEvaluateExpressionByTraceable(this.scope, this.directive) as Indexer, scopeAlias: this.injection!.directive.pattern.name };
+        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injectionContext.directive.pattern))
+            ? { elementScope: tryEvaluatePatternByTraceable(this.context.scope, tryEvaluateExpressionByTraceable(this.context.scope, this.directive), this.injectionContext.directive), scopeAlias: "__scope__" }
+            : { elementScope: tryEvaluateExpressionByTraceable(this.context.scope, this.directive) as Indexer, scopeAlias: this.injectionContext.directive.pattern.name };
 
         const mergedScope = destructured
-            ? { ...elementScope, ...this.injection!.scope }
-            : { [scopeAlias]: elementScope, ...this.injection!.scope };
+            ? { ...elementScope, ...this.injectionContext.scope }
+            : { [scopeAlias]: elementScope, ...this.injectionContext.scope };
 
-        const [content, disposable] = this.processTemplate(mergedScope, this.injection!.context, this.injection!.host, this.injection!.template, this.injection!.directive.descriptor);
+        const content = this.injectionContext.template.content.cloneNode(true);
+
+        const context: TemplateProcessorContext =
+        {
+            descriptor: this.injectionContext.directive.descriptor,
+            host:       this.injectionContext.host,
+            parentNode: this.injectionContext.parentNode,
+            root:       content,
+            scope:      mergedScope,
+        };
+
+        const disposable = TemplateProcessor.process(context);
 
         this.templateBlock.setContent(content);
 
@@ -141,7 +155,18 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
 
         this.templateBlock.clear();
 
-        const [content, disposable] = this.processTemplate(this.scope, this.context, this.host, this.template, this.directive.descriptor);
+        const content =  this.template.content.cloneNode(true);
+
+        const context: TemplateProcessorContext =
+        {
+            descriptor: this.directive.descriptor,
+            host:       this.context!.host,
+            parentNode: this.context.parentNode,
+            root:       content,
+            scope:      this.context.scope,
+        };
+
+        const disposable = TemplateProcessor.process(context);
 
         this.templateBlock.setContent(content);
 
@@ -162,8 +187,6 @@ export default class PlaceholderDirectiveHandler extends TemplateDirectiveHandle
             this.metadata.placeholders.delete(this.key);
 
             this.templateBlock.dispose();
-
-            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }

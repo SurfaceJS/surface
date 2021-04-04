@@ -1,16 +1,19 @@
-import type { Delegate, IDisposable }                                                      from "@surface/core";
-import { CancellationTokenSource, DisposableMetadata }                                     from "@surface/core";
-import { TypeGuard }                                                                       from "@surface/expression";
-import type { Subscription }                                                               from "@surface/reactive";
-import { inheritScope, tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
-import type ILoopDirective                                                                 from "../../interfaces/loop-directive";
-import { scheduler }                                                                       from "../../singletons.js";
-import TemplateBlock                                                                       from "../template-block.js";
-import TemplateDirectiveHandler                                                            from "./template-directive-handler.js";
+import type { Delegate, IDisposable }                                        from "@surface/core";
+import { CancellationTokenSource }                                           from "@surface/core";
+import { TypeGuard }                                                         from "@surface/expression";
+import type { Subscription }                                                 from "@surface/reactive";
+import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../../common.js";
+import type ILoopDirective                                                   from "../../interfaces/loop-directive";
+import TemplateProcessor                                                     from "../../processors/template-processor.js";
+import { scheduler }                                                         from "../../singletons.js";
+import type TemplateDirectiveContext                                         from "../../types/template-directive-context";
+import type TemplateProcessorContext                                         from "../../types/template-processor-context";
+import TemplateBlock                                                         from "../template-block.js";
 
-export default class LoopDirectiveHandler extends TemplateDirectiveHandler
+export default class LoopDirectiveHandler implements IDisposable
 {
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
+    private readonly context:                 TemplateDirectiveContext;
     private readonly directive:               ILoopDirective;
     private readonly disposables:             IDisposable[] = [];
     private readonly iterator:                (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => void;
@@ -21,12 +24,11 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
     private disposed: boolean = false;
 
-    public constructor(scope: object, context: Node, host: Node, template: HTMLTemplateElement, directive: ILoopDirective)
+    public constructor(template: HTMLTemplateElement, directive: ILoopDirective, context: TemplateDirectiveContext)
     {
-        super(inheritScope(scope), context, host);
-
         this.template  = template;
         this.directive = directive;
+        this.context   = context;
         this.tree      = document.createDocumentFragment();
 
         this.iterator = directive.operator == "in" ? this.forInIterator : this.forOfIterator;
@@ -37,7 +39,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
 
-        this.subscription = tryObserveByObservable(this.scope, directive, listener, true);
+        this.subscription = tryObserveByObservable(context.scope, directive, listener, true);
 
         listener();
     }
@@ -45,10 +47,21 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
     private action(value: unknown, index: number): void
     {
         const mergedScope = TypeGuard.isIdentifier(this.directive.left)
-            ? { ...this.scope, [this.directive.left.name]: value }
-            : { ...this.scope, ...tryEvaluatePattern(this.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
+            ? { ...this.context.scope, [this.directive.left.name]: value }
+            : { ...this.context.scope, ...tryEvaluatePattern(this.context.scope, this.directive.left, value, this.directive.rawExpression, this.directive.stackTrace) };
 
-        const [content, disposable] = this.processTemplate(mergedScope, this.context, this.host, this.template, this.directive.descriptor);
+        const content =  this.template.content.cloneNode(true);
+
+        const context: TemplateProcessorContext =
+        {
+            descriptor: this.directive.descriptor,
+            host:       this.context!.host,
+            parentNode: this.context.parentNode,
+            root:       content,
+            scope:      mergedScope,
+        };
+
+        const disposable = TemplateProcessor.process(context);
 
         const block = new TemplateBlock();
 
@@ -100,7 +113,7 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
         this.disposables.splice(0).forEach(x => x.dispose());
 
-        const elements = tryEvaluateExpression(this.scope, this.directive.right, this.directive.rawExpression, this.directive.stackTrace) as Iterable<unknown>;
+        const elements = tryEvaluateExpression(this.context.scope, this.directive.right, this.directive.rawExpression, this.directive.stackTrace) as Iterable<unknown>;
 
         this.iterator(elements, this.action);
 
@@ -117,8 +130,6 @@ export default class LoopDirectiveHandler extends TemplateDirectiveHandler
 
             this.subscription.unsubscribe();
             this.templateBlock.dispose();
-
-            DisposableMetadata.from(this.scope).dispose();
 
             this.disposed = true;
         }
