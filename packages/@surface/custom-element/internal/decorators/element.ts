@@ -9,10 +9,8 @@ import StaticMetadata                             from "../metadata/static-metad
 import TemplateParser                             from "../parsers/template-parser.js";
 import TemplateProcessor                          from "../processors/template-processor.js";
 import { globalCustomDirectives }                 from "../singletons.js";
-import type { DirectiveEntry }                    from "../types/index.js";
+import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
 import type TemplateProcessorContext              from "../types/template-processor-context.js";
-
-type CustomElementDefinitionOptions = ElementDefinitionOptions & { directives?: Record<string, DirectiveEntry> };
 
 const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
 
