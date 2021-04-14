@@ -338,15 +338,14 @@ export async function createDevServerConfiguration(configuration: Configuration,
 {
     const extendedConfiguration: webpack.Configuration =
     {
-        entry:   configureDevServerEntry(configuration.entry, url),
         mode:    "development",
         plugins: [new webpack.HotModuleReplacementPlugin()],
     };
 
     if (configuration.compilations)
     {
-        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, extendedConfiguration)));
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, { entry: configureDevServerEntry(x.entry, url), ...extendedConfiguration })));
     }
 
-    return createConfiguration(configuration, extendedConfiguration);
+    return createConfiguration(configuration, { entry: configureDevServerEntry(configuration.entry, url), ...extendedConfiguration });
 }
