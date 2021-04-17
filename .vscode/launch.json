@@ -26,11 +26,11 @@
             "name":     "Launch Compiler",
             "outFiles":
             [
-                "${workspaceFolder}/packages/@surface/compiler/node_modules/fork-ts-checker-webpack-plugin/**/*.js",
+                "${workspaceFolder}/packages/@surface/builder/node_modules/fork-ts-checker-webpack-plugin/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/internal/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
             ],
-            "program":  "${workspaceFolder}/packages/@surface/compiler/cli",
+            "program":  "${workspaceFolder}/packages/@surface/builder/cli",
             "protocol": "inspector",
             "request":  "launch",
             "skipFiles":

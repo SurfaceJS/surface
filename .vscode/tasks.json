@@ -25,7 +25,7 @@
             "options": [
                 "@surface/cli",
                 "@surface/collection",
-                "@surface/compiler",
+                "@surface/builder",
                 "@surface/core",
                 "@surface/custom-element",
                 "@surface/dependency-injection",

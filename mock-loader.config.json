@@ -6,9 +6,9 @@
         "webpack",
         "webpack-dev-server",
         "./packages/@surface/io/internal/fs.js",
-        "./packages/@surface/compiler/internal/tasks.js",
-        "./packages/@surface/compiler/internal/compiler.js",
-        "./packages/@surface/compiler/internal/configurations.js",
-        "./packages/@surface/compiler/internal/common.js"
+        "./packages/@surface/builder/internal/tasks.js",
+        "./packages/@surface/builder/internal/compiler.js",
+        "./packages/@surface/builder/internal/configurations.js",
+        "./packages/@surface/builder/internal/common.js"
     ]
 }

@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bin": {
-        "sfcc": "cli.js"
+        "surface-builder": "cli.js"
     },
     "bugs": {
         "url": "https://github.com/SurfaceJS/modules/issues"
@@ -56,14 +56,13 @@
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "bundler",
-        "compiler",
+        "builder",
         "surface",
         "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/compiler",
+    "name": "@surface/builder",
     "peerDependencies": {
         "sass": "^1.32.8",
         "typescript": "^4.2.3"
