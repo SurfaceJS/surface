@@ -227,14 +227,18 @@ export default class TemplateProcessor
                 throw new TemplateProcessError(`Unregistered directive #${descriptor.name}.`, buildStackTrace(descriptor.stackTrace));
             }
 
+            const context = { descriptor, element, scope: inheritScope(scope) };
+
             if (typeGuard<DirectiveFactory>(handlerConstructor, !handlerConstructor.prototype))
             {
-                disposables.push(handlerConstructor(scope, element, descriptor));
+                disposables.push(handlerConstructor(context));
             }
             else
             {
-                disposables.push(new handlerConstructor(scope, element, descriptor));
+                disposables.push(new handlerConstructor(context));
             }
+
+            disposables.push(DisposableMetadata.from(context.scope));
         }
 
         return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };

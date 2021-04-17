@@ -1,37 +1,28 @@
-import type { IDisposable }   from "@surface/core";
-import { DisposableMetadata } from "@surface/core";
-import type { Subscription }  from "@surface/reactive";
+import type { IDisposable }  from "@surface/core";
+import type { Subscription } from "@surface/reactive";
 import
 {
-    inheritScope,
     tryEvaluateExpressionByTraceable,
     tryEvaluateKeyExpressionByTraceable,
     tryObserveByObservable,
     tryObserveKeyByObservable,
 } from "../common.js";
-import type DirectiveDescriptor from "../types/directive-descriptor";
+import type DirectiveContext from "../types/directive-context.js";
 
 export default abstract class Directive implements IDisposable
 {
-    protected readonly descriptor:      DirectiveDescriptor;
-    protected readonly element:         HTMLElement;
-    protected readonly scope:           object;
     protected readonly subscription:    Subscription;
     protected readonly keySubscription: Subscription;
 
     protected key!: string;
     protected value: unknown;
 
-    public constructor(scope: object, element: HTMLElement, descriptor: DirectiveDescriptor)
+    public constructor(protected readonly context: DirectiveContext)
     {
-        this.scope      = inheritScope(scope);
-        this.element    = element;
-        this.descriptor = descriptor;
-
         this.onBeforeBind?.();
 
-        this.keySubscription = tryObserveKeyByObservable(this.scope, descriptor, this.keyNotify.bind(this), true);
-        this.subscription    = tryObserveByObservable(this.scope, descriptor,    this.valueNotify.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(this.context.scope, this.context.descriptor, this.keyNotify.bind(this), true);
+        this.subscription    = tryObserveByObservable(this.context.scope, this.context.descriptor,    this.valueNotify.bind(this), true);
 
         this.keyNotify();
         this.valueNotify();
@@ -42,7 +33,7 @@ export default abstract class Directive implements IDisposable
     private keyNotify(): void
     {
         const oldKey = this.key;
-        const newKey = `${tryEvaluateKeyExpressionByTraceable(this.scope, this.descriptor)}`;
+        const newKey = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.context.descriptor)}`;
 
         this.key = newKey;
 
@@ -52,7 +43,7 @@ export default abstract class Directive implements IDisposable
     private valueNotify(): void
     {
         const oldValue = this.value;
-        const newValue = tryEvaluateExpressionByTraceable(this.scope, this.descriptor);
+        const newValue = tryEvaluateExpressionByTraceable(this.context.scope, this.context.descriptor);
 
         this.value = newValue;
 
@@ -72,8 +63,6 @@ export default abstract class Directive implements IDisposable
 
         this.keySubscription.unsubscribe();
         this.subscription.unsubscribe();
-
-        DisposableMetadata.from(this.scope).dispose();
 
         this.onAfterUnbind?.();
     }

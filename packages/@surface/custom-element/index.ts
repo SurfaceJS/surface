@@ -3,7 +3,7 @@ import CustomElement from "./internal/custom-element.js";
 
 export type { default as ICustomElement }                 from "./internal/interfaces/custom-element";
 export type { default as CustomElementDefinitionOptions } from "./internal/types/custom-element-definition-options";
-export type { default as DirectiveDescriptor }            from "./internal/types/directive-descriptor";
+export type { default as DirectiveContext }               from "./internal/types/directive-context";
 
 export type
 {

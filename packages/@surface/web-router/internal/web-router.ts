@@ -2,14 +2,12 @@ import { Stack }                                        from "@surface/collectio
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
 import { observe }                                      from "@surface/custom-element";
-import type { DirectiveFactory }                        from "@surface/custom-element";
 import Container                                        from "@surface/dependency-injection";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
 import type IRouteableElement                           from "./interfaces/routeable-element";
 import type IRouterMiddleware                           from "./interfaces/router-interceptor";
 import Metadata                                         from "./metadata.js";
-import NavigationDirective                              from "./navigation-directive.js";
 import RouteConfigurator                                from "./route-configurator.js";
 import type Component                                   from "./types/component";
 import type Module                                      from "./types/module";
@@ -301,11 +299,6 @@ export default class WebRouter
     private resolvePath(path: string): URL
     {
         return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${joinPaths(window.location.origin, this.baseUrl)}/`);
-    }
-
-    public asDirective(): DirectiveFactory
-    {
-        return (...args) => new NavigationDirective(this, ...args);
     }
 
     public async back(): Promise<void>

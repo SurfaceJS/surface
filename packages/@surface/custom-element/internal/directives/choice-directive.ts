@@ -39,7 +39,7 @@ export default class ChoiceDirective implements IDisposable
 
         this.templateBlock.insertAt(parent, templates[0]);
 
-        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
         for (let index = 0; index < descriptor.branches.length; index++)
         {
@@ -56,7 +56,7 @@ export default class ChoiceDirective implements IDisposable
         listener();
     }
 
-    private task(): void
+    private readonly task = (): void =>
     {
         for (const choice of this.choices)
         {
@@ -98,7 +98,7 @@ export default class ChoiceDirective implements IDisposable
         this.templateBlock.clear();
 
         this.currentChoice = undefined;
-    }
+    };
 
     public dispose(): void
     {
