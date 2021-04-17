@@ -1,25 +1,25 @@
-import type { DirectiveDescriptor } from "@surface/custom-element";
-import { Directive }                from "@surface/custom-element";
-import type WebRouter               from "./web-router.js";
+import type { DirectiveContext } from "@surface/custom-element";
+import { Directive }             from "@surface/custom-element";
+import type WebRouter            from "./web-router.js";
 
 export default class NavigationDirective extends Directive
 {
     private disposed: boolean = false;
 
-    public constructor(private readonly router: WebRouter, scope: object, element: HTMLElement, descriptor: DirectiveDescriptor)
+    public constructor(private readonly router: WebRouter, context: DirectiveContext)
     {
-        super(scope, element, descriptor);
+        super(context);
 
-        if (this.element instanceof HTMLAnchorElement)
+        if (context.element instanceof HTMLAnchorElement)
         {
             // eslint-disable-next-line no-script-url
-            this.element.href = "javascript:void(0)";
+            context.element.href = "javascript:void(0)";
         }
 
-        this.element.addEventListener("click", this.to.bind(this));
+        context.element.addEventListener("click", this.onClick);
     }
 
-    private to(event: MouseEvent): void
+    private readonly onClick = (event: MouseEvent): void =>
     {
         if (event.ctrlKey)
         {
@@ -29,13 +29,13 @@ export default class NavigationDirective extends Directive
         {
             void this.router.push(this.value as string);
         }
-    }
+    };
 
     public dispose(): void
     {
         if (!this.disposed)
         {
-            this.element.removeEventListener("click", this.to);
+            this.context.element.removeEventListener("click", this.onClick);
 
             super.dispose();
 

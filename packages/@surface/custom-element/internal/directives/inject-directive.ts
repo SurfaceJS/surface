@@ -35,7 +35,7 @@ export default class InjectDirective implements IDisposable
 
         template.remove();
 
-        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
         this.keySubscription = tryObserveKeyByObservable(context.scope, descriptor, listener, true);
         this.subscription    = tryObserveByObservable(context.scope, descriptor,    listener, true);
@@ -43,7 +43,7 @@ export default class InjectDirective implements IDisposable
         this.task();
     }
 
-    private task(): void
+    private readonly task = (): void =>
     {
         this.disposeCurrentInjection();
 
@@ -67,7 +67,7 @@ export default class InjectDirective implements IDisposable
         {
             action(injectionContext);
         }
-    }
+    };
 
     private disposeCurrentInjection(): void
     {

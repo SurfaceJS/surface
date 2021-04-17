@@ -37,7 +37,7 @@ export default class LoopDirective implements IDisposable
 
         this.templateBlock.insertAt(parent, template);
 
-        const listener = (): void => void scheduler.enqueue(this.task.bind(this), "normal", this.cancellationTokenSource.token);
+        const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(context.scope, descriptor, listener, true);
 
@@ -105,7 +105,7 @@ export default class LoopDirective implements IDisposable
         }
     }
 
-    private task(): void
+    private readonly task = (): void =>
     {
         if (this.disposed)
         {
@@ -119,7 +119,7 @@ export default class LoopDirective implements IDisposable
         this.iterator(elements, this.action);
 
         void scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high", this.cancellationTokenSource.token);
-    }
+    };
 
     public dispose(): void
     {

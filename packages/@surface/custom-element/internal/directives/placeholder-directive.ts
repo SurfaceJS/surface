@@ -50,26 +50,26 @@ export default class PlaceholderDirective implements IDisposable
 
         this.templateBlock.insertAt(parent, template);
 
-        this.keySubscription = tryObserveKeyByObservable(context.scope, descriptor, this.onKeyChange.bind(this), true);
+        this.keySubscription = tryObserveKeyByObservable(context.scope, descriptor, this.onKeyChange, true);
 
         this.onKeyChange();
     }
 
-    private applyInjection(): void
+    private readonly applyInjection = (): void =>
     {
         const injection = this.metadata.injections.get(this.key);
 
         this.inject(injection);
-    }
+    };
 
-    private applyLazyInjection(): void
+    private readonly applyLazyInjection = (): void =>
     {
         this.lazyInjectionCancellationTokenSource = new CancellationTokenSource();
 
-        void scheduler.enqueue(() => this.applyInjection(), "low", this.lazyInjectionCancellationTokenSource.token);
-    }
+        void scheduler.enqueue(this.applyInjection, "low", this.lazyInjectionCancellationTokenSource.token);
+    };
 
-    private inject(injection?: InjectionContext): void
+    private readonly inject = (injection?: InjectionContext): void =>
     {
         this.lazyInjectionCancellationTokenSource.cancel();
 
@@ -80,17 +80,17 @@ export default class PlaceholderDirective implements IDisposable
         this.subscription = null;
 
         const task = (this.injectionContext = injection)
-            ? this.task.bind(this)
-            : this.defaultTask.bind(this);
+            ? this.task
+            : this.defaultTask;
 
         const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
         this.subscription = tryObserveByObservable(this.context.scope, this.descriptor, listener, true);
 
         listener();
-    }
+    };
 
-    private onKeyChange(): void
+    private readonly onKeyChange = (): void =>
     {
         if (this.key)
         {
@@ -100,8 +100,8 @@ export default class PlaceholderDirective implements IDisposable
 
         this.key = `${tryEvaluateKeyExpressionByTraceable(this.context.scope, this.descriptor)}`;
 
-        this.metadata.defaults.set(this.key, this.applyLazyInjection.bind(this));
-        this.metadata.placeholders.set(this.key, this.inject.bind(this));
+        this.metadata.defaults.set(this.key, this.applyLazyInjection);
+        this.metadata.placeholders.set(this.key, this.inject);
 
         if (this.context.host.isConnected)
         {
@@ -111,9 +111,9 @@ export default class PlaceholderDirective implements IDisposable
         {
             this.applyLazyInjection();
         }
-    }
+    };
 
-    private task(): void
+    private readonly task = (): void =>
     {
         assert(this.injectionContext);
 
@@ -148,9 +148,9 @@ export default class PlaceholderDirective implements IDisposable
         this.templateBlock.setContent(content);
 
         this.currentDisposable = disposable;
-    }
+    };
 
-    private defaultTask(): void
+    private readonly defaultTask = (): void =>
     {
         this.currentDisposable?.dispose();
 
@@ -173,7 +173,7 @@ export default class PlaceholderDirective implements IDisposable
         this.templateBlock.setContent(content);
 
         this.currentDisposable = disposable;
-    }
+    };
 
     public dispose(): void
     {
