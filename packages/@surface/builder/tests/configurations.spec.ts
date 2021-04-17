@@ -19,13 +19,8 @@ export default class ConfigurationsSpec
     @test
     public createAnalyzerConfiguration(): void
     {
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ compilations: [{ }] }, { }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: true }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "none" }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "verbose" }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { logging: "log" }));
-        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }, { analyzerMode: "server", mode: "production" }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ }));
+        void chai.assert.isFulfilled(createAnalyzerConfiguration({ compilations: [{ }], devServer: { } }));
     }
 
     @test
@@ -33,9 +28,9 @@ export default class ConfigurationsSpec
     {
         process.env.SURFACE_ENVIRONMENT = "development";
 
-        void chai.assert.isFulfilled(createBuildConfiguration({ }, { }));
-        void chai.assert.isFulfilled(createBuildConfiguration({ compilations: [{ }] }, { }));
-        void chai.assert.isFulfilled(createBuildConfiguration({ }, { mode: "development" }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ mode: "development" }));
+        void chai.assert.isFulfilled(createBuildConfiguration({ compilations: [{ }] }));
     }
 
     @test

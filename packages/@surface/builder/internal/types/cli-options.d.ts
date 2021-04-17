@@ -1,7 +1,8 @@
-import type Logging from "./logging";
+import type Configuration from "./configuration.js";
 
 type CliOptions =
 {
+    mode?:                     Configuration["mode"],
     context?:                  string,
     copyFiles?:                (string | { from: string, to: string })[],
     entry?:                    [string, ...string[]],
@@ -9,7 +10,7 @@ type CliOptions =
     filename?:                 string,
     forceTs?:                  boolean | string[],
     htmlTemplate?:             string,
-    logging?:                  Logging,
+    logging?:                  Configuration["logging"],
     output?:                   string,
     project?:                  string,
     publicPath?:               string,

@@ -1,16 +1,16 @@
-import path                                    from "path";
-import { deepMerge, isEsm }                    from "@surface/core";
-import type { RequiredProperties }             from "@surface/core";
-import { isFile, lookupFile, removePathAsync } from "@surface/io";
-import type webpack                            from "webpack";
-import { createOnlyDefinedProxy, loadModule }  from "./common.js";
-import Compiler                                from "./compiler.js";
-import type CliAnalyzerOptions                 from "./types/cli-analyzer-options";
-import type CliBuildOptions                    from "./types/cli-build-options";
-import type CliDevServerOptions                from "./types/cli-dev-serve-options";
-import type CliOptions                         from "./types/cli-options";
-import type Configuration                      from "./types/configuration";
-import type WebpackExtension                   from "./types/webpack-extension.js";
+import path                                                 from "path";
+import { deepMerge, isEsm }                                 from "@surface/core";
+import { isFile, lookupFile, removePathAsync }              from "@surface/io";
+import type webpack                                         from "webpack";
+import type { BundleAnalyzerPlugin }                        from "webpack-bundle-analyzer";
+import Builder                                              from "./builder.js";
+import { createOnlyDefinedProxy, createStats, loadModule }  from "./common.js";
+import type CliAnalyzerOptions                              from "./types/cli-analyzer-options";
+import type CliBuildOptions                                 from "./types/cli-build-options";
+import type CliDevServerOptions                             from "./types/cli-dev-serve-options";
+import type CliOptions                                      from "./types/cli-options";
+import type Configuration                                   from "./types/configuration";
+import type WebpackExtension                                from "./types/webpack-extension.js";
 
 export default class Tasks
 {
@@ -26,7 +26,7 @@ export default class Tasks
         };
     }
 
-    private static async optionsToConfiguration(options: CliOptions & { mode?: webpack.Configuration["mode"] }): Promise<Configuration>
+    private static async optionsToConfiguration(options: CliOptions): Promise<Configuration>
     {
         const cwd = process.cwd();
 
@@ -45,6 +45,8 @@ export default class Tasks
             filename:      options.filename,
             forceTs:       options.forceTs,
             htmlTemplate:  options.htmlTemplate,
+            logging:       options.logging,
+            mode:          options.mode,
             output:        options.output,
             publicPath:    options.publicPath,
             tsconfig:      options.tsconfig,
@@ -191,49 +193,53 @@ export default class Tasks
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const analyzerOptions: RequiredProperties<CliAnalyzerOptions> =
-        {
+        const logging = !configuration.logging
+            ? "none"
+            : configuration.logging == true
+                ? "info"
+                : configuration.logging;
+
+        const logLevel: BundleAnalyzerPlugin.Options["logLevel"] =
+            logging == "none"
+                ? "silent"
+                : logging == "verbose" || logging == "log"
+                    ? "info"
+                    :  logging;
+
+        configuration.bundlerAnalyzer = createOnlyDefinedProxy
+        ({
             analyzerHost:   options.analyzerHost,
-            analyzerMode:   options.analyzerMode,
+            analyzerMode:   options.analyzerMode ?? "static",
             analyzerPort:   options.analyzerPort,
             defaultSizes:   options.defaultSizes,
             excludeAssets:  options.excludeAssets,
-            logging:        options.logging,
-            mode:           options.mode,
+            logLevel,
             openAnalyzer:   options.openAnalyzer,
             reportFilename: options.reportFilename,
-            reportTitle:    options.reportTitle,
-        };
+        });
 
         await removePathAsync(configuration.output!);
 
-        await Compiler.analyze(configuration, createOnlyDefinedProxy(analyzerOptions));
+        await Builder.analyze(configuration);
     }
 
     public static async build(options: CliOptions & CliBuildOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const buildOptions: RequiredProperties<CliBuildOptions> =
-        {
-            logging: options.logging,
-            mode:    options.mode,
-            watch:   options.watch,
-        };
-
         await removePathAsync(configuration.output!);
 
         options.watch
-            ? await Compiler.watch(configuration, createOnlyDefinedProxy(buildOptions))
-            : await Compiler.run(configuration, createOnlyDefinedProxy(buildOptions));
+            ? await Builder.watch(configuration)
+            : await Builder.run(configuration);
     }
 
     public static async serve(options: CliOptions & CliDevServerOptions): Promise<void>
     {
         const configuration = await Tasks.optionsToConfiguration(options);
 
-        const devServerOptions: RequiredProperties<CliDevServerOptions> =
-        {
+        configuration.devServer = createOnlyDefinedProxy
+        ({
             compress:              options.compress,
             contentBase:           options.contentBase,
             contentBasePublicPath: options.contentBasePublicPath,
@@ -243,19 +249,19 @@ export default class Tasks
             index:                 options.index,
             lazy:                  options.lazy,
             liveReload:            options.liveReload,
-            logging:               options.logging,
             open:                  options.open,
             openPage:              options.openPage,
             port:                  options.port,
             public:                options.public,
             quiet:                 options.quiet,
+            stats:                 createStats(configuration.logging),
             useLocalIp:            options.useLocalIp,
             watchContentBase:      options.watchContentBase,
             writeToDisk:           options.writeToDisk,
-        };
+        });
 
         await removePathAsync(configuration.output!);
 
-        await Compiler.serve(configuration, createOnlyDefinedProxy(devServerOptions));
+        await Builder.serve(configuration);
     }
 }

@@ -5,22 +5,20 @@ import Mock, { It }                            from "@surface/mock";
 import { afterEach, beforeEach, suite, test }  from "@surface/test-suite";
 import chai                                    from "chai";
 import type webpack                            from "webpack";
+import Builder                                 from "../internal/builder.js";
 import { loadModule }                          from "../internal/common.js";
-import Compiler                                from "../internal/compiler.js";
 import Tasks                                   from "../internal/tasks.js";
-import type CliAnalyzerOptions                 from "../internal/types/cli-analyzer-options";
-import type CliBuildOptions                    from "../internal/types/cli-build-options";
 import type CliDevServerOptions                from "../internal/types/cli-dev-serve-options";
 import type CliOptions                         from "../internal/types/cli-options";
 import type Configuration                      from "../internal/types/configuration";
 
 const CWD = process.cwd();
 
-const isFileMock          = Mock.of(isFile)!;
-const lookupFileMock      = Mock.of(lookupFile)!;
-const removePathAsyncMock = Mock.of(removePathAsync)!;
-const compilerCtorMock    = Mock.of(Compiler)!;
-const loadModuleMock      = Mock.of(loadModule)!;
+const isFileMock          = Mock.of(isFile);
+const lookupFileMock      = Mock.of(lookupFile);
+const removePathAsyncMock = Mock.of(removePathAsync);
+const compilerCtorMock    = Mock.of(Builder);
+const loadModuleMock      = Mock.of(loadModule);
 
 const CWD_BUILD                                                                  = path.join(CWD, "build");
 const CWD_PROJECT                                                                = path.join(CWD, "project");
@@ -188,16 +186,15 @@ export default class TasksSpec
     @test
     public async analyze(): Promise<void>
     {
-        type Args = [Configuration, CliAnalyzerOptions];
 
-        const expected: Args = [DEFAULTS, { }];
+        const expected: Configuration = { ...DEFAULTS, bundlerAnalyzer: { analyzerMode: "static", logLevel: "silent" } };
 
-        let actual: Args;
+        let actual: Configuration;
 
         compilerCtorMock
             .setup("analyze")
-            .call(It.any(), It.any())
-            .callback((...x) => actual = x)
+            .call(It.any())
+            .callback(x => actual = x)
             .returns(Promise.resolve());
 
         await Tasks.analyze({ }),
@@ -208,187 +205,164 @@ export default class TasksSpec
     @test
     public async build(): Promise<void>
     {
-        type Args = [Configuration, CliBuildOptions];
+        const expectedRun: Configuration = { ...DEFAULTS, mode: "development" };
 
-        const expectedRun: Args =
-        [
-            DEFAULTS,
-            { mode: "development" },
-        ];
-
-        let actualRun: Args;
+        let actualRun: Configuration;
 
         compilerCtorMock
             .setup("run")
-            .call(It.any(), It.any())
-            .callback((...x) => actualRun = x)
+            .call(It.any())
+            .callback(x => actualRun = x)
             .returns(Promise.resolve());
 
         await Tasks.build({ mode: "development" }),
 
         chai.assert.deepEqual(actualRun!, expectedRun, "actualRun deep equal to expectedRun");
 
-        const expectedRunWithProject: Args =
-        [
-            {
-                ...DEFAULTS,
-                context:    CWD_PROJECT,
-                eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
-                forceTs:    true,
-                output:     CWD_PROJECT_BUILD,
-                tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
-                webpack:    { },
-            },
-            { },
-        ];
+        const expectedRunWithProject: Configuration =
+        {
+            ...DEFAULTS,
+            context:    CWD_PROJECT,
+            eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
+            forceTs:    true,
+            output:     CWD_PROJECT_BUILD,
+            tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
+            webpack:    { },
+        };
 
-        let actualRunWithProject: Args;
+        let actualRunWithProject: Configuration;
 
         compilerCtorMock
             .setup("run")
-            .call(It.any(), It.any())
-            .callback((...x) => actualRunWithProject = x)
+            .call(It.any())
+            .callback(x => actualRunWithProject = x)
             .returns(Promise.resolve());
 
         await Tasks.build({ project: CWD_PROJECT_SURFACE_DEVELOPMENT_JSON }),
 
         chai.assert.deepEqual(actualRunWithProject!, expectedRunWithProject, "actualRunWithProject deep equal to expectedRunWithProject");
 
-        const expectedRunWithNoEsLintProject: Args =
-        [
-            {
-                ...DEFAULTS,
-                context:  CWD_PROJECT_NO_ESLINTRC,
-                output:   CWD_PROJECT_NO_ESLINTRC_BUILD,
-                tsconfig: CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON,
-                webpack:  { configuration: { } },
-            },
-            { },
-        ];
+        const expectedRunWithNoEsLintProject: Configuration =
+        {
+            ...DEFAULTS,
+            context:  CWD_PROJECT_NO_ESLINTRC,
+            output:   CWD_PROJECT_NO_ESLINTRC_BUILD,
+            tsconfig: CWD_PROJECT_NO_ESLINTRC_TSCONFIG_JSON,
+            webpack:  { configuration: { } },
+        };
 
-        let actualRunWithNoEsLintProject: Args;
+        let actualRunWithNoEsLintProject: Configuration;
 
         compilerCtorMock
             .setup("run")
-            .call(It.any(), It.any())
-            .callback((...x) => actualRunWithNoEsLintProject = x)
+            .call(It.any())
+            .callback(x => actualRunWithNoEsLintProject = x)
             .returns(Promise.resolve());
 
         await Tasks.build({ project: CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON, webpackConfiguration: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_CONFIGURATION_JS }),
 
         chai.assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
 
-        const expectedRunWithCompilations: Args =
-        [
-            {
-                ...DEFAULTS,
-                compilations:
-                [
-                    {
-                        ...DEFAULTS,
-                        compilations: undefined,
-                        context:      CWD_PROJECT_WITH_COMPILATIONS,
-                        entry:        "file-1.js",
-                        output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-                        tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
-                        webpack:      { postConfiguration },
-                    },
-                    {
-                        ...DEFAULTS,
-                        compilations: undefined,
-                        context:      CWD_PROJECT_WITH_COMPILATIONS,
-                        entry:        "file-2.js",
-                        output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-                        tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
-                        webpack:      { postConfiguration },
-                    },
-                ],
-                context:  CWD_PROJECT_WITH_COMPILATIONS,
-                output:   CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-                tsconfig: CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
-                webpack:  { postConfiguration },
-            },
-            { },
-        ];
+        const expectedRunWithCompilations: Configuration =
+        {
+            ...DEFAULTS,
+            compilations:
+            [
+                {
+                    ...DEFAULTS,
+                    compilations: undefined,
+                    context:      CWD_PROJECT_WITH_COMPILATIONS,
+                    entry:        "file-1.js",
+                    output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+                    tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+                    webpack:      { postConfiguration },
+                },
+                {
+                    ...DEFAULTS,
+                    compilations: undefined,
+                    context:      CWD_PROJECT_WITH_COMPILATIONS,
+                    entry:        "file-2.js",
+                    output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+                    tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+                    webpack:      { postConfiguration },
+                },
+            ],
+            context:  CWD_PROJECT_WITH_COMPILATIONS,
+            output:   CWD_PROJECT_WITH_COMPILATIONS_BUILD,
+            tsconfig: CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+            webpack:  { postConfiguration },
+        };
 
-        let actualRunWithCompilations: Args;
+        let actualRunWithCompilations: Configuration;
 
         compilerCtorMock
             .setup("run")
-            .call(It.any(), It.any())
-            .callback((...x) => actualRunWithCompilations = x)
+            .call(It.any())
+            .callback(x => actualRunWithCompilations = x)
             .returns(Promise.resolve());
 
         await Tasks.build({ project: CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON, webpackPostConfiguration: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_POST_CONFIGURATION_JS }),
 
         chai.assert.deepEqual(actualRunWithCompilations!, expectedRunWithCompilations, "actualRunWithNoEsLintProject deep equal to expectedRunWithCompilations");
 
-        const expectedRunWithExtraWebpackConfigurationFile: Args =
-        [
-            {
-                ...DEFAULTS,
-                compilations:
-                [
-                    {
-                        ...DEFAULTS,
-                        compilations: undefined,
-                        context:      CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
-                        output:       CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
-                        tsconfig:     CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
-                        webpack:
-                        {
-                            configuration: { },
-                            postConfiguration,
-                        },
-                    },
-                ],
-                context:  CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
-                output:   CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
-                tsconfig: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
-                webpack:
+        const expectedRunWithExtraWebpackConfigurationFile: Configuration =
+        {
+            ...DEFAULTS,
+            compilations:
+            [
                 {
-                    configuration: { },
-                    postConfiguration,
+                    ...DEFAULTS,
+                    compilations: undefined,
+                    context:      CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
+                    output:       CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
+                    tsconfig:     CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
+                    webpack:
+                    {
+                        configuration: { },
+                        postConfiguration,
+                    },
                 },
+            ],
+            context:  CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
+            output:   CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
+            tsconfig: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
+            webpack:
+            {
+                configuration: { },
+                postConfiguration,
             },
-            { },
-        ];
+        };
 
-        let actualRunWithExtraWebpackConfigurationFile: Args;
+        let actualRunWithExtraWebpackConfigurationFile: Configuration;
 
         compilerCtorMock
             .setup("run")
-            .call(It.any(), It.any())
-            .callback((...x) => actualRunWithExtraWebpackConfigurationFile = x)
+            .call(It.any())
+            .callback(x => actualRunWithExtraWebpackConfigurationFile = x)
             .returns(Promise.resolve());
 
         await Tasks.build({ project: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_SURFACE_JSON }),
 
         chai.assert.deepEqual(actualRunWithExtraWebpackConfigurationFile!, expectedRunWithExtraWebpackConfigurationFile, "actualRunWithExtraWebpackConfigurationFile deep equal to expectedRunWithExtraWebpackConfigurationFile");
 
-        const expectedWatch: Args =
-        [
-            {
-                ...DEFAULTS,
-                context:  CWD_PROJECT,
-                entry:    "./source/index.ts",
-                eslintrc: CWD_PROJECT_ESLINTRC_JSON,
-                filename: "index.js",
-                output:   path.join(CWD_PROJECT, "./www"),
-                tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
-                webpack:  { },
-            },
-            {
-                watch: true,
-            },
-        ];
+        const expectedWatch: Configuration =
+        {
+            ...DEFAULTS,
+            context:  CWD_PROJECT,
+            entry:    "./source/index.ts",
+            eslintrc: CWD_PROJECT_ESLINTRC_JSON,
+            filename: "index.js",
+            output:   path.join(CWD_PROJECT, "./www"),
+            tsconfig: path.join(CWD_PROJECT, "./base.tsconfig.json"),
+            webpack:  { },
+        };
 
-        let actualWatch: Args;
+        let actualWatch: Configuration;
 
         compilerCtorMock
             .setup("watch")
-            .call(It.any(), It.any())
-            .callback((...x) => actualWatch = x)
+            .call(It.any())
+            .callback(x => actualWatch = x)
             .returns(Promise.resolve({ close: async () => Promise.resolve() }));
 
         await Tasks.build({ project: CWD_PROJECT_SURFACE_JS, watch: true }),
@@ -399,30 +373,40 @@ export default class TasksSpec
     @test
     public async serve(): Promise<void>
     {
-        type Args = [Configuration, CliDevServerOptions];
-
-        const expected: Args =
-        [
+        const expected: Configuration =
+        {
+            context:    CWD_PROJECT,
+            devServer:
             {
-                context:    CWD_PROJECT,
-                entry:      "./source/index.ts",
-                eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
-                filename:   "[name].js",
-                forceTs:    [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
-                output:     CWD_PROJECT_BUILD,
-                publicPath: "/",
-                tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
-                webpack:    { configuration: { } },
+                stats:
+                {
+                    assets:       true,
+                    children:     true,
+                    colors:       true,
+                    errorDetails: false,
+                    errors:       true,
+                    logging:      "info",
+                    modules:      true,
+                    version:      true,
+                    warnings:     true,
+                },
             },
-            { },
-        ];
+            entry:      "./source/index.ts",
+            eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
+            filename:   "[name].js",
+            forceTs:    [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
+            output:     CWD_PROJECT_BUILD,
+            publicPath: "/",
+            tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
+            webpack:    { configuration: { } },
+        };
 
-        let actual: Args;
+        let actual: Configuration;
 
         compilerCtorMock
             .setup("serve")
-            .call(It.any(), It.any())
-            .callback((...x) => actual = x)
+            .call(It.any())
+            .callback(x => actual = x)
             .returns(Promise.resolve({ close: async () => Promise.resolve() }));
 
         const configuration: CliOptions & CliDevServerOptions =

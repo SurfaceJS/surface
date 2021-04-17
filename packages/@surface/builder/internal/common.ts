@@ -1,7 +1,9 @@
 import fs                 from "fs";
 import { pathToFileURL }  from "url";
 import util               from "util";
+import type webpack       from "webpack";
 import { booleanPattern } from "./patterns.js";
+import type Logging       from "./types/logging.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -19,6 +21,33 @@ export function createOnlyDefinedProxy<T extends object>(target: T): T
     };
 
     return new Proxy(target, handler);
+}
+
+export function createStats(logging: Logging = true): webpack.Configuration["stats"]
+{
+    if (logging && logging != "none")
+    {
+        return {
+            assets:       logging == true,
+            children:     logging == true,
+            colors:       true,
+            errorDetails: logging == "verbose",
+            errors:       logging != "info",
+            logging:      logging == true ? "info" : logging,
+            modules:      logging == true || logging == "log" || logging == "verbose",
+            version:      logging == true || logging == "log" || logging == "verbose",
+            warnings:     logging != "info",
+        };
+    }
+
+    return {
+        assets:   false,
+        colors:   true,
+        errors:   false,
+        logging:  "none",
+        modules:  false,
+        warnings: false,
+    };
 }
 
 export async function loadModule(path: string): Promise<unknown>

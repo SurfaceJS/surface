@@ -14,8 +14,6 @@ import WorkboxPlugin                              from "workbox-webpack-plugin";
 import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
-import type CliAnalyzerOptions                    from "./types/cli-analyzer-options";
-import type CliBuildOptions                       from "./types/cli-build-options";
 import type Configuration                         from "./types/configuration";
 
 const DEFAULT_MERGE_RULES: MergeRules<webpack.Configuration> =
@@ -65,38 +63,12 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export async function createAnalyzerConfiguration(configuration: Configuration, options: CliAnalyzerOptions): Promise<webpack.Configuration | webpack.Configuration[]>
+export async function createAnalyzerConfiguration(configuration: Configuration): Promise<webpack.Configuration | webpack.Configuration[]>
 {
-    const logging = !options.logging
-        ? "none"
-        : options.logging == true
-            ? "info"
-            : options.logging;
-
-    const logLevel: BundleAnalyzerPlugin.Options["logLevel"] =
-        logging == "none"
-            ? "silent"
-            : logging == "verbose" || logging == "log"
-                ? "info"
-                :  logging;
-
-    const bundleAnalyzerPluginOptions: BundleAnalyzerPlugin.Options =
-    {
-        ...configuration.bundlerAnalyzer,
-        analyzerHost:   options.analyzerHost,
-        analyzerMode:   options.analyzerMode ?? "static",
-        analyzerPort:   options.analyzerPort,
-        defaultSizes:   options.defaultSizes,
-        excludeAssets:  options.excludeAssets,
-        logLevel,
-        openAnalyzer:   options.openAnalyzer,
-        reportFilename: options.reportFilename,
-    };
-
     const extendedConfiguration: webpack.Configuration =
     {
-        mode:    options.mode,
-        plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(bundleAnalyzerPluginOptions))],
+        mode:    configuration.mode,
+        plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(configuration.bundlerAnalyzer ?? { }))],
     };
 
     if (configuration.compilations)
@@ -107,7 +79,7 @@ export async function createAnalyzerConfiguration(configuration: Configuration, 
     return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
 }
 
-export async function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration): Promise<webpack.Configuration>
+export async function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration = { }): Promise<webpack.Configuration>
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -324,14 +296,14 @@ export async function createConfiguration(configuration: Configuration, extended
         : mergedConfiguration;
 }
 
-export async function createBuildConfiguration(configuration: Configuration, options: CliBuildOptions): Promise<webpack.Configuration | webpack.Configuration[]>
+export async function createBuildConfiguration(configuration: Configuration): Promise<webpack.Configuration | webpack.Configuration[]>
 {
     if (configuration.compilations)
     {
-        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy({ mode: options.mode }))));
+        return Promise.all(configuration.compilations.map(async x => createConfiguration(x)));
     }
 
-    return createConfiguration(configuration, createOnlyDefinedProxy({ mode: options.mode }));
+    return createConfiguration(configuration);
 }
 
 export async function createDevServerConfiguration(configuration: Configuration, url: URL): Promise<webpack.Configuration | webpack.Configuration[]>

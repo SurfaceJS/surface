@@ -54,9 +54,16 @@ export default class Mock<T extends object | Function>
         return new Mock(INSTANCE_TARGET as T, "strict");
     }
 
-    public static of<T extends object | Function>(target: T): Mock<T> | undefined
+    public static of<T extends object | Function>(target: T): Mock<T>
     {
-        return Reflect.get(target, MOCK_INSTANCE);
+        const mock = Reflect.get(target, MOCK_INSTANCE);
+
+        if (!mock)
+        {
+            throw new Error("Target is not a proxy mock");
+        }
+
+        return mock;
     }
 
     private createProxy(target: T): T

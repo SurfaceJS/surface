@@ -8,7 +8,7 @@ import type CliBuildOptions                   from "../internal/types/cli-build-
 import type CliDevServerOptions               from "../internal/types/cli-dev-serve-options";
 import type CliOptions                        from "../internal/types/cli-options";
 
-const tasksMock = Mock.of(Tasks)!;
+const tasksMock = Mock.of(Tasks);
 
 @suite
 export default class BinSpec

@@ -16,6 +16,6 @@ export default class LoaderSpec
         chai.assert.instanceOf(Mock.of(fsProxy), Mock);
         chai.assert.equal(fixture, getESM().default);
         chai.assert.equal(fsProxy, getCommonJS());
-        chai.assert.isTrue(fsTarget && !Mock.of(fsTarget));
+        chai.assert.throws(() => fsTarget && !Mock.of(fsTarget));
     }
 }

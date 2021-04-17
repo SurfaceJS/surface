@@ -2,6 +2,7 @@ import type HtmlWebpackPlugin        from "html-webpack-plugin";
 import type webpack                  from "webpack";
 import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import type WebpackDevServer         from "webpack-dev-server";
+import type Logging                  from "./logging";
 import type WebpackExtension         from "./webpack-extension";
 
 type Configuration =
@@ -34,6 +35,12 @@ type Configuration =
 
     /** Path to html template file or options object. */
     htmlTemplate?: string | HtmlWebpackPlugin.Options,
+
+    /** Output verbosity level. */
+    logging?: Logging,
+
+    /** Enable production optimizations or development hints. */
+    mode?: webpack.Configuration["mode"],
 
     /** The output directory. */
     output?: string,

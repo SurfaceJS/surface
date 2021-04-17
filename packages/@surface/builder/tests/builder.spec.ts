@@ -6,8 +6,8 @@ import chai                                                       from "chai";
 import type { Configuration, Stats, Compiler as WebpackCompiler } from "webpack";
 import webpack                                                    from "webpack";
 import WebpackDevServer                                           from "webpack-dev-server";
+import Builder                                                    from "../internal/builder.js";
 import { log }                                                    from "../internal/common.js";
-import Compiler                                                   from "../internal/compiler.js";
 import
 {
     createAnalyzerConfiguration,
@@ -18,13 +18,13 @@ import
 
 type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
-const createAnalyzerConfigurationMock  = Mock.of(createAnalyzerConfiguration)!;
-const createBuildConfigurationMock     = Mock.of(createBuildConfiguration)!;
-const createConfigurationMock          = Mock.of(createConfiguration)!;
-const createDevServerConfigurationMock = Mock.of(createDevServerConfiguration)!;
-const logMock                          = Mock.of(log)!;
-const webpackDevServerConstructor      = Mock.of(WebpackDevServer)!;
-const webpackMock                      = Mock.of<WebpackCall>(webpack)!;
+const createAnalyzerConfigurationMock  = Mock.of(createAnalyzerConfiguration);
+const createBuildConfigurationMock     = Mock.of(createBuildConfiguration);
+const createConfigurationMock          = Mock.of(createConfiguration);
+const createDevServerConfigurationMock = Mock.of(createDevServerConfiguration);
+const logMock                          = Mock.of(log);
+const webpackDevServerConstructor      = Mock.of(WebpackDevServer);
+const webpackMock                      = Mock.of<WebpackCall>(webpack);
 
 function setup(type: "ok" | "ko"): void
 {
@@ -82,10 +82,10 @@ export default class CompilerSpec
         logMock.call();
 
         createAnalyzerConfigurationMock.lock();
-        createAnalyzerConfigurationMock.call(It.any(), It.any());
+        createAnalyzerConfigurationMock.call(It.any());
 
         createBuildConfigurationMock.lock();
-        createBuildConfigurationMock.call(It.any(), It.any());
+        createBuildConfigurationMock.call(It.any());
 
         createConfigurationMock.lock();
         createConfigurationMock.call(It.any(), It.any());
@@ -111,7 +111,7 @@ export default class CompilerSpec
     {
         setup("ok");
 
-        await Compiler.analyze({ }, { });
+        await Builder.analyze({ });
 
         chai.assert.isOk(true);
     }
@@ -121,11 +121,11 @@ export default class CompilerSpec
     {
         setup("ok");
 
-        await Compiler.run({ }, { });
-        await Compiler.run({ }, { logging: true });
-        await Compiler.run({ }, { logging: "none" });
-        await Compiler.run({ }, { logging: "log" });
-        await Compiler.run({ }, { logging: "verbose" });
+        await Builder.run({ });
+        await Builder.run({ logging: true });
+        await Builder.run({ logging: "none" });
+        await Builder.run({ logging: "log" });
+        await Builder.run({ logging: "verbose" });
 
         chai.assert.isOk(true);
     }
@@ -135,15 +135,15 @@ export default class CompilerSpec
     {
         setup("ok");
 
-        let signal = await Compiler.serve({ }, { });
+        let signal = await Builder.serve({ });
 
         await signal.close();
 
-        signal = await Compiler.serve({ publicPath: "path" }, { });
+        signal = await Builder.serve({ publicPath: "path" });
 
         await signal.close();
 
-        signal = await Compiler.serve({ publicPath: "/path" }, { });
+        signal = await Builder.serve({ publicPath: "/path" });
 
         await signal.close();
 
@@ -155,7 +155,7 @@ export default class CompilerSpec
     {
         setup("ok");
 
-        const signal = await Compiler.watch({ }, { });
+        const signal = await Builder.watch({ });
 
         await signal.close();
 
@@ -169,7 +169,7 @@ export default class CompilerSpec
 
         try
         {
-            await Compiler.run({ }, { });
+            await Builder.run({ });
         }
         catch (error)
         {
@@ -184,7 +184,7 @@ export default class CompilerSpec
 
         try
         {
-            await Compiler.serve({ }, { });
+            await Builder.serve({ });
         }
         catch (error)
         {
@@ -199,7 +199,7 @@ export default class CompilerSpec
 
         try
         {
-            const signal = await Compiler.watch({ }, { });
+            const signal = await Builder.watch({ });
 
             await signal.close();
         }
