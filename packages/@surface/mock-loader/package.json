@@ -7,12 +7,12 @@
         "@surface/core": "file:../core",
         "@surface/mock": "file:../mock",
         "@types/node": "14.14.27",
-        "tslib": "2.1.0"
+        "tslib": "2.2.0"
     },
     "description": "Provides mocking module import capability.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "4.2.15",
+        "@types/chai": "4.2.16",
         "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",

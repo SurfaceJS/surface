@@ -5,11 +5,11 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
-        "tslib": "2.1.0"
+        "tslib": "2.2.0"
     },
     "description": "Provides decorators for testing with mocha using the OOP approach.",
     "devDependencies": {
-        "@types/chai": "4.2.15",
+        "@types/chai": "4.2.16",
         "chai": "4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
