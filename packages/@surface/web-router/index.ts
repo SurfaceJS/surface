@@ -7,6 +7,6 @@ export type { default as NamedRoute }         from "./internal/types/named-route
 export type { default as Route }              from "./internal/types/route";
 export type { default as RouteConfiguration } from "./internal/types/route-configuration";
 
-export { default as RouterLinkDirective } from "./internal/navigation-directive.js";
+export { default as RouterLinkDirective } from "./internal/router-link-directive.js";
 
 export default WebRouter;
