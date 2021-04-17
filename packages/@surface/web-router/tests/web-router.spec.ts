@@ -8,7 +8,7 @@ import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
-import NavigationDirective                     from "../internal/navigation-directive.js";
+import RouterLinkDirective                     from "../internal/router-link-directive";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
@@ -174,7 +174,7 @@ export default class WebRouterSpec
 
         this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
 
-        CustomElement.registerDirective("to", x => new NavigationDirective(this.router, x));
+        CustomElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
 
         this.appRoot = document.body.appendChild(new AppRoot());
     }

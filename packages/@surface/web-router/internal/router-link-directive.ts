@@ -2,7 +2,7 @@ import type { DirectiveContext } from "@surface/custom-element";
 import { Directive }             from "@surface/custom-element";
 import type WebRouter            from "./web-router.js";
 
-export default class NavigationDirective extends Directive
+export default class RouterLinkDirective extends Directive
 {
     private disposed: boolean = false;
 
@@ -39,7 +39,7 @@ export default class NavigationDirective extends Directive
 
             super.dispose();
 
-            this.disposed = false;
+            this.disposed = true;
         }
     }
 }
