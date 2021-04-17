@@ -8,7 +8,7 @@ import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
-import RouterLinkDirective                     from "../internal/router-link-directive";
+import RouterLinkDirective                     from "../internal/router-link-directive.js";
 import type NamedRoute                         from "../internal/types/named-route.js";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
