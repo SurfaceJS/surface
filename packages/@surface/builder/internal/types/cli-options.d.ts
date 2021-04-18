@@ -1,17 +1,17 @@
-import type Configuration from "./configuration.js";
+import type Project from "./project.js";
 
 type CliOptions =
 {
-    mode?:                     Configuration["mode"],
     context?:                  string,
-    copyFiles?:                (string | { from: string, to: string })[],
     entry?:                    [string, ...string[]],
     eslintrc?:                 string,
     filename?:                 string,
-    forceTs?:                  boolean | string[],
     htmlTemplate?:             string,
-    logging?:                  Configuration["logging"],
+    includeFiles?:             (string | { from: string, to: string })[],
+    logging?:                  Project["logging"],
+    mode?:                     Project["mode"],
     output?:                   string,
+    preferTs?:                 boolean | string[],
     project?:                  string,
     publicPath?:               string,
     tsconfig?:                 string,

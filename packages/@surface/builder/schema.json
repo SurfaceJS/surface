@@ -78,57 +78,8 @@
                     "description": "The base directory for resolving the entry option.",
                     "type": "string"
                 },
-                "copyFiles": {
-                    "description": "File patterns to copy to output path.",
-                    "items": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "properties": {
-                                    "from": {
-                                        "type": "string"
-                                    },
-                                    "to": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        ]
-                    },
-                    "type": "array"
-                },
                 "entry": {
-                    "anyOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        },
-                        {
-                            "additionalProperties": {
-                                "anyOf": [
-                                    {
-                                        "type": "string"
-                                    },
-                                    {
-                                        "items": {
-                                            "type": "string"
-                                        },
-                                        "type": "array"
-                                    }
-                                ]
-                            },
-                            "type": "object"
-                        }
-                    ],
-                    "description": "Entry point.s"
+                    "$ref": "#/definitions/entry"
                 },
                 "eslintrc": {
                     "description": "Path to eslintrc file.",
@@ -138,7 +89,7 @@
                     "description": "The filename of the entry chunk as relative path inside the output path directory.",
                     "type": "string"
                 },
-                "forceTs": {
+                "preferTs": {
                     "anyOf": [
                         {
                             "type": "boolean"
@@ -150,10 +101,14 @@
                             "type": "array"
                         }
                     ],
-                    "description": "Force resolve to the ts file when next to the transpiled js file."
+                    "description": "Resolve to the ts file when next to the transpiled js file."
                 },
                 "htmlTemplate": {
                     "description": "Path to html template file.",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Configuration name.",
                     "type": "string"
                 },
                 "output": {
@@ -194,6 +149,9 @@
                     "type": "object"
                 }
             },
+            "required": [
+                "entry"
+            ],
             "type": "object"
         },
         "devServer": {
@@ -316,6 +274,36 @@
             },
             "type": "object"
         },
+        "entry": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                {
+                    "additionalProperties": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    "type": "object"
+                }
+            ],
+            "description": "Entry point"
+        },
         "mergeRule": {
             "description": "Rule used to merge this property on source object.",
             "oneOf": [
@@ -351,7 +339,7 @@
             "$ref": "#/definitions/bundlerAnalyzer",
             "description": "Bundler analyzer configuration."
         },
-        "compilations": {
+        "dependencies": {
             "description": "Configurations used by multicompiler. When specified, all root configuration will merge with it.",
             "items": {
                 "$ref": "#/definitions/configuration"
@@ -361,6 +349,28 @@
         "devServer": {
             "$ref": "#/definitions/devServer",
             "description": "Dev Server configuration."
+        },
+        "includeFiles": {
+            "description": "File patterns to copy to output path.",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "properties": {
+                            "from": {
+                                "type": "string"
+                            },
+                            "to": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "type": "array"
         },
         "logging": {
             "description": "Log level.",
@@ -382,5 +392,6 @@
             ]
         }
     },
+    "required": [],
     "title": "Surface's compiler options"
 }

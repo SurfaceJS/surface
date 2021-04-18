@@ -1,28 +1,15 @@
-import type HtmlWebpackPlugin        from "html-webpack-plugin";
-import type webpack                  from "webpack";
-import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-import type WebpackDevServer         from "webpack-dev-server";
-import type Logging                  from "./logging";
-import type WebpackExtension         from "./webpack-extension";
+
+import type webpack          from "webpack";
+import type WebpackExtension from "./webpack-extension";
 
 type Configuration =
 {
-    bundlerAnalyzer?: BundleAnalyzerPlugin.Options,
 
-    /** Configurations used by multicompiler. When specified, all root configuration will merge with it. */
-    compilations?: Configuration[],
+    /** Entry points. */
+    entry: webpack.Configuration["entry"],
 
     /** The base directory for resolving the entry option. */
     context?: string,
-
-    /** File patterns to copy to output path. */
-    copyFiles?: (string | { from: string, to: string })[],
-
-    /** Dev Server configuration. */
-    devServer?: WebpackDevServer.Configuration,
-
-    /** Entry points. */
-    entry?: webpack.Configuration["entry"],
 
     /** Path to eslintrc file. */
     eslintrc?: string,
@@ -30,17 +17,11 @@ type Configuration =
     /** The filename of the entry chunk as relative path inside the output path directory. */
     filename?: string,
 
-    /** Force resolve to the ts file when next to the transpiled js file. */
-    forceTs?: boolean | string[],
+    /** Resolve to the ts file when next to the transpiled js file. */
+    preferTs?: boolean | string[],
 
-    /** Path to html template file or options object. */
-    htmlTemplate?: string | HtmlWebpackPlugin.Options,
-
-    /** Output verbosity level. */
-    logging?: Logging,
-
-    /** Enable production optimizations or development hints. */
-    mode?: webpack.Configuration["mode"],
+    /** Configuration name. */
+    name?: string,
 
     /** The output directory. */
     output?: string,
@@ -50,9 +31,6 @@ type Configuration =
 
     /** Path to tsconfig file.*/
     tsconfig?: string,
-
-    /** Uses Workbox to offline cache handling.*/
-    useWorkbox?: boolean,
 
     /** Webpack configuration used to extend defaults. */
     webpack?: WebpackExtension,

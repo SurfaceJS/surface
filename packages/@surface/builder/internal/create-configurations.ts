@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable max-lines-per-function */
-import type { URL }                               from "url";
+import path                                       from "path";
+import { URL }                                    from "url";
 import { merge }                                  from "@surface/core";
 import type MergeRules                            from "@surface/core/internal/types/merge-rules";
 import CopyPlugin                                 from "copy-webpack-plugin";
@@ -15,6 +16,8 @@ import { createOnlyDefinedProxy }                 from "./common.js";
 import loaders                                    from "./loaders.js";
 import ForceTsResolvePlugin                       from "./plugins/force-ts-resolve-plugin.js";
 import type Configuration                         from "./types/configuration";
+import type Project                               from "./types/project";
+import type WebpackExtension                      from "./types/webpack-extension";
 
 const DEFAULT_MERGE_RULES: MergeRules<webpack.Configuration> =
 {
@@ -63,35 +66,10 @@ function configureDevServerEntry(entry: webpack.Entry | undefined, url: URL): we
                 : entry;
 }
 
-export async function createAnalyzerConfiguration(configuration: Configuration): Promise<webpack.Configuration | webpack.Configuration[]>
-{
-    const extendedConfiguration: webpack.Configuration =
-    {
-        mode:    configuration.mode,
-        plugins: [new BundleAnalyzerPlugin(createOnlyDefinedProxy(configuration.bundlerAnalyzer ?? { }))],
-    };
-
-    if (configuration.compilations)
-    {
-        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, createOnlyDefinedProxy(extendedConfiguration))));
-    }
-
-    return createConfiguration(configuration, createOnlyDefinedProxy(extendedConfiguration));
-}
-
-export async function createConfiguration(configuration: Configuration, extendedConfiguration: webpack.Configuration = { }): Promise<webpack.Configuration>
+function mapConfiguration(configuration: Partial<Configuration> & { mode?: webpack.Configuration["mode"] }): webpack.Configuration
 {
     const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
     const plugins:        webpack.WebpackPluginInstance[]   = [];
-
-    if (configuration.forceTs)
-    {
-        const paths = !Array.isArray(configuration.forceTs)
-            ? []
-            : configuration.forceTs;
-
-        resolvePlugins.push(new ForceTsResolvePlugin(paths));
-    }
 
     const forkTsCheckerWebpackPluginOptions: ForkTsCheckerWebpackPluginOptions =
     {
@@ -115,45 +93,6 @@ export async function createConfiguration(configuration: Configuration, extended
     plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
     plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
-    if (configuration.htmlTemplate)
-    {
-        const htmlWebpackPluginOptions = typeof configuration.htmlTemplate == "string"
-            ? { template: configuration.htmlTemplate }
-            : configuration.htmlTemplate;
-
-        plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
-    }
-
-    if (configuration.copyFiles)
-    {
-        const patterns = configuration.copyFiles
-            .map
-            (
-                pattern =>
-                {
-                    if (typeof pattern == "string")
-                    {
-                        const [from, to = configuration.output!] = pattern.split(":");
-
-                        return { from, to };
-                    }
-
-                    return pattern;
-                },
-            );
-
-        const copyPlugin = new CopyPlugin({ patterns });
-
-        plugins.push(copyPlugin);
-    }
-
-    if (configuration.useWorkbox)
-    {
-        plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true }));
-    }
-
-    const isProduction = extendedConfiguration.mode == "production";
-
     const tersePlugin = new TerserWebpackPlugin
     ({
         extractComments: true,
@@ -164,6 +103,8 @@ export async function createConfiguration(configuration: Configuration, extended
             mangle:   true,
         },
     });
+
+    const isProduction = configuration.mode == "production";
 
     const webpackConfiguration: webpack.Configuration =
     {
@@ -252,6 +193,7 @@ export async function createConfiguration(configuration: Configuration, extended
                 },
             ],
         },
+        name:         configuration.name,
         optimization:
         {
             chunkIds:             isProduction ? "total-size" : "named",
@@ -289,35 +231,132 @@ export async function createConfiguration(configuration: Configuration, extended
         },
     };
 
-    const mergedConfiguration = merge([webpackConfiguration, extendedConfiguration, (configuration.webpack?.configuration as webpack.Configuration | undefined) ?? { }], configuration.webpack?.mergeRules ?? DEFAULT_MERGE_RULES);
+    return webpackConfiguration;
+}
 
-    return typeof configuration.webpack?.postConfiguration == "function"
-        ? await configuration.webpack.postConfiguration(mergedConfiguration)
+async function applyPostConfiguration(webpackConfiguration: webpack.Configuration, extension: WebpackExtension | undefined): Promise<webpack.Configuration>
+{
+    const mergedConfiguration = typeof extension?.configuration == "object"
+        ? merge([webpackConfiguration, extension.configuration], extension.mergeRules ?? DEFAULT_MERGE_RULES)
+        : webpackConfiguration;
+
+    return typeof extension?.postConfiguration == "function"
+        ? extension.postConfiguration(mergedConfiguration)
         : mergedConfiguration;
 }
 
-export async function createBuildConfiguration(configuration: Configuration): Promise<webpack.Configuration | webpack.Configuration[]>
+export default async function createConfigurations(type: "analyze" | "build" | "serve", project: Project): Promise<webpack.Configuration[]>
 {
-    if (configuration.compilations)
+    const mainConfiguration = mapConfiguration(project);
+
+    const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
+    const plugins:        webpack.WebpackPluginInstance[]   = [];
+    const sharePlugins:   webpack.WebpackPluginInstance[]   = [];
+
+    if (project.includeFiles)
     {
-        return Promise.all(configuration.compilations.map(async x => createConfiguration(x)));
+        const patterns = project.includeFiles
+            .map
+            (
+                pattern =>
+                {
+                    if (typeof pattern == "string")
+                    {
+                        const [from, to = project.output!] = pattern.split(":");
+
+                        return { from, to };
+                    }
+
+                    return pattern;
+                },
+            );
+
+        const copyPlugin = new CopyPlugin({ patterns });
+
+        plugins.push(copyPlugin);
     }
 
-    return createConfiguration(configuration);
-}
-
-export async function createDevServerConfiguration(configuration: Configuration, url: URL): Promise<webpack.Configuration | webpack.Configuration[]>
-{
-    const extendedConfiguration: webpack.Configuration =
+    if (project.preferTs)
     {
-        mode:    "development",
-        plugins: [new webpack.HotModuleReplacementPlugin()],
-    };
+        const paths = !Array.isArray(project.preferTs)
+            ? []
+            : project.preferTs;
 
-    if (configuration.compilations)
-    {
-        return Promise.all(configuration.compilations.map(async x => createConfiguration(x, { entry: configureDevServerEntry(x.entry, url), ...extendedConfiguration })));
+        resolvePlugins.push(new ForceTsResolvePlugin(paths));
     }
 
-    return createConfiguration(configuration, { entry: configureDevServerEntry(configuration.entry, url), ...extendedConfiguration });
+    const htmlWebpackPluginOptions = typeof project.htmlTemplate == "string"
+        ? { template: project.htmlTemplate }
+        : project.htmlTemplate;
+
+    plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
+
+    if (project.useWorkbox)
+    {
+        plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true }));
+    }
+
+    switch (type)
+    {
+        case "analyze":
+            plugins.push(new BundleAnalyzerPlugin(project.bundlerAnalyzer ?? { }));
+            break;
+        case "serve":
+            {
+                const
+                {
+                    host = "http://localhost",
+                    port = 8080,
+                } = project.devServer ?? { };
+
+                const url = new URL(host);
+
+                url.port     = port.toString();
+                url.pathname = project.publicPath ?? "/";
+
+                mainConfiguration.entry = configureDevServerEntry(project.entry, url);
+
+                sharePlugins.push(new webpack.HotModuleReplacementPlugin());
+            }
+            break;
+        default:
+            break;
+    }
+
+    mainConfiguration.plugins!.push(...plugins, ...sharePlugins);
+    mainConfiguration.resolve!.plugins!.push(...resolvePlugins);
+
+    const webpackConfigurations = [await applyPostConfiguration(mainConfiguration, project.webpack)];
+
+    if (project.dependencies)
+    {
+        let index = 0;
+
+        for (const configuration of project.dependencies)
+        {
+            const webpackConfiguration = mapConfiguration({ ...configuration, mode: project.mode });
+
+            if (type == "analyze")
+            {
+                const analyzerPort = typeof project.bundlerAnalyzer?.analyzerPort == "number"
+                    ? project.bundlerAnalyzer.analyzerPort + index + 1
+                    : project.bundlerAnalyzer?.analyzerPort;
+
+                const parsed = path.parse(project.bundlerAnalyzer?.reportFilename ?? "report.html");
+
+                const reportFilename = `${parsed.dir + parsed.name}_${configuration.name ?? String(index + 1)}${parsed.ext}`;
+
+                webpackConfiguration.plugins!.push(new BundleAnalyzerPlugin({ ...project.bundlerAnalyzer ?? { }, analyzerPort, reportFilename }));
+            }
+
+            webpackConfiguration.plugins!.push(...sharePlugins);
+            webpackConfiguration.resolve!.plugins!.push(...resolvePlugins);
+
+            webpackConfigurations.push(await applyPostConfiguration(webpackConfiguration, configuration.webpack));
+
+            index++;
+        }
+    }
+
+    return webpackConfigurations;
 }

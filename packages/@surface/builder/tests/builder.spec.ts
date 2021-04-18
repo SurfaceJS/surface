@@ -8,23 +8,14 @@ import webpack                                                    from "webpack"
 import WebpackDevServer                                           from "webpack-dev-server";
 import Builder                                                    from "../internal/builder.js";
 import { log }                                                    from "../internal/common.js";
-import
-{
-    createAnalyzerConfiguration,
-    createBuildConfiguration,
-    createConfiguration,
-    createDevServerConfiguration,
-} from "../internal/configurations.js";
+import createConfigurations                                       from "../internal/create-configurations.js";
 
 type WebpackCall = (options: Configuration, callback?: (err?: Error, stats?: Stats) => void) => WebpackCompiler;
 
-const createAnalyzerConfigurationMock  = Mock.of(createAnalyzerConfiguration);
-const createBuildConfigurationMock     = Mock.of(createBuildConfiguration);
-const createConfigurationMock          = Mock.of(createConfiguration);
-const createDevServerConfigurationMock = Mock.of(createDevServerConfiguration);
-const logMock                          = Mock.of(log);
-const webpackDevServerConstructor      = Mock.of(WebpackDevServer);
-const webpackMock                      = Mock.of<WebpackCall>(webpack);
+const createConfigurationsMock    = Mock.of(createConfigurations);
+const logMock                     = Mock.of(log);
+const webpackDevServerConstructor = Mock.of(WebpackDevServer);
+const webpackMock                 = Mock.of<WebpackCall>(webpack);
 
 function setup(type: "ok" | "ko"): void
 {
@@ -81,27 +72,15 @@ export default class CompilerSpec
         logMock.lock();
         logMock.call();
 
-        createAnalyzerConfigurationMock.lock();
-        createAnalyzerConfigurationMock.call(It.any());
-
-        createBuildConfigurationMock.lock();
-        createBuildConfigurationMock.call(It.any());
-
-        createConfigurationMock.lock();
-        createConfigurationMock.call(It.any(), It.any());
-
-        createDevServerConfigurationMock.lock();
-        createDevServerConfigurationMock.call(It.any(), It.any());
+        createConfigurationsMock.lock();
+        createConfigurationsMock.call(It.any(), It.any());
     }
 
     @afterEach
     public afterEach(): void
     {
         logMock.release();
-        createAnalyzerConfigurationMock.release();
-        createBuildConfigurationMock.release();
-        createConfigurationMock.release();
-        createDevServerConfigurationMock.release();
+        createConfigurationsMock.release();
         webpackDevServerConstructor.release();
         webpackMock.release();
     }

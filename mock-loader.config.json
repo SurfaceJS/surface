@@ -8,7 +8,7 @@
         "./packages/@surface/io/internal/fs.js",
         "./packages/@surface/builder/internal/builder.js",
         "./packages/@surface/builder/internal/common.js",
-        "./packages/@surface/builder/internal/configurations.js",
+        "./packages/@surface/builder/internal/create-configurations.js",
         "./packages/@surface/builder/internal/tasks.js"
     ]
 }

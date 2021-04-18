@@ -1,21 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/indent */
-import { URL }                                      from "url";
 import type { Delegate }                            from "@surface/core";
 import { joinPaths }                                from "@surface/core";
 import chalk                                        from "chalk";
 import webpack                                      from "webpack";
 import WebpackDevServer                             from "webpack-dev-server";
 import { createOnlyDefinedProxy, createStats, log } from "./common.js";
-import
-{
-    createAnalyzerConfiguration,
-    createBuildConfiguration,
-    createDevServerConfiguration,
-} from "./configurations.js";
-import type CompilerSignal from "./types/compiler-signal";
-import type Configuration  from "./types/configuration";
-import type Logging        from "./types/logging.js";
+import createConfigurations                         from "./create-configurations.js";
+import type CompilerSignal                          from "./types/compiler-signal";
+import type Logging                                 from "./types/logging";
+import type Project                                 from "./types/project";
 
 type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
 
@@ -44,47 +38,36 @@ export default class Builder
         return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }
 
-    public static async analyze(configuration: Configuration): Promise<void>
+    public static async analyze(project: Project): Promise<void>
     {
-        const webpackConfiguration = await createAnalyzerConfiguration(configuration);
+        const webpackConfiguration = await createConfigurations("analyze", project);
 
         log(`Starting ${chalk.bold.green("analyzer...")}`);
 
-        await this.runInternal(webpackConfiguration, configuration.logging);
+        await this.runInternal(webpackConfiguration, project.logging);
     }
 
-    public static async run(configuration: Configuration): Promise<void>
+    public static async run(project: Project): Promise<void>
     {
-        const webpackConfiguration = await createBuildConfiguration(configuration);
+        const webpackConfiguration = await createConfigurations("build", project);
 
-        log(`Running using ${chalk.bold.green(configuration.mode ?? "development")} configuration...`);
+        log(`Running using ${chalk.bold.green(project.mode ?? "development")} configuration...`);
 
-        await this.runInternal(webpackConfiguration, configuration.logging);
+        await this.runInternal(webpackConfiguration, project.logging);
     }
 
-    public static async serve(configuration: Configuration): Promise<CompilerSignal>
+    public static async serve(project: Project): Promise<CompilerSignal>
     {
-        const
-        {
-            host = "http://localhost",
-            port = 8080,
-        } = configuration.devServer ?? { };
+        const publicPath = project.publicPath ?? "/";
 
-        const url = new URL(host);
-
-        url.port     = port.toString();
-        url.pathname = configuration.publicPath ?? "/";
-
-        const webpackConfiguration = await createDevServerConfiguration(configuration, url);
+        const webpackConfiguration = await createConfigurations("serve", project);
         const webpackCompiler      = (webpack as WebpackOverload)(webpackConfiguration);
 
         const webpackDevServerConfiguration: WebpackDevServer.Configuration = createOnlyDefinedProxy
         ({
-            historyApiFallback: { index: joinPaths(url.pathname, "index.html") },
-            host:               url.hostname,
-            port,
-            publicPath:         url.pathname,
-            ...configuration.devServer,
+            historyApiFallback: { index: joinPaths(publicPath, "index.html") },
+            publicPath,
+            ...project.devServer,
         });
 
         const server = new WebpackDevServer(webpackCompiler, webpackDevServerConfiguration);
@@ -97,12 +80,12 @@ export default class Builder
         return { close: async () => Promise.resolve(server.close()) };
     }
 
-    public static async watch(configuration: Configuration): Promise<CompilerSignal>
+    public static async watch(project: Project): Promise<CompilerSignal>
     {
-        const webpackConfiguration = await createBuildConfiguration(configuration);
+        const webpackConfiguration = await createConfigurations("build", project);
 
-        log(`Watching using ${chalk.bold.green(configuration.mode)} configuration.`);
+        log(`Watching using ${chalk.bold.green(project.mode ?? "development")} configuration.`);
 
-        return this.watchInternal(webpackConfiguration, configuration.logging);
+        return this.watchInternal(webpackConfiguration, project.logging);
     }
 }

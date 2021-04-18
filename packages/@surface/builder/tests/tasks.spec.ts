@@ -10,7 +10,7 @@ import { loadModule }                          from "../internal/common.js";
 import Tasks                                   from "../internal/tasks.js";
 import type CliDevServerOptions                from "../internal/types/cli-dev-serve-options";
 import type CliOptions                         from "../internal/types/cli-options";
-import type Configuration                      from "../internal/types/configuration";
+import type Project                            from "../internal/types/project";
 
 const CWD = process.cwd();
 
@@ -37,10 +37,10 @@ const CWD_PROJECT_SURFACE_JS                                                    
 const CWD_PROJECT_SURFACE_JSON                                                   = path.join(CWD, "project", "surface.json");
 const CWD_PROJECT_TSCONFIG_JSON                                                  = path.join(CWD, "project", "tsconfig.json");
 const CWD_PROJECT_WEBPACK_CONFIG_JS                                              = path.join(CWD, "project", "webpack.config.js");
-const CWD_PROJECT_WITH_COMPILATIONS                                              = path.join(CWD, "project-with-compilations");
-const CWD_PROJECT_WITH_COMPILATIONS_BUILD                                        = path.join(CWD, "project-with-compilations", "build");
-const CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON                                 = path.join(CWD, "project-with-compilations", "surface.json");
-const CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON                                = path.join(CWD, "project-with-compilations", "tsconfig.json");
+const CWD_PROJECT_WITH_DEPENDENCIES                                              = path.join(CWD, "project-with-dependencies");
+const CWD_PROJECT_WITH_DEPENDENCIES_BUILD                                        = path.join(CWD, "project-with-dependencies", "build");
+const CWD_PROJECT_WITH_DEPENDENCIES_SURFACE_JSON                                 = path.join(CWD, "project-with-dependencies", "surface.json");
+const CWD_PROJECT_WITH_DEPENDENCIES_TSCONFIG_JSON                                = path.join(CWD, "project-with-dependencies", "tsconfig.json");
 const CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION                               = path.join(CWD, "project-with-extra-configuration");
 const CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD                         = path.join(CWD, "project-with-extra-configuration", "build");
 const CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_SURFACE_JSON                  = path.join(CWD, "project-with-extra-configuration", "surface.json");
@@ -49,7 +49,7 @@ const CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_CONFIGURATION_JS     
 const CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_POST_CONFIGURATION_JS = path.join(CWD, "project-with-extra-configuration", "webpack-post-configuration.js");
 const CWD_TSCONFIG_JSON                                                          = path.join(CWD, "tsconfig.json");
 
-const DEFAULTS: Required<Pick<Configuration, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">> =
+const DEFAULTS: Required<Pick<Project, "context" | "entry" | "filename" | "publicPath" | "output" | "tsconfig">> =
 {
     context:    CWD,
     entry:      "./source/index.ts",
@@ -77,7 +77,7 @@ export default class TasksSpec
         isFileMock.call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_JS).returns(true);
         isFileMock.call(CWD_PROJECT_SURFACE_JSON).returns(true);
-        isFileMock.call(CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON).returns(true);
+        isFileMock.call(CWD_PROJECT_WITH_DEPENDENCIES_SURFACE_JSON).returns(true);
         isFileMock.call(CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_SURFACE_JSON).returns(true);
 
         lookupFileMock
@@ -116,11 +116,11 @@ export default class TasksSpec
 
         loadModuleMock
             .call(CWD_PROJECT_SURFACE_JSON)
-            .returns(Promise.resolve({ forceTs: ["foo", "bar"] }));
+            .returns(Promise.resolve({ preferTs: ["foo", "bar"] }));
 
         loadModuleMock
             .call(CWD_PROJECT_SURFACE_DEVELOPMENT_JSON)
-            .returns(Promise.resolve({ eslintrc: CWD_PROJECT_ESLINTRC_JSON, forceTs: true }));
+            .returns(Promise.resolve({ eslintrc: CWD_PROJECT_ESLINTRC_JSON, preferTs: true }));
 
         loadModuleMock
             .call(CWD_PROJECT_NO_ESLINTRC_SURFACE_JSON)
@@ -131,8 +131,8 @@ export default class TasksSpec
             .returns(Promise.resolve({ "__esModule": true, default: { } }));
 
         loadModuleMock
-            .call(CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON)
-            .returns(Promise.resolve({ "__esModule": true, default: { compilations: [{ entry: "file-1.js" }, { entry: "file-2.js" }] } }));
+            .call(CWD_PROJECT_WITH_DEPENDENCIES_SURFACE_JSON)
+            .returns(Promise.resolve({ "__esModule": true, default: { dependencies: [{ entry: "file-1.js" }, { entry: "file-2.js" }] } }));
 
         loadModuleMock
             .call(CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_SURFACE_JSON)
@@ -143,9 +143,10 @@ export default class TasksSpec
                     "__esModule": true,
                     default:
                     {
-                        compilations:
+                        dependencies:
                         [
                             {
+                                entry:   "file.js",
                                 webpack:
                                 {
                                     configuration:     "./webpack-configuration.js",
@@ -187,9 +188,9 @@ export default class TasksSpec
     public async analyze(): Promise<void>
     {
 
-        const expected: Configuration = { ...DEFAULTS, bundlerAnalyzer: { analyzerMode: "static", logLevel: "silent" } };
+        const expected: Project = { ...DEFAULTS, bundlerAnalyzer: { analyzerMode: "static", logLevel: "silent" } };
 
-        let actual: Configuration;
+        let actual: Project;
 
         compilerCtorMock
             .setup("analyze")
@@ -205,9 +206,9 @@ export default class TasksSpec
     @test
     public async build(): Promise<void>
     {
-        const expectedRun: Configuration = { ...DEFAULTS, mode: "development" };
+        const expectedRun: Project = { ...DEFAULTS, mode: "development" };
 
-        let actualRun: Configuration;
+        let actualRun: Project;
 
         compilerCtorMock
             .setup("run")
@@ -219,18 +220,18 @@ export default class TasksSpec
 
         chai.assert.deepEqual(actualRun!, expectedRun, "actualRun deep equal to expectedRun");
 
-        const expectedRunWithProject: Configuration =
+        const expectedRunWithProject: Project =
         {
             ...DEFAULTS,
             context:    CWD_PROJECT,
             eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
-            forceTs:    true,
             output:     CWD_PROJECT_BUILD,
+            preferTs:   true,
             tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
             webpack:    { },
         };
 
-        let actualRunWithProject: Configuration;
+        let actualRunWithProject: Project;
 
         compilerCtorMock
             .setup("run")
@@ -242,7 +243,7 @@ export default class TasksSpec
 
         chai.assert.deepEqual(actualRunWithProject!, expectedRunWithProject, "actualRunWithProject deep equal to expectedRunWithProject");
 
-        const expectedRunWithNoEsLintProject: Configuration =
+        const expectedRunWithNoEsLintProject: Project =
         {
             ...DEFAULTS,
             context:  CWD_PROJECT_NO_ESLINTRC,
@@ -251,7 +252,7 @@ export default class TasksSpec
             webpack:  { configuration: { } },
         };
 
-        let actualRunWithNoEsLintProject: Configuration;
+        let actualRunWithNoEsLintProject: Project;
 
         compilerCtorMock
             .setup("run")
@@ -263,59 +264,56 @@ export default class TasksSpec
 
         chai.assert.deepEqual(actualRunWithNoEsLintProject!, expectedRunWithNoEsLintProject, "actualRunWithNoEsLintProject deep equal to expectedRunWithNoEsLintProject");
 
-        const expectedRunWithCompilations: Configuration =
+        const expectedRunWithDependencies: Project =
         {
             ...DEFAULTS,
-            compilations:
+            context:      CWD_PROJECT_WITH_DEPENDENCIES,
+            dependencies:
             [
                 {
                     ...DEFAULTS,
-                    compilations: undefined,
-                    context:      CWD_PROJECT_WITH_COMPILATIONS,
-                    entry:        "file-1.js",
-                    output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-                    tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
-                    webpack:      { postConfiguration },
+                    context:  CWD_PROJECT_WITH_DEPENDENCIES,
+                    entry:    "file-1.js",
+                    output:   CWD_PROJECT_WITH_DEPENDENCIES_BUILD,
+                    tsconfig: CWD_PROJECT_WITH_DEPENDENCIES_TSCONFIG_JSON,
                 },
                 {
                     ...DEFAULTS,
-                    compilations: undefined,
-                    context:      CWD_PROJECT_WITH_COMPILATIONS,
-                    entry:        "file-2.js",
-                    output:       CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-                    tsconfig:     CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
-                    webpack:      { postConfiguration },
+                    context:  CWD_PROJECT_WITH_DEPENDENCIES,
+                    entry:    "file-2.js",
+                    output:   CWD_PROJECT_WITH_DEPENDENCIES_BUILD,
+                    tsconfig: CWD_PROJECT_WITH_DEPENDENCIES_TSCONFIG_JSON,
                 },
             ],
-            context:  CWD_PROJECT_WITH_COMPILATIONS,
-            output:   CWD_PROJECT_WITH_COMPILATIONS_BUILD,
-            tsconfig: CWD_PROJECT_WITH_COMPILATIONS_TSCONFIG_JSON,
+            output:   CWD_PROJECT_WITH_DEPENDENCIES_BUILD,
+            tsconfig: CWD_PROJECT_WITH_DEPENDENCIES_TSCONFIG_JSON,
             webpack:  { postConfiguration },
         };
 
-        let actualRunWithCompilations: Configuration;
+        let actualRunWithDependencies: Project;
 
         compilerCtorMock
             .setup("run")
             .call(It.any())
-            .callback(x => actualRunWithCompilations = x)
+            .callback(x => actualRunWithDependencies = x)
             .returns(Promise.resolve());
 
-        await Tasks.build({ project: CWD_PROJECT_WITH_COMPILATIONS_SURFACE_JSON, webpackPostConfiguration: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_POST_CONFIGURATION_JS }),
+        await Tasks.build({ project: CWD_PROJECT_WITH_DEPENDENCIES_SURFACE_JSON, webpackPostConfiguration: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_WEBPACK_POST_CONFIGURATION_JS }),
 
-        chai.assert.deepEqual(actualRunWithCompilations!, expectedRunWithCompilations, "actualRunWithNoEsLintProject deep equal to expectedRunWithCompilations");
+        chai.assert.deepEqual(actualRunWithDependencies!, expectedRunWithDependencies, "actualRunWithNoEsLintProject deep equal to expectedRunWithDependencies");
 
-        const expectedRunWithExtraWebpackConfigurationFile: Configuration =
+        const expectedRunWithExtraWebpackConfigurationFile: Project =
         {
             ...DEFAULTS,
-            compilations:
+            context:      CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
+            dependencies:
             [
                 {
                     ...DEFAULTS,
-                    compilations: undefined,
-                    context:      CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
-                    output:       CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
-                    tsconfig:     CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
+                    context:  CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
+                    entry:    "file.js",
+                    output:   CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
+                    tsconfig: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
                     webpack:
                     {
                         configuration: { },
@@ -323,7 +321,6 @@ export default class TasksSpec
                     },
                 },
             ],
-            context:  CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION,
             output:   CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_BUILD,
             tsconfig: CWD_PROJECT_WITH_WEBPACK_EXTRA_CONFIGURATION_TSCONFIG_JSON,
             webpack:
@@ -333,7 +330,7 @@ export default class TasksSpec
             },
         };
 
-        let actualRunWithExtraWebpackConfigurationFile: Configuration;
+        let actualRunWithExtraWebpackConfigurationFile: Project;
 
         compilerCtorMock
             .setup("run")
@@ -345,7 +342,7 @@ export default class TasksSpec
 
         chai.assert.deepEqual(actualRunWithExtraWebpackConfigurationFile!, expectedRunWithExtraWebpackConfigurationFile, "actualRunWithExtraWebpackConfigurationFile deep equal to expectedRunWithExtraWebpackConfigurationFile");
 
-        const expectedWatch: Configuration =
+        const expectedWatch: Project =
         {
             ...DEFAULTS,
             context:  CWD_PROJECT,
@@ -357,7 +354,7 @@ export default class TasksSpec
             webpack:  { },
         };
 
-        let actualWatch: Configuration;
+        let actualWatch: Project;
 
         compilerCtorMock
             .setup("watch")
@@ -373,7 +370,7 @@ export default class TasksSpec
     @test
     public async serve(): Promise<void>
     {
-        const expected: Configuration =
+        const expected: Project =
         {
             context:    CWD_PROJECT,
             devServer:
@@ -394,14 +391,14 @@ export default class TasksSpec
             entry:      "./source/index.ts",
             eslintrc:   CWD_PROJECT_ESLINTRC_JSON,
             filename:   "[name].js",
-            forceTs:    [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
             output:     CWD_PROJECT_BUILD,
+            preferTs:   [path.join(CWD_PROJECT, "foo"), path.join(CWD_PROJECT, "bar")],
             publicPath: "/",
             tsconfig:   CWD_PROJECT_TSCONFIG_JSON,
             webpack:    { configuration: { } },
         };
 
-        let actual: Configuration;
+        let actual: Project;
 
         compilerCtorMock
             .setup("serve")
