@@ -1,39 +1,30 @@
 
 import type webpack          from "webpack";
-import type WebpackExtension from "./webpack-extension";
+import type WebpackDevServer from "webpack-dev-server";
+import type Logging          from "./logging";
+import type Project          from "./project";
 
 type Configuration =
 {
 
-    /** Entry points. */
-    entry: webpack.Configuration["entry"],
+    /** Dev server configurations. */
+    devServer?: WebpackDevServer.Configuration,
 
-    /** The base directory for resolving the entry option. */
-    context?: string,
+    /** Module specifier or hook object */
+    hooks?: {
 
-    /** Path to eslintrc file. */
-    eslintrc?: string,
+        /** Executed before compilation. */
+        beforeRun?: ((configuration: webpack.Configuration) => Promise<webpack.Configuration>),
+    },
 
-    /** The filename of the entry chunk as relative path inside the output path directory. */
-    filename?: string,
+    /** Main project. Used by dev server. */
+    main?: string,
 
-    /** Resolve to the ts file when next to the transpiled js file. */
-    preferTs?: boolean | string[],
+    /** Output verbosity level. */
+    logging?:  Logging,
 
-    /** Configuration name. */
-    name?: string,
-
-    /** The output directory. */
-    output?: string,
-
-    /** The output path from the view of the Javascript / HTML page.*/
-    publicPath?: string,
-
-    /** Path to tsconfig file.*/
-    tsconfig?: string,
-
-    /** Webpack configuration used to extend defaults. */
-    webpack?: WebpackExtension,
+    /** Project map. */
+    projects?: Record<string, Project>,
 };
 
 export default Configuration;

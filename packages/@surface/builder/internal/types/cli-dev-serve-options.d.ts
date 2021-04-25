@@ -1,25 +1,22 @@
-import type Logging from "./logging";
-
 type CliDevServerOptions =
 {
-    compress?:              boolean,
-    contentBase?:           boolean | number | string[],
-    contentBasePublicPath?: string | string[],
-    host?:                  string,
-    hot?:                   boolean,
-    hotOnly?:               boolean,
-    index?:                 string,
-    lazy?:                  boolean,
-    liveReload?:            boolean,
-    logging?:               Logging,
-    open?:                  string | boolean,
-    openPage?:              string[],
-    port?:                  number,
-    public?:                string,
-    quiet?:                 boolean,
-    useLocalIp?:            boolean,
-    watchContentBase?:      boolean,
-    writeToDisk?:           boolean,
+    devserverCompress?:              boolean,
+    devserverContentBase?:           boolean | number | string[],
+    devserverContentBasePublicPath?: string | string[],
+    devserverHost?:                  string,
+    devserverHot?:                   boolean,
+    devserverHotOnly?:               boolean,
+    devserverIndex?:                 string,
+    devserverLazy?:                  boolean,
+    devserverLiveReload?:            boolean,
+    devserverOpen?:                  string | boolean,
+    devserverOpenPage?:              string[],
+    devserverPort?:                  number,
+    devserverPublic?:                string,
+    devserverQuiet?:                 boolean,
+    devserverUseLocalIp?:            boolean,
+    devserverWatchContentBase?:      boolean,
+    devserverWriteToDisk?:           boolean,
 };
 
 export default CliDevServerOptions;

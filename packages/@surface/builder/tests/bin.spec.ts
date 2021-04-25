@@ -2,13 +2,13 @@
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
-import Tasks                                  from "../internal/tasks.js";
+import Commands                               from "../internal/commands.js";
 import type CliAnalyzerOptions                from "../internal/types/cli-analyzer-options";
 import type CliBuildOptions                   from "../internal/types/cli-build-options";
 import type CliDevServerOptions               from "../internal/types/cli-dev-serve-options";
 import type CliOptions                        from "../internal/types/cli-options";
 
-const tasksMock = Mock.of(Tasks);
+const commandsMock = Mock.of(Commands);
 
 @suite
 export default class BinSpec
@@ -16,13 +16,13 @@ export default class BinSpec
     @beforeEach
     public beforeEach(): void
     {
-        tasksMock.lock();
+        commandsMock.lock();
     }
 
     @afterEach
     public afterEach(): void
     {
-        tasksMock.release();
+        commandsMock.release();
     }
 
     @test
@@ -30,7 +30,7 @@ export default class BinSpec
     {
         let actual: Required<CliOptions & CliAnalyzerOptions>;
 
-        tasksMock
+        commandsMock
             .setup("analyze")
             .call(It.any())
             .callback(x => actual = x as Required<CliOptions & CliAnalyzerOptions>);
@@ -39,60 +39,62 @@ export default class BinSpec
         [
             "",
             "",
+            "--analyzer-default-sizes=parsed",
+            "--analyzer-exclude-assets=analyzerExcludeAssets-1,analyzerExcludeAssets-2",
             "--analyzer-host=analyzerHost",
-            "--analyzer-mode=server",
+            "--analyzer-log-level=info",
+            "--analyzer-mode=static",
+            "--analyzer-open=true",
             "--analyzer-port=auto",
+            "--analyzer-report-filename=analyzerReportFilename",
+            "--analyzer-report-title=analyzerReportTitle",
+            "--config=config",
             "--context=context",
-            "--default-sizes=parsed",
-            "--entry=entry",
+            "--entry=entry-1,entry-2",
             "--eslintrc=eslintrc",
-            "--exclude-assets=excludeAssets",
             "--filename=filename",
-            "--html-template=htmlTemplate",
-            "--include-files=**/foo/*.js,**/bar/*.js",
+            "--include-files=includeFiles-1,includeFiles-2",
+            "--index=index",
             "--logging=info",
+            "--main=main",
             "--mode=development",
-            "--open-analyzer=true",
             "--output=output",
-            "--prefer-ts=true",
+            "--prefer-ts=preferTs-1,preferTs-2",
             "--project=project",
             "--public-path=publicPath",
-            "--report-filename=reportFilename",
-            "--report-title=reportTitle",
+            "--target=pwa",
             "--tsconfig=tsconfig",
-            "--use-workbox=true",
-            "--webpack-configuration=webpackConfiguration",
-            "--webpack-post-configuration=webpackPostConfiguration",
         ];
 
         await import("../bin/analyze.js");
 
         const expected: Required<CliOptions & CliAnalyzerOptions> =
         {
+            analyzerDefaultSizes:     "parsed",
+            analyzerExcludeAssets:    ["analyzerExcludeAssets-1", "analyzerExcludeAssets-2"],
             analyzerHost:             "analyzerHost",
-            analyzerMode:             "server",
+            analyzerLogLevel:         "info",
+            analyzerMode:             "static",
+            analyzerOpen:             true,
             analyzerPort:             "auto",
+            analyzerReportFilename:   "analyzerReportFilename",
+            analyzerReportTitle:      "analyzerReportTitle",
+            config:                   "config",
             context:                  "context",
-            defaultSizes:             "parsed",
-            entry:                    ["entry"],
+            entry:                    ["entry-1", "entry-2"],
             eslintrc:                 "eslintrc",
-            excludeAssets:            ["excludeAssets"],
             filename:                 "filename",
-            htmlTemplate:             "htmlTemplate",
-            includeFiles:             ["**/foo/*.js", "**/bar/*.js"],
+            includeFiles:             ["includeFiles-1", "includeFiles-2"],
+            index:                    "index",
             logging:                  "info",
+            main:                     "main",
             mode:                     "development",
-            openAnalyzer:             true,
             output:                   "output",
-            preferTs:                  true,
+            preferTs:                 ["preferTs-1", "preferTs-2"],
             project:                  "project",
             publicPath:               "publicPath",
-            reportFilename:           "reportFilename",
-            reportTitle:              "reportTitle",
+            target:                   "pwa",
             tsconfig:                 "tsconfig",
-            useWorkbox:               true,
-            webpackConfiguration:     "webpackConfiguration",
-            webpackPostConfiguration: "webpackPostConfiguration",
         };
 
         chai.assert.deepEqual(actual!, expected);
@@ -103,7 +105,7 @@ export default class BinSpec
     {
         let actual: Required<CliOptions & CliBuildOptions>;
 
-        tasksMock
+        commandsMock
             .setup("build")
             .call(It.any())
             .callback(x => actual = x as Required<CliOptions & CliBuildOptions>);
@@ -112,46 +114,46 @@ export default class BinSpec
         [
             "",
             "",
+            "--config=config",
             "--context=context",
-            "--entry=entry",
+            "--entry=entry-1,entry-2",
             "--eslintrc=eslintrc",
             "--filename=filename",
-            "--html-template=htmlTemplate",
-            "--include-files=**/foo/*.js,**/bar/*.js",
+            "--include-files=includeFiles-1,includeFiles-2",
+            "--index=index",
             "--logging=info",
+            "--main=main",
             "--mode=development",
             "--output=output",
             "--prefer-ts=true",
             "--project=project",
             "--public-path=publicPath",
+            "--target=pwa",
             "--tsconfig=tsconfig",
-            "--use-workbox=true",
-            "--watch=true",
-            "--webpack-configuration=webpackConfiguration",
-            "--webpack-post-configuration=webpackPostConfiguration",
+            "--watch",
         ];
 
         await import("../bin/build.js");
 
         const expected: Required<CliOptions & CliBuildOptions> =
         {
-            context:                  "context",
-            entry:                    ["entry"],
-            eslintrc:                 "eslintrc",
-            filename:                 "filename",
-            htmlTemplate:             "htmlTemplate",
-            includeFiles:             ["**/foo/*.js", "**/bar/*.js"],
-            logging:                  "info",
-            mode:                     "development",
-            output:                   "output",
-            preferTs:                  true,
-            project:                  "project",
-            publicPath:               "publicPath",
-            tsconfig:                 "tsconfig",
-            useWorkbox:               true,
-            watch:                    true,
-            webpackConfiguration:     "webpackConfiguration",
-            webpackPostConfiguration: "webpackPostConfiguration",
+            config:       "config",
+            context:      "context",
+            entry:        ["entry-1", "entry-2"],
+            eslintrc:     "eslintrc",
+            filename:     "filename",
+            includeFiles: ["includeFiles-1", "includeFiles-2"],
+            index:        "index",
+            logging:      "info",
+            main:         "main",
+            mode:         "development",
+            output:       "output",
+            preferTs:      true,
+            project:      "project",
+            publicPath:   "publicPath",
+            target:       "pwa",
+            tsconfig:     "tsconfig",
+            watch:        true,
         };
 
         chai.assert.deepEqual(actual!, expected);
@@ -162,7 +164,7 @@ export default class BinSpec
     {
         let actual: Required<CliOptions & CliDevServerOptions>;
 
-        tasksMock
+        commandsMock
             .setup("serve")
             .call(It.any())
             .callback(x => actual = x as Required<CliOptions & CliDevServerOptions>);
@@ -171,76 +173,79 @@ export default class BinSpec
         [
             "",
             "",
-            "--compress",
-            "--content-base-public-path=contentBasePublicPath",
-            "--content-base=contentBase",
+            "--devserver-compress=true",
+            "--devserver-content-base-public-path=devserverContentBasePublicPath-1,devserverContentBasePublicPath-2",
+            "--devserver-content-base=devserverContentBase-1,devserverContentBase-2",
+            "--devserver-host=devserverHost",
+            "--devserver-hot-only=true",
+            "--devserver-hot=true",
+            "--devserver-index=devserverIndex",
+            "--devserver-lazy=true",
+            "--devserver-lazy=true",
+            "--devserver-live-reload=true",
+            "--devserver-open-page=devserverOpenPage-1,devserverOpenPage-2",
+            "--devserver-open=true",
+            "--devserver-port=8080",
+            "--devserver-public=devserverPublic",
+            "--devserver-quiet=true",
+            "--devserver-use-local-ip=true",
+            "--devserver-watch-content-base=true",
+            "--devserver-write-to-disk=true",
+            "--config=config",
             "--context=context",
-            "--entry=entry",
+            "--entry=entry-1,entry-2",
             "--eslintrc=eslintrc",
             "--filename=filename",
-            "--host=localhost",
-            "--hot",
-            "--hot-only",
-            "--html-template=htmlTemplate",
-            "--include-files=**/foo/*.js,**/bar/*.js",
+            "--include-files=includeFiles-1,includeFiles-2",
             "--index=index",
-            "--lazy",
-            "--live-reload",
             "--logging=info",
-            "--open",
-            "--open-page=/",
+            "--main=main",
+            "--mode=development",
             "--output=output",
-            "--port=8080",
-            "--prefer-ts",
+            "--prefer-ts=true",
             "--project=project",
             "--public-path=publicPath",
-            "--public=public",
-            "--quiet",
+            "--target=pwa",
             "--tsconfig=tsconfig",
-            "--use-local-ip",
-            "--use-workbox",
-            "--watch-content-base",
-            "--webpack-configuration=webpackConfiguration",
-            "--webpack-post-configuration=webpackPostConfiguration",
-            "--write-to-disk",
         ];
 
         await import("../bin/serve.js");
 
-        const expected: Required<Omit<CliOptions, "mode"> & CliDevServerOptions> =
+        const expected: Required<CliOptions & CliDevServerOptions> =
         {
-            compress:                 true,
-            contentBase:              ["contentBase"],
-            contentBasePublicPath:    ["contentBasePublicPath"],
-            context:                  "context",
-            entry:                    ["entry"],
-            eslintrc:                 "eslintrc",
-            filename:                 "filename",
-            host:                     "localhost",
-            hot:                      true,
-            hotOnly:                  true,
-            htmlTemplate:             "htmlTemplate",
-            includeFiles:             ["**/foo/*.js", "**/bar/*.js"],
-            index:                    "index",
-            lazy:                     true,
-            liveReload:               true,
-            logging:                  "info",
-            open:                     true,
-            openPage:                 ["/"],
-            output:                   "output",
-            port:                     8080,
-            preferTs:                 true,
-            project:                  "project",
-            public:                   "public",
-            publicPath:               "publicPath",
-            quiet:                    true,
-            tsconfig:                 "tsconfig",
-            useLocalIp:               true,
-            useWorkbox:               true,
-            watchContentBase:         true,
-            webpackConfiguration:     "webpackConfiguration",
-            webpackPostConfiguration: "webpackPostConfiguration",
-            writeToDisk:              true,
+            config:                         "config",
+            context:                        "context",
+            devserverCompress:              true,
+            devserverContentBase:           ["devserverContentBase-1", "devserverContentBase-2"],
+            devserverContentBasePublicPath: ["devserverContentBasePublicPath-1", "devserverContentBasePublicPath-2"],
+            devserverHost:                  "devserverHost",
+            devserverHot:                   true,
+            devserverHotOnly:               true,
+            devserverIndex:                 "devserverIndex",
+            devserverLazy:                  true,
+            devserverLiveReload:            true,
+            devserverOpen:                  true,
+            devserverOpenPage:              ["devserverOpenPage-1", "devserverOpenPage-2"],
+            devserverPort:                  8080,
+            devserverPublic:                "devserverPublic",
+            devserverQuiet:                 true,
+            devserverUseLocalIp:            true,
+            devserverWatchContentBase:      true,
+            devserverWriteToDisk:           true,
+            entry:                          ["entry-1", "entry-2"],
+            eslintrc:                       "eslintrc",
+            filename:                       "filename",
+            includeFiles:                   ["includeFiles-1", "includeFiles-2"],
+            index:                          "index",
+            logging:                        "info",
+            main:                           "main",
+            mode:                           "development",
+            output:                         "output",
+            preferTs:                       true,
+            project:                        "project",
+            publicPath:                     "publicPath",
+            target:                         "pwa",
+            tsconfig:                       "tsconfig",
         };
 
         chai.assert.deepEqual(actual!, expected);

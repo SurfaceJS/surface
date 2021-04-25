@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
-import { parsePattern, toBoolean } from "../internal/common.js";
-import { modePattern }             from "../internal/patterns.js";
-import Tasks                       from "../internal/tasks.js";
-import createProgram               from "./create-program.js";
+import Commands      from "../internal/commands.js";
+import { toBoolean } from "../internal/common.js";
+import createProgram from "./create-program.js";
 
 const program = createProgram()
-    .option("--mode                     <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
-    .option("--watch                    [n]", "Enable Watch mode compilation.", toBoolean)
-    .action(x => void Tasks.build(x));
+    .option("--watch                              [n]", "Enable Watch mode compilation.", toBoolean)
+    .action(x => void Commands.build(x));
 
 program.parse(process.argv);

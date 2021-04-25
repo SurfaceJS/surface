@@ -4,6 +4,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import
 {
+    DeepMergeFlags,
     deepEqual,
     deepMerge,
     merge,
@@ -280,12 +281,36 @@ export default class CommonObjectSpec
     @test @shouldPass
     public deepMergeObjects(): void
     {
-        const left  = { a: 1, b: "2", c: { a: 1, c: { a: 1, b: 2 } }, e: { }, h: { } as object | undefined };
-        const right = { c: { b: true, c: { a: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+        const left   = { a: 1, b: { a: 1,          c: [1], d: null }, c: { }, d: [0], e: { } as object | null,  f: { } as object | undefined };
+        const right  = {       b: {       b: true, c: [2]          }, c: 1,   d: [1], e: null,                  f: undefined, h: undefined };
+        const expect = { a: 1, b: { a: 1, b: true, c: [2], d: null }, c: 1,   d: [1], e: null,                  f: undefined, h: undefined };
 
-        const expect = { a: 1, b: "2", c: { a: 1, b: true, c: { a: 2, b: 2, c: 3 } }, e: 1, f: [1], g: { }, h: undefined, i: undefined };
+        const actual = deepMerge([left, right]);
 
-        const actual = deepMerge(left, right);
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public deepMergeObjectsIgnoreUndefined(): void
+    {
+        const left   = { a: 1, b: [undefined] };
+        const right  = {                       e: undefined, f: { a: undefined } };
+        const expect = { a: 1, b: [undefined],               f: { } };
+
+        const actual = deepMerge([left, right], DeepMergeFlags.IgnoreUndefined);
+
+        chai.assert.deepEqual(actual, expect);
+    }
+
+    @test @shouldPass
+    public deepMergeConcatArrays(): void
+    {
+        const left  = { values: [1, 2, 3] };
+        const right = { values: [4, 5, 6] };
+
+        const actual = deepMerge([left, right], DeepMergeFlags.ConcatArrays);
+
+        const expect = { values: [1, 2, 3, 4, 5, 6] };
 
         chai.assert.deepEqual(actual, expect);
     }
@@ -296,7 +321,7 @@ export default class CommonObjectSpec
         const left  = { values: [1,  , 2, 3, 5] };
         const right = { values: [ , 2, 3, 4, , 6] };
 
-        const actual = deepMerge(left, right);
+        const actual = deepMerge([left, right], DeepMergeFlags.MergeArrays);
 
         const expect = { values: [1, 2, 3, 4, 5, 6] };
 
@@ -310,7 +335,7 @@ export default class CommonObjectSpec
         const second = { values: [, { two: 2 }, { five: 5 }] as const };
         const third  = { values: [{ zero: 0 }, { three: 3 }, { six: 6 }] as const };
 
-        const actual = deepMerge(first, second, third);
+        const actual = deepMerge([first, second, third], DeepMergeFlags.MergeArrays);
 
         // eslint-disable-next-line sort-keys
         const expect = { values: [{ zero: 0 }, { one: 1, two: 2, three: 3 }, { four: 4, five: 5, six: 6 }] };
@@ -325,7 +350,7 @@ export default class CommonObjectSpec
         const second = { c: { e: true } };
         const third  = { f: [1], g: { } };
 
-        const actual = deepMerge(first, second, third);
+        const actual = deepMerge([first, second, third]);
 
         const expect = { a: 1, b: "2", c: { d: 3, e: true }, f: [1], g: { } };
 

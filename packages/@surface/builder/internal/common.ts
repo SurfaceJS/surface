@@ -1,6 +1,8 @@
 import fs                 from "fs";
+import path               from "path";
 import { pathToFileURL }  from "url";
 import util               from "util";
+import { lookupFile }     from "@surface/io";
 import type webpack       from "webpack";
 import { booleanPattern } from "./patterns.js";
 import type Logging       from "./types/logging.js";
@@ -10,17 +12,6 @@ const readFileAsync = util.promisify(fs.readFile);
 export function normalizeUrlPath(path: string): string
 {
     return path ? (path.startsWith("/") ? "" : "/") + path.replace(/\/$/, "") : "";
-}
-
-export function createOnlyDefinedProxy<T extends object>(target: T): T
-{
-    const handler: ProxyHandler<T> =
-    {
-        has:     (target, key) => key in target && !Object.is(target[key as keyof T], undefined),
-        ownKeys: target => Object.entries(target).filter(x => !Object.is(x[1], undefined)).map(x => x[0]),
-    };
-
-    return new Proxy(target, handler);
 }
 
 export function createStats(logging: Logging = true): webpack.Configuration["stats"]
@@ -63,6 +54,19 @@ export async function loadModule(path: string): Promise<unknown>
     }
 
     return import(pathToFileURL(path).href);
+}
+
+export function locateEslint(cwd: string): string | null
+{
+    const lookups =
+    [
+        path.join(cwd, ".eslintrc.js"),
+        path.join(cwd, ".eslintrc.json"),
+        path.join(cwd, ".eslintrc.yml"),
+        path.join(cwd, ".eslintrc.yaml"),
+    ];
+
+    return lookupFile(lookups);
 }
 
 export const parsePattern = (pattern: RegExp) =>

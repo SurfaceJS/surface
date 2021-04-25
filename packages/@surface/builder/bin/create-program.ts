@@ -1,24 +1,25 @@
-import commander                                                               from "commander";
-import { toArray, toBoolean, toBooleanOrParsePattern, toBooleanOrStringArray } from "../internal/common.js";
-import { loggingPattern }                                                      from "../internal/patterns.js";
+import commander                                         from "commander";
+import { parsePattern, toArray, toBooleanOrStringArray } from "../internal/common.js";
+import { loggingPattern, modePattern, targetPattern }    from "../internal/patterns.js";
 
 export default function createProgram(): commander.Command
 {
     return new commander.Command()
         .storeOptionsAsProperties(false)
-        .option("-c, --context                <n>", "The base directory for resolving the entry option.")
-        .option("-e, --entry                  <n>", "Entry points.", toArray)
-        .option("-f, --filename               <n>", "The filename of the entry chunk as relative path inside the output path directory.")
-        .option("-o, --output                 <n>", "The output directory.")
-        .option("-p, --project                <n>", "Path to project file.")
-        .option("-t, --html-template          <n>", "Path to html template file.")
-        .option("--include-files              <n>", "File patterns to copy to output path.", toArray)
-        .option("--eslintrc                   <n>", "Path to eslintrc file.")
-        .option("--prefer-ts                  [n]", "Resolve to the ts file when next to the transpiled js file.", toBooleanOrStringArray)
-        .option("--logging                    [n]", "Output verbosity level. Can be 'none', 'verbose', 'error', 'warn', 'info' or 'log'.", toBooleanOrParsePattern(loggingPattern))
-        .option("--public-path                <n>", "The output path from the view of the Javascript / HTML page.")
-        .option("--tsconfig                   <n>", "Path to tsconfig file.")
-        .option("--use-workbox                [n]", "Use workbox to handle service workers.", toBoolean)
-        .option("--webpack-configuration      <n>", "Path to webpack configuration file.")
-        .option("--webpack-post-configuration <n>", "Path to webpack post configuration hook file.");
+        .option("--config                         <n>", "Path to configuration file.")
+        .option("--context                        <n>", "The base directory for resolving the entry option.")
+        .option("--entry                          <n>", "Entry points.", toArray)
+        .option("--eslintrc                       <n>", "Path to eslintrc file.")
+        .option("--filename                       <n>", "The filename of the entry chunk as relative path inside the output path directory.")
+        .option("--include-files                  <n>", "File patterns to copy to output path.", toArray)
+        .option("--index                          <n>", "Path to html index file.")
+        .option("--logging                        [n]", "Output verbosity level. Can be 'none', 'verbose', 'error', 'warn', 'info' or 'log'.", parsePattern(loggingPattern))
+        .option("--main                           <n>", "Specify main project. Used by dev server.")
+        .option("--mode                           <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
+        .option("--output                         <n>", "The output directory.")
+        .option("--prefer-ts                      [n]", "Resolve to the ts file when next to the transpiled js file. Necessary only when both files are being included in the bundle.", toBooleanOrStringArray)
+        .option("--project                        <n>", "When a configuration file is specified. Defines which project will have the settings overwritten. Otherwise, it will be used as the project name.")
+        .option("--public-path                    <n>", "The output path from the view of the Javascript / HTML page.")
+        .option("--target                         <n>", "Environment to build for. Can be 'pwa', 'web' or 'webworker'.", parsePattern(targetPattern))
+        .option("--tsconfig                       <n>", "Path to tsconfig file.");
 }

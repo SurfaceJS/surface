@@ -1,93 +1,66 @@
-import { suite, test }      from "@surface/test-suite";
-import chai                 from "chai";
-import chaiAsPromised       from "chai-as-promised";
-import createConfigurations from "../internal/create-configurations.js";
-import type Project         from "../internal/types/project";
+import { shouldPass, suite, test } from "@surface/test-suite";
+import chai                        from "chai";
+import chaiAsPromised              from "chai-as-promised";
+import createConfigurations        from "../internal/create-configurations.js";
+import type Configuration          from "../internal/types/configuration";
 
 chai.use(chaiAsPromised);
 
 @suite
 export default class CreateConfigurationsSpec
 {
-    @test
-    public createAnalyzerConfiguration(): void
+    @test @shouldPass
+    public async createAnalyzerConfiguration(): Promise<void>
     {
-        void chai.assert.isFulfilled(createConfigurations("analyze", { }));
-        void chai.assert.isFulfilled(createConfigurations("analyze", { dependencies: [{ entry: "file.js" }] }));
-        void chai.assert.isFulfilled(createConfigurations("analyze", { bundlerAnalyzer: { analyzerPort: "auto" }, dependencies: [{ entry: "file.js" }] }));
-
-        const project: Project =
-        {
-            bundlerAnalyzer:
-            {
-                analyzerPort:   8888,
-                reportFilename: "app.html",
-            },
-            dependencies:
-            [
-                {
-                    entry: "file.js",
-                    name:  "deps",
-                },
-            ],
-        };
-
-        void chai.assert.isFulfilled(createConfigurations("analyze", project));
+        void chai.assert.isNotEmpty(await createConfigurations("analyze", { }));
+        void chai.assert.isNotEmpty(await createConfigurations("analyze", { projects: { default: { analyzer: { reportFilename: "analyzer.html" } } } }));
     }
 
-    @test
-    public createBuildConfiguration(): void
+    @test @shouldPass
+    public async createBuildConfiguration(): Promise<void>
     {
         void chai.assert.isFulfilled(createConfigurations("build", { }));
 
-        const project1: Project =
+        const configuration: Configuration =
         {
-            htmlTemplate: ".",
-            mode:         "development",
-            preferTs:     true,
-            publicPath:   "path",
-        };
-
-        void chai.assert.isFulfilled(createConfigurations("build", project1));
-
-        const project2: Project =
-        {
-            htmlTemplate: { template: "." },
-            includeFiles: ["**/foo", { from: "**/bar", to: "**/baz" }],
-            mode:         "production",
-            preferTs:     ["foo", "bar"],
-            publicPath:   "/path",
-            useWorkbox:   true,
-            webpack:      { configuration: { context: "." }, mergeRules: { }, postConfiguration: async x => Promise.resolve(x) },
-        };
-
-        void chai.assert.isFulfilled(createConfigurations("build", project2));
-
-        const project3: Project =
-        {
-            dependencies:
-            [
+            hooks:
+            {
+                beforeRun: async x => Promise.resolve(x),
+            },
+            main:     "default",
+            projects:
+            {
+                default:
                 {
-                    entry:        "file.js",
-                    publicPath:   "/path",
-                    webpack:      { configuration: { context: "." } },
+                    index:    "template.html",
+                    mode:     "development",
+                    preferTs: true,
+                    target:   "pwa",
                 },
-            ],
-            htmlTemplate: { template: "." },
-            includeFiles: ["**/foo", { from: "**/bar", to: "**/baz" }],
-            preferTs:     ["foo", "bar"],
-            webpack:      { },
+                empty:
+                {
+                    eslint: undefined,
+                    mode:   undefined,
+                },
+                webworker:
+                {
+                    includeFiles: ["**/foo", { from: "**/bar", to: "**/baz" }],
+                    mode:         "production",
+                    preferTs:     ["**/foo", "**/bar"],
+                    target:       "webworker",
+                },
+            },
         };
 
-        void chai.assert.isFulfilled(createConfigurations("build", project3));
+        void chai.assert.isNotEmpty(await createConfigurations("build", configuration));
     }
 
-    @test
-    public createDevServerConfiguration(): void
+    @test @shouldPass
+    public async createDevServerConfiguration(): Promise<void>
     {
-        void chai.assert.isFulfilled(createConfigurations("serve", { }));
-        void chai.assert.isFulfilled(createConfigurations("serve", { entry: "." }));
-        void chai.assert.isFulfilled(createConfigurations("serve", { entry: ["."] }));
-        void chai.assert.isFulfilled(createConfigurations("serve", { entry: { index: "." } }));
+        void chai.assert.isNotEmpty(await createConfigurations("serve", { }));
+        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: () => "." } } }));
+        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
+        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
     }
 }

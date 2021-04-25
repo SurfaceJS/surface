@@ -1,13 +1,9 @@
 {
     "$id": "https://github.com/SurfaceJS/modules/blob/master/packages/%40surface/compiler/schema.json",
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "allOf": [
-        {
-            "$ref": "#/definitions/configuration"
-        }
-    ],
+    "additionalProperties": false,
     "definitions": {
-        "bundlerAnalyzer": {
+        "analyzer": {
             "properties": {
                 "analyzerHost": {
                     "description": "Host that will be used in `server` mode to start HTTP server.",
@@ -72,86 +68,33 @@
             },
             "type": "object"
         },
-        "configuration": {
+        "buildConfiguration": {
             "properties": {
-                "context": {
-                    "description": "The base directory for resolving the entry option.",
-                    "type": "string"
+                "cache": {
+                    "$ref": "#/definitions/cache"
                 },
-                "entry": {
-                    "$ref": "#/definitions/entry"
+                "optimization": {
+                    "$ref": "#/definitions/optimization"
                 },
-                "eslintrc": {
-                    "description": "Path to eslintrc file.",
-                    "type": "string"
-                },
-                "filename": {
-                    "description": "The filename of the entry chunk as relative path inside the output path directory.",
-                    "type": "string"
-                },
-                "preferTs": {
-                    "anyOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        }
-                    ],
-                    "description": "Resolve to the ts file when next to the transpiled js file."
-                },
-                "htmlTemplate": {
-                    "description": "Path to html template file.",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "Configuration name.",
-                    "type": "string"
-                },
-                "output": {
-                    "description": "The output directory.",
-                    "type": "string"
-                },
-                "publicPath": {
-                    "description": "The output path from the view of the Javascript / HTML page.",
-                    "type": "string"
-                },
-                "tsconfig": {
-                    "description": "Path to tsconfig file.",
-                    "type": "string"
-                },
-                "useWorkbox": {
-                    "description": "Uses Workbox to offline cache handling.",
+                "performance": {
+                    "$ref": "#/definitions/performance"
+                }
+            }
+        },
+        "cache": {
+            "oneOf": [
+                {
                     "type": "boolean"
                 },
-                "webpack": {
-                    "description": "Webpack configuration",
-                    "properties": {
-                        "configuration": {
-                            "description": "Path to webpack configuration file..",
-                            "type": "string"
-                        },
-                        "mergeRules": {
-                            "additionalProperties": {
-                                "$ref": "#definitions/mergeRule"
-                            },
-                            "description": "Rules used to merge webpack.configuration.",
-                            "type": "object"
-                        },
-                        "postConfiguration": {
-                            "description": "Path to webpack post configuration hook file.",
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
+                {
+                    "$ref": "#/definitions/memoryCacheOptions"
+                },
+                {
+                    "$ref": "#/definitions/fileCacheOptions"
                 }
-            },
-            "required": [
-                "entry"
-            ],
+            ]
+        },
+        "configurations": {
             "type": "object"
         },
         "devServer": {
@@ -277,13 +220,7 @@
         "entry": {
             "anyOf": [
                 {
-                    "type": "string"
-                },
-                {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
+                    "$ref": "#/definitions/stringOrStringArray"
                 },
                 {
                     "additionalProperties": {
@@ -301,54 +238,44 @@
                     },
                     "type": "object"
                 }
-            ],
-            "description": "Entry point"
-        },
-        "mergeRule": {
-            "description": "Rule used to merge this property on source object.",
-            "oneOf": [
-                {
-                    "items": {
-                        "$ref": "#definitions/mergeRule"
-                    },
-                    "type": "array"
-                },
-                {
-                    "additionalProperties": {
-                        "$ref": "#definitions/mergeRule"
-                    },
-                    "type": "object"
-                },
-                {
-                    "enum": [
-                        "...merge",
-                        "append",
-                        "match",
-                        "merge",
-                        "prepend",
-                        "protected"
-                    ],
-                    "type": "string"
-                }
             ]
-        }
-    },
-    "description": "Surface's compiler options.",
-    "properties": {
-        "bundlerAnalyzer": {
-            "$ref": "#/definitions/bundlerAnalyzer",
-            "description": "Bundler analyzer configuration."
         },
-        "dependencies": {
-            "description": "Configurations used by multicompiler. When specified, all root configuration will merge with it.",
-            "items": {
-                "$ref": "#/definitions/configuration"
-            },
-            "type": "array"
+        "eslint": {
+            "properties": {
+                "cwd": {
+                    "description": "CWD.",
+                    "type": "string"
+                },
+                "enabled": {
+                    "description": "CWD.",
+                    "type": "boolean"
+                },
+                "eslintrc": {
+                    "description": "CWD.",
+                    "type": "boolean"
+                },
+                "files": {
+                    "$ref": "#/definitions/stringOrStringArray"
+                }
+            }
         },
-        "devServer": {
-            "$ref": "#/definitions/devServer",
-            "description": "Dev Server configuration."
+        "fileCacheOptions": {
+            "properties": {
+                "cacheDirectory": {
+                    "description": "Base directory for the cache (defaults to node_modules/.cache/webpack).",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Name for the cache. Different names will lead to different coexisting caches.",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "Name for the cache. Different names will lead to different coexisting caches.",
+                    "enum": [
+                        "filesystem"
+                    ]
+                }
+            }
         },
         "includeFiles": {
             "description": "File patterns to copy to output path.",
@@ -372,26 +299,308 @@
             },
             "type": "array"
         },
+        "index": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "$ref": "#/definitions/indexOptions"
+                }
+            ]
+        },
+        "indexOptions": {
+            "properties": {
+                "cache": {
+                    "description": "Emit the file only if it was changed.",
+                    "type": "boolean"
+                },
+                "filename": {
+                    "description": "The file to write the HTML to. Supports subdirectories eg: `assets/admin.html` [name] will be replaced by the entry name",
+                    "type": "string"
+                },
+                "minify": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "enum": [
+                                "auto"
+                            ]
+                        }
+                    ],
+                    "description": "HTML Minification options. Set to `false` to disable minifcation. Set to `'auto'` to enable minifcation only for production mode."
+                },
+                "publicPath": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "enum": [
+                                "auto"
+                            ]
+                        }
+                    ],
+                    "description": "By default the public path is set to `auto` - that way the bundler will try to set the publicPath according to the current filename and the project publicPath setting."
+                },
+                "template": {
+                    "description": "Path to the template",
+                    "type": "string"
+                }
+            }
+        },
         "logging": {
             "description": "Log level.",
-            "oneOf": [
+            "enum": [
+                "none",
+                "verbose",
+                "error",
+                "warn",
+                "info",
+                "log"
+            ]
+        },
+        "memoryCacheOptions": {
+            "properties": {
+                "maxGenerations": {
+                    "description": "Number of generations unused cache entries stay in memory cache at minimum (1 = may be removed after unused for a single compilation, ..., Infinity: kept forever).",
+                    "type": "number"
+                },
+                "type": {
+                    "description": "In memory caching.",
+                    "enum": [
+                        "memory"
+                    ]
+                }
+            }
+        },
+        "mode": {
+            "enum": [
+                "development",
+                "production"
+            ]
+        },
+        "optimization": {
+            "properties": {
+                "chunkIds": {
+                    "description": "Define the algorithm to choose chunk ids (named: readable ids for better debugging, deterministic: numeric hash ids for better long term caching, size: numeric ids focused on minimal initial download size, total-size: numeric ids focused on minimal total download size, false: no algorithm used, as custom one can be provided via plugin).",
+                    "enum": [
+                        false,
+                        "natural",
+                        "named",
+                        "deterministic",
+                        "size",
+                        "total-size"
+                    ]
+                },
+                "concatenateModules": {
+                    "description": "Concatenate modules when possible to generate less modules, more efficient code and enable more optimizations by the minimizer.",
+                    "type": "boolean"
+                },
+                "emitOnErrors": {
+                    "description": "Emit assets even when errors occur. Critical errors are emitted into the generated code and will cause errors at runtime.",
+                    "type": "boolean"
+                },
+                "flagIncludedChunks": {
+                    "description": "Also flag chunks as loaded which contain a subset of the modules.",
+                    "type": "boolean"
+                },
+                "mangleExports": {
+                    "description": "Also flag chunks as loaded which contain a subset of the modules.",
+                    "enum": [
+                        true,
+                        false,
+                        "deterministic",
+                        "size"
+                    ]
+                },
+                "mergeDuplicateChunks": {
+                    "description": "Merge chunks which contain the same modules.",
+                    "type": "boolean"
+                },
+                "minimize": {
+                    "description": "Enable minimizing the output. Uses optimization.minimizer.",
+                    "type": "boolean"
+                },
+                "moduleIds": {
+                    "description": "Define the algorithm to choose module ids (natural: numeric ids in order of usage, named: readable ids for better debugging, hashed: (deprecated) short hashes as ids for better long term caching, deterministic: numeric hash ids for better long term caching, size: numeric ids focused on minimal initial download size, false: no algorithm used, as custom one can be provided via plugin).",
+                    "enum": [
+                        false,
+                        "natural",
+                        "named",
+                        "deterministic",
+                        "size",
+                        "hashed"
+                    ]
+                },
+                "providedExports": {
+                    "description": "Figure out which exports are provided by modules to generate more efficient code.",
+                    "type": "boolean"
+                },
+                "usedExports": {
+                    "description": "Figure out which exports are used by modules to mangle export names, omit unused exports and generate more efficient code (true: analyse used exports for each runtime, 'global': analyse exports globally for all runtimes combined).",
+                    "enum": [
+                        true,
+                        false,
+                        "global"
+                    ]
+                }
+            }
+        },
+        "performance": {
+            "properties": {
+                "hints": {
+                    "description": "Sets the format of the hints: warnings, errors or nothing at all.",
+                    "enum": [
+                        false,
+                        "error",
+                        "warning"
+                    ]
+                },
+                "maxAssetSize": {
+                    "description": "File size limit (in bytes) when exceeded, that webpack will provide performance hints.",
+                    "type": "number"
+                },
+                "maxEntrypointSize": {
+                    "description": "Total size of an entry point (in bytes).",
+                    "type": "number"
+                }
+            }
+        },
+        "preferTs": {
+            "anyOf": [
                 {
                     "type": "boolean"
                 },
                 {
-                    "enum": [
-                        "none",
-                        "verbose",
-                        "error",
-                        "warn",
-                        "info",
-                        "log"
-                    ],
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            ],
+            "description": "Resolve to the ts file when next to the transpiled js file."
+        },
+        "project": {
+            "additionalProperties": false,
+            "properties": {
+                "analyzer": {
+                    "$ref": "#/definitions/analyzer",
+                    "description": "Bundler analyzer configuration."
+                },
+                "configurations": {
+                    "$ref": "#/definitions/configurations"
+                },
+                "context": {
+                    "description": "The base directory for resolving the entry option.",
+                    "type": "string"
+                },
+                "entry": {
+                    "$ref": "#/definitions/entry",
+                    "description": "Entry points."
+                },
+                "eslint": {
+                    "$ref": "#/definitions/eslint",
+                    "description": "Eslint options."
+                },
+                "filename": {
+                    "description": "The filename of the entry chunk as relative path inside the output path directory.",
+                    "type": "string"
+                },
+                "includeFiles": {
+                    "$ref": "#/definitions/includeFiles",
+                    "description": "File patterns to copy to output path."
+                },
+                "index": {
+                    "description": "Path to html template file.",
+                    "type": "string"
+                },
+                "mode": {
+                    "$ref": "#/definitions/mode",
+                    "description": "Enable production optimizations or development hints."
+                },
+                "output": {
+                    "description": "The output directory.",
+                    "type": "string"
+                },
+                "preferTs": {
+                    "$ref": "#/definitions/preferTs",
+                    "description": "Resolve to the ts file when next to the transpiled js file."
+                },
+                "publicPath": {
+                    "description": "The output path from the view of the Javascript / HTML page.",
+                    "type": "string"
+                },
+                "target": {
+                    "$ref": "#/definitions/target",
+                    "description": "Environment to build for."
+                },
+                "tsconfig": {
+                    "description": "Path to tsconfig file.",
                     "type": "string"
                 }
+            },
+            "description": "Project settings.",
+            "type": "object"
+        },
+        "stringOrBoolean": {
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "boolean"
+                }
+            ]
+        },
+        "stringOrStringArray": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            ]
+        },
+        "target": {
+            "enum": [
+                "pwa",
+                "web",
+                "webworker"
             ]
         }
     },
-    "required": [],
-    "title": "Surface's compiler options"
+    "description": "Surface's builder options.",
+    "properties": {
+        "$schema": {
+            "description": "The schema to verify this document against.",
+            "type": "string"
+        },
+        "devServer": {
+            "$ref": "#/definitions/devServer",
+            "description": "Dev Server configuration."
+        },
+        "logging": {
+            "$ref": "#/definitions/logging",
+            "description": "Log level."
+        },
+        "main": {
+            "description": "Main project. Used by dev server.",
+            "type": "string"
+        },
+        "projects": {
+            "description": "Project map.",
+            "additionalProperties": {
+                "$ref": "#/definitions/project"
+            },
+            "type": "object"
+        }
+    },
+    "title": "Surface's builder options"
 }

@@ -114,15 +114,7 @@ export default class CompilerSpec
     {
         setup("ok");
 
-        let signal = await Builder.serve({ });
-
-        await signal.close();
-
-        signal = await Builder.serve({ publicPath: "path" });
-
-        await signal.close();
-
-        signal = await Builder.serve({ publicPath: "/path" });
+        const signal = await Builder.serve({ });
 
         await signal.close();
 

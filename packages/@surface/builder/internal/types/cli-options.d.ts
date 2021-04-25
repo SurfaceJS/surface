@@ -1,23 +1,12 @@
-import type Project from "./project.js";
+import type CliProjectOptions from "./cli-project-options";
+import type Configuration     from "./configuration";
 
 type CliOptions =
 {
-    context?:                  string,
-    entry?:                    [string, ...string[]],
-    eslintrc?:                 string,
-    filename?:                 string,
-    htmlTemplate?:             string,
-    includeFiles?:             (string | { from: string, to: string })[],
-    logging?:                  Project["logging"],
-    mode?:                     Project["mode"],
-    output?:                   string,
-    preferTs?:                 boolean | string[],
-    project?:                  string,
-    publicPath?:               string,
-    tsconfig?:                 string,
-    useWorkbox?:               boolean,
-    webpackConfiguration?:     string,
-    webpackPostConfiguration?: string,
-};
+    config?:  string,
+    logging?: Configuration["logging"],
+    main?:    string,
+    project?: string,
+} & CliProjectOptions;
 
 export default CliOptions;
