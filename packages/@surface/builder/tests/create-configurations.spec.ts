@@ -25,7 +25,7 @@ export default class CreateConfigurationsSpec
         {
             hooks:
             {
-                beforeRun: async x => Promise.resolve(x),
+                configured: async x => Promise.resolve(x),
             },
             main:     "default",
             projects:

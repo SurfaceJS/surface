@@ -6,6 +6,7 @@ export default function createProgram(): commander.Command
 {
     return new commander.Command()
         .storeOptionsAsProperties(false)
+        .option("--clean                          [n]", "Enables clean builds. Note that clean builds can lead to unexpected results for projects with same output.")
         .option("--config                         <n>", "Path to configuration file.")
         .option("--context                        <n>", "The base directory for resolving the entry option.")
         .option("--entry                          <n>", "Entry points.", toArray)

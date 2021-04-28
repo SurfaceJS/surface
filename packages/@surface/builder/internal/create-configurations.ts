@@ -63,8 +63,13 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             },
         };
 
+        if (configuration.clean)
+        {
+            plugins.push(new CleanWebpackPlugin());
+        }
+
         plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
-        plugins.push(new CleanWebpackPlugin());
+        plugins.push(new webpack.ProgressPlugin());
         plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
         const tersePlugin = new TerserWebpackPlugin
@@ -80,21 +85,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (project.includeFiles)
         {
-            const patterns = project.includeFiles
-                .map
-                (
-                    pattern =>
-                    {
-                        if (typeof pattern == "string")
-                        {
-                            return { from: pattern, to: project.output! };
-                        }
-
-                        return pattern;
-                    },
-                );
-
-            const copyPlugin = new CopyPlugin({ patterns });
+            const copyPlugin = new CopyPlugin({ patterns: project.includeFiles });
 
             plugins.push(copyPlugin);
         }
@@ -127,7 +118,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         switch (type)
         {
             case "analyze":
-                plugins.push(new BundleAnalyzerPlugin(project.analyzer ?? { reportFilename: `${name}.html` }));
+                plugins.push(new BundleAnalyzerPlugin({ reportFilename: `${name}.html`, ...project.analyzer }));
                 break;
             case "serve":
                 if (name == main && isTargetingBrowser)
@@ -258,7 +249,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             },
         };
 
-        webPackconfigurations.push(await configuration.hooks?.beforeRun?.(webpackConfiguration) ?? webpackConfiguration);
+        webPackconfigurations.push(await configuration.hooks?.configured?.(webpackConfiguration) ?? webpackConfiguration);
     }
 
     return webPackconfigurations;

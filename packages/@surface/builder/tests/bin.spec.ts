@@ -48,6 +48,7 @@ export default class BinSpec
             "--analyzer-port=auto",
             "--analyzer-report-filename=analyzerReportFilename",
             "--analyzer-report-title=analyzerReportTitle",
+            "--clean=true",
             "--config=config",
             "--context=context",
             "--entry=entry-1,entry-2",
@@ -79,6 +80,7 @@ export default class BinSpec
             analyzerPort:             "auto",
             analyzerReportFilename:   "analyzerReportFilename",
             analyzerReportTitle:      "analyzerReportTitle",
+            clean:                    true,
             config:                   "config",
             context:                  "context",
             entry:                    ["entry-1", "entry-2"],
@@ -114,6 +116,7 @@ export default class BinSpec
         [
             "",
             "",
+            "--clean=true",
             "--config=config",
             "--context=context",
             "--entry=entry-1,entry-2",
@@ -137,6 +140,7 @@ export default class BinSpec
 
         const expected: Required<CliOptions & CliBuildOptions> =
         {
+            clean:        true,
             config:       "config",
             context:      "context",
             entry:        ["entry-1", "entry-2"],
@@ -173,6 +177,7 @@ export default class BinSpec
         [
             "",
             "",
+            "--clean=true",
             "--devserver-compress=true",
             "--devserver-content-base-public-path=devserverContentBasePublicPath-1,devserverContentBasePublicPath-2",
             "--devserver-content-base=devserverContentBase-1,devserverContentBase-2",
@@ -213,6 +218,7 @@ export default class BinSpec
 
         const expected: Required<CliOptions & CliDevServerOptions> =
         {
+            clean:                          true,
             config:                         "config",
             context:                        "context",
             devserverCompress:              true,

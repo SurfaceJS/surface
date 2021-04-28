@@ -71,31 +71,47 @@
         "buildConfiguration": {
             "properties": {
                 "cache": {
-                    "$ref": "#/definitions/cache"
+                    "description": "Cache generated modules and chunks to improve performance for multiple incremental builds.",
+                    "oneOf": [
+                        {
+                            "if": {
+                                "properties": {
+                                    "type": {
+                                        "const": "memory"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "$ref": "#/definitions/memoryCacheOptions"
+                            },
+                            "else": {
+                                "$ref": "#/definitions/fileCacheOptions"
+                            },
+                            "properties": {
+                                "type": {
+                                    "enum": [
+                                        "memory",
+                                        "filesystem"
+                                    ]
+                                }
+                            },
+                            "required": ["type"],
+                            "type": "object"
+                        },
+                        {
+                            "type": "boolean"
+                        }
+                    ]
                 },
                 "optimization": {
-                    "$ref": "#/definitions/optimization"
+                    "$ref": "#/definitions/optimization",
+                    "description": ""
                 },
                 "performance": {
-                    "$ref": "#/definitions/performance"
+                    "$ref": "#/definitions/performance",
+                    "description": "Configuration for web performance recommendations."
                 }
             }
-        },
-        "cache": {
-            "oneOf": [
-                {
-                    "type": "boolean"
-                },
-                {
-                    "$ref": "#/definitions/memoryCacheOptions"
-                },
-                {
-                    "$ref": "#/definitions/fileCacheOptions"
-                }
-            ]
-        },
-        "configurations": {
-            "type": "object"
         },
         "devServer": {
             "properties": {
@@ -270,7 +286,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "description": "Name for the cache. Different names will lead to different coexisting caches.",
+                    "description": "Filesystem caching.",
                     "enum": [
                         "filesystem"
                     ]
@@ -383,6 +399,7 @@
             ]
         },
         "optimization": {
+            "description": "",
             "properties": {
                 "chunkIds": {
                     "description": "Define the algorithm to choose chunk ids (named: readable ids for better debugging, deterministic: numeric hash ids for better long term caching, size: numeric ids focused on minimal initial download size, total-size: numeric ids focused on minimal total download size, false: no algorithm used, as custom one can be provided via plugin).",
@@ -485,17 +502,34 @@
         },
         "project": {
             "additionalProperties": false,
+            "description": "Project settings.",
             "properties": {
                 "analyzer": {
                     "$ref": "#/definitions/analyzer",
                     "description": "Bundler analyzer configuration."
                 },
                 "configurations": {
-                    "$ref": "#/definitions/configurations"
+                    "description": "Configurations by mode. Use to override some defaults.",
+                    "properties": {
+                        "development": {
+                            "$ref": "#/definitions/buildConfiguration"
+                        },
+                        "production": {
+                            "$ref": "#/definitions/buildConfiguration"
+                        }
+                    },
+                    "type": "object"
                 },
                 "context": {
                     "description": "The base directory for resolving the entry option.",
                     "type": "string"
+                },
+                "dependencies": {
+                    "description": "References to other projects to depend on.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
                 },
                 "entry": {
                     "$ref": "#/definitions/entry",
@@ -542,7 +576,6 @@
                     "type": "string"
                 }
             },
-            "description": "Project settings.",
             "type": "object"
         },
         "stringOrBoolean": {
@@ -582,6 +615,11 @@
             "description": "The schema to verify this document against.",
             "type": "string"
         },
+        "clean":
+        {
+            "description": "Enables clean builds. Note that clean builds can lead to unexpected results for projects with same output.",
+            "type": "boolean"
+        },
         "devServer": {
             "$ref": "#/definitions/devServer",
             "description": "Dev Server configuration."
@@ -595,10 +633,10 @@
             "type": "string"
         },
         "projects": {
-            "description": "Project map.",
             "additionalProperties": {
                 "$ref": "#/definitions/project"
             },
+            "description": "Project map.",
             "type": "object"
         }
     },

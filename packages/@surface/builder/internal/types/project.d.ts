@@ -18,7 +18,7 @@ type Project =
     /** Bundle analyzer options */
     analyzer?: BundleAnalyzerPlugin.Options,
 
-    /** Configurations by mode. Use to override some defaults */
+    /** Configurations by mode. Use to override some defaults. */
     configurations?:
     {
         development?: BuildConfiguration,
@@ -27,6 +27,9 @@ type Project =
 
     /** The base directory for resolving the entry option. */
     context?: string,
+
+    /** References to other projects to depend on. */
+    dependencies?: string[],
 
     /** Entry points. */
     entry?: webpack.Configuration["entry"],

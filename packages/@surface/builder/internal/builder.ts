@@ -9,29 +9,27 @@ import type CompilerSignal  from "./types/compiler-signal";
 import type Configuration   from "./types/configuration.js";
 import type Logging         from "./types/logging";
 
-type WebpackOverload = (options: webpack.Configuration | webpack.Configuration[]) => webpack.Compiler | webpack.MultiCompiler;
-
 export default class Builder
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: Logging): (err?: Error, result?: webpack.Stats | any) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: Logging): (err?: Error, result?: webpack.MultiStats) => unknown
     {
         return (error, stats) => error ? reject(error) : (log(stats?.toString(createStats(logging))), resolve());
     }
 
     private static async runInternal(webpackConfiguration: webpack.Configuration[], logging?: Logging): Promise<void>
     {
-        const webpackCompiler = webpack(webpackConfiguration);
+        const compiler = webpack(webpackConfiguration);
 
-        await new Promise<void>((resolve, reject) => webpackCompiler.run(this.createHandler(resolve, reject, logging)));
+        await new Promise<void>((resolve, reject) => compiler.run(this.createHandler(resolve, reject, logging)));
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration | webpack.Configuration[], logging?: Logging): Promise<CompilerSignal>
+    private static async watchInternal(webpackConfiguration: webpack.Configuration[], logging?: Logging): Promise<CompilerSignal>
     {
-        const webpackCompiler = (webpack as WebpackOverload)(webpackConfiguration);
+        const compiler = webpack(webpackConfiguration);
 
-        let watching: ReturnType<webpack.Compiler["watch"] | webpack.MultiCompiler["watch"]>;
+        let watching: ReturnType<webpack.MultiCompiler["watch"]>;
 
-        await new Promise<void>((resolve, reject) => watching = webpackCompiler.watch({ }, this.createHandler(resolve, reject, logging)));
+        await new Promise<void>((resolve, reject) => watching = compiler.watch({ }, this.createHandler(resolve, reject, logging)));
 
         return { close: async () => new Promise<void>((resolve, reject) => watching.close(error => error ? reject(error) : resolve())) };
     }

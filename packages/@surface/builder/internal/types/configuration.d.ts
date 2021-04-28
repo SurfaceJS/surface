@@ -7,14 +7,17 @@ import type Project          from "./project";
 type Configuration =
 {
 
+    /** Enables clean builds. Note that clean builds can lead to unexpected results for projects with same output. */
+    clean?: boolean,
+
     /** Dev server configurations. */
     devServer?: WebpackDevServer.Configuration,
 
     /** Module specifier or hook object */
     hooks?: {
 
-        /** Executed before compilation. */
-        beforeRun?: ((configuration: webpack.Configuration) => Promise<webpack.Configuration>),
+        /** Executed after the configuration is created and before it is applied. */
+        configured?: ((configuration: webpack.Configuration) => Promise<webpack.Configuration>),
     },
 
     /** Main project. Used by dev server. */

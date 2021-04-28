@@ -3,6 +3,7 @@ import type Configuration     from "./configuration";
 
 type CliOptions =
 {
+    clean?:   boolean,
     config?:  string,
     logging?: Configuration["logging"],
     main?:    string,

@@ -24,6 +24,11 @@ const INSTANCE_TARGET = { };
 const CALLABLE_TARGET = () => void 0;
 const NEWABLE_TARGET  = class { };
 
+const isAllowed = (target: object, key: PropertyKey): boolean =>
+    typeof target == "function"
+        ? key in Function.prototype
+        : key in Object.prototype || key in Promise.prototype;
+
 type Mode = "strict" | "loose";
 
 export default class Mock<T extends object | Function>
@@ -113,9 +118,9 @@ export default class Mock<T extends object | Function>
                 {
                     return setup.execute();
                 }
-                else if (this.mode == "strict")
+                else if (this.mode == "strict" && !isAllowed(target, propertyKey))
                 {
-                    throw new Error(`${this.getTargetName(target)} does not has get setup for the key "${typeof propertyKey == "symbol" ? `Symbol(${propertyKey.description})` : propertyKey}"`);
+                    throw new Error(`${this.getTargetName(target)} does not has get setup for the key "${String(propertyKey)}"`);
                 }
 
                 return Reflect.get(target, propertyKey, receiver);
@@ -137,7 +142,7 @@ export default class Mock<T extends object | Function>
 
                     return { configurable: true, enumerable: true, value, writable: true };
                 }
-                else if (this.mode == "strict")
+                else if (this.mode == "strict" && !isAllowed(target, propertyKey))
                 {
                     throw new Error(`${this.getTargetName(target)} does not has get setup for the key "${typeof propertyKey == "symbol" ? `Symbol(${propertyKey.description})` : propertyKey}"`);
                 }
@@ -152,7 +157,7 @@ export default class Mock<T extends object | Function>
     private getTargetName(target: object): string
     {
         return target == INSTANCE_TARGET
-            ? "Instace target"
+            ? "Instance target"
             : target == CALLABLE_TARGET
                 ? "Callable target"
                 : target == NEWABLE_TARGET

@@ -25,8 +25,9 @@ export default function applyProjectDefaults(project: Project): Project
             {
                 cache:
                 {
-                    name: ".cache",
-                    type: "filesystem",
+                    maxAge: 3600000,
+                    name:   ".cache",
+                    type:   "filesystem",
                 },
                 optimization:
                 {
