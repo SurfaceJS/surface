@@ -40,28 +40,6 @@
             "type": "node"
         },
         {
-            "args":
-            [
-                "relink"
-            ],
-            "cwd":     "${workspaceFolder}/tasks",
-            "name":    "Launch Modules Tasks Cli",
-            "program": "${workspaceFolder}/tasks/cli",
-            "request": "launch",
-            "type":    "node"
-        },
-        {
-            "args":
-            [
-                "relink"
-            ],
-            "cwd":     "${workspaceFolder}/tasks",
-            "name":    "Launch Workbench Tasks Cli",
-            "program": "${workspaceFolder}/tasks/cli",
-            "request": "launch",
-            "type":    "node"
-        },
-        {
             "cwd":      "${fileDirname}",
             "name":     "Debug File",
             "program":  "${fileDirname}/${fileBasenameNoExtension}.js",

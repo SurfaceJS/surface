@@ -1,46 +1,10 @@
 {
     "inputs": [
         {
-            "default": "default",
-            "description": "Strategy type for dependency sync",
-            "id": "strategy-type",
-            "options": [
-                "default",
-                "force-version",
-                "force-dependent-updates",
-                "ignore-depentends"
-            ],
-            "type": "pickString"
-        },
-        {
-            "default": "*.*.*",
-            "description": "Version for dependency sync",
-            "id": "sync-version",
+            "default": "",
+            "description": "Timestamp used by nightly build",
+            "id": "timestamp",
             "type": "promptString"
-        },
-        {
-            "default": "@surface/core",
-            "description": "Modules",
-            "id": "modules",
-            "options": [
-                "@surface/cli",
-                "@surface/collection",
-                "@surface/builder",
-                "@surface/core",
-                "@surface/custom-element",
-                "@surface/dependency-injection",
-                "@surface/enumerable",
-                "@surface/expression",
-                "@surface/io",
-                "@surface/mock",
-                "@surface/reactive",
-                "@surface/reflection",
-                "@surface/router",
-                "@surface/test-suite",
-                "@surface/view-router",
-                "@surface/web-host",
-            ],
-            "type": "pickString"
         }
     ],
     "tasks": [
@@ -105,9 +69,19 @@
             "type": "shell"
         },
         {
-            "command": "npm task:publish -- --t ${env:NPM_AUTH_TOKEN}",
+            "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=nightly --timestamp=${input:timestamp} --debug",
             "isBackground": true,
-            "label": "Publish to NPM - DEV",
+            "label": "Publish - Nightly",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": [],
+            "type": "shell"
+        },
+        {
+            "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=release --debug",
+            "isBackground": true,
+            "label": "Publish - Release",
             "presentation": {
                 "reveal": "always"
             },

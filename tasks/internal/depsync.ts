@@ -1,6 +1,5 @@
 import chalk                    from "chalk";
 import type { IPackage }        from "npm-registry-client";
-import { filterPackages }       from "./common.js";
 import Status                   from "./enums/status.js";
 import StrategyType             from "./enums/strategy-type.js";
 import NpmRepository            from "./npm-repository.js";
@@ -12,12 +11,12 @@ const darkGreen = chalk.rgb(0, 128, 0);
 const green     = chalk.rgb(0, 255, 0);
 const purple    = chalk.rgb(191, 0, 191);
 
-export interface IOptions
+export type Options =
 {
-    strategy?: StrategyType;
-    silent?:   boolean;
-    template?: string;
-}
+    strategy?: StrategyType,
+    silent?:   boolean,
+    version?:  `${string}.${string}.${string}`,
+};
 
 export default class Depsync
 {
@@ -28,23 +27,23 @@ export default class Depsync
     private readonly  strategy:   StrategyType;
     private readonly  template?:  string;
 
-    public constructor(repository: NpmRepository, lookup: Map<string, IPackage>, options?: IOptions)
+    public constructor(repository: NpmRepository, lookup: Map<string, IPackage>, options?: Options)
     {
         this.repository = repository;
         this.lookup     = lookup;
 
-        // istanbul ignore next
+        // c8 ignore next
         this.silent   = options?.silent   ?? false;
-        // istanbul ignore next
+        // c8 ignore next
         this.strategy = options?.strategy ?? StrategyType.Default;
-        // istanbul ignore next
-        this.template = options?.template;
+        // c8 ignore next
+        this.template = options?.version;
     }
 
-    // istanbul ignore next
-    public static async sync(lookup: Map<string, IPackage>, modules?: string[], options?: IOptions): Promise<IPackage[]>
+    // c8 ignore next
+    public static async sync(lookup: Map<string, IPackage>, options?: Options): Promise<IPackage[]>
     {
-        return new Depsync(new NpmRepository(), lookup, options).sync(modules);
+        return new Depsync(new NpmRepository(), lookup, options).sync();
     }
 
     private applyPlaceholder(placeholder: string | undefined, value: string | undefined): string | undefined
@@ -92,7 +91,7 @@ export default class Depsync
 
                     $package.version = targetVersion.toString();
 
-                    // istanbul ignore if
+                    // c8 ignore if
                     if (!this.silent)
                     {
                         console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
@@ -132,7 +131,7 @@ export default class Depsync
 
             dependent.dependencies![$package.name] = $package.version;
 
-            // istanbul ignore if
+            // c8 ignore if
             if (!this.silent)
             {
                 console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dependency in ${blue(dependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
@@ -160,7 +159,7 @@ export default class Depsync
 
             devDependent.devDependencies![$package.name] = $package.version;
 
-            // istanbul ignore if
+            // c8 ignore if
             if (!this.silent)
             {
                 console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} dev dependency in ${blue(devDependent.name)} - ${darkGreen(version)} >> ${green($package.version)}`);
@@ -192,22 +191,22 @@ export default class Depsync
 
         $package.version = version.toString();
 
-        // istanbul ignore if
+        // c8 ignore if
         if (!this.silent)
         {
             console.log(`${chalk.bold.gray("[UPDATE]:")} ${blue($package.name)} - ${darkGreen(actual)} >> ${green($package.version)}`);
         }
     }
 
-    public async sync(modules: string[] = []): Promise<IPackage[]>
+    public async sync(): Promise<IPackage[]>
     {
-        // istanbul ignore if
+        // c8 ignore if
         if (this.template && !this.silent)
         {
             console.log(`[INFO]: Sync using target version ${purple(this.template)}`);
         }
 
-        const packages = filterPackages(this.lookup.values(), modules);
+        const packages = Array.from(this.lookup.values());
 
         const updateList = await Promise.all(packages.map(async x => ({ package: x, updated: await this.hasUpdate(x) })));
 

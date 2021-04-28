@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-import { exec }            from "child_process";
 import fs                  from "fs";
 import path                from "path";
 import { fileURLToPath }   from "url";
@@ -11,48 +10,30 @@ import
     backupFile,
     cleanup,
     execute,
-    filterPackages,
     log,
     lookup,
     paths,
-    removePathAsync,
     restoreBackup,
 } from "./common.js";
-import Depsync       from "./depsync.js";
-import StrategyType  from "./enums/strategy-type.js";
-import NpmRepository from "./npm-repository.js";
-import patterns      from "./patterns.js";
-import Publisher     from "./publisher.js";
+import Depsync                from "./depsync.js";
+import StrategyType           from "./enums/strategy-type.js";
+import NpmRepository          from "./npm-repository.js";
+import patterns               from "./patterns.js";
+import Publisher              from "./publisher.js";
+import type CliPublishOptions from "./types/cli-publish-options.js";
+import type SemanticVersion   from "./types/semantic-version";
 
-const execAsync      = promisify(exec);
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const tsc     = path.resolve(dirname, "../../node_modules/.bin/tsc");
 
-type PublishOptions =
+export default class Commands
 {
-    config?:   "development" | "release",
-    debug?:    boolean,
-    modules?:  string[],
-    strategy?: StrategyType,
-    target?:   string,
-    token:     string,
-};
-
-export default class Tasks
-{
-    private static async getTag(): Promise<string | undefined>
+    private static async sync(strategy: StrategyType, version?: SemanticVersion): Promise<void>
     {
-        return (await execAsync("git tag --points-at HEAD")).stdout;
-    }
-
-    private static async sync(options: { modules?: string[], strategy?: StrategyType, template?: string }): Promise<void>
-    {
-        const { modules, strategy, template } = options;
-
-        const syncedPackages = await Depsync.sync(lookup, modules, { strategy, template });
+        const syncedPackages = await Depsync.sync(lookup, { strategy, version });
 
         for (const $package of syncedPackages)
         {
@@ -64,11 +45,11 @@ export default class Tasks
         }
     }
 
-    public static async backup({ modules = [] as string[] } = { }): Promise<void>
+    private static async backup(): Promise<void>
     {
         const commands: Promise<void>[] = [];
 
-        for (const $package of filterPackages(lookup.values(), modules))
+        for (const $package of lookup.values())
         {
             const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
 
@@ -82,11 +63,11 @@ export default class Tasks
         log(chalk.bold.green("Backuping modules done!"));
     }
 
-    public static async build({ modules = [] as string[], declaration = false } = { }): Promise<void>
+    public static async build(declaration: boolean = false): Promise<void>
     {
         const commands: Promise<void>[] = [];
 
-        for (const $package of filterPackages(lookup.values(), modules))
+        for (const $package of lookup.values())
         {
             const source = path.normalize(path.resolve(paths.packages.root, $package.name));
 
@@ -98,20 +79,15 @@ export default class Tasks
         log(chalk.bold.green("Building modules done!"));
     }
 
-    public static async clean({ modules = [] as string[], nodeModules = false } = { }): Promise<void>
+    public static async clean(): Promise<void>
     {
         const commands: Promise<unknown>[] = [];
 
-        for (const $package of filterPackages(lookup.values(), modules))
+        for (const $package of lookup.values())
         {
             const source = path.normalize(path.resolve(paths.packages.root, $package.name));
 
             log(`Cleaning ${chalk.bold.blue($package.name)}`);
-
-            if (nodeModules)
-            {
-                commands.push(removePathAsync(path.join(source, "node_modules")));
-            }
 
             commands.push(cleanup(source, patterns.clean.includes, patterns.clean.excludes));
         }
@@ -136,29 +112,23 @@ export default class Tasks
         await execute(`cover ${chalk.bold.blue(filepath)} tests`, command);
     }
 
-    public static async publish(registry: string, options: PublishOptions): Promise<void>
+    public static async publish(registry: string, options: CliPublishOptions): Promise<void>
     {
-        const exclude = (await readFileAsync(path.join(dirname, "../.publishignore")))
-            .toString()
-            .split("\n")
-            .map(x => x.trim());
+        console.log(options.target);
 
-        await Tasks.clean();
-        await Tasks.build({ declaration: true });
-        await Tasks.backup();
+        const publishignore = (await readFileAsync(path.join(dirname, "../.publishignore"))).toString();
+
+        const exclude = new Set(publishignore.split("\n").map(x => x.trim()));
+
+        await Commands.clean();
+        await Commands.build(true);
+        await Commands.backup();
 
         try
         {
             if (options.config == "release")
             {
-                const version = options.target
-                    ? options.target
-                    : await Tasks.getTag();
-
-                if (version)
-                {
-                    await Tasks.sync({ strategy: StrategyType.Default, template: version });
-                }
+                await Commands.sync(StrategyType.Default);
             }
             else
             {
@@ -166,28 +136,30 @@ export default class Tasks
                     .replace(/[-T:]/g, "")
                     .substring(0, 12);
 
-                await Tasks.sync({ strategy: StrategyType.ForceVersion, template: `*.*.*-dev.${timestamp}` });
+                await Commands.sync(StrategyType.ForceVersion, `*.*.*-dev.${timestamp}` as SemanticVersion);
             }
 
             const auth = { alwaysAuth: true, token: options.token } as Credential;
 
-            const packages = filterPackages(lookup.values(), options.modules ?? [], exclude).map(x => x.name);
+            const packages = Array.from(lookup.keys()).filter(x => !exclude.has(x));
 
-            await new Publisher(lookup, new NpmRepository(registry, true), auth, "public", options.debug).publish(packages);
+            const repository = new NpmRepository(registry);
+
+            await new Publisher(lookup, repository, auth, "public", options.debug).publish(packages);
         }
         catch (error)
         {
             log(error.message);
         }
 
-        await Tasks.restore();
+        await Commands.restore();
     }
 
-    public static async restore({ modules = [] as string[] } = { }): Promise<void>
+    public static async restore(): Promise<void>
     {
         const commands: Promise<void>[] = [];
 
-        for (const $package of filterPackages(lookup.values(), modules))
+        for (const $package of lookup.values())
         {
             const manifest = path.normalize(path.resolve(paths.packages.root, $package.name, "package.json"));
 
