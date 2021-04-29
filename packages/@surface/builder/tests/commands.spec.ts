@@ -11,20 +11,23 @@ import type CliOptions                        from "../internal/types/cli-option
 import type Configuration                     from "../internal/types/configuration.js";
 
 const CWD = process.cwd();
-const DIST               = path.join(CWD, "dist");
-const CACHE              = path.join(CWD, ".cache");
-const ESLINTRC_JS        = path.join(CWD, ".eslintrc.js");
-const ESLINTRC_JSON      = path.join(CWD, ".eslintrc.json");
-const INDEX_HTML         = path.join(CWD, "index.html");
-const SOURCE             = path.join(CWD, "source");
-const SRC                = path.join(CWD, "src");
-const SURFACE_JS         = path.join(CWD, "surface.js");
-const SURFACE_JSON       = path.join(CWD, "surface.json");
-const EMPTY_JSON         = path.join(CWD, "empty.json");
-const TEMPLATE_HTML      = path.join(CWD, "template.html");
-const TSCONFIG_BASE_JSON = path.join(CWD, "tsconfig.base.json");
-const TSCONFIG_HTML      = path.join(CWD, "tsconfig.json");
-const WWW                = path.join(CWD, "www");
+const DIST                           = path.join(CWD, "dist");
+const ESLINTRC_JS                    = path.join(CWD, ".eslintrc.js");
+const INDEX_HTML                     = path.join(CWD, "index.html");
+const PROJECT_CACHE                  = path.join(CWD, "project", ".cache");
+const PROJECT_DIST                   = path.join(CWD, "project", "dist");
+const PROJECT_EMPTY_JSON             = path.join(CWD, "project", "empty.json");
+const PROJECT_ESLINTRC_JSON          = path.join(CWD, "project", ".eslintrc.json");
+const PROJECT_SOURCE                 = path.join(CWD, "project", "source");
+const PROJECT_SRC                    = path.join(CWD, "project", "src");
+const PROJECT_SURFACE_JS             = path.join(CWD, "project", "surface.js");
+const PROJECT_SETTINGS_JS            = path.join(CWD, "project", "settings.js");
+const PROJECT_SETTINGS_PRODUCTION_JS = path.join(CWD, "project", "settings.production.js");
+const PROJECT_SURFACE_JSON           = path.join(CWD, "project", "surface.json");
+const PROJECT_TEMPLATE_HTML          = path.join(CWD, "project", "template.html");
+const PROJECT_TSCONFIG_BASE_JSON     = path.join(CWD, "project", "tsconfig.base.json");
+const TSCONFIG_JSON                  = path.join(CWD, "tsconfig.json");
+const WWW                            = path.join(CWD, "www");
 
 const isFileMock       = Mock.of(isFile);
 const lookupFileMock   = Mock.of(lookupFile);
@@ -40,6 +43,7 @@ const DEFAULT_EXPECTED: Configuration =
         {
             analyzer: { },
             eslint:   { },
+            output:   DIST,
         },
     },
 };
@@ -64,7 +68,14 @@ const CONFIGURATION_JSON: Configuration =
                 },
                 production:
                 {
-                    cache: false,
+                    cache:     false,
+                    overrides:
+                    [
+                        {
+                            replace: "./settings.js",
+                            with:    "./settings.production.js",
+                        },
+                    ],
                 },
             },
             context:      "src",
@@ -77,7 +88,7 @@ const CONFIGURATION_JSON: Configuration =
             includeFiles:   ["fonts", "images"],
             index:          "template.html",
             mode:           "production",
-            output:         "www",
+            output:         "../www",
             preferTs:       ["src/**/*"],
             publicPath:     "app",
             target:         "web",
@@ -128,16 +139,16 @@ export default class CommandsSpec
         lookupFileMock.lock();
         loadModuleMock.lock();
 
-        isFileMock.call(EMPTY_JSON).returns(true);
-        isFileMock.call(SURFACE_JSON).returns(true);
-        isFileMock.call(SURFACE_JS).returns(true);
+        isFileMock.call(PROJECT_EMPTY_JSON).returns(true);
+        isFileMock.call(PROJECT_SURFACE_JSON).returns(true);
+        isFileMock.call(PROJECT_SURFACE_JS).returns(true);
         isFileMock.call(It.any());
 
         lookupFileMock.call(It.any());
 
-        loadModuleMock.call(EMPTY_JSON).returns(Promise.resolve({ }));
-        loadModuleMock.call(SURFACE_JS).returns(Promise.resolve({ __esModule: true, default: CONFIGURATION_JS }));
-        loadModuleMock.call(SURFACE_JSON).returns(Promise.resolve(CONFIGURATION_JSON));
+        loadModuleMock.call(PROJECT_EMPTY_JSON).returns(Promise.resolve({ }));
+        loadModuleMock.call(PROJECT_SURFACE_JS).returns(Promise.resolve({ __esModule: true, default: CONFIGURATION_JS }));
+        loadModuleMock.call(PROJECT_SURFACE_JSON).returns(Promise.resolve(CONFIGURATION_JSON));
         loadModuleMock.call(It.any());
     }
 
@@ -199,7 +210,7 @@ export default class CommandsSpec
             .callback(x => actual2 = x)
             .returns(Promise.resolve());
 
-        await Commands.build({ config: EMPTY_JSON }),
+        await Commands.build({ config: PROJECT_EMPTY_JSON }),
 
         chai.assert.deepEqual(actual2!, expected2, "build 2");
 
@@ -213,7 +224,7 @@ export default class CommandsSpec
             .callback(x => actual4 = x)
             .returns(Promise.resolve());
 
-        await Commands.build({ config: SURFACE_JS }),
+        await Commands.build({ config: PROJECT_SURFACE_JS }),
 
         chai.assert.deepEqual(actual4!, expected4, "build 4");
 
@@ -231,36 +242,44 @@ export default class CommandsSpec
                         {
                             cache:
                             {
-                                cacheDirectory: CACHE,
+                                cacheDirectory: PROJECT_CACHE,
                                 type:           "filesystem",
                             },
                         },
                         production:
                         {
-                            cache: false,
+                            cache:     false,
+                            overrides:
+                            [
+                                {
+                                    replace: PROJECT_SETTINGS_JS,
+                                    with:    PROJECT_SETTINGS_PRODUCTION_JS,
+                                },
+                            ],
                         },
                     },
-                    context:      SRC,
+                    context:      PROJECT_SRC,
                     entry:        ["index.js"],
                     eslint:
                     {
-                        eslintrc: ESLINTRC_JSON,
+                        eslintrc: PROJECT_ESLINTRC_JSON,
                     },
                     filename:     "[name].[fullhash].js",
                     includeFiles: ["fonts", "images"],
-                    index:        TEMPLATE_HTML,
+                    index:        PROJECT_TEMPLATE_HTML,
                     mode:         "production",
                     output:       WWW,
                     preferTs:     ["src/**/*"],
                     publicPath:   "app",
                     target:       "web",
-                    tsconfig:     TSCONFIG_BASE_JSON,
+                    tsconfig:     PROJECT_TSCONFIG_BASE_JSON,
                 },
                 static:
                 {
                     analyzer: { },
                     entry:    "static/index.js",
                     eslint:   { },
+                    output:   PROJECT_DIST,
                 },
             },
         };
@@ -273,7 +292,7 @@ export default class CommandsSpec
             .callback(x => actual5 = x)
             .returns(Promise.resolve());
 
-        await Commands.build({ config: SURFACE_JSON }),
+        await Commands.build({ config: PROJECT_SURFACE_JSON }),
 
         chai.assert.deepEqual(actual5!, expected5, "build 5");
 
@@ -291,7 +310,7 @@ export default class CommandsSpec
                 static:
                 {
                     analyzer: { },
-                    context:  SOURCE,
+                    context:  PROJECT_SOURCE,
                     entry:    ["main.ts"],
                     eslint:
                     {
@@ -306,7 +325,7 @@ export default class CommandsSpec
                     preferTs:     true,
                     publicPath:   "path",
                     target:       "pwa",
-                    tsconfig:     TSCONFIG_HTML,
+                    tsconfig:     TSCONFIG_JSON,
                 },
             },
         };
@@ -321,8 +340,8 @@ export default class CommandsSpec
 
         const cliOptions: CliOptions =
         {
-            config:       SURFACE_JSON,
-            context:      "source",
+            config:       PROJECT_SURFACE_JSON,
+            context:      "project/source",
             entry:        ["main.ts"],
             eslintrc:     ".eslintrc.js",
             filename:     "[name].js",

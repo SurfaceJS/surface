@@ -8,7 +8,7 @@ program.version("1.0.0");
 
 program
     .command("build")
-    .action(Commands.build);
+    .action(async () => Commands.build());
 
 program
     .command("cover <n>")

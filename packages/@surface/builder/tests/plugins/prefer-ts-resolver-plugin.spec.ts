@@ -7,7 +7,7 @@ import fs                                                 from "fs";
 import Mock                                               from "@surface/mock";
 import { afterEach, beforeEach, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                               from "chai";
-import PreferTsResolvePlugin                              from "../../internal/plugins/prefer-ts-resolve-plugin.js";
+import PreferTsResolverPlugin                             from "../../internal/plugins/prefer-ts-resolver-plugin.js";
 import path                                               from "path";
 
 const CWD = process.cwd();
@@ -25,12 +25,12 @@ const PATH2_FOO    = path.join(CWD, "path-2", "foo");
 const PATH2_FOO_JS = path.join(CWD, "path-2", "foo.js");
 const PATH2_FOO_TS = path.join(CWD, "path-2", "foo.ts");
 
-type Resolver = Parameters<PreferTsResolvePlugin["apply"]>[0];
+type Resolver = Parameters<PreferTsResolverPlugin["apply"]>[0];
 
 const fsMock = Mock.of(fs);
 
 @suite
-export default class PreferTsResolvePluginSpec
+export default class PreferTsResolverPluginSpec
 {
     @beforeEach
     public beforeEach(): void
@@ -91,7 +91,7 @@ export default class PreferTsResolvePluginSpec
             },
         } as Resolver;
 
-        new PreferTsResolvePlugin().apply(resolver);
+        new PreferTsResolverPlugin().apply(resolver);
 
         const expectedForEmpty =
         [
@@ -111,7 +111,7 @@ export default class PreferTsResolvePluginSpec
 
         actual = [];
 
-        new PreferTsResolvePlugin(["**/path-1/**/*.js"]).apply(resolver);
+        new PreferTsResolverPlugin(["**/path-1/**/*.js"]).apply(resolver);
 
         const expectedForNonEmpty =
         [

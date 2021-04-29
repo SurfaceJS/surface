@@ -23,10 +23,9 @@
                 // "-w",  "false",                                              /* "-w|--watch"           */
             ],
             "cwd":      "${workspaceFolder}",
-            "name":     "Launch Compiler",
+            "name":     "Launch Builder",
             "outFiles":
             [
-                "${workspaceFolder}/packages/@surface/builder/node_modules/fork-ts-checker-webpack-plugin/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/internal/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
             ],

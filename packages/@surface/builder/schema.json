@@ -69,23 +69,21 @@
             "type": "object"
         },
         "buildConfiguration": {
+            "additionalProperties": false,
             "properties": {
                 "cache": {
                     "description": "Cache generated modules and chunks to improve performance for multiple incremental builds.",
                     "oneOf": [
                         {
+                            "else": {
+                                "$ref": "#/definitions/fileCacheOptions"
+                            },
                             "if": {
                                 "properties": {
                                     "type": {
                                         "const": "memory"
                                     }
                                 }
-                            },
-                            "then": {
-                                "$ref": "#/definitions/memoryCacheOptions"
-                            },
-                            "else": {
-                                "$ref": "#/definitions/fileCacheOptions"
                             },
                             "properties": {
                                 "type": {
@@ -95,7 +93,12 @@
                                     ]
                                 }
                             },
-                            "required": ["type"],
+                            "required": [
+                                "type"
+                            ],
+                            "then": {
+                                "$ref": "#/definitions/memoryCacheOptions"
+                            },
                             "type": "object"
                         },
                         {
@@ -107,11 +110,16 @@
                     "$ref": "#/definitions/optimization",
                     "description": ""
                 },
+                "overrides": {
+                    "$ref": "#/definitions/overrides",
+                    "description": "Overrides files during compilation."
+                },
                 "performance": {
                     "$ref": "#/definitions/performance",
                     "description": "Configuration for web performance recommendations."
                 }
-            }
+            },
+            "type": "object"
         },
         "devServer": {
             "properties": {
@@ -486,6 +494,21 @@
                 }
             }
         },
+        "overrides": {
+            "items": {
+                "properties": {
+                    "replace": {
+                        "type":"string"
+                    },
+                    "with": {
+                        "type":"string"
+                    }
+                },
+                "additionalProperties": false,
+                "type": "object"
+            },
+            "type": "array"
+        },
         "preferTs": {
             "anyOf": [
                 {
@@ -615,8 +638,7 @@
             "description": "The schema to verify this document against.",
             "type": "string"
         },
-        "clean":
-        {
+        "clean": {
             "description": "Enables clean builds. Note that clean builds can lead to unexpected results for projects with same output.",
             "type": "boolean"
         },

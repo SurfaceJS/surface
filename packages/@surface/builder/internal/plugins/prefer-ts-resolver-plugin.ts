@@ -6,27 +6,27 @@ import type webpack          from "webpack";
 type ResolverPluginInstance = Exclude<Exclude<webpack.ResolveOptions["plugins"], undefined>[number], "...">;
 type Resolver               = Parameters<ResolverPluginInstance["apply"]>[0];
 
-export default class PreferTsResolvePlugin implements ResolverPluginInstance
+export default class PreferTsResolverPlugin implements ResolverPluginInstance
 {
-    private readonly patterns: RegExp;
+    private readonly patterns: RegExp | null;
 
-    public constructor(patterns: string[] = [])
+    public constructor(patterns?: string[])
     {
-        this.patterns = patterns.length == 0 ? /.*/ : createPathMatcher(...patterns);
+        this.patterns = patterns ? createPathMatcher(...patterns) : null;
     }
 
     public apply(resolver: Resolver): void
     {
         resolver.hooks.result.tap
         (
-            PreferTsResolvePlugin.name,
+            PreferTsResolverPlugin.name,
             request =>
             {
                 if (typeof request.path == "string")
                 {
                     const target = path.parse(request.path);
 
-                    if (target.ext.toLowerCase() == ".js" && this.patterns.test(request.path))
+                    if (target.ext.toLowerCase() == ".js" && (this.patterns?.test(request.path) ?? true))
                     {
                         const simbling = path.join(target.dir, `${target.name}.ts`);
 

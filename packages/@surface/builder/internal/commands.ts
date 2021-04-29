@@ -1,15 +1,15 @@
-import path                                 from "path";
-import { DeepMergeFlags, deepMerge, isEsm } from "@surface/core";
-import { isFile, lookupFile }               from "@surface/io";
-import Builder                              from "./builder.js";
-import { createStats, loadModule }          from "./common.js";
-import type BuildConfiguration              from "./types/build-configuration.js";
-import type CliAnalyzerOptions              from "./types/cli-analyzer-options";
-import type CliBuildOptions                 from "./types/cli-build-options";
-import type CliDevServerOptions             from "./types/cli-dev-serve-options";
-import type CliOptions                      from "./types/cli-options";
-import type Configuration                   from "./types/configuration.js";
-import type Project                         from "./types/project";
+import path                                            from "path";
+import { DeepMergeFlags, deepMerge, isEsm }            from "@surface/core";
+import { isFile, lookupFile }                          from "@surface/io";
+import Builder                                         from "./builder.js";
+import { createStats, loadModule, locateProjectPaths } from "./common.js";
+import type BuildConfiguration                         from "./types/build-configuration.js";
+import type CliAnalyzerOptions                         from "./types/cli-analyzer-options";
+import type CliBuildOptions                            from "./types/cli-build-options";
+import type CliDevServerOptions                        from "./types/cli-dev-serve-options";
+import type CliOptions                                 from "./types/cli-options";
+import type Configuration                              from "./types/configuration.js";
+import type Project                                    from "./types/project";
 
 export default class Commands
 {
@@ -82,7 +82,7 @@ export default class Commands
             projects: { },
         };
 
-        Commands.resolvePaths(cliProject, cwd);
+        Commands.resolvePaths(cwd, cliProject);
 
         const configPath = isFile(config)
             ? config
@@ -90,29 +90,35 @@ export default class Commands
 
         if (configPath)
         {
+            const root                = path.dirname(configPath);
             const loadedConfiguration = Commands.resolveModule(await loadModule(configPath)) as Configuration;
 
             Object.assign(loadedConfiguration, deepMerge([loadedConfiguration, cliConfiguration], DeepMergeFlags.IgnoreUndefined));
 
             const isJson = configPath.endsWith(".json");
 
-            if (isJson)
-            {
-                for (const [name, project] of Object.entries(loadedConfiguration.projects!))
-                {
-                    if (!options.project || name == options.project)
-                    {
-                        Object.assign(project, deepMerge([project, cliProject], DeepMergeFlags.IgnoreUndefined));
-                    }
+            const projectPaths = locateProjectPaths(root);
 
-                    Commands.resolvePaths(project, path.dirname(configPath));
+            for (const [name, project] of Object.entries(loadedConfiguration.projects!))
+            {
+                const source = !options.project || name == options.project
+                    ? [projectPaths, project, cliProject]
+                    : [projectPaths, project];
+
+                Object.assign(project, deepMerge(source, DeepMergeFlags.IgnoreUndefined));
+
+                if (isJson)
+                {
+                    Commands.resolvePaths(root, project);
                 }
             }
 
             return deepMerge([loadedConfiguration, cliConfiguration], DeepMergeFlags.IgnoreUndefined);
         }
 
-        cliConfiguration.projects![options.project ?? "default"] = cliProject;
+        const projectPaths = locateProjectPaths(config);
+
+        cliConfiguration.projects![options.project ?? "default"] = deepMerge([projectPaths, cliProject], DeepMergeFlags.IgnoreUndefined);
 
         return deepMerge([cliConfiguration], DeepMergeFlags.IgnoreUndefined);
     }
@@ -137,15 +143,20 @@ export default class Commands
         }
     }
 
-    private static resolveCachPath(configuration: BuildConfiguration, root: string): void
+    private static resolveConfigurationPaths(root: string, configuration: BuildConfiguration): void
     {
         if (typeof configuration.cache == "object" && configuration.cache.type == "filesystem")
         {
-            Commands.resolvePath(configuration.cache, "cacheDirectory",  root);
+            Commands.resolvePath(configuration.cache, "cacheDirectory", root);
+        }
+
+        if (configuration.overrides)
+        {
+            configuration.overrides.forEach(x => (Commands.resolvePath(x, "replace", root), Commands.resolvePath(x, "with", root)));
         }
     }
 
-    private static resolvePaths(project: Project, root: string): void
+    private static resolvePaths(root: string, project: Project): void
     {
         if (project.eslint)
         {
@@ -154,12 +165,12 @@ export default class Commands
 
         if (project.configurations?.development)
         {
-            Commands.resolveCachPath(project.configurations.development, root);
+            Commands.resolveConfigurationPaths(root, project.configurations.development);
         }
 
         if (project.configurations?.production)
         {
-            Commands.resolveCachPath(project.configurations.production, root);
+            Commands.resolveConfigurationPaths(root, project.configurations.production);
         }
 
         Commands.resolvePath(project, "context",  root);

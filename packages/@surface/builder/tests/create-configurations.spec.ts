@@ -23,6 +23,7 @@ export default class CreateConfigurationsSpec
 
         const configuration: Configuration =
         {
+            clean: true,
             hooks:
             {
                 configured: async x => Promise.resolve(x),
@@ -32,8 +33,21 @@ export default class CreateConfigurationsSpec
             {
                 default:
                 {
+                    configurations:
+                    {
+                        production:
+                        {
+                            overrides:
+                            [
+                                {
+                                    replace: "foo",
+                                    with:    "bar",
+                                },
+                            ],
+                        },
+                    },
                     index:    "template.html",
-                    mode:     "development",
+                    mode:     "production",
                     preferTs: true,
                     target:   "pwa",
                 },

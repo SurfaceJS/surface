@@ -3,8 +3,7 @@ import { URL }                                    from "url";
 import { CleanWebpackPlugin }                     from "clean-webpack-plugin";
 import CopyPlugin                                 from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
-// eslint-disable-next-line import/extensions
-import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions";
+import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
 import HtmlWebpackPlugin                          from "html-webpack-plugin";
 import TerserWebpackPlugin                        from "terser-webpack-plugin";
 import webpack                                    from "webpack";
@@ -12,7 +11,8 @@ import { BundleAnalyzerPlugin }                   from "webpack-bundle-analyzer"
 import WorkboxPlugin                              from "workbox-webpack-plugin";
 import applyProjectDefaults                       from "./apply-project-defaults.js";
 import loaders                                    from "./loaders.js";
-import PreferTsResolvePlugin                       from "./plugins/prefer-ts-resolve-plugin.js";
+import OverrideResolvePlugin                      from "./plugins/override-resolver-plugin.js";
+import PreferTsResolverPlugin                     from "./plugins/prefer-ts-resolver-plugin.js";
 import type Configuration                         from "./types/configuration";
 
 function configureDevServerEntry(entry: webpack.Entry, url: URL): webpack.Entry
@@ -38,7 +38,8 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
     for (const [name, _project] of Object.entries(projects))
     {
-        const project = applyProjectDefaults(_project);
+        const project            = applyProjectDefaults(_project);
+        const buildConfiguration = project!.configurations![project.mode!];
 
         const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
         const plugins:        webpack.WebpackPluginInstance[]   = [];
@@ -92,11 +93,14 @@ export default async function createConfigurations(type: "analyze" | "build" | "
 
         if (project.preferTs)
         {
-            const paths = !Array.isArray(project.preferTs)
-                ? []
-                : project.preferTs;
+            const paths = !Array.isArray(project.preferTs) ? undefined : project.preferTs;
 
-            resolvePlugins.push(new PreferTsResolvePlugin(paths));
+            resolvePlugins.push(new PreferTsResolverPlugin(paths));
+        }
+
+        if (buildConfiguration?.overrides)
+        {
+            resolvePlugins.push(new OverrideResolvePlugin(buildConfiguration.overrides));
         }
 
         if (project.target == "pwa")
@@ -140,8 +144,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         }
 
         const isProduction = project.mode == "production";
-
-        const buildConfiguration = project!.configurations![project.mode!];
 
         const webpackConfiguration: webpack.Configuration =
         {
