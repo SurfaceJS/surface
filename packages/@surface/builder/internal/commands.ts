@@ -1,28 +1,20 @@
-import path                                            from "path";
-import { DeepMergeFlags, deepMerge, isEsm }            from "@surface/core";
-import { isFile, lookupFile }                          from "@surface/io";
-import Builder                                         from "./builder.js";
-import { createStats, loadModule, locateProjectPaths } from "./common.js";
-import type BuildConfiguration                         from "./types/build-configuration.js";
-import type CliAnalyzerOptions                         from "./types/cli-analyzer-options";
-import type CliBuildOptions                            from "./types/cli-build-options";
-import type CliDevServerOptions                        from "./types/cli-dev-serve-options";
-import type CliOptions                                 from "./types/cli-options";
-import type Configuration                              from "./types/configuration.js";
-import type Project                                    from "./types/project";
+import path                                 from "path";
+import { DeepMergeFlags, deepMerge, isEsm } from "@surface/core";
+import { isDirectory, lookupFile }          from "@surface/io";
+import Builder                              from "./builder.js";
+import { createStats, loadModule }          from "./common.js";
+import type BuildConfiguration              from "./types/build-configuration.js";
+import type CliAnalyzerOptions              from "./types/cli-analyzer-options";
+import type CliBuildOptions                 from "./types/cli-build-options";
+import type CliDevServerOptions             from "./types/cli-dev-serve-options";
+import type CliOptions                      from "./types/cli-options";
+import type Configuration                   from "./types/configuration.js";
+import type Project                         from "./types/project";
 
 export default class Commands
 {
     private static async optionsToConfiguration(options: CliOptions & CliAnalyzerOptions & CliDevServerOptions): Promise<Configuration>
     {
-        const cwd = process.cwd();
-
-        const config = !options.config
-            ? cwd
-            : path.isAbsolute(options.config)
-                ? options.config
-                : path.resolve(cwd, options.config);
-
         const cliProject: Project =
         {
             analyzer:
@@ -36,22 +28,24 @@ export default class Commands
                 openAnalyzer:   options.analyzerOpen,
                 reportFilename: options.analyzerReportFilename,
             },
-            context: options.context,
-            entry:   options.entry,
+            context:      options.context,
+            entry:        options.entry,
             eslint:
             {
-                enabled:  options.eslintrc ? true : undefined,
-                eslintrc: options.eslintrc,
+                configFile: options.eslintConfigFile,
+                enabled:    options.eslintEnabled,
+                files:      options.eslintFiles,
+                formatter:  options.eslintFormatter,
             },
-            filename:      options.filename,
-            includeFiles:  options.includeFiles,
-            index:         options.index,
-            mode:          options.mode,
-            output:        options.output,
-            preferTs:      options.preferTs,
-            publicPath:    options.publicPath,
-            target:        options.target,
-            tsconfig:      options.tsconfig,
+            filename:     options.filename,
+            includeFiles: options.includeFiles,
+            index:        options.index,
+            mode:         options.mode,
+            output:       options.output,
+            preferTs:     options.preferTs,
+            publicPath:   options.publicPath,
+            target:       options.target,
+            tsconfig:     options.tsconfig,
         };
 
         const cliConfiguration: Configuration =
@@ -82,11 +76,13 @@ export default class Commands
             projects: { },
         };
 
-        Commands.resolvePaths(cwd, cliProject);
+        const cwd        = process.cwd();
+        const config     = path.resolve(cwd, options.config ?? ".");
+        const configPath = isDirectory(config)
+            ? lookupFile([path.join(config, "surface.builder.js"), path.join(config, "surface.builder.json")])
+            : config;
 
-        const configPath = isFile(config)
-            ? config
-            : lookupFile([path.join(config, "surface.js"), path.join(config, "surface.json")]);
+        Commands.resolvePaths(cwd, cliProject);
 
         if (configPath)
         {
@@ -97,13 +93,11 @@ export default class Commands
 
             const isJson = configPath.endsWith(".json");
 
-            const projectPaths = locateProjectPaths(root);
-
             for (const [name, project] of Object.entries(loadedConfiguration.projects!))
             {
                 const source = !options.project || name == options.project
-                    ? [projectPaths, project, cliProject]
-                    : [projectPaths, project];
+                    ? [project, cliProject]
+                    : [project];
 
                 Object.assign(project, deepMerge(source, DeepMergeFlags.IgnoreUndefined));
 
@@ -116,9 +110,7 @@ export default class Commands
             return deepMerge([loadedConfiguration, cliConfiguration], DeepMergeFlags.IgnoreUndefined);
         }
 
-        const projectPaths = locateProjectPaths(config);
-
-        cliConfiguration.projects![options.project ?? "default"] = deepMerge([projectPaths, cliProject], DeepMergeFlags.IgnoreUndefined);
+        cliConfiguration.projects![options.project ?? "default"] = deepMerge([cliProject], DeepMergeFlags.IgnoreUndefined);
 
         return deepMerge([cliConfiguration], DeepMergeFlags.IgnoreUndefined);
     }
@@ -143,7 +135,7 @@ export default class Commands
         }
     }
 
-    private static resolveConfigurationPaths(root: string, configuration: BuildConfiguration): void
+    private static resolveBuildConfigurationPaths(root: string, configuration: BuildConfiguration): void
     {
         if (typeof configuration.cache == "object" && configuration.cache.type == "filesystem")
         {
@@ -160,17 +152,17 @@ export default class Commands
     {
         if (project.eslint)
         {
-            Commands.resolvePath(project.eslint, "eslintrc", root);
+            Commands.resolvePath(project.eslint, "configFile", root);
         }
 
-        if (project.configurations?.development)
+        if (project.environments?.development)
         {
-            Commands.resolveConfigurationPaths(root, project.configurations.development);
+            Commands.resolveBuildConfigurationPaths(root, project.environments.development);
         }
 
-        if (project.configurations?.production)
+        if (project.environments?.production)
         {
-            Commands.resolveConfigurationPaths(root, project.configurations.production);
+            Commands.resolveBuildConfigurationPaths(root, project.environments.production);
         }
 
         Commands.resolvePath(project, "context",  root);

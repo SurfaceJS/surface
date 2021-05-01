@@ -1,12 +1,9 @@
 import fs                 from "fs";
-import path               from "path";
 import { pathToFileURL }  from "url";
 import util               from "util";
-import { lookupFile }     from "@surface/io";
 import type webpack       from "webpack";
 import { booleanPattern } from "./patterns.js";
 import type Logging       from "./types/logging.js";
-import type Project       from "./types/project.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -55,36 +52,6 @@ export async function loadModule(path: string): Promise<unknown>
     }
 
     return import(pathToFileURL(path).href);
-}
-
-export function locateEslint(cwd: string): string | null
-{
-    const lookups =
-    [
-        path.join(cwd, ".eslintrc.js"),
-        path.join(cwd, ".eslintrc.json"),
-        path.join(cwd, ".eslintrc.yml"),
-        path.join(cwd, ".eslintrc.yaml"),
-    ];
-
-    return lookupFile(lookups);
-}
-
-export function locateProjectPaths(cwd: string): Project
-{
-
-    const project: Project =
-    {
-        eslint:
-        {
-            eslintrc: locateEslint(cwd) ?? undefined,
-        },
-        index:    lookupFile([path.join(cwd, "index.html")]) ?? undefined,
-        output:   path.join(cwd, "dist"),
-        tsconfig: lookupFile([path.join(cwd, "tsconfig.json")]) ?? undefined,
-    };
-
-    return project;
 }
 
 export const parsePattern = (pattern: RegExp) =>

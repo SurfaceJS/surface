@@ -15,7 +15,7 @@
                 "kind": "build"
             },
             "isBackground": true,
-            "label": "Compile Modules",
+            "label": "build-all",
             "options": {
                 "cwd": "${workspaceFolder}/tasks/"
             },
@@ -27,7 +27,7 @@
         },
         {
             "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1",
-            "label": "TS Compile File",
+            "label": "tsc",
             "options": {
                 "cwd": "${fileDirname}"
             },
@@ -46,7 +46,7 @@
         {
             "command": "npm run cover",
             "isBackground": true,
-            "label": "Cover Modules",
+            "label": "cover-all",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -56,7 +56,7 @@
         {
             "command": "node ${workspaceFolder}/tasks/cli cover ${file}",
             "isBackground": true,
-            "label": "Cover File",
+            "label": "cover-file",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -71,7 +71,7 @@
         {
             "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=nightly --timestamp=${input:timestamp} --debug",
             "isBackground": true,
-            "label": "Publish - Nightly",
+            "label": "publish-nightly",
             "presentation": {
                 "reveal": "always"
             },
@@ -81,7 +81,7 @@
         {
             "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=release --debug",
             "isBackground": true,
-            "label": "Publish - Release",
+            "label": "publish-release",
             "presentation": {
                 "reveal": "always"
             },
@@ -91,7 +91,7 @@
         {
             "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
             "isBackground": true,
-            "label": "Test File",
+            "label": "test-file",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -110,7 +110,7 @@
         {
             "command": "npm run test",
             "isBackground": true,
-            "label": "Test Modules",
+            "label": "test-all",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

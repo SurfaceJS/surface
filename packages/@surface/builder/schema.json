@@ -117,6 +117,23 @@
                 "performance": {
                     "$ref": "#/definitions/performance",
                     "description": "Configuration for web performance recommendations."
+                },
+                "variables": {
+                    "description": "Accepts an array with the environment variables that will be used or an object with the variables and their default values.",
+                    "oneOf": [
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        },
+                        {
+                            "additionalProperties": {
+                                "type": "string"
+                            },
+                            "type": "object"
+                        }
+                    ]
                 }
             },
             "type": "object"
@@ -266,20 +283,35 @@
         },
         "eslint": {
             "properties": {
-                "cwd": {
-                    "description": "CWD.",
-                    "type": "string"
-                },
-                "enabled": {
-                    "description": "CWD.",
+                "configFile": {
+                    "description": "The configuration file to use. Notes that paths resolution applied in config file is relative to cwd.",
                     "type": "boolean"
                 },
-                "eslintrc": {
-                    "description": "CWD.",
+                "enabled": {
+                    "description": "Enables ESLint linter.",
                     "type": "boolean"
                 },
                 "files": {
-                    "$ref": "#/definitions/stringOrStringArray"
+                    "$ref": "#/definitions/stringOrStringArray",
+                    "description": "Specify directories, files, or globs."
+                },
+                "formatter": {
+                    "description": "Formatter used by ESLint.",
+                    "enum": [
+                        "checkstyle",
+                        "codeframe",
+                        "compact",
+                        "html",
+                        "jslint-xml",
+                        "json-with-metadata",
+                        "json",
+                        "junit",
+                        "stylish",
+                        "table",
+                        "tap",
+                        "unix",
+                        "visualstudio"
+                    ]
                 }
             }
         },
@@ -474,6 +506,21 @@
                 }
             }
         },
+        "overrides": {
+            "items": {
+                "additionalProperties": false,
+                "properties": {
+                    "replace": {
+                        "type": "string"
+                    },
+                    "with": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "type": "array"
+        },
         "performance": {
             "properties": {
                 "hints": {
@@ -493,21 +540,6 @@
                     "type": "number"
                 }
             }
-        },
-        "overrides": {
-            "items": {
-                "properties": {
-                    "replace": {
-                        "type":"string"
-                    },
-                    "with": {
-                        "type":"string"
-                    }
-                },
-                "additionalProperties": false,
-                "type": "object"
-            },
-            "type": "array"
         },
         "preferTs": {
             "anyOf": [
@@ -531,18 +563,6 @@
                     "$ref": "#/definitions/analyzer",
                     "description": "Bundler analyzer configuration."
                 },
-                "configurations": {
-                    "description": "Configurations by mode. Use to override some defaults.",
-                    "properties": {
-                        "development": {
-                            "$ref": "#/definitions/buildConfiguration"
-                        },
-                        "production": {
-                            "$ref": "#/definitions/buildConfiguration"
-                        }
-                    },
-                    "type": "object"
-                },
                 "context": {
                     "description": "The base directory for resolving the entry option.",
                     "type": "string"
@@ -557,6 +577,18 @@
                 "entry": {
                     "$ref": "#/definitions/entry",
                     "description": "Entry points."
+                },
+                "environments": {
+                    "description": "Configurations by mode. Use to override some defaults.",
+                    "properties": {
+                        "development": {
+                            "$ref": "#/definitions/buildConfiguration"
+                        },
+                        "production": {
+                            "$ref": "#/definitions/buildConfiguration"
+                        }
+                    },
+                    "type": "object"
                 },
                 "eslint": {
                     "$ref": "#/definitions/eslint",

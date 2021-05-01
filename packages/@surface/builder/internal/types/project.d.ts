@@ -1,15 +1,42 @@
 // eslint-disable-next-line import/extensions
+import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
 import type HtmlWebpackPlugin        from "html-webpack-plugin";
 import type webpack                  from "webpack";
 import type { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 import type BuildConfiguration       from "./build-configuration";
 
+type Formaters =
+    | "checkstyle"
+    | "codeframe"
+    | "compact"
+    | "html"
+    | "jslint-xml"
+    | "json-with-metadata"
+    | "json"
+    | "junit"
+    | "stylish"
+    | "table"
+    | "tap"
+    | "unix"
+    | "visualstudio";
+
 type EsLintOptions =
 {
-    cwd?:      string,
-    enabled?:  boolean,
-    eslintrc?: string,
-    files?:    string | string[],
+
+    /** Overrides all configurations used by the linter. You can use this option to define the settings that will be used even if your configuration files configure it. */
+    config?: EslintWebpackPluginOptions["overrideConfig"],
+
+    /** The configuration file to use used by the linter. Notes that paths resolution applied in config file is relative to cwd. */
+    configFile?: string,
+
+    /** Enables ESLint linter. */
+    enabled?: boolean,
+
+    /** Specify directories, files, or globs. */
+    files?: string | string[],
+
+    /** Formatter used by ESLint. */
+    formatter?:  Formaters,
 };
 
 type Project =
@@ -18,21 +45,21 @@ type Project =
     /** Bundle analyzer options */
     analyzer?: BundleAnalyzerPlugin.Options,
 
-    /** Configurations by mode. Use to override some defaults. */
-    configurations?:
-    {
-        development?: BuildConfiguration,
-        production?:  BuildConfiguration,
-    },
-
     /** The base directory for resolving the entry option. */
     context?: string,
 
     /** References to other projects to depend on. */
     dependencies?: string[],
 
+    /** Configurations by mode. Use to override some defaults. */
+    environments?:
+    {
+        development?: BuildConfiguration,
+        production?:  BuildConfiguration,
+    },
+
     /** Entry points. */
-    entry?: webpack.Configuration["entry"],
+    entry?: Exclude<webpack.Configuration["entry"], Function>,
 
     /** Eslint options. */
     eslint?: EsLintOptions,

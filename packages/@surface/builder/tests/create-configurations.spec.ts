@@ -33,7 +33,8 @@ export default class CreateConfigurationsSpec
             {
                 default:
                 {
-                    configurations:
+                    dependencies: ["webworker"],
+                    environments:
                     {
                         production:
                         {
@@ -44,8 +45,10 @@ export default class CreateConfigurationsSpec
                                     with:    "bar",
                                 },
                             ],
+                            variables: ["Foo", "Bar"],
                         },
                     },
+                    eslint:   { enabled: true },
                     index:    "template.html",
                     mode:     "production",
                     preferTs: true,
@@ -73,7 +76,7 @@ export default class CreateConfigurationsSpec
     public async createDevServerConfiguration(): Promise<void>
     {
         void chai.assert.isNotEmpty(await createConfigurations("serve", { }));
-        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: () => "." } } }));
+        void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: "." } } }));
         void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: ["."] } } }));
         void chai.assert.isNotEmpty(await createConfigurations("serve", { projects: { default: { entry: { index: "." } } } }));
     }

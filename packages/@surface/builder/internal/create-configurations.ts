@@ -1,21 +1,85 @@
 /* eslint-disable max-lines-per-function */
-import { URL }                                    from "url";
-import { CleanWebpackPlugin }                     from "clean-webpack-plugin";
-import CopyPlugin                                 from "copy-webpack-plugin";
-import ForkTsCheckerWebpackPlugin                 from "fork-ts-checker-webpack-plugin";
-import type { ForkTsCheckerWebpackPluginOptions } from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
-import HtmlWebpackPlugin                          from "html-webpack-plugin";
-import TerserWebpackPlugin                        from "terser-webpack-plugin";
-import webpack                                    from "webpack";
-import { BundleAnalyzerPlugin }                   from "webpack-bundle-analyzer";
-import WorkboxPlugin                              from "workbox-webpack-plugin";
-import applyProjectDefaults                       from "./apply-project-defaults.js";
-import loaders                                    from "./loaders.js";
-import OverrideResolvePlugin                      from "./plugins/override-resolver-plugin.js";
-import PreferTsResolverPlugin                     from "./plugins/prefer-ts-resolver-plugin.js";
-import type Configuration                         from "./types/configuration";
+import { URL }                                        from "url";
+import { DeepMergeFlags, deepMerge }                  from "@surface/core";
+import { CleanWebpackPlugin }                         from "clean-webpack-plugin";
+import CopyPlugin                                     from "copy-webpack-plugin";
+import EslintWebpackPlugin                            from "eslint-webpack-plugin";
+import type { Options as EslintWebpackPluginOptions } from "eslint-webpack-plugin";
+import ForkTsCheckerWebpackPlugin                     from "fork-ts-checker-webpack-plugin";
+import type { ForkTsCheckerWebpackPluginOptions }     from "fork-ts-checker-webpack-plugin/lib/ForkTsCheckerWebpackPluginOptions.js";
+import HtmlWebpackPlugin                              from "html-webpack-plugin";
+import TerserWebpackPlugin                            from "terser-webpack-plugin";
+import webpack                                        from "webpack";
+import { BundleAnalyzerPlugin }                       from "webpack-bundle-analyzer";
+import WorkboxPlugin                                  from "workbox-webpack-plugin";
+import loaders                                        from "./loaders.js";
+import OverrideResolvePlugin                          from "./plugins/override-resolver-plugin.js";
+import PreferTsResolverPlugin                         from "./plugins/prefer-ts-resolver-plugin.js";
+import type Configuration                             from "./types/configuration";
+import type Project                                   from "./types/project";
 
-function configureDevServerEntry(entry: webpack.Entry, url: URL): webpack.Entry
+const PROJECT_DEFAULTS: Project =
+{
+    analyzer:
+    {
+        analyzerMode: "static",
+    },
+    environments:
+    {
+        development:
+        {
+            cache:
+            {
+                maxAge: 3600000,
+                name:   ".cache",
+                type:   "filesystem",
+            },
+            optimization:
+            {
+                chunkIds:             "named",
+                concatenateModules:   false,
+                emitOnErrors:         false,
+                flagIncludedChunks:   false,
+                mangleExports:        false,
+                mergeDuplicateChunks: false,
+                minimize:             false,
+                moduleIds:            "named",
+                providedExports:      true,
+                usedExports:          false,
+            },
+            performance:
+            {
+                hints: false,
+            },
+        },
+        production:
+        {
+            cache:        false,
+            optimization:
+            {
+                chunkIds:             "total-size",
+                concatenateModules:   true,
+                emitOnErrors:         false,
+                flagIncludedChunks:   true,
+                mangleExports:        true,
+                mergeDuplicateChunks: true,
+                minimize:             true,
+                moduleIds:            "size",
+                providedExports:      true,
+                usedExports:          true,
+            },
+            performance:
+            {
+                hints: "error",
+            },
+        },
+    },
+    mode:       "development",
+    publicPath: "/",
+    target:     "web",
+};
+
+function configureDevServerEntry(entry: Project["entry"], url: URL): Project["entry"]
 {
     const webpackDevServerClient = `webpack-dev-server/client?${url}`;
     const webpackHotDevServer    = "webpack/hot/dev-server";
@@ -24,7 +88,9 @@ function configureDevServerEntry(entry: webpack.Entry, url: URL): webpack.Entry
         ? [webpackDevServerClient, webpackHotDevServer, ...entry]
         : typeof entry == "object"
             ? { [webpackDevServerClient]: webpackDevServerClient, [webpackHotDevServer]: webpackHotDevServer, ...entry }
-            : [webpackDevServerClient, webpackHotDevServer, entry as string];
+            : typeof entry == "string"
+                ? [webpackDevServerClient, webpackHotDevServer, entry]
+                : [webpackDevServerClient, webpackHotDevServer, "./src"];
 }
 
 export default async function createConfigurations(type: "analyze" | "build" | "serve", configuration: Configuration): Promise<webpack.Configuration[]>
@@ -32,30 +98,35 @@ export default async function createConfigurations(type: "analyze" | "build" | "
     const projects = configuration.projects ?? { default: { } };
     const main     = configuration.main     ?? Object.keys(projects)[0];
 
-    const generateSWPlugin = new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true });
-
     const webPackconfigurations: webpack.Configuration[] = [];
 
     for (const [name, _project] of Object.entries(projects))
     {
-        const project            = applyProjectDefaults(_project);
-        const buildConfiguration = project!.configurations![project.mode!];
+        const project            = deepMerge([PROJECT_DEFAULTS, _project], DeepMergeFlags.IgnoreUndefined);
+        const buildConfiguration = project!.environments![project.mode!];
 
         const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
         const plugins:        webpack.WebpackPluginInstance[]   = [];
 
+        plugins.push(new webpack.ProgressPlugin());
+
+        if (project.eslint?.enabled)
+        {
+            const eslintWebpackPluginOptions: EslintWebpackPluginOptions =
+            {
+                files:              project.eslint?.files ?? `${project.context ?? `${process.cwd()}/!(node_modules)`}/**/*.{js,ts}`,
+                formatter:          project.eslint?.formatter,
+                overrideConfig:     project.eslint?.config,
+                overrideConfigFile: project.eslint?.configFile,
+                threads:            true,
+                useEslintrc:        true,
+            };
+
+            plugins.push(new EslintWebpackPlugin(eslintWebpackPluginOptions));
+        }
+
         const forkTsCheckerWebpackPluginOptions: ForkTsCheckerWebpackPluginOptions =
         {
-            eslint:
-            {
-                enabled: project.eslint!.enabled,
-                files:   project.eslint!.files!,
-                options:
-                {
-                    configFile: project.eslint!.eslintrc,
-                    cwd:        project.eslint!.cwd,
-                },
-            },
             typescript:
             {
                 build:      true,
@@ -64,13 +135,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             },
         };
 
-        if (configuration.clean)
-        {
-            plugins.push(new CleanWebpackPlugin());
-        }
-
-        plugins.push(new webpack.WatchIgnorePlugin({ paths: [/\.js$/, /\.d\.ts$/] }));
-        plugins.push(new webpack.ProgressPlugin());
         plugins.push(new ForkTsCheckerWebpackPlugin(forkTsCheckerWebpackPluginOptions));
 
         const tersePlugin = new TerserWebpackPlugin
@@ -84,11 +148,26 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             },
         });
 
+        if (configuration.clean)
+        {
+            plugins.push(new CleanWebpackPlugin());
+        }
+
         if (project.includeFiles)
         {
             const copyPlugin = new CopyPlugin({ patterns: project.includeFiles });
 
             plugins.push(copyPlugin);
+        }
+
+        if (project.target == "pwa")
+        {
+            plugins.push(new WorkboxPlugin.GenerateSW({ clientsClaim: true, skipWaiting: true, swDest: `${name}-service-worker.js` }));
+        }
+
+        if (buildConfiguration?.variables)
+        {
+            plugins.push(new webpack.EnvironmentPlugin(buildConfiguration.variables));
         }
 
         if (project.preferTs)
@@ -103,18 +182,13 @@ export default async function createConfigurations(type: "analyze" | "build" | "
             resolvePlugins.push(new OverrideResolvePlugin(buildConfiguration.overrides));
         }
 
-        if (project.target == "pwa")
-        {
-            plugins.push(generateSWPlugin);
-        }
-
         const isTargetingBrowser = project.target == "pwa" || project.target == "web";
 
         if (isTargetingBrowser)
         {
-            const htmlWebpackPluginOptions = typeof project.index == "string"
+            const htmlWebpackPluginOptions: HtmlWebpackPlugin.Options = typeof project.index == "string"
                 ? { template: project.index }
-                : project.index;
+                : { title: "Surface App", ...project.index };
 
             plugins.push(new HtmlWebpackPlugin(htmlWebpackPluginOptions));
         }
@@ -134,7 +208,7 @@ export default async function createConfigurations(type: "analyze" | "build" | "
                     url.port     = port.toString();
                     url.pathname = project.publicPath!;
 
-                    project.entry = configureDevServerEntry(project.entry!, url);
+                    project.entry = configureDevServerEntry(project.entry, url);
 
                     plugins.push(new webpack.HotModuleReplacementPlugin());
                 }

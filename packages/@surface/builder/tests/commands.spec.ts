@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import path                                   from "path";
-import { isFile, lookupFile }                 from "@surface/io";
+import { isDirectory, lookupFile }                         from "@surface/io";
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
@@ -10,26 +10,28 @@ import { createStats, loadModule }            from "../internal/common.js";
 import type CliOptions                        from "../internal/types/cli-options.js";
 import type Configuration                     from "../internal/types/configuration.js";
 
-const CWD = process.cwd();
+const CWD                            = process.cwd();
 const DIST                           = path.join(CWD, "dist");
 const ESLINTRC_JS                    = path.join(CWD, ".eslintrc.js");
 const INDEX_HTML                     = path.join(CWD, "index.html");
 const PROJECT_CACHE                  = path.join(CWD, "project", ".cache");
-const PROJECT_DIST                   = path.join(CWD, "project", "dist");
 const PROJECT_EMPTY_JSON             = path.join(CWD, "project", "empty.json");
 const PROJECT_ESLINTRC_JSON          = path.join(CWD, "project", ".eslintrc.json");
-const PROJECT_SOURCE                 = path.join(CWD, "project", "source");
-const PROJECT_SRC                    = path.join(CWD, "project", "src");
-const PROJECT_SURFACE_JS             = path.join(CWD, "project", "surface.js");
+const PROJECT_ESLINTRC_JS            = path.join(CWD, "project", ".eslintrc.js");
+const PROJECT_ESLINTRC_YML           = path.join(CWD, "project", ".eslintrc.yml");
+const PROJECT_ESLINTRC_YAML          = path.join(CWD, "project", ".eslintrc.yaml");
 const PROJECT_SETTINGS_JS            = path.join(CWD, "project", "settings.js");
 const PROJECT_SETTINGS_PRODUCTION_JS = path.join(CWD, "project", "settings.production.js");
-const PROJECT_SURFACE_JSON           = path.join(CWD, "project", "surface.json");
+const PROJECT_SOURCE                 = path.join(CWD, "project", "source");
+const PROJECT_SRC                    = path.join(CWD, "project", "src");
+const PROJECT_SURFACE_BUILDER_JS     = path.join(CWD, "project", "surface.builder.js");
+const PROJECT_SURFACE_BUILDER_JSON   = path.join(CWD, "project", "surface.builder.json");
 const PROJECT_TEMPLATE_HTML          = path.join(CWD, "project", "template.html");
 const PROJECT_TSCONFIG_BASE_JSON     = path.join(CWD, "project", "tsconfig.base.json");
 const TSCONFIG_JSON                  = path.join(CWD, "tsconfig.json");
 const WWW                            = path.join(CWD, "www");
 
-const isFileMock       = Mock.of(isFile);
+const isDirectoryMock  = Mock.of(isDirectory);
 const lookupFileMock   = Mock.of(lookupFile);
 const compilerCtorMock = Mock.of(Builder);
 const loadModuleMock   = Mock.of(loadModule);
@@ -43,7 +45,6 @@ const DEFAULT_EXPECTED: Configuration =
         {
             analyzer: { },
             eslint:   { },
-            output:   DIST,
         },
     },
 };
@@ -55,8 +56,10 @@ const CONFIGURATION_JSON: Configuration =
     {
         main:
         {
-            analyzer:       { },
-            configurations:
+            analyzer:     { },
+            context:      "src",
+            entry:        ["index.js"],
+            environments:
             {
                 development:
                 {
@@ -78,11 +81,9 @@ const CONFIGURATION_JSON: Configuration =
                     ],
                 },
             },
-            context:      "src",
-            entry:        ["index.js"],
             eslint:
             {
-                eslintrc: ".eslintrc.json",
+                configFile: ".eslintrc.json",
             },
             filename:       "[name].[fullhash].js",
             includeFiles:   ["fonts", "images"],
@@ -114,7 +115,7 @@ const CONFIGURATION_JS: Configuration =
             entry:        ["index.js"],
             eslint:
             {
-                eslintrc: ".eslintrc.json",
+                configFile: ".eslintrc.json",
             },
             filename:     "[name].[fullhash].js",
             includeFiles: ["fonts", "images"],
@@ -135,28 +136,31 @@ export default class CommandsSpec
     @beforeEach
     public beforeEach(): void
     {
-        isFileMock.lock();
+        isDirectoryMock.lock();
         lookupFileMock.lock();
         loadModuleMock.lock();
 
-        isFileMock.call(PROJECT_EMPTY_JSON).returns(true);
-        isFileMock.call(PROJECT_SURFACE_JSON).returns(true);
-        isFileMock.call(PROJECT_SURFACE_JS).returns(true);
-        isFileMock.call(It.any());
+        lookupFileMock.call
+        ([
+            PROJECT_ESLINTRC_JS,
+            PROJECT_ESLINTRC_JSON,
+            PROJECT_ESLINTRC_YML,
+            PROJECT_ESLINTRC_YAML,
+        ]).returns(PROJECT_ESLINTRC_JS);
 
-        lookupFileMock.call(It.any());
+        isDirectoryMock.call(CWD).returns(true);
 
         loadModuleMock.call(PROJECT_EMPTY_JSON).returns(Promise.resolve({ }));
-        loadModuleMock.call(PROJECT_SURFACE_JS).returns(Promise.resolve({ __esModule: true, default: CONFIGURATION_JS }));
-        loadModuleMock.call(PROJECT_SURFACE_JSON).returns(Promise.resolve(CONFIGURATION_JSON));
+        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JS).returns(Promise.resolve({ __esModule: true, default: CONFIGURATION_JS }));
+        loadModuleMock.call(PROJECT_SURFACE_BUILDER_JSON).returns(Promise.resolve(CONFIGURATION_JSON));
         loadModuleMock.call(It.any());
     }
 
     @afterEach
     public afterEach(): void
     {
+        isDirectoryMock.release();
         compilerCtorMock.release();
-        isFileMock.release();
         loadModuleMock.release();
         lookupFileMock.release();
     }
@@ -224,7 +228,7 @@ export default class CommandsSpec
             .callback(x => actual4 = x)
             .returns(Promise.resolve());
 
-        await Commands.build({ config: PROJECT_SURFACE_JS }),
+        await Commands.build({ config: PROJECT_SURFACE_BUILDER_JS }),
 
         chai.assert.deepEqual(actual4!, expected4, "build 4");
 
@@ -235,8 +239,10 @@ export default class CommandsSpec
             {
                 main:
                 {
-                    analyzer:       { },
-                    configurations:
+                    analyzer:     { },
+                    context:      PROJECT_SRC,
+                    entry:        ["index.js"],
+                    environments:
                     {
                         development:
                         {
@@ -258,11 +264,9 @@ export default class CommandsSpec
                             ],
                         },
                     },
-                    context:      PROJECT_SRC,
-                    entry:        ["index.js"],
                     eslint:
                     {
-                        eslintrc: PROJECT_ESLINTRC_JSON,
+                        configFile: PROJECT_ESLINTRC_JSON,
                     },
                     filename:     "[name].[fullhash].js",
                     includeFiles: ["fonts", "images"],
@@ -279,7 +283,6 @@ export default class CommandsSpec
                     analyzer: { },
                     entry:    "static/index.js",
                     eslint:   { },
-                    output:   PROJECT_DIST,
                 },
             },
         };
@@ -292,7 +295,7 @@ export default class CommandsSpec
             .callback(x => actual5 = x)
             .returns(Promise.resolve());
 
-        await Commands.build({ config: PROJECT_SURFACE_JSON }),
+        await Commands.build({ config: PROJECT_SURFACE_BUILDER_JSON }),
 
         chai.assert.deepEqual(actual5!, expected5, "build 5");
 
@@ -314,8 +317,9 @@ export default class CommandsSpec
                     entry:    ["main.ts"],
                     eslint:
                     {
-                        enabled:  true,
-                        eslintrc: ESLINTRC_JS,
+                        configFile: ESLINTRC_JS,
+                        enabled:    true,
+                        files:      "./project/source/**/*.{ts}",
                     },
                     filename:     "[name].js",
                     includeFiles: ["static/**/*.js"],
@@ -340,22 +344,24 @@ export default class CommandsSpec
 
         const cliOptions: CliOptions =
         {
-            config:       PROJECT_SURFACE_JSON,
-            context:      "project/source",
-            entry:        ["main.ts"],
-            eslintrc:     ".eslintrc.js",
-            filename:     "[name].js",
-            includeFiles: ["static/**/*.js"],
-            index:        "index.html",
-            logging:      true,
-            main:         "static",
-            mode:         "development",
-            output:       "dist",
-            preferTs:     true,
-            project:      "static",
-            publicPath:   "path",
-            target:       "pwa",
-            tsconfig:     "tsconfig.json",
+            config:           PROJECT_SURFACE_BUILDER_JSON,
+            context:          "project/source",
+            entry:            ["main.ts"],
+            eslintConfigFile: ".eslintrc.js",
+            eslintEnabled:    true,
+            eslintFiles:      "./project/source/**/*.{ts}",
+            filename:         "[name].js",
+            includeFiles:     ["static/**/*.js"],
+            index:            "index.html",
+            logging:          true,
+            main:             "static",
+            mode:             "development",
+            output:           "dist",
+            preferTs:         true,
+            project:          "static",
+            publicPath:       "path",
+            target:           "pwa",
+            tsconfig:         "tsconfig.json",
         };
 
         await Commands.build(cliOptions),
