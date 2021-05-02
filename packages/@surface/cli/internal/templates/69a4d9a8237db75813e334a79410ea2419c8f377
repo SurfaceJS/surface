@@ -1,0 +1,13 @@
+{
+    "$schema": "./node_modules/@surface/compiler/schema.json",
+    "clean": true,
+    "projects": {
+        "app": {
+            "entry": "./source/index.ts",
+            "eslint": {
+                "enabled": false
+            },
+            "index": "./template.html"
+        }
+    }
+}

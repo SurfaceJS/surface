@@ -1,9 +1,8 @@
 {
     "author": "author",
     "dependencies": {
-        "@surface/compiler": "latest",
+        "@surface/builder": "latest",
         "@surface/custom-element": "latest",
-        "@surface/web-router": "latest",
         "tslib": "2.1.0"
     },
     "devDependencies": {

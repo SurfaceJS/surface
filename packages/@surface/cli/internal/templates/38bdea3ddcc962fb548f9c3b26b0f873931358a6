@@ -1,13 +1,9 @@
 {
     "author": "author",
     "dependencies": {
-        "@surface/compiler": "latest",
-        "@surface/core": "latest",
+        "@surface/builder": "latest",
         "@surface/custom-element": "latest",
-        "@surface/dependency-injection": "latest",
-        "@surface/enumerable": "latest",
         "@surface/web-router": "latest",
-        "material-design-icons-iconfont": "6.1.0",
         "tslib": "2.1.0"
     },
     "devDependencies": {
@@ -19,8 +15,8 @@
     },
     "name": "app",
     "scripts": {
-        "build": "sfcc build --use-workbox --mode=production",
-        "start": "sfcc serve --hot --use-workbox --open",
+        "build": "sfcc build --mode=production",
+        "start": "sfcc serve --hot --open",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "sideEffects": true,
