@@ -8,7 +8,6 @@ import type { Credential } from "npm-registry-client";
 import
 {
     backupFile,
-    cleanup,
     execute,
     log,
     lookup,
@@ -18,7 +17,6 @@ import
 import Depsync                from "./depsync.js";
 import StrategyType           from "./enums/strategy-type.js";
 import NpmRepository          from "./npm-repository.js";
-import patterns               from "./patterns.js";
 import Publisher              from "./publisher.js";
 import type CliPublishOptions from "./types/cli-publish-options.js";
 import type SemanticVersion   from "./types/semantic-version";
@@ -26,8 +24,9 @@ import type SemanticVersion   from "./types/semantic-version";
 const readFileAsync  = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const tsc     = path.resolve(dirname, "../../node_modules/.bin/tsc");
+const DIRNAME  = path.dirname(fileURLToPath(import.meta.url));
+const TSC      = path.resolve(DIRNAME, "../../node_modules/.bin/tsc");
+const TSCONFIG = path.resolve(DIRNAME, "../../tsconfig.json");
 
 export default class Commands
 {
@@ -63,43 +62,23 @@ export default class Commands
         log(chalk.bold.green("Backuping modules done!"));
     }
 
-    public static async build(declaration: boolean = false): Promise<void>
+    public static async build(): Promise<void>
     {
-        const commands: Promise<void>[] = [];
-
-        for (const $package of lookup.values())
-        {
-            const source = path.normalize(path.resolve(paths.packages.root, $package.name));
-
-            commands.push(execute(`Building ${chalk.bold.blue($package.name)}`, `${tsc} -p ${source} --declaration ${declaration}`));
-        }
-
-        await Promise.all(commands);
+        await execute("Building...", `${TSC} --build "${TSCONFIG}"`);
 
         log(chalk.bold.green("Building modules done!"));
     }
 
     public static async clean(): Promise<void>
     {
-        const commands: Promise<unknown>[] = [];
-
-        for (const $package of lookup.values())
-        {
-            const source = path.normalize(path.resolve(paths.packages.root, $package.name));
-
-            log(`Cleaning ${chalk.bold.blue($package.name)}`);
-
-            commands.push(cleanup(source, patterns.clean.includes, patterns.clean.excludes));
-        }
-
-        await Promise.all(commands);
+        await execute("Cleaning...", `${TSC} --build "${TSCONFIG}" --clean`);
 
         log(chalk.bold.green("Cleaning done!"));
     }
 
     public static async cover(filepath: string): Promise<void>
     {
-        const bin   = path.resolve(dirname, "../../node_modules/.bin");
+        const bin   = path.resolve(DIRNAME, "../../node_modules/.bin");
         const mocha = path.join(bin, "mocha");
         const c8    = path.join(bin, "c8");
 
@@ -116,12 +95,12 @@ export default class Commands
     {
         console.log(options.target);
 
-        const publishignore = (await readFileAsync(path.join(dirname, "../.publishignore"))).toString();
+        const publishignore = (await readFileAsync(path.join(DIRNAME, "../.publishignore"))).toString();
 
         const exclude = new Set(publishignore.split("\n").map(x => x.trim()));
 
         await Commands.clean();
-        await Commands.build(true);
+        await Commands.build();
         await Commands.backup();
 
         try

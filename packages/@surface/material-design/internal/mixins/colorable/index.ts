@@ -5,14 +5,12 @@ import { attribute }        from "@surface/custom-element";
 const CSS_COLORS_PATTERN = /^(#[a-f0-9]{6}|((rgba?|hsla?)\([^)]*)\))$/i;
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-const colorable = <T extends Constructor<CustomElement>>(superClass: T) =>
+const colorable = <T extends Constructor<CustomElement & { colorable?: HTMLElement }>>(superClass: T): Constructor<IColorable> & T =>
 {
-    abstract class Colorable extends superClass
+    class Colorable extends superClass implements IColorable
     {
         private _color:     string = "";
         private _textColor: string = "";
-
-        protected abstract readonly colorable?: HTMLElement;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         public constructor(...args: any[])
@@ -68,5 +66,11 @@ const colorable = <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Colorable;
 };
+
+export interface IColorable
+{
+    color:     string;
+    textColor: string;
+}
 
 export default colorable;

@@ -9,20 +9,36 @@
     ],
     "tasks": [
         {
-            "command": "node cli clean; node cli build;",
-            "group": {
-                "isDefault": true,
-                "kind": "build"
-            },
-            "isBackground": true,
-            "label": "build-all",
-            "options": {
-                "cwd": "${workspaceFolder}/tasks/"
-            },
+            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build",
+            "label": "build",
             "presentation": {
                 "reveal": "silent"
             },
-            "problemMatcher": [],
+            "problemMatcher": {
+                "base": "$tsc"
+            },
+            "type": "shell"
+        },
+        {
+            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build --clean --dry",
+            "label": "dry",
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": {
+                "base": "$tsc"
+            },
+            "type": "shell"
+        },
+        {
+            "command": "${workspaceFolder}/node_modules/.bin/tsc.ps1 --build --clean",
+            "label": "clean",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": {
+                "base": "$tsc"
+            },
             "type": "shell"
         },
         {
@@ -45,32 +61,24 @@
         },
         {
             "command": "npm run cover",
-            "isBackground": true,
             "label": "cover-all",
-            "options": {
-                "cwd": "${workspaceFolder}"
+            "presentation": {
+                "reveal": "always"
             },
             "problemMatcher": [],
             "type": "shell"
         },
         {
             "command": "node ${workspaceFolder}/tasks/cli cover ${file}",
-            "isBackground": true,
             "label": "cover-file",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
             "presentation": {
                 "reveal": "always"
             },
-            "problemMatcher": [
-                "$tsc"
-            ],
+            "problemMatcher": [],
             "type": "shell"
         },
         {
             "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=nightly --timestamp=${input:timestamp} --debug",
-            "isBackground": true,
             "label": "publish-nightly",
             "presentation": {
                 "reveal": "always"
@@ -80,7 +88,6 @@
         },
         {
             "command": "npm run task:publish -- https://registry.npmjs.org --token=${env:NPM_AUTH_TOKEN} --config=release --debug",
-            "isBackground": true,
             "label": "publish-release",
             "presentation": {
                 "reveal": "always"
@@ -89,30 +96,19 @@
             "type": "shell"
         },
         {
-            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
-            "isBackground": true,
-            "label": "test-file",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
+            "command": "npm run test",
+            "label": "test-all",
             "presentation": {
                 "reveal": "always"
             },
-            "problemMatcher": {
-                "base": "$tsc",
-                "fileLocation": [
-                    "relative",
-                    "${fileDirname}"
-                ]
-            },
+            "problemMatcher": [],
             "type": "shell"
         },
         {
-            "command": "npm run test",
-            "isBackground": true,
-            "label": "test-all",
-            "options": {
-                "cwd": "${workspaceFolder}"
+            "command": "${workspaceFolder}/node_modules/.bin/mocha.cmd --loader=@surface/mock-loader --ui=tdd ${fileDirname}/${fileBasenameNoExtension}.js",
+            "label": "test-file",
+            "presentation": {
+                "reveal": "always"
             },
             "problemMatcher": [],
             "type": "shell"

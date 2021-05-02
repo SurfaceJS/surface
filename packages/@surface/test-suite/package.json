@@ -4,7 +4,6 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/core": "file:../core",
         "tslib": "2.2.0"
     },
     "description": "Provides decorators for testing with mocha using the OOP approach.",

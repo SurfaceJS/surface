@@ -9,17 +9,13 @@ const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const lineRippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
+function lineRippleable<T extends Constructor<CustomElement & { noRipple: boolean, readonly rippleable: HTMLElement }>>(superClass: T): ILineRippleable & T
 {
     @styles(style)
-    abstract class LineRippleable extends superClass
+    class LineRippleable extends superClass implements ILineRippleable
     {
-        protected abstract readonly rippleable: HTMLElement;
-
-        protected abstract noRipple: boolean;
-
         @event("focus")
-        protected show(): void
+        protected showLineRipple(): void
         {
             if (!this.noRipple)
             {
@@ -50,7 +46,7 @@ const lineRippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
         }
 
         @event("focusout")
-        protected hide(): void
+        protected hideLineRipple(): void
         {
             if (!this.noRipple)
             {
@@ -84,6 +80,11 @@ const lineRippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
     }
 
     return LineRippleable;
-};
+}
+
+export interface ILineRippleable
+{
+
+}
 
 export default lineRippleable;

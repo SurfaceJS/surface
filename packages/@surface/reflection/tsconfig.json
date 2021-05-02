@@ -1,15 +1,27 @@
 {
-    "compilerOptions": {
-        "typeRoots": [
+    "compilerOptions":
+    {
+        "composite": true,
+        "outDir":    ".",
+        "rootDir":   ".",
+        "typeRoots":
+        [
             "./node_modules/@types"
         ]
     },
     "extends": "../../../tsconfig.json",
-    "files": [
+    "files":
+    [
         "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./internal",
         "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../test-suite" },
     ]
 }

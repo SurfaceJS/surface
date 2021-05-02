@@ -1,9 +1,17 @@
 {
+    "compilerOptions":
+    {
+        "composite": true,
+        "outDir":    ".",
+        "rootDir":   ".",
+    },
     "extends": "../../../tsconfig.json",
-    "files": [
+    "files":
+    [
         "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./internal",
         "./tests"
     ]

@@ -1,19 +1,33 @@
 {
-    "compilerOptions": {
-        "types": [
+    "compilerOptions":
+    {
+        "composite": true,
+        "outDir":    ".",
+        "rootDir":   ".",
+        "types":
+        [
             "node",
             "copy-webpack-plugin",
             "workbox-webpack-plugin"
         ],
     },
     "extends": "../../../tsconfig.json",
-    "files": [
+    "files":
+    [
         "./cli.ts",
-        "./index.ts",
+        "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./bin",
         "./internal",
-        "./tests",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../io" },
+        { "path": "../mock" },
+        { "path": "../test-suite" },
     ]
 }

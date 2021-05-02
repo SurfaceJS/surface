@@ -4,7 +4,7 @@ import { attribute }        from "@surface/custom-element";
 import { computed }         from "@surface/reactive";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const themeable = <T extends Constructor<CustomElement>>(superClass: T) =>
+const themeable = <T extends Constructor<CustomElement>>(superClass: T): Constructor<IThemeable> & T =>
 {
     class Themeable extends superClass
     {
@@ -23,5 +23,12 @@ const themeable = <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Themeable;
 };
+
+export interface IThemeable
+{
+    dark:         boolean;
+    light:        boolean;
+    themeClasses: Record<string, boolean>;
+}
 
 export default themeable;

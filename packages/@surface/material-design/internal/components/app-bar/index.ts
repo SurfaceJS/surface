@@ -1,4 +1,4 @@
-import { mixer }                         from "@surface/core";
+import { mix }                           from "@surface/core";
 import CustomElement, { element, query } from "@surface/custom-element";
 import { computed }                      from "@surface/reactive";
 import colorable                         from "../../mixins/colorable/index.js";
@@ -17,10 +17,10 @@ declare global
 }
 
 @element("smd-app-bar", template, style)
-export default class AppBar extends mixer(CustomElement, [colorable, elevatable, themeable])
+export default class AppBar extends mix(CustomElement, [colorable, elevatable, themeable])
 {
     @query("#root")
-    protected colorable!: HTMLElement;
+    public colorable!: HTMLElement;
 
     @computed("elevationClasses", "themeClasses")
     public get classes(): Record<string, boolean>

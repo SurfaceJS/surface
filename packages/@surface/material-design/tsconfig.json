@@ -2,6 +2,29 @@
     "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "lib":   ["dom", "esnext"],
-    }
+        "lib":       ["dom", "esnext"],
+        "composite": true,
+        "rootDir":   ".",
+        "outDir":    ".",
+    },
+    "files":
+    [
+        "./index.ts"
+    ],
+    "include":
+    [
+        "./internal",
+        "./tests"
+    ],
+    "references":
+    [
+        { "path": "../collection" },
+        { "path": "../core" },
+        { "path": "../custom-element" },
+        { "path": "../enumerable" },
+        { "path": "../expression" },
+        { "path": "../reactive" },
+        { "path": "../reflection" },
+        { "path": "../test-suite" },
+    ]
 }

@@ -10,7 +10,7 @@ import type
     Delegate,
     Indexer,
     Intersect,
-    Mixer,
+    Mix,
 } from "../types";
 import type MergeRule        from "../types/merge-rule";
 import type MergeRules       from "../types/merge-rules";
@@ -333,7 +333,8 @@ export function merge<TSources extends [object, ...object[]]>(sources: TSources,
     return result as Intersect<TSources>;
 }
 
-export function mixer<TConstructor extends Constructor, TMixins extends ((superClass: TConstructor) => Constructor)[], TMixer extends Mixer<TConstructor, TMixins>>(constructor: TConstructor, mixins: TMixins): TMixer
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mix<T extends Constructor, M extends ((superClass: Constructor<any>) => Constructor)[]>(constructor: T, mixins: [...M]): T & Mix<M>
 {
     assert(mixins.length > 0, "Mixer requires at least one mixin");
 
@@ -343,10 +344,10 @@ export function mixer<TConstructor extends Constructor, TMixins extends ((superC
 
     if (mixins.length > 0)
     {
-        return mixer($class as TConstructor, mixins);
+        return mix($class as T, mixins);
     }
 
-    return $class as TMixer;
+    return $class as T & Mix<M>;
 }
 
 /**

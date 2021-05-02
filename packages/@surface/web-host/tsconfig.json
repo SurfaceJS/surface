@@ -1,19 +1,36 @@
 {
-    "compilerOptions": {
-        "lib": [
+    "compilerOptions":
+    {
+        "composite": true,
+        "lib":
+        [
             "dom",
             "esnext"
         ],
-        "types": [
+        "outDir": ".",
+        "rootDir": ".",
+        "types":
+        [
             "node"
         ]
     },
     "extends": "../../../tsconfig.json",
-    "files": [
+    "files":
+    [
         "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./internal",
         "./tests"
+    ],
+    "references":
+    [
+        { "path": "../collection" },
+        { "path": "../core" },
+        { "path": "../enumerable" },
+        { "path": "../reflection" },
+        { "path": "../router" },
+        { "path": "../test-suite" },
     ]
 }

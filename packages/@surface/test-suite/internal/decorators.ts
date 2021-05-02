@@ -1,6 +1,4 @@
-import type { Constructor, Delegate, Indexer } from "@surface/core";
-import { camelToText }                         from "@surface/core";
-import mocha                                   from "./mocha.js";
+import mocha from "./mocha.js";
 import
 {
     AFTER,
@@ -17,6 +15,16 @@ import
 import type Test       from "./types/test";
 import type TestMethod from "./types/test-method";
 import type TestObject from "./types/test-object";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = object>                                = new (...args: any[]) => T;
+type Delegate<TArgs extends unknown[] = [], TResult = void> = (...args: TArgs) => TResult;
+type Indexer<T = unknown>                                   = object & Record<string | number, T | undefined>;
+
+function camelToText(value: string): string
+{
+    return value.split(/(?:(?<![A-Z])(?=[A-Z]))|(?:(?<![a-zA-Z])(?=[a-z]))|(?:(?<![0-9])(?=[0-9]))/g).join(" ").toLowerCase();
+}
 
 export function after(description: string): MethodDecorator;
 export function after(target: object, key: string | symbol): void;

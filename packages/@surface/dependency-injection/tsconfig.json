@@ -1,10 +1,23 @@
 {
     "extends": "../../../tsconfig.json",
-    "files": [
+    "compilerOptions":
+    {
+        "composite": true,
+        "outDir":    ".",
+        "rootDir":   "."
+    },
+    "files":
+    [
         "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./internal",
         "./tests"
+    ],
+    "references":
+    [
+        { "path": "../core" },
+        { "path": "../test-suite" },
     ]
 }
