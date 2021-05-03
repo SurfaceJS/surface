@@ -1,20 +1,11 @@
 {
+    "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "composite": true,
-        "lib":
-        [
-            "dom",
-            "esnext"
-        ],
-        "outDir": ".",
+        "outDir":  ".",
         "rootDir": ".",
-        "types":
-        [
-            "node"
-        ]
+        "types":   ["node"],
     },
-    "extends": "../../../tsconfig.json",
     "files":
     [
         "./index.ts"

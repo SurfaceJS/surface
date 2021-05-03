@@ -3,11 +3,13 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
+        "composite":                        true,
         "emitDecoratorMetadata":            true,
         "esModuleInterop":                  true,
         "experimentalDecorators":           true,
         "forceConsistentCasingInFileNames": false,
         "importHelpers":                    true,
+        "incremental":                      true,
         "lib":                              ["esnext"],
         "module":                           "ESNext",
         "moduleResolution":                 "node",

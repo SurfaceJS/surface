@@ -1,16 +1,11 @@
 {
+    "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "composite": true,
-        "lib":
-        [
-            "dom",
-            "esnext"
-        ],
-        "outDir": ".",
-        "rootDir": "."
+        "lib":     ["dom", "esnext"],
+        "outDir":  ".",
+        "rootDir": ".",
     },
-    "extends": "../../../tsconfig.json",
     "files":
     [
         "./index.ts"

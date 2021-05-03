@@ -2,10 +2,9 @@
     "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "lib":       ["dom", "esnext"],
-        "composite": true,
-        "rootDir":   ".",
-        "outDir":    ".",
+        "lib":     ["dom", "esnext"],
+        "outDir":  ".",
+        "rootDir": ".",
     },
     "files":
     [

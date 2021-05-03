@@ -1,15 +1,10 @@
 {
+    "extends": "../../../tsconfig.json",
     "compilerOptions":
     {
-        "composite": true,
-        "outDir":    ".",
-        "rootDir":   ".",
-        "typeRoots":
-        [
-            "./node_modules/@types"
-        ]
+        "outDir":  ".",
+        "rootDir": ".",
     },
-    "extends": "../../../tsconfig.json",
     "files":
     [
         "./index.ts"
