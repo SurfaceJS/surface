@@ -125,50 +125,55 @@ export default class Commands
         return module;
     }
 
-    private static resolvePath<T extends object, TKey extends keyof T, TValue extends T[TKey] & string>(configuration: T, key: TKey, context: string): void
+    private static resolvePath<T extends object, TKey extends keyof T, TValue extends T[TKey] & string>(cwd: string, configuration: T, key: TKey): void
     {
         const value = configuration[key];
 
         if (typeof value == "string" && !path.isAbsolute(value))
         {
-            configuration[key] = path.resolve(context, value) as TValue;
+            configuration[key] = path.resolve(cwd, value) as TValue;
         }
     }
 
-    private static resolveBuildConfigurationPaths(root: string, configuration: BuildConfiguration): void
+    private static resolveBuildConfigurationPaths(cwd: string, configuration: BuildConfiguration): void
     {
         if (typeof configuration.cache == "object" && configuration.cache.type == "filesystem")
         {
-            Commands.resolvePath(configuration.cache, "cacheDirectory", root);
+            Commands.resolvePath(cwd, configuration.cache, "cacheDirectory");
         }
 
         if (configuration.overrides)
         {
-            configuration.overrides.forEach(x => (Commands.resolvePath(x, "replace", root), Commands.resolvePath(x, "with", root)));
+            configuration.overrides.forEach(x => (Commands.resolvePath(cwd, x, "replace"), Commands.resolvePath(cwd, x, "with")));
         }
     }
 
-    private static resolvePaths(root: string, project: Project): void
+    private static resolvePaths(cwd: string, project: Project): void
     {
         if (project.eslint)
         {
-            Commands.resolvePath(project.eslint, "configFile", root);
+            Commands.resolvePath(cwd, project.eslint, "configFile");
         }
 
         if (project.environments?.development)
         {
-            Commands.resolveBuildConfigurationPaths(root, project.environments.development);
+            Commands.resolveBuildConfigurationPaths(cwd, project.environments.development);
         }
 
         if (project.environments?.production)
         {
-            Commands.resolveBuildConfigurationPaths(root, project.environments.production);
+            Commands.resolveBuildConfigurationPaths(cwd, project.environments.production);
         }
 
-        Commands.resolvePath(project, "context",  root);
-        Commands.resolvePath(project, "index",    root);
-        Commands.resolvePath(project, "output",   root);
-        Commands.resolvePath(project, "tsconfig", root);
+        Commands.resolvePath(cwd, project, "context");
+        Commands.resolvePath(cwd, project, "index");
+        Commands.resolvePath(cwd, project, "output");
+        Commands.resolvePath(cwd, project, "tsconfig");
+
+        if (Array.isArray(project.preferTs))
+        {
+            project.preferTs.forEach((_, i) => Commands.resolvePath(cwd, project.preferTs as string[], i));
+        }
     }
 
     public static async analyze(options: CliOptions & CliAnalyzerOptions): Promise<void>

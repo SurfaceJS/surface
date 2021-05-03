@@ -14,6 +14,7 @@ const CWD                            = process.cwd();
 const DIST                           = path.join(CWD, "dist");
 const ESLINTRC_JS                    = path.join(CWD, ".eslintrc.js");
 const INDEX_HTML                     = path.join(CWD, "index.html");
+const PROJECT                        = path.join(CWD, "project");
 const PROJECT_CACHE                  = path.join(CWD, "project", ".cache");
 const PROJECT_EMPTY_JSON             = path.join(CWD, "project", "empty.json");
 const PROJECT_ESLINTRC_JSON          = path.join(CWD, "project", ".eslintrc.json");
@@ -273,7 +274,7 @@ export default class CommandsSpec
                     index:        PROJECT_TEMPLATE_HTML,
                     mode:         "production",
                     output:       WWW,
-                    preferTs:     ["src/**/*"],
+                    preferTs:     [path.join(PROJECT, "src/**/*")],
                     publicPath:   "app",
                     target:       "web",
                     tsconfig:     PROJECT_TSCONFIG_BASE_JSON,
