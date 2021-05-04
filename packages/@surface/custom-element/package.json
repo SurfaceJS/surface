@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/expression": "file:../expression",
-        "@surface/reactive": "file:../reactive",
+        "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
         "tslib": "^2.2.0"
     },

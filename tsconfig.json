@@ -43,7 +43,7 @@
         { "path": "./packages/@surface/material-design" },
         { "path": "./packages/@surface/mock" },
         { "path": "./packages/@surface/mock-loader" },
-        { "path": "./packages/@surface/reactive" },
+        { "path": "./packages/@surface/observer" },
         { "path": "./packages/@surface/reflection" },
         { "path": "./packages/@surface/router" },
         { "path": "./packages/@surface/test-suite" },

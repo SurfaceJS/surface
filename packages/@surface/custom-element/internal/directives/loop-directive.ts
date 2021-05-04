@@ -1,7 +1,7 @@
 import type { Delegate, IDisposable }                                        from "@surface/core";
 import { CancellationTokenSource }                                           from "@surface/core";
 import { TypeGuard }                                                         from "@surface/expression";
-import type { Subscription }                                                 from "@surface/reactive";
+import type { Subscription }                                                 from "@surface/observer";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../common.js";
 import TemplateProcessor                                                     from "../processors/template-processor.js";
 import { scheduler }                                                         from "../singletons.js";

@@ -1,6 +1,6 @@
 import type { Delegate }     from "@surface/core";
 import { setValue }          from "@surface/core";
-import type { Subscription } from "@surface/reactive";
+import type { Subscription } from "@surface/observer";
 import { scheduler }         from "../singletons.js";
 import AsyncObserver         from "./async-observer.js";
 

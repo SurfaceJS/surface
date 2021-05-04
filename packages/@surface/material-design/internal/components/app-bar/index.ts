@@ -1,6 +1,6 @@
 import { mix }                           from "@surface/core";
 import CustomElement, { element, query } from "@surface/custom-element";
-import { computed }                      from "@surface/reactive";
+import { computed }                      from "@surface/observer";
 import colorable                         from "../../mixins/colorable/index.js";
 import elevatable                        from "../../mixins/elevatable/index.js";
 import themeable                         from "../../mixins/themeable/index.js";

@@ -1,7 +1,7 @@
 import type { IDisposable, Indexer }       from "@surface/core";
 import { CancellationTokenSource, assert } from "@surface/core";
 import { TypeGuard }                       from "@surface/expression";
-import type { Subscription }               from "@surface/reactive";
+import type { Subscription }               from "@surface/observer";
 import
 {
     tryEvaluateExpressionByTraceable,

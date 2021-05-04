@@ -8,7 +8,7 @@
         "@surface/core": "file:../core",
         "@surface/custom-element": "file:../custom-element",
         "@surface/expression": "file:../expression",
-        "@surface/reactive": "file:../reactive",
+        "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
         "material-design-icons-iconfont": "^6.1.0",
         "resize-observer-polyfill": "^1.5.1",

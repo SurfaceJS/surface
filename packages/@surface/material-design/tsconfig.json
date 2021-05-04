@@ -21,7 +21,7 @@
         { "path": "../core" },
         { "path": "../custom-element" },
         { "path": "../expression" },
-        { "path": "../reactive" },
+        { "path": "../observer" },
         { "path": "../reflection" },
         { "path": "../test-suite" },
     ]

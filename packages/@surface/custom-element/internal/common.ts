@@ -2,7 +2,7 @@ import type { Delegate, IDisposable, Indexer } from "@surface/core";
 import { assert }                              from "@surface/core";
 import type { IExpression, IPattern }          from "@surface/expression";
 import { Evaluate }                            from "@surface/expression";
-import type { Subscription }                   from "@surface/reactive";
+import type { Subscription }                   from "@surface/observer";
 import TemplateEvaluationError                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                from "./errors/template-observation-error.js";
 import TemplateParseError                      from "./errors/template-parse-error.js";
