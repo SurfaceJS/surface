@@ -9,6 +9,7 @@ export default function parsePatternPath(pattern: string): RegExp
         switch (character)
         {
             case "/":
+            case "\\":
                 expression += "(\\/|\\\\)";
                 break;
             case ".":
@@ -29,8 +30,8 @@ export default function parsePatternPath(pattern: string): RegExp
                     const next = pattern[index + 1];
 
                     const isGlobstar = starCount > 1
-                        && (previous == "/" || !previous)
-                        && (next == "/" || !next);
+                        && (previous == "/" || previous == "\\" || !previous)
+                        && (next == "/" || next == "\\" || !next);
 
                     if (isGlobstar)
                     {

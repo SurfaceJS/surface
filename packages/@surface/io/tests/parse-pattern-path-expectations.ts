@@ -21,8 +21,20 @@ export const validExpectations: CommonParsePatternPathValidExpectation[] =
         unmatches: ["foo"],
     },
     {
+        matches:   ["foo\\bar"],
+        pattern:   "**\\bar",
+        regex:     /^(.*)(\/|\\)?bar$/,
+        unmatches: ["foo"],
+    },
+    {
         matches:   ["bar/foo/foo", "/bar/foo/foo", "foo/bar/foo", "foo/foo/bar/"],
         pattern:   "**/bar/**",
+        regex:     /^(.*)(\/|\\)?bar(\/|\\)(.*)(\/|\\)?$/,
+        unmatches: ["foo/foo/bar"],
+    },
+    {
+        matches:   ["bar\\foo\\foo", "\\bar\\foo\\foo", "foo\\bar\\foo", "foo\\foo\\bar\\"],
+        pattern:   "**\\bar\\**",
         regex:     /^(.*)(\/|\\)?bar(\/|\\)(.*)(\/|\\)?$/,
         unmatches: ["foo/foo/bar"],
     },
@@ -33,8 +45,20 @@ export const validExpectations: CommonParsePatternPathValidExpectation[] =
         unmatches: ["file.ext/bar"],
     },
     {
+        matches:   ["file.ext", "\\file.ext", "foo\\file.ext"],
+        pattern:   "**\\*.ext",
+        regex:     /^(.*)(\/|\\)?([^\/\\]*)\.ext$/,
+        unmatches: ["file.ext/bar"],
+    },
+    {
         matches:   ["/file.ext", "foo/file.ext", "/file.x.ext", "foo/file.x.ext"],
         pattern:   "**/*(.x)?.ext",
+        regex:     /^(.*)(\/|\\)?([^\/\\]*)(\.x)?\.ext$/,
+        unmatches: ["ext"],
+    },
+    {
+        matches:   ["\\file.ext", "foo\\file.ext", "\\file.x.ext", "foo\\file.x.ext"],
+        pattern:   "**\\*(.x)?.ext",
         regex:     /^(.*)(\/|\\)?([^\/\\]*)(\.x)?\.ext$/,
         unmatches: ["ext"],
     },
@@ -45,8 +69,20 @@ export const validExpectations: CommonParsePatternPathValidExpectation[] =
         unmatches: ["file.z.ext"],
     },
     {
+        matches:   ["\\file.y.ext", "foo\\file.x.ext"],
+        pattern:   "**\\*.(x|y).ext",
+        regex:     /^(.*)(\/|\\)?([^\/\\]*)\.(x|y)\.ext$/,
+        unmatches: ["file.z.ext"],
+    },
+    {
         matches:   ["bar/file.ext", "/bar/file.ext", "foo/bar/file.ext", "foo/bar/baz/file.ext"],
-        pattern:   "**/bar/**/*.ext",
+        pattern:   "**\\bar\\**\\*.ext",
+        regex:     /^(.*)(\/|\\)?bar(\/|\\)(.*)(\/|\\)?([^\/\\]*)\.ext$/,
+        unmatches: ["file.z.ext"],
+    },
+    {
+        matches:   ["bar\\file.ext", "\\bar\\file.ext", "foo\\bar\\file.ext", "foo\\bar\\baz\\file.ext"],
+        pattern:   "**/bar\\**\\*.ext",
         regex:     /^(.*)(\/|\\)?bar(\/|\\)(.*)(\/|\\)?([^\/\\]*)\.ext$/,
         unmatches: ["file.z.ext"],
     },
