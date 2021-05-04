@@ -18,6 +18,8 @@
     "references":
     [
         { "path": "../core" },
+        { "path": "../custom-element" },
+        { "path": "../dependency-injection" },
         { "path": "../router" },
         { "path": "../test-suite" },
     ]

@@ -1,6 +1,6 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
-import Reactive                                 from "../reactive.js";
+import Observer                                 from "../observer.js";
 
 export default function observe(...properties: string[]): (target: object, propertyKey: string, descriptor?: PropertyDescriptor) => void
 {
@@ -9,7 +9,7 @@ export default function observe(...properties: string[]): (target: object, prope
         const finisher = (instance: object): void =>
         {
             const disposableMetadata = DisposableMetadata.from(instance);
-            const observer           = Reactive.from(instance, [propertyKey]);
+            const observer           = Observer.observe(instance, [propertyKey]);
 
             for (const property of properties)
             {

@@ -3,7 +3,7 @@ import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/co
 import type ICustomElement                                     from "../interfaces/custom-element";
 import Metadata                                                from "../metadata/metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";
-import AsyncReactive                                           from "../reactivity/async-reactive.js";
+import AsyncObserver                                           from "../reactivity/async-observer.js";
 import { scheduler } from "../singletons.js";
 
 function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
@@ -82,7 +82,7 @@ function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, str
                 metadata.reflectingAttribute.delete(attributeName);
             };
 
-            const subscription = AsyncReactive.from(instance, [propertyKey], scheduler).subscribe(action);
+            const subscription = AsyncObserver.observe(instance, [propertyKey], scheduler).subscribe(action);
 
             DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };

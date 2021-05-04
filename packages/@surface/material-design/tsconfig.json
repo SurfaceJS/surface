@@ -20,7 +20,6 @@
         { "path": "../collection" },
         { "path": "../core" },
         { "path": "../custom-element" },
-        { "path": "../enumerable" },
         { "path": "../expression" },
         { "path": "../reactive" },
         { "path": "../reflection" },

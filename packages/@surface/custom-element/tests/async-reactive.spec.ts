@@ -4,10 +4,10 @@ import "./fixtures/dom.js";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import Scheduler                   from "../internal/processors/scheduler.js";
-import AsyncReactive               from "../internal/reactivity/async-reactive.js";
+import AsyncObserver               from "../internal/reactivity/async-observer.js";
 
 @suite
-export default class AsyncReactiveSpec
+export default class AsyncObserverSpec
 {
     @test @shouldPass
     public async observe(): Promise<void>
@@ -18,8 +18,8 @@ export default class AsyncReactiveSpec
 
         let asyncReceiver = target.value;
 
-        AsyncReactive.from(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
-        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
+        AsyncObserver.observe(target, ["value"], scheduler).subscribe(() => void 0); // Coverage
+        AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => asyncReceiver = x as number);
 
         chai.assert.equal(target.value, asyncReceiver);
 
@@ -37,7 +37,7 @@ export default class AsyncReactiveSpec
 
         let asyncReceiver = target.value;
 
-        AsyncReactive.from(target, ["value"]).subscribe(x => asyncReceiver = x as number);
+        AsyncObserver.observe(target, ["value"]).subscribe(x => asyncReceiver = x as number);
 
         chai.assert.equal(target.value, asyncReceiver);
 
@@ -56,7 +56,7 @@ export default class AsyncReactiveSpec
         let receiver = target.value;
         let hits = 0;
 
-        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
+        AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as number, hits++));
 
         chai.assert.equal(target.value, receiver);
 
@@ -81,8 +81,8 @@ export default class AsyncReactiveSpec
         let receiver = target.value;
         let length   = target.value.length;
 
-        AsyncReactive.from(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
-        AsyncReactive.from(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
+        AsyncObserver.observe(target, ["value"], scheduler).subscribe(x => (receiver = x as string, hits++));
+        AsyncObserver.observe(target, ["value", "length"], scheduler).subscribe(x => length = x as number);
 
         chai.assert.equal(target.value, receiver);
 

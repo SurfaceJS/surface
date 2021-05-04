@@ -2,7 +2,7 @@ import type { Delegate }     from "@surface/core";
 import { setValue }          from "@surface/core";
 import type { Subscription } from "@surface/reactive";
 import { scheduler }         from "../singletons.js";
-import AsyncReactive         from "./async-reactive.js";
+import AsyncObserver         from "./async-observer.js";
 
 export default class DataBind
 {
@@ -15,7 +15,7 @@ export default class DataBind
 
     public static oneWay(root: object, path: string[], listener: Delegate<[unknown]>, lazy: boolean = false): Subscription
     {
-        const observer = AsyncReactive.from(root, path, scheduler);
+        const observer = AsyncObserver.observe(root, path, scheduler);
 
         const subscription = observer.subscribe(listener);
 

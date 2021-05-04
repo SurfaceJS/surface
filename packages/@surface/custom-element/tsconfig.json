@@ -18,9 +18,9 @@
     "references":
     [
         { "path": "../core" },
-        { "path": "../enumerable" },
         { "path": "../expression" },
         { "path": "../reactive" },
+        { "path": "../reflection" },
         { "path": "../test-suite" },
     ]
 }

@@ -7,7 +7,14 @@ import type MemberInfo  from "./member-info.js";
 import MethodInfo       from "./method-info.js";
 import PropertyInfo     from "./property-info.js";
 
-type Member = { key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean };
+type Member =
+{
+    declaringType: Type,
+    descriptor:    PropertyDescriptor,
+    isOwn:         boolean,
+    isStatic:      boolean,
+    key:           string | symbol,
+};
 
 export default class Type
 {

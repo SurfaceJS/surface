@@ -4,9 +4,7 @@
         "url": "https://github.com/SurfaceJS/modules/issues"
     },
     "dependencies": {
-        "@surface/collection": "file:../collection",
         "@surface/core": "file:../core",
-        "@surface/enumerable": "file:../enumerable",
         "@surface/expression": "file:../expression",
         "@surface/reactive": "file:../reactive",
         "@surface/reflection": "file:../reflection",
