@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/indent */
 
 import type { Indexer }                                                                         from "@surface/core";
 import { assert, contains, dashedToCamel, typeGuard }                                           from "@surface/core";
-import Enumerable                                                                               from "@surface/enumerable";
 import type { IExpression, IIdentifier, IPattern }                                              from "@surface/expression";
 import Expression, { SyntaxError, TypeGuard }                                                   from "@surface/expression";
 import { scapeBrackets, throwTemplateParseError }                                               from "../common.js";
@@ -222,48 +222,57 @@ export default class TemplateParser
     }
 
     private enumerateDirectives(namedNodeMap: NamedNodeMap): Iterable<Directive>;
-    private enumerateDirectives(namedNodeMap: NamedNodeMap & Indexer<Attr>): Iterable<Directive>
+    private *enumerateDirectives(namedNodeMap: NamedNodeMap & Indexer<Attr>): Iterable<Directive>
     {
         const KEYED_DIRECTIVES = [DirectiveType.Inject, DirectiveType.Placeholder];
 
-        return Enumerable.from(namedNodeMap)
-            .where(x => !x.name.endsWith("-key"))
-            .select
-            (
-                attribute =>
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of
+        for (let i = 0; i < namedNodeMap.length; i++)
+        {
+            const attribute = namedNodeMap[i];
+
+            if (!attribute.name.endsWith("-key"))
+            {
+                const raw = this.attributeToString(attribute);
+
+                let isKeyed = false;
+
+                for (const directive of KEYED_DIRECTIVES)
                 {
-                    const raw = this.attributeToString(attribute);
-
-                    for (const directive of KEYED_DIRECTIVES)
+                    if (attribute.name == directive || attribute.name.startsWith(`${directive}:`))
                     {
-                        if (attribute.name == directive || attribute.name.startsWith(`${directive}:`))
-                        {
-                            const DEFAULT_KEY = "'default'";
+                        const DEFAULT_KEY = "'default'";
 
-                            const directiveKey = `${directive}-key`;
+                        const directiveKey = `${directive}-key`;
 
-                            const [type, _key] = attribute.name.split(":") as [DirectiveType, string | undefined];
+                        const [type, _key] = attribute.name.split(":") as [DirectiveType, string | undefined];
 
-                            const hasStaticKey = typeof _key == "string";
+                        const hasStaticKey = typeof _key == "string";
 
-                            const key = hasStaticKey
-                                ? `'${_key}'`
-                                : `${namedNodeMap[directiveKey]?.value ?? DEFAULT_KEY}`;
+                        const key = hasStaticKey
+                            ? `'${_key}'`
+                            : `${namedNodeMap[directiveKey]?.value ?? DEFAULT_KEY}`;
 
-                            const rawKey = !hasStaticKey && key != DEFAULT_KEY ? `${directiveKey}=\"${key}\"` : "";
+                        const rawKey = !hasStaticKey && key != DEFAULT_KEY ? `${directiveKey}=\"${key}\"` : "";
 
-                            return {
-                                key,
-                                name:  attribute.name,
-                                raw,
-                                rawKey,
-                                type,
-                                value: attribute.value,
-                            };
-                        }
+                        yield {
+                            key,
+                            name:  attribute.name,
+                            raw,
+                            rawKey,
+                            type,
+                            value: attribute.value,
+                        };
+
+                        isKeyed = true;
+
+                        break;
                     }
+                }
 
-                    return {
+                if (!isKeyed)
+                {
+                    yield {
                         key:    "",
                         name:   attribute.name,
                         raw,
@@ -271,8 +280,9 @@ export default class TemplateParser
                         type:   attribute.name as DirectiveType,
                         value:  attribute.value,
                     };
-                },
-            );
+                }
+            }
+        }
     }
 
     private nest(template: HTMLTemplateElement, innerTemplate: HTMLTemplateElement): void
@@ -458,10 +468,7 @@ export default class TemplateParser
             const lastIndex = this.indexStack.pop()!;
             const lastStack = this.stackTrace.pop()!;
 
-            const parentChildNodes = Enumerable.from(template.parentNode!.childNodes)
-                .skip(lastIndex)
-                .take(template.parentNode!.childNodes.length - lastIndex)
-                .toArray();
+            const parentChildNodes = this.sliceNodes(template.parentNode!, lastIndex);
 
             let nodeIndex    = 0;
             let elementIndex = lastIndex - nonElementsCount;
@@ -679,6 +686,18 @@ export default class TemplateParser
     private setDecomposed(element: Element & { [DECOMPOSED]?: boolean }): void
     {
         element[DECOMPOSED] = true;
+    }
+
+    private sliceNodes(element: Node & ParentNode, start: number): ChildNode[]
+    {
+        const nodes: ChildNode[] = [];
+
+        for (let index = start; index < element.childNodes.length; index++)
+        {
+            nodes.push(element.childNodes[index]);
+        }
+
+        return nodes;
     }
 
     private traverseNode(node: Node): void

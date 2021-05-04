@@ -26,6 +26,7 @@
     },
     "scripts": {
         "build": "tsc --build",
+        "clean": "rimraf ./node_modules ./package-lock.json ./packages/@surface/*/node_modules ./packages/@surface/*/package-lock.json && tsc --build --clean",
         "cover": "c8 --check-coverage mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js --ui tdd **/packages/@surface/*/tests/**/*.spec.js",
         "lint": "eslint . --ext .ts",
         "task:build": "node ./tasks/cli build",
