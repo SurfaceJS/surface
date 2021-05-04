@@ -1,4 +1,4 @@
-import { mixer }                                           from "@surface/core";
+import { mix }                                             from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
 import { computed, observe }                               from "@surface/reactive";
 import colorable                                           from "../../mixins/colorable/index.js";
@@ -19,13 +19,13 @@ declare global
 }
 
 @element("smd-switch", template, style)
-export default class Switch extends mixer(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
+export default class Switch extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")
-    protected colorable!: HTMLElement;
+    public colorable!: HTMLElement;
 
     @query("#selection")
-    protected rippleable!: HTMLElement;
+    public rippleable!: HTMLElement;
 
     @attribute
     public checked: boolean = false;

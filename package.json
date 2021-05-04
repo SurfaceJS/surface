@@ -2,16 +2,16 @@
     "author": "HitalloExiled",
     "description": "Global modules and shared types",
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "4.18.0",
-        "@typescript-eslint/parser": "4.18.0",
-        "c8": "7.6.0",
-        "eslint": "7.22.0",
-        "eslint-plugin-import": "2.22.1",
-        "mocha": "8.3.2",
-        "nyc": "15.1.0",
-        "rimraf": "3.0.2",
-        "tslib": "2.1.0",
-        "typescript": "4.2.3"
+        "@typescript-eslint/eslint-plugin": "^4.22.0",
+        "@typescript-eslint/parser": "^4.22.0",
+        "c8": "7.7.1",
+        "eslint": "^7.25.0",
+        "eslint-plugin-import": "^2.22.1",
+        "mocha": "^8.3.2",
+        "nyc": "^15.1.0",
+        "rimraf": "^3.0.2",
+        "tslib": "^2.2.0",
+        "typescript": "^4.2.4"
     },
     "keywords": [
         "types",
@@ -25,7 +25,7 @@
         "url": "git+https://github.com/SurfaceJS/modules.git"
     },
     "scripts": {
-        "build": "tsc -p ./tasks/tsconfig.no-tests.json && npm run task:build",
+        "build": "tsc --build",
         "cover": "c8 --check-coverage mocha --loader=@surface/mock-loader --require=./tasks/polyfill.js --ui tdd **/packages/@surface/*/tests/**/*.spec.js",
         "lint": "eslint . --ext .ts",
         "task:build": "node ./tasks/cli build",

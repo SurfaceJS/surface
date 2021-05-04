@@ -2,7 +2,7 @@
 import "../button/index.js";
 import "../icon/index.js";
 
-import { mixer }                  from "@surface/core";
+import { mix }                    from "@surface/core";
 import CustomElement, { element } from "@surface/custom-element";
 import colorable                  from "../../mixins/colorable/index.js";
 import elevatable                 from "../../mixins/elevatable/index.js";
@@ -20,7 +20,7 @@ declare global
 }
 
 @element("smd-app-toogle", template, style)
-export default class AppToogle extends mixer(CustomElement, [colorable, elevatable, themeable])
+export default class AppToogle extends mix(CustomElement, [colorable, elevatable, themeable])
 {
-    protected colorable?: HTMLElement;
+    public colorable?: HTMLElement;
 }

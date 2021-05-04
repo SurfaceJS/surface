@@ -7,7 +7,7 @@ import glob                                          from "glob";
 import type { Credential, IPackage, IPublishParams } from "npm-registry-client";
 import type { ICreateOptions }                       from "tar";
 import { create }                                    from "tar";
-import { filterPackages, log, paths }                from "./common.js";
+import { log, paths }                                from "./common.js";
 import Status                                        from "./enums/status.js";
 import NpmRepository                                 from "./npm-repository.js";
 import Version                                       from "./version.js";
@@ -76,9 +76,9 @@ export default class Publisher
         return await create(options, files);
     }
 
-    public async publish(modules: string[] = []): Promise<void>
+    public async publish(modules?: string[]): Promise<void>
     {
-        const packages = filterPackages(this.lookup.values(), modules);
+        const packages = modules ? modules.map(x => this.lookup.get(x)!) : this.lookup.values();
 
         for (const $package of packages)
         {

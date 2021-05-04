@@ -1,21 +1,25 @@
 {
     "all": false,
     "branches": 90,
-    "exclude": [
+    "exclude":
+    [
         "**/packages/@surface/*/index.js",
         "**/tests"
     ],
-    "extension": [
+    "extension":
+    [
         ".js",
         ".ts"
     ],
     "functions": 90,
-    "include": [
+    "include":
+    [
         "packages/@surface/**/*.js",
         "packages/@surface/**/*.ts"
     ],
     "lines": 90,
-    "reporter": [
+    "reporter":
+    [
         "text-summary",
         "lcov"
     ],

@@ -1,17 +1,26 @@
 {
-    "compilerOptions": {
-        "types": [
-            "node"
-        ]
-    },
     "extends": "../tsconfig.json",
-    "files": [
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+        "types":   ["node"],
+    },
+    "files":
+    [
         "./cli.ts",
-        "./polyfill.ts"
+        "./polyfill.ts",
     ],
-    "include": [
+    "include":
+    [
         "./@types",
         "./internal",
         "./tests"
+    ],
+    "references":
+    [
+        { "path": "../packages/@surface/core" },
+        { "path": "../packages/@surface/io" },
+        { "path": "../packages/@surface/mock" },
     ]
 }

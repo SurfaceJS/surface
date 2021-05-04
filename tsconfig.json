@@ -3,11 +3,13 @@
     {
         "allowSyntheticDefaultImports":     true,
         "alwaysStrict":                     true,
+        "composite":                        true,
         "emitDecoratorMetadata":            true,
         "esModuleInterop":                  true,
         "experimentalDecorators":           true,
         "forceConsistentCasingInFileNames": false,
         "importHelpers":                    true,
+        "incremental":                      true,
         "lib":                              ["esnext"],
         "module":                           "ESNext",
         "moduleResolution":                 "node",
@@ -24,5 +26,29 @@
         "strict":                           true,
         "target":                           "ES2020",
         "types":                            []
-    }
+    },
+    "exclude": [],
+    "include": [],
+    "references":
+    [
+        { "path": "./packages/@surface/builder" },
+        { "path": "./packages/@surface/collection" },
+        { "path": "./packages/@surface/cli" },
+        { "path": "./packages/@surface/core" },
+        { "path": "./packages/@surface/custom-element" },
+        { "path": "./packages/@surface/dependency-injection" },
+        { "path": "./packages/@surface/enumerable" },
+        { "path": "./packages/@surface/expression" },
+        { "path": "./packages/@surface/io" },
+        { "path": "./packages/@surface/material-design" },
+        { "path": "./packages/@surface/mock" },
+        { "path": "./packages/@surface/mock-loader" },
+        { "path": "./packages/@surface/reactive" },
+        { "path": "./packages/@surface/reflection" },
+        { "path": "./packages/@surface/router" },
+        { "path": "./packages/@surface/test-suite" },
+        { "path": "./packages/@surface/web-host" },
+        { "path": "./packages/@surface/web-router" },
+        { "path": "./tasks" },
+    ]
 }

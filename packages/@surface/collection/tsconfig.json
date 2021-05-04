@@ -1,9 +1,16 @@
 {
     "extends": "../../../tsconfig.json",
-    "files": [
+    "compilerOptions":
+    {
+        "outDir":  ".",
+        "rootDir": ".",
+    },
+    "files":
+    [
         "./index.ts"
     ],
-    "include": [
+    "include":
+    [
         "./internal",
         "./tests"
     ]

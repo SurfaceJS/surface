@@ -23,14 +23,13 @@
                 // "-w",  "false",                                              /* "-w|--watch"           */
             ],
             "cwd":      "${workspaceFolder}",
-            "name":     "Launch Compiler",
+            "name":     "Launch Builder",
             "outFiles":
             [
-                "${workspaceFolder}/packages/@surface/compiler/node_modules/fork-ts-checker-webpack-plugin/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/internal/**/*.js",
                 "${workspaceFolder}/packages/@surface/*/tests/**/*.js"
             ],
-            "program":  "${workspaceFolder}/packages/@surface/compiler/cli",
+            "program":  "${workspaceFolder}/packages/@surface/builder/cli",
             "protocol": "inspector",
             "request":  "launch",
             "skipFiles":
@@ -38,28 +37,6 @@
                 "<node_internals>/**",
             ],
             "type": "node"
-        },
-        {
-            "args":
-            [
-                "relink"
-            ],
-            "cwd":     "${workspaceFolder}/tasks",
-            "name":    "Launch Modules Tasks Cli",
-            "program": "${workspaceFolder}/tasks/cli",
-            "request": "launch",
-            "type":    "node"
-        },
-        {
-            "args":
-            [
-                "relink"
-            ],
-            "cwd":     "${workspaceFolder}/tasks",
-            "name":    "Launch Workbench Tasks Cli",
-            "program": "${workspaceFolder}/tasks/cli",
-            "request": "launch",
-            "type":    "node"
         },
         {
             "cwd":      "${fileDirname}",

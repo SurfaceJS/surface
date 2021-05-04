@@ -5,10 +5,10 @@ import { computed }          from "@surface/reactive";
 import style                 from "./index.scss";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-const elevatable = <T extends Constructor<CustomElement>>(superClass: T) =>
+const elevatable = <T extends Constructor<CustomElement>>(superClass: T): Constructor<IElevatable> & T =>
 {
     @styles(style)
-    class Elevatable extends superClass
+    class Elevatable extends superClass implements IElevatable
     {
         @attribute
         public elevation: number = 0;
@@ -22,5 +22,12 @@ const elevatable = <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Elevatable;
 };
+
+export interface IElevatable
+{
+    elevation: number;
+    elevationClasses: Record<string, boolean>;
+
+}
 
 export default elevatable;

@@ -2,7 +2,7 @@ import chai                                    from "chai";
 import type { IGetData, IPackage }             from "npm-registry-client";
 import Mock, { It }                            from "../../packages/@surface/mock/index.js";
 import { shouldFail, shouldPass, suite, test } from "../../packages/@surface/test-suite/index.js";
-import type { IOptions }                       from "../internal/depsync.js";
+import type { Options }                       from "../internal/depsync.js";
 import Depsync                                 from "../internal/depsync.js";
 import StrategyType                            from "../internal/enums/strategy-type.js";
 import NpmRepository                           from "../internal/npm-repository.js";
@@ -37,7 +37,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.resolve(getDataMock.proxy));
 
-        const options: IOptions = { silent: true };
+        const options: Options = { silent: true };
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
@@ -78,9 +78,9 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call("c", It.any())
             .returns(Promise.reject({ code: "E404" }));
 
-        const options: IOptions = { silent: true };
+        const options: Options = { silent: true };
 
-        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync(["c"]);
+        await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -113,7 +113,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject({ code: "E404" }));
 
-        const options: IOptions = { silent: true, strategy: StrategyType.Default, template: "*.2.*" };
+        const options: Options = { silent: true, strategy: StrategyType.Default, version: "*.2.*" };
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
@@ -139,7 +139,7 @@ export default class PublisherSpec
             { name: "d", version: "1.2.0" },
         ];
 
-        const options: IOptions = { silent: true, strategy: StrategyType.Default, template: "*.2.*-*.*" };
+        const options: Options = { silent: true, strategy: StrategyType.Default, version: "*.2.*-*.*" };
 
         const bGetDataMock = Mock.instance<IGetData>();
         bGetDataMock.setupGet("versions").returns({ [actual[1].version]: actual[1] });
@@ -185,7 +185,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.resolve(getDataMock.proxy));
 
-        const options: IOptions = { silent: true, strategy: StrategyType.ForceUpdate, template: "2.0.0" };
+        const options: Options = { silent: true, strategy: StrategyType.ForceUpdate, version: "2.0.0" };
 
         await new Depsync(npmRepositoryMock.proxy, toLookup(actual), options).sync();
 
@@ -211,7 +211,7 @@ export default class PublisherSpec
             { name: "e", version: "1.2.0" },
         ];
 
-        const options: IOptions = { silent: true, strategy: StrategyType.IgnoreDependents, template: "*.2.*-*.*" };
+        const options: Options = { silent: true, strategy: StrategyType.IgnoreDependents, version: "*.2.*-*.*" };
 
         const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
@@ -239,7 +239,7 @@ export default class PublisherSpec
             { name: "c", version: "1.0.0-alpha.0" },
         ];
 
-        const options: IOptions = { silent: true, strategy: StrategyType.OnlyStable, template: "3.0.0-*.*" };
+        const options: Options = { silent: true, strategy: StrategyType.OnlyStable, version: "3.0.0-*.*" };
 
         const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
@@ -269,7 +269,7 @@ export default class PublisherSpec
             { name: "e", version: "3.0.0" },
         ];
 
-        const options: IOptions = { silent: true, strategy: StrategyType.IgnoreDependents | StrategyType.OnlyStable, template: "3.0.0-*.*" };
+        const options: Options = { silent: true, strategy: StrategyType.IgnoreDependents | StrategyType.OnlyStable, version: "3.0.0-*.*" };
 
         const npmRepositoryMock = new Mock(new NpmRepository());
         npmRepositoryMock.setup("get").call(It.any(), It.any())
@@ -294,7 +294,7 @@ export default class PublisherSpec
         npmRepositoryMock.setup("get").call(It.any(), It.any())
             .returns(Promise.reject(expected));
 
-        const options: IOptions = { silent: true, strategy: StrategyType.IgnoreDependents | StrategyType.OnlyStable, template: "3.0.0-*.*" };
+        const options: Options = { silent: true, strategy: StrategyType.IgnoreDependents | StrategyType.OnlyStable, version: "3.0.0-*.*" };
 
         try
         {

@@ -1,4 +1,4 @@
-import { assert, mixer }                                   from "@surface/core";
+import { assert, mix }                                     from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
 import { computed }                                        from "@surface/reactive";
 import colorable                                           from "../../mixins/colorable/index.js";
@@ -17,26 +17,27 @@ declare global
 }
 
 @element("smd-text-field", template, style)
-export default class TextField extends mixer(CustomElement, [colorable, lineRippleable, themeable])
+export default class TextField extends mix(CustomElement, [colorable, lineRippleable, themeable])
 {
     private _selectionEnd:   number = 0;
     private _selectionStart: number = 0;
 
-    @query("#root")
-    protected colorable!: HTMLElement;
-
     @query("#inputable")
     protected inputable!: HTMLElement;
 
-    @query(".rippleable")
-    protected rippleable!: HTMLElement;
+    protected input!: HTMLElement;
 
-    protected get noRipple(): boolean
+    @query("#root")
+    public colorable!: HTMLElement;
+
+    @query(".rippleable")
+    public rippleable!: HTMLElement;
+
+    // @ts-expect-error
+    public get noRipple(): boolean
     {
         return this.outlined;
     }
-
-    protected input!: HTMLElement;
 
     @attribute
     public counter: boolean = false;

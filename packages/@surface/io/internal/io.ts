@@ -17,6 +17,7 @@ import
     unlinkAsync,
     unlinkSync,
 } from "./fs.js";
+import parsePatternPath from "./parse-pattern-path.js";
 
 function getStats(filepath: string): Stats | null
 {
@@ -95,6 +96,15 @@ export async function createPathAsync(targetPath: string, mode: number = 0o777):
     }
 
     return mkdirAsync(targetPath, mode);
+}
+
+/**
+ * Creates a regex that test the provided patterns.
+ * @param patterns Patterns to test.
+ */
+export function createPathMatcher(...patterns: string[]): RegExp
+{
+    return new RegExp(patterns.map(x => `(${parsePatternPath(x).source})`).join("|"));
 }
 
 /**
@@ -193,6 +203,17 @@ export async function lookupFileAsync(lookup: string[], context: string = proces
     }
 
     return null;
+}
+
+/**
+ * Returns true if the path matches one of the provided patterns.
+ * @param path Path to test.
+ * @param patterns Patterns to which the path must match.
+ */
+export function matchPath(path: string, ...patterns: [string, ...string[]]): boolean;
+export function matchPath(targetPath: string, ...patterns: [string, ...string[]]): boolean
+{
+    return createPathMatcher(...patterns).test(targetPath);
 }
 
 /**

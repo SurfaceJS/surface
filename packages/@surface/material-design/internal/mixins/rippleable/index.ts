@@ -10,19 +10,22 @@ const ANIMATION_OUT   = "animation-out";
 const RIPPLE          = "ripple";
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-const rippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
+const rippleable = <T extends Constructor<CustomElement & { rippleable?: HTMLElement }>>(superClass: T): Constructor<IRippleable> & T =>
 {
     @styles(style)
-    abstract class Rippleable extends superClass
+    class Rippleable extends superClass implements IRippleable
     {
         private firedByTouch: boolean = false;
 
-        protected abstract readonly rippleable: HTMLElement;
-
         @event("mousedown")
         @event("touchstart", { passive: true })
-        protected show(event: MouseEvent|TouchEvent): void
+        public showRipple(event: MouseEvent | TouchEvent): void
         {
+            if (!this.rippleable)
+            {
+                return;
+            }
+
             this.rippleable.classList.add("rippleable");
 
             const isTouch = event instanceof TouchEvent;
@@ -80,8 +83,13 @@ const rippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
         @event("dragstart")
         @event("touchcancel")
         @event("touchend", { passive: true })
-        protected hide(): void
+        public hideRipple(): void
         {
+            if (!this.rippleable)
+            {
+                return;
+            }
+
             const ripples = this.rippleable.querySelectorAll<HTMLElement>(`.${RIPPLE}`);
 
             if (ripples.length == 0)
@@ -111,5 +119,8 @@ const rippleable = <T extends Constructor<CustomElement>>(superClass: T) =>
 
     return Rippleable;
 };
+
+export interface IRippleable
+{ }
 
 export default rippleable;
