@@ -15,7 +15,7 @@ import TemplateProcessor                       from "../internal/processors/temp
 import { globalCustomDirectives, scheduler }   from "../internal/singletons.js";
 import type TemplateProcessorContext           from "../internal/types/template-processor-context";
 import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
-import CustomDirectiveHandler                  from "./fixtures/custom-directive.js";
+import CustomDirective                         from "./fixtures/custom-directive.js";
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
@@ -23,7 +23,7 @@ class XComponent extends HTMLElement { }
 
 window.customElements.define("x-component", XComponent);
 
-globalCustomDirectives.set("custom", CustomDirectiveHandler);
+globalCustomDirectives.set("custom", CustomDirective);
 globalCustomDirectives.set("custom-factory", customDirectiveFactory);
 
 function tryAction(action: Delegate): RawError

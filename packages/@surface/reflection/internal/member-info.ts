@@ -36,21 +36,6 @@ export default abstract class MemberInfo
         return this._key;
     }
 
-    public get metadata(): Indexer
-    {
-        if (!this._metadata)
-        {
-            const metadata: Indexer = { };
-
-            Reflect.getMetadataKeys(this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key)
-                .forEach(key => metadata[key] = Reflect.getMetadata(key, this.isStatic ? this.declaringType.getConstructor() : this.declaringType.getPrototype(), this.key));
-
-            this._metadata = metadata;
-        }
-
-        return this._metadata;
-    }
-
     protected constructor(key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean)
     {
         this._key           = key;

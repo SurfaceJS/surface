@@ -27,13 +27,13 @@ export default class Switch extends mix(CustomElement, [colorable, disableable, 
     @query("#selection")
     public rippleable!: HTMLElement;
 
-    @attribute
+    @attribute(Boolean)
     public checked: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public flat: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public inset: boolean = false;
 
     @attribute

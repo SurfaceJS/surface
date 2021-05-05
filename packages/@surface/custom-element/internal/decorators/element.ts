@@ -1,10 +1,8 @@
-import type { Constructor, Delegate, Indexer }    from "@surface/core";
+import type { Constructor }                       from "@surface/core";
 import { DisposableMetadata, HookableMetadata }   from "@surface/core";
 import { createHostScope, stringToCSSStyleSheet } from "../common.js";
 import CustomElement                              from "../custom-element.js";
 import type ICustomElement                        from "../interfaces/custom-element";
-import Metadata                                   from "../metadata/metadata.js";
-import PrototypeMetadata                          from "../metadata/prototype-metadata.js";
 import StaticMetadata                             from "../metadata/static-metadata.js";
 import TemplateParser                             from "../parsers/template-parser.js";
 import TemplateProcessor                          from "../processors/template-processor.js";
@@ -12,46 +10,12 @@ import { globalCustomDirectives }                 from "../singletons.js";
 import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
 import type TemplateProcessorContext              from "../types/template-processor-context.js";
 
-const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
-
-function wraperPrototype(prototype: ICustomElement): void
-{
-    const attributeChangedCallback = (callback?: ICustomElement["attributeChangedCallback"]): ICustomElement["attributeChangedCallback"] => function (this: ICustomElement, name, oldValue, newValue, namespace)
-    {
-        if (!Metadata.from(this).reflectingAttribute.has(name))
-        {
-            StaticMetadata.from(this.constructor)
-                .converters[name]?.(this as object as Indexer, name == newValue && STANDARD_BOOLEANS.has(name) ? "true" : newValue);
-
-            callback?.call(this, name, oldValue, newValue, namespace);
-        }
-    };
-
-    wraperLifecycle(prototype, "attributeChangedCallback", attributeChangedCallback);
-}
-
-function wraperLifecycle<K extends keyof ICustomElement>(prototype: ICustomElement, key: K, action: Delegate<[ICustomElement[K]], ICustomElement[K]>): void
-{
-    const metadata = PrototypeMetadata.from(prototype) as unknown as Indexer;
-
-    const callback = prototype[key];
-
-    if (!callback || callback != metadata[key])
-    {
-        prototype[key] = action(callback);
-
-        metadata[key] = prototype[key];
-    }
-}
-
 export default function element(tagname: `${string}-${string}`, template?: string, style?: string, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
     return <T extends Constructor<ICustomElement>>(target: T) =>
     {
         if (target.prototype instanceof CustomElement)
         {
-            wraperPrototype(target.prototype);
-
             const staticMetadata = StaticMetadata.from(target);
 
             const templateElement = document.createElement("template");

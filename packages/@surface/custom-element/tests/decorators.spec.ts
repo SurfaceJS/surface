@@ -7,7 +7,7 @@ import chai                        from "chai";
 import CustomElement               from "../internal/custom-element.js";
 import attribute                   from "../internal/decorators/attribute.js";
 import element                     from "../internal/decorators/element.js";
-import CustomDirectiveHandler from "./fixtures/custom-directive.js";
+import CustomDirective from "./fixtures/custom-directive.js";
 
 @suite
 export default class DecoratorsSpec
@@ -20,72 +20,69 @@ export default class DecoratorsSpec
         {
             public static observedAttributes?: string[];
 
-            private _value: Object = 1;
+            private _property: string = "value";
 
             @attribute
-            public get value(): Object
+            public field: string = "";
+
+            @attribute
+            public get property(): string
             {
-                return this._value;
+                return this._property;
             }
 
-            public set value(value: Object)
+            public set property(value: string)
             {
-                this._value = value;
-            }
-
-            public constructor()
-            {
-                super();
+                this._property = value;
             }
         }
 
         chai.assert.doesNotThrow(() => new Mock());
-        chai.assert.deepEqual(Mock.observedAttributes, ["value"]);
+        chai.assert.deepEqual(Mock.observedAttributes, ["field", "property"]);
     }
 
-    @test @shouldPass
-    public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
-    {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`)
-        class Mock extends CustomElement
-        {
-            public static observedAttributes?: string[];
+    // @test @shouldPass
+    // public elementDecoratorHtmlElementWithMultiplesObservedAttibute(): void
+    // {
+    //     @element(`mock-${uuidv4()}` as `${string}-${string}`)
+    //     class Mock extends CustomElement
+    //     {
+    //         public static observedAttributes?: string[];
 
-            @attribute
-            public get value1(): Object
-            {
-                return this._value1;
-            }
+    //         private _value1: number = 1;
+    //         private _value2: number = 1;
 
-            public set value1(value: Object)
-            {
-                this._value1 = value;
-            }
+    //         @attribute(Object)
+    //         public get value1(): Object
+    //         {
+    //             return this._value1;
+    //         }
 
-            @attribute
-            public get value2(): Object
-            {
-                return this._value2;
-            }
+    //         public set value1(value: Object)
+    //         {
+    //             this._value1 = value;
+    //         }
 
-            public set value2(value: Object)
-            {
-                this._value2 = value;
-            }
+    //         @attribute
+    //         public get value2(): number
+    //         {
+    //             return this._value2;
+    //         }
 
-            private _value1: Object = 1;
+    //         public set value2(value: number)
+    //         {
+    //             this._value2 = value;
+    //         }
 
-            private _value2: Object = 1;
+    //         public constructor()
+    //         {
+    //             super();
+    //         }
+    //     }
 
-            public constructor()
-            {
-                super();
-            }
-        }
-
-        chai.assert.doesNotThrow(() => new Mock());
-        chai.assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
-    }
+    //     chai.assert.doesNotThrow(() => new Mock());
+    //     chai.assert.deepEqual(Mock.observedAttributes, ["value-1", "value-2"]);
+    // }
 
     @test @shouldPass
     public elementDecoratorCustomElement(): void
@@ -135,7 +132,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyleAndOptions(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`, "<div #custom>Template</div>", "div { color: red; }", { directives: { custom: CustomDirectiveHandler }, extends: "div" })
+        @element(`mock-${uuidv4()}` as `${string}-${string}`, "<div #custom>Template</div>", "div { color: red; }", { directives: { custom: CustomDirective }, extends: "div" })
         class Mock extends CustomElement.as(HTMLDivElement)
         {
             public constructor()

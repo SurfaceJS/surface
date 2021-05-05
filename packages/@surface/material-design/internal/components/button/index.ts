@@ -34,28 +34,28 @@ export default class Button extends mix(CustomElement, [colorable, disableable, 
     @query("#root")
     public rippleable!: HTMLElement;
 
-    @attribute
+    @attribute(Boolean)
     public block: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public fab: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public icon: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public rounded: boolean = false;
 
     @attribute
     public size: Size = "";
 
-    @attribute
+    @attribute(Boolean)
     public outlined: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public text: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public tile: boolean = false;
 
     @computed("block", "fab", "icon", "outlined", "rounded", "text", "tile", "elevationClasses", "themeClasses")

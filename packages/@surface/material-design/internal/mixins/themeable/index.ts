@@ -8,10 +8,10 @@ const themeable = <T extends Constructor<CustomElement>>(superClass: T): Constru
 {
     class Themeable extends superClass
     {
-        @attribute
+        @attribute(Boolean)
         public dark: boolean = false;
 
-        @attribute
+        @attribute(Boolean)
         public light: boolean = false;
 
         @computed("dark", "light")

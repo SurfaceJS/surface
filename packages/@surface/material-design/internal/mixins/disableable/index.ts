@@ -9,7 +9,7 @@ const disableable = <T extends Constructor<CustomElement>>(superClass: T): Const
     @styles(style)
     class Disableable extends superClass implements IDisableable
     {
-        @attribute
+        @attribute(Boolean)
         public disabled: boolean = false;
     }
 
