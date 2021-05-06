@@ -22,7 +22,8 @@ export default class LoopDirective implements IDisposable
     private readonly templateBlock:           TemplateBlock = new TemplateBlock();
     private readonly tree:                    DocumentFragment;
 
-    private disposed: boolean = false;
+    private disposed:            boolean       = false;
+    private previousDisposables: IDisposable[] = [];
 
     public constructor(template: HTMLTemplateElement, descriptor: LoopDirectiveDescriptor, context: TemplateDirectiveContext)
     {
@@ -77,7 +78,14 @@ export default class LoopDirective implements IDisposable
 
         if (Math.ceil(index / multiple) * multiple == index)
         {
-            this.templateBlock.setContent(this.tree);
+            const task = (): void =>
+            {
+                this.previousDisposables.splice(0, multiple * 2).forEach(x => x.dispose());
+
+                this.templateBlock.setContent(this.tree);
+            };
+
+            void scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
         }
     }
 
@@ -112,13 +120,27 @@ export default class LoopDirective implements IDisposable
             return;
         }
 
-        this.disposables.splice(0).forEach(x => x.dispose());
-
         const elements = tryEvaluateExpression(this.context.scope, this.descriptor.right, this.descriptor.rawExpression, this.descriptor.stackTrace) as Iterable<unknown>;
 
-        this.iterator(elements, this.action);
+        this.previousDisposables = this.disposables.splice(0);
 
-        void scheduler.enqueue(() => this.templateBlock.setContent(this.tree), "high", this.cancellationTokenSource.token);
+        if (elements[Symbol.iterator]().next().done)
+        {
+            this.previousDisposables.splice(0).forEach(x => x.dispose());
+        }
+        else
+        {
+            this.iterator(elements, this.action);
+
+            const task = (): void =>
+            {
+                this.previousDisposables.splice(0).forEach(x => x.dispose());
+
+                this.templateBlock.setContent(this.tree);
+            };
+
+            void scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
+        }
     };
 
     public dispose(): void
@@ -128,6 +150,7 @@ export default class LoopDirective implements IDisposable
             this.cancellationTokenSource.cancel();
 
             this.disposables.splice(0).forEach(x => x.dispose());
+            this.previousDisposables.splice(0).forEach(x => x.dispose());
 
             this.subscription.unsubscribe();
             this.templateBlock.dispose();
