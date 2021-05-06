@@ -1,10 +1,11 @@
 import type { Constructor, Indexer }                           from "@surface/core";
 import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
-import Observer                                                from "@surface/observer";
 import type ICustomElement                                     from "../interfaces/custom-element";
 import Metadata                                                from "../metadata/metadata.js";
 import PrototypeMetadata                                       from "../metadata/prototype-metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";
+import AsyncObserver                                           from "../reactivity/async-observer.js";
+import { scheduler }                                           from "../singletons.js";
 
 type Serializer =
 {
@@ -12,7 +13,7 @@ type Serializer =
     stringfy?: (value: unknown) => string,
 };
 
-type Types = typeof Boolean | typeof Number | typeof String | typeof Object;
+type Types = typeof Boolean | typeof Number | typeof String;
 
 type AttributeOptions =
 {
@@ -28,8 +29,6 @@ function getTypeSerializer(type: AttributeOptions["type"]): Serializer
     {
         switch (type)
         {
-            case Object:
-                return JSON;
             case Boolean:
                 return { parse: x => x === "" || x == "true" };
             case Number:
@@ -59,9 +58,14 @@ function patchPrototype(prototype: ICustomElement): void
 
                 if (!metadata.isPropagatingCallback && !metadata.reflectingAttribute.has(attributeName))
                 {
-                    const value = attributeName == newValue && STANDARD_BOOLEANS.has(attributeName) ? "" : newValue;
+                    const action = (): void =>
+                    {
+                        const value = attributeName == newValue && STANDARD_BOOLEANS.has(attributeName) ? "" : newValue;
 
-                    StaticMetadata.from(this.constructor).converters[attributeName]?.(this as object as Indexer, value);
+                        StaticMetadata.from(this.constructor).converters[attributeName]?.(this as object as Indexer, value);
+                    };
+
+                    void scheduler.enqueue(action, "high");
                 }
 
                 metadata.isPropagatingCallback = true;
@@ -140,7 +144,7 @@ function attribute(...args: [Types | AttributeOptions] |  [ICustomElement, strin
                 metadata.reflectingAttribute.delete(attributeName);
             };
 
-            const subscription = Observer.observe(instance, [propertyKey]).subscribe(action);
+            const subscription = AsyncObserver.observe(instance, [propertyKey], scheduler).subscribe(action);
 
             DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };

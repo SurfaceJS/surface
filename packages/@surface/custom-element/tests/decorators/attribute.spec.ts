@@ -4,6 +4,7 @@ import "../fixtures/dom.js";
 import { uuidv4 }                  from "@surface/core";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
+import { scheduler }               from "../../index.js";
 import CustomElement               from "../../internal/custom-element.js";
 import attribute                   from "../../internal/decorators/attribute.js";
 import element                     from "../../internal/decorators/element.js";
@@ -95,7 +96,7 @@ export default class ElementDecoratorSpec
     // }
 
     @test @shouldPass
-    public elementWithDefaultsAndAttributeChangedCallbackWithInheritance(): void
+    public async elementWithDefaultsAndAttributeChangedCallbackWithInheritance(): Promise<void>
     {
         class Base extends CustomElement
         {
@@ -156,15 +157,21 @@ export default class ElementDecoratorSpec
 
         mock.property = "changed";
 
+        await scheduler.whenDone();
+
         chai.assert.equal(mock.callbackValue, "property:changed");
         chai.assert.equal(mock.getAttribute("property"), "changed");
 
         mock.baseProperty = "changed";
 
+        await scheduler.whenDone();
+
         chai.assert.equal(mock.baseCallbackValue, "base-property:changed");
         chai.assert.equal(mock.getAttribute("base-property"), "changed");
 
         mock.setAttribute("property", "changed-again");
+
+        await scheduler.whenDone();
 
         chai.assert.equal(mock.property, "changed-again");
         chai.assert.equal(mock.baseProperty, "changed");
@@ -172,6 +179,8 @@ export default class ElementDecoratorSpec
         chai.assert.equal(mock.baseCallbackValue, "property:changed-again");
 
         mock.setAttribute("base-property", "changed-one-more");
+
+        await scheduler.whenDone();
 
         chai.assert.equal(mock.property, "changed-again");
         chai.assert.equal(mock.baseProperty, "changed-one-more");
