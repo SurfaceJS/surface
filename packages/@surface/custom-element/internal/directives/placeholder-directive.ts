@@ -120,10 +120,9 @@ export default class PlaceholderDirective implements IDisposable
 
         this.templateBlock.clear();
 
-        const value        = tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor);
-        const elementScope = tryEvaluatePatternByTraceable(this.context.scope, value, this.injectionContext.descriptor);
-
-        const mergedScope = { ...elementScope, ...this.injectionContext.scope };
+        const value          = tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor);
+        const directiveScope = tryEvaluatePatternByTraceable(this.context.scope, value, this.injectionContext.descriptor);
+        const mergedScope    = { ...this.injectionContext.scope, ...directiveScope };
 
         const content = this.injectionContext.template.content.cloneNode(true);
 
