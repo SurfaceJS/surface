@@ -4,7 +4,7 @@
 import "./fixtures/dom.js";
 
 import type { Delegate }                                                 from "@surface/core";
-import type { IIdentifier }                                              from "@surface/expression";
+import type { IIdentifier, IMemberExpression }                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import chai                                                              from "chai";
 import TemplateParseError                                                from "../internal/errors/template-parse-error.js";
@@ -104,7 +104,7 @@ export default class TemplateParserSpec
                         keyObservables:   [],
                         observables:      [],
                         path:             "1",
-                        pattern:          parseDestructuredPattern("__scope__"),
+                        pattern:          parseDestructuredPattern("{ }"),
                         rawExpression:    "#inject",
                         rawKeyExpression: "",
                         stackTrace:
@@ -593,7 +593,7 @@ export default class TemplateParserSpec
                     events:
                     [
                         {
-                            expression:       parseExpression("host.handler"),
+                            expression:       parseExpression("host.handler") as IMemberExpression,
                             name:             "click",
                             observables:      [["host", "handler"]],
                             rawExpression:    "@click=\"host.handler\"",

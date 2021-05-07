@@ -40,7 +40,14 @@ export default class Identifier implements IExpression, IPattern
     }
 
     public evaluate(scope: object): unknown
+    public evaluate(scope: object, value: unknown): object
+    public evaluate(scope: object, value?: unknown): unknown
     {
+        if (arguments.length == 2)
+        {
+            return { [this.name]: value };
+        }
+
         if (this.name == "undefined")
         {
             return undefined;

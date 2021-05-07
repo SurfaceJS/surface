@@ -322,10 +322,15 @@ export default class TemplateParser
         {
             if (attribute.name.startsWith("@"))
             {
-                const name           = attribute.name.replace("@", "");
-                const rawExpression = `${attribute.name}=\"${attribute.value}\"`;
-                const expression     = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
-                const observables    = ObserverVisitor.observe(expression);
+                const name              = attribute.name.replace("@", "");
+                const rawExpression     = `${attribute.name}=\"${attribute.value}\"`;
+                const unknownExpression = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
+
+                const expression = TypeGuard.isMemberExpression(unknownExpression) || TypeGuard.isArrowFunctionExpression(unknownExpression)
+                    ? unknownExpression
+                    : Expression.arrowFunction([], unknownExpression);
+
+                const observables = ObserverVisitor.observe(expression);
 
                 const descriptor: EventDirectiveDescriptor =
                 {
@@ -579,7 +584,7 @@ export default class TemplateParser
             const destructured = /^\s*\{/.test(value);
 
             const keyExpression  = this.tryParseExpression(parseExpression, key, rawKey);
-            const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "__scope__"}`, raw) as IPattern | IIdentifier;
+            const pattern        = this.tryParseExpression(destructured ? parseDestructuredPattern : parseExpression, `${value || "{ }"}`, raw) as IPattern | IIdentifier;
             const keyObservables = ObserverVisitor.observe(keyExpression);
             const observables    = ObserverVisitor.observe(pattern);
 

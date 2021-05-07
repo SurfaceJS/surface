@@ -1,5 +1,4 @@
 import { format }                     from "@surface/core";
-import { getThisArg }                 from "../common.js";
 import type IExpression               from "../interfaces/expression";
 import type ITaggedTemplateExpression from "../interfaces/tagged-template-expression";
 import Messages                       from "../messages.js";
@@ -50,7 +49,7 @@ export default class TaggedTemplateExpression implements IExpression
 
     public evaluate(scope: object): unknown
     {
-        const [thisArg, fn] = getThisArg(this.callee, scope);
+        const fn = this.callee.evaluate(scope);
 
         if (!fn)
         {
@@ -65,7 +64,7 @@ export default class TaggedTemplateExpression implements IExpression
 
         Object.defineProperty(cooked, "raw", { value: this.quasi.quasis.map(x => x.raw) });
 
-        return fn.apply(thisArg, [cooked, ...this.quasi.expressions.map(x => x.evaluate(scope))]);
+        return fn(...[cooked, ...this.quasi.expressions.map(x => x.evaluate(scope))]);
     }
 
     public toString(): string

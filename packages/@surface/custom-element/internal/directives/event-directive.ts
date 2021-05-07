@@ -1,6 +1,4 @@
-import type { Delegate, IDisposable, Indexer } from "@surface/core";
-import { assert }                              from "@surface/core";
-import { TypeGuard }                           from "@surface/expression";
+import type { Delegate, IDisposable } from "@surface/core";
 import
 {
     throwTemplateEvaluationError,
@@ -25,38 +23,19 @@ export default class EventDirective implements IDisposable
 
     private evaluate(scope: object, directive: EventDirectiveDescriptor): Delegate<[Event]>
     {
-        if (TypeGuard.isArrowFunctionExpression(directive.expression) || TypeGuard.isIdentifier(directive.expression))
+        const action = tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
+
+        if (!action)
         {
-            return directive.expression.evaluate(scope) as Delegate<[Event]>;
-        }
-        else if (TypeGuard.isMemberExpression(directive.expression))
-        {
-            const key = TypeGuard.isIdentifier(directive.expression.property) && !directive.expression.computed ?  directive.expression.property.name : `${directive.expression.property.evaluate(scope)}`;
-
-            const thisArg = directive.expression.object.evaluate(scope) as Indexer;
-
-            let action: Function | undefined;
-
-            try
-            {
-                action = thisArg[key] as Function | undefined;
-            }
-            catch (error)
-            {
-                assert(error instanceof Error);
-
-                throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${error.message}`, directive.stackTrace);
-            }
-
-            if (!action)
-            {
-                throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${directive.expression} is not defined`, directive.stackTrace);
-            }
-
-            return action.bind(thisArg) as Delegate<[Event]>;
+            throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${directive.expression} is not defined`, directive.stackTrace);
         }
 
-        return () => tryEvaluateExpression(scope, directive.expression, directive.rawExpression, directive.stackTrace);
+        if (!(action instanceof Function))
+        {
+            throwTemplateEvaluationError(`Evaluation error in ${directive.rawExpression}: ${directive.expression} is not a function`, directive.stackTrace);
+        }
+
+        return action as Delegate<[Event]>;
     }
 
     public dispose(): void

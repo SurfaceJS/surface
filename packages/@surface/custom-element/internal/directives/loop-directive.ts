@@ -1,6 +1,5 @@
 import type { Delegate, IDisposable }                                        from "@surface/core";
 import { CancellationTokenSource }                                           from "@surface/core";
-import { TypeGuard }                                                         from "@surface/expression";
 import type { Subscription }                                                 from "@surface/observer";
 import { tryEvaluateExpression, tryEvaluatePattern, tryObserveByObservable } from "../common.js";
 import TemplateProcessor                                                     from "../processors/template-processor.js";
@@ -47,9 +46,7 @@ export default class LoopDirective implements IDisposable
 
     private action(value: unknown, index: number): void
     {
-        const mergedScope = TypeGuard.isIdentifier(this.descriptor.left)
-            ? { ...this.context.scope, [this.descriptor.left.name]: value }
-            : { ...this.context.scope, ...tryEvaluatePattern(this.context.scope, this.descriptor.left, value, this.descriptor.rawExpression, this.descriptor.stackTrace) };
+        const mergedScope = { ...this.context.scope, ...tryEvaluatePattern(this.context.scope, this.descriptor.left, value, this.descriptor.rawExpression, this.descriptor.stackTrace) };
 
         const content =  this.template.content.cloneNode(true);
 

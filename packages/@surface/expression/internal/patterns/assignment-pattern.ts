@@ -1,8 +1,10 @@
 import type IAssignmentPattern from "../interfaces/assignment-pattern";
 import type IExpression        from "../interfaces/expression";
 import type IPattern           from "../interfaces/pattern";
+import Messages from "../messages.js";
 import NodeType                from "../node-type.js";
 import { PATTERN }             from "../symbols.js";
+import TypeGuard from "../type-guard.js";
 
 export default class AssignmentPattern implements IPattern
 {
@@ -47,6 +49,16 @@ export default class AssignmentPattern implements IPattern
     public clone(): IAssignmentPattern
     {
         return new AssignmentPattern(this.left.clone(), this.right.clone());
+    }
+
+    public evaluate(scope: object, value: unknown): object
+    {
+        if (TypeGuard.isIdentifier(this.left))
+        {
+            return { [this.left.name]: value ?? this.right.evaluate(scope) };
+        }
+
+        throw new Error(Messages.illegalPropertyInDeclarationContext);
     }
 
     public toString(): string

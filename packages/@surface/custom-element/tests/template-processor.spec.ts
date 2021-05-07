@@ -486,6 +486,28 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
+    public async templateWithInjectAndPlaceholderDirectiveWithAliasedScope(): Promise<void>
+    {
+        const root = getHost();
+        const host = getHost();
+
+        root.id = "root";
+        host.id = "host";
+
+        host.shadowRoot.innerHTML = "<span>Hello </span><template #placeholder:items='{ name: \"World\" }'></template><span>!!!</span>";
+        host.innerHTML            = "<template #inject:items='scope'>{scope.name}</template>";
+
+        root.shadowRoot.appendChild(host);
+
+        process(host, host.shadowRoot);
+        process(root, root.shadowRoot);
+
+        await scheduler.whenDone();
+
+        chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
+    }
+
+    @test @shouldPass
     public async templateWithDynamicInjectAndPlaceholderDirective(): Promise<void>
     {
         const root = getHost<{ injectKey: string }>();
