@@ -9,28 +9,54 @@ import type TemplateDirectiveContext                                         fro
 import type TemplateProcessorContext                                         from "../types/template-processor-context";
 import TemplateBlock                                                         from "./template-block.js";
 
-type Cache =
+class Cache
 {
-    disposables: IDisposable[],
-    elements:    unknown[],
-};
+    public changed:     boolean       = false;
+    public cursor:      number        = 0;
+    public disposables: IDisposable[] = [];
+    public elements:    unknown[]     = [];
+    public stored:      number        = 0;
+
+    public trim(): void
+    {
+        if (this.stored > 0)
+        {
+            this.disposables.splice(this.cursor * 2, (this.stored - this.cursor) * 2).forEach(x => x.dispose());
+
+            this.stored = 0;
+        }
+    }
+
+    public resize(size: number): void
+    {
+        if (!this.changed)
+        {
+            this.cursor = size;
+        }
+
+        this.trim();
+
+        this.changed = false;
+        this.cursor  = 0;
+        this.stored  = size;
+
+        this.elements.splice(size);
+    }
+}
 
 export default class LoopDirective implements IDisposable
 {
-    private readonly cache:                   Cache                   = { disposables: [], elements: [] };
+    private readonly cache:                   Cache                   = new Cache();
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
     private readonly descriptor:              LoopDirectiveDescriptor;
-    private readonly disposables:             IDisposable[]           = [];
     private readonly iterator:                (elements: Iterable<unknown>, action: Delegate<[unknown, number]>) => number;
     private readonly subscription:            Subscription;
     private readonly template:                HTMLTemplateElement;
     private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
     private readonly tree:                    DocumentFragment;
 
-    private changed:     boolean = false;
-    private disposed:    boolean = false;
-    private indexChange: number  = 0;
+    private disposed: boolean = false;
 
     public constructor(template: HTMLTemplateElement, descriptor: LoopDirectiveDescriptor, context: TemplateDirectiveContext)
     {
@@ -54,18 +80,18 @@ export default class LoopDirective implements IDisposable
 
     private action(value: unknown, index: number): void
     {
-        if (this.changed || !Object.is(value, this.cache.elements[index]))
+        if (this.cache.changed || !Object.is(value, this.cache.elements[index]))
         {
-            if (!this.changed)
+            if (!this.cache.changed)
             {
-                this.changed     = true;
-                this.indexChange = index;
+                this.cache.changed     = true;
+                this.cache.cursor = index;
             }
 
             this.cache.elements[index] = value;
 
             const directiveScope = tryEvaluatePattern(this.context.scope, this.descriptor.left, value, this.descriptor.rawExpression, this.descriptor.stackTrace);
-            const mergedScope    = { ...this.context.scope, ...directiveScope };
+            const mergedScope    = { $index: index, ...this.context.scope, ...directiveScope };
 
             const content = this.template.content.cloneNode(true);
 
@@ -87,8 +113,8 @@ export default class LoopDirective implements IDisposable
 
             block.setContent(content);
 
-            this.disposables.push(block);
-            this.disposables.push(disposable);
+            this.cache.disposables.push(block);
+            this.cache.disposables.push(disposable);
 
             const multiple = 1000;
 
@@ -96,7 +122,7 @@ export default class LoopDirective implements IDisposable
 
             if (Math.ceil(count / multiple) * multiple == count)
             {
-                this.cache.disposables.splice(this.indexChange * 2).forEach(x => x.dispose());
+                this.cache.trim();
 
                 this.templateBlock.setContent(this.tree, false);
             }
@@ -142,35 +168,15 @@ export default class LoopDirective implements IDisposable
 
         if (elements[Symbol.iterator]().next().done)
         {
-            this.cache.disposables.splice(0).forEach(x => x.dispose());
-            this.cache.elements.length = 0;
+            this.cache.resize(0);
         }
         else
         {
-            this.changed     = false;
-            this.indexChange = 0;
-
             const size = this.iterator(elements, this.action);
 
             const task = (): void =>
             {
-                if (!this.changed)
-                {
-                    this.indexChange = size;
-                }
-
-                this.cache.elements.splice(size);
-
-                this.cache.disposables.splice(this.indexChange * 2).forEach(x => x.dispose());
-
-                if (this.indexChange > 0)
-                {
-                    this.cache.disposables.push(...this.disposables.splice(0));
-                }
-                else
-                {
-                    this.cache.disposables = this.disposables.splice(0);
-                }
+                this.cache.resize(size);
 
                 this.templateBlock.setContent(this.tree, false);
             };
@@ -185,10 +191,7 @@ export default class LoopDirective implements IDisposable
         {
             this.cancellationTokenSource.cancel();
 
-            this.disposables.splice(0).forEach(x => x.dispose());
-
-            this.cache.disposables.splice(0).forEach(x => x.dispose());
-            this.cache.elements.length = 0;
+            this.cache.resize(0);
 
             this.subscription.unsubscribe();
             this.templateBlock.dispose();
