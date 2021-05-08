@@ -57,22 +57,38 @@ export default class ProcessorsSpec
 
         const [content] = processTemplate("<span #for='item of items'>Item: {item}</span>", scope);
 
-        chai.assert.equal(content.childNodes[0].textContent, "#open");
-        chai.assert.equal(content.childNodes[1].textContent, "#close");
+        const expected1 =
+        [
+            "#open",
+            "#close",
+        ];
+
+        const actual1 = Array.from(content.childNodes).map(x => x.textContent);
+
+        chai.assert.deepEqual(actual1, expected1, "#1");
 
         scope.items = [1, 2, 3];
 
         await scheduler.whenDone();
 
-        chai.assert.equal(content.childNodes[0].textContent, "#open");
-        chai.assert.equal(content.childNodes[1].textContent, "Item: 1");
-        chai.assert.equal(content.childNodes[2].textContent, "#close");
-        chai.assert.equal(content.childNodes[3].textContent, "#open");
-        chai.assert.equal(content.childNodes[4].textContent, "Item: 2");
-        chai.assert.equal(content.childNodes[5].textContent, "#close");
-        chai.assert.equal(content.childNodes[6].textContent, "#open");
-        chai.assert.equal(content.childNodes[7].textContent, "Item: 3");
-        chai.assert.equal(content.childNodes[8].textContent, "#close");
+        const expected2 =
+        [
+            "#open",
+            "#open",
+            "Item: 1",
+            "#close",
+            "#open",
+            "Item: 2",
+            "#close",
+            "#open",
+            "Item: 3",
+            "#close",
+            "#close",
+        ];
+
+        const actual2 = Array.from(content.childNodes).map(x => x.textContent);
+
+        chai.assert.deepEqual(actual2, expected2, "#2");
     }
 
     @test @shouldPass
