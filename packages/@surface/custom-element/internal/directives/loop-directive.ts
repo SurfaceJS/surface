@@ -28,9 +28,9 @@ export default class LoopDirective implements IDisposable
     private readonly templateBlock:           TemplateBlock           = new TemplateBlock();
     private readonly tree:                    DocumentFragment;
 
-    private disposed:   boolean = false;
-    private breakIndex: number  = 0;
-    private broken:     boolean = false;
+    private changed:     boolean = false;
+    private disposed:    boolean = false;
+    private indexChange: number  = 0;
 
     public constructor(template: HTMLTemplateElement, descriptor: LoopDirectiveDescriptor, context: TemplateDirectiveContext)
     {
@@ -54,12 +54,12 @@ export default class LoopDirective implements IDisposable
 
     private action(value: unknown, index: number): void
     {
-        if (this.broken || !Object.is(value, this.cache.elements[index]))
+        if (this.changed || !Object.is(value, this.cache.elements[index]))
         {
-            if (!this.broken)
+            if (!this.changed)
             {
-                this.broken     = true;
-                this.breakIndex = index;
+                this.changed     = true;
+                this.indexChange = index;
             }
 
             this.cache.elements[index] = value;
@@ -96,7 +96,9 @@ export default class LoopDirective implements IDisposable
 
             if (Math.ceil(count / multiple) * multiple == count)
             {
-                this.templateBlock.setContent(this.tree);
+                this.cache.disposables.splice(this.indexChange * 2).forEach(x => x.dispose());
+
+                this.templateBlock.setContent(this.tree, false);
             }
         }
     }
@@ -145,18 +147,23 @@ export default class LoopDirective implements IDisposable
         }
         else
         {
-            this.broken     = false;
-            this.breakIndex = 0;
+            this.changed     = false;
+            this.indexChange = 0;
 
             const size = this.iterator(elements, this.action);
 
             const task = (): void =>
             {
+                if (!this.changed)
+                {
+                    this.indexChange = size;
+                }
+
                 this.cache.elements.splice(size);
 
-                this.cache.disposables.splice(this.breakIndex * 2).forEach(x => x.dispose());
+                this.cache.disposables.splice(this.indexChange * 2).forEach(x => x.dispose());
 
-                if (this.breakIndex > 0)
+                if (this.indexChange > 0)
                 {
                     this.cache.disposables.push(...this.disposables.splice(0));
                 }
@@ -165,10 +172,10 @@ export default class LoopDirective implements IDisposable
                     this.cache.disposables = this.disposables.splice(0);
                 }
 
-                this.templateBlock.setContent(this.tree);
+                this.templateBlock.setContent(this.tree, false);
             };
 
-            void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
+            void scheduler.enqueue(task, "high", this.cancellationTokenSource.token);
         }
     };
 
