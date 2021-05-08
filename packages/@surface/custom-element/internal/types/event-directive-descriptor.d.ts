@@ -1,10 +1,10 @@
-import type { IExpression } from "@surface/expression";
-import type IObservable     from "../interfaces/observable";
-import type ITraceable      from "../interfaces/traceable";
+import type { IArrowFunctionExpression, IMemberExpression } from "@surface/expression";
+import type IObservable                                     from "../interfaces/observable";
+import type ITraceable                                      from "../interfaces/traceable";
 
 type EventDirectiveDescriptor =
 {
-    expression: IExpression,
+    expression: IMemberExpression | IArrowFunctionExpression,
     name:       string,
 } & IObservable & ITraceable;
 

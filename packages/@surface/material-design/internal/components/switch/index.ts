@@ -1,6 +1,6 @@
 import { mix }                                             from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
-import { computed, observe }                               from "@surface/reactive";
+import { computed, observe }                               from "@surface/observer";
 import colorable                                           from "../../mixins/colorable/index.js";
 import disableable                                         from "../../mixins/disableable/index.js";
 import elevatable                                          from "../../mixins/elevatable/index.js";
@@ -27,13 +27,13 @@ export default class Switch extends mix(CustomElement, [colorable, disableable, 
     @query("#selection")
     public rippleable!: HTMLElement;
 
-    @attribute
+    @attribute(Boolean)
     public checked: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public flat: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public inset: boolean = false;
 
     @attribute

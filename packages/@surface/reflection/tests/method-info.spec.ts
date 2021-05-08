@@ -47,28 +47,6 @@ export default class FieldInfoSpec
     }
 
     @test @shouldPass
-    public metadata(): void
-    {
-        const methodInfo = new MethodInfo
-        (
-            "instanceMethodWithParametersMetadata",
-            Object.getOwnPropertyDescriptor(Mock.prototype, "instanceMethodWithParametersMetadata")!,
-            Type.of(Mock),
-            false,
-            false,
-        );
-
-        const metadata =
-        {
-            "design:paramtypes": [Number, String, Boolean],
-            "design:returntype": undefined,
-            "design:type":       Function,
-        };
-
-        chai.assert.deepEqual(methodInfo.metadata, metadata);
-    }
-
-    @test @shouldPass
     public noParameters(): void
     {
         chai.assert.deepEqual(Array.from(methodInfo.parameters), []);
@@ -81,9 +59,9 @@ export default class FieldInfoSpec
 
         const parameters =
         [
-            new ParameterInfo("a", 0, methodInfo, null),
-            new ParameterInfo("b", 1, methodInfo, null),
-            new ParameterInfo("c", 2, methodInfo, null),
+            new ParameterInfo("a", 0, methodInfo),
+            new ParameterInfo("b", 1, methodInfo),
+            new ParameterInfo("c", 2, methodInfo),
         ];
 
         chai.assert.equal(methodInfo.parameters.length, 3);
@@ -104,9 +82,9 @@ export default class FieldInfoSpec
 
         const parameters =
         [
-            new ParameterInfo("a", 0, methodInfo, Number),
-            new ParameterInfo("b", 1, methodInfo, String),
-            new ParameterInfo("c", 2, methodInfo, Boolean),
+            new ParameterInfo("a", 0, methodInfo),
+            new ParameterInfo("b", 1, methodInfo),
+            new ParameterInfo("c", 2, methodInfo),
         ];
 
         chai.assert.equal(methodInfo.parameters.length, 3);

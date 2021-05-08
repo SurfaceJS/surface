@@ -702,7 +702,7 @@ export const validExpressions: ParseExpectedSpec[] =
         scope,
         toString: "getScope()",
         type:     CallExpression,
-        value:    null,
+        value:    undefined,
     },
     {
         raw:      "this.getValue()",

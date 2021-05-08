@@ -1,14 +1,24 @@
-import type { Indexer }                from "@surface/core";
-import { hasValue, privatesFrom }      from "@surface/core";
-import { FieldInfo, MethodInfo, Type } from "@surface/reflection";
-import Metadata                        from "./metadata.js";
-import Observer                        from "./observer.js";
+import type { Delegate, Indexer, Subscription } from "@surface/core";
+import { getValue, hasValue, privatesFrom }     from "@surface/core";
+import { FieldInfo, MethodInfo, Type }          from "@surface/reflection";
+import Metadata                                 from "./metadata.js";
+import Observer                                 from "./observer.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
-export default class Reactive
+export default class Reactive<TValue = unknown>
 {
-    protected static observe(root: Object, path: string[], observer: Observer): void
+    protected readonly path:      string[];
+    protected readonly root:      object;
+    protected readonly listeners: Set<Delegate<[TValue]>> = new Set();
+
+    public constructor(root: object, path: string[])
+    {
+        this.root = root;
+        this.path = path;
+    }
+
+    protected static observePath(root: Object, path: string[], observer: Observer): void
     {
         if (root instanceof Object)
         {
@@ -31,7 +41,7 @@ export default class Reactive
                 {
                     for (const dependencies of computed)
                     {
-                        this.observe(root, dependencies, observer);
+                        this.observePath(root, dependencies, observer);
                     }
                 }
                 else
@@ -48,7 +58,7 @@ export default class Reactive
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.observe(property, keys, observer);
+                this.observePath(property, keys, observer);
             }
         }
     }
@@ -99,8 +109,8 @@ export default class Reactive
                 {
                     if (path.length > 0)
                     {
-                        hasValue(oldValue) && this.unobserve(oldValue, path, observer);
-                        hasValue(newValue) && this.observe(newValue, path, observer);
+                        hasValue(oldValue) && this.unobservePath(oldValue, path, observer);
+                        hasValue(newValue) && this.observePath(newValue, path, observer);
                     }
 
                     observer.notify();
@@ -165,7 +175,7 @@ export default class Reactive
         }
     }
 
-    protected static unobserve(root: Object, path: string[], observer: Observer): void
+    protected static unobservePath(root: Object, path: string[], observer: Observer): void
     {
         if (root instanceof Object)
         {
@@ -177,12 +187,12 @@ export default class Reactive
 
             if (keys.length > 0 && hasValue(property))
             {
-                this.unobserve(property, keys, observer);
+                this.unobservePath(property, keys, observer);
             }
         }
     }
 
-    public static from(root: object, path: string[]): Observer
+    public static observe(root: object, path: string[]): Observer
     {
         const key = path.join("\u{fffff}");
 
@@ -192,10 +202,10 @@ export default class Reactive
 
         if (!observer)
         {
-            this.observe(root, path, observer = new Observer(root, path));
+            this.observePath(root, path, observer = new Observer(root, path));
 
             metadata.observers.set(key, observer);
-            metadata.disposables.push({ dispose: () => this.unobserve(root, path, observer!) });
+            metadata.disposables.push({ dispose: () => this.unobservePath(root, path, observer!) });
         }
 
         return observer;
@@ -208,5 +218,33 @@ export default class Reactive
         path
             ? metadata.observers.get(path.join("\u{fffff}"))?.notify()
             : metadata.observers.forEach(x => x.notify());
+    }
+
+    public subscribe(listerner: Delegate<[TValue]>): Subscription
+    {
+        this.listeners.add(listerner);
+
+        return { unsubscribe: () => this.unsubscribe(listerner) };
+    }
+
+    public unsubscribe(listerner: Delegate<[TValue]>): void
+    {
+        if (!this.listeners.delete(listerner))
+        {
+            throw new Error("Listerner not subscribed");
+        }
+    }
+
+    public notify(): void
+    {
+        if (this.listeners.size > 0)
+        {
+            const value = getValue(this.root, ...this.path) as TValue;
+
+            for (const listerner of this.listeners)
+            {
+                listerner(value);
+            }
+        }
     }
 }

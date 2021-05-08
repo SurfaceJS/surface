@@ -16,13 +16,13 @@
     },
     "homepage": "https://github.com/SurfaceJS/modules#readme",
     "keywords": [
-        "reactive",
+        "observer",
         "surface",
         "typescript"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/reactive",
+    "name": "@surface/observer",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/modules.git"

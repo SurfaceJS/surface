@@ -1,18 +1,21 @@
-// eslint-disable-next-line import/no-unassigned-import
-import "reflect-metadata";
-
 import type { Indexer } from "@surface/core";
 import FieldInfo        from "./field-info.js";
 import type MemberInfo  from "./member-info.js";
 import MethodInfo       from "./method-info.js";
 import PropertyInfo     from "./property-info.js";
 
-type Member = { key: string | symbol, descriptor: PropertyDescriptor, declaringType: Type, isOwn: boolean, isStatic: boolean };
+type Member =
+{
+    declaringType: Type,
+    descriptor:    PropertyDescriptor,
+    isOwn:         boolean,
+    isStatic:      boolean,
+    key:           string | symbol,
+};
 
 export default class Type
 {
-    private _baseType: Type | null    = null;
-    private _metadata: Indexer | null = null;
+    private _baseType: Type | null = null;
 
     private readonly instance:  object;
     private readonly prototype: object;
@@ -40,21 +43,6 @@ export default class Type
     public get sealed(): boolean
     {
         return Object.isSealed(this.prototype);
-    }
-
-    public get metadata(): Indexer
-    {
-        if (!this._metadata)
-        {
-            const metadata: Indexer = { };
-
-            Reflect.getMetadataKeys(this.prototype)
-                .forEach(/* c8 ignore next */ x => metadata[x] = Reflect.getMetadata(x, this.prototype));
-
-            this._metadata = metadata;
-        }
-
-        return this._metadata;
     }
 
     public get name(): string

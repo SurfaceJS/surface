@@ -1,4 +1,3 @@
-import { Stack }                                        from "@surface/collection";
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
 import { observe }                                      from "@surface/custom-element";
@@ -23,7 +22,7 @@ const LEADING_SLASH_PATTERN = /^\//;
 export default class WebRouter
 {
     private readonly baseUrl:           string;
-    private readonly connectedElements: Stack<IRouteableElement> = new Stack();
+    private readonly connectedElements: IRouteableElement[] = [];
     private readonly container:         Container;
     private readonly history:           [URL, RouteDefinition, RouteData][] = [];
     private readonly interceptors:      IRouterMiddleware[];

@@ -1,64 +1,126 @@
-import type { Constructor, Delegate, Indexer }                 from "@surface/core";
+import type { Constructor, Indexer }                           from "@surface/core";
 import { DisposableMetadata, HookableMetadata, camelToDashed } from "@surface/core";
 import type ICustomElement                                     from "../interfaces/custom-element";
 import Metadata                                                from "../metadata/metadata.js";
+import PrototypeMetadata                                       from "../metadata/prototype-metadata.js";
 import StaticMetadata                                          from "../metadata/static-metadata.js";
-import AsyncReactive                                           from "../reactivity/async-reactive.js";
-import { scheduler } from "../singletons.js";
+import AsyncObserver                                           from "../reactivity/async-observer.js";
+import { scheduler }                                           from "../singletons.js";
 
-function attribute(converter: Delegate<[string], unknown>): (target: ICustomElement, propertyKey: string) => void;
-function attribute(target: ICustomElement, propertyKey: string): void;
-function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, string, PropertyDescriptor?]): ((target: ICustomElement, propertyKey: string) => void) | void
+type Serializer =
 {
-    const decorator = (target: ICustomElement, propertyKey: string): void =>
-    {
-        const constructor = target.constructor as Constructor;
+    parse:     (value: string) => unknown,
+    stringfy?: (value: unknown) => string,
+};
 
-        const attributeName = camelToDashed(propertyKey);
+type Types = typeof Boolean | typeof Number | typeof String;
+
+type AttributeOptions =
+{
+    type:  Types | Serializer,
+    name?: string,
+};
+
+const STANDARD_BOOLEANS = new Set(["checked", "disabled", "readonly"]);
+
+function getTypeSerializer(type: AttributeOptions["type"]): Serializer
+{
+    if (typeof type == "function")
+    {
+        switch (type)
+        {
+            case Boolean:
+                return { parse: x => x === "" || x == "true" };
+            case Number:
+                return { parse: x => Number(x) || 0 };
+            case String:
+            default:
+                return { parse: x => x };
+        }
+    }
+
+    return type;
+}
+
+function patchPrototype(prototype: ICustomElement): void
+{
+    const metadata = PrototypeMetadata.from(prototype);
+
+    if (!metadata.attributeChangedCallback)
+    {
+        const callback = prototype.attributeChangedCallback;
+
+        if (!callback || callback != metadata.attributeChangedCallback)
+        {
+            function attributeChangedCallback(this: ICustomElement, attributeName: string, oldValue: string | undefined, newValue: string, namespace: string | undefined): void
+            {
+                const metadata = Metadata.from(this);
+
+                if (!metadata.isPropagatingCallback && !metadata.reflectingAttribute.has(attributeName))
+                {
+                    const action = (): void =>
+                    {
+                        const value = attributeName == newValue && STANDARD_BOOLEANS.has(attributeName) ? "" : newValue;
+
+                        StaticMetadata.from(this.constructor).converters[attributeName]?.(this as object as Indexer, value);
+                    };
+
+                    void scheduler.enqueue(action, "high");
+                }
+
+                metadata.isPropagatingCallback = true;
+
+                callback?.call(this, attributeName, oldValue, newValue, namespace);
+
+                metadata.isPropagatingCallback = false;
+            }
+
+            metadata.attributeChangedCallback = prototype.attributeChangedCallback = attributeChangedCallback;
+        }
+    }
+
+    if (!prototype.constructor.hasOwnProperty("observedAttributes"))
+    {
+        function get(this: Constructor): string[]
+        {
+            return StaticMetadata.from(this).observedAttributes;
+        }
+
+        Object.defineProperty(prototype.constructor, "observedAttributes", { get });
+    }
+}
+
+function attribute(type: Types): (target: ICustomElement, propertyKey: string) => void;
+function attribute(options: AttributeOptions): (prototype: ICustomElement, propertyKey: string) => void;
+function attribute(prototype: ICustomElement, propertyKey: string): void;
+function attribute(...args: [Types | AttributeOptions] |  [ICustomElement, string, PropertyDescriptor?]): ((prototype: ICustomElement, propertyKey: string) => void) | void
+{
+    const decorator = (prototype: ICustomElement, propertyKey: string): void =>
+    {
+        const options: AttributeOptions = args.length == 1
+            ? typeof args[0] == "function"
+                ? { type: args[0] }
+                : args[0]
+            : { type: String };
+
+        const constructor = prototype.constructor as Constructor;
+
+        const attributeName = options.name ?? camelToDashed(propertyKey);
 
         const staticMetadata = StaticMetadata.from(constructor);
 
         staticMetadata.observedAttributes.push(attributeName);
 
-        if (!constructor.hasOwnProperty("observedAttributes"))
-        {
-            function get(this: Constructor): string[]
-            {
-                return StaticMetadata.from(this).observedAttributes;
-            }
-
-            Object.defineProperty(target.constructor, "observedAttributes", { get });
-        }
-
-        let converter: Delegate<[string], unknown>;
-
-        if (args.length == 1)
-        {
-            converter = args[0];
-        }
-        else
-        {
-            switch (Reflect.getMetadata("design:type", target, propertyKey))
-            {
-                case Boolean:
-                    converter = x => x === "" || x == "true";
-                    break;
-                case Number:
-                    converter = x => Number.parseFloat(x) || 0;
-                    break;
-                default:
-                    converter = x => x;
-            }
-        }
+        const serializer = getTypeSerializer(options.type);
 
         staticMetadata.converters[attributeName] = (target: Indexer, value: string) =>
         {
             const current = target[propertyKey];
-            const converted = converter(value);
+            const parsed  = serializer.parse(value);
 
-            if (!Object.is(current, converted))
+            if (!Object.is(current, parsed))
             {
-                target[propertyKey] = converted;
+                target[propertyKey] = parsed;
             }
         };
 
@@ -70,24 +132,26 @@ function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, str
             {
                 metadata.reflectingAttribute.add(attributeName);
 
-                if (typeof value == "boolean")
+                if (typeof value == "boolean" && !serializer.stringfy)
                 {
                     value ? instance.setAttribute(attributeName, "") : instance.removeAttribute(attributeName);
                 }
                 else
                 {
-                    instance.setAttribute(attributeName, `${value}`);
+                    instance.setAttribute(attributeName, (serializer.stringfy ?? String)(value));
                 }
 
                 metadata.reflectingAttribute.delete(attributeName);
             };
 
-            const subscription = AsyncReactive.from(instance, [propertyKey], scheduler).subscribe(action);
+            const subscription = AsyncObserver.observe(instance, [propertyKey], scheduler).subscribe(action);
 
             DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };
 
         HookableMetadata.from(constructor as Constructor<HTMLElement>).finishers.push(initializer);
+
+        patchPrototype(prototype);
     };
 
     if (args.length == 1)
@@ -99,5 +163,7 @@ function attribute(...args: [Delegate<[string], unknown>] | [ICustomElement, str
 
     decorator(target, propertyKey);
 }
+
+export { AttributeOptions };
 
 export default attribute;

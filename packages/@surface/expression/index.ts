@@ -33,7 +33,6 @@ export type { default as IThisExpression }           from "./internal/interfaces
 export type { default as IUnaryExpression }          from "./internal/interfaces/unary-expression";
 export type { default as IUpdateExpression }         from "./internal/interfaces/update-expression";
 
-export { default as Evaluate }          from "./internal/evaluate.js";
 export { default as ExpressionVisitor } from "./internal/expression-visitor.js";
 export { default as NodeType }          from "./internal/node-type.js";
 export { default as SyntaxError }       from "./internal/syntax-error.js";

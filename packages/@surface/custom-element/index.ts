@@ -11,7 +11,9 @@ export type
     DirectiveFactory,
 } from "./internal/types";
 
-export { computed, notify, observe }  from "@surface/reactive";
+export type { AttributeOptions } from "./internal/decorators/attribute.js";
+
+export { computed, notify, observe }  from "@surface/observer";
 export { default as attribute }       from "./internal/decorators/attribute.js";
 export { default as define }          from "./internal/decorators/define.js";
 export { default as element }         from "./internal/decorators/element.js";

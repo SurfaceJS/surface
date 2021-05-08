@@ -1,10 +1,10 @@
 import type { Indexer }              from "@surface/core";
 import { proxyFrom }                 from "@surface/core";
-import Evaluate                      from "../evaluate.js";
 import type IArrowFunctionExpression from "../interfaces/arrow-function-expression";
 import type IExpression              from "../interfaces/expression";
 import type IPattern                 from "../interfaces/pattern";
 import NodeType                      from "../node-type.js";
+import TypeGuard                     from "../type-guard.js";
 
 export default class ArrowFunctionExpression implements IExpression
 {
@@ -48,9 +48,17 @@ export default class ArrowFunctionExpression implements IExpression
         const currentScope: Indexer = { };
 
         let index = 0;
+
         for (const parameter of this.parameters)
         {
-            Object.assign(currentScope, Evaluate.pattern(scope, parameter, $arguments[index], $arguments.slice(index)));
+            if (TypeGuard.isRestElement(parameter))
+            {
+                Object.assign(currentScope, parameter.evaluate(scope, $arguments.slice(index)));
+            }
+            else
+            {
+                Object.assign(currentScope, parameter.evaluate(scope, $arguments[index]));
+            }
 
             index++;
         }

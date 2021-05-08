@@ -1,6 +1,6 @@
 import type { Delegate, IDisposable, Indexer }             from "@surface/core";
 import { DisposableMetadata, assert, getValue, typeGuard } from "@surface/core";
-import type { Subscription }                               from "@surface/reactive";
+import type { Subscription }                               from "@surface/observer";
 import { FieldInfo, Type }                                 from "@surface/reflection";
 import
 {

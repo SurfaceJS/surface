@@ -1,7 +1,6 @@
-import type { IDisposable, Indexer }       from "@surface/core";
+import type { IDisposable }                from "@surface/core";
 import { CancellationTokenSource, assert } from "@surface/core";
-import { TypeGuard }                       from "@surface/expression";
-import type { Subscription }               from "@surface/reactive";
+import type { Subscription }               from "@surface/observer";
 import
 {
     tryEvaluateExpressionByTraceable,
@@ -121,15 +120,9 @@ export default class PlaceholderDirective implements IDisposable
 
         this.templateBlock.clear();
 
-        let destructured = false;
-
-        const { elementScope, scopeAlias } = (destructured = !TypeGuard.isIdentifier(this.injectionContext.descriptor.pattern))
-            ? { elementScope: tryEvaluatePatternByTraceable(this.context.scope, tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor), this.injectionContext.descriptor), scopeAlias: "__scope__" }
-            : { elementScope: tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor) as Indexer, scopeAlias: this.injectionContext.descriptor.pattern.name };
-
-        const mergedScope = destructured
-            ? { ...elementScope, ...this.injectionContext.scope }
-            : { [scopeAlias]: elementScope, ...this.injectionContext.scope };
+        const value          = tryEvaluateExpressionByTraceable(this.context.scope, this.descriptor);
+        const directiveScope = tryEvaluatePatternByTraceable(this.context.scope, value, this.injectionContext.descriptor);
+        const mergedScope    = { ...this.injectionContext.scope, ...directiveScope };
 
         const content = this.injectionContext.template.content.cloneNode(true);
 

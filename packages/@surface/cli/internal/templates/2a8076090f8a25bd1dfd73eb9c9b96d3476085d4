@@ -1,4 +1,0 @@
-<a #to="'/home'">Home</a>
-<a #to="'/about'">About</a>
-
-<router-outlet></router-outlet>

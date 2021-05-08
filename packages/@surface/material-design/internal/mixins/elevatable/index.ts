@@ -1,7 +1,7 @@
 import type { Constructor }  from "@surface/core";
 import type CustomElement    from "@surface/custom-element";
 import { attribute, styles } from "@surface/custom-element";
-import { computed }          from "@surface/reactive";
+import { computed }          from "@surface/observer";
 import style                 from "./index.scss";
 
 /* eslint-disable @typescript-eslint/explicit-function-return-type */

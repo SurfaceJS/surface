@@ -15,8 +15,8 @@
     },
     "name": "app",
     "scripts": {
-        "build": "sfcc build --mode=production",
-        "start": "sfcc serve --hot --open",
+        "build": "surface-builder build --mode=production",
+        "start": "surface-builder serve --devserver-hot --devserver-open",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "sideEffects": true,

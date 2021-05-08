@@ -275,16 +275,6 @@ export default class TypeSpec
     }
 
     @test @shouldPass
-    public getClassMetadata(): void
-    {
-        const type     = Type.of(Mock);
-        const actual   = type.metadata /* Caching */ && type.metadata;
-        const expected = { };
-
-        chai.assert.deepEqual(actual, expected);
-    }
-
-    @test @shouldPass
     public getBaseField(): void
     {
         const key = "baseInstanceField";
@@ -346,15 +336,6 @@ export default class TypeSpec
 
         const actual   = Type.of(Mock).getStaticProperty(key);
         const expected = new PropertyInfo(key, Object.getOwnPropertyDescriptor(BaseMock, key)!, Type.of(BaseMock), true, true);
-
-        chai.assert.deepEqual(actual, expected);
-    }
-
-    @test @shouldPass
-    public getBaseClassMetadata(): void
-    {
-        const actual   = Type.of(BaseMock).metadata;
-        const expected = { };
 
         chai.assert.deepEqual(actual, expected);
     }

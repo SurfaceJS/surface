@@ -20,9 +20,8 @@
         { "path": "../collection" },
         { "path": "../core" },
         { "path": "../custom-element" },
-        { "path": "../enumerable" },
         { "path": "../expression" },
-        { "path": "../reactive" },
+        { "path": "../observer" },
         { "path": "../reflection" },
         { "path": "../test-suite" },
     ]

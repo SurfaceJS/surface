@@ -1,8 +1,7 @@
 import type { Delegate, IDisposable, Indexer } from "@surface/core";
 import { assert }                              from "@surface/core";
 import type { IExpression, IPattern }          from "@surface/expression";
-import { Evaluate }                            from "@surface/expression";
-import type { Subscription }                   from "@surface/reactive";
+import type { Subscription }                   from "@surface/observer";
 import TemplateEvaluationError                 from "./errors/template-evaluation-error.js";
 import TemplateObservationError                from "./errors/template-observation-error.js";
 import TemplateParseError                      from "./errors/template-parse-error.js";
@@ -126,11 +125,11 @@ export function tryEvaluateKeyExpressionByTraceable(scope: object, traceable: { 
     return tryEvaluateExpression(scope, traceable.keyExpression, traceable.rawKeyExpression, traceable.stackTrace);
 }
 
-export function tryEvaluatePattern(scope: object, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): Indexer
+export function tryEvaluatePattern(scope: object, pattern: IPattern, value: unknown, rawExpression: string, stackTrace: StackTrace): object
 {
     try
     {
-        return Evaluate.pattern(scope, pattern, value);
+        return pattern.evaluate(scope, value);
     }
     catch (error)
     {
@@ -140,7 +139,7 @@ export function tryEvaluatePattern(scope: object, pattern: IPattern, value: unkn
     }
 }
 
-export function tryEvaluatePatternByTraceable(scope: object, value: unknown, traceable: { pattern: IPattern } & ITraceable): Indexer
+export function tryEvaluatePatternByTraceable(scope: object, value: unknown, traceable: { pattern: IPattern } & ITraceable): object
 {
     return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }

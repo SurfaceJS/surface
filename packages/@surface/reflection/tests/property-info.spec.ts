@@ -34,34 +34,6 @@ export default class FieldInfoSpec
     }
 
     @test @shouldPass
-    public metadata(): void
-    {
-        const metadata =
-        {
-            "design:paramtypes": [Number],
-            "design:type":       Number,
-        };
-
-        // Caching
-        chai.assert.deepEqual(propertyInfo.metadata, metadata);
-        chai.assert.deepEqual(propertyInfo.metadata, metadata);
-    }
-
-    @test @shouldPass
-    public staticPropertymetadata(): void
-    {
-        const propertyInfo = new PropertyInfo("staticProperty", Object.getOwnPropertyDescriptor(Mock, "staticProperty")!, Type.of(Mock), false, true);
-
-        const metadata =
-        {
-            "design:paramtypes": [Number],
-            "design:type":       Number,
-        };
-
-        chai.assert.deepEqual(propertyInfo.metadata, metadata);
-    }
-
-    @test @shouldPass
     public readonly(): void
     {
         chai.assert.equal(propertyInfo.readonly, false);

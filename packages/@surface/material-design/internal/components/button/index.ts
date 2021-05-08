@@ -1,6 +1,6 @@
 import { mix }                                      from "@surface/core";
 import CustomElement, { attribute, element, query } from "@surface/custom-element";
-import { computed }                                 from "@surface/reactive";
+import { computed }                                 from "@surface/observer";
 import colorable                                    from "../../mixins/colorable/index.js";
 import disableable                                  from "../../mixins/disableable/index.js";
 import elevatable                                   from "../../mixins/elevatable/index.js";
@@ -34,28 +34,28 @@ export default class Button extends mix(CustomElement, [colorable, disableable, 
     @query("#root")
     public rippleable!: HTMLElement;
 
-    @attribute
+    @attribute(Boolean)
     public block: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public fab: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public icon: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public rounded: boolean = false;
 
     @attribute
     public size: Size = "";
 
-    @attribute
+    @attribute(Boolean)
     public outlined: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public text: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public tile: boolean = false;
 
     @computed("block", "fab", "icon", "outlined", "rounded", "text", "tile", "elevationClasses", "themeClasses")

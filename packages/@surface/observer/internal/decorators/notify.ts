@@ -1,7 +1,7 @@
 import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
 import Metadata                                 from "../metadata.js";
-import Reactive                                 from "../reactive.js";
+import Observer                                 from "../observer.js";
 
 export default function notify<T extends object>(...properties: (keyof T | string[])[]): <U extends T>(target: U, propertyKey: string) => void
 {
@@ -20,7 +20,7 @@ export default function notify<T extends object>(...properties: (keyof T | strin
                 }
             };
 
-            const subscription = Reactive.from(instance, [propertyKey]).subscribe(action);
+            const subscription = Observer.observe(instance, [propertyKey]).subscribe(action);
 
             DisposableMetadata.from(instance).add({ dispose: () => subscription.unsubscribe() });
         };

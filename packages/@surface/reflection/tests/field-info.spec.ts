@@ -34,12 +34,6 @@ export default class FieldInfoSpec
     }
 
     @test @shouldPass
-    public metadata(): void
-    {
-        chai.assert.deepEqual(fieldInfo.metadata, { });
-    }
-
-    @test @shouldPass
     public readonly(): void
     {
         chai.assert.equal(fieldInfo.readonly, true);

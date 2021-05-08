@@ -1,6 +1,6 @@
 import { assert, mix }                                     from "@surface/core";
 import CustomElement, { attribute, element, event, query } from "@surface/custom-element";
-import { computed }                                        from "@surface/reactive";
+import { computed }                                        from "@surface/observer";
 import colorable                                           from "../../mixins/colorable/index.js";
 import lineRippleable                                      from "../../mixins/line-rippleable/index.js";
 import themeable                                           from "../../mixins/themeable/index.js";
@@ -39,34 +39,34 @@ export default class TextField extends mix(CustomElement, [colorable, lineRipple
         return this.outlined;
     }
 
-    @attribute
+    @attribute(Boolean)
     public counter: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public filled: boolean = false;
 
     @attribute
     public hint: string = "";
 
-    @attribute
+    @attribute(Boolean)
     public inline: boolean = false;
 
     @attribute
     public label: string = "";
 
-    @attribute
+    @attribute(Number)
     public maxLenght: number = 0;
 
-    @attribute
+    @attribute(Boolean)
     public outlined: boolean = false;
 
-    @attribute
+    @attribute(Boolean)
     public persistentHint: boolean = false;
 
     @attribute
     public placeholder: string = "";
 
-    @attribute
+    @attribute(Boolean)
     public singleLine: boolean = false;
 
     @attribute

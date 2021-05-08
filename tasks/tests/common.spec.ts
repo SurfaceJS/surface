@@ -1,8 +1,9 @@
-import chai                                                          from "chai";
+import chai                                            from "chai";
 import { batchTest, shouldPass, suite }                from "../../packages/@surface/test-suite/index.js";
 import { parsePatternPath }                            from "../internal/common.js";
-import type { CommonParsePatternPathValidExpectation }               from "./common-expectations.js";
-import { validExpectations }                                         from "./common-expectations.js";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type { CommonParsePatternPathValidExpectation } from "./common-expectations.js";
+import { validExpectations }                           from "./common-expectations.js";
 
 @suite
 export default class CommonSpec

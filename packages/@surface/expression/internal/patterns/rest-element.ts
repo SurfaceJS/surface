@@ -1,7 +1,8 @@
-import type IPattern     from "../interfaces/pattern";
-import type IRestElement from "../interfaces/rest-element";
-import NodeType          from "../node-type.js";
-import { PATTERN }       from "../symbols.js";
+import type IPattern           from "../interfaces/pattern";
+import type IRestElement       from "../interfaces/rest-element";
+import NodeType                from "../node-type.js";
+import { PATTERN }             from "../symbols.js";
+import TypeGuard from "../type-guard.js";
 
 export default class RestElement implements IPattern
 {
@@ -33,6 +34,16 @@ export default class RestElement implements IPattern
     public clone(): IRestElement
     {
         return new RestElement(this.argument.clone());
+    }
+
+    public evaluate(scope: object, value: unknown): object
+    {
+        if (TypeGuard.isIdentifier(this.argument))
+        {
+            return { [this.argument.name]: value };
+        }
+
+        return this.argument.evaluate(scope, value);
     }
 
     public toString(): string

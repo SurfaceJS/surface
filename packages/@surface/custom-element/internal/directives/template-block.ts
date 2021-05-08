@@ -119,10 +119,13 @@ export default class TemplateBlock implements IDisposable
         parent.insertBefore(this.open, this.close);
     }
 
-    public setContent<T extends Node>(content: T): void
+    public setContent<T extends Node>(content: T, optimize: boolean = true): void
     {
         this.close.parentNode!.insertBefore(content, this.close);
 
-        this.optimize();
+        if (optimize)
+        {
+            this.optimize();
+        }
     }
 }

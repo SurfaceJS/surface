@@ -29,9 +29,7 @@ export default class MethodInfo extends MemberInfo
             {
                 const args = match[1].split(",").map(x => x.trim());
 
-                const paramTypes = (this.metadata["design:paramtypes"] || []) as Object[];
-
-                this._parameters = args.map((name, index) => new ParameterInfo(name, index, this, paramTypes[index]));
+                this._parameters = args.map((name, index) => new ParameterInfo(name, index, this));
             }
             else
             {

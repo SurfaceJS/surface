@@ -1,6 +1,54 @@
-import { Queue }                            from "@surface/collection";
 import type { CancellationToken, Delegate } from "@surface/core";
 import { AggregateError, runAsync }         from "@surface/core";
+
+type Node<T> = { value: T, next?: Node<T> };
+
+class Queue<T>
+{
+    private _length: number = 0;
+
+    private node:     Node<T> | null = null;
+    private lastNode: Node<T> | null = null;
+
+    public get length(): number
+    {
+        return this._length;
+    }
+
+    public enqueue(value: T): void
+    {
+        const node = { value };
+
+        if (this.node)
+        {
+            this.lastNode!.next = node;
+        }
+        else
+        {
+            this.node = node;
+        }
+
+        this.lastNode = node;
+
+        this._length++;
+    }
+
+    public dequeue(): T | null
+    {
+        const value = this.node?.value;
+
+        this.node = this.node?.next ?? null;
+
+        this._length--;
+
+        if (this._length == 0)
+        {
+            this.lastNode = null;
+        }
+
+        return value ?? null;
+    }
+}
 
 type Entry =
 [

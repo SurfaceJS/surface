@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 import path                                   from "path";
-import { isDirectory, lookupFile }                         from "@surface/io";
+import { isDirectory, lookupFile }            from "@surface/io";
 import Mock, { It }                           from "@surface/mock";
 import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";

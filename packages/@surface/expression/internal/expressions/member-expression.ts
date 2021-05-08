@@ -85,7 +85,18 @@ export default class MemberExpression implements IExpression, IChainElement
             return hasValue(object) ? object[key] : undefined;
         }
 
-        return object![key];
+        const value = object![key];
+
+        if (value instanceof Function)
+        {
+            const fn = value.bind(object);
+
+            fn.toString = () => value.toString();
+
+            return fn;
+        }
+
+        return value;
     }
 
     public toString(): string

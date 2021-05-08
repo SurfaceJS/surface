@@ -1,0 +1,4 @@
+<a #to="'/hello'">Hello</a>
+<a #to="'/world'">World</a>
+
+<router-outlet></router-outlet>

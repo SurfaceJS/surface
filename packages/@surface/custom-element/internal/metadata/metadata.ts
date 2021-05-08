@@ -2,7 +2,8 @@ export const METADATA = Symbol("custom-element:metadata");
 
 export default class Metadata
 {
-    public reflectingAttribute: Set<string> = new Set();
+    public isPropagatingCallback: boolean = false;
+    public reflectingAttribute:   Set<string> = new Set();
 
     public host?: Node;
 

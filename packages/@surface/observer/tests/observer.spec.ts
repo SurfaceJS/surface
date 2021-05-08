@@ -1,26 +1,43 @@
-import { DisposableMetadata, Hookable }                            from "@surface/core";
+
+import { DisposableMetadata, Hookable }        from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import computed                                from "../internal/decorators/computed.js";
 import notify                                  from "../internal/decorators/notify.js";
-import Metadata from "../internal/metadata.js";
-import Reactive                                from "../internal/reactive.js";
+import Metadata                                from "../internal/metadata.js";
+import Observer                                from "../internal/observer.js";
 
 @suite
-export default class ReactiveSpec
+export default class ObserverSpec
 {
     @test @shouldPass
     public observeProperty(): void
     {
-        const target = { value: 1 };
+        const target =
+        {
+            _private: 0,
+            a:        1,
+            get b(): number
+            {
+                return this._private;
+            },
+            set b(value: number)
+            {
+                this._private = value;
+            },
+        };
 
-        let receiver = 0;
+        let receiverA = 0;
+        let receiverB = 0;
 
-        Reactive.from(target, ["value"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["a"]).subscribe(x => receiverA = x as number);
+        Observer.observe(target, ["b"]).subscribe(x => receiverB = x as number);
 
-        target.value = 2;
+        target.a = 2;
+        target.b = 3;
 
-        chai.assert.equal(target.value, receiver);
+        chai.assert.equal(target.a, receiverA);
+        chai.assert.equal(target.b, receiverB);
     }
 
     @test @shouldPass
@@ -29,7 +46,7 @@ export default class ReactiveSpec
         const target   = { a: { b: { c: { value: 0 } } } };
         let   receiver = 0;
 
-        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["a", "b", "c", "value"]).subscribe(x => receiver = x as number);
 
         target.a.b.c.value = 1;
 
@@ -69,7 +86,7 @@ export default class ReactiveSpec
         const target   = { value: "" };
         let   receiver = 0;
 
-        Reactive.from(target, ["value", "length"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["value", "length"]).subscribe(x => receiver = x as number);
 
         target.value = "Hello World!!!";
 
@@ -84,8 +101,8 @@ export default class ReactiveSpec
         let receiver1 = 0;
         let receiver2 = 0;
 
-        Reactive.from(target, ["a", "value"]).subscribe(x => receiver1 = x as number);
-        Reactive.from(target, ["a", "value"]).subscribe(x => receiver2 = x as number);
+        Observer.observe(target, ["a", "value"]).subscribe(x => receiver1 = x as number);
+        Observer.observe(target, ["a", "value"]).subscribe(x => receiver2 = x as number);
 
         target.a.value = 2;
 
@@ -107,9 +124,9 @@ export default class ReactiveSpec
         let aReceiver     = { b: { c: { value: 0 } } };
         let bReceiver     = { c: { value: 0 } };
 
-        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as typeof aReceiver);
-        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => valueReceiver = x as number);
-        Reactive.from(target, ["a", "b"]).subscribe(x => bReceiver = x as typeof bReceiver);
+        Observer.observe(target, ["a"]).subscribe(x => aReceiver = x as typeof aReceiver);
+        Observer.observe(target, ["a", "b", "c", "value"]).subscribe(x => valueReceiver = x as number);
+        Observer.observe(target, ["a", "b"]).subscribe(x => bReceiver = x as typeof bReceiver);
 
         target.a.b = { c: { value: 1 } };
 
@@ -132,8 +149,8 @@ export default class ReactiveSpec
         let abcValueReceiver = 0;
         let cValueReceiver   = 0;
 
-        Reactive.from(target, ["a", "b", "c", "value"]).subscribe(x => abcValueReceiver = x as typeof abcValueReceiver);
-        Reactive.from(c, ["value"]).subscribe(x => cValueReceiver = x as typeof cValueReceiver);
+        Observer.observe(target, ["a", "b", "c", "value"]).subscribe(x => abcValueReceiver = x as typeof abcValueReceiver);
+        Observer.observe(c, ["value"]).subscribe(x => cValueReceiver = x as typeof cValueReceiver);
 
         target.a.b.c.value = 1;
 
@@ -158,9 +175,9 @@ export default class ReactiveSpec
         let receiver1 = target[1];
         let length    = target.length;
 
-        Reactive.from(target, ["0"]).subscribe(x => receiver0 = x as number);
-        Reactive.from(target, ["1"]).subscribe(x => receiver1 = x as number);
-        Reactive.from(target, ["length"]).subscribe(x => length = x as number);
+        Observer.observe(target, ["0"]).subscribe(x => receiver0 = x as number);
+        Observer.observe(target, ["1"]).subscribe(x => receiver1 = x as number);
+        Observer.observe(target, ["length"]).subscribe(x => length = x as number);
 
         target[0] = 3;
         target[1] = 4;
@@ -213,7 +230,7 @@ export default class ReactiveSpec
 
         let receiver = target[0].value;
 
-        Reactive.from(target, ["0", "value"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["0", "value"]).subscribe(x => receiver = x as number);
 
         chai.assert.equal(target[0].value, receiver);
 
@@ -233,7 +250,7 @@ export default class ReactiveSpec
 
         let receiver = target.value;
 
-        Reactive.from(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
+        Observer.observe(target, ["value"]).subscribe(x => receiver = x as typeof receiver);
 
         chai.assert.equal(target.value, receiver);
 
@@ -249,7 +266,7 @@ export default class ReactiveSpec
 
         chai.assert.notEqual(newTarget.value, receiver);
 
-        Reactive.from(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
+        Observer.observe(newTarget, ["value"]).subscribe(x => newReceiver = x as typeof newReceiver);
 
         newTarget.value = 4;
 
@@ -257,25 +274,25 @@ export default class ReactiveSpec
     }
 
     @test @shouldPass
-    public notify(): void
+    public staticNotify(): void
     {
-        Reactive.notify({ }); // Coverage
+        Observer.notify({ }); // Coverage
 
         const target = { a: 1, b: 1 };
 
         let aReceiver = 0;
         let bReceiver = 0;
 
-        Reactive.from(target, ["a"]).subscribe(x => aReceiver = x as number);
-        Reactive.from(target, ["b"]).subscribe(x => bReceiver = x as number);
+        Observer.observe(target, ["a"]).subscribe(x => aReceiver = x as number);
+        Observer.observe(target, ["b"]).subscribe(x => bReceiver = x as number);
 
-        Reactive.notify(target, ["a"]);
-        Reactive.notify(target, ["c"]); // Coverage
+        Observer.notify(target, ["a"]);
+        Observer.notify(target, ["c"]); // Coverage
 
         chai.assert.equal(target.a, aReceiver);
         chai.assert.notEqual(target.b, bReceiver);
 
-        Reactive.notify(target);
+        Observer.notify(target);
 
         chai.assert.equal(target.a, aReceiver);
         chai.assert.equal(target.b, bReceiver);
@@ -307,7 +324,7 @@ export default class ReactiveSpec
 
         let receiver = 0;
 
-        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["sum"]).subscribe(x => receiver = x as number);
 
         target.recalculate();
 
@@ -342,7 +359,7 @@ export default class ReactiveSpec
 
         let receiver = 0;
 
-        Reactive.from(target, ["sum"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["sum"]).subscribe(x => receiver = x as number);
 
         target.recalculate();
 
@@ -356,7 +373,7 @@ export default class ReactiveSpec
 
         const target1 = { property };
 
-        Reactive.from(target1, ["property", "a", "value"]);
+        Observer.observe(target1, ["property", "a", "value"]);
 
         const propertyMetadata  = Metadata.from(target1.property);
         const propertyAMetadata = Metadata.from(target1.property.a);
@@ -375,12 +392,60 @@ export default class ReactiveSpec
     {
         const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
 
-        chai.assert.throws(() => Reactive.from(target, ["a", "b", "c", "value"]));
+        chai.assert.throws(() => Observer.observe(target, ["a", "b", "c", "value"]));
 
         target.a = { b: { c: { value: 1 } } };
 
-        Reactive.from(target, ["a", "b", "c", "value"]);
+        Observer.observe(target, ["a", "b", "c", "value"]);
 
         chai.assert.throws(() => target.a = { });
+    }
+
+    @test @shouldPass
+    public notify(): void
+    {
+        const target = { value: 1 };
+
+        let value = 0;
+
+        const observer = new Observer<number>(target, ["value"]);
+
+        observer.subscribe(x => value = x);
+
+        observer.notify();
+
+        chai.assert.equal(value, 1);
+    }
+
+    @test @shouldFail
+    public unsubscribe(): void
+    {
+        const target = { value: 1 };
+
+        let value = 0;
+
+        const observer = new Observer<number>(target, ["value"]);
+
+        const listener = (x: number): number => value = x;
+
+        observer.subscribe(listener);
+
+        observer.notify();
+
+        chai.assert.equal(value, 1);
+
+        observer.unsubscribe(listener);
+
+        target.value = 2;
+
+        observer.notify();
+
+        chai.assert.equal(value, 1);
+    }
+
+    @test @shouldFail
+    public unsubscribeInvalidListener(): void
+    {
+        chai.assert.throws(() => new Observer({ }, []).unsubscribe(() => void 0), "Listerner not subscribed");
     }
 }

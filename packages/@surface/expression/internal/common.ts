@@ -1,22 +1,6 @@
-import type { Indexer }     from "@surface/core";
-import type { IExpression } from "../index.js";
-import type IPattern        from "./interfaces/pattern";
-import TypeGuard            from "./type-guard.js";
-import type Token           from "./types/token";
-
-export function getThisArg(expression: IExpression, scope: object): [thisArg: object | null, function: Function | undefined]
-{
-    if (TypeGuard.isMemberExpression(expression))
-    {
-        const key = TypeGuard.isIdentifier(expression.property) && !expression.computed ?  expression.property.name : `${expression.property.evaluate(scope)}`;
-
-        const thisArg = expression.object.evaluate(scope) as Indexer;
-
-        return [thisArg, thisArg[key] as Function | undefined];
-    }
-
-    return [null, expression.evaluate(scope) as Function | undefined];
-}
+import type IPattern from "./interfaces/pattern";
+import TypeGuard     from "./type-guard.js";
+import type Token    from "./types/token";
 
 export function hasDuplicated(parameters: IPattern[]): boolean;
 export function hasDuplicated(parameters: IPattern[], lookeaheads: Token[]): { result: true, token: Token } | { result: false, token: null };
