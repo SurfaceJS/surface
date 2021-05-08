@@ -113,7 +113,7 @@ export default class PreferTsResolverPluginSpec
 
         new PreferTsResolverPlugin(["**/path-1/**/*.js"]).apply(resolver);
 
-        const expectedForNonEmpty =
+        const expectedForRelativePattern =
         [
             PATH1_BAR_JS,
             PATH1_BAR_TS,
@@ -127,6 +127,26 @@ export default class PreferTsResolverPluginSpec
             PATH2_FOO_JS,
         ];
 
-        chai.assert.deepEqual(actual, expectedForNonEmpty, "Non empty patterns");
+        chai.assert.deepEqual(actual, expectedForRelativePattern, "Relative Pattern");
+
+        actual = [];
+
+        new PreferTsResolverPlugin([path.join(CWD, "**/path-1/**/*.js")]).apply(resolver);
+
+        const expectedForAbsolutePattern =
+        [
+            PATH1_BAR_JS,
+            PATH1_BAR_TS,
+            PATH1_BAZ_TS,
+            PATH1_FOO,
+            PATH1_FOO_TS,
+            PATH2_BAR_JS,
+            PATH2_BAR_TS,
+            PATH2_BAZ_TS,
+            PATH2_FOO,
+            PATH2_FOO_JS,
+        ];
+
+        chai.assert.deepEqual(actual, expectedForAbsolutePattern, "Absolute Pattern");
     }
 }
