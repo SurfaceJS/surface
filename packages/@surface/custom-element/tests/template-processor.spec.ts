@@ -8,6 +8,7 @@ import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import CustomElement                           from "../internal/custom-element.js";
 import element                                 from "../internal/decorators/element.js";
+import LoopDirective                           from "../internal/directives/loop-directive.js";
 import CustomStackError                        from "../internal/errors/custom-stack-error.js";
 import TemplateEvaluationError                 from "../internal/errors/template-evaluation-error.js";
 import TemplateParser                          from "../internal/parsers/template-parser.js";
@@ -16,6 +17,9 @@ import { globalCustomDirectives, scheduler }   from "../internal/singletons.js";
 import type TemplateProcessorContext           from "../internal/types/template-processor-context";
 import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
 import CustomDirective                         from "./fixtures/custom-directive.js";
+
+// @ts-expect-error
+LoopDirective.maximumAmount = 2;
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 

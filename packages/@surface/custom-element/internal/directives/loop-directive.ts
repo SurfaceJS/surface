@@ -46,6 +46,8 @@ class Cache
 
 export default class LoopDirective implements IDisposable
 {
+    private static readonly maximumAmount: number = 1000;
+
     private readonly cache:                   Cache                   = new Cache();
     private readonly cancellationTokenSource: CancellationTokenSource = new CancellationTokenSource();
     private readonly context:                 TemplateDirectiveContext;
@@ -116,11 +118,9 @@ export default class LoopDirective implements IDisposable
             this.cache.disposables.push(block);
             this.cache.disposables.push(disposable);
 
-            const multiple = 1000;
-
             const count = index + 1;
 
-            if (Math.ceil(count / multiple) * multiple == count)
+            if (Math.ceil(count / LoopDirective.maximumAmount) * LoopDirective.maximumAmount == count)
             {
                 this.cache.trim();
 
