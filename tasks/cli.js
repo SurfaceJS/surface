@@ -10,7 +10,7 @@ program
     .command("publish <registry>")
     .requiredOption("--token     <n>", "NPM token", toString)
     .option("--config    <n>", "Configuration", parsePattern(/^nightly|release$/))
-    .option("--debug     [n]", "Debug mode")
+    .option("--debug     [n]", "Debug mode", x => x === "" || x == "true")
     .action(Commands.publish);
 program.parse(process.argv);
 //# sourceMappingURL=cli.js.map

@@ -10,7 +10,7 @@ import { create }                                    from "tar";
 import { log, paths }                                from "./common.js";
 import Status                                        from "./enums/status.js";
 import NpmRepository                                 from "./npm-repository.js";
-import Version                                       from "./version.js";
+// import Version                                       from "./version.js";
 
 const globAsync     = promisify(glob);
 const readdirAsync  = promisify(fs.readdir);
@@ -108,19 +108,20 @@ export default class Publisher
                     await this.repository.publish(encodeURIComponent($package.name), { access: this.access, auth: this.auth, body, metadata: $package });
                 }
 
-                const version = Version.parse($package.version);
+                // Automation Token dont support disttag yet: https://github.com/npm/roadmap/issues/29
+                // const version = Version.parse($package.version);
 
-                if (version.prerelease)
-                {
-                    const tag = version.prerelease.type == "dev" ? "next" : version.prerelease.type;
+                // // if (version.prerelease)
+                // // {
+                // //     const tag = version.prerelease.type == "dev" ? "next" : version.prerelease.type;
 
-                    log(`Adding tag ${tag}`);
+                // //     log(`Adding tag ${tag}`);
 
-                    if (!this.debug)
-                    {
-                        await this.repository.addTag(encodeURIComponent($package.name), { auth: this.auth, distTag: tag, package: $package.name, version: $package.version });
-                    }
-                }
+                // //     if (!this.debug)
+                // //     {
+                // //         await this.repository.addTag(encodeURIComponent($package.name), { auth: this.auth, distTag: tag, package: $package.name, version: $package.version });
+                // //     }
+                // // }
 
                 this.published.add($package);
             }

@@ -122,7 +122,7 @@ export default class Commands
 
             const packages = Array.from(lookup.keys()).filter(x => !exclude.has(x));
 
-            const repository = new NpmRepository(registry);
+            const repository = new NpmRepository(registry, false);
 
             await new Publisher(lookup, repository, auth, "public", options.debug).publish(packages);
         }
