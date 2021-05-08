@@ -8,7 +8,7 @@
                 "enabled": false
             },
             "index": "./template.html",
-            "type": "pwa"
+            "target": "pwa"
         }
     }
 }

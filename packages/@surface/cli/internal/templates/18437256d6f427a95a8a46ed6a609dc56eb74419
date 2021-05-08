@@ -15,7 +15,7 @@
     "name": "app",
     "scripts": {
         "build": "surface-builder build --mode=production",
-        "start": "surface-builder serve --hot --open",
+        "start": "surface-builder serve --devserver-hot --devserver-open",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "sideEffects": true,

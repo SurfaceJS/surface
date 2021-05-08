@@ -2,8 +2,12 @@
     "author": "author",
     "dependencies": {
         "@surface/builder": "latest",
+        "@surface/core": "latest",
         "@surface/custom-element": "latest",
+        "@surface/dependency-injection": "latest",
+        "@surface/enumerable": "latest",
         "@surface/web-router": "latest",
+        "material-design-icons-iconfont": "6.1.0",
         "tslib": "2.1.0"
     },
     "devDependencies": {
@@ -16,7 +20,7 @@
     "name": "app",
     "scripts": {
         "build": "surface-builder build --mode=production",
-        "start": "surface-builder serve --hot --open",
+        "start": "surface-builder serve --devserver-hot --devserver-open",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "sideEffects": true,
