@@ -5,12 +5,12 @@ import style                                 from "./index.scss";
 @element("app-button", template, style)
 export default class Button extends CustomElement
 {
-    @attribute
+    @attribute(Boolean)
     public fab = false;
 
-    @attribute
+    @attribute(Boolean)
     public flat = false;
 
-    @attribute
+    @attribute(Boolean)
     public text = false;
 }

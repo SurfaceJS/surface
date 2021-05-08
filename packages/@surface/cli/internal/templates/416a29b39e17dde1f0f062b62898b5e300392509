@@ -1,5 +1,5 @@
 {
-    "$schema": "./node_modules/@surface/compiler/schema.json",
+    "$schema": "./node_modules/@surface/builder/schema.json",
     "clean": true,
     "projects": {
         "app": {
@@ -7,7 +7,8 @@
             "eslint": {
                 "enabled": false
             },
-            "index": "./template.html"
+            "index": "./template.html",
+            "type": "pwa"
         }
     }
 }
