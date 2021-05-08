@@ -9,22 +9,45 @@ import type TemplateDirectiveContext                                         fro
 import type TemplateProcessorContext                                         from "../types/template-processor-context";
 import TemplateBlock                                                         from "./template-block.js";
 
+type CacheEntry = [unknown, TemplateBlock, IDisposable];
+
 class Cache
 {
-    public changed:     boolean       = false;
-    public cursor:      number        = 0;
-    public disposables: IDisposable[] = [];
-    public elements:    unknown[]     = [];
-    public stored:      number        = 0;
+    private readonly entries: CacheEntry[] = [];
+
+    private changed: boolean = false;
+    private cursor:  number  = 0;
+    private stored:  number  = 0;
 
     public trim(): void
     {
         if (this.stored > 0)
         {
-            this.disposables.splice(this.cursor * 2, (this.stored - this.cursor) * 2).forEach(x => x.dispose());
+            this.entries.splice(this.cursor, this.stored - this.cursor).forEach(x => (x[2].dispose(), x[1].dispose()));
 
             this.stored = 0;
         }
+    }
+
+    public add(value: unknown, block: TemplateBlock, disposable: IDisposable): void
+    {
+        this.entries.push([value, block, disposable]);
+    }
+
+    public hasChanges(index: number, value: unknown): boolean
+    {
+        if (this.changed || !Object.is(value, this.entries[index]?.[0]))
+        {
+            if (!this.changed)
+            {
+                this.changed = true;
+                this.cursor  = index;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public resize(size: number): void
@@ -39,8 +62,6 @@ class Cache
         this.changed = false;
         this.cursor  = 0;
         this.stored  = size;
-
-        this.elements.splice(size);
     }
 }
 
@@ -82,16 +103,8 @@ export default class LoopDirective implements IDisposable
 
     private action(value: unknown, index: number): void
     {
-        if (this.cache.changed || !Object.is(value, this.cache.elements[index]))
+        if (this.cache.hasChanges(index, value))
         {
-            if (!this.cache.changed)
-            {
-                this.cache.changed     = true;
-                this.cache.cursor = index;
-            }
-
-            this.cache.elements[index] = value;
-
             const directiveScope = tryEvaluatePattern(this.context.scope, this.descriptor.left, value, this.descriptor.rawExpression, this.descriptor.stackTrace);
             const mergedScope    = { $index: index, ...this.context.scope, ...directiveScope };
 
@@ -108,15 +121,13 @@ export default class LoopDirective implements IDisposable
             };
 
             const disposable = TemplateProcessor.process(context);
+            const block      = new TemplateBlock();
 
-            const block = new TemplateBlock();
+            this.cache.add(value, block, disposable);
 
             block.connect(this.tree);
 
             block.setContent(content);
-
-            this.cache.disposables.push(block);
-            this.cache.disposables.push(disposable);
 
             const count = index + 1;
 
