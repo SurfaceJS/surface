@@ -27,7 +27,7 @@
     "name": "modules-tasks",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/SurfaceJS/modules.git"
+        "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "type": "module",
     "version": "1.0.0"

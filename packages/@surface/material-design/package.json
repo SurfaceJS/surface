@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/SurfaceJS/modules/issues"
+        "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
         "@surface/collection": "file:../collection",
@@ -21,7 +21,7 @@
         "chai": "^4.3.4",
         "jsdom": "^16.5.3"
     },
-    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "material-design",
         "surface",
@@ -33,7 +33,7 @@
     "name": "@surface/material-design",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/SurfaceJS/modules.git"
+        "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "sideEffects": true,
     "type": "module",

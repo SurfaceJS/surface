@@ -1,7 +1,7 @@
 {
     "author": "HitalloExiled",
     "bugs": {
-        "url": "https://github.com/SurfaceJS/modules/issues"
+        "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
         "@surface/core": "file:../core",
@@ -17,7 +17,7 @@
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1"
     },
-    "homepage": "https://github.com/SurfaceJS/modules#readme",
+    "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "io",
         "surface",
@@ -28,7 +28,7 @@
     "name": "@surface/io",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/SurfaceJS/modules.git"
+        "url": "git+https://github.com/SurfaceJS/surface.git"
     },
     "sideEffects": false,
     "type": "module",
