@@ -2,11 +2,10 @@ import type { Delegate, Indexer, Subscription } from "@surface/core";
 import { getValue, hasValue, privatesFrom }     from "@surface/core";
 import { FieldInfo, MethodInfo, Type }          from "@surface/reflection";
 import Metadata                                 from "./metadata.js";
-import Observer                                 from "./observer.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
-export default class Reactive<TValue = unknown>
+export default class Observer<TValue = unknown>
 {
     protected readonly path:      string[];
     protected readonly root:      object;
@@ -18,6 +17,11 @@ export default class Reactive<TValue = unknown>
         this.path = path;
     }
 
+    protected static makeComputed(root: object, key: string, dependencies: string[][]): void
+    {
+        Metadata.from(root).computed.set(key, dependencies);
+    }
+
     protected static observePath(root: Object, path: string[], observer: Observer): void
     {
         if (root instanceof Object)
@@ -25,6 +29,8 @@ export default class Reactive<TValue = unknown>
             const [key, ...keys] = path;
 
             const metadata = Metadata.from(root);
+
+            this.observeComputed(root, key, metadata, observer);
 
             let subject = metadata.subjects.get(key);
 
@@ -35,19 +41,7 @@ export default class Reactive<TValue = unknown>
                     this.observeArray(root);
                 }
 
-                const computed = metadata.computed.get(key);
-
-                if (computed)
-                {
-                    for (const dependencies of computed)
-                    {
-                        this.observePath(root, dependencies, observer);
-                    }
-                }
-                else
-                {
-                    this.observeProperty(root, key);
-                }
+                this.observeProperty(root, key);
 
                 metadata.subjects.set(key, subject = new Map());
             }
@@ -89,6 +83,19 @@ export default class Reactive<TValue = unknown>
         }
 
         Metadata.from(source).isReactiveArray = true;
+    }
+
+    protected static observeComputed(root: Object, key: string, metadata: Metadata, observer: Observer): void
+    {
+        const computed = metadata.computed.get(key);
+
+        if (computed)
+        {
+            for (const dependency of computed)
+            {
+                this.observePath(root, dependency, observer);
+            }
+        }
     }
 
     protected static observeProperty(root: object, key: string): void
@@ -190,6 +197,13 @@ export default class Reactive<TValue = unknown>
                 this.unobservePath(property, keys, observer);
             }
         }
+    }
+
+    public static compute(root: object, key: string, dependencies: string[][]): Observer
+    {
+        this.makeComputed(root, key, dependencies);
+
+        return this.observe(root, [key]);
     }
 
     public static observe(root: object, path: string[]): Observer

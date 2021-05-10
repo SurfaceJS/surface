@@ -1,13 +1,12 @@
-import { mix }                                      from "@surface/core";
-import CustomElement, { attribute, element, query } from "@surface/custom-element";
-import { computed }                                 from "@surface/observer";
-import colorable                                    from "../../mixins/colorable/index.js";
-import disableable                                  from "../../mixins/disableable/index.js";
-import elevatable                                   from "../../mixins/elevatable/index.js";
-import rippleable                                   from "../../mixins/rippleable/index.js";
-import themeable                                    from "../../mixins/themeable/index.js";
-import template                                     from "./index.html";
-import style                                        from "./index.scss";
+import { mix }                                                from "@surface/core";
+import CustomElement, { attribute, computed, element, query } from "@surface/custom-element";
+import colorable                                              from "../../mixins/colorable/index.js";
+import disableable                                            from "../../mixins/disableable/index.js";
+import elevatable                                             from "../../mixins/elevatable/index.js";
+import rippleable                                             from "../../mixins/rippleable/index.js";
+import themeable                                              from "../../mixins/themeable/index.js";
+import template                                               from "./index.html";
+import style                                                  from "./index.scss";
 
 declare global
 {

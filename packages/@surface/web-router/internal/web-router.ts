@@ -1,7 +1,7 @@
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
-import { observe }                                      from "@surface/custom-element";
 import Container                                        from "@surface/dependency-injection";
+import { computed }                                     from "@surface/observer";
 import Router                                           from "@surface/router";
 import type { RouteData }                               from "@surface/router";
 import type IRouteableElement                           from "./interfaces/routeable-element";
@@ -35,7 +35,7 @@ export default class WebRouter
 
     public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
 
-    @observe("current")
+    @computed("current")
     public get route(): Route
     {
         return this.current?.route

@@ -1,3 +1,4 @@
+import { DeepMergeFlags, deepMerge }           from "@surface/core";
 import { generateCssVariables, generateTheme } from "../common.js";
 import type RawPalette                         from "../types/raw-palette";
 import type RawTheme                           from "../types/raw-theme";
@@ -82,7 +83,7 @@ export default class ThemeProvider
     {
         const generated = generateTheme("dark" in theme || "light" in theme ? theme : { light: theme as RawPalette });
 
-        this.theme = { ...this.theme, ...generated } as Theme;
+        this.theme = deepMerge([this.theme, generated], DeepMergeFlags.IgnoreUndefined) as Theme;
 
         this.updateVariables();
     }
