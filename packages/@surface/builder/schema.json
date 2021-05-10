@@ -410,12 +410,16 @@
         "logging": {
             "description": "Log level.",
             "enum": [
+                true,
+                false,
                 "none",
-                "verbose",
-                "error",
-                "warn",
-                "info",
-                "log"
+                "summary",
+                "errors-only",
+                "errors-warnings",
+                "minimal",
+                "normal",
+                "detailed",
+                "verbose"
             ]
         },
         "memoryCacheOptions": {

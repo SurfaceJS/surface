@@ -2,7 +2,7 @@ import path                                 from "path";
 import { DeepMergeFlags, deepMerge, isEsm } from "@surface/core";
 import { isDirectory, lookupFile }          from "@surface/io";
 import Builder                              from "./builder.js";
-import { createStats, loadModule }          from "./common.js";
+import { loadModule }                       from "./common.js";
 import type BuildConfiguration              from "./types/build-configuration.js";
 import type CliAnalyzerOptions              from "./types/cli-analyzer-options";
 import type CliBuildOptions                 from "./types/cli-build-options";
@@ -66,7 +66,6 @@ export default class Commands
                 port:                  options.devserverPort,
                 public:                options.devserverPublic,
                 quiet:                 options.devserverQuiet,
-                stats:                 options.logging ? createStats(options.logging) : undefined,
                 useLocalIp:            options.devserverUseLocalIp,
                 watchContentBase:      options.devserverWatchContentBase,
                 writeToDisk:           options.devserverWriteToDisk,

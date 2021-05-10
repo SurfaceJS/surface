@@ -1,7 +1,6 @@
 
 import type webpack          from "webpack";
 import type WebpackDevServer from "webpack-dev-server";
-import type Logging          from "./logging";
 import type Project          from "./project";
 
 type Configuration =
@@ -24,7 +23,7 @@ type Configuration =
     main?: string,
 
     /** Output verbosity level. */
-    logging?:  Logging,
+    logging?: webpack.Configuration["stats"],
 
     /** Project map. */
     projects?: Record<string, Project>,

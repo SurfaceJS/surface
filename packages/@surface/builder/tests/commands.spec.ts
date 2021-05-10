@@ -6,7 +6,7 @@ import { afterEach, beforeEach, suite, test } from "@surface/test-suite";
 import chai                                   from "chai";
 import Builder                                from "../internal/builder.js";
 import Commands                               from "../internal/commands.js";
-import { createStats, loadModule }            from "../internal/common.js";
+import { loadModule }                         from "../internal/common.js";
 import type CliOptions                        from "../internal/types/cli-options.js";
 import type Configuration                     from "../internal/types/configuration.js";
 
@@ -303,9 +303,7 @@ export default class CommandsSpec
         const expected6: Configuration =
         {
             devServer:
-            {
-                stats: createStats(true),
-            },
+            { },
             logging:  true,
             main:     "static",
             projects:

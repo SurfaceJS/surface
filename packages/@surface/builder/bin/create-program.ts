@@ -1,6 +1,6 @@
-import commander                                                              from "commander";
-import { parsePattern, toArray, toBoolean, toBooleanOrStringArray }           from "../internal/common.js";
-import { eslintFormatterPattern, loggingPattern, modePattern, targetPattern } from "../internal/patterns.js";
+import commander                                                                             from "commander";
+import { parsePattern, toArray, toBoolean, toBooleanOrParsePattern, toBooleanOrStringArray } from "../internal/common.js";
+import { eslintFormatterPattern, loggingPattern, modePattern, targetPattern }                from "../internal/patterns.js";
 
 export default function createProgram(): commander.Command
 {
@@ -17,7 +17,7 @@ export default function createProgram(): commander.Command
         .option("--filename                       <n>", "The filename of the entry chunk as relative path inside the output path directory.")
         .option("--include-files                  <n>", "File patterns to copy to output path.", toArray)
         .option("--index                          <n>", "Path to html index file.")
-        .option("--logging                        [n]", "Output verbosity level. Can be 'none', 'verbose', 'error', 'warn', 'info' or 'log'.", parsePattern(loggingPattern))
+        .option("--logging                        [n]", "Output verbosity level. Can be an boolean or 'none', 'summary', 'errors-only', 'errors-warnings', 'minimal', 'normal', 'detailed', 'verbose'.", toBooleanOrParsePattern(loggingPattern))
         .option("--main                           <n>", "Specify main project. Used by dev server.")
         .option("--mode                           <n>", "Enable production optimizations or development hints.", parsePattern(modePattern))
         .option("--output                         <n>", "The output directory.")

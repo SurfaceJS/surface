@@ -54,7 +54,6 @@ const loaders =
         loader:  "ts-loader",
         options:
         {
-            configFile:              "tsconfig.json",
             happyPackMode:           true,
             onlyCompileBundledFiles: true,
             transpileOnly:           true,

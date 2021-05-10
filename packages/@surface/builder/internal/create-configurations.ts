@@ -108,8 +108,6 @@ export default async function createConfigurations(type: "analyze" | "build" | "
         const resolvePlugins: webpack.ResolveOptions["plugins"] = [];
         const plugins:        webpack.WebpackPluginInstance[]   = [];
 
-        plugins.push(new webpack.ProgressPlugin());
-
         if (project.eslint?.enabled)
         {
             const eslintWebpackPluginOptions: EslintWebpackPluginOptions =
