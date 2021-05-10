@@ -3,27 +3,26 @@
 import type { Delegate }    from "@surface/core";
 import webpack              from "webpack";
 import WebpackDevServer     from "webpack-dev-server";
-import { createStats, log } from "./common.js";
+import { log }              from "./common.js";
 import createConfigurations from "./create-configurations.js";
 import type CompilerSignal  from "./types/compiler-signal";
 import type Configuration   from "./types/configuration.js";
-import type Logging         from "./types/logging";
 
 export default class Builder
 {
-    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: Logging): (err?: Error, result?: webpack.MultiStats) => unknown
+    private static createHandler(resolve: Delegate, reject: Delegate<[Error]>, logging?: webpack.Configuration["stats"]): (err?: Error, result?: webpack.MultiStats) => unknown
     {
-        return (error, stats) => error ? reject(error) : (log(stats?.toString(createStats(logging))), resolve());
+        return (error, stats) => error ? reject(error) : (log(stats?.toString(logging)), resolve());
     }
 
-    private static async runInternal(webpackConfiguration: webpack.Configuration[], logging?: Logging): Promise<void>
+    private static async runInternal(webpackConfiguration: webpack.Configuration[], logging?: webpack.Configuration["stats"]): Promise<void>
     {
         const compiler = webpack(webpackConfiguration);
 
         await new Promise<void>((resolve, reject) => compiler.run(this.createHandler(resolve, reject, logging)));
     }
 
-    private static async watchInternal(webpackConfiguration: webpack.Configuration[], logging?: Logging): Promise<CompilerSignal>
+    private static async watchInternal(webpackConfiguration: webpack.Configuration[], logging?: webpack.Configuration["stats"]): Promise<CompilerSignal>
     {
         const compiler = webpack(webpackConfiguration);
 
@@ -56,6 +55,7 @@ export default class Builder
         const devServerConfiguration: WebpackDevServer.Configuration =
         {
             historyApiFallback: true,
+            stats:              configuration.logging,
             ...configuration.devServer,
         };
 

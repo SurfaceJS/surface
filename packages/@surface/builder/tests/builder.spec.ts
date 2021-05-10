@@ -103,7 +103,7 @@ export default class CompilerSpec
         await Builder.run({ });
         await Builder.run({ logging: true });
         await Builder.run({ logging: "none" });
-        await Builder.run({ logging: "log" });
+        await Builder.run({ logging: "normal" });
         await Builder.run({ logging: "verbose" });
 
         chai.assert.isOk(true);
