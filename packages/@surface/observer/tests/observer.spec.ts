@@ -3,7 +3,7 @@ import { DisposableMetadata, Hookable }        from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import computed                                from "../internal/decorators/computed.js";
-import notify                                  from "../internal/decorators/notify.js";
+// import listener                                from "../internal/decorators/listener.js";
 import Metadata                                from "../internal/metadata.js";
 import Observer                                from "../internal/observer.js";
 
@@ -299,6 +299,49 @@ export default class ObserverSpec
     }
 
     @test @shouldPass
+    public computed(): void
+    {
+        @Hookable.finisher
+        class Target
+        {
+            private a: number = 0;
+
+            private b: number = 0;
+
+            public get sum(): number
+            {
+                return this.a + this.b;
+            }
+
+            public recalculate(): void
+            {
+                this.a = Math.ceil(Math.random() * 100);
+                this.b = Math.ceil(Math.random() * 100);
+            }
+        }
+
+        const target = new Target();
+
+        let receiver1 = 0;
+
+        Observer.compute(target, "sum", [["a"], ["b"]]).subscribe(x => receiver1 = x as number);
+
+        target.recalculate();
+
+        chai.assert.equal(target.sum, receiver1);
+
+        const scope = { target };
+
+        let receiver2 = 0;
+
+        Observer.observe(scope, ["target", "sum"]).subscribe(x => receiver2 = x as number);
+
+        target.recalculate();
+
+        chai.assert.equal(target.sum, receiver2);
+    }
+
+    @test @shouldPass
     public decoratorComputed(): void
     {
         @Hookable.finisher
@@ -307,7 +350,7 @@ export default class ObserverSpec
             private a: number = 0;
             private b: number = 0;
 
-            @computed(["a"], ["b"])
+            @computed("a", "b")
             public get sum(): number
             {
                 return this.a + this.b;
@@ -322,48 +365,22 @@ export default class ObserverSpec
 
         const target = new Target();
 
-        let receiver = 0;
+        let receiver1 = 0;
+        let receiver2 = 0;
 
-        Observer.observe(target, ["sum"]).subscribe(x => receiver = x as number);
-
-        target.recalculate();
-
-        chai.assert.equal(target.sum, receiver);
-    }
-
-    @test @shouldPass
-    public decoratorNotify(): void
-    {
-        @Hookable.finisher
-        class Target
-        {
-            @notify("sum")
-            private a: number = 0;
-
-            @notify("sum")
-            private b: number = 0;
-
-            public get sum(): number
-            {
-                return this.a + this.b;
-            }
-
-            public recalculate(): void
-            {
-                this.a = Math.ceil(Math.random() * 100);
-                this.b = Math.ceil(Math.random() * 100);
-            }
-        }
-
-        const target = new Target();
-
-        let receiver = 0;
-
-        Observer.observe(target, ["sum"]).subscribe(x => receiver = x as number);
+        Observer.observe(target, ["sum"]).subscribe(x => receiver1 = x as number);
 
         target.recalculate();
 
-        chai.assert.equal(target.sum, receiver);
+        chai.assert.equal(target.sum, receiver1);
+
+        const scope = { target };
+
+        Observer.observe(scope, ["target", "sum"]).subscribe(x => receiver2 = x as number);
+
+        target.recalculate();
+
+        chai.assert.equal(target.sum, receiver2);
     }
 
     @test @shouldPass
@@ -387,20 +404,6 @@ export default class ObserverSpec
         chai.assert.equal(propertyAMetadata.subjects.get("value")!.size, 0);
     }
 
-    @test @shouldFail
-    public observeStrictPath(): void
-    {
-        const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
-
-        chai.assert.throws(() => Observer.observe(target, ["a", "b", "c", "value"]));
-
-        target.a = { b: { c: { value: 1 } } };
-
-        Observer.observe(target, ["a", "b", "c", "value"]);
-
-        chai.assert.throws(() => target.a = { });
-    }
-
     @test @shouldPass
     public notify(): void
     {
@@ -415,6 +418,20 @@ export default class ObserverSpec
         observer.notify();
 
         chai.assert.equal(value, 1);
+    }
+
+    @test @shouldFail
+    public observeStrictPath(): void
+    {
+        const target: { a?: { b?: { c?: { value: 1 } } }  } = { a: { } };
+
+        chai.assert.throws(() => Observer.observe(target, ["a", "b", "c", "value"]));
+
+        target.a = { b: { c: { value: 1 } } };
+
+        Observer.observe(target, ["a", "b", "c", "value"]);
+
+        chai.assert.throws(() => target.a = { });
     }
 
     @test @shouldFail

@@ -23,6 +23,8 @@ export default class AsyncObserver extends Observer
 
             const metadata = Metadata.from(root);
 
+            this.observeComputed(root, key, metadata, observer);
+
             let subject = metadata.subjects.get(key);
 
             if (!subject)
