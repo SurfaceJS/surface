@@ -81,6 +81,13 @@ export function joinPaths(...paths: string[]): string
         .join("/");
 }
 
+export function queryfy(source: object): string
+{
+    return Array.from(enumeratePropertyPath(source))
+        .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`)
+        .join("&");
+}
+
 export function toTitle(value: string): string
 {
     return value.replace(/(^[a-z]|\s+[a-z])/g, (_, group) => group.toUpperCase());
@@ -98,4 +105,30 @@ export function uuidv4(): string
             return value.toString(16);
         },
     );
+}
+
+export function *enumeratePropertyPath(source: object): Iterable<[string, unknown]>
+{
+    const sourceIsArray = Array.isArray(source);
+
+    for (const [key, value] of Object.entries(source))
+    {
+        const property = sourceIsArray ? `[${key}]` : key;
+
+        if (value instanceof Object)
+        {
+            const valueIsArray = Array.isArray(value);
+
+            for (const [nestedKey, nestedValue] of enumeratePropertyPath(value))
+            {
+                const nestedProperty = valueIsArray ? `${property}${nestedKey}` : `${property}.${nestedKey}`;
+
+                yield [nestedProperty, nestedValue];
+            }
+        }
+        else if (!Object.is(value, undefined))
+        {
+            yield [property, value];
+        }
+    }
 }

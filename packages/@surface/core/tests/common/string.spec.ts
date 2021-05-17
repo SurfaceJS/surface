@@ -1,6 +1,6 @@
-import { shouldPass, suite, test }     from "@surface/test-suite";
-import chai                            from "chai";
-import { capture, captureAll, format } from "../../internal/common/string.js";
+import { shouldPass, suite, test }              from "@surface/test-suite";
+import chai                                     from "chai";
+import { capture, captureAll, format, queryfy } from "../../internal/common/string.js";
 
 @suite
 export default class CommonStringSpec
@@ -65,6 +65,53 @@ export default class CommonStringSpec
 
         const actual   = format(pattern, source);
         const expected = "Hi Jon! Here your ticket, number: 33";
+
+        chai.assert.equal(actual, expected);
+    }
+
+    @test @shouldPass
+    public queryfy(): void
+    {
+        const source =
+        {
+            array:
+            [
+                1,
+                [1, 2],
+                {
+                    property: 1,
+                },
+            ],
+            boolean: true,
+            number:  1.5,
+            object:
+            {
+                property:
+                {
+                    boolean: false,
+                    number:  -1,
+                    string:  "bar",
+                },
+            },
+            string:    "foo",
+            undefined,
+        };
+
+        const expected =
+        [
+            "array[0]=1",
+            "array[1][0]=1",
+            "array[1][1]=2",
+            "array[2].property=1",
+            "boolean=true",
+            "number=1.5",
+            "object.property.boolean=false",
+            "object.property.number=-1",
+            "object.property.string=bar",
+            "string=foo",
+        ].join("&");
+
+        const actual = queryfy(source);
 
         chai.assert.equal(actual, expected);
     }
