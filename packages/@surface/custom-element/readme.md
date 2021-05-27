@@ -72,12 +72,12 @@ Following example is not allowed.
 The core of the binding system is reactivity that allows the ui keep sync with the data.
 Templates can evaluate almost any valid javascript expression¹. But only properties can be observed.
 
-Example assuming that the scope contains an variable called ammount and item:
+Example assuming that the scope contains an variable called amount and item:
 ```html
-<span>The value is: {(host.value + item.value) * ammount}</span>
+<span>The value is: {(host.value + item.value) * amount}</span>
 ```
 
-The above expression only be reevaluated when the properties **host.value** or **item.value** changes since the variables like **ammount** are not reactive.
+The above expression only be reevaluated when the properties **host.value** or **item.value** changes since the variables like **amount** are not reactive.
 
 ## Scopes
 Reactivity depends on the scope which may vary according to the context.
@@ -88,7 +88,7 @@ The top scope of the tamplates is composed by the browser globals, **host** and 
 type Scope = Window & { host: MyElement, this?: HTMLElement }
 ```
 
-The **host** variable is the template owner (shadowdom host), while the **this** is the element being binded and is evaluated to undefined at root level.
+The **host** variable is the template owner (shadowroot host), while the **this** is the element being binded and is evaluated to undefined at root level.
 
 Examples:
 ```html
