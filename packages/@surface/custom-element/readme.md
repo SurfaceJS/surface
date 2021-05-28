@@ -69,10 +69,10 @@ Following example is not allowed.
 ```
 
 ## Reactivity
-The core of the binding system is reactivity that allows the ui keep sync with the data.
+The core of the binding system is reactivity that allows the ui keep sync with the data.  
 Templates can evaluate almost any valid javascript expression¹. But only properties can be observed.
 
-Example assuming that the scope contains an variable called amount and item:
+Example assuming that the scope contains variables called amount and item:
 ```html
 <span>The value is: {(host.value + item.value) * amount}</span>
 ```
@@ -95,4 +95,87 @@ Examples:
 <div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
 <!-- Resusts -->
 <div>DIV<span name="SPAN">SPAN</span></div>
+```
+
+## Conditional Directive Statement
+Conditional directive statement are well straightforward.
+If the expression evaluated is truthy, the template is inserted.
+
+Example:
+```html
+<template #if="host.value == 1">ONE</template>
+<template #else-if="host.value == 2">TWO</template>
+<template #else>OTHER</template>
+```
+
+## Loop Directive Statement
+The loop directive works similarly to its js counterpart. Also supporting **"for in"**, **"for of"** and **array and object destructuring**.
+
+Example:
+```html
+<template #for="item of host.items">ONE
+    <span>Name: {item.name}</span>
+</template>
+
+<template #for="index in host.items">ONE
+    <span>Name: {host.items[index].name}</span>
+</template>
+
+<template #for="{ name } of host.items">ONE
+    <span>Name: {name}</span>
+</template>
+
+<template #for="[key, value] of Object.entries(host.items)">ONE
+    <span>{key}: {value}</span>
+</template>
+```
+
+## Placeholder and Inject directives
+If you have already worked with a javascript framework then you should already be familiar with the concept of [transclusion](https://en.wikipedia.org/wiki/Transclusion).
+
+Transclusion means the inclusion of the content of one document within another document by reference.
+
+Html5 already provides this through slots.
+
+On @Surface/CustomElement, templates additionally provide the ability to inject the client's html into the component's shadowdom.
+
+Example:
+
+MyElement
+```html
+<div class="card">
+    <template #placeholder:header>
+        <span>{host.header}</span>
+    </template>
+</div>
+```
+
+Consuming MyElement
+```html
+<my-element>
+    <template #inject:header>
+        <span>Custom Header</span>
+    </template>
+</my-element>
+```
+
+## Slots vs Placeholders
+You might have thought that what would be possible to get the same result as above using slots.
+
+You're right.
+
+MyElement
+```html
+<div class="card">
+    <slot name="header">
+        <span>{host.header}</span>
+    </slot>
+</div>
+```
+
+Consuming MyElement
+```html
+<my-element>
+    <span slot="header">Custom Header</span>
+</my-element>
 ```
