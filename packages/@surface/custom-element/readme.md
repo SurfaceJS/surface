@@ -68,6 +68,22 @@ Following example is not allowed.
 <my-element ::message="host[key]"></my-element>
 ```
 
+Events
+```html
+<!--self-bounded-handler-->
+<my-element @click="host.clickHandler"></my-element>
+
+<!--lambda-handler-->
+<my-element @click="event => host.clickHandler(event)"></my-element>
+
+<!--headerless-lambda-->
+<my-element @click="host.toogle = !host.toogle"></my-element>
+<!--desugared to-->
+<my-element @click="() => host.toogle = !host.toogle"></my-element>
+```
+
+Binded events are executed in the scope of the template as opposed to events passed by attributes that are executed in the global scope.
+
 ## Reactivity
 The core of the binding system is reactivity that allows the ui keep sync with the data.  
 Templates can evaluate almost any valid javascript expression¹. But only properties can be observed.
@@ -90,44 +106,59 @@ type Scope = Window & { host: MyElement, this?: HTMLElement }
 
 The **host** variable is the template owner (shadowroot host), while the **this** is the element being binded and is evaluated to undefined at root level.
 
-Examples:
 ```html
 <div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
 <!-- Resusts -->
 <div>DIV<span name="SPAN">SPAN</span></div>
 ```
 
+## Templates Directive Statement
+Templates Directive Statement allows us to dynamically create content associated with local scopes.
+
+Directives can be used with templates or elements.
+
+```html
+<template #if="true">OK</template>
+<span #else>NOT OK</span>
+```
+
+It can also be composed where the decomposition will follow the order of directives.
+
+```html
+<span #if="host.items.lenght > 0" #for="item of host.items">{item.name}</span>
+<span #else>No data avaliable</span>
+<!--decomposition-->
+<template #if="host.items.lenght > 0">
+    <template #for="item of host.items">
+        <span>{item.name}</span>
+    </template>
+</template>
+<template #else>
+    <span>No data avaliable</span>
+</template>
+```
+
 ## Conditional Directive Statement
 Conditional directive statement are well straightforward.
 If the expression evaluated is truthy, the template is inserted.
 
-Example:
 ```html
-<template #if="host.value == 1">ONE</template>
-<template #else-if="host.value == 2">TWO</template>
-<template #else>OTHER</template>
+<span #if="host.value == 1">ONE</span>
+<span #else-if="host.value == 2">TWO</span>
+<span #else>OTHER</span>
 ```
 
 ## Loop Directive Statement
 The loop directive works similarly to its js counterpart. Also supporting **"for in"**, **"for of"** and **array and object destructuring**.
 
-Example:
 ```html
-<template #for="item of host.items">ONE
-    <span>Name: {item.name}</span>
-</template>
+<span #for="item of host.items">Name: {item.name}</span>
 
-<template #for="index in host.items">ONE
-    <span>Name: {host.items[index].name}</span>
-</template>
+<span #for="index in host.items">Name: {host.items[index].name}</span>
 
-<template #for="{ name } of host.items">ONE
-    <span>Name: {name}</span>
-</template>
+<span #for="{ name } of host.items">Name: {name}</span>
 
-<template #for="[key, value] of Object.entries(host.items)">ONE
-    <span>{key}: {value}</span>
-</template>
+<span #for="[key, value] of Object.entries(host.items)">{key}: {value}</span>
 ```
 
 ## Placeholder and Inject directives
@@ -139,23 +170,18 @@ Html5 already provides this through slots.
 
 On @Surface/CustomElement, templates additionally provide the ability to inject the client's html into the component's shadowdom.
 
-Example:
-
-MyElement
 ```html
+<!--my-element-->
 <div class="card">
     <template #placeholder:header>
+        <!-- Default content (optional) -->
         <span>{host.header}</span>
     </template>
 </div>
-```
+<!--my-element/-->
 
-Consuming MyElement
-```html
 <my-element>
-    <template #inject:header>
-        <span>Custom Header</span>
-    </template>
+    <span #inject:header>Custom Header</span>
 </my-element>
 ```
 
@@ -164,18 +190,115 @@ You might have thought that what would be possible to get the same result as abo
 
 You're right.
 
-MyElement
 ```html
+<!--my-element-->
 <div class="card">
     <slot name="header">
         <span>{host.header}</span>
     </slot>
 </div>
-```
+<!--my-element/-->
 
-Consuming MyElement
-```html
 <my-element>
     <span slot="header">Custom Header</span>
+</my-element>
+```
+
+The key difference here are scopes.  
+
+```html
+<!--my-element-->
+<div class="card">
+    <span #placeholder:header="{ header: host.header }">{host.header}</span>
+</div>
+<!--my-element/-->
+
+<my-element>
+    <span #inject:header="scope">{scope.header}</span>
+</my-element>
+<!-- destructured also supported -->
+<my-element>
+    <span #inject:header="{ header }">{header}</span>
+</my-element>
+```
+
+Something that Vue users are already familiar with.
+
+Placeholders allow you to expose scopes that injections can use to customize the presentation.
+
+And, unlike slots, placeholders can instantiate the injected model many times as needed. Necessary for templating iterated data.
+
+```html
+<!--my-element-->
+<div class="card">
+    <table>
+        <tr #for="item of host.items" #placeholder:item="{ item }">{item.name}</tr>
+    </table>
+</div>
+<!--my-element/-->
+
+<my-element>
+    <tr #inject:item="{ item }">{item.name}</tr>
+</my-element>
+```
+
+## Dynamic keys
+**\#placeholder** and **\#inject** also supports dynamic keys using the syntax:
+
+```html
+<span #placeholder="scope" #placeholder-key="key"></span>
+<span #inject="scope" #inject-key="key"></span>
+```
+
+Usefull to elaborate more complex scenarios.  
+
+```html
+<!--my-element-->
+<div class="card">
+    <table>
+        <th #for="header of host.headers">
+            <template #placeholder="{ header }" #placeholder-key="`header.${header}`">{header}</template>
+        </th>
+        <tr #for="item of host.items">
+            <td #for="header of host.headers">
+                <template #placeholder="{ value: item[header] }" #placeholder-key="`item.${header}`">{item.name}</template>
+            </td>
+        </tr>
+    </table>
+</div>
+<!--my-element/-->
+
+<my-element :headers="['id', 'name']">
+    <!--headers-->
+    <template #inject:header.id="{ header }"><b>{header}</b></template>
+    <template #inject:header.name="{ header }">{header}</template>
+    <!--columns-->
+    <template #inject:item.id="{ value }"><b>{value}</b></template>
+    <template #inject:item.name="{ value }">{value}</template>
+</my-element>
+```
+
+## Styling injections
+How said before. The injected templates are placed inside the shadowdom.  
+Therefore, they are not affected by external CSS rules unless the css parts of the element are specified.
+
+```css
+my-element::part(header)
+{
+    color: red;
+}
+```
+
+```html
+<!--my-element-->
+<template #placeholder:header>
+    <div>Title</div>
+</template>
+<!--my-element/-->
+
+<my-element>
+    <template #inject:header>
+        <span part="header">Custom Title</span>
+    </template>
 </my-element>
 ```
