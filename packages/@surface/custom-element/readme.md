@@ -1,6 +1,6 @@
 ## Introduction
-Surface@CustomElement is a library that adds the ability to use directives and data bindings within web components templates.  
-Fully compatible with other libraries and frameworks and requires a minimun ESM compatible enviroment to run.
+**@surface/custom-element** adds the ability to use directives and data bindings within web components templates.  
+Fully compatible with other libraries and frameworks and just requires a ESM compatible enviroment to run.
 
 ## Getting Started
 A minimal component requires two things: Extend the Custom Element class and annotate the class with the element's decorator.
@@ -86,7 +86,7 @@ Binded events are executed in the scope of the template as opposed to events pas
 
 ## Reactivity
 The core of the binding system is reactivity that allows the ui keep sync with the data.  
-Templates can evaluate almost any valid javascript expression¹. But only properties can be observed.
+Templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed.
 
 Example assuming that the scope contains variables called amount and item:
 ```html
@@ -127,7 +127,7 @@ It can also be composed where the decomposition will follow the order of directi
 ```html
 <span #if="host.items.lenght > 0" #for="item of host.items">{item.name}</span>
 <span #else>No data avaliable</span>
-<!--decomposition-->
+<!--decomposes-to-->
 <template #if="host.items.lenght > 0">
     <template #for="item of host.items">
         <span>{item.name}</span>
@@ -232,13 +232,17 @@ And, unlike slots, placeholders can instantiate the injected model many times as
 <!--my-element-->
 <div class="card">
     <table>
-        <tr #for="item of host.items" #placeholder:item="{ item }">{item.name}</tr>
+        <tr #for="item of host.items" #placeholder:item="{ item }">
+            <td>{item.name}</td>
+        </tr>
     </table>
 </div>
 <!--my-element/-->
 
 <my-element>
-    <tr #inject:item="{ item }">{item.name}</tr>
+    <tr #inject:item="{ item }">
+        <td>{item.name}</td>
+    </tr>
 </my-element>
 ```
 
@@ -254,18 +258,16 @@ Usefull to elaborate more complex scenarios.
 
 ```html
 <!--my-element-->
-<div class="card">
-    <table>
-        <th #for="header of host.headers">
-            <template #placeholder="{ header }" #placeholder-key="`header.${header}`">{header}</template>
-        </th>
-        <tr #for="item of host.items">
-            <td #for="header of host.headers">
-                <template #placeholder="{ value: item[header] }" #placeholder-key="`item.${header}`">{item.name}</template>
-            </td>
-        </tr>
-    </table>
-</div>
+<table>
+    <th #for="header of host.headers">
+        <template #placeholder="{ header }" #placeholder-key="`header.${header}`">{header}</template>
+    </th>
+    <tr #for="item of host.items">
+        <td #for="header of host.headers">
+            <template #placeholder="{ value: item[header] }" #placeholder-key="`item.${header}`">{item.name}</template>
+        </td>
+    </tr>
+</table>
 <!--my-element/-->
 
 <my-element :headers="['id', 'name']">
