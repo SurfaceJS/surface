@@ -1,3 +1,23 @@
+### Summary
+* [Introduction](#introduction)
+* [Getting Started](#getting-started)
+* [Templating](#templating)
+* [Interpolation](#interpolation)
+* [Bindings](#bindings)
+    * [One Way](#one-way)
+    * [Two Way](#two-way)
+    * [Events](#events)
+    * [Class and Style](#class-and-style)
+* [Reactivity](#reactivity)
+    * [Computed properties](#computed-properties)
+    * [Scopes](#scopes)
+* [Templates Directive Statement](#templates-directive-statement)
+    * [Conditional](#conditional)
+    * [Loop](#loop)
+    * [Placeholder and Injection](#placeholder-and-injection)
+        * [Dynamic keys](#dynamic-keys)
+    * [Styling injections](#styling-injections)
+
 ## Introduction
 **@surface/custom-element** adds the ability to use directives and data bindings within web components templates.  
 Fully compatible with other libraries and frameworks and just requires a ESM compatible enviroment to run.
@@ -42,7 +62,7 @@ document.body.appendChild(new MyElement());
 Templates can contain 3 types of directives: **interpolation**, **bindings**, and **statements**.
 
 ## Interpolation
-Interpolation has the syntax "Some Text {expression}" and can be used in the text node or in the attributes.
+Interpolation has the syntax `"Some Text {expression}"` and can be used in the text node or in the attributes.
 
 ```html
 <my-element style="display: {host.display}">Hello {host.name}</my-element>
@@ -51,12 +71,12 @@ Interpolation has the syntax "Some Text {expression}" and can be used in the tex
 ## Bindings
 Bindings support both one way and two way flow.
 
-One Way
+### One Way
 ```html
 <my-element :message="'Hello ' + host.name"></my-element>
 ```
 
-Two Way
+### Two Way
 ```html
 <my-element ::message="host.message"></my-element>
 ```
@@ -68,7 +88,7 @@ Following example is not allowed.
 <my-element ::message="host[key]"></my-element>
 ```
 
-Events
+### Events
 ```html
 <!--self-bounded-handler-->
 <my-element @click="host.clickHandler"></my-element>
@@ -84,27 +104,71 @@ Events
 
 Binded events are executed in the scope of the template as opposed to events passed by attributes that are executed in the global scope.
 
+### Class and Style
+**`class`** and **`style`** properties has a special binding handlers.
+
+**`class`** bindind expects an object of type `Record<string, boolean>` where only truthy properties will be added to the class list.
+
+```html
+<my-element :class="{ foo: true, bar: false }"></my-element>
+<!--results-->
+<my-element class="foo"></my-element>
+```
+
+**`style`** bindind expects an object of type `Record<string, string>` where all properties will be converted to css properties.
+
+```html
+<my-element :style="{ display: host.display /* flex */ }"></my-element>
+<!--results-->
+<my-element style="display: flex"></my-element>
+```
+
 ## Reactivity
 The core of the binding system is reactivity that allows the ui keep sync with the data.  
-Templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed.
+Templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.  
+
+By design, no error or warning will be fired when trying to use an non observable property. Except for **two way** binding higher members.
 
 Example assuming that the scope contains variables called amount and item:
 ```html
 <span>The value is: {(host.value + item.value) * amount}</span>
 ```
 
-The above expression only be reevaluated when the properties **host.value** or **item.value** changes since the variables like **amount** are not reactive.
+The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
+
+## Computed properties
+Since readonly properties cannot be observed an decorator is necessary to map the dependencies.
+
+```ts
+import CustomElement, { computed, element } from "@surface/custom-element";
+
+const template = "<span>Computed: {host.sum}</span>";
+
+@element("my-element", template)
+class MyElement extends CustomElement
+{
+    private a: number = 0;
+    private b: number = 0;
+
+    // When **a** or **b** changes, the **sum** is notified.
+    @computed("a", "b")
+    public get sum(): number
+    {
+        return this.a + this.b;
+    }
+}
+```
 
 ## Scopes
 Reactivity depends on the scope which may vary according to the context.
 
-The top scope of the tamplates is composed by the browser globals, **host** and **this**,
+The top scope of the tamplates is composed by the browser globals, **`host`** and **`this`**,
 
 ```ts
 type Scope = Window & { host: MyElement, this?: HTMLElement }
 ```
 
-The **host** variable is the template owner (shadowroot host), while the **this** is the element being binded and is evaluated to undefined at root level.
+The **`host`** variable is the template owner (shadowroot host), while the **`this`** is the element being binded and is evaluated to undefined at root level.
 
 ```html
 <div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
@@ -138,7 +202,7 @@ It can also be composed where the decomposition will follow the order of directi
 </template>
 ```
 
-## Conditional Directive Statement
+## Conditional
 Conditional directive statement are well straightforward.
 If the expression evaluated is truthy, the template is inserted.
 
@@ -148,8 +212,8 @@ If the expression evaluated is truthy, the template is inserted.
 <span #else>OTHER</span>
 ```
 
-## Loop Directive Statement
-The loop directive works similarly to its js counterpart. Also supporting **"for in"**, **"for of"** and **array and object destructuring**.
+## Loop
+The loop directive works similarly to its js counterpart. Also supporting **`"for in"`**, **`"for of"`** and **`array and object destructuring`**.
 
 ```html
 <span #for="item of host.items">Name: {item.name}</span>
@@ -161,14 +225,14 @@ The loop directive works similarly to its js counterpart. Also supporting **"for
 <span #for="[key, value] of Object.entries(host.items)">{key}: {value}</span>
 ```
 
-## Placeholder and Inject directives
+## Placeholder and Injection
 If you have already worked with a javascript framework then you should already be familiar with the concept of [transclusion](https://en.wikipedia.org/wiki/Transclusion).
 
 Transclusion means the inclusion of the content of one document within another document by reference.
 
 Html5 already provides this through slots.
 
-On @Surface/CustomElement, templates additionally provide the ability to inject the client's html into the component's shadowdom.
+On surface/custom-element, templates additionally provide the ability to inject the client's html into the component's shadowdom.
 
 ```html
 <!--my-element-->
@@ -247,7 +311,7 @@ And, unlike slots, placeholders can instantiate the injected model many times as
 ```
 
 ## Dynamic keys
-**\#placeholder** and **\#inject** also supports dynamic keys using the syntax:
+**`#placeholder`** and **`#inject`** also supports dynamic keys using the syntax:
 
 ```html
 <span #placeholder="scope" #placeholder-key="key"></span>
