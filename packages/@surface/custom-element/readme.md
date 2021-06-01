@@ -1,4 +1,4 @@
-### Summary
+# Summary
 * [Introduction](#introduction)
 * [Getting Started](#getting-started)
 * [Templating](#templating)
@@ -11,18 +11,23 @@
 * [Reactivity](#reactivity)
     * [Computed properties](#computed-properties)
     * [Scopes](#scopes)
-* [Templates Directive Statement](#templates-directive-statement)
+* [Template Directive Statements](#template-directive-statements)
     * [Conditional](#conditional)
     * [Loop](#loop)
     * [Placeholder and Injection](#placeholder-and-injection)
         * [Dynamic keys](#dynamic-keys)
     * [Styling injections](#styling-injections)
+    * [Awaiting painting](#awaiting-painting)
+    * [Custom Directives](#custom-directives)
+* [Helpers](#helpers)
 
-## Introduction
+# Introduction
+...
+
 **@surface/custom-element** adds the ability to use directives and data bindings within web components templates.  
 Fully compatible with other libraries and frameworks and just requires a ESM compatible enviroment to run.
 
-## Getting Started
+# Getting Started
 A minimal component requires two things: Extend the Custom Element class and annotate the class with the element's decorator.
 
 Simple hello world component
@@ -42,7 +47,7 @@ class MyElement extends CustomElement
 document.body.appendChild(new MyElement());
 ```
 
-Javascript.
+Javascript (no decorators).
 ```js
 import CustomElement, { element } from "@surface/custom-element";
 
@@ -50,7 +55,7 @@ const template = "<span>Hello {host.name}!!!</span>";
 
 class _MyElement extends CustomElement
 {
-    public name = "World";
+    name = "World";
 }
 
 const MyElement = element("my-element", template)(_MyElement);
@@ -58,25 +63,27 @@ const MyElement = element("my-element", template)(_MyElement);
 document.body.appendChild(new MyElement());
 ```
 
-## Templating
-Templates can contain 3 types of directives: **interpolation**, **bindings**, and **statements**.
+Note that currently custom elements are registered at declaration time in the global scope due a limitation of the current [web components spec](https://www.webcomponents.org/specs). This is expected to change with the arrival of [Custom Element Registry](https://github.com/WICG/webcomponents/pull/865).
 
-## Interpolation
+## Templating
+Templates are where the magic happens. It can handle some types of directives to present data in dynamic ways.
+
+### Interpolation
 Interpolation has the syntax `"Some Text {expression}"` and can be used in the text node or in the attributes.
 
 ```html
-<my-element style="display: {host.display}">Hello {host.name}</my-element>
+<my-element title="Hello {host.display}">Hello {host.name}</my-element>
 ```
 
-## Bindings
-Bindings support both one way and two way flow.
+### Bindings
+Bindings support both `one way` and `two way` flow.
 
-### One Way
+#### One Way
 ```html
 <my-element :message="'Hello ' + host.name"></my-element>
 ```
 
-### Two Way
+#### Two Way
 ```html
 <my-element ::message="host.message"></my-element>
 ```
@@ -88,7 +95,9 @@ Following example is not allowed.
 <my-element ::message="host[key]"></my-element>
 ```
 
-### Events
+#### Events
+Binded events are executed in the scope of the template as opposed to events passed by attributes that are executed in the global scope.
+
 ```html
 <!--self-bounded-handler-->
 <my-element @click="host.clickHandler"></my-element>
@@ -102,9 +111,7 @@ Following example is not allowed.
 <my-element @click="() => host.toogle = !host.toogle"></my-element>
 ```
 
-Binded events are executed in the scope of the template as opposed to events passed by attributes that are executed in the global scope.
-
-### Class and Style
+#### Class and Style
 **`class`** and **`style`** properties has a special binding handlers.
 
 **`class`** bindind expects an object of type `Record<string, boolean>` where only truthy properties will be added to the class list.
@@ -123,11 +130,11 @@ Binded events are executed in the scope of the template as opposed to events pas
 <my-element style="display: flex"></my-element>
 ```
 
-## Reactivity
+### Reactivity
 The core of the binding system is reactivity that allows the ui keep sync with the data.  
 Templates can evaluate almost any valid javascript expression ([see more](../expression/readme.md)). But only properties can be observed and requires that observed properties to be **`configurable`** and not **`readonly`**.  
 
-By design, no error or warning will be fired when trying to use an non observable property. Except for **two way** binding higher members.
+By design, no error or warning will be fired when trying to use an non observable property in an expression. Except for **two way** binding higher members.
 
 Example assuming that the scope contains variables called amount and item:
 ```html
@@ -136,8 +143,8 @@ Example assuming that the scope contains variables called amount and item:
 
 The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
 
-## Computed properties
-Since readonly properties cannot be observed an decorator is necessary to map the dependencies.
+### Computed properties
+Since readonly properties cannot be observed, to make them reactive it is necessary to map their dependencies ([see more](#helpers)).
 
 ```ts
 import CustomElement, { computed, element } from "@surface/custom-element";
@@ -159,7 +166,7 @@ class MyElement extends CustomElement
 }
 ```
 
-## Scopes
+### Scopes
 Reactivity depends on the scope which may vary according to the context.
 
 The top scope of the tamplates is composed by the browser globals, **`host`** and **`this`**,
@@ -172,12 +179,12 @@ The **`host`** variable is the template owner (shadowroot host), while the **`th
 
 ```html
 <div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
-<!-- Resusts -->
+<!-- Results -->
 <div>DIV<span name="SPAN">SPAN</span></div>
 ```
 
-## Templates Directive Statement
-Templates Directive Statement allows us to dynamically create content associated with local scopes.
+### Template Directive Statements
+Template Directive Statements allows us to dynamically create content associated with local scopes.
 
 Directives can be used with templates or elements.
 
@@ -202,7 +209,7 @@ It can also be composed where the decomposition will follow the order of directi
 </template>
 ```
 
-## Conditional
+### Conditional
 Conditional directive statement are well straightforward.
 If the expression evaluated is truthy, the template is inserted.
 
@@ -212,7 +219,7 @@ If the expression evaluated is truthy, the template is inserted.
 <span #else>OTHER</span>
 ```
 
-## Loop
+### Loop
 The loop directive works similarly to its js counterpart. Also supporting **`"for in"`**, **`"for of"`** and **`array and object destructuring`**.
 
 ```html
@@ -225,7 +232,7 @@ The loop directive works similarly to its js counterpart. Also supporting **`"fo
 <span #for="[key, value] of Object.entries(host.items)">{key}: {value}</span>
 ```
 
-## Placeholder and Injection
+### Placeholder and Injection
 If you have already worked with a javascript framework then you should already be familiar with the concept of [transclusion](https://en.wikipedia.org/wiki/Transclusion).
 
 Transclusion means the inclusion of the content of one document within another document by reference.
@@ -249,7 +256,7 @@ On surface/custom-element, templates additionally provide the ability to inject 
 </my-element>
 ```
 
-## Slots vs Placeholders
+### Slots vs Placeholders
 You might have thought that what would be possible to get the same result as above using slots.
 
 You're right.
@@ -270,6 +277,10 @@ You're right.
 
 The key difference here are scopes.  
 
+Something that Vue users are already familiar with.
+
+Placeholders allow you to expose scopes that injections can use to customize the presentation.
+
 ```html
 <!--my-element-->
 <div class="card">
@@ -285,10 +296,6 @@ The key difference here are scopes.
     <span #inject:header="{ header }">{header}</span>
 </my-element>
 ```
-
-Something that Vue users are already familiar with.
-
-Placeholders allow you to expose scopes that injections can use to customize the presentation.
 
 And, unlike slots, placeholders can instantiate the injected model many times as needed. Necessary for templating iterated data.
 
@@ -344,7 +351,7 @@ Usefull to elaborate more complex scenarios.
 </my-element>
 ```
 
-## Styling injections
+### Styling injections
 How said before. The injected templates are placed inside the shadowdom.  
 Therefore, they are not affected by external CSS rules unless the css parts of the element are specified.
 
@@ -368,3 +375,53 @@ my-element::part(header)
     </template>
 </my-element>
 ```
+
+### Awaiting painting
+...
+
+### Custom Directives
+Custom directives enables behaviors without a need to dive into the elements internals.
+It must be created extending the `Directive` class and registering using `CustomElement.registerDirective` on global scope or element scope through `@element` decorator.
+
+```ts
+import type { DirectiveContext }   from "@surface/custom-element";
+import CustomElement { Directive } from "@surface/custom-element";
+
+class ShowDirective extends Directive
+{
+    private display: string;
+
+    public constructor(context: DirectiveContext)
+    {
+        super(context);
+
+        this.display = context.element.style.display;
+    }
+
+    protected onValueChange(value: boolean): void
+    {
+        this.context.element.style.display = value ? this.display : "none";
+    }
+}
+
+// Registered at global scope
+CustomElement.registerDirective("show", ShowDirective);
+
+// Registered at my-element scope
+@element("my-element", "", "", { directives: { 'el-show': ShowDirective } })
+class MyElement extends CustomElement
+{ /* ... */ }
+```
+
+```html
+<span #show="host.show">
+    Show if host.show is true
+</span>
+
+<span #el-show="host.show">
+    Show if host.show is true
+</span>
+```
+
+## Helpers
+...
