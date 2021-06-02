@@ -66,7 +66,7 @@ const MyElement = element("my-element", { template, style })(_MyElement);
 document.body.appendChild(new MyElement());
 ```
 
-You also can extends builtin elements using the `extends` option and the mixin `CustomElement.as`.
+You also can extends builtin elements using the `extends` option with the mixin `CustomElement.as`.
 
 ```ts
 import CustomElement, { element } from "@surface/custom-element";
