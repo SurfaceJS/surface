@@ -22,10 +22,11 @@
 * [Helpers](#helpers)
 
 # Introduction
-...
+[Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) are a set of web platform APIs that allow you to create new custom, reusable, encapsulated HTML tags to use in web pages and web apps. Custom components and widgets build on the Web Component standards, will work across modern browsers, and can be used with any JavaScript library or framework that works with HTML.
 
-**@surface/custom-element** adds the ability to use directives and data bindings within web components templates.  
-Fully compatible with other libraries and frameworks and just requires a ESM compatible enviroment to run.
+However, the technology still lacks some important features presents on everyday workflow.
+
+**@surface/custom-element** aims cover this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.  
 
 # Getting Started
 A minimal component requires two things: Extend the Custom Element class and annotate the class with the element's decorator.
@@ -37,8 +38,9 @@ Typescript.
 import CustomElement, { element } from "@surface/custom-element";
 
 const template = "<span>Hello {host.name}!!!</span>";
+const style    = "span { color: red; }";
 
-@element("my-element", template)
+@element("my-element", { template, style })
 class MyElement extends CustomElement
 {
     public name: string = "World";
@@ -52,13 +54,28 @@ Javascript (no decorators).
 import CustomElement, { element } from "@surface/custom-element";
 
 const template = "<span>Hello {host.name}!!!</span>";
+const style    = "span { color: red; }";
 
 class _MyElement extends CustomElement
 {
     name = "World";
 }
 
-const MyElement = element("my-element", template)(_MyElement);
+const MyElement = element("my-element", { template, style })(_MyElement);
+
+document.body.appendChild(new MyElement());
+```
+
+You also can extends builtin elements using the `extends` option and the mixin `CustomElement.as`.
+
+```ts
+import CustomElement, { element } from "@surface/custom-element";
+
+@element("my-element", { extends: "button" })
+class MyElement extends CustomElement.as(HTMLButtonElement)
+{
+    /* ... */
+}
 
 document.body.appendChild(new MyElement());
 ```
@@ -151,7 +168,7 @@ import CustomElement, { computed, element } from "@surface/custom-element";
 
 const template = "<span>Computed: {host.sum}</span>";
 
-@element("my-element", template)
+@element("my-element", { template })
 class MyElement extends CustomElement
 {
     private a: number = 0;
@@ -377,11 +394,74 @@ my-element::part(header)
 ```
 
 ### Awaiting painting
-...
+Sometimes you may need to access some interface element that can be dynamically rendered as some data changes.
+
+```ts
+import CustomElement { element } from "@surface/custom-element";
+
+const template =
+`
+    <table>
+        <tr #for="item of host.items">
+            <td>{item.name}</td>
+        </tr>
+    </table>
+`;
+
+@element("my-element", { template })
+class MyComponent extends CustomElement
+{
+    public items: string[] = [];
+
+    public changeData(): void
+    {
+        this.items = ["One", "Two", "Three"];
+
+        const table = this.shadowRoot.querySelector("table");
+
+        console.log(table.row.length) // expected 3, but logged 0;
+    }
+}
+```
+
+When the data changes, all associated ui updated is scheduled and executed asynchronously.
+Therefore, it is necessary to wait for the execution of all updates before accessing the element.
+
+This can be done awaiting the promise returned by the `painting` method.
+
+```ts
+import CustomElement { element, painting } from "@surface/custom-element";
+
+const template =
+`
+    <table>
+        <tr #for="item of host.items">
+            <td>{item.name}</td>
+        </tr>
+    </table>
+`;
+
+@element("my-element", { template })
+class MyComponent extends CustomElement
+{
+    public items: string[] = [];
+
+    public async changeData(): Promise<void>
+    {
+        this.items = ["One", "Two", "Three"];
+
+        await painting();
+
+        const table = this.shadowRoot.querySelector("table");
+
+        console.log(table.row.length) // logged 3;
+    }
+}
+```
 
 ### Custom Directives
 Custom directives enables behaviors without a need to dive into the elements internals.
-It must be created extending the `Directive` class and registering using `CustomElement.registerDirective` on global scope or element scope through `@element` decorator.
+It requires extending the `Directive` class and registering using `CustomElement.registerDirective` on global scope or element scope through `@element` decorator.
 
 ```ts
 import type { DirectiveContext }   from "@surface/custom-element";
@@ -407,20 +487,21 @@ class ShowDirective extends Directive
 // Registered at global scope
 CustomElement.registerDirective("show", ShowDirective);
 
+const template =
+`
+    <span #show="host.show">
+        Show if host.show is true
+    </span>
+
+    <span #el-show="host.show">
+        Show if host.show is true
+    </span>
+`;
+
 // Registered at my-element scope
-@element("my-element", "", "", { directives: { 'el-show': ShowDirective } })
+@element("my-element", { template, directives: { 'el-show': ShowDirective } })
 class MyElement extends CustomElement
 { /* ... */ }
-```
-
-```html
-<span #show="host.show">
-    Show if host.show is true
-</span>
-
-<span #el-show="host.show">
-    Show if host.show is true
-</span>
 ```
 
 ## Helpers
