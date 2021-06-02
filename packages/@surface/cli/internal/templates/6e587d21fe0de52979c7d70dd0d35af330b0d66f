@@ -12,7 +12,7 @@ import Todo                                            from "../../types/todo";
 import template                                        from "./index.html";
 import style                                           from "./index.scss";
 
-@element("home-view", template, style)
+@element("home-view", { style, template })
 
 export default class HomeView extends CustomElement implements IRouteableElement
 {

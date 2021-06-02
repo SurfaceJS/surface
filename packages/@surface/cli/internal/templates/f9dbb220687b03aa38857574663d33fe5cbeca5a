@@ -9,7 +9,7 @@ import User                                     from "../../types/user";
 import template                                 from "./index.html";
 import style                                    from "./index.scss";
 
-@element("account-edit-view", template, style)
+@element("account-edit-view", { style, template })
 
 export default class AccountEdit extends CustomElement implements IRouteableElement
 {

@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@element("smd-app-bar", template, style)
+@element("smd-app-bar", { style, template })
 export default class AppBar extends mix(CustomElement, [colorable, elevatable, themeable])
 {
     @query("#root")

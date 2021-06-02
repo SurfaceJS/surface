@@ -24,7 +24,7 @@ export type Size = ""
 | "large"
 | "x-large";
 
-@element("smd-button", template, style)
+@element("smd-button", { style, template })
 export default class Button extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")

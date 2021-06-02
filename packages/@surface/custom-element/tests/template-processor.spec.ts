@@ -1697,7 +1697,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        @element(X_ELEMENT, template)
+        @element(X_ELEMENT, { template })
         class XElement extends CustomElement
         {
             public indexes: number[] = [1, 2, 3];

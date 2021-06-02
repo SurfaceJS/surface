@@ -11,6 +11,6 @@ declare global
     }
 }
 
-@element("smd-content", template, style)
+@element("smd-content", { style, template })
 export default class Content extends CustomElement
 { }

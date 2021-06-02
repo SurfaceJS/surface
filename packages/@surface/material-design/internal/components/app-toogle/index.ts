@@ -19,7 +19,7 @@ declare global
     }
 }
 
-@element("smd-app-toogle", template, style)
+@element("smd-app-toogle", { style, template })
 export default class AppToogle extends mix(CustomElement, [colorable, elevatable, themeable])
 {
     public colorable?: HTMLElement;

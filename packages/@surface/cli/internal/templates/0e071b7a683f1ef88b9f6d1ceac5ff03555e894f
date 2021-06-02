@@ -8,7 +8,7 @@ import AuthService                      from "../../services/auth-service";
 import template                         from "./index.html";
 import style                            from "./index.scss";
 
-@element("login-view", template, style)
+@element("login-view", { style, template })
 
 export default class Login extends CustomElement implements IRouteableElement
 {

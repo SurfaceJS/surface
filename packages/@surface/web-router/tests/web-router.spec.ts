@@ -16,7 +16,7 @@ import WebRouter                               from "../internal/web-router.js";
 
 chai.use(chaiAsPromised);
 
-@element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
+@element("home-view", { template: "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>" })
 class HomeView extends CustomElement
 {
     public fullscreen: boolean = false;
@@ -45,7 +45,7 @@ class HomeDetailView extends HTMLElement
 class HomeOtherDetailView extends HTMLElement
 { }
 
-@element("home-index-view", "<div id='router-outlet' name='non-default'></div>")
+@element("home-index-view", { template: "<div id='router-outlet' name='non-default'></div>" })
 class HomeIndexView extends CustomElement implements IRouteableElement
 { }
 
@@ -82,7 +82,7 @@ const template =
         </template>
     `;
 
-@element("app-root", template)
+@element("app-root", { template })
 class AppRoot extends CustomElement
 {
     public fullscreen: boolean = false;

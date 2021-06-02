@@ -11,6 +11,6 @@ declare global
     }
 }
 
-@element("smd-navigation-drawer", template, style)
+@element("smd-navigation-drawer", { style, template })
 export default class NavigationDrawer extends CustomElement
 { }

@@ -9,7 +9,7 @@ const template =
 
 const style = "span { color: red; }";
 
-@element("mock-element", template, style)
+@element("mock-element", { style, template })
 export default class MockElement extends CustomElement
 {
     public value: number = 0;

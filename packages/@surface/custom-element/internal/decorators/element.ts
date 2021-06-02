@@ -10,7 +10,7 @@ import { globalCustomDirectives }                 from "../singletons.js";
 import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
 import type TemplateProcessorContext              from "../types/template-processor-context.js";
 
-export default function element(tagname: `${string}-${string}`, template?: string, style?: string, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
+export default function element(tagname: `${string}-${string}`, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
     return <T extends Constructor<ICustomElement>>(target: T) =>
     {
@@ -20,13 +20,13 @@ export default function element(tagname: `${string}-${string}`, template?: strin
 
             const templateElement = document.createElement("template");
 
-            templateElement.innerHTML = template ?? "<slot></slot>";
+            templateElement.innerHTML = options?.template ?? "<slot></slot>";
 
             const descriptor = TemplateParser.parseReference(tagname, templateElement);
 
-            if (style)
+            if (options?.style)
             {
-                staticMetadata.styles.push(stringToCSSStyleSheet(style));
+                staticMetadata.styles.push(stringToCSSStyleSheet(options.style));
             }
 
             staticMetadata.template = templateElement;
