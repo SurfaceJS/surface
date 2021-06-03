@@ -22,7 +22,9 @@ Create a new workspace
     SPA Todo application
 ```
 
-- [Getting started](packages/%40surface/custom-element/readme.md#getting-started)
+## Getting Started
+* [Custom elements](packages/%40surface/custom-element/readme.md#getting-started)
+* [Working with router](packages/%40surface/web-router/readme.md) 
 
 ## Ecosystem
 
