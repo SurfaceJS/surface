@@ -20,7 +20,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(changed);
     }
@@ -35,7 +35,7 @@ export default class DataBindSpec
         // Todo: Review if should throw error or not
         DataBind.oneWay(target, ["value"], () => undefined);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(true);
     }
@@ -65,7 +65,7 @@ export default class DataBindSpec
 
         target.value = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(changed);
     }
@@ -95,7 +95,7 @@ export default class DataBindSpec
 
         target.setValue(2);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(changed);
     }
@@ -113,7 +113,7 @@ export default class DataBindSpec
         target.dispatchEvent(new Event("change"));
         target.dispatchEvent(new Event("keyup"));
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(changed);
     }
@@ -132,7 +132,7 @@ export default class DataBindSpec
 
         attribute.value = "2";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(value, "2");
     }
@@ -159,17 +159,17 @@ export default class DataBindSpec
 
         DataBind.twoWay(left, ["value"], right, ["value"]);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         left.value = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(right.value, 2);
 
         right.value = 3;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(left.value, 3);
     }
@@ -183,7 +183,7 @@ export default class DataBindSpec
 
         DataBind.observe(target, [["value", "length"]], () => observed = true);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.isTrue(observed);
     }

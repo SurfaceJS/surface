@@ -157,21 +157,21 @@ export default class ElementDecoratorSpec
 
         mock.property = "changed";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(mock.callbackValue, "property:changed");
         chai.assert.equal(mock.getAttribute("property"), "changed");
 
         mock.baseProperty = "changed";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(mock.baseCallbackValue, "base-property:changed");
         chai.assert.equal(mock.getAttribute("base-property"), "changed");
 
         mock.setAttribute("property", "changed-again");
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(mock.property, "changed-again");
         chai.assert.equal(mock.baseProperty, "changed");
@@ -180,7 +180,7 @@ export default class ElementDecoratorSpec
 
         mock.setAttribute("base-property", "changed-one-more");
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(mock.property, "changed-again");
         chai.assert.equal(mock.baseProperty, "changed-one-more");

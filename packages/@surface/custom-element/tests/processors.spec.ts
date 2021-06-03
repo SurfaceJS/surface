@@ -28,7 +28,7 @@ export default class ProcessorsSpec
 
         const [content] = processTemplate("<span #if='host.visible'>Hello {host.message} !!!</span>", scope);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(content.childNodes[0].textContent, "#open");
         chai.assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -36,14 +36,14 @@ export default class ProcessorsSpec
 
         scope.host.visible = false;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(content.childNodes[0].textContent, "#open");
         chai.assert.equal(content.childNodes[1].textContent, "#close");
 
         scope.host.visible = true;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(content.childNodes[0].textContent, "#open");
         chai.assert.equal(content.childNodes[1].textContent, "Hello World !!!");
@@ -69,7 +69,7 @@ export default class ProcessorsSpec
 
         scope.items = [1, 2, 3];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -102,7 +102,7 @@ export default class ProcessorsSpec
 
         scope.host.message = "Web";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
 
@@ -110,7 +110,7 @@ export default class ProcessorsSpec
 
         scope.host.message = "World";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(content.childNodes[0].textContent, "Hello Web !!!");
     }
