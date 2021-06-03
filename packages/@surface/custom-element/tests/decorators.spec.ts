@@ -117,7 +117,7 @@ export default class DecoratorsSpec
     @test @shouldPass
     public elementDecoratorCustomElementWithTemplateAndStyle(): void
     {
-        @element(`mock-${uuidv4()}` as `${string}-${string}`, { style: "div { color: red; }", template: "<div>Template</div>" })
+        @element(`mock-${uuidv4()}` as `${string}-${string}`, { style: ["div { color: red; }"], template: "<div>Template</div>" })
         class Mock extends CustomElement
         {
             public constructor()

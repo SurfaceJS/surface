@@ -19,7 +19,13 @@
     * [Styling injections](#styling-injections)
     * [Awaiting painting](#awaiting-painting)
     * [Custom Directives](#custom-directives)
-* [Helpers](#helpers)
+* [Decorators](#decorators)
+    * [attribute](#attribute)
+    * [event](#event)
+    * [listener](#listener)
+    * [query](#query)
+    * [queryAll](#queryall)
+    * [styles](#styles)
 
 # Introduction
 [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) are a set of web platform APIs that allow you to create new custom, reusable, encapsulated HTML tags to use in web pages and web apps. Custom components and widgets build on the Web Component standards, will work across modern browsers, and can be used with any JavaScript library or framework that works with HTML.
@@ -161,7 +167,7 @@ Example assuming that the scope contains variables called amount and item:
 The above expression only be reevaluated when the properties **`host.value`** or **`item.value`** changes since the variables like **amount** are not reactive.
 
 ### Computed properties
-Since readonly properties cannot be observed, to make them reactive it is necessary to map their dependencies ([see more](#helpers)).
+Since readonly properties cannot be observed, to make them reactive it is necessary to map their dependencies using the `@computed` decorator.
 
 ```ts
 import CustomElement, { computed, element } from "@surface/custom-element";
@@ -504,5 +510,148 @@ class MyElement extends CustomElement
 { /* ... */ }
 ```
 
-## Helpers
-...
+## Decorators
+In addition, @surface / custom-element also provides a set of decorators that help with most trivial tasks.
+
+### attribute
+Keeps sync between property and decorator.
+
+```ts
+import CustomElement { attribute } from "@surface/custom-element";
+
+@element("my-element")
+class MyComponent extends CustomElement
+{
+    @attribute
+    public string: string = "some string";
+
+    @attribute(Boolean)
+    public boolean: boolean = false;
+
+    @attribute({ type: Number })
+    public number: number = 5;
+
+    @attribute({ name: "json" type: JSON })
+    public object: object = { foo: "bar" };
+
+    @attribute({ type: { parse: x => x === "true" || x === "", stringfy: String }, })
+    public customParser: boolean = false;
+}
+```
+
+Results
+```html
+    <my-element string="some string" boolean number="5" json='{"foo":"bar"}' custom-parser="false"></my-element>
+```
+
+### event
+Creates an event handler using the decorated method.
+
+```ts
+import CustomElement { event } from "@surface/custom-element";
+
+@element("my-element")
+class MyComponent extends CustomElement
+{
+    @event("click")
+    public onClick(event: Event): void
+    {
+        /* Do Something */
+    }
+}
+```
+
+### listener
+Listen to property changes.
+
+```ts
+import CustomElement { listener } from "@surface/custom-element";
+
+@element("my-element")
+class MyComponent extends CustomElement
+{
+    public value: number = 0;
+
+    @listener("value")
+    public valueListener(value: number): void
+    {
+        /* Do Something */
+    }
+}
+```
+
+### query
+Injects and optionally cache lazy queried element.
+
+```ts
+import CustomElement { query } from "@surface/custom-element";
+
+const template = "<input type='text' /><button>Click Me</button>";
+
+@element("my-element", { template })
+class MyComponent extends CustomElement
+{
+    @query("input")
+    public input: HTMLInputElement!;
+
+    @query("button", true) // no cache
+    public button: HTMLButtonElement!;
+}
+```
+
+### queryAll
+Injects and optionally cache lazy queried an list of elements.
+
+```ts
+import CustomElement { queryAll } from "@surface/custom-element";
+
+const template =
+`
+    <table>
+        <tr>
+            <td>
+                <input type='text' />
+                <button>Click Me</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type='text' />
+                <button>Click Me</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type='text' />
+                <button>Click Me</button>
+            </td>
+        </tr>
+    </table>
+`;
+
+@element("my-element", { template })
+class MyComponent extends CustomElement
+{
+    @queryAll("tr td input")
+    public input: HTMLInputElement[]!;
+
+    @queryAll("tr td button", true) // no cache
+    public button: HTMLButtonElement[]!;
+}
+```
+
+### styles
+Styles adopted by the shadow root. Particularly useful when used with inheritance or mixins.
+
+```ts
+import CustomElement { element, styles } from "@surface/custom-element";
+
+@styles(".danger { color: red; }")
+class StyleableElement extends CustomElement
+{ }
+
+@element("my-element", { template: "<span class='danger'>Some critical message</span>" })
+class MyElement extends StyleableElement
+{ }
+```
+

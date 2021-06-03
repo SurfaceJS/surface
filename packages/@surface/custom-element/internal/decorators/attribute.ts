@@ -17,7 +17,11 @@ type Types = typeof Boolean | typeof Number | typeof String;
 
 type AttributeOptions =
 {
+
+    /** Type to be converted or serializer that will handle the conversion. */
     type:  Types | Serializer,
+
+    /** Attribute name */
     name?: string,
 };
 
@@ -90,8 +94,19 @@ function patchPrototype(prototype: ICustomElement): void
     }
 }
 
+/**
+ * Keep sync between attribute and the decorated property.
+ * @param type type to be converted.
+ */
 function attribute(type: Types): (target: ICustomElement, propertyKey: string) => void;
+
+/**
+ * Keep sync between attribute and the decorated property.
+ * @param options attribute sync options.
+ */
 function attribute(options: AttributeOptions): (prototype: ICustomElement, propertyKey: string) => void;
+
+/** Keep sync between attribute and the decorated property. */
 function attribute(prototype: ICustomElement, propertyKey: string): void;
 function attribute(...args: [Types | AttributeOptions] |  [ICustomElement, string, PropertyDescriptor?]): ((prototype: ICustomElement, propertyKey: string) => void) | void
 {

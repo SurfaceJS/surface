@@ -1,6 +1,11 @@
 import type { Indexer }                         from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
 
+/**
+ * Creates an event handler using the decorated method.
+ * @type Event listener type.
+ * @options Event listener options.
+*/
 export default function event<K extends keyof HTMLElementEventMap>(type: K, options?: boolean | AddEventListenerOptions): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return (target: HTMLElement, propertyKey: string | symbol) =>

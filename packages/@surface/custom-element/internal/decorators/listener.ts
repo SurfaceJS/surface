@@ -2,7 +2,16 @@ import type { Constructor }                     from "@surface/core";
 import { DisposableMetadata, HookableMetadata } from "@surface/core";
 import AsyncObserver                            from "../reactivity/async-observer.js";
 
+/**
+ * Listen to property changes.
+ * @param properties Properties to be observed.
+ */
 export default function listener(...properties: string[]): MethodDecorator;
+
+/**
+ * Listen to property changes.
+ * @param paths Paths to be observed.
+ */
 export default function listener(...paths: string[][]): MethodDecorator;
 export default function listener(...propertiesOrPaths: (string | string[])[]): MethodDecorator
 {

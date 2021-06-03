@@ -7,15 +7,10 @@ const template =
     <span>Another Span</span>
 `;
 
-const style = "span { color: red; }";
+const style = ["span { color: green; }", "* { background: black; }"];
 
 @element("mock-element", { style, template })
 export default class MockElement extends CustomElement
 {
     public value: number = 0;
-
-    public constructor()
-    {
-        super();
-    }
 }

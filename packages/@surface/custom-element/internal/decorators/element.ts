@@ -10,6 +10,11 @@ import { globalCustomDirectives }                 from "../singletons.js";
 import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
 import type TemplateProcessorContext              from "../types/template-processor-context.js";
 
+/**
+ * Defines a new custom element.
+ * @param tagname tag name to be registered.
+ * @param options definition options.
+ */
 export default function element(tagname: `${string}-${string}`, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
     return <T extends Constructor<ICustomElement>>(target: T) =>
@@ -26,7 +31,9 @@ export default function element(tagname: `${string}-${string}`, options?: Custom
 
             if (options?.style)
             {
-                staticMetadata.styles.push(stringToCSSStyleSheet(options.style));
+                const styles = Array.isArray(options.style) ? options.style : [options.style];
+
+                staticMetadata.styles.push(...styles.map(stringToCSSStyleSheet));
             }
 
             staticMetadata.template = templateElement;
