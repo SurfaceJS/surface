@@ -11,7 +11,7 @@ type RouteConfiguration =
     children?: RouteConfiguration[],
     meta?:     Indexer,
     name?:     string,
-    selector?:   string,
+    selector?: string,
 } & (RouteConfigurationComponent | RouteConfigurationComponents);
 
 export default RouteConfiguration;
