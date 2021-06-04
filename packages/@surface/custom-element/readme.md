@@ -19,6 +19,7 @@
     * [Styling injections](#styling-injections)
     * [Awaiting painting](#awaiting-painting)
     * [Custom Directives](#custom-directives)
+    * [Custom Processing](#custom-processing)
 * [Decorators](#decorators)
     * [attribute](#attribute)
     * [event](#event)
@@ -192,18 +193,18 @@ class MyElement extends CustomElement
 ### Scopes
 Reactivity depends on the scope which may vary according to the context.
 
-The top scope of the tamplates is composed by the browser globals, **`host`** and **`this`**,
-
-```ts
-type Scope = Window & { host: MyElement, this?: HTMLElement }
-```
-
-The **`host`** variable is the template owner (shadowroot host), while the **`this`** is the element being binded and is evaluated to undefined at root level.
+The upper scope contains only the variable **`host`** which refers to the model owner (shadowroot host).
+Inside the child elements, it is possible to access the variable **`this`** which refers to the element itself.
 
 ```html
 <div>{this.nodeName}<span name="{this.nodeName}">{this.nodeName}</span></div>
 <!-- Results -->
 <div>DIV<span name="SPAN">SPAN</span></div>
+```
+
+The base scope resembles something like this but it can also be extended using directives as we'll see later.
+```ts
+type Scope = { host: MyElement, this?: HTMLElement };
 ```
 
 ### Template Directive Statements
@@ -510,6 +511,58 @@ class MyElement extends CustomElement
 { /* ... */ }
 ```
 
+
+
+
+
+
+### Custom Processing
+If you need more control over you component but do not want to give up the reactivity it is also possible to manually process the template. Just remember of always dispose your unused stuffs.
+
+```ts
+
+import type { IDisposable }                  from "@surface/core";
+import type { disposeTree, processTemplate } from "@surface/custom-element";
+
+class MyComponent extends HTMLElement implements IDisposable
+{
+    private readonly disposable: IDisposable;
+
+    public constructor()
+    {
+        this.attachShadow({ mode: "open" });
+
+        const [content, disposable] = processTemplate("<span>Hello {name}!!!</span>", { name: "World" });
+
+        this.shadowRoot!.appendChild(content);
+
+        this.disposable = disposable;
+    }
+
+    public dispose(): void
+    {
+
+        // Disposes template bindings
+        this.disposable.dispose();
+
+        // Disposes nested custom elements
+        disposeTree(this.shadowRoot);
+    }
+}
+
+window.customElements.define("my-element", MyComponent);
+
+const myComponent = new MyComponent();
+
+document.body.appendChild(myComponent);
+
+/* ... */
+
+// Always call dispose before discard processed element to prevent memory leak.
+myComponent.dispose();
+
+```
+
 ## Decorators
 In addition, @surface / custom-element also provides a set of decorators that help with most trivial tasks.
 
@@ -517,7 +570,7 @@ In addition, @surface / custom-element also provides a set of decorators that he
 Keeps sync between property and decorator.
 
 ```ts
-import CustomElement { attribute } from "@surface/custom-element";
+import CustomElement { attribute, element } from "@surface/custom-element";
 
 @element("my-element")
 class MyComponent extends CustomElement
