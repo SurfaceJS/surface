@@ -74,7 +74,7 @@ export default class ChoiceDirective implements IDisposable
 
                     const context: TemplateProcessorContext =
                     {
-                        customDirectives:   this.context.customDirectives,
+                        directives:         this.context.directives,
                         host:               this.context.host,
                         parentNode:         this.context.parentNode,
                         root:               content,

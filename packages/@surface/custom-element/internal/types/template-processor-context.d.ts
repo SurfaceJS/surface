@@ -3,7 +3,7 @@ import type { DirectiveEntry } from ".";
 
 type TemplateProcessorContext =
 {
-    customDirectives:   Map<string, DirectiveEntry>,
+    directives:         Map<string, DirectiveEntry>,
     host:               Node | Element,
     parentNode?:        Node,
     root:               Node,

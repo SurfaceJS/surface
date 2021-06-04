@@ -128,7 +128,7 @@ export default class PlaceholderDirective implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            customDirectives:   this.injectionContext.customDirectives,
+            directives:         this.injectionContext.customDirectives,
             host:               this.injectionContext.host,
             parentNode:         this.injectionContext.parentNode,
             root:               content,
@@ -153,7 +153,7 @@ export default class PlaceholderDirective implements IDisposable
 
         const context: TemplateProcessorContext =
         {
-            customDirectives:   this.context.customDirectives,
+            directives:         this.context.directives,
             host:               this.context!.host,
             parentNode:         this.context.parentNode,
             root:               content,

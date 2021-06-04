@@ -106,7 +106,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
 
     const context: TemplateProcessorContext =
     {
-        customDirectives:   globalCustomDirectives,
+        directives:         globalCustomDirectives,
         host,
         root,
         scope:              scope ?? { host },
@@ -244,20 +244,6 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithOneWayDataBindingToWindowFallback(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span lang='{Node.name}'</span>";
-
-        process(host, host.shadowRoot);
-
-        const span = host.shadowRoot.firstElementChild as HTMLSpanElement;
-
-        chai.assert.equal(span.lang, "Node");
-    }
-
-    @test @shouldPass
     public async elementWithTwoWayDataBinding(): Promise<void>
     {
         const host = getHost<{ value?: string }>();
@@ -356,15 +342,15 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithEventDirectiveBindArrowFunction(): void
     {
-        const host = getHost();
+        const host = getHost<{ clicked?: boolean }>();
 
-        host.shadowRoot.innerHTML = "<span @click='() => window.name = \"clicked\"'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='() => host.clicked = true'>Text</span>";
 
         process(host, host.shadowRoot);
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(window.name, "clicked");
+        chai.assert.isTrue(host.clicked);
     }
 
     @test @shouldPass

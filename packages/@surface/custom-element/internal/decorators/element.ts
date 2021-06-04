@@ -1,14 +1,14 @@
-import type { Constructor }                       from "@surface/core";
-import { DisposableMetadata, HookableMetadata }   from "@surface/core";
-import { createHostScope, stringToCSSStyleSheet } from "../common.js";
-import CustomElement                              from "../custom-element.js";
-import type ICustomElement                        from "../interfaces/custom-element";
-import StaticMetadata                             from "../metadata/static-metadata.js";
-import TemplateParser                             from "../parsers/template-parser.js";
-import TemplateProcessor                          from "../processors/template-processor.js";
-import { globalCustomDirectives }                 from "../singletons.js";
-import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
-import type TemplateProcessorContext              from "../types/template-processor-context.js";
+import type { Constructor }                     from "@surface/core";
+import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import { disposeTree, stringToCSSStyleSheet }   from "../common.js";
+import CustomElement                            from "../custom-element.js";
+import type ICustomElement                      from "../interfaces/custom-element";
+import StaticMetadata                           from "../metadata/static-metadata.js";
+import TemplateParser                           from "../parsers/template-parser.js";
+import TemplateProcessor                        from "../processors/template-processor.js";
+import { globalCustomDirectives }               from "../singletons.js";
+import type CustomElementDefinitionOptions      from "../types/custom-element-definition-options.js";
+import type TemplateProcessorContext            from "../types/template-processor-context.js";
 
 /**
  * Defines a new custom element.
@@ -49,16 +49,17 @@ export default function element(tagname: `${string}-${string}`, options?: Custom
 
                     const context: TemplateProcessorContext =
                     {
-                        customDirectives:   new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
+                        directives:         new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
                         host:               instance,
                         root:               instance.shadowRoot,
-                        scope:              createHostScope(instance),
+                        scope:              { host: instance },
                         templateDescriptor: StaticMetadata.from(target).descriptor,
                     };
 
                     const disposable = TemplateProcessor.process(context);
 
                     DisposableMetadata.from(instance).add(disposable);
+                    DisposableMetadata.from(instance).add({ dispose: () => disposeTree(instance.shadowRoot) });
 
                     return instance;
                 },

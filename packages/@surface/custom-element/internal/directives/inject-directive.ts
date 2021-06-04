@@ -51,7 +51,7 @@ export default class InjectDirective implements IDisposable
 
         const injectionContext: InjectionContext =
         {
-            customDirectives: this.context.customDirectives,
+            customDirectives: this.context.directives,
             descriptor:       this.descriptor,
             host:             this.context.host,
             parentNode:       this.context.parentNode,
