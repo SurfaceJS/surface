@@ -33,7 +33,7 @@
 
 However, the technology still lacks some important features presents on everyday workflow.
 
-**@surface/custom-element** aims cover this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.  
+**@surface/custom-element** aims fill this gap adding the ability to use directives and data bindings within web components templates enabling the creation of more complex components with less effort.  
 
 # Getting Started
 A minimal component requires two things: Extend the Custom Element class and annotate the class with the element's decorator.
