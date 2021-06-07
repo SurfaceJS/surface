@@ -15,7 +15,7 @@ import type NamedRoute                                  from "./types/named-rout
 import type Route                                       from "./types/route";
 import type RouteConfiguration                          from "./types/route-configuration";
 import type RouteDefinition                             from "./types/route-definition";
-import type ViewRouterOptions                           from "./types/view-router-options";
+import type WebRouterOptions                            from "./types/web-router-options";
 
 const LEADING_SLASH_PATTERN = /^\//;
 
@@ -47,7 +47,7 @@ export default class WebRouter
         };
     }
 
-    public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
+    public constructor(root: string, routes: RouteConfiguration[], options: WebRouterOptions = { })
     {
         this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
 

@@ -327,6 +327,19 @@ export const routeValidExpectations: RouteValidExpectation[] =
                 matched:   true,
                 routeData:
                 {
+                    parameters: { value: "foo/bar" },
+                    path:       "/path/path-foo/bar",
+                },
+            },
+            pattern:  "path/path-{*value}",
+            value:    "path/path-foo/bar",
+        },
+        {
+            expected:
+            {
+                matched:   true,
+                routeData:
+                {
                     parameters: { value: "path/path/path/path" },
                     path:       "/path/path/path/path/path",
                 },

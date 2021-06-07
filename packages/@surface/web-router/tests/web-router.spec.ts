@@ -161,7 +161,7 @@ export default class WebRouterSpec
             },
         ];
 
-        class Middleware implements IRouterInterceptor
+        class Interceptor implements IRouterInterceptor
         {
             public async intercept(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
             {
@@ -172,7 +172,7 @@ export default class WebRouterSpec
             }
         }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
+        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Interceptor] });
 
         CustomElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
 

@@ -13,9 +13,9 @@ type Entry<T> =
 
 const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 [
-    ["Boolean", { parse: Boolean,                              stringfy: x => x.toString() }],
+    ["Boolean", { parse: Boolean,                              stringfy: String }],
     ["Date",    { parse: (source: string) => new Date(source), stringfy: (x: Date) => x.toISOString().replace(/T.+$/, "") }],
-    ["Number",  { parse: Number,                               stringfy: x => x.toString() }],
+    ["Number",  { parse: Number,                               stringfy: String }],
 ];
 
 export default class Router<T = RouteData>

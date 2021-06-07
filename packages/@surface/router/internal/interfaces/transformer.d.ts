@@ -1,5 +1,5 @@
 export default interface ITransformer
 {
-    parse(source: string): Object;
-    stringfy(object: Object): string;
+    parse(value: string): unknown;
+    stringfy(value: unknown): string;
 }

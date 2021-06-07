@@ -3,6 +3,7 @@ import chai                                                    from "chai";
 import type ITransformer                                       from "../internal/interfaces/transformer";
 import Route                                                   from "../internal/route.js";
 import type RouteMatch                                         from "../internal/types/route-match";
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type { RouteInvalidExpectation, RouteValidExpectation } from "./route-expectations.js";
 import { routeInvalidExpectations, routeValidExpectations }    from "./route-expectations.js";
 
