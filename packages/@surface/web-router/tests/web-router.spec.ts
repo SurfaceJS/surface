@@ -96,7 +96,7 @@ export default class WebRouterSpec
 
     public constructor()
     {
-        const configurations: RouteConfiguration[] =
+        const routes: RouteConfiguration[] =
         [
             {
                 children:
@@ -172,7 +172,15 @@ export default class WebRouterSpec
             }
         }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Interceptor] });
+        const options =
+        {
+            baseUrl:      "/base/path",
+            interceptors: [{ intercept: async () => Promise.resolve() },  Interceptor],
+            root:         "app-root",
+            routes,
+        };
+
+        this.router = new WebRouter(options);
 
         CustomElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
 
@@ -324,6 +332,65 @@ export default class WebRouterSpec
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "slot.firstElementChild to HomeView");
+    }
+
+    @test @shouldPass
+    public async replace(): Promise<void>
+    {
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
+
+        chai.assert.instanceOf(slot, HTMLElement);
+
+        // @ts-expect-error
+        this.router.history = [];
+
+        await this.router.push("/home");
+
+        // @ts-expect-error
+        let historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        let historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 1);
+        chai.assert.instanceOf(slot.firstElementChild, HomeView, "push('/home'): slot.firstElementChild instanceOf HomeView");
+
+        await this.router.push("/about");
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 1);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, AboutView, "push('/about'): slot.firstElementChild instanceOf AboutView");
+
+        await this.router.back();
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, HomeView, "push('/home'): slot.firstElementChild instanceOf HomeView");
+
+        await this.router.replace("/about");
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, AboutView, "push('/about'): slot.firstElementChild instanceOf AboutView");
     }
 
     @test @shouldPass

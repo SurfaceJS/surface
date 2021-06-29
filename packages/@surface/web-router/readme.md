@@ -13,6 +13,7 @@
     * [Transformers](#transformers)
     * [Match All](#match-all)
 * [Interceptors](#interceptors)
+* [Life Cycle Hooks](#life-cycle-hooks)
 * [Navigation](#navigation)
 * [Dependency Injection](#dependency-injection)
 * [Directive](#directive)
@@ -40,7 +41,7 @@ class HomeView extends CustomElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
-const router = new WebRouter("app-root", [{ component: HomeView, path: "/" }]);
+const router = new WebRouter("app-root", { routes: [{ component: HomeView, path: "/" }] });
 
 // Navigates to /home.
 void router.push("/home");
@@ -49,7 +50,7 @@ void router.push("/home");
 Optionally, you can also provide a base URL.
 
 ```ts
-const router = new WebRouter("app-root", [{ component: HomeView, path: "/" }], { baseUrl: "my-app" });
+const router = new WebRouter("app-root", { baseUrl: "my-app", routes: [{ component: HomeView, path: "/" }] });
 
 // Resolves to "my-app/home" on browser.
 void router.push("/home");
@@ -75,7 +76,7 @@ class HomeView extends CustomElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
-const router = new WebRouter("app-root", [{ component: HomeView, path: "/", selector: "div.outlet" }]);
+const router = new WebRouter("app-root", { routes: [{ component: HomeView, path: "/", selector: "div.outlet" }] });
 
 // Navigates to /home.
 void router.push("/home");
@@ -271,7 +272,7 @@ const routes: RouteConfiguration[] =
     { components: User, path: "/user/{id:Array}" },
 ];
 
-const router = new WebRouter("app-root", routes, { transformers: { Array: arrayTransformer } });
+const router = new WebRouter("app-root", { routes, transformers: { Array: arrayTransformer } });
 ```
 
 ## Match All
@@ -314,12 +315,105 @@ const routes: RouteConfiguration[] =
     { component: async () => import("./views/login"), path: "/login" },
 ];
 
-const router = new WebRouter("app-root", routes, { interceptors: [Interceptor] });
+const router = new WebRouter("app-root", { interceptors: [Interceptor], routes });
+```
+### Life Cycle Hooks
+Besides interceptor, some hooks also can be used to handle some route life cycles.
+
+```ts
+export default interface IRouteableElement extends HTMLElement, Partial<IDisposable>
+{
+    // Called when entering on new route
+    onRouteEnter?(to: Route, from?: Route): void;
+    // Called when leaving on new route
+    onRouteLeave?(to: Route, from?: Route): void;
+    // Called when the route parameters changes
+    onRouteUpdate?(to: Route, from?: Route): void;
+    // Called when the element is discarded
+    dispose?(): void;
+}
+```
+## Navigation
+It is possible to navigate between routes using url, named routes or router history.
+```ts
+const routes: RouteConfiguration[] =
+[
+    { component: async () => import("./views/company"), path: "/company/{id}", name: "company" }
+];
+
+// Pushs to window.location.href
+await router.pushCurrentLocation();
+
+await router.push("/company/1?show-employees=true#details");
+// Equivalent to
+await router.push({ name: "company", parameters: { id: 1 }, query: { "show-employees": "true" }, hash: "details" });
+
+// Go back one step in history
+await router.back();
+
+// Advance one step in history.
+await router.forward();
+
+// Go back two steps in history
+await router.go(-2);
+
+// Advance two steps in history.
+await router.go(2);
+
+// Replaces current entry in history
+await router.replace("/company/2");
+```
+## Dependency Injection
+**@surface/web-router** has builtin support of dependency injection through of module [**@surface/dependency-injection**](../dependency-injection/readme.md) and can inject dependencies directly on routed component constructor or properties (notes that injected properties are initialized after constructor).
+
+```ts
+import CustomElement               from "@surface/custom-element";
+import Container, { inject }       from "@surface/dependency-injection";
+import type { RouteConfiguration } from "@surface/web-router";
+import WebRouter                   from "@surface/web-router";
+
+@element("home-view")
+class HomeView extends CustomElement
+{
+    @inject(MyOtherService)
+    private readonly otherService!: MyOtherService;
+
+    public constructor(@inject(MyService) private readonly service: MyService)
+    {
+        super();
+    }
+}
+
+const container = new Container();
+
+container.registerSingleton(MyService);
+container.registerSingleton(MyOtherService);
+
+const router = new WebRouter("app-root", { container, routes: [{ component: HomeView, path: "/" }] });
+
+// Creates the app element using the container and then routes to the current location
+void import("./app")
+    .then(x => document.body.appendChild(container.inject(x.default)))
+    .then(() => void router.pushCurrentLocation());
 ```
 
-## Navigation
-...
-## Dependency Injection
-...
 ## Directive
-...
+**@surface/web-router** provides a custom directive that allows you to create router links directly in html and accepts the same arguments that `router.push(...)`.
+
+```ts
+import CustomElement                      from "@surface/custom-element";
+import WebRouter, { RouterLinkDirective } from "@surface/web-router";
+import routes                             from "./routes";
+
+const router = new WebRouter({ root: "app-root", routes });
+
+// Register directive
+CustomElement.registerDirective("router-link", context => new RouterLinkDirective(router, context));
+
+void import("./app").then(() => void router.pushCurrentLocation());
+```
+
+```html
+<a #router-link="'/components/users'">Users</a>
+<a #router-link="{ name: 'companies' }">Companies</a>
+```

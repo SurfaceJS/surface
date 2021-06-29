@@ -426,7 +426,7 @@ class MyComponent extends CustomElement
 
         const table = this.shadowRoot.querySelector("table");
 
-        console.log(table.row.length) // expected 3, but logged 0;
+        console.log(table.rows.length) // expected 3, but logged 0;
     }
 }
 ```
@@ -461,7 +461,7 @@ class MyComponent extends CustomElement
 
         const table = this.shadowRoot.querySelector("table");
 
-        console.log(table.row.length) // logged 3;
+        console.log(table.rows.length) // logged 3;
     }
 }
 ```
@@ -598,7 +598,7 @@ Results
 ```
 
 ### event
-Creates an event handler using the decorated method.
+Listen for a host event using the decorated method as a handler.
 
 ```ts
 import CustomElement { event } from "@surface/custom-element";
@@ -707,4 +707,3 @@ class StyleableElement extends CustomElement
 class MyElement extends StyleableElement
 { }
 ```
-

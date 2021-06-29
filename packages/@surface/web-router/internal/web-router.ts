@@ -13,7 +13,6 @@ import type Module                                      from "./types/module";
 import type NamedRoute                                  from "./types/named-route";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type Route                                       from "./types/route";
-import type RouteConfiguration                          from "./types/route-configuration";
 import type RouteDefinition                             from "./types/route-definition";
 import type WebRouterOptions                            from "./types/web-router-options";
 
@@ -47,15 +46,15 @@ export default class WebRouter
         };
     }
 
-    public constructor(root: string, routes: RouteConfiguration[], options: WebRouterOptions = { })
+    public constructor(options: WebRouterOptions)
     {
-        this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
+        this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(options.root), `Cannot find root element using selector: ${options.root}`));
 
         this.baseUrl      = options.baseUrl       ?? /* c8 ignore next */ "";
         this.container    = options.container     ?? /* c8 ignore next */ new Container();
         this.interceptors = (options.interceptors ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
         /* c8 ignore next */ // c8 can't cover iterable
-        for (const definition of RouteConfigurator.configure(routes))
+        for (const definition of RouteConfigurator.configure(options.routes))
         {
             if (definition.name)
             {
@@ -67,7 +66,7 @@ export default class WebRouter
             }
         }
 
-        this.container.registerSingleton(WebRouter, this as WebRouter);
+        this.container.registerSingleton(WebRouter, this);
 
         window.addEventListener("popstate", () => void this.pushCurrentLocation());
     }
@@ -131,7 +130,7 @@ export default class WebRouter
         }
     }
 
-    private async create(url: URL, definition: RouteDefinition, routeData: RouteData, fromHistory: boolean = false): Promise<void>
+    private async create(url: URL, definition: RouteDefinition, routeData: RouteData, fromHistory: boolean, replace: boolean): Promise<void>
     {
         const to   = this.createRoute(url, definition, routeData);
         const from = this.current?.route;
@@ -199,11 +198,18 @@ export default class WebRouter
 
             if (!fromHistory)
             {
-                this.history.splice(this.index + 1, Infinity);
+                if (replace)
+                {
+                    this.history[this.index] = [url, definition, routeData];
+                }
+                else
+                {
+                    this.history.splice(this.index + 1, Infinity);
 
-                this.history.push([url, definition, routeData]);
+                    this.history.push([url, definition, routeData]);
 
-                this.index = this.history.length - 1;
+                    this.index = this.history.length - 1;
+                }
             }
 
             this.routeChangeEvent.notify({ from, to });
@@ -300,33 +306,7 @@ export default class WebRouter
         return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${joinPaths(window.location.origin, this.baseUrl)}/`);
     }
 
-    public async back(): Promise<void>
-    {
-        await this.go(-1);
-    }
-
-    public async forward(): Promise<void>
-    {
-        await this.go(1);
-    }
-
-    public async go(value: number): Promise<void>
-    {
-        const index = Math.min(Math.max(this.index + value, 0), this.history.length - 1);
-
-        if (index != this.index)
-        {
-            const [url, routeItem, routeData] = this.history[index];
-
-            await this.create(url, routeItem, routeData, true);
-
-            window.history.replaceState(null, "", url.href);
-
-            this.index = index;
-        }
-    }
-
-    public async push(route: string | NamedRoute): Promise<void>
+    private async pushOrReplace(route: string | NamedRoute, replace: boolean): Promise<void>
     {
         if (typeof route == "string")
         {
@@ -336,7 +316,7 @@ export default class WebRouter
 
             if (match.matched)
             {
-                await this.create(url, ...match.value);
+                await this.create(url, ...match.value, false, replace);
 
                 window.history.pushState(null, "", this.route.url.href);
             }
@@ -369,7 +349,7 @@ export default class WebRouter
                     }
                 }
 
-                await this.create(url, routeConfig, routeData);
+                await this.create(url, routeConfig, routeData, false, replace);
 
                 window.history.pushState(null, "", this.route.url.href);
             }
@@ -378,6 +358,42 @@ export default class WebRouter
                 this.disconnectElements();
             }
         }
+    }
+
+    public async back(): Promise<void>
+    {
+        await this.go(-1);
+    }
+
+    public async forward(): Promise<void>
+    {
+        await this.go(1);
+    }
+
+    public async go(delta: number): Promise<void>
+    {
+        const index = Math.min(Math.max(this.index + delta, 0), this.history.length - 1);
+
+        if (index != this.index)
+        {
+            const [url, routeItem, routeData] = this.history[index];
+
+            await this.create(url, routeItem, routeData, true, false);
+
+            window.history.replaceState(null, "", url.href);
+
+            this.index = index;
+        }
+    }
+
+    public async push(route: string | NamedRoute): Promise<void>
+    {
+        return this.pushOrReplace(route, false);
+    }
+
+    public async replace(route: string | NamedRoute): Promise<void>
+    {
+        return this.pushOrReplace(route, true);
     }
 
     public async pushCurrentLocation(): Promise<void>

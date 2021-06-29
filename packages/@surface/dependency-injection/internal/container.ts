@@ -2,9 +2,8 @@ import type { Constructor } from "@surface/core";
 import { typeGuard }        from "@surface/core";
 import StaticMetadata       from "./metadata.js";
 
-type Factory     = (container: Pick<Container, "resolve" | "inject">) => object;
-type Key         = string | symbol | Constructor;
-type Instance<T> = T extends Function ? never : T;
+type Factory = (container: Pick<Container, "resolve" | "inject">) => object;
+type Key     = string | symbol | Constructor;
 
 export default class Container
 {
@@ -31,7 +30,7 @@ export default class Container
     public registerSingleton(constructor: Constructor): Container;
     public registerSingleton(key: Key, factory: Factory): Container;
     public registerSingleton(key: Key, constructor: Constructor): Container;
-    public registerSingleton<T>(key: Key, instance: Instance<T>): Container;
+    public registerSingleton(key: Key, instance: object): Container;
     public registerSingleton(...args: [Constructor] | [Key, object] | [Key, Function]): Container
     {
         const [key, factory, instance] = args.length == 1
