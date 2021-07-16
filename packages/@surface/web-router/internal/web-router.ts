@@ -58,11 +58,11 @@ export default class WebRouter
         {
             if (definition.name)
             {
-                this.router.map(definition.name, joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
+                this.router.map({ name: definition.name, pattern: joinPaths(this.baseUrl, definition.path), selector: routeData => [definition, routeData] });
             }
             else
             {
-                this.router.map(joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
+                this.router.map({ pattern: joinPaths(this.baseUrl, definition.path), selector: routeData => [definition, routeData] });
             }
         }
 
