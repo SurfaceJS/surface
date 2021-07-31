@@ -132,6 +132,71 @@ export default class DependencyInjectionSpec
     }
 
     @test @shouldPass
+    public createScope(): void
+    {
+        class MockD { }
+        class MockC { }
+
+        class MockB
+        {
+            public constructor
+            (
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        class MockA implements IDisposable
+        {
+            public constructor
+            (
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+
+            public dispose(): void
+            {
+                return void 0;
+            }
+        }
+
+        class Mock
+        {
+            public constructor
+            (
+                @inject(MockA) public a: MockA,
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        const scope = new Container(new Container().registerScoped(MockD))
+            .registerTransient(MockA)
+            .registerSingleton(MockB)
+            .registerScoped(MockC)
+            .registerScoped("MockC", x => x.resolve(MockC))
+            .createScope();
+
+        const instance1 = scope.inject(Mock);
+        const instance2 = scope.inject(Mock);
+
+        chai.assert.notEqual(scope.resolve(MockA), scope.resolve(MockA), "scope.resolve(MockC) notEqual scope.resolve(MockC)");
+        chai.assert.equal(scope.resolve(MockB), scope.resolve(MockB), "scope.resolve(MockB) equal scope.resolve(MockB)");
+        chai.assert.equal(scope.resolve(MockC), scope.resolve(MockC), "scope.resolve(MockC) equal scope.resolve(MockC)");
+        chai.assert.equal(scope.resolve(MockD), scope.resolve(MockD), "scope.resolve(MockD) equal scope.resolve(MockD)");
+        chai.assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
+        chai.assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
+        chai.assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
+        chai.assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
+        chai.assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
+    }
+
+    @test @shouldPass
     public parent(): void
     {
         class Mock { }

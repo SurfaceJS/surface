@@ -1,24 +1,48 @@
 import type { Constructor, IDisposable } from "@surface/core";
 import { typeGuard }                     from "@surface/core";
+import type IScopedProvider              from "./interfaces/scoped-provider";
 import StaticMetadata                    from "./metadata.js";
 import type { Factory, Key }             from "./types";
 
 /** Container used to dependency injection. */
-export default class Container implements IDisposable
+class Container implements IDisposable
 {
-    private readonly cache:      Map<Key, Partial<IDisposable>> = new Map();
-    private readonly scopeCache: Map<Key, Partial<IDisposable>> = new Map();
-    private readonly registries: Map<Key, Function>             = new Map();
-    private readonly scoped:     Set<Key>                       = new Set();
-    private readonly singletons: Set<Key>                       = new Set();
-    private readonly stack:      Set<Key>                       = new Set();
+    protected readonly cache:      Map<Key, Partial<IDisposable>> = new Map();
+    protected readonly scopeCache: Map<Key, Partial<IDisposable>> = new Map();
+    protected readonly registries: Map<Key, Function>             = new Map();
+    protected readonly scoped:     Set<Key>                       = new Set();
+    protected readonly singletons: Set<Key>                       = new Set();
+    protected readonly stack:      Set<Key>                       = new Set();
 
-    private depth: number = 0;
+    protected depth:     number  = 0;
+    protected resolving: boolean = false;
 
-    public constructor(private parent: Container | null = null)
+    public constructor(protected parent: Container | null = null)
     { }
 
-    private getCacheEntry(key: Key, scoped: boolean): Partial<IDisposable> | undefined
+    protected clearScope(): void
+    {
+        this.scopeCache.clear();
+        this.parent?.clearScope();
+    }
+
+    protected *enumerateScopedCache(): Iterable<[Key, object]>
+    {
+        if (this.parent)
+        {
+            for (const entry of this.parent.enumerateScopedCache())
+            {
+                yield entry;
+            }
+        }
+
+        for (const entry of this.scopeCache)
+        {
+            yield entry;
+        }
+    }
+
+    protected getCacheEntry(key: Key, scoped: boolean): Partial<IDisposable> | undefined
     {
         if (scoped)
         {
@@ -28,12 +52,12 @@ export default class Container implements IDisposable
         return this.cache.get(key) ?? this.parent?.getCacheEntry(key, scoped);
     }
 
-    private getRoot(): Container
+    protected getRoot(): Container
     {
         return this.parent?.getRoot() ?? this;
     }
 
-    private resolveInternal(key: Key, requirer: Container): object
+    protected resolveInternal(key: Key, requirer: Container): object
     {
         const isScoped    = this.scoped.has(key);
         const isSingleton = this.singletons.has(key);
@@ -92,21 +116,10 @@ export default class Container implements IDisposable
 
         if (requirer.depth == 0)
         {
-            requirer.disposeScope();
+            requirer.clearScope();
         }
 
         return instance;
-    }
-
-    private disposeScope(): void
-    {
-        for (const instance of this.scopeCache.values())
-        {
-            instance.dispose?.();
-        }
-
-        this.scopeCache.clear();
-        this.parent?.disposeScope();
     }
 
     /** Disposes all cached instancies e clear all registrations */
@@ -117,12 +130,16 @@ export default class Container implements IDisposable
             instance.dispose?.();
         }
 
-        this.disposeScope();
-
         this.registries.clear();
         this.cache.clear();
         this.scoped.clear();
         this.singletons.clear();
+    }
+
+    /** Creates a scoped provider that will cache all scoped dependencies. */
+    public createScope(): IScopedProvider
+    {
+        return new ScopedProvider(this);
     }
 
     /** Instantiate and inject constructor parameters and properties. */
@@ -145,11 +162,27 @@ export default class Container implements IDisposable
             root.parent = this;
         }
 
+        if (!this.resolving)
+        {
+            this.depth = 1;
+
+            this.resolving = true;
+        }
+
         const instance = typeof target == "function" ? Reflect.construct(target, metadata.parameters.map(x => active.resolveInternal(x, active))) : target;
 
         for (const [property, key] of metadata.properties)
         {
             instance[property] = active.resolveInternal(key, active);
+        }
+
+        if (this.depth == 1)
+        {
+            this.depth = 0;
+
+            this.resolving = false;
+
+            this.clearScope();
         }
 
         if (root)
@@ -266,14 +299,60 @@ export default class Container implements IDisposable
      * @param key Key used to resolve instance.
      **/
     public resolve<T extends object = object>(key: string | symbol): T;
-
-    /**
-     * Returns resolved dependency.
-     * @param key Key used to resolve instance.
-     **/
     public resolve<T>(key: Constructor<T>): T;
+    public resolve(key: Key): object;
     public resolve(key: Key): object
     {
         return this.resolveInternal(key, this);
     }
 }
+
+class ScopedProvider extends Container implements IScopedProvider
+{
+    private factorize(factory: () => object): object
+    {
+        if (!this.resolving)
+        {
+            this.depth = 1;
+
+            this.resolving = true;
+        }
+
+        const instance = factory();
+
+        if (this.depth == 1)
+        {
+            this.depth = 0;
+
+            this.resolving = false;
+
+            for (const [key, instance] of this.enumerateScopedCache())
+            {
+                this.cache.set(key, instance);
+            }
+
+            this.clearScope();
+        }
+
+        return instance;
+    }
+
+    public override inject(target: Constructor | object): object
+    {
+        return this.factorize(() => super.inject(target) as object);
+    }
+
+    public override resolve(key: Key): object
+    {
+        const entry = this.cache.get(key);
+
+        if (entry)
+        {
+            return entry;
+        }
+
+        return this.factorize(() => super.resolve(key));
+    }
+}
+
+export default Container;
