@@ -4,15 +4,13 @@
         "url": "https://github.com/SurfaceJS/surface/issues"
     },
     "dependencies": {
-        "@surface/collection": "file:../collection",
         "@surface/core": "file:../core",
-        "@surface/enumerable": "file:../enumerable",
-        "tslib": "^2.2.0"
+        "tslib": "^2.3.0"
     },
     "description": "Generic router for extension purposes.",
     "devDependencies": {
         "@surface/test-suite": "file:../test-suite",
-        "@types/chai": "^4.2.17",
+        "@types/chai": "^4.2.21",
         "chai": "^4.3.4"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
