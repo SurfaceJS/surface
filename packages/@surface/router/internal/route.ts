@@ -182,7 +182,7 @@ export default class Route
                         {
                             parameters[node.name] = value;
 
-                            const stringValue = transformer.stringfy(value);
+                            const stringValue = transformer.stringify(value);
 
                             if (!this.constraints.get(key)?.validate(stringValue))
                             {

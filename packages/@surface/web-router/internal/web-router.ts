@@ -29,7 +29,7 @@ export default class WebRouter
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
     private cache: Record<string, IRouteableElement>[] = [];
-    private index:    number  = 0;
+    private index: number                              = 0;
     private current?: { definition: RouteDefinition, route: Route };
 
     public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
@@ -56,14 +56,14 @@ export default class WebRouter
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(options.routes))
         {
-            if (definition.name)
-            {
-                this.router.map({ name: definition.name, pattern: joinPaths(this.baseUrl, definition.path), selector: routeData => [definition, routeData] });
-            }
-            else
-            {
-                this.router.map({ pattern: joinPaths(this.baseUrl, definition.path), selector: routeData => [definition, routeData] });
-            }
+            this.router.map
+            ({
+                constraints:  definition.constraints,
+                name:         definition.name,
+                pattern:      joinPaths(this.baseUrl, definition.path),
+                selector:     routeData => [definition, routeData],
+                transformers: definition.transformers,
+            });
         }
 
         this.container.registerSingleton(WebRouter, this);

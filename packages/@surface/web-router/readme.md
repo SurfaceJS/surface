@@ -10,7 +10,9 @@
     * [Multiples Components](#multiples-components)
 * [Url Templates](#url-templates)
     * [Parameters](#parameters)
+    * [Constraints](#constraints)
     * [Transformers](#transformers)
+        * [Custom Constraints and Transformers](#custom-constraints-and-transformers)
     * [Match All](#match-all)
 * [Interceptors](#interceptors)
 * [Life Cycle Hooks](#life-cycle-hooks)
@@ -234,8 +236,23 @@ The URL http://localhost/path-3 will produces some like:
 { id: "0" }
 ```
 
+### Constraints
+Constrains are used to restrict match to exact pattern expected by parameter.
+The builtin constraints are: `UUID`, `Alpha`, `Number`, `Boolean` and `Date`.
+
+```ts
+const routes: RouteConfiguration[] =
+[
+    { components: User, path: "/user/{id:Alpha}" },
+];
+```
+
+Using above configuration.
+
+The URL https://localhost/user/xyz will match, while https://localhost/user/41 will not.
+
 ### Transformers
-By default all parameters are captured like string. But if you need some kind of transformation, route parameter transformers can be used.
+By default all parameters are captured like string. But if you need some kind of transformation, transformers can be used.
 
 The builtin transformer are: `Number`, `Boolean` and `Date`.
 
@@ -253,19 +270,19 @@ The URL http://localhost/user/42 will produces some like:
 { id: 42 }
 ```
 
-### Custom Transformers
-⚠️ Missing implementation ⚠️  
-You also can provide your own custom tranformers implementeing the interface `IRouteParameterTransformer` and registering on the router instance.
+### Custom Constraints and Transformers
+You also can provide your own custom constraints implementeing the interface `IRouteParameterConstraints` and/or custom transformers implementeing the interface IRouteParameterTransformers` and registering on the router instance.
 
 ```ts
-import type { IRouteParameterTransformer } from "@surface/web-router";
-import WebRouter                           from "@surface/web-router";
+import type { IRouteParameterConstraint, IRouteParameterTransformer } from "@surface/web-router";
+import WebRouter                                                      from "@surface/web-router";
 
-const arrayTransformer: IRouteParameterTransformer =
+const arrayTransformer: IRouteParameterConstraint & IRouteParameterTransformer =
 {
-    parse:    value => value.split(","),
-    stringfy: value => value.join();
-}
+    parse:     value => value.split(","),
+    stringify: value => value.join(),
+    validate:  value => value.includes(","),
+};
 
 const routes: RouteConfiguration[] =
 [

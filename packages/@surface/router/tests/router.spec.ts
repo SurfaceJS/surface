@@ -189,7 +189,7 @@ export default class RouterSpec
     }
 
     @test @shouldPass
-    public matchWithDefaultTranformers(): void
+    public matchWithDefaultConstraintsAndTransformers(): void
     {
         const expected: RouterMatch =
         {
@@ -198,18 +198,19 @@ export default class RouterSpec
             {
                 parameters:
                 {
+                    alpha:   "text",
                     boolean: true,
                     date:    new Date("2020-01-01"),
                     id:      "e7dcfc52e66d11ebba800242ac130004",
                     number:  1,
                 },
-                path: "/path/e7dcfc52e66d11ebba800242ac130004/true/2020-01-01/1",
+                path: "/path/text/e7dcfc52e66d11ebba800242ac130004/true/2020-01-01/1",
             },
         };
 
         const actual = new Router()
-            .map({ pattern: "/path/{id:UIID}/{boolean:Boolean}/{date:Date}/{number:Number}" })
-            .match("/path/e7dcfc52e66d11ebba800242ac130004/true/2020-01-01/1");
+            .map({ pattern: "/path/{alpha:Alpha}/{id:UIID}/{boolean:Boolean}/{date:Date}/{number:Number}" })
+            .match("/path/text/e7dcfc52e66d11ebba800242ac130004/true/2020-01-01/1");
 
         chai.assert.deepEqual(actual, expected);
     }
