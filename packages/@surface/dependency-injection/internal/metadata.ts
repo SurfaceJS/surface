@@ -1,4 +1,5 @@
 import type { Constructor } from "@surface/core";
+import type Container       from "./container.js";
 
 const METADATA = Symbol("dependency-injection:static-metadata");
 
@@ -6,6 +7,7 @@ export default class StaticMetadata
 {
     public readonly parameters: (string | symbol | Constructor)[]                  = [];
     public readonly properties: [string | symbol, string | symbol | Constructor][] = [];
+    public provider?: Container;
 
     public static from(target: Function): StaticMetadata
     {
