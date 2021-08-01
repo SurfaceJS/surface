@@ -14,8 +14,8 @@ class Container implements IDisposable
     protected readonly singletons: Set<Key>                       = new Set();
     protected readonly stack:      Set<Key>                       = new Set();
 
-    protected depth:     number  = 0;
-    protected resolving: boolean = false;
+    // protected depth:     number  = 0;
+    // protected resolving: boolean = false;
 
     public constructor(protected parent: Container | null = null)
     { }
@@ -57,12 +57,40 @@ class Container implements IDisposable
         return this.parent?.getRoot() ?? this;
     }
 
-    protected resolveInternal(key: Key, requirer: Container): object
+    protected internalInject(target: Constructor | object): object
+    {
+        const constructor = typeof target == "function" ? target : target.constructor;
+
+        const metadata = StaticMetadata.from(constructor);
+
+        const active = metadata.provider ?? this;
+
+        const root = metadata.provider?.getRoot();
+
+        if (root)
+        {
+            root.parent = this;
+        }
+
+        const instance = typeof target == "function" ? Reflect.construct(target, metadata.parameters.map(x => active.internalResolve(x))) : target;
+
+        for (const [property, key] of metadata.properties)
+        {
+            instance[property] = active.internalResolve(key);
+        }
+
+        if (root)
+        {
+            root.parent = null;
+        }
+
+        return instance;
+    }
+
+    protected internalResolve(key: Key): object
     {
         const isScoped    = this.scoped.has(key);
         const isSingleton = this.singletons.has(key);
-
-        requirer.depth++;
 
         let instance: object | null = null;
 
@@ -87,7 +115,7 @@ class Container implements IDisposable
 
                 this.stack.add(key);
 
-                instance = this.inject(!entry.prototype ? (entry as Factory)(this) : entry);
+                instance = this.internalInject(!entry.prototype ? (entry as Factory)(this) : entry);
 
                 this.stack.delete(key);
 
@@ -103,20 +131,13 @@ class Container implements IDisposable
             }
             else if (this.parent)
             {
-                instance = this.parent.resolveInternal(key, requirer);
+                instance = this.parent.internalResolve(key);
             }
         }
 
         if (!instance)
         {
             throw new Error(`Cannot resolve entry for the key ${typeof key == "function" ? key.name : key.toString()}`);
-        }
-
-        requirer.depth--;
-
-        if (requirer.depth == 0)
-        {
-            requirer.clearScope();
         }
 
         return instance;
@@ -149,46 +170,9 @@ class Container implements IDisposable
     public inject<T extends object>(target: T): T;
     public inject(target: Constructor | object): object
     {
-        const constructor = typeof target == "function" ? target : target.constructor;
+        const instance = this.internalInject(target);
 
-        const metadata = StaticMetadata.from(constructor);
-
-        const active = metadata.provider ?? this;
-
-        const root = metadata.provider?.getRoot();
-
-        if (root)
-        {
-            root.parent = this;
-        }
-
-        if (!this.resolving)
-        {
-            this.depth = 1;
-
-            this.resolving = true;
-        }
-
-        const instance = typeof target == "function" ? Reflect.construct(target, metadata.parameters.map(x => active.resolveInternal(x, active))) : target;
-
-        for (const [property, key] of metadata.properties)
-        {
-            instance[property] = active.resolveInternal(key, active);
-        }
-
-        if (this.depth == 1)
-        {
-            this.depth = 0;
-
-            this.resolving = false;
-
-            this.clearScope();
-        }
-
-        if (root)
-        {
-            root.parent = null;
-        }
+        this.clearScope();
 
         return instance;
     }
@@ -303,7 +287,7 @@ class Container implements IDisposable
     public resolve(key: Key): object;
     public resolve(key: Key): object
     {
-        return this.resolveInternal(key, this);
+        return this.internalResolve(key);
     }
 }
 
@@ -311,35 +295,21 @@ class ScopedProvider extends Container implements IScopedProvider
 {
     private factorize(factory: () => object): object
     {
-        if (!this.resolving)
-        {
-            this.depth = 1;
-
-            this.resolving = true;
-        }
-
         const instance = factory();
 
-        if (this.depth == 1)
+        for (const [key, instance] of this.enumerateScopedCache())
         {
-            this.depth = 0;
-
-            this.resolving = false;
-
-            for (const [key, instance] of this.enumerateScopedCache())
-            {
-                this.cache.set(key, instance);
-            }
-
-            this.clearScope();
+            this.cache.set(key, instance);
         }
+
+        this.clearScope();
 
         return instance;
     }
 
     public override inject(target: Constructor | object): object
     {
-        return this.factorize(() => super.inject(target) as object);
+        return this.factorize(() => super.internalInject(target) as object);
     }
 
     public override resolve(key: Key): object
@@ -351,7 +321,7 @@ class ScopedProvider extends Container implements IScopedProvider
             return entry;
         }
 
-        return this.factorize(() => super.resolve(key));
+        return this.factorize(() => super.internalResolve(key));
     }
 }
 
