@@ -1,5 +1,6 @@
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import type { IScopedProvider }                         from "@surface/dependency-injection";
 import Container                                        from "@surface/dependency-injection";
 import { computed }                                     from "@surface/observer";
 import Router                                           from "@surface/router";
@@ -18,6 +19,12 @@ import type WebRouterOptions                            from "./types/web-router
 
 const LEADING_SLASH_PATTERN = /^\//;
 
+type Context =
+{
+    definition: RouteDefinition,
+    route:      Route,
+};
+
 export default class WebRouter
 {
     private readonly baseUrl:           string;
@@ -30,14 +37,15 @@ export default class WebRouter
 
     private cache: Record<string, IRouteableElement>[] = [];
     private index: number                              = 0;
-    private current?: { definition: RouteDefinition, route: Route };
+    private context?: Context;
+    private scope: IScopedProvider;
 
     public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
 
     @computed("current")
     public get route(): Route
     {
-        return this.current?.route
+        return this.context?.route
         ?? {
             meta:       { },
             name:       "",
@@ -53,6 +61,8 @@ export default class WebRouter
         this.baseUrl      = options.baseUrl       ?? /* c8 ignore next */ "";
         this.container    = options.container     ?? /* c8 ignore next */ new Container();
         this.interceptors = (options.interceptors ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
+        this.scope        = this.container.createScope();
+
         /* c8 ignore next */ // c8 can't cover iterable
         for (const definition of RouteConfigurator.configure(options.routes))
         {
@@ -92,7 +102,7 @@ export default class WebRouter
         {
             (outlet as Partial<IDisposable>).dispose = () =>
             {
-                if (this.current?.route == to)
+                if (this.context?.route == to)
                 {
                     element.remove();
 
@@ -133,17 +143,18 @@ export default class WebRouter
     private async create(url: URL, definition: RouteDefinition, routeData: RouteData, fromHistory: boolean, replace: boolean): Promise<void>
     {
         const to   = this.createRoute(url, definition, routeData);
-        const from = this.current?.route;
+        const from = this.context?.route;
 
         if (!await this.invokeMiddleware(to, from))
         {
-            const previous  = this.current;
+            const previous  = this.context;
             const hasUpdate = definition == previous?.definition;
             const cache     = this.cache.slice(0, definition.stack.length);
 
-            this.current = { definition, route: to };
+            this.context = { definition, route: to };
 
-            let parent = this.root.value as IRouteableElement;
+            let parent          = this.root.value as IRouteableElement;
+            let requireNewScope = true;
 
             for (let index = 0; index < definition.stack.length; index++)
             {
@@ -166,10 +177,19 @@ export default class WebRouter
                         next.onRouteEnter?.(to, from);
                     }
 
+                    requireNewScope = false;
+
                     parent = next!;
                 }
                 else
                 {
+                    if (requireNewScope)
+                    {
+                        this.scope.dispose();
+
+                        this.scope = this.container.createScope();
+                    }
+
                     let next: HTMLElement | undefined;
 
                     cache[index] = { };
@@ -178,7 +198,7 @@ export default class WebRouter
                     {
                         const constructor = await this.resolveComponent(component);
 
-                        const element = this.container.inject(constructor) as IRouteableElement;
+                        const element = this.scope.inject(constructor) as IRouteableElement;
 
                         this.connectToOutlet(parent, element, key, to, from, definition.selector);
 
@@ -230,7 +250,7 @@ export default class WebRouter
     {
         this.connectedElements.forEach(x => (x.dispose?.(), x.remove()));
 
-        this.current = undefined;
+        this.context = undefined;
     }
 
     private disconnectFromOutlets(parent: HTMLElement, exclude: Set<string>, to: Route, from?: Route): void

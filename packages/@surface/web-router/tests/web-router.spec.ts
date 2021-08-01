@@ -3,15 +3,17 @@
 import "./fixtures/dom.js";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
+import Container, { inject }                   from "@surface/dependency-injection";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
 import RouterLinkDirective                     from "../internal/router-link-directive.js";
-import type NamedRoute                         from "../internal/types/named-route.js";
+import type NamedRoute                         from "../internal/types/named-route";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
+import type WebRouterOptions                   from "../internal/types/web-router-options";
 import WebRouter                               from "../internal/web-router.js";
 
 chai.use(chaiAsPromised);
@@ -21,17 +23,17 @@ class HomeView extends CustomElement
 {
     public fullscreen: boolean = false;
 
-    public onEnter(): void
+    public onRouteEnter(): void
     {
         // Coverage
     }
 
-    public onLeave(): void
+    public onRouteLeave(): void
     {
         // Coverage
     }
 
-    public onUpdate(): void
+    public onRouteUpdate(): void
     {
         // Coverage
     }
@@ -39,7 +41,17 @@ class HomeView extends CustomElement
 
 @define("home-detail-view")
 class HomeDetailView extends HTMLElement
-{ }
+{
+    public onRouteLeave(): void
+    {
+        // Coverage
+    }
+
+    public dispose(): void
+    {
+        // Coverage
+    }
+}
 
 @define("home-other-detail-view")
 class HomeOtherDetailView extends HTMLElement
@@ -59,7 +71,25 @@ class AboutInvalidView extends HTMLElement implements IRouteableElement
 
 @define("data-view")
 class DataView extends HTMLElement
-{ }
+{
+    @inject("foo")
+    public foo!: object;
+
+    public onRouteEnter(): void
+    {
+        // Coverage
+    }
+
+    public onRouteUpdate(): void
+    {
+        // Coverage
+    }
+
+    public onRouteLeave(): void
+    {
+        // Coverage
+    }
+}
 
 @define("about-view")
 class AboutView extends HTMLElement
@@ -172,9 +202,10 @@ export default class WebRouterSpec
             }
         }
 
-        const options =
+        const options: WebRouterOptions =
         {
             baseUrl:      "/base/path",
+            container:    new Container().registerScoped("foo", () => ({ dispose: () => void 0 })),
             interceptors: [{ intercept: async () => Promise.resolve() },  Interceptor],
             root:         "app-root",
             routes,
