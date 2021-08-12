@@ -43,7 +43,7 @@ class HomeView extends CustomElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
-const router = new WebRouter("app-root", { routes: [{ component: HomeView, path: "/" }] });
+const router = new WebRouter({ root: "app-root", routes: [{ component: HomeView, path: "/" }] });
 
 // Navigates to /home.
 void router.push("/home");
@@ -52,7 +52,7 @@ void router.push("/home");
 Optionally, you can also provide a base URL.
 
 ```ts
-const router = new WebRouter("app-root", { baseUrl: "my-app", routes: [{ component: HomeView, path: "/" }] });
+const router = new WebRouter({ root: "app-root", baseUrl: "my-app", routes: [{ component: HomeView, path: "/" }] });
 
 // Resolves to "my-app/home" on browser.
 void router.push("/home");
@@ -78,7 +78,7 @@ class HomeView extends CustomElement
 { }
 
 // The router will start looking for the outlet at the shadow root of the app-root component.
-const router = new WebRouter("app-root", { routes: [{ component: HomeView, path: "/", selector: "div.outlet" }] });
+const router = new WebRouter({ root: "app-root", routes: [{ component: HomeView, path: "/", selector: "div.outlet" }] });
 
 // Navigates to /home.
 void router.push("/home");
@@ -289,7 +289,7 @@ const routes: RouteConfiguration[] =
     { components: User, path: "/user/{id:Array}" },
 ];
 
-const router = new WebRouter("app-root", { routes, transformers: { Array: arrayTransformer } });
+const router = new WebRouter({ root: "app-root", routes, transformers: { Array: arrayTransformer } });
 ```
 
 ## Match All
@@ -332,7 +332,7 @@ const routes: RouteConfiguration[] =
     { component: async () => import("./views/login"), path: "/login" },
 ];
 
-const router = new WebRouter("app-root", { interceptors: [Interceptor], routes });
+const router = new WebRouter({ root: "app-root", interceptors: [Interceptor], routes });
 ```
 ### Life Cycle Hooks
 Besides interceptor, some hooks also can be used to handle some route life cycles.
@@ -407,7 +407,7 @@ const container = new Container();
 container.registerSingleton(MyService);
 container.registerSingleton(MyOtherService);
 
-const router = new WebRouter("app-root", { container, routes: [{ component: HomeView, path: "/" }] });
+const router = new WebRouter({ root: "app-root", container, routes: [{ component: HomeView, path: "/" }] });
 
 // Creates the app element using the container and then routes to the current location
 void import("./app")
