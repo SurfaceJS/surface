@@ -14,6 +14,6 @@ declare global
     }
 }
 
-@element("smd-app", template, style)
+@element("smd-app", { style, template })
 export default class App extends CustomElement
 { }

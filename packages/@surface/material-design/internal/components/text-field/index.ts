@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@element("smd-text-field", template, style)
+@element("smd-text-field", { style, template })
 export default class TextField extends mix(CustomElement, [colorable, lineRippleable, themeable])
 {
     private _selectionEnd:   number = 0;

@@ -6,17 +6,26 @@ import type TemplateDescriptor       from "../types/template-descriptor";
 import type TemplateProcessorContext from "../types/template-processor-context.js";
 import TemplateProcessor             from "./template-processor.js";
 
-const cache = new Map<string, [template: HTMLTemplateElement, descriptor: TemplateDescriptor]>();
+const cache = new Map<string | HTMLTemplateElement, [template: HTMLTemplateElement, descriptor: TemplateDescriptor]>();
 
-export default function processTemplate(template: string, scope: object, directiveHandlers?: Record<string, DirectiveEntry>): [content: DocumentFragment, disposable: IDisposable]
+export default function processTemplate(template: string | HTMLTemplateElement, scope: object, directives?: Record<string, DirectiveEntry>): [content: DocumentFragment, disposable: IDisposable]
 {
     if (!cache.has(template))
     {
-        const templateElement = document.createElement("template");
+        if (typeof template == "string")
+        {
+            const templateElement = document.createElement("template");
 
-        templateElement.innerHTML = template;
+            templateElement.innerHTML = template;
 
-        cache.set(template, TemplateParser.parse("annonymous", template));
+            cache.set(template, TemplateParser.parse("annonymous", template));
+        }
+        else
+        {
+            const templateElement = template.cloneNode(true) as HTMLTemplateElement;
+
+            cache.set(template, [templateElement, TemplateParser.parseReference("annonymous", templateElement)]);
+        }
     }
 
     const [parsed, descriptor] = cache.get(template)!;
@@ -24,7 +33,7 @@ export default function processTemplate(template: string, scope: object, directi
 
     const context: TemplateProcessorContext =
     {
-        customDirectives:   new Map([...globalCustomDirectives, ...Object.entries(directiveHandlers ?? { })]),
+        directives:         new Map([...globalCustomDirectives, ...Object.entries(directives ?? { })]),
         host:               content,
         root:               content,
         scope,

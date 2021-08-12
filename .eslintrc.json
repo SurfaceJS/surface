@@ -206,7 +206,6 @@
         "@typescript-eslint/prefer-reduce-type-parameter":   "warn",
         "@typescript-eslint/prefer-regexp-exec":             "warn",
         "@typescript-eslint/prefer-string-starts-ends-with": "warn",
-        "@typescript-eslint/prefer-ts-expect-error":         "warn",
         "@typescript-eslint/promise-function-async":         "warn",
         "@typescript-eslint/quotes":                         "warn",
         "@typescript-eslint/require-array-sort-compare":     "warn",

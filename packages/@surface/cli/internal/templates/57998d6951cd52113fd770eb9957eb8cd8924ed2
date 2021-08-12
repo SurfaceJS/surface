@@ -10,7 +10,7 @@ import User                             from "../../types/user";
 import template                         from "./index.html";
 import style                            from "./index.scss";
 
-@element("account-create-view", template, style)
+@element("account-create-view", { style, template })
 
 export default class AccountCreate extends CustomElement implements IRouteableElement
 {

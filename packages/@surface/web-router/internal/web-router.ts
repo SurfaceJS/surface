@@ -1,5 +1,6 @@
 import type { Constructor, IDisposable }                from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import type { IScopedProvider }                         from "@surface/dependency-injection";
 import Container                                        from "@surface/dependency-injection";
 import { computed }                                     from "@surface/observer";
 import Router                                           from "@surface/router";
@@ -13,11 +14,16 @@ import type Module                                      from "./types/module";
 import type NamedRoute                                  from "./types/named-route";
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import type Route                                       from "./types/route";
-import type RouteConfiguration                          from "./types/route-configuration";
 import type RouteDefinition                             from "./types/route-definition";
-import type ViewRouterOptions                           from "./types/view-router-options";
+import type WebRouterOptions                            from "./types/web-router-options";
 
 const LEADING_SLASH_PATTERN = /^\//;
+
+type Context =
+{
+    definition: RouteDefinition,
+    route:      Route,
+};
 
 export default class WebRouter
 {
@@ -30,15 +36,16 @@ export default class WebRouter
     private readonly router:            Router<[RouteDefinition, RouteData]> = new Router();
 
     private cache: Record<string, IRouteableElement>[] = [];
-    private index:    number  = 0;
-    private current?: { definition: RouteDefinition, route: Route };
+    private index: number                              = 0;
+    private context?: Context;
+    private scope: IScopedProvider;
 
     public readonly routeChangeEvent: Event<{ to: Route, from?: Route }> = new Event();
 
     @computed("current")
     public get route(): Route
     {
-        return this.current?.route
+        return this.context?.route
         ?? {
             meta:       { },
             name:       "",
@@ -47,27 +54,29 @@ export default class WebRouter
         };
     }
 
-    public constructor(root: string, routes: RouteConfiguration[], options: ViewRouterOptions = { })
+    public constructor(options: WebRouterOptions)
     {
-        this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(root), `Cannot find root element using selector: ${root}`));
+        this.root = new Lazy(() => assertGet(document.querySelector<HTMLElement>(options.root), `Cannot find root element using selector: ${options.root}`));
 
         this.baseUrl      = options.baseUrl       ?? /* c8 ignore next */ "";
         this.container    = options.container     ?? /* c8 ignore next */ new Container();
         this.interceptors = (options.interceptors ?? /* c8 ignore next */ []).map(x => typeof x == "function" ? this.container.inject(x) : x);
+        this.scope        = this.container.createScope();
+
         /* c8 ignore next */ // c8 can't cover iterable
-        for (const definition of RouteConfigurator.configure(routes))
+        for (const definition of RouteConfigurator.configure(options.routes))
         {
-            if (definition.name)
-            {
-                this.router.map(definition.name, joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
-            }
-            else
-            {
-                this.router.map(joinPaths(this.baseUrl, definition.path), routeData => [definition, routeData]);
-            }
+            this.router.map
+            ({
+                constraints:  definition.constraints,
+                name:         definition.name,
+                pattern:      joinPaths(this.baseUrl, definition.path),
+                selector:     routeData => [definition, routeData],
+                transformers: definition.transformers,
+            });
         }
 
-        this.container.registerSingleton(WebRouter, this as WebRouter);
+        this.container.registerSingleton(WebRouter, this);
 
         window.addEventListener("popstate", () => void this.pushCurrentLocation());
     }
@@ -93,7 +102,7 @@ export default class WebRouter
         {
             (outlet as Partial<IDisposable>).dispose = () =>
             {
-                if (this.current?.route == to)
+                if (this.context?.route == to)
                 {
                     element.remove();
 
@@ -131,20 +140,21 @@ export default class WebRouter
         }
     }
 
-    private async create(url: URL, definition: RouteDefinition, routeData: RouteData, fromHistory: boolean = false): Promise<void>
+    private async create(url: URL, definition: RouteDefinition, routeData: RouteData, fromHistory: boolean, replace: boolean): Promise<void>
     {
         const to   = this.createRoute(url, definition, routeData);
-        const from = this.current?.route;
+        const from = this.context?.route;
 
         if (!await this.invokeMiddleware(to, from))
         {
-            const previous  = this.current;
+            const previous  = this.context;
             const hasUpdate = definition == previous?.definition;
             const cache     = this.cache.slice(0, definition.stack.length);
 
-            this.current = { definition, route: to };
+            this.context = { definition, route: to };
 
-            let parent = this.root.value as IRouteableElement;
+            let parent          = this.root.value as IRouteableElement;
+            let requireNewScope = true;
 
             for (let index = 0; index < definition.stack.length; index++)
             {
@@ -167,10 +177,19 @@ export default class WebRouter
                         next.onRouteEnter?.(to, from);
                     }
 
+                    requireNewScope = false;
+
                     parent = next!;
                 }
                 else
                 {
+                    if (requireNewScope)
+                    {
+                        this.scope.dispose();
+
+                        this.scope = this.container.createScope();
+                    }
+
                     let next: HTMLElement | undefined;
 
                     cache[index] = { };
@@ -179,7 +198,7 @@ export default class WebRouter
                     {
                         const constructor = await this.resolveComponent(component);
 
-                        const element = this.container.inject(constructor) as IRouteableElement;
+                        const element = this.scope.inject(constructor) as IRouteableElement;
 
                         this.connectToOutlet(parent, element, key, to, from, definition.selector);
 
@@ -199,11 +218,18 @@ export default class WebRouter
 
             if (!fromHistory)
             {
-                this.history.splice(this.index + 1, Infinity);
+                if (replace)
+                {
+                    this.history[this.index] = [url, definition, routeData];
+                }
+                else
+                {
+                    this.history.splice(this.index + 1, Infinity);
 
-                this.history.push([url, definition, routeData]);
+                    this.history.push([url, definition, routeData]);
 
-                this.index = this.history.length - 1;
+                    this.index = this.history.length - 1;
+                }
             }
 
             this.routeChangeEvent.notify({ from, to });
@@ -224,7 +250,7 @@ export default class WebRouter
     {
         this.connectedElements.forEach(x => (x.dispose?.(), x.remove()));
 
-        this.current = undefined;
+        this.context = undefined;
     }
 
     private disconnectFromOutlets(parent: HTMLElement, exclude: Set<string>, to: Route, from?: Route): void
@@ -300,33 +326,7 @@ export default class WebRouter
         return new URL(path.replace(LEADING_SLASH_PATTERN, ""), `${joinPaths(window.location.origin, this.baseUrl)}/`);
     }
 
-    public async back(): Promise<void>
-    {
-        await this.go(-1);
-    }
-
-    public async forward(): Promise<void>
-    {
-        await this.go(1);
-    }
-
-    public async go(value: number): Promise<void>
-    {
-        const index = Math.min(Math.max(this.index + value, 0), this.history.length - 1);
-
-        if (index != this.index)
-        {
-            const [url, routeItem, routeData] = this.history[index];
-
-            await this.create(url, routeItem, routeData, true);
-
-            window.history.replaceState(null, "", url.href);
-
-            this.index = index;
-        }
-    }
-
-    public async push(route: string | NamedRoute): Promise<void>
+    private async pushOrReplace(route: string | NamedRoute, replace: boolean): Promise<void>
     {
         if (typeof route == "string")
         {
@@ -336,7 +336,7 @@ export default class WebRouter
 
             if (match.matched)
             {
-                await this.create(url, ...match.value);
+                await this.create(url, ...match.value, false, replace);
 
                 window.history.pushState(null, "", this.route.url.href);
             }
@@ -369,7 +369,7 @@ export default class WebRouter
                     }
                 }
 
-                await this.create(url, routeConfig, routeData);
+                await this.create(url, routeConfig, routeData, false, replace);
 
                 window.history.pushState(null, "", this.route.url.href);
             }
@@ -378,6 +378,42 @@ export default class WebRouter
                 this.disconnectElements();
             }
         }
+    }
+
+    public async back(): Promise<void>
+    {
+        await this.go(-1);
+    }
+
+    public async forward(): Promise<void>
+    {
+        await this.go(1);
+    }
+
+    public async go(delta: number): Promise<void>
+    {
+        const index = Math.min(Math.max(this.index + delta, 0), this.history.length - 1);
+
+        if (index != this.index)
+        {
+            const [url, routeItem, routeData] = this.history[index];
+
+            await this.create(url, routeItem, routeData, true, false);
+
+            window.history.replaceState(null, "", url.href);
+
+            this.index = index;
+        }
+    }
+
+    public async push(route: string | NamedRoute): Promise<void>
+    {
+        return this.pushOrReplace(route, false);
+    }
+
+    public async replace(route: string | NamedRoute): Promise<void>
+    {
+        return this.pushOrReplace(route, true);
     }
 
     public async pushCurrentLocation(): Promise<void>

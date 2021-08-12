@@ -17,7 +17,7 @@ declare global
     }
 }
 
-@element("smd-switch", template, style)
+@element("smd-switch", { style, template })
 export default class Switch extends mix(CustomElement, [colorable, disableable, elevatable, rippleable, themeable])
 {
     @query("#root")

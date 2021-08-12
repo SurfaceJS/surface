@@ -1,7 +1,7 @@
 import CustomElement, { element } from "@surface/custom-element";
 
 
-@element("app-roo", "<h1>Hello {host.name}!!!</h1>", "h1 { color: blue; }")
+@element("app-roo", { template: "<h1>Hello {host.name}!!!</h1>", style: "h1 { color: blue; }"})
 class App extends CustomElement
 {
     public name = "World";

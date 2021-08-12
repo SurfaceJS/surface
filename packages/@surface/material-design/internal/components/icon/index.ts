@@ -14,7 +14,7 @@ declare global
     }
 }
 
-@element("smd-icon", template, style)
+@element("smd-icon", { style, template })
 export default class Icon extends CustomElement
 {
     private _name: string = "";

@@ -1,49 +1,20 @@
-import type { Delegate, IDisposable, Indexer } from "@surface/core";
-import { assert }                              from "@surface/core";
-import type { IExpression, IPattern }          from "@surface/expression";
-import type { Subscription }                   from "@surface/observer";
-import TemplateEvaluationError                 from "./errors/template-evaluation-error.js";
-import TemplateObservationError                from "./errors/template-observation-error.js";
-import TemplateParseError                      from "./errors/template-parse-error.js";
-import type IKeyValueObservable                from "./interfaces/key-value-observable";
-import type IKeyValueTraceable                 from "./interfaces/key-value-traceable";
-import type IObservable                        from "./interfaces/observable";
-import type ITraceable                         from "./interfaces/traceable";
-import DataBind                                from "./reactivity/data-bind.js";
-import type { Observables, StackTrace }        from "./types";
-
-// eslint-disable-next-line object-shorthand
-const wrapper = { "Window": /* c8 ignore next */ function () { /* */ } }.Window as object as typeof Window;
-
-wrapper.prototype = window;
-wrapper.prototype.constructor = wrapper;
-
-const windowWrapper = wrapper.prototype;
+import type { Delegate, IDisposable }   from "@surface/core";
+import { assert }                       from "@surface/core";
+import type { IExpression, IPattern }   from "@surface/expression";
+import type { Subscription }            from "@surface/observer";
+import TemplateEvaluationError          from "./errors/template-evaluation-error.js";
+import TemplateObservationError         from "./errors/template-observation-error.js";
+import TemplateParseError               from "./errors/template-parse-error.js";
+import type IKeyValueObservable         from "./interfaces/key-value-observable";
+import type IKeyValueTraceable          from "./interfaces/key-value-traceable";
+import type IObservable                 from "./interfaces/observable";
+import type ITraceable                  from "./interfaces/traceable";
+import DataBind                         from "./reactivity/data-bind.js";
+import type { Observables, StackTrace } from "./types";
 
 export function buildStackTrace(stackTrace: StackTrace): string
 {
     return stackTrace.map((entry, i) => entry.map(value => "   ".repeat(i) + value).join("\n")).join("\n");
-}
-
-export function createHostScope(host: HTMLElement): object
-{
-    return { $class: classMap, $style: styleMap, host };
-}
-
-export function inheritScope(scope: object): object
-{
-    const handler: ProxyHandler<Indexer> =
-    {
-        get:                      (target, key) => key in target ? target[key as string] : (windowWrapper as object as Indexer)[key as string],
-        getOwnPropertyDescriptor: (target, key) => Object.getOwnPropertyDescriptor(target, key) ?? Object.getOwnPropertyDescriptor(windowWrapper, key),
-        has:                      (target, key) => key in target || key in windowWrapper,
-        set:                      (_target, key) =>
-        {
-            throw new ReferenceError(`Assignment to constant variable "${String(key)}"`);
-        },
-    };
-
-    return new Proxy(scope, handler);
 }
 
 export function classMap(classes: Record<string, boolean>): string

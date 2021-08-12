@@ -1,49 +1,54 @@
 import type { Delegate, Indexer } from "@surface/core";
-import { typeGuard }              from "@surface/core";
+import type IConstraint           from "./interfaces/constraint.js";
 import type ITransformer          from "./interfaces/transformer";
 import Route                      from "./route.js";
 import type RouteData             from "./types/route-data.js";
+import type RouteOptions          from "./types/route-options";
 import type RouterMatch           from "./types/router-match";
 
 type Entry<T> =
-    {
-        route:    Route,
-        selector: Delegate<[RouteData], T>,
-    };
+{
+    route:    Route,
+    selector: Delegate<[RouteData], T>,
+};
+
+const ALPHA_PATTERN = /^[a-zA-Z]+$/;
+const DATE_PATTERN  = /^([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))$/;
+const UIID_PATTERN  = /^(([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})|([0-9a-f]{32}))$/i;
+
+const DEFAULT_CONSTRAINTS: [string, IConstraint][] =
+[
+    ["Alpha",   { validate: x => ALPHA_PATTERN.test(x) }],
+    ["Boolean", { validate: x => x == "true" || x == "false" }],
+    ["Date",    { validate: x => DATE_PATTERN.test(x) }],
+    ["Number",  { validate: x => !Number.isNaN(Number(x)) }],
+    ["UIID",    { validate: x => UIID_PATTERN.test(x) }],
+];
 
 const DEFAULT_TRANFORMERS: [string, ITransformer][] =
 [
-    ["Boolean", { parse: Boolean,                              stringfy: x => x.toString() }],
-    ["Date",    { parse: (source: string) => new Date(source), stringfy: (x: Date) => x.toISOString().replace(/T.+$/, "") }],
-    ["Number",  { parse: Number,                               stringfy: x => x.toString() }],
+    ["Boolean", { parse: Boolean,                              stringify: String }],
+    ["Date",    { parse: (source: string) => new Date(source), stringify: (x: Date) => x.toISOString().replace(/T.+$/, "") }],
+    ["Number",  { parse: Number,                               stringify: String }],
 ];
 
 export default class Router<T = RouteData>
 {
-    protected readonly entries:      Entry<T>[]                = [];
-    protected readonly namedEntries: Map<string, Entry<T>>     = new Map();
-    protected readonly tranformers:  Map<string, ITransformer> = new Map(DEFAULT_TRANFORMERS);
+    protected readonly entries:      Entry<T>[]            = [];
+    protected readonly namedEntries: Map<string, Entry<T>> = new Map();
 
-    public map(pattern: string): this;
-    public map(pattern: string, selector: Delegate<[RouteData], T>): this;
-    public map(name: string, pattern: string): this;
-    public map(name: string, pattern: string, selector: Delegate<[RouteData], T>): this;
-    public map(...args: [string] | [string, string] | [string, Delegate<[RouteData], T>] | [string, string, Delegate<[RouteData], T>]): this
+    public map(options: RouteOptions<T>): this
     {
-        const [name, pattern, selector = (x: RouteData) => x as unknown as T] =
-            args.length == 1
-                ? [undefined, args[0], undefined]
-                : args.length == 2
-                    ? typeGuard<[string, string]>(args, typeof args[1] == "string")
-                        ? [...args, undefined]
-                        : [undefined, ...args]
-                    : args;
+        const constraints  = new Map([...DEFAULT_CONSTRAINTS, ...Object.entries(options.constraints ?? { })]);
+        const transformers = new Map([...DEFAULT_TRANFORMERS, ...Object.entries(options.transformers ?? { })]);
 
-        const entry = { route: new Route(pattern, this.tranformers), selector };
+        const route = new Route(options.pattern, constraints, transformers);
 
-        if (name)
+        const entry = { route, selector: options.selector ?? (x => x as unknown as T) };
+
+        if (options.name)
         {
-            this.namedEntries.set(name, entry);
+            this.namedEntries.set(options.name, entry);
         }
 
         this.entries.push(entry);

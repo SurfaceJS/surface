@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom.js";
 
+import type { IConstraint, ITransformer }      from "@surface/router";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import RouteConfigurator                       from "../internal/route-configurator.js";
@@ -24,6 +25,9 @@ class UserProfileDetails extends HTMLElement
 
 class UserNestedRoot extends HTMLElement
 { }
+
+const constraints:  Record<string, IConstraint>  = { UPPERCASE: { validate: x => x == x.toUpperCase() } };
+const transformers: Record<string, ITransformer> = { JSON };
 
 @suite
 export default class ViewRouterSpec
@@ -67,51 +71,63 @@ export default class ViewRouterSpec
                         selector:  "outlet",
                     },
                 ],
-                component:  User,
-                components: { base: UserBase },
-                meta:       { userRead: true },
-                name:       "user",
-                path:       "user/{id}",
-                selector:   "outlet",
+                component:    User,
+                components:   { base: UserBase },
+                constraints,
+                meta:         { userRead: true },
+                name:         "user",
+                path:         "user/{id}",
+                selector:     "outlet",
+                transformers,
             },
         ];
 
         const expected: IRouteDefinition[] =
         [
             {
+                constraints,
                 meta:     { userProfileDetailsRead: true },
                 name:     "user-profile-details",
                 path:     "user/{id}/profile/details",
                 selector: "outlet",
                 stack:    [new Map([["default", User]]), new Map([["default", UserProfile]]), new Map([["default", UserProfileDetails]])],
+                transformers,
             },
             {
-                meta:     { userProfileDetailsRead: true },
-                name:     "user-nested-root",
-                path:     "/user/nested/root",
-                selector: "outlet",
-                stack:    [new Map([["default", User]]), new Map([["default", UserProfile]]), new Map([["default", UserNestedRoot]])],
+                constraints,
+                meta:        { userProfileDetailsRead: true },
+                name:        "user-nested-root",
+                path:        "/user/nested/root",
+                selector:    "outlet",
+                stack:       [new Map([["default", User]]), new Map([["default", UserProfile]]), new Map([["default", UserNestedRoot]])],
+                transformers,
             },
             {
-                meta:     { userProfileRead: true },
-                name:     "user-profile",
-                path:     "user/{id}/profile",
-                selector: "outlet",
-                stack:    [new Map([["default", User]]), new Map([["default", UserProfile]])],
+                constraints,
+                meta:        { userProfileRead: true },
+                name:        "user-profile",
+                path:        "user/{id}/profile",
+                selector:    "outlet",
+                stack:       [new Map([["default", User]]), new Map([["default", UserProfile]])],
+                transformers,
             },
             {
-                meta:     {  },
-                name:     "user-index",
-                path:     "user/{id}",
-                selector: "outlet",
-                stack:    [new Map([["default", User]]), new Map([["default", UserIndex]])],
+                constraints,
+                meta:        {  },
+                name:        "user-index",
+                path:        "user/{id}",
+                selector:    "outlet",
+                stack:       [new Map([["default", User]]), new Map([["default", UserIndex]])],
+                transformers,
             },
             {
-                meta:     { userRead: true },
-                name:     "user",
-                path:     "user",
-                selector: "outlet",
-                stack:    [new Map([["default", User]])],
+                constraints,
+                meta:       { userRead: true },
+                name:       "user",
+                path:       "user",
+                selector:   "outlet",
+                stack:      [new Map([["default", User]])],
+                transformers,
             },
         ];
 

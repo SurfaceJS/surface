@@ -46,7 +46,7 @@ export default class SchedulerSpec
         void scheduler.enqueue(() => actual.push("normal"), "normal");
         void scheduler.enqueue(() => actual.push("high"), "high");
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.deepEqual(actual, expected);
     }
@@ -95,6 +95,6 @@ export default class SchedulerSpec
         void scheduler.enqueue(() => { throw new Error(); }, "high");
         void scheduler.enqueue(() => { throw new Error(); }, "high");
 
-        await chai.assert.isRejected(scheduler.whenDone());
+        await chai.assert.isRejected(scheduler.execution());
     }
 }

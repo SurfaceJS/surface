@@ -29,11 +29,21 @@ function queryFactory(fn: (shadowRoot: ShadowRoot) => (Element | null) | NodeLis
     };
 }
 
+/**
+ * Injects lazy queried element.
+ * @param selector Selector used to element query.
+ * @param nocache Specifies whether the element should be cached.
+ */
 export function query(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return queryFactory(x => x.querySelector(selector), nocache);
 }
 
+/**
+ * Injects all queried element.
+ * @param selector Selector used to elements query.
+ * @param nocache Specifies whether the elements should be cached.
+ */
 export function queryAll(selector: string, nocache?: boolean): (target: HTMLElement, propertyKey: string | symbol) => void
 {
     return queryFactory(x => x.querySelectorAll(selector), nocache);

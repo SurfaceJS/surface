@@ -25,7 +25,7 @@ export default class AsyncObserverSpec
 
         target.value = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(target.value, asyncReceiver);
     }
@@ -64,7 +64,7 @@ export default class AsyncObserverSpec
         target.value = 3;
         target.value = 5;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(hits, 1);
         chai.assert.equal(target.value, receiver);
@@ -89,7 +89,7 @@ export default class AsyncObserverSpec
         target.value = "Hello World !!!";
         target.dispatchEvent(new Event("input"));
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(hits, 1);
         chai.assert.equal(target.value, receiver);

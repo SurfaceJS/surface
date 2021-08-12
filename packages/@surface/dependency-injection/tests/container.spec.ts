@@ -1,7 +1,9 @@
+import type { IDisposable }                    from "@surface/core";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import Container                               from "../internal/container.js";
 import inject                                  from "../internal/decorators/inject.js";
+import provide                                 from "../internal/decorators/provide.js";
 import Bar                                     from "./mocks/bar.js";
 import Baz                                     from "./mocks/baz.js";
 import Foo                                     from "./mocks/foo.js";
@@ -40,6 +42,67 @@ export default class DependencyInjectionSpec
     }
 
     @test @shouldPass
+    public registerScoped(): void
+    {
+        class MockD { }
+        class MockC { }
+
+        class MockB
+        {
+            public constructor
+            (
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        class MockA implements IDisposable
+        {
+            public constructor
+            (
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+
+            public dispose(): void
+            {
+                return void 0;
+            }
+        }
+
+        class Mock
+        {
+            public constructor
+            (
+                @inject(MockA) public a: MockA,
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        const container = new Container(new Container().registerScoped(MockD))
+            .registerTransient(MockA)
+            .registerSingleton(MockB)
+            .registerScoped(MockC)
+            .registerScoped("MockC", x => x.resolve(MockC));
+
+        const instance1 = container.inject(Mock);
+        const instance2 = container.inject(Mock);
+
+        chai.assert.notEqual(container.resolve(MockA), container.resolve(MockA), "container.resolve(MockA) notEqual container.resolve(MockA)");
+        chai.assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
+        chai.assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
+        chai.assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
+        chai.assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
+        chai.assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
+    }
+
+    @test @shouldPass
     public registerSingleton(): void
     {
         class Mock { }
@@ -66,6 +129,84 @@ export default class DependencyInjectionSpec
 
         chai.assert.notEqual(container.resolve(Mock), container.resolve(Mock), "container.resolve(Mock) notEqual container.resolve(Mock)");
         chai.assert.notEqual(container.resolve(key), container.resolve(key), "container.resolve(key) notEqual container.resolve(key)");
+    }
+
+    @test @shouldPass
+    public createScope(): void
+    {
+        class MockD { }
+        class MockC { }
+
+        class MockB
+        {
+            public constructor
+            (
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        class MockA implements IDisposable
+        {
+            public constructor
+            (
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+
+            public dispose(): void
+            {
+                return void 0;
+            }
+        }
+
+        class Mock
+        {
+            public constructor
+            (
+                @inject(MockA) public a: MockA,
+                @inject(MockB) public b: MockB,
+                @inject(MockC) public c: MockC,
+                @inject(MockD) public d: MockD,
+            )
+            { }
+        }
+
+        const scope = new Container(new Container().registerScoped(MockD))
+            .registerTransient(MockA)
+            .registerSingleton(MockB)
+            .registerScoped(MockC)
+            .registerScoped("MockC", x => x.resolve(MockC))
+            .createScope();
+
+        const instance1 = scope.inject(Mock);
+        const instance2 = scope.inject(Mock);
+
+        chai.assert.notEqual(scope.resolve(MockA), scope.resolve(MockA), "scope.resolve(MockC) notEqual scope.resolve(MockC)");
+        chai.assert.equal(scope.resolve(MockB), scope.resolve(MockB), "scope.resolve(MockB) equal scope.resolve(MockB)");
+        chai.assert.equal(scope.resolve(MockC), scope.resolve(MockC), "scope.resolve(MockC) equal scope.resolve(MockC)");
+        chai.assert.equal(scope.resolve(MockD), scope.resolve(MockD), "scope.resolve(MockD) equal scope.resolve(MockD)");
+        chai.assert.equal(instance1.b,    instance2.b,   "instance1.a equal instance1.b");
+        chai.assert.equal(instance1.a.c,  instance1.b.c, "instance1.a.c equal instance1.b.c");
+        chai.assert.equal(instance1.a.d,  instance1.b.d, "instance1.a.d equal instance1.b.d");
+        chai.assert.notEqual(instance1.c, instance2.c,   "instance1.c notEqual instance2.c");
+        chai.assert.notEqual(instance1.d, instance2.d,   "instance1.d notEqual instance2.d");
+    }
+
+    @test @shouldPass
+    public parent(): void
+    {
+        class Mock { }
+
+        const parentContainer = new Container();
+        const childContainer  = new Container(parentContainer);
+
+        parentContainer.registerSingleton(Mock);
+
+        chai.assert.equal(childContainer.resolve(Mock), parentContainer.resolve(Mock));
     }
 
     @test @shouldPass
@@ -192,27 +333,77 @@ export default class DependencyInjectionSpec
     }
 
     @test @shouldPass
-    public merge(): void
+    public provider(): void
     {
-        class LeftA { }
-        class LeftB { }
-        class RightA { }
-        class RightB { }
+        class RootA { }
+        class RootB implements IDisposable
+        {
+            public dispose(): void
+            {
+                return void 0;
+            }
+        }
+        class A { }
+        class B { }
 
-        const left = new Container()
-            .registerSingleton(LeftA)
-            .registerTransient(LeftB);
+        const root = new Container()
+            .registerTransient(RootA)
+            .registerScoped(RootB);
 
-        const right = new Container()
-            .registerSingleton(RightA)
-            .registerTransient(RightB);
+        const parent = new Container()
+            .registerTransient(B);
 
-        const container = Container.merge(left, right);
+        const container = new Container(parent)
+            .registerSingleton(RootA, A)
+            .registerTransient(A);
 
-        chai.assert.instanceOf(container.resolve(LeftA), LeftA, "container.resolve(LeftA) instanceOf LeftA");
-        chai.assert.instanceOf(container.resolve(LeftB), LeftB, "container.resolve(LeftB) instanceOf LeftB");
-        chai.assert.instanceOf(container.resolve(RightA), RightA, "container.resolve(RightA) instanceOf RightA");
-        chai.assert.instanceOf(container.resolve(RightB), RightB, "container.resolve(RightB) instanceOf RightB");
+        @provide(container)
+        class Mock
+        {
+            @inject(RootA)
+            public rootA!: RootA;
+
+            @inject(RootB)
+            public rootB!: RootB;
+
+            @inject(A)
+            public a!: A;
+
+            @inject(B)
+            public b!: B;
+        }
+
+        const instance = root.inject(Mock);
+
+        chai.assert.instanceOf(instance.rootA, A, "instance.rootA instanceOf RootA");
+        chai.assert.instanceOf(instance.rootB, RootB, "instance.rootB instanceOf RootB");
+        chai.assert.instanceOf(instance.a, A, "instance.a instanceOf A");
+        chai.assert.instanceOf(instance.b, B, "instance.b instanceOf B");
+    }
+
+    @test @shouldPass
+    public dispose(): void
+    {
+        const container = new Container();
+
+        class Mock implements IDisposable
+        {
+            public disposed: boolean = false;
+            public dispose(): void
+            {
+                this.disposed = true;
+            }
+        }
+
+        container.registerSingleton(Mock);
+
+        const intance = container.resolve(Mock);
+
+        chai.assert.isFalse(intance.disposed);
+
+        container.dispose();
+
+        chai.assert.isTrue(intance.disposed);
     }
 
     @test @shouldFail

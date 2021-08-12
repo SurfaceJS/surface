@@ -15,7 +15,7 @@ declare global
     }
 }
 
-@element("smd-footer", template, style)
+@element("smd-footer", { style, template })
 export default class Footer extends mix(CustomElement, [colorable, elevationable, themeable])
 {
     @query("#root")

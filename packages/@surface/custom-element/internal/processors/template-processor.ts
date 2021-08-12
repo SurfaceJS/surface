@@ -6,7 +6,6 @@ import
 {
     buildStackTrace,
     classMap,
-    inheritScope,
     styleMap,
     tryEvaluateExpressionByTraceable,
     tryObserveByObservable,
@@ -18,7 +17,6 @@ import LoopDirective                      from "../directives/loop-directive.js"
 import PlaceholderDirective               from "../directives/placeholder-directive.js";
 import TemplateProcessError               from "../errors/template-process-error.js";
 import DataBind                           from "../reactivity/data-bind.js";
-import { disposeTree }                    from "../singletons.js";
 import type { DirectiveFactory }          from "../types";
 import type AttributeDirectiveDescriptor  from "../types/attribute-directive-descriptor";
 import type DirectiveDescriptor           from "../types/directive-descriptor";
@@ -97,7 +95,7 @@ export default class TemplateProcessor
 
             const $this = element.nodeType == Node.DOCUMENT_FRAGMENT_NODE && this.context.parentNode ? this.context.parentNode : element;
 
-            const localScope = inheritScope({ this: $this, ...this.context.scope });
+            const localScope = { this: $this, ...this.context.scope };
 
             disposables.push(this.processAttributes(localScope, element, descriptor.attributes));
             disposables.push(this.processEvents(localScope, element, descriptor.events));
@@ -110,13 +108,7 @@ export default class TemplateProcessor
 
         disposables.push(this.processTemplateDirectives(this.context.templateDescriptor.directives));
 
-        return {
-            dispose: () =>
-            {
-                disposables.splice(0).forEach(x => x.dispose());
-                disposeTree(this.context.root);
-            },
-        };
+        return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     }
 
     private processAttributes(scope: object, element: Element, attributeDescriptors: AttributeDirectiveDescriptor[]): IDisposable
@@ -220,14 +212,14 @@ export default class TemplateProcessor
 
         for (const descriptor of descriptors)
         {
-            const handlerConstructor = this.context.customDirectives.get(descriptor.name);
+            const handlerConstructor = this.context.directives.get(descriptor.name);
 
             if (!handlerConstructor)
             {
                 throw new TemplateProcessError(`Unregistered directive #${descriptor.name}.`, buildStackTrace(descriptor.stackTrace));
             }
 
-            const context = { descriptor, element, scope: inheritScope(scope) };
+            const context = { descriptor, element, scope };
 
             if (typeGuard<DirectiveFactory>(handlerConstructor, !handlerConstructor.prototype))
             {
@@ -268,10 +260,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                customDirectives: this.context.customDirectives,
-                host:              this.context.host,
-                parentNode:        template.parentNode,
-                scope:             inheritScope(this.context.scope),
+                directives: this.context.directives,
+                host:       this.context.host,
+                parentNode: template.parentNode,
+                scope:      this.context.scope,
             };
 
             disposables.push(new InjectDirective(template, descriptor, context));
@@ -286,10 +278,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                customDirectives: this.context.customDirectives,
-                host:              this.context.host,
-                parentNode:        this.context.parentNode ?? templates[0].parentNode,
-                scope:             inheritScope(this.context.scope),
+                directives: this.context.directives,
+                host:       this.context.host,
+                parentNode: this.context.parentNode ?? templates[0].parentNode,
+                scope:      this.context.scope,
             };
 
             disposables.push(new ChoiceDirective(templates, descriptor, context));
@@ -304,10 +296,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                customDirectives: this.context.customDirectives,
-                host:              this.context.host,
-                parentNode:        this.context.parentNode ?? template.parentNode,
-                scope:             inheritScope(this.context.scope),
+                directives: this.context.directives,
+                host:       this.context.host,
+                parentNode: this.context.parentNode ?? template.parentNode,
+                scope:      this.context.scope,
             };
 
             disposables.push(new LoopDirective(template, descriptor, context));
@@ -322,10 +314,10 @@ export default class TemplateProcessor
 
             const context: TemplateDirectiveContext =
             {
-                customDirectives: this.context.customDirectives,
-                host:              this.context.host,
-                parentNode:        this.context.parentNode ?? template.parentNode,
-                scope:             inheritScope(this.context.scope),
+                directives: this.context.directives,
+                host:       this.context.host,
+                parentNode: this.context.parentNode ?? template.parentNode,
+                scope:      this.context.scope,
             };
 
             disposables.push(new PlaceholderDirective(template, descriptor, context));

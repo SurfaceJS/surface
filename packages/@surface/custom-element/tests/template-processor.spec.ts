@@ -50,7 +50,7 @@ async function tryActionAsync(action: Delegate): Promise<RawError>
     {
         action();
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
     }
     catch (error)
@@ -106,7 +106,7 @@ function process(host: Element, root: Node, scope?: Indexer): void
 
     const context: TemplateProcessorContext =
     {
-        customDirectives:   globalCustomDirectives,
+        directives:         globalCustomDirectives,
         host,
         root,
         scope:              scope ?? { host },
@@ -161,7 +161,7 @@ export default class TemplateProcessorSpec
 
             host.lang = "en-us";
 
-            await scheduler.whenDone();
+            await scheduler.execution();
 
             chai.assert.equal(input.lang, "en-us");
             chai.assert.equal(input.getAttribute("lang"), "en-us");
@@ -182,7 +182,7 @@ export default class TemplateProcessorSpec
 
         host.lang = "en-us";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild!.getAttribute("data-text"), "Tag lang: en-us");
     }
@@ -244,20 +244,6 @@ export default class TemplateProcessorSpec
     }
 
     @test @shouldPass
-    public elementWithOneWayDataBindingToWindowFallback(): void
-    {
-        const host = getHost();
-
-        host.shadowRoot.innerHTML = "<span lang='{Node.name}'</span>";
-
-        process(host, host.shadowRoot);
-
-        const span = host.shadowRoot.firstElementChild as HTMLSpanElement;
-
-        chai.assert.equal(span.lang, "Node");
-    }
-
-    @test @shouldPass
     public async elementWithTwoWayDataBinding(): Promise<void>
     {
         const host = getHost<{ value?: string }>();
@@ -276,13 +262,13 @@ export default class TemplateProcessorSpec
 
         host.value = "foo";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(span.value, "foo");
 
         span.value = "foo";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.value, "foo");
     }
@@ -306,13 +292,13 @@ export default class TemplateProcessorSpec
 
         host.value = "foo";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(span.value, "foo");
 
         span.value = "foo";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.value, "foo");
     }
@@ -356,15 +342,15 @@ export default class TemplateProcessorSpec
     @test @shouldPass
     public elementWithEventDirectiveBindArrowFunction(): void
     {
-        const host = getHost();
+        const host = getHost<{ clicked?: boolean }>();
 
-        host.shadowRoot.innerHTML = "<span @click='() => window.name = \"clicked\"'>Text</span>";
+        host.shadowRoot.innerHTML = "<span @click='() => host.clicked = true'>Text</span>";
 
         process(host, host.shadowRoot);
 
         host.shadowRoot.firstElementChild!.dispatchEvent(new Event("click"));
 
-        chai.assert.equal(window.name, "clicked");
+        chai.assert.isTrue(host.clicked);
     }
 
     @test @shouldPass
@@ -408,7 +394,7 @@ export default class TemplateProcessorSpec
 
         host.id = "02";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "Host id: 02");
     }
@@ -427,7 +413,7 @@ export default class TemplateProcessorSpec
 
         host.id = "02";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild!.innerHTML, "false");
     }
@@ -462,7 +448,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Hello Default!!!");
     }
@@ -484,7 +470,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
@@ -506,7 +492,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
@@ -528,32 +514,32 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
 
         root.injectKey = "key-b";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-a");
 
         root.injectKey = "key-a";
         host.placeholderKey = "key-b";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Placeholder Key: key-b");
 
         host.placeholderKey = "key-a";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Inject Key: key-a");
     }
@@ -598,7 +584,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(childHost.shadowRoot.querySelector("span")?.textContent, "Value: 1");
     }
@@ -620,13 +606,13 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Hello People!!!");
 
         host.item = { value: "World" };
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.textContent, "Hello World!!!");
     }
@@ -656,7 +642,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.childNodes[0].textContent, "#open",  "childNodes[0]");
         chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "#close", "childNodes[1]");
@@ -668,7 +654,7 @@ export default class TemplateProcessorSpec
             ["Three", 3, true],
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -696,7 +682,7 @@ export default class TemplateProcessorSpec
             ["Three", 3, true],
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const actual2 = Array.from(host.shadowRoot.childNodes).map(x => x.textContent);
 
@@ -728,13 +714,13 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild?.textContent, "First");
 
         host.order = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild?.textContent, "");
 
@@ -756,19 +742,19 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "First");
 
         host.order = 2;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Second");
 
         host.order = 3;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.childNodes[1].textContent, "Last");
     }
@@ -784,25 +770,25 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild, null);
 
         host.description = "Not Empty";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild!.textContent, "Text");
 
         host.description = "Still Not Empty";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild!.textContent, "Text");
 
         host.description = "";
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         chai.assert.equal(host.shadowRoot.firstElementChild, null);
     }
@@ -818,7 +804,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -835,7 +821,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -855,7 +841,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -878,7 +864,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [2];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -905,7 +891,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -922,7 +908,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -942,7 +928,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -965,7 +951,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [2];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -982,7 +968,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [1, 2, 3];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected5 =
         [
@@ -1005,7 +991,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [3, 2, 1];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected6 =
         [
@@ -1038,7 +1024,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1055,7 +1041,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[1, 2], [2, 4]];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1075,7 +1061,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[1, 2], [2, 4], [3, 6]];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -1098,7 +1084,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[2, 4]];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -1125,7 +1111,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1146,7 +1132,7 @@ export default class TemplateProcessorSpec
             [2, { item: { name: "two" } }],
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1171,7 +1157,7 @@ export default class TemplateProcessorSpec
             [3, { item: { name: "three" } }],
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -1194,7 +1180,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [[2, { item: { name: "two" } }]];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -1221,7 +1207,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1242,7 +1228,7 @@ export default class TemplateProcessorSpec
             { values: [2, 4] },
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1267,7 +1253,7 @@ export default class TemplateProcessorSpec
             { values: [3, 6] },
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -1290,7 +1276,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [{ values: [2, 4] }];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -1317,7 +1303,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1338,7 +1324,7 @@ export default class TemplateProcessorSpec
             { values: [2, [[4]]] },
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1363,7 +1349,7 @@ export default class TemplateProcessorSpec
             { values: [3, [[6]]] },
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -1386,7 +1372,7 @@ export default class TemplateProcessorSpec
 
         host.elements = [{ values: [2, [[4]]] }];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected4 =
         [
@@ -1427,7 +1413,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1442,7 +1428,7 @@ export default class TemplateProcessorSpec
 
         host.condition = true;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1465,7 +1451,7 @@ export default class TemplateProcessorSpec
 
         host.condition = false;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected3 =
         [
@@ -1508,7 +1494,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1522,7 +1508,7 @@ export default class TemplateProcessorSpec
 
         host.condition = true;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1561,7 +1547,7 @@ export default class TemplateProcessorSpec
 
         process(host, host.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1576,7 +1562,7 @@ export default class TemplateProcessorSpec
 
         host.condition = true;
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1627,7 +1613,7 @@ export default class TemplateProcessorSpec
         process(host, host.shadowRoot);
         process(root, root.shadowRoot);
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected1 =
         [
@@ -1646,7 +1632,7 @@ export default class TemplateProcessorSpec
             ["Three", 3],
         ];
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         const expected2 =
         [
@@ -1697,7 +1683,7 @@ export default class TemplateProcessorSpec
             </template>
         `;
 
-        @element(X_ELEMENT, template)
+        @element(X_ELEMENT, { template })
         class XElement extends CustomElement
         {
             public indexes: number[] = [1, 2, 3];
@@ -1705,7 +1691,7 @@ export default class TemplateProcessorSpec
 
         const xelement = new XElement();
 
-        await scheduler.whenDone();
+        await scheduler.execution();
 
         host.appendChild(xelement);
 

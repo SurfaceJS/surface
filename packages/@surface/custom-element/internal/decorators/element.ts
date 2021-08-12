@@ -1,16 +1,21 @@
-import type { Constructor }                       from "@surface/core";
-import { DisposableMetadata, HookableMetadata }   from "@surface/core";
-import { createHostScope, stringToCSSStyleSheet } from "../common.js";
-import CustomElement                              from "../custom-element.js";
-import type ICustomElement                        from "../interfaces/custom-element";
-import StaticMetadata                             from "../metadata/static-metadata.js";
-import TemplateParser                             from "../parsers/template-parser.js";
-import TemplateProcessor                          from "../processors/template-processor.js";
-import { globalCustomDirectives }                 from "../singletons.js";
-import type CustomElementDefinitionOptions        from "../types/custom-element-definition-options.js";
-import type TemplateProcessorContext              from "../types/template-processor-context.js";
+import type { Constructor }                     from "@surface/core";
+import { DisposableMetadata, HookableMetadata } from "@surface/core";
+import { disposeTree, stringToCSSStyleSheet }   from "../common.js";
+import CustomElement                            from "../custom-element.js";
+import type ICustomElement                      from "../interfaces/custom-element";
+import StaticMetadata                           from "../metadata/static-metadata.js";
+import TemplateParser                           from "../parsers/template-parser.js";
+import TemplateProcessor                        from "../processors/template-processor.js";
+import { globalCustomDirectives }               from "../singletons.js";
+import type CustomElementDefinitionOptions      from "../types/custom-element-definition-options.js";
+import type TemplateProcessorContext            from "../types/template-processor-context.js";
 
-export default function element(tagname: `${string}-${string}`, template?: string, style?: string, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
+/**
+ * Defines a new custom element.
+ * @param tagname tag name to be registered.
+ * @param options definition options.
+ */
+export default function element(tagname: `${string}-${string}`, options?: CustomElementDefinitionOptions): <T extends Constructor<ICustomElement>>(target: T) => T
 {
     return <T extends Constructor<ICustomElement>>(target: T) =>
     {
@@ -20,13 +25,15 @@ export default function element(tagname: `${string}-${string}`, template?: strin
 
             const templateElement = document.createElement("template");
 
-            templateElement.innerHTML = template ?? "<slot></slot>";
+            templateElement.innerHTML = options?.template ?? "<slot></slot>";
 
             const descriptor = TemplateParser.parseReference(tagname, templateElement);
 
-            if (style)
+            if (options?.style)
             {
-                staticMetadata.styles.push(stringToCSSStyleSheet(style));
+                const styles = Array.isArray(options.style) ? options.style : [options.style];
+
+                staticMetadata.styles.push(...styles.map(stringToCSSStyleSheet));
             }
 
             staticMetadata.template = templateElement;
@@ -42,16 +49,17 @@ export default function element(tagname: `${string}-${string}`, template?: strin
 
                     const context: TemplateProcessorContext =
                     {
-                        customDirectives:   new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
+                        directives:         new Map([...globalCustomDirectives, ...Object.entries(options?.directives ?? { })]),
                         host:               instance,
                         root:               instance.shadowRoot,
-                        scope:              createHostScope(instance),
+                        scope:              { host: instance },
                         templateDescriptor: StaticMetadata.from(target).descriptor,
                     };
 
                     const disposable = TemplateProcessor.process(context);
 
                     DisposableMetadata.from(instance).add(disposable);
+                    DisposableMetadata.from(instance).add({ dispose: () => disposeTree(instance.shadowRoot) });
 
                     return instance;
                 },

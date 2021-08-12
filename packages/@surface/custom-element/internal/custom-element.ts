@@ -41,6 +41,10 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         return Reflect.get(instance.constructor, CUSTOM_ELEMENT);
     }
 
+    /**
+     * Extends a HTML element.
+     * @param base Element to be extended.
+     */
     public static as<T extends Constructor<HTMLElement>>(base: T): T & Constructor<ICustomElement>
     {
         return class CustomElementExtends extends base implements ICustomElement
@@ -64,11 +68,17 @@ export default class CustomElement extends HTMLElement implements ICustomElement
         };
     }
 
+    /**
+     * Registers a custom directive.
+     * @param name Custom directive name.
+     * @param handler An directive constructor or factory.
+     */
     public static registerDirective(name: string, handler: DirectiveConstructor | DirectiveFactory): void
     {
         globalCustomDirectives.set(name, handler);
     }
 
+    /** Disposes resources. */
     public dispose(): void
     {
         DisposableMetadata.from(this).dispose();

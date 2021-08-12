@@ -34,11 +34,13 @@ export default class RouteConfigurator
 
             const definition: IRouteDefinition =
             {
-                meta:     config.meta ?? { },
-                name:     config.name,
+                constraints:  { ...parent?.constraints, ...config.constraints },
+                meta:         config.meta ?? { },
+                name:         config.name,
                 path,
-                selector: config.selector,
-                stack:    [...parent?.stack ?? [], components],
+                selector:     config.selector,
+                stack:        [...parent?.stack ?? [], components],
+                transformers: { ...parent?.transformers, ...config.transformers },
             };
 
             if ((config.children?.length ?? 0) > 0)

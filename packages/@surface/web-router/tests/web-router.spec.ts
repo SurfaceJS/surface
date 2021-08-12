@@ -3,35 +3,37 @@
 import "./fixtures/dom.js";
 
 import CustomElement, { define, element }      from "@surface/custom-element";
+import Container, { inject }                   from "@surface/dependency-injection";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
 import chaiAsPromised                          from "chai-as-promised";
 import type IRouteableElement                  from "../internal/interfaces/routeable-element";
 import type IRouterInterceptor                 from "../internal/interfaces/router-interceptor";
 import RouterLinkDirective                     from "../internal/router-link-directive.js";
-import type NamedRoute                         from "../internal/types/named-route.js";
+import type NamedRoute                         from "../internal/types/named-route";
 import type Route                              from "../internal/types/route";
 import type RouteConfiguration                 from "../internal/types/route-configuration";
+import type WebRouterOptions                   from "../internal/types/web-router-options";
 import WebRouter                               from "../internal/web-router.js";
 
 chai.use(chaiAsPromised);
 
-@element("home-view", "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>")
+@element("home-view", { template: "<router-outlet></router-outlet><router-outlet name='non-default'></router-outlet>" })
 class HomeView extends CustomElement
 {
     public fullscreen: boolean = false;
 
-    public onEnter(): void
+    public onRouteEnter(): void
     {
         // Coverage
     }
 
-    public onLeave(): void
+    public onRouteLeave(): void
     {
         // Coverage
     }
 
-    public onUpdate(): void
+    public onRouteUpdate(): void
     {
         // Coverage
     }
@@ -39,13 +41,23 @@ class HomeView extends CustomElement
 
 @define("home-detail-view")
 class HomeDetailView extends HTMLElement
-{ }
+{
+    public onRouteLeave(): void
+    {
+        // Coverage
+    }
+
+    public dispose(): void
+    {
+        // Coverage
+    }
+}
 
 @define("home-other-detail-view")
 class HomeOtherDetailView extends HTMLElement
 { }
 
-@element("home-index-view", "<div id='router-outlet' name='non-default'></div>")
+@element("home-index-view", { template: "<div id='router-outlet' name='non-default'></div>" })
 class HomeIndexView extends CustomElement implements IRouteableElement
 { }
 
@@ -59,7 +71,25 @@ class AboutInvalidView extends HTMLElement implements IRouteableElement
 
 @define("data-view")
 class DataView extends HTMLElement
-{ }
+{
+    @inject("foo")
+    public foo!: object;
+
+    public onRouteEnter(): void
+    {
+        // Coverage
+    }
+
+    public onRouteUpdate(): void
+    {
+        // Coverage
+    }
+
+    public onRouteLeave(): void
+    {
+        // Coverage
+    }
+}
 
 @define("about-view")
 class AboutView extends HTMLElement
@@ -82,7 +112,7 @@ const template =
         </template>
     `;
 
-@element("app-root", template)
+@element("app-root", { template })
 class AppRoot extends CustomElement
 {
     public fullscreen: boolean = false;
@@ -96,7 +126,7 @@ export default class WebRouterSpec
 
     public constructor()
     {
-        const configurations: RouteConfiguration[] =
+        const routes: RouteConfiguration[] =
         [
             {
                 children:
@@ -161,7 +191,7 @@ export default class WebRouterSpec
             },
         ];
 
-        class Middleware implements IRouterInterceptor
+        class Interceptor implements IRouterInterceptor
         {
             public async intercept(next: (route: string | NamedRoute) => Promise<void>, to: Route, _: Route | undefined): Promise<void>
             {
@@ -172,7 +202,16 @@ export default class WebRouterSpec
             }
         }
 
-        this.router = new WebRouter("app-root", configurations, { baseUrl: "/base/path", interceptors: [{ intercept: async () => Promise.resolve() },  Middleware] });
+        const options: WebRouterOptions =
+        {
+            baseUrl:      "/base/path",
+            container:    new Container().registerScoped("foo", () => ({ dispose: () => void 0 })),
+            interceptors: [{ intercept: async () => Promise.resolve() },  Interceptor],
+            root:         "app-root",
+            routes,
+        };
+
+        this.router = new WebRouter(options);
 
         CustomElement.registerDirective("to", x => new RouterLinkDirective(this.router, x));
 
@@ -324,6 +363,65 @@ export default class WebRouterSpec
 
         chai.assert.equal(window.location.href, "http://localhost.com/base/path/home", "window.location.href equal 'http://localhost.com/base/path/home'");
         chai.assert.instanceOf(slot.firstElementChild, HomeView, "slot.firstElementChild to HomeView");
+    }
+
+    @test @shouldPass
+    public async replace(): Promise<void>
+    {
+        const slot = document.body.firstElementChild!.shadowRoot!.querySelector<HTMLElement>("router-outlet")!;
+
+        chai.assert.instanceOf(slot, HTMLElement);
+
+        // @ts-expect-error
+        this.router.history = [];
+
+        await this.router.push("/home");
+
+        // @ts-expect-error
+        let historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        let historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 1);
+        chai.assert.instanceOf(slot.firstElementChild, HomeView, "push('/home'): slot.firstElementChild instanceOf HomeView");
+
+        await this.router.push("/about");
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 1);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, AboutView, "push('/about'): slot.firstElementChild instanceOf AboutView");
+
+        await this.router.back();
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, HomeView, "push('/home'): slot.firstElementChild instanceOf HomeView");
+
+        await this.router.replace("/about");
+
+        // @ts-expect-error
+        historyLength = this.router.history.length;
+
+        // @ts-expect-error
+        historyIndex = this.router.index;
+
+        chai.assert.equal(historyIndex, 0);
+        chai.assert.equal(historyLength, 2);
+        chai.assert.instanceOf(slot.firstElementChild, AboutView, "push('/about'): slot.firstElementChild instanceOf AboutView");
     }
 
     @test @shouldPass

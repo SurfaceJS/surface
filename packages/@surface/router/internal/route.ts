@@ -1,5 +1,6 @@
 import type { Indexer }  from "@surface/core";
 import { hasValue }      from "@surface/core";
+import type IConstraint  from "./interfaces/constraint";
 import type INode        from "./interfaces/node";
 import type ITransformer from "./interfaces/transformer";
 import type SegmentNode  from "./nodes/segment-node.js";
@@ -9,13 +10,15 @@ import type RouteMatch   from "./types/route-match";
 
 export default class Route
 {
-    private readonly nodes:       INode[];
-    private readonly pattern:     RegExp;
-    private readonly segments:    SegmentNode[];
+    private readonly nodes:        INode[];
+    private readonly pattern:      RegExp;
+    private readonly segments:     SegmentNode[];
+    private readonly constraints:  Map<string, IConstraint>;
     private readonly transformers: Map<string, ITransformer>;
 
-    public constructor(pattern: string, transformers: Map<string, ITransformer>)
+    public constructor(pattern: string, constraints: Map<string, IConstraint>, transformers: Map<string, ITransformer>)
     {
+        this.constraints  = constraints;
         this.transformers = transformers;
         this.segments     = Parser.parse(this.normalize(pattern));
         this.nodes        = this.segments.flatMap(x => x.nodes);
@@ -59,9 +62,9 @@ export default class Route
         }
     }
 
-    private collectParameters(match: RegExpExecArray): Indexer
+    private collectParameters(match: RegExpExecArray): Indexer | null
     {
-        const data: Indexer = { };
+        const parameters: Indexer = { };
 
         for (let index = 0; index < this.nodes.length; index++)
         {
@@ -72,7 +75,7 @@ export default class Route
             {
                 if (TypeGuard.isAssignment(node))
                 {
-                    data[node.left] = group || node.right;
+                    parameters[node.left] = group || node.right;
                 }
                 else if (TypeGuard.isTransformer(node))
                 {
@@ -80,37 +83,43 @@ export default class Route
                         ? [node.transformer.left, group ?? node.transformer.right]
                         : [node.transformer.name, group];
 
+                    const constraint = this.constraints.get(key);
                     const tranformer = this.transformers.get(key);
 
-                    if (!tranformer)
+                    if (!constraint && !tranformer)
                     {
-                        throw new Error(`Unregistred transformer ${key}`);
+                        throw new Error(`Unregistred constraint or transformer ${key}`);
+                    }
+
+                    if (value && !node.optional && !(constraint?.validate(value) ?? true))
+                    {
+                        return null;
                     }
 
                     if (value)
                     {
-                        data[node.name] = tranformer.parse(value);
+                        parameters[node.name] = tranformer ? tranformer.parse(value) : value;
                     }
-
                 }
                 else if (TypeGuard.isIdentifier(node) && group)
                 {
-                    data[node.name] = group;
+                    parameters[node.name] = group;
                 }
                 else if (TypeGuard.isRest(node))
                 {
-                    data[node.name] = group ?? "";
+                    parameters[node.name] = group ?? "";
                 }
             }
         }
 
-        return data;
+        return parameters;
     }
 
     private matchParameters(params: Indexer): RouteMatch
     {
         const paths:         string[] = [];
         const missingParams: string[] = [];
+        const invalidParams: string[] = [];
 
         const parameters: Indexer = { };
 
@@ -146,11 +155,12 @@ export default class Route
                         ? [node.transformer.left, params[node.name] ?? (defaultValue = node.transformer.right)]
                         : [node.transformer.name, params[node.name]];
 
+                    const constraint  = this.constraints.get(key);
                     const transformer = this.transformers.get(key);
 
-                    if (!transformer)
+                    if (!constraint && !transformer)
                     {
-                        throw new Error(`Unregistred transformer ${key}`);
+                        throw new Error(`Unregistred constraint or transformer ${key}`);
                     }
 
                     if (!hasValue(value))
@@ -160,15 +170,29 @@ export default class Route
                             missingParams.push(node.name);
                         }
                     }
-                    else if (value == defaultValue)
+                    else if (transformer)
                     {
-                        parameters[node.name] = transformer.parse(value as string);
-                    }
-                    else
-                    {
-                        parameters[node.name] = value;
+                        if (value == defaultValue)
+                        {
+                            parameters[node.name] = transformer.parse(value as string);
 
-                        paths.push(transformer.stringfy(value));
+                            paths.push(value as string);
+                        }
+                        else
+                        {
+                            parameters[node.name] = value;
+
+                            const stringValue = transformer.stringify(value);
+
+                            if (!this.constraints.get(key)?.validate(stringValue))
+                            {
+                                invalidParams.push(`${typeof value == "string" ? `"${value}"` : value} is not assignable to ${node.name}:${key}`);
+                            }
+                            else
+                            {
+                                paths.push(stringValue);
+                            }
+                        }
                     }
                 }
                 else if (TypeGuard.isIdentifier(node))
@@ -205,12 +229,26 @@ export default class Route
             }
         }
 
-        if (missingParams.length == 0)
+        const reasons: string[] = [];
+
+        if (invalidParams.length > 0)
         {
-            return { matched: true, routeData: { parameters, path: paths.join("") } };
+            reasons.push(`Invalid parameters: ${invalidParams.join(", ")}`);
+            // reasons.push(invalidParams.join(", "));
         }
 
-        return { matched: false, reason: `Missing required parameters: ${missingParams.join(", ")}` };
+        if (missingParams.length > 0)
+        {
+            reasons.push(`Missing parameters: ${missingParams.join(", ")}`);
+            // reasons.push(missingParams.map(x => `${x}: missing`).join(", "));
+        }
+
+        if (reasons.length > 0)
+        {
+            return { matched: false, reason: reasons.join(", ") };
+        }
+
+        return { matched: true, routeData: { parameters, path: paths.join("") } };
     }
 
     private matchUrl(path: string): RouteMatch
@@ -221,10 +259,15 @@ export default class Route
 
         if (match)
         {
-            return {
-                matched:   true,
-                routeData: { parameters: this.collectParameters(match), path: normalizedPath },
-            };
+            const parameters = this.collectParameters(match);
+
+            if (parameters)
+            {
+                return {
+                    matched:   true,
+                    routeData: { parameters, path: normalizedPath },
+                };
+            }
         }
 
         return { matched: false, reason: "Pattern don't match" };
