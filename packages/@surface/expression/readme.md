@@ -25,7 +25,7 @@ Supported Expressions:
 
 Notes that ArrowFunctionExpression does not supports **Block Body**.
 
-Basic usage:
+## Basic usage
 ```js
 import Expression from "@surface/expression";
 

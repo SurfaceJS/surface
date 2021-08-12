@@ -381,7 +381,8 @@ await router.go(2);
 await router.replace("/company/2");
 ```
 ## Dependency Injection
-**@surface/web-router** has builtin support of dependency injection through of module [**@surface/dependency-injection**](../dependency-injection/readme.md) and can inject dependencies directly on routed component constructor or properties (notes that injected properties are initialized after constructor).
+**@surface/web-router** has builtin support of dependency injection through of module [**@surface/dependency-injection**](../dependency-injection/readme.md) and can inject dependencies directly on routed component constructor or properties (notes that injected properties are initialized after constructor). For code split, see [**Provider**](../dependency-injection/readme.md#provider).
+
 
 ```ts
 import CustomElement               from "@surface/custom-element";
