@@ -3,7 +3,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "additionalProperties": false,
     "definitions": {
-        "analyzer": {
+        "Analyzer": {
             "properties": {
                 "analyzerHost": {
                     "description": "Host that will be used in `server` mode to start HTTP server.",
@@ -20,7 +20,7 @@
                 },
                 "analyzerPort": {
                     "description": "Port that will be used in `server` mode to start HTTP server.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "type": "number"
                         },
@@ -41,7 +41,7 @@
                 },
                 "excludeAssets": {
                     "description": "Patterns that will be used to match against asset names to exclude them from the report.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "type": "string"
                         },
@@ -68,15 +68,15 @@
             },
             "type": "object"
         },
-        "buildConfiguration": {
+        "BuildConfiguration": {
             "additionalProperties": false,
             "properties": {
                 "cache": {
                     "description": "Cache generated modules and chunks to improve performance for multiple incremental builds.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "else": {
-                                "$ref": "#/definitions/fileCacheOptions"
+                                "$ref": "#/definitions/FileCacheOptions"
                             },
                             "if": {
                                 "properties": {
@@ -97,7 +97,7 @@
                                 "type"
                             ],
                             "then": {
-                                "$ref": "#/definitions/memoryCacheOptions"
+                                "$ref": "#/definitions/MemoryCacheOptions"
                             },
                             "type": "object"
                         },
@@ -107,20 +107,20 @@
                     ]
                 },
                 "optimization": {
-                    "$ref": "#/definitions/optimization",
+                    "$ref": "#/definitions/Optimization",
                     "description": ""
                 },
                 "overrides": {
-                    "$ref": "#/definitions/overrides",
+                    "$ref": "#/definitions/Overrides",
                     "description": "Overrides files during compilation."
                 },
                 "performance": {
-                    "$ref": "#/definitions/performance",
+                    "$ref": "#/definitions/Performance",
                     "description": "Configuration for web performance recommendations."
                 },
                 "variables": {
                     "description": "Accepts an array with the environment variables that will be used or an object with the variables and their default values.",
-                    "oneOf": [
+                    "anyOf": [
                         {
                             "items": {
                                 "type": "string"
@@ -138,65 +138,34 @@
             },
             "type": "object"
         },
-        "devServer": {
+        "DevServer": {
             "properties": {
                 "compress": {
                     "description": "Enable gzip compression for everything served.",
                     "type": "boolean"
                 },
-                "contentBase": {
-                    "description": "Tell the server where to serve content from. This is only necessary if you want to serve static files. devServer.publicPath will be used to determine where the bundles should be served from, and takes precedence.",
-                    "oneOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "type": "number"
-                        },
-                        {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        }
-                    ]
-                },
-                "contentBasePublicPath": {
-                    "description": "Tell the server at what URL to serve `devServer.contentBase`. If there was a file `assets/manifest.json`, it would be served at `/serve-content-base-at-this-url/manifest.json`.",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
-                        {
-                            "items": {
-                                "type": "string"
-                            },
-                            "type": "array"
-                        }
-                    ]
-                },
                 "host": {
                     "description": "Specify a host to use. By default this is localhost.",
-                    "type": "number"
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "enum": [
+                                "local-ip",
+                                "local-ipv4",
+                                "local-ipv6"
+                            ]
+                        }
+                    ]
                 },
                 "hot": {
                     "description": "Enable webpack's Hot Module Replacement feature.",
-                    "type": "boolean"
-                },
-                "hotOnly": {
-                    "description": "Enables Hot Module Replacement (see devServer.hot) without page refresh as fallback in case of build failures.",
-                    "type": "boolean"
-                },
-                "index": {
-                    "description": "The filename that is considered the index file.",
-                    "type": "string"
-                },
-                "lazy": {
-                    "description": "When lazy is enabled, the dev-server will only compile the bundle when it gets requested.",
-                    "type": "boolean"
+                    "enum": [
+                        true,
+                        false,
+                        "only"
+                    ]
                 },
                 "liveReload": {
                     "description": "By default, the dev-server will reload/refresh the page when file changes are detected. devServer.hot option must be disabled or devServer.watchContentBase option must be enabled in order for liveReload to take effect. Disable devServer.liveReload by setting it to false.",
@@ -204,64 +173,48 @@
                 },
                 "open": {
                     "description": "When open is enabled, the dev server will open the browser.",
-                    "oneOf": [
-                        {
-                            "type": "string"
-                        },
+                    "anyOf": [
                         {
                             "type": "boolean"
-                        }
-                    ]
-                },
-                "openPage": {
-                    "description": "Specify a page to navigate to when opening the browser.",
-                    "oneOf": [
+                        },
                         {
                             "type": "string"
                         },
                         {
                             "items": {
                                 "type": "string"
-                            },
-                            "type": "array"
+                            }
+                        },
+                        {
+                            "$ref": "#/definitions/Open"
+                        },
+                        {
+                            "items": {
+                                "$ref": "#/definitions/Open"
+                            }
                         }
                     ]
                 },
                 "port": {
                     "description": "Specify a port number to listen for requests on.",
-                    "type": "number"
-                },
-                "public": {
-                    "description": "When using inline mode and you're proxying dev-server, the inline client script does not always know where to connect to.  It will try to guess the URL of the server based on window.location, but if that fails you'll need to use this.",
-                    "type": "string"
-                },
-                "publicPath": {
-                    "description": "The bundled files will be available in the browser under this path. default is '/'.",
-                    "type": "string"
-                },
-                "quiet": {
-                    "description": "With quiet enabled, nothing except the initial startup information will be written to the console.  This also means that errors or warnings from webpack are not visible.",
-                    "type": "boolean"
-                },
-                "useLocalIp": {
-                    "description": "This option lets the browser open with your local IP.",
-                    "type": "boolean"
-                },
-                "watchContentBase": {
-                    "description": "Tell the server to watch the files served by the devServer.contentBase option. File changes will trigger a full page reload.",
-                    "type": "boolean"
-                },
-                "writeToDisk": {
-                    "description": "Tells devServer to write generated assets to the disk.",
-                    "type": "boolean"
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "enum": [
+                                "auto"
+                            ]
+                        }
+                    ]
                 }
             },
             "type": "object"
         },
-        "entry": {
+        "Entry": {
             "anyOf": [
                 {
-                    "$ref": "#/definitions/stringOrStringArray"
+                    "$ref": "#/definitions/StringOrStringArray"
                 },
                 {
                     "additionalProperties": {
@@ -281,7 +234,7 @@
                 }
             ]
         },
-        "eslint": {
+        "Eslint": {
             "properties": {
                 "configFile": {
                     "description": "The configuration file to use. Notes that paths resolution applied in config file is relative to cwd.",
@@ -292,7 +245,7 @@
                     "type": "boolean"
                 },
                 "files": {
-                    "$ref": "#/definitions/stringOrStringArray",
+                    "$ref": "#/definitions/StringOrStringArray",
                     "description": "Specify directories, files, or globs."
                 },
                 "formatter": {
@@ -315,7 +268,7 @@
                 }
             }
         },
-        "fileCacheOptions": {
+        "FileCacheOptions": {
             "properties": {
                 "cacheDirectory": {
                     "description": "Base directory for the cache (defaults to node_modules/.cache/webpack).",
@@ -333,7 +286,7 @@
                 }
             }
         },
-        "includeFiles": {
+        "IncludeFiles": {
             "description": "File patterns to copy to output path.",
             "items": {
                 "anyOf": [
@@ -355,59 +308,7 @@
             },
             "type": "array"
         },
-        "index": {
-            "anyOf": [
-                {
-                    "type": "string"
-                },
-                {
-                    "$ref": "#/definitions/indexOptions"
-                }
-            ]
-        },
-        "indexOptions": {
-            "properties": {
-                "cache": {
-                    "description": "Emit the file only if it was changed.",
-                    "type": "boolean"
-                },
-                "filename": {
-                    "description": "The file to write the HTML to. Supports subdirectories eg: `assets/admin.html` [name] will be replaced by the entry name",
-                    "type": "string"
-                },
-                "minify": {
-                    "anyOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "enum": [
-                                "auto"
-                            ]
-                        }
-                    ],
-                    "description": "HTML Minification options. Set to `false` to disable minifcation. Set to `'auto'` to enable minifcation only for production mode."
-                },
-                "publicPath": {
-                    "anyOf": [
-                        {
-                            "type": "boolean"
-                        },
-                        {
-                            "enum": [
-                                "auto"
-                            ]
-                        }
-                    ],
-                    "description": "By default the public path is set to `auto` - that way the bundler will try to set the publicPath according to the current filename and the project publicPath setting."
-                },
-                "template": {
-                    "description": "Path to the template",
-                    "type": "string"
-                }
-            }
-        },
-        "logging": {
+        "Logging": {
             "description": "Log level.",
             "enum": [
                 true,
@@ -422,7 +323,7 @@
                 "verbose"
             ]
         },
-        "memoryCacheOptions": {
+        "MemoryCacheOptions": {
             "properties": {
                 "maxGenerations": {
                     "description": "Number of generations unused cache entries stay in memory cache at minimum (1 = may be removed after unused for a single compilation, ..., Infinity: kept forever).",
@@ -436,13 +337,58 @@
                 }
             }
         },
-        "mode": {
+        "Mode": {
             "enum": [
                 "development",
                 "production"
             ]
         },
-        "optimization": {
+        "Open": {
+            "properties": {
+                "app": {
+                    "description": "Open specified browser.",
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        {
+                            "$ref": "#/definitions/OpenApp"
+                        }
+                    ]
+                },
+                "target": {
+                    "description": "Opens specified page in browser.",
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "OpenApp": {
+            "properties": {
+                "arguments": {
+                    "type": "string"
+                },
+                "name": {
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "Optimization": {
             "description": "",
             "properties": {
                 "chunkIds": {
@@ -510,7 +456,7 @@
                 }
             }
         },
-        "overrides": {
+        "Overrides": {
             "items": {
                 "additionalProperties": false,
                 "properties": {
@@ -525,7 +471,7 @@
             },
             "type": "array"
         },
-        "performance": {
+        "Performance": {
             "properties": {
                 "hints": {
                     "description": "Sets the format of the hints: warnings, errors or nothing at all.",
@@ -545,7 +491,7 @@
                 }
             }
         },
-        "preferTs": {
+        "PreferTs": {
             "anyOf": [
                 {
                     "type": "boolean"
@@ -559,12 +505,12 @@
             ],
             "description": "Resolve to the ts file when next to the transpiled js file."
         },
-        "project": {
+        "Project": {
             "additionalProperties": false,
             "description": "Project settings.",
             "properties": {
                 "analyzer": {
-                    "$ref": "#/definitions/analyzer",
+                    "$ref": "#/definitions/Analyzer",
                     "description": "Bundler analyzer configuration."
                 },
                 "context": {
@@ -579,23 +525,23 @@
                     "type": "array"
                 },
                 "entry": {
-                    "$ref": "#/definitions/entry",
+                    "$ref": "#/definitions/Entry",
                     "description": "Entry points."
                 },
                 "environments": {
                     "description": "Configurations by mode. Use to override some defaults.",
                     "properties": {
                         "development": {
-                            "$ref": "#/definitions/buildConfiguration"
+                            "$ref": "#/definitions/BuildConfiguration"
                         },
                         "production": {
-                            "$ref": "#/definitions/buildConfiguration"
+                            "$ref": "#/definitions/BuildConfiguration"
                         }
                     },
                     "type": "object"
                 },
                 "eslint": {
-                    "$ref": "#/definitions/eslint",
+                    "$ref": "#/definitions/Eslint",
                     "description": "Eslint options."
                 },
                 "filename": {
@@ -603,7 +549,7 @@
                     "type": "string"
                 },
                 "includeFiles": {
-                    "$ref": "#/definitions/includeFiles",
+                    "$ref": "#/definitions/IncludeFiles",
                     "description": "File patterns to copy to output path."
                 },
                 "index": {
@@ -611,7 +557,7 @@
                     "type": "string"
                 },
                 "mode": {
-                    "$ref": "#/definitions/mode",
+                    "$ref": "#/definitions/Mode",
                     "description": "Enable production optimizations or development hints."
                 },
                 "output": {
@@ -619,7 +565,7 @@
                     "type": "string"
                 },
                 "preferTs": {
-                    "$ref": "#/definitions/preferTs",
+                    "$ref": "#/definitions/PreferTs",
                     "description": "Resolve to the ts file when next to the transpiled js file."
                 },
                 "publicPath": {
@@ -627,7 +573,7 @@
                     "type": "string"
                 },
                 "target": {
-                    "$ref": "#/definitions/target",
+                    "$ref": "#/definitions/Target",
                     "description": "Environment to build for."
                 },
                 "tsconfig": {
@@ -637,8 +583,8 @@
             },
             "type": "object"
         },
-        "stringOrBoolean": {
-            "oneOf": [
+        "StringOrBoolean": {
+            "anyOf": [
                 {
                     "type": "string"
                 },
@@ -647,7 +593,7 @@
                 }
             ]
         },
-        "stringOrStringArray": {
+        "StringOrStringArray": {
             "anyOf": [
                 {
                     "type": "string"
@@ -660,7 +606,7 @@
                 }
             ]
         },
-        "target": {
+        "Target": {
             "enum": [
                 "pwa",
                 "web",
@@ -679,11 +625,11 @@
             "type": "boolean"
         },
         "devServer": {
-            "$ref": "#/definitions/devServer",
+            "$ref": "#/definitions/DevServer",
             "description": "Dev Server configuration."
         },
         "logging": {
-            "$ref": "#/definitions/logging",
+            "$ref": "#/definitions/Logging",
             "description": "Log level."
         },
         "main": {
@@ -692,7 +638,7 @@
         },
         "projects": {
             "additionalProperties": {
-                "$ref": "#/definitions/project"
+                "$ref": "#/definitions/Project"
             },
             "description": "Project map.",
             "type": "object"

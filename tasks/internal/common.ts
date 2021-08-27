@@ -5,6 +5,7 @@ import { createRequire }                    from "module";
 import path                                 from "path";
 import { fileURLToPath }                    from "url";
 import util                                 from "util";
+import { resolveError }                     from "@surface/core";
 import { createPathAsync, removePathAsync } from "@surface/io";
 import chalk                                from "chalk";
 import type { IPackage }                    from "npm-registry-client";
@@ -80,7 +81,7 @@ export async function execute(label: string, command: string): Promise<void>
     }
     catch (error)
     {
-        console.log(error.message);
+        console.log(resolveError(error).message);
     }
 }
 

@@ -4,6 +4,7 @@
 import "./fixtures/dom.js";
 
 import type { Delegate }                                                 from "@surface/core";
+import { resolveError }                                                  from "@surface/core";
 import type { IIdentifier, IMemberExpression }                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                           from "@surface/test-suite";
 import chai                                                              from "chai";
@@ -24,7 +25,7 @@ function tryAction(action: Delegate): RawError
     }
     catch (error)
     {
-        return toRaw(error);
+        return toRaw(resolveError(error));
     }
 
     return toRaw(new TemplateParseError("", ""));

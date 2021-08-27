@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "./fixtures/dom.js";
 
+import { resolveError }                        from "@surface/core";
 import { SyntaxError }                         from "@surface/expression";
 import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
 import chai                                    from "chai";
@@ -16,7 +17,7 @@ function parseWithError(expression: string): RawError | null
     }
     catch (error)
     {
-        return toRaw(error);
+        return toRaw(resolveError(error));
     }
 
     return null;

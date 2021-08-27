@@ -1,5 +1,6 @@
 import type { PathLike, Stats } from "fs";
 import path                     from "path";
+import { resolveError }         from "@surface/core";
 import Mock, { It }             from "@surface/mock";
 import
 {
@@ -355,7 +356,7 @@ export default class IoSpec
         }
         catch (error)
         {
-            chai.assert.deepEqual(`${PATH_TO_CREATE} exist and isn't an directory`, error.message);
+            chai.assert.deepEqual(`${PATH_TO_CREATE} exist and isn't an directory`, resolveError(error).message);
         }
 
         try
@@ -364,7 +365,7 @@ export default class IoSpec
         }
         catch (error)
         {
-            chai.assert.deepEqual(`${PATH_TO_SIMBOLIC_LINK} exist and isn't an directory`, error.message);
+            chai.assert.deepEqual(`${PATH_TO_SIMBOLIC_LINK} exist and isn't an directory`, resolveError(error).message);
         }
     }
 

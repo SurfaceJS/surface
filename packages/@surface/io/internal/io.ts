@@ -25,7 +25,8 @@ function getStats(filepath: string): Stats | null
     {
         return statSync(filepath);
     }
-    catch (e)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (e: any)
     {
         if (e && (e.code == "ENOENT" || e.code == "ENOTDIR"))
         {

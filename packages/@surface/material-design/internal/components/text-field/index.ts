@@ -153,7 +153,7 @@ export default class TextField extends mix(CustomElement, [colorable, lineRipple
     @event("keyup")
     protected handleCaret(): void
     {
-        const selection = super.shadowRoot.getSelection();
+        const selection = window.getSelection();
 
         assert(selection);
 
@@ -170,7 +170,7 @@ export default class TextField extends mix(CustomElement, [colorable, lineRipple
     {
         if (this.input.firstChild)
         {
-            const selection = super.shadowRoot.getSelection();
+            const selection = window.getSelection();
 
             assert(selection);
 

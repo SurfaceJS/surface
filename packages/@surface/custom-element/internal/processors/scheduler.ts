@@ -1,5 +1,5 @@
-import type { CancellationToken, Delegate } from "@surface/core";
-import { AggregateError, runAsync }         from "@surface/core";
+import type { CancellationToken, Delegate }       from "@surface/core";
+import { AggregateError, resolveError, runAsync } from "@surface/core";
 
 type Node<T> = { value: T, next?: Node<T> };
 
@@ -100,8 +100,10 @@ export default class Scheduler
                     resolve(task());
 
                 }
-                catch (error)
+                catch (e)
                 {
+                    const error = resolveError(e);
+
                     this.errors.push(error);
 
                     reject(error);

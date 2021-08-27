@@ -459,6 +459,11 @@ export function proxyFrom(...instances: Indexer[]): Indexer
     return new Proxy(instances[0], handler);
 }
 
+export function resolveError(error: unknown): Error
+{
+    return error instanceof Error ? error : new Error(String(error));
+}
+
 export function setValue<T extends object, P extends ArrayPathOf<T, P>>(value: ArrayPathOfValue<T, P>, root: T, ...path: P): void;
 export function setValue(value: unknown, root: object, ...path: string[]): void
 {

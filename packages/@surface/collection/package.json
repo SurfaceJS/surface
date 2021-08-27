@@ -6,7 +6,7 @@
     "dependencies": {
         "@surface/core": "file:../core",
         "@surface/enumerable": "file:../enumerable",
-        "tslib": "^2.3.0"
+        "tslib": "^2.3.1"
     },
     "description": "Provides many collection types.",
     "devDependencies": {

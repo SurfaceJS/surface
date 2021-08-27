@@ -8,7 +8,7 @@
         "@surface/expression": "file:../expression",
         "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
-        "tslib": "^2.3.0"
+        "tslib": "^2.3.1"
     },
     "description": "Provides support of directives and data binding on custom elements.",
     "devDependencies": {
@@ -18,7 +18,7 @@
         "@types/jsdom": "^16.2.13",
         "chai": "^4.3.4",
         "chai-as-promised": "^7.1.1",
-        "jsdom": "^16.6.0"
+        "jsdom": "^17.0.0"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [

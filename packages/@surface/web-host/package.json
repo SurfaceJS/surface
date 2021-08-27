@@ -9,8 +9,8 @@
         "@surface/enumerable": "file:../enumerable",
         "@surface/reflection": "file:../reflection",
         "@surface/router": "file:../router",
-        "@types/node": "^16.4.8",
-        "tslib": "^2.3.0"
+        "@types/node": "^16.7.2",
+        "tslib": "^2.3.1"
     },
     "description": "Simple web host for @surface projects.",
     "devDependencies": {

@@ -3,6 +3,7 @@ import fs                  from "fs";
 import path                from "path";
 import { fileURLToPath }   from "url";
 import { promisify }       from "util";
+import { resolveError }    from "@surface/core";
 import chalk               from "chalk";
 import type { Credential } from "npm-registry-client";
 import
@@ -128,7 +129,7 @@ export default class Commands
         }
         catch (error)
         {
-            log(error.message);
+            log(resolveError(error).message);
         }
 
         await Commands.restore();

@@ -1,3 +1,4 @@
+import { assert } from "@surface/core";
 import { batchTest, shouldFail, shouldPass, suite, test }          from "@surface/test-suite";
 import chai                                                        from "chai";
 import Expression                                                  from "../internal/expression.js";
@@ -63,6 +64,8 @@ export default class ExpressionSpec
         }
         catch (error)
         {
+            assert(error instanceof Error);
+
             chai.assert.equal(error.message, evaluationErrorExpected.error.message);
         }
     }

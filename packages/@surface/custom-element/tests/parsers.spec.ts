@@ -1,3 +1,4 @@
+import { resolveError }                                                     from "@surface/core";
 import { SyntaxError, TypeGuard }                                           from "@surface/expression";
 import { shouldFail, shouldPass, suite, test }                              from "@surface/test-suite";
 import chai                                                                 from "chai";
@@ -13,7 +14,7 @@ function parseWithError(parser: (expression: string) => unknown, expression: str
     }
     catch (error)
     {
-        return toRaw(error);
+        return toRaw(resolveError(error));
     }
 
     return toRaw(new SyntaxError("", 0, 0, 0));

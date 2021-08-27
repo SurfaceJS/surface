@@ -1,5 +1,6 @@
 import http                   from "http";
 import { List }               from "@surface/collection";
+import { resolveError }       from "@surface/core";
 import type Router            from "@surface/router";
 import type Configuration     from "./configuration.js";
 import FallbackRequestHandler from "./fallback-request-handler.js";
@@ -82,8 +83,10 @@ export default class WebHost
 
             this.startup?.onEndRequest?.(httpContext);
         }
-        catch (error)
+        catch (e)
         {
+            const error = resolveError(e);
+
             response.writeHead(StatusCode.InternalServerError, { "Content-Type": "text/plain" });
             response.end(error.message);
 

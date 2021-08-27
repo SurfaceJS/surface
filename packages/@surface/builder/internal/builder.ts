@@ -55,18 +55,14 @@ export default class Builder
         const devServerConfiguration: WebpackDevServer.Configuration =
         {
             historyApiFallback: true,
-            stats:              configuration.logging,
             ...configuration.devServer,
         };
 
-        const server = new WebpackDevServer(webpackCompiler, devServerConfiguration);
+        const server = new WebpackDevServer(devServerConfiguration, webpackCompiler);
 
-        const handlerAsync = (resolve: Delegate, reject: Delegate<[Error]>) =>
-            (error?: Error) => error ? reject(error) : resolve();
+        await server.start();
 
-        await new Promise<void>((resolve, reject) => server.listen(configuration.devServer?.port ?? 8080, configuration.devServer?.host ?? "localhost", handlerAsync(resolve, reject)));
-
-        return { close: async () => Promise.resolve(server.close()) };
+        return { close: async () => server.stop() };
     }
 
     public static async watch(configuration: Configuration): Promise<CompilerSignal>

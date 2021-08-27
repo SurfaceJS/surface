@@ -1,3 +1,4 @@
+import { assert }                                           from "@surface/core";
 import { batchTest, shouldFail, shouldPass, suite, test }   from "@surface/test-suite";
 import chai                                                 from "chai";
 import ParenthesizedExpression                              from "../internal/expressions/parenthesized-expression.js";
@@ -118,6 +119,8 @@ export default class ParserSpec
         }
         catch (error)
         {
+            assert(error instanceof Error);
+
             chai.assert.deepEqual(toRaw(error), toRaw(invalidParseExpectedSpec.error));
         }
     }

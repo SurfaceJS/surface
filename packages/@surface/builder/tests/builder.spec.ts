@@ -1,5 +1,4 @@
 
-import type { Server }                                            from "http";
 import Mock, { It }                                               from "@surface/mock";
 import { afterEach, beforeEach, suite, test }                     from "@surface/test-suite";
 import chai                                                       from "chai";
@@ -51,12 +50,15 @@ function setup(type: "ok" | "ko"): void
 
     const WebpackDevServerMock = Mock.instance<WebpackDevServer>();
 
-    WebpackDevServerMock.setup("close");
+    WebpackDevServerMock
+        .setup("start")
+        .call()
+        .returns(Promise.resolve());
 
     WebpackDevServerMock
-        .setup("listen")
-        .call<(port: number, hostname: string, callback?: (error?: Error | undefined) => void) => Server>(It.any(), It.any(), It.any())
-        .callback((_1, _2, callback) => callback!(error));
+        .setup("stop")
+        .call()
+        .returns(Promise.resolve());
 
     webpackDevServerConstructor
         .new(It.any(), It.any())
