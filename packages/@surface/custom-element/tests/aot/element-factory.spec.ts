@@ -7,7 +7,7 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import { scheduler }               from "../../index.js";
 import elementFactory              from "../../internal/aot/factories/element-factory.js";
-import type Activator               from "../../internal/aot/types/activator";
+import type Activator              from "../../internal/aot/types/activator";
 
 @suite
 export default class ElementFactorySpec
@@ -15,7 +15,7 @@ export default class ElementFactorySpec
     @test @shouldPass
     public tag(): void
     {
-        const [element] = elementFactory({ tag: "div" })();
+        const [element] = elementFactory("div")();
 
         chai.assert.equal(element.nodeName, "DIV");
         chai.assert.instanceOf(element, HTMLElement);
@@ -24,11 +24,7 @@ export default class ElementFactorySpec
     @test @shouldPass
     public attributes(): void
     {
-        const [element] = elementFactory
-        ({
-            tag:        "div",
-            attributes: [["foo", ""], ["bar", "bar"]],
-        })() as [Element, Activator];
+        const [element] = elementFactory("div", [["foo", ""], ["bar", "bar"]])() as [Element, Activator];
 
         chai.assert.isTrue(element.hasAttribute("foo"));
         chai.assert.equal(element.getAttribute("bar"), "bar");
@@ -38,10 +34,11 @@ export default class ElementFactorySpec
     public async interpolation(): Promise<void>
     {
         const [element, activator] = elementFactory
-        ({
-            tag:           "div",
-            interpolation: [["value", (scope: any) => scope.host.value, [["host", "value"]]]],
-        })() as [Element, Activator];
+        (
+            "div",
+            undefined,
+            [["interpolation", "value", (scope: any) => scope.host.value, [["host", "value"]]]],
+        )() as [Element, Activator];
 
         const scope = { host: { value: "Hello World" } };
 
@@ -70,10 +67,11 @@ export default class ElementFactorySpec
     public async oneWay(): Promise<void>
     {
         const [element, activator] = elementFactory
-        ({
-            tag:    "div",
-            oneWay: [["className", (scope: any) => scope.host.value, [["host", "value"]]]],
-        })() as [Element, Activator];
+        (
+            "div",
+            undefined,
+            [["oneway", "className", (scope: any) => scope.host.value, [["host", "value"]]]],
+        )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
 
@@ -102,10 +100,11 @@ export default class ElementFactorySpec
     public async twoWay(): Promise<void>
     {
         const [element, activator] = elementFactory
-        ({
-            tag:    "div",
-            twoWay: [["className", (scope: any) => scope.host, ["host", "value"]]],
-        })() as [Element, Activator];
+        (
+            "div",
+            undefined,
+            [["twoway", "className", (scope: any) => scope.host, [["host", "value"]]]],
+        )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
 
@@ -140,10 +139,12 @@ export default class ElementFactorySpec
     public events(): void
     {
         const [element, activator] = elementFactory
-        ({
-            tag:    "div",
-            events: [["click", (scope: any) => scope.host.click.bind(scope.host)]],
-        })() as [Element, Activator];
+        (
+            "div",
+            undefined,
+            undefined,
+            [["click", (scope: any) => scope.host.click.bind(scope.host)]],
+        )() as [Element, Activator];
 
         let clicked = 0;
 
@@ -166,10 +167,13 @@ export default class ElementFactorySpec
     public directives(): void
     {
         const [element, activator] = elementFactory
-        ({
-            tag:        "div",
-            directives: [[() => "click", (scope: any) => ({ value: scope.host.value }), [[["click"]], [["host", "value"]]]]],
-        })() as [Element, Activator];
+        (
+            "div",
+            undefined,
+            undefined,
+            undefined,
+            [[() => "click", (scope: any) => ({ value: scope.host.value }), [[["click"]], [["host", "value"]]]]],
+        )() as [Element, Activator];
 
         const scope = { host: { value: "Hello World" } };
 
@@ -184,17 +188,21 @@ export default class ElementFactorySpec
     public async childs(): Promise<void>
     {
         const [element, activator] = elementFactory
-        ({
-            tag:    "div",
-            childs:
+        (
+            "div",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             [
                 elementFactory
-                ({
-                    tag:           "span",
-                    interpolation: [["value", (scope: any) => scope.host.value, [["host", "value"]]]],
-                }),
+                (
+                    "span",
+                    undefined,
+                    [["interpolation", "value", (scope: any) => scope.host.value, [["host", "value"]]]],
+                ),
             ],
-        })() as [Element, Activator];
+        )() as [Element, Activator];
 
         const scope = { host: { value: "Hello World" } };
 

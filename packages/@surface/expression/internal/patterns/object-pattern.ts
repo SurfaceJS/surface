@@ -85,6 +85,6 @@ export default class ObjectPattern implements IPattern
 
     public toString(): string
     {
-        return `{ ${this.properties.map(x => x.toString()).join(", ")} }`;
+        return this.properties.length > 0 ? `{ ${this.properties.map(x => x.toString()).join(", ")} }` : "{ }";
     }
 }

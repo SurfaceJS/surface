@@ -73,10 +73,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("{this.value}");
 
-        chai.assert.deepEqual(expression.evaluate(scope), [0]);
+        chai.assert.deepEqual(expression.evaluate(scope), "0");
 
         scope.this.value = 1;
-        chai.assert.deepEqual(expression.evaluate(scope), [1]);
+        chai.assert.deepEqual(expression.evaluate(scope), "1");
     }
 
     @test @shouldPass
@@ -86,10 +86,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("{ this.value } value at start");
 
-        chai.assert.deepEqual(expression.evaluate(scope), [0, " value at start"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "0 value at start");
 
         scope.this.value = 1;
-        chai.assert.deepEqual(expression.evaluate(scope), [1, " value at start"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "1 value at start");
     }
 
     @test @shouldPass
@@ -99,10 +99,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("Value { this.value } at middle");
 
-        chai.assert.deepEqual(expression.evaluate(scope), ["Value ", 0, " at middle"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "Value 0 at middle");
 
         scope.this.value = 1;
-        chai.assert.deepEqual(expression.evaluate(scope), ["Value ", 1, " at middle"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "Value 1 at middle");
     }
 
     @test @shouldPass
@@ -112,10 +112,10 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("value at end { this.value }");
 
-        chai.assert.deepEqual(expression.evaluate(scope), ["value at end ", 0]);
+        chai.assert.deepEqual(expression.evaluate(scope), "value at end 0");
 
         scope.this.value = 1;
-        chai.assert.deepEqual(expression.evaluate(scope), ["value at end ", 1]);
+        chai.assert.deepEqual(expression.evaluate(scope), "value at end 1");
     }
 
     @test @shouldPass
@@ -125,11 +125,11 @@ export default class InterpolatedExpressionSpec
 
         const expression = InterpolatedExpression.parse("{ this.value } text at center { this.text }");
 
-        chai.assert.deepEqual(expression.evaluate(scope), [0, " text at center ", "Hello World!!!"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "0 text at center Hello World!!!");
 
         scope.this.value = 1;
         scope.this.text  = "Just Hello!";
-        chai.assert.deepEqual(expression.evaluate(scope), [1, " text at center ", "Just Hello!"]);
+        chai.assert.deepEqual(expression.evaluate(scope), "1 text at center Just Hello!");
     }
 
     @test @shouldPass
@@ -137,7 +137,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { \" double quoted string } - { \" } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " double quoted string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  double quoted string } - {  inside");
     }
 
     @test @shouldPass
@@ -145,7 +145,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { \" double \\\"quoted\\\" string } - { \" } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " double \"quoted\" string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  double \"quoted\" string } - {  inside");
     }
 
     @test @shouldPass
@@ -153,7 +153,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ' single quoted string } - { ' } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " single quoted string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  single quoted string } - {  inside");
     }
 
     @test @shouldPass
@@ -161,7 +161,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ' single \\'quoted\\' string } - { ' } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " single 'quoted' string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  single 'quoted' string } - {  inside");
     }
 
     @test @shouldPass
@@ -169,7 +169,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template single string } - { ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " template single string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  template single string } - {  inside");
     }
 
     @test @shouldPass
@@ -177,7 +177,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template \\`single\\` string } - { ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["interpolatation with ", " template `single` string } - { ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "interpolatation with  template `single` string } - {  inside");
     }
 
     @test @shouldPass
@@ -185,7 +185,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { ` template single ${ `value: ` + \"1\"} ` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({  }), ["interpolatation with ", " template single value: 1 ", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({  }), "interpolatation with  template single value: 1  inside");
     }
 
     @test @shouldPass
@@ -193,7 +193,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("interpolatation with { value == 'default' ? '' : `${value} expression` } inside");
 
-        chai.assert.deepEqual(expression.evaluate({ value: "conditional" }), ["interpolatation with ", "conditional expression", " inside"]);
+        chai.assert.deepEqual(expression.evaluate({ value: "conditional" }), "interpolatation with conditional expression inside");
     }
 
     @test @shouldPass
@@ -201,7 +201,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\{ this.value }");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression { this.value }"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "This is an scaped expression { this.value }");
     }
 
     @test @shouldPass
@@ -209,7 +209,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\\\{ 'scaped' }");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression \\", "scaped"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "This is an scaped expression \\scaped");
     }
 
     @test @shouldPass
@@ -217,7 +217,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an scaped expression \\{ { 'scaped' } }");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["This is an scaped expression { ", "scaped", " }"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "This is an scaped expression { scaped }");
     }
 
     @test @shouldPass
@@ -225,7 +225,7 @@ export default class InterpolatedExpressionSpec
     {
         const expression = InterpolatedExpression.parse("This is an { '\\'very\\'' } complex \\{scaped} \\\\{ 'interpolation' } \\}");
 
-        chai.assert.deepEqual(expression.evaluate({ }), ["This is an ", "\'very\'", " complex {scaped} \\", "interpolation", " \\}"]);
+        chai.assert.deepEqual(expression.evaluate({ }), "This is an \'very\' complex {scaped} \\interpolation \\}");
     }
 
     @test @shouldFail

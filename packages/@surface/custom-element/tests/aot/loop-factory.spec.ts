@@ -22,23 +22,24 @@ export default class LoopFactorySpec
 
         const [element, activator] = elementFactory
         (
-            {
-                tag:    "div",
-                childs:
-                [
-                    loopFactory
-                    (
-                        (_: Scope, value: unknown) => ({ item: value }),
-                        "in",
-                        (scope: Scope) => scope.items,
-                        [["items"]],
-                        fragmentFactory
-                        ([
-                            textNodeFactory((scope: any) => `Index: ${scope.item}`, [["item"]]),
-                        ]),
-                    ),
-                ],
-            },
+            "div",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+                loopFactory
+                (
+                    (_: Scope, value: unknown) => ({ item: value }),
+                    "in",
+                    (scope: Scope) => scope.items,
+                    [["items"]],
+                    fragmentFactory
+                    ([
+                        textNodeFactory((scope: any) => `Index: ${scope.item}`, [["item"]]),
+                    ]),
+                ),
+            ],
         )() as [Element, Activator];
 
         const scope: Scope = { items: [1] };

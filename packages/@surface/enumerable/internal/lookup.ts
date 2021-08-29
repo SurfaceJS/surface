@@ -111,15 +111,18 @@ export default class Lookup<TSource, TKey, TElement> implements ILookup<TKey, TE
 
     public *[Symbol.iterator](): Iterator<Group<TKey, TElement>>
     {
-        let current = this.lastGroup!;
-
-        do
+        if (this.lastGroup)
         {
-            current = current.next!;
+            let current = this.lastGroup;
 
-            yield current;
+            do
+            {
+                current = current.next!;
+
+                yield current;
+            }
+            while (current != this.lastGroup);
         }
-        while (current != this.lastGroup);
     }
 
     public contains(key: TKey): boolean

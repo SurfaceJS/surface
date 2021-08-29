@@ -1,7 +1,7 @@
-import { assert }                                from "@surface/core";
-import type { IArrayExpression, IExpression }    from "@surface/expression";
-import Expression, { SyntaxError }               from "@surface/expression";
-import { getOffsetSyntaxError, parseExpression } from "./expression-parsers.js";
+import { assert }                                               from "@surface/core";
+import type { IExpression, ITemplateElement, ITemplateLiteral } from "@surface/expression";
+import Expression, { SyntaxError }                              from "@surface/expression";
+import { getOffsetSyntaxError, parseExpression }                from "./expression-parsers.js";
 
 const stringTokens = ["\"", "'", "`"];
 
@@ -9,6 +9,7 @@ export default class InterpolatedExpression
 {
     private readonly source: string;
 
+    private readonly quasis:      ITemplateElement[] = [];
     private readonly expressions: IExpression[] = [];
 
     private expressionEnd:   number = 0;
@@ -30,7 +31,7 @@ export default class InterpolatedExpression
         this.source  = source;
     }
 
-    public static parse(source: string): IArrayExpression
+    public static parse(source: string): ITemplateLiteral
     {
         return new InterpolatedExpression(source).scan();
     }
@@ -47,7 +48,7 @@ export default class InterpolatedExpression
             .replace(/\\\\{/g, "\\")
             .replace(/{$/, "");
 
-        this.expressions.push(Expression.literal(textFragment));
+        this.quasis.push(Expression.templateElement(textFragment, textFragment, end >= this.source.length));
     }
 
     private parse(start: number): void
@@ -70,7 +71,7 @@ export default class InterpolatedExpression
                 this.advance();
             }
 
-            if (start < this.index)
+            if (start == 0 || start < this.index)
             {
                 this.collectTextFragment(start, this.index + 1);
             }
@@ -91,6 +92,10 @@ export default class InterpolatedExpression
                     {
                         this.parse(this.index);
                     }
+                    else if (this.expressions.length > 0)
+                    {
+                        this.collectTextFragment(this.index, this.index);
+                    }
                 }
                 else
                 {
@@ -106,11 +111,11 @@ export default class InterpolatedExpression
         }
     }
 
-    private scan(): IArrayExpression
+    private scan(): ITemplateLiteral
     {
         this.parse(0);
 
-        return Expression.array(this.expressions);
+        return Expression.template(this.quasis, this.expressions);
     }
 
     private scanBalance(): boolean

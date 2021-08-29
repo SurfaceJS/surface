@@ -21,39 +21,40 @@ export default class ChoiceFactorySpec
 
         const [element, activator] = elementFactory
         (
-            {
-                tag:    "div",
-                childs:
-                [
-                    choiceFactory
-                    ([
-                        {
-                            expression:  (scope: Scope) => scope.id == 1,
-                            observables: [["id"]],
-                            factory:     fragmentFactory
-                            ([
-                                elementFactory({ tag: "span", attributes: [["name", "IF"]] }),
-                            ]),
-                        },
-                        {
-                            expression:  (scope: Scope) => scope.id == 2,
-                            observables: [["id"]],
-                            factory:     fragmentFactory
-                            ([
-                                elementFactory({ tag: "span", attributes: [["name", "ELSE IF"]] }),
-                            ]),
-                        },
-                        {
-                            expression:  () => true,
-                            observables: [],
-                            factory:     fragmentFactory
-                            ([
-                                elementFactory({ tag: "span", attributes: [["name", "ELSE"]] }),
-                            ]),
-                        },
-                    ]),
-                ],
-            },
+            "div",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+                choiceFactory
+                ([
+                    {
+                        expression:  (scope: Scope) => scope.id == 1,
+                        observables: [["id"]],
+                        factory:     fragmentFactory
+                        ([
+                            elementFactory("span", [["name", "IF"]]),
+                        ]),
+                    },
+                    {
+                        expression:  (scope: Scope) => scope.id == 2,
+                        observables: [["id"]],
+                        factory:     fragmentFactory
+                        ([
+                            elementFactory("span", [["name", "ELSE IF"]]),
+                        ]),
+                    },
+                    {
+                        expression:  () => true,
+                        observables: [],
+                        factory:     fragmentFactory
+                        ([
+                            elementFactory("span", [["name", "ELSE"]]),
+                        ]),
+                    },
+                ]),
+            ],
         )() as [Element, Activator];
 
         const scope: Scope = { id: 1 };

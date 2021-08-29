@@ -21,19 +21,20 @@ export default class PlaceholderFactorySpec
 
         const [element, activator] = elementFactory
         (
-            {
-                tag:    "div",
-                childs:
-                [
-                    placeholderFactory
-                    (
-                        () => "default",
-                        scope => ({ item: scope.value }),
-                        [[], [["value"]]],
-                        textNodeFactory(scope => `Value: ${scope.value}`, [["value"]]),
-                    ),
-                ],
-            },
+            "div",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+                placeholderFactory
+                (
+                    () => "default",
+                    scope => ({ item: scope.value }),
+                    [[], [["value"]]],
+                    textNodeFactory(scope => `Value: ${scope.value}`, [["value"]]),
+                ),
+            ],
         )() as [Element, Activator];
 
         const scope: Scope = { value: 42 };

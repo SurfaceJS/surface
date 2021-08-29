@@ -5,20 +5,29 @@ import bind                               from "../bind.js";
 import Directive                          from "../directive.js";
 import observe                            from "../observe.js";
 import type Activator                     from "../types/activator";
-import type ElementDescriptor             from "../types/element-descriptor";
+import type Expression                    from "../types/expression.js";
 import type Factory                       from "../types/fatctory";
+import type ObservablePath                from "../types/observable-path.js";
 
-export default function elementFactory(descriptor: ElementDescriptor): Factory
+export default function elementFactory
+(
+    tag:               string,
+    attributes?:       [key: string, value: string][],
+    binds?:            [type: "oneway" | "twoway" | "interpolation", key: string, value: Expression, observables: ObservablePath[]][],
+    events?:           [key: string, value: Expression][],
+    customDirectives?: [key: Expression, value: Expression, observables: [key: ObservablePath[], value: ObservablePath[]]][],
+    childs?:           Factory[],
+): Factory
 {
     return () =>
     {
-        const element = document.createElement(descriptor.tag);
+        const element = document.createElement(tag);
 
         window.customElements.upgrade(element);
 
-        if (descriptor.attributes)
+        if (attributes)
         {
-            for (const [key, value] of descriptor.attributes)
+            for (const [key, value] of attributes)
             {
                 element.setAttribute(key, value);
             }
@@ -26,9 +35,9 @@ export default function elementFactory(descriptor: ElementDescriptor): Factory
 
         const activators: Activator[] = [];
 
-        if (descriptor.childs)
+        if (childs)
         {
-            for (const childFactory of descriptor.childs)
+            for (const childFactory of childs)
             {
                 const [childElement, activator] = childFactory();
 
@@ -49,39 +58,31 @@ export default function elementFactory(descriptor: ElementDescriptor): Factory
                 disposables.push(activator(element, host, scope, directives));
             }
 
-            if (descriptor.interpolation)
+            if (binds)
             {
-                for (const [key, expression, observables] of descriptor.interpolation)
+                for (const [type, key, expression, observables] of binds)
                 {
-                    const listener = (): void => element.setAttribute(key, `${expression(scope)}`);
+                    switch (type)
+                    {
+                        case "oneway":
+                            subscriptions.push(observe(scope, observables, (): void => void ((element as unknown as Record<string, unknown>)[key] = expression(scope)), false));
 
-                    subscriptions.push(observe(scope, observables, listener, false));
+                            break;
+                        case "twoway":
+                            subscriptions.push(bind(element, [key], scope as object, observables[0]));
+
+                            break;
+                        default:
+                            subscriptions.push(observe(scope, observables, (): void => element.setAttribute(key, `${expression(scope)}`), false));
+
+                    }
+
                 }
             }
 
-            if (descriptor.oneWay)
+            if (events)
             {
-                for (const [key, expression, observables] of descriptor.oneWay)
-                {
-                    const task = (): void => void ((element as unknown as Record<string, unknown>)[key] = expression(scope));
-
-                    subscriptions.push(observe(scope, observables, task, false));
-                }
-            }
-
-            if (descriptor.twoWay)
-            {
-                for (const [key, expression, observables] of descriptor.twoWay)
-                {
-                    expression(scope);
-
-                    subscriptions.push(bind(element, [key], scope as object, observables));
-                }
-            }
-
-            if (descriptor.events)
-            {
-                for (const [key, expression] of descriptor.events)
+                for (const [key, expression] of events)
                 {
                     const listener = expression(scope) as () => void;
 
@@ -91,9 +92,9 @@ export default function elementFactory(descriptor: ElementDescriptor): Factory
                 }
             }
 
-            if (descriptor.directives)
+            if (customDirectives)
             {
-                for (const [key, expression, observables] of descriptor.directives)
+                for (const [key, expression, observables] of customDirectives)
                 {
                     disposables.push(new Directive({ element, scope, key, expression, observables }));
                 }

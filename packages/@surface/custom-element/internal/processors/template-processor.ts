@@ -183,7 +183,7 @@ export default class TemplateProcessor
                 }
                 else
                 {
-                    const listener = (): void => element.setAttribute(descriptor.name, `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`);
+                    const listener = (): void => element.setAttribute(descriptor.name, tryEvaluateExpressionByTraceable(scope, descriptor) as string);
 
                     const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 
@@ -335,7 +335,7 @@ export default class TemplateProcessor
         {
             const node = this.lookup[descriptor.path];
 
-            const listener = (): string => node.nodeValue = `${(tryEvaluateExpressionByTraceable(scope, descriptor) as unknown[]).reduce((previous, current) => `${previous}${current}`)}`;
+            const listener = (): string => node.nodeValue = tryEvaluateExpressionByTraceable(scope, descriptor) as string;
 
             const subscription = tryObserveByObservable(scope, descriptor, listener, true);
 

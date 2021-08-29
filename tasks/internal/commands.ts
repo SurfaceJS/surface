@@ -27,7 +27,7 @@ const writeFileAsync = promisify(fs.writeFile);
 
 const DIRNAME  = path.dirname(fileURLToPath(import.meta.url));
 const TSC      = path.resolve(DIRNAME, "../../node_modules/.bin/tsc");
-const TSCONFIG = path.resolve(DIRNAME, "../../tsconfig.json");
+const TSCONFIG = path.resolve(DIRNAME, "../../tsconfig.release.json");
 
 export default class Commands
 {

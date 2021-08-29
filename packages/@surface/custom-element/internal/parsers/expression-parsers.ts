@@ -1,12 +1,12 @@
 import { assert } from "@surface/core";
 import type
 {
-    IArrayExpression,
     IArrowFunctionExpression,
     IExpression,
     IIdentifier,
     INode,
     IPattern,
+    ITemplateLiteral,
 } from "@surface/expression";
 import Expression, { SyntaxError, TypeGuard } from "@surface/expression";
 import InterpolatedExpression                 from "./interpolated-expression.js";
@@ -57,11 +57,11 @@ export function parseExpression(expression: string): IExpression
     return expressionCache[expression] = Expression.parse(expression);
 }
 
-export function parseInterpolation(expression: string): IArrayExpression
+export function parseInterpolation(expression: string): ITemplateLiteral
 {
     if (expression in expressionCache)
     {
-        return expressionCache[expression] as IArrayExpression;
+        return expressionCache[expression] as ITemplateLiteral;
     }
 
     return expressionCache[expression] = InterpolatedExpression.parse(expression);
