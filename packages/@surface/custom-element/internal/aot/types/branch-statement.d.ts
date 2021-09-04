@@ -1,12 +1,12 @@
-import type Expression     from "./expression";
-import type Factory        from "./fatctory";
+import type Evaluator     from "./evaluator";
+import type NodeFactory        from "./node-fatctory";
 import type ObservablePath from "./observable-path";
 
 type BranchStatement =
-{
-    expression:  Expression,
+[
+    expression:  Evaluator,
     observables: ObservablePath[],
-    factory:     Factory,
-};
+    factory:     NodeFactory,
+];
 
 export default BranchStatement;

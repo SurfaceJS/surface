@@ -5,22 +5,22 @@ import type { DirectiveEntry }                                 from "../../types
 import type Block                                              from "../block.js";
 import TemplateMetadata                                        from "../metadata/template-metadata.js";
 import observe                                                 from "../observe.js";
-import type Expression                                         from "../types/expression.js";
-import type Factory                                            from "../types/fatctory.js";
+import type Evaluator                                          from "../types/evaluator.js";
 import type InjectionContext                                   from "../types/injection-context.js";
+import type NodeFactory                                        from "../types/node-fatctory.js";
 import type ObservablePath                                     from "../types/observable-path.js";
 
 type Context =
 {
     block:       Block,
     directives:  Map<string, DirectiveEntry>,
-    factory:     Factory,
+    factory:     NodeFactory,
     host:        Node,
-    key:         Expression<string>,
+    key:         Evaluator<string>,
     observables: [key: ObservablePath[], value: ObservablePath[]],
     parent:      Node,
     scope:       object,
-    value:       Expression,
+    value:       Evaluator,
 };
 export default class PlaceholdeStatement implements IDisposable
 {
@@ -59,7 +59,7 @@ export default class PlaceholdeStatement implements IDisposable
         void scheduler.enqueue(this.applyInjection, "low", this.lazyInjectionCancellationTokenSource.token);
     };
 
-    private readonly inject = (injection?: InjectionContext): void =>
+    private readonly inject = (injectionContext?: InjectionContext): void =>
     {
         this.lazyInjectionCancellationTokenSource.cancel();
 
@@ -69,7 +69,7 @@ export default class PlaceholdeStatement implements IDisposable
         this.subscription?.unsubscribe();
         this.subscription = null;
 
-        const task = (this.injectionContext = injection)
+        const task = (this.injectionContext = injectionContext)
             ? this.task
             : this.defaultTask;
 
@@ -112,14 +112,14 @@ export default class PlaceholdeStatement implements IDisposable
         this.context.block.clear();
 
         const value          = this.context.value(this.context.scope);
-        const directiveScope = this.injectionContext.pattern(this.context.scope, value);
+        const directiveScope = this.injectionContext.value(this.context.scope, value);
         const scope          = { ...this.injectionContext.scope, ...directiveScope };
 
         const [content, activator] = this.injectionContext.factory();
 
         this.context.block.setContent(content);
 
-        const disposables = [activator(this.context.parent, this.context.host, scope, new Map()), DisposableMetadata.from(scope)];
+        const disposables = [activator(this.injectionContext.parent, this.injectionContext.host, scope, this.injectionContext.directives), DisposableMetadata.from(scope)];
 
         this.currentDisposable = { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
     };

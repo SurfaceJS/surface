@@ -16,6 +16,10 @@ type Context =
     scope:      object,
 };
 
+const EXPRESSION  = 0;
+const OBSERVABLES = 1;
+const FACTORY     = 2;
+
 export default class ChoiceStatement implements IDisposable
 {
     private readonly cancellationTokenSource:  CancellationTokenSource = new CancellationTokenSource();
@@ -32,7 +36,7 @@ export default class ChoiceStatement implements IDisposable
 
         for (const branch of this.context.branches)
         {
-            this.subscriptions.push(observe(context.scope, branch.observables, () => listener(), true));
+            this.subscriptions.push(observe(context.scope, branch[OBSERVABLES], () => listener(), true));
         }
 
         listener();
@@ -42,7 +46,7 @@ export default class ChoiceStatement implements IDisposable
     {
         for (const branch of this.context.branches)
         {
-            if (branch.expression(this.context.scope))
+            if (branch[EXPRESSION](this.context.scope))
             {
                 if (branch != this.currentBranch)
                 {
@@ -52,7 +56,7 @@ export default class ChoiceStatement implements IDisposable
 
                     this.context.block.clear();
 
-                    const [content, activator] = branch.factory();
+                    const [content, activator] = branch[FACTORY]();
 
                     this.context.block.setContent(content);
 

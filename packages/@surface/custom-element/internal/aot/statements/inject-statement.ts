@@ -2,26 +2,26 @@ import { CancellationTokenSource }        from "@surface/core";
 import type { IDisposable, Subscription } from "@surface/core";
 import { scheduler }                      from "../../singletons.js";
 import type { DirectiveEntry }            from "../../types/index.js";
-import type Block                         from "../block";
+import type Block                         from "../block.js";
 import TemplateMetadata                   from "../metadata/template-metadata.js";
 import observe                            from "../observe.js";
-import type Expression                    from "../types/expression.js";
-import type Factory                       from "../types/fatctory";
+import type DestructuredEvaluator                       from "../types/destructured-evaluator.js";
+import type Evaluator                    from "../types/evaluator.js";
 import type InjectionContext              from "../types/injection-context.js";
+import type NodeFactory                       from "../types/node-fatctory";
 import type ObservablePath                from "../types/observable-path.js";
-import type Pattern                       from "../types/pattern.js";
 
 type Context =
 {
     block:       Block,
     directives:  Map<string, DirectiveEntry>,
-    factory:     Factory,
+    factory:     NodeFactory,
     host:        Node,
-    key:         Expression<string>,
+    key:         Evaluator<string>,
     observables: [key: ObservablePath[], value: ObservablePath[]],
     parent:      Node,
     scope:       object,
-    value:       Pattern,
+    value:       DestructuredEvaluator,
 };
 
 export default class InjectStatement implements IDisposable
@@ -58,8 +58,8 @@ export default class InjectStatement implements IDisposable
             factory:    this.context.factory,
             host:       this.context.host,
             parent:     this.context.parent,
-            pattern:    this.context.value,
             scope:      this.context.scope,
+            value:      this.context.value,
         };
 
         this.metadata.injections.set(this.key, injectionContext);

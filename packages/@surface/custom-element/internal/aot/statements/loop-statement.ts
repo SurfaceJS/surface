@@ -5,22 +5,22 @@ import { scheduler }                                   from "../../singletons.js
 import type { DirectiveEntry }                         from "../../types/index";
 import Block                                           from "../block.js";
 import observe                                         from "../observe.js";
-import type Expression                                 from "../types/expression";
-import type Factory                                    from "../types/fatctory";
+import type DestructuredEvaluator                      from "../types/destructured-evaluator";
+import type Evaluator                                  from "../types/evaluator";
+import type NodeFactory                                from "../types/node-fatctory";
 import type ObservablePath                             from "../types/observable-path";
-import type Pattern                                    from "../types/pattern";
 
 type Context =
 {
     block:       Block,
     directives:  Map<string, DirectiveEntry>,
-    factory:     Factory,
+    factory:     NodeFactory,
     host:        Node,
-    left:        Pattern,
+    left:        DestructuredEvaluator,
     observables: ObservablePath[],
     operator:    "in" | "of",
     parent:      Node,
-    right:       Expression,
+    right:       Evaluator,
     scope:       object,
 };
 
@@ -114,7 +114,7 @@ export default class LoopStatement implements IDisposable
 
             const [content, activator] = this.context.factory();
 
-            const disposables = [activator(this.context.parent, this.context.host, scope, new Map()), DisposableMetadata.from(scope)];
+            const disposables = [activator(this.context.parent, this.context.host, scope, this.context.directives), DisposableMetadata.from(scope)];
 
             const disposable = { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
             const block      = new Block();

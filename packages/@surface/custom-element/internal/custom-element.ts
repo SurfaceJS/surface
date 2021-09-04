@@ -29,11 +29,26 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
         (instance.shadowRoot as { adoptedStyleSheets?: CSSStyleSheet[] }).adoptedStyleSheets = staticMetadata.styles;
 
-        const content = staticMetadata.template.content.cloneNode(true);
+        const hookableMetadata = HookableMetadata.from(instance.constructor as Constructor<HTMLElement>);
 
-        instance.shadowRoot.appendChild(content);
+        if (staticMetadata.template)
+        {
+            const content = staticMetadata.template.content.cloneNode(true);
 
-        HookableMetadata.from(instance.constructor as Constructor<HTMLElement>).initialize(instance);
+            instance.shadowRoot.appendChild(content);
+        }
+        else if (staticMetadata.factory)
+        {
+            const [content, activator] = staticMetadata.factory();
+
+            instance.shadowRoot.appendChild(content);
+
+            // window.customElements.upgrade(instance.shadowRoot);
+
+            hookableMetadata.finishers.unshift(x => DisposableMetadata.from(this).add(activator(x.shadowRoot!, x, { host: x }, globalCustomDirectives)));
+        }
+
+        hookableMetadata.initialize(instance);
     }
 
     public static [Symbol.hasInstance](instance: object): boolean

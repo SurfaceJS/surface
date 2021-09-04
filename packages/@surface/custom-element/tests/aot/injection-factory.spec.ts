@@ -9,6 +9,7 @@ import fragmentFactory             from "../../internal/aot/factories/fragment-f
 import injectionFactory            from "../../internal/aot/factories/injection-factory.js";
 import placeholderFactory          from "../../internal/aot/factories/placeholder-factory.js";
 import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
+import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
 import { scheduler }               from "../../internal/singletons.js";
 
 @suite
@@ -67,7 +68,7 @@ export default class InjectionFactorySpec
         const [injectionContent, injectionActivator] = injectionFactory
         (
             () => "default",
-            (scope: Scope) => scope,
+            ((scope: Scope) => scope) as DestructuredEvaluator,
             [[], [["value"]]],
             textNodeFactory((scope: Scope) => `Injected: ${scope.value}`, [["value"]]),
         )();

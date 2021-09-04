@@ -24,35 +24,33 @@ export default class ChoiceFactorySpec
             "div",
             undefined,
             undefined,
-            undefined,
-            undefined,
             [
                 choiceFactory
                 ([
-                    {
-                        expression:  (scope: Scope) => scope.id == 1,
-                        observables: [["id"]],
-                        factory:     fragmentFactory
+                    [
+                        (scope: Scope) => scope.id == 1,
+                        [["id"]],
+                        fragmentFactory
                         ([
                             elementFactory("span", [["name", "IF"]]),
                         ]),
-                    },
-                    {
-                        expression:  (scope: Scope) => scope.id == 2,
-                        observables: [["id"]],
-                        factory:     fragmentFactory
+                    ],
+                    [
+                        (scope: Scope) => scope.id == 2,
+                        [["id"]],
+                        fragmentFactory
                         ([
                             elementFactory("span", [["name", "ELSE IF"]]),
                         ]),
-                    },
-                    {
-                        expression:  () => true,
-                        observables: [],
-                        factory:     fragmentFactory
+                    ],
+                    [
+                        () => true,
+                        [],
+                        fragmentFactory
                         ([
                             elementFactory("span", [["name", "ELSE"]]),
                         ]),
-                    },
+                    ],
                 ]),
             ],
         )() as [Element, Activator];

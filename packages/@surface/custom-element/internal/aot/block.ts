@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-readonly */
 import type { IDisposable } from "@surface/core";
 import { enumerateRange }   from "../common.js";
 import { disposeTree }      from "../singletons.js";
@@ -9,9 +10,8 @@ type Anchor = Comment & { [BLOCKS]: Set<Block> };
 export default class Block implements IDisposable
 {
     private disposed: boolean = false;
-
-    public end:   Anchor;
-    public start: Anchor;
+    private end:   Anchor;
+    private start: Anchor;
 
     public constructor()
     {
@@ -39,28 +39,28 @@ export default class Block implements IDisposable
 
         if (hasNestedDirective)
         {
-            const nextOpen      = this.start.nextSibling   as Anchor;
-            const previousClose = this.end.previousSibling as Anchor;
+            const nextStart      = this.start.nextSibling   as Anchor;
+            const previousEnd = this.end.previousSibling as Anchor;
 
-            const open  = this.start;
-            const close = this.end;
+            const start = this.start;
+            const end   = this.end;
 
-            for (const block of open[BLOCKS].values())
+            for (const block of start[BLOCKS].values())
             {
-                block.start = nextOpen;
+                block.start = nextStart;
 
-                nextOpen[BLOCKS].add(block);
+                nextStart[BLOCKS].add(block);
             }
 
-            for (const block of close[BLOCKS].values())
+            for (const block of end[BLOCKS].values())
             {
-                block.end = previousClose;
+                block.end = previousEnd;
 
-                previousClose[BLOCKS].add(block);
+                previousEnd[BLOCKS].add(block);
             }
 
-            open.remove();
-            close.remove();
+            start.remove();
+            end.remove();
         }
     }
 

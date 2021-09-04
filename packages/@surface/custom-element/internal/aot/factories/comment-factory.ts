@@ -1,6 +1,6 @@
-import type Factory from "../types/fatctory";
+import type NodeFactory from "../types/node-fatctory";
 
-export default function commentFactory(value: string): Factory
+export default function commentFactory(value: string): NodeFactory
 {
     return () =>
     {

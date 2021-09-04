@@ -9,7 +9,8 @@ import elementFactory              from "../../internal/aot/factories/element-fa
 import fragmentFactory             from "../../internal/aot/factories/fragment-factory.js";
 import loopFactory                 from "../../internal/aot/factories/loop-factory.js";
 import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
-import type Activator               from "../../internal/aot/types/activator";
+import type Activator              from "../../internal/aot/types/activator";
+import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
 import { scheduler }               from "../../internal/singletons.js";
 
 @suite
@@ -25,12 +26,10 @@ export default class LoopFactorySpec
             "div",
             undefined,
             undefined,
-            undefined,
-            undefined,
             [
                 loopFactory
                 (
-                    (_: Scope, value: unknown) => ({ item: value }),
+                    ((_: Scope, value: unknown) => ({ item: value })) as DestructuredEvaluator,
                     "in",
                     (scope: Scope) => scope.items,
                     [["items"]],

@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable sort-keys */
 import type { IDisposable } from "@surface/core";
 import type Activator       from "../types/activator";
-import type Factory         from "../types/fatctory";
+import type NodeFactory     from "../types/node-fatctory";
 
-export default function fragmentFactory(factories: Factory[]): Factory
+export default function fragmentFactory(factories: NodeFactory[]): NodeFactory
 {
     return () =>
     {
@@ -22,7 +20,7 @@ export default function fragmentFactory(factories: Factory[]): Factory
 
         const activator: Activator = (parent, host, scope, directives) =>
         {
-            const disposables:   IDisposable[]  = [];
+            const disposables: IDisposable[] = [];
 
             for (const activator of activators)
             {

@@ -1,21 +1,23 @@
-import Block               from "../block.js";
-import InjectStatement     from "../statements/inject-statement.js";
-import type Activator      from "../types/activator";
-import type Expression     from "../types/expression.js";
-import type Factory        from "../types/fatctory";
-import type ObservablePath from "../types/observable-path";
-import type Pattern        from "../types/pattern.js";
+import Block                      from "../block.js";
+import InjectStatement            from "../statements/inject-statement.js";
+import type Activator             from "../types/activator";
+import type DestructuredEvaluator from "../types/destructured-evaluator.js";
+import type Evaluator             from "../types/evaluator.js";
+import type NodeFactory           from "../types/node-fatctory";
+import type ObservablePath        from "../types/observable-path";
 
-export default function injectionFactory(key: Expression<string>, value: Pattern, observables: [key: ObservablePath[], value: ObservablePath[]], factory: Factory): Factory
+export default function injectionFactory(key: Evaluator<string>, value: DestructuredEvaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory): NodeFactory
 {
     return () =>
     {
+        const fragment = document.createDocumentFragment();
+
         const block = new Block();
+
+        block.connect(fragment);
 
         const activator: Activator = (parent, host, scope, directives) =>
         {
-            parent.insertBefore(block.start, block.end);
-
             const context =
             {
                 block,
@@ -32,6 +34,6 @@ export default function injectionFactory(key: Expression<string>, value: Pattern
             return new InjectStatement(context);
         };
 
-        return [block.end, activator];
+        return [fragment, activator];
     };
 }

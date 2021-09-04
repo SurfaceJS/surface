@@ -24,8 +24,6 @@ export default class PlaceholderFactorySpec
             "div",
             undefined,
             undefined,
-            undefined,
-            undefined,
             [
                 placeholderFactory
                 (

@@ -1,35 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable sort-keys */
-import type { IDisposable, Subscription } from "@surface/core";
-import bind                               from "../bind.js";
-import Directive                          from "../directive.js";
-import observe                            from "../observe.js";
-import type Activator                     from "../types/activator";
-import type Expression                    from "../types/expression.js";
-import type Factory                       from "../types/fatctory";
-import type ObservablePath                from "../types/observable-path.js";
+import type { IDisposable }  from "@surface/core";
+import type Activator        from "../types/activator";
+import type AttributeFactory from "../types/attribute-fatctory.js";
+import type NodeFactory      from "../types/node-fatctory";
 
-export default function elementFactory
-(
-    tag:               string,
-    attributes?:       [key: string, value: string][],
-    binds?:            [type: "oneway" | "twoway" | "interpolation", key: string, value: Expression, observables: ObservablePath[]][],
-    events?:           [key: string, value: Expression][],
-    customDirectives?: [key: Expression, value: Expression, observables: [key: ObservablePath[], value: ObservablePath[]]][],
-    childs?:           Factory[],
-): Factory
+type Attributes = [key: string, value: string];
+
+export default function elementFactory(tag: string, attributes?: Attributes[], attributesFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
 {
     return () =>
     {
         const element = document.createElement(tag);
 
-        window.customElements.upgrade(element);
-
         if (attributes)
         {
-            for (const [key, value] of attributes)
+            for (const attribute of attributes)
             {
-                element.setAttribute(key, value);
+                element.setAttribute(attribute[0], attribute[1]);
             }
         }
 
@@ -41,7 +27,6 @@ export default function elementFactory
             {
                 const [childElement, activator] = childFactory();
 
-                // TODO: Allow factory returns multiples nodes.
                 element.appendChild(childElement);
 
                 activators.push(activator);
@@ -50,57 +35,22 @@ export default function elementFactory
 
         const activator: Activator = (_parent, host, scope, directives) =>
         {
-            const disposables:   IDisposable[]  = [];
-            const subscriptions: Subscription[] = [];
+            const disposables: IDisposable[] = [];
 
             for (const activator of activators)
             {
                 disposables.push(activator(element, host, scope, directives));
             }
 
-            if (binds)
+            if (attributesFactories)
             {
-                for (const [type, key, expression, observables] of binds)
+                for (const factory of attributesFactories)
                 {
-                    switch (type)
-                    {
-                        case "oneway":
-                            subscriptions.push(observe(scope, observables, (): void => void ((element as unknown as Record<string, unknown>)[key] = expression(scope)), false));
-
-                            break;
-                        case "twoway":
-                            subscriptions.push(bind(element, [key], scope as object, observables[0]));
-
-                            break;
-                        default:
-                            subscriptions.push(observe(scope, observables, (): void => element.setAttribute(key, `${expression(scope)}`), false));
-
-                    }
-
+                    disposables.push(factory(element, scope, directives));
                 }
             }
 
-            if (events)
-            {
-                for (const [key, expression] of events)
-                {
-                    const listener = expression(scope) as () => void;
-
-                    element.addEventListener(key, listener);
-
-                    subscriptions.push({ unsubscribe: () => element.removeEventListener(key, listener) });
-                }
-            }
-
-            if (customDirectives)
-            {
-                for (const [key, expression, observables] of customDirectives)
-                {
-                    disposables.push(new Directive({ element, scope, key, expression, observables }));
-                }
-            }
-
-            return { dispose: () => (subscriptions.splice(0).forEach(x => x.unsubscribe()), disposables.splice(0).forEach(x => x.dispose())) };
+            return { dispose: () => disposables.splice(0).forEach(x => x.dispose()) };
         };
 
         return [element, activator];

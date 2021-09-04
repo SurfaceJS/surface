@@ -2,73 +2,54 @@
 import type { IExpression, IPattern } from "@surface/expression";
 import type ObservablePath            from "./observable-path";
 
-export type FragmentDescriptor =
+export type RawAttributeDescritor =
 {
-    childs: Descriptor[],
-    type:   "fragment",
+    key:   string,
+    value: string,
+    type:  "raw",
+};
+
+export type OneWayAttributeDescritor =
+{
+    key:         string,
+    observables: ObservablePath[],
+    type:        "oneway" | "interpolation",
+    value:       IExpression,
+};
+
+export type TwoWayAttributeDescritor =
+{
+    left:  string,
+    right: ObservablePath,
+    type:  "twoway",
+};
+
+export type DirectiveAttributeDescritor =
+{
+    key:         string,
+    observables: ObservablePath[],
+    type:        "directive",
+    value:       IExpression,
+};
+
+export type AttributeDescritor =
+    | DirectiveAttributeDescritor
+    | EventDescritor
+    | OneWayAttributeDescritor
+    | RawAttributeDescritor
+    | TwoWayAttributeDescritor;
+
+export type BranchDescriptor =
+{
+    expression:  IExpression,
+    fragment:    FragmentDescriptor,
+    observables: ObservablePath[],
 };
 
 export type CommentDescriptor =
 {
-    value: string,
     type:  "comment",
-};
-
-export type BranchDescriptor =
-{
-    descriptor:  Descriptor,
-    expression:  Expression,
-    observables: ObservablePath[],
-};
-
-export type BindDescritor =
-{
-    key:         string,
-    value:       IExpression,
-    observables: ObservablePath[],
-    type:        "oneway" | "twoway" | "interpolation",
-};
-
-export type AttributeDescritor =
-{
-    key:   string,
     value: string,
-};
-
-export type EventDescritor =
-{
-    key:   string,
-    value: IExpression,
-};
-
-export type EventDescritor =
-{
-    key:   string,
-    value: IExpression,
-};
-
-export type KeyValueObservable =
-{
-    key:   ObservablePath[],
-    value: ObservablePath[],
-};
-
-export type ElementDescriptor =
-{
-    tag:         string,
-    attributes:  AttributeDescritor[],
-    binds:       BindDescritor[],
-    events:      EventDescritor[],
-    directives:  DirectiveDescritor[],
-    type:        "element",
-    childs:      Descriptor[],
-};
-
-export type TextDescriptor =
-{
-    value:       IExpression,
-    observables: ObservablePath[],
-    type:        "text",
 };
 
 export type ChoiceStatementDescriptor =
@@ -77,32 +58,72 @@ export type ChoiceStatementDescriptor =
     type:     "choice-statement",
 };
 
+export type ElementDescriptor =
+{
+    attributes:  Iterable<AttributeDescritor>,
+    childs:      Iterable<Descriptor>,
+    tag:         string,
+    type:        "element",
+};
+
+export type EventDescritor =
+{
+    key:   string,
+    value: IExpression,
+    type:  "event",
+};
+
+export type EventDescritor =
+{
+    key:   string,
+    value: IExpression,
+};
+
+export type FragmentDescriptor =
+{
+    childs: Iterable<Descriptor>,
+    type:   "fragment",
+};
+
+export type KeyValueObservable =
+{
+    key:   ObservablePath[],
+    value: ObservablePath[],
+};
+
+export type InjectionStatementDescriptor =
+{
+    fragment:    FragmentDescriptor,
+    key:         IExpression,
+    observables: KeyValueObservable,
+    type:        "injection-statement",
+    value:       IPattern,
+};
+
 export type LoopStatementDescriptor =
 {
+    fragment:    FragmentDescriptor,
     left:        IPattern,
+    observables: ObservablePath[],
     operator:    "in" | "of",
     right:       IExpression,
-    observables: ObservablePath[],
-    descriptor:  Descriptor,
     type:        "loop-statement",
 };
 
 export type PlaceholderStatementDescriptor =
 {
+    fragment:    FragmentDescriptor,
     key:         IExpression,
-    value:       IExpression,
     observables: KeyValueObservable,
-    descriptor:  Descriptor,
     type:        "placeholder-statement",
+    value:       IExpression,
 };
 
-export type InjectionStatementDescriptor =
+export type TextDescriptor =
 {
-    key:         IExpression,
-    value:       IPattern,
-    observables: KeyValueObservable,
-    descriptor:  Descriptor,
-    type:        "injection-statement",
+    observables: ObservablePath[],
+    type:        "text",
+    value:       IExpression,
 };
 
 type Descriptor =

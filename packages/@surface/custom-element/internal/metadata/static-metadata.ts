@@ -1,4 +1,5 @@
 import type { Indexer }        from "@surface/core";
+import type NodeFactory        from "../aot/types/node-fatctory.js";
 import type TemplateDescriptor from "../types/template-descriptor";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
@@ -10,7 +11,8 @@ export default class StaticMetadata
     public observedAttributes: string[]                                          = [];
     public styles:             CSSStyleSheet[]                                   = [];
 
-    public template!:   HTMLTemplateElement;
+    public template?:   HTMLTemplateElement;
+    public factory?:    NodeFactory;
     public descriptor!: TemplateDescriptor;
 
     public static from(target: Function): StaticMetadata

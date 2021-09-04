@@ -1,33 +1,85 @@
+/* eslint-disable max-lines */
 /* eslint-disable max-lines-per-function */
 // eslint-disable-next-line import/no-unassigned-import
 import "../fixtures/dom.js";
 
-import type { Indexer }            from "@surface/core";
-import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
-import TemplateParser              from "../../internal/aot/template-parser.js";
-import type { FragmentDescriptor } from "../../internal/aot/types/descriptor";
-import { parseDestructuredPattern, parseExpression }         from "../../internal/parsers/expression-parsers.js";
+import type { Delegate, Indexer }                    from "@surface/core";
+import { isIterable, resolveError }                  from "@surface/core";
+import { shouldFail, shouldPass, suite, test }       from "@surface/test-suite";
+import chai                                          from "chai";
+import TemplateParser                                from "../../internal/aot/template-parser.js";
+import type Descriptor                               from "../../internal/aot/types/descriptor";
+import TemplateParseError                            from "../../internal/errors/template-parse-error.js";
+import { parseDestructuredPattern, parseExpression } from "../../internal/parsers/expression-parsers.js";
 
-function stringfyFuncions<T extends object>(target: T): T;
-function stringfyFuncions(target: Indexer): Indexer
+type RawError = { message: string } | Pick<TemplateParseError, "message" | "stack">;
+
+function resolveValue(value: unknown): unknown
 {
-    for (const [key, value] of Object.entries(target))
+    if (value instanceof Object)
     {
-        if (value instanceof Object)
+        if ("evaluate" in value || typeof value == "function")
         {
-            if ("evaluate" in value || typeof value == "function")
-            {
-                target[key] = String(value);
-            }
-            else
-            {
-                target[key] = stringfyFuncions(value);
-            }
+            return String(value);
         }
+
+        return stringifyExpressions(value as Indexer);
+
     }
 
-    return target;
+    return value;
+}
+
+function stringifyExpressions(target: Indexer): Indexer
+{
+    if (isIterable(target))
+    {
+        const result = [];
+
+        for (const value of target)
+        {
+            result.push(resolveValue(value));
+        }
+
+        return result as Indexer;
+    }
+
+    const result: Indexer = { };
+
+    for (const [key, value] of Object.entries(target))
+    {
+        result[key] = resolveValue(value);
+    }
+
+    return result;
+
+}
+
+function tryAction(action: Delegate): RawError
+{
+    try
+    {
+        action();
+    }
+    catch (error)
+    {
+        return toRaw(resolveError(error));
+    }
+
+    return toRaw(new TemplateParseError("", ""));
+}
+
+function toRaw(error: Error): RawError
+{
+    if (error instanceof TemplateParseError)
+    {
+        return {
+            message: error.message,
+            stack:   error.stack,
+        };
+    }
+
+    return { message: error.message };
 }
 
 @suite
@@ -69,18 +121,28 @@ export default class TemplateParserSpec
             "<!--This is a comment-->",
         ].join("");
 
-        const expected: FragmentDescriptor =
+        const expected: Descriptor =
         {
             childs:
             [
                 {
                     attributes:
                     [
-                        { key: "foo", value: "" },
-                        { key: "bar", value: "baz" },
-                    ],
-                    binds:
-                    [
+                        {
+                            key:   "foo",
+                            type:  "raw",
+                            value: "",
+                        },
+                        {
+                            key:   "bar",
+                            type:  "raw",
+                            value: "baz",
+                        },
+                        {
+                            key:   "value",
+                            type:  "raw",
+                            value: "",
+                        },
                         {
                             key:         "value",
                             observables: [["host", "name"]],
@@ -88,10 +150,14 @@ export default class TemplateParserSpec
                             value:       parseExpression("`Hello ${host.name}`"),
                         },
                         {
-                            key:         "valueA",
-                            observables: [["host", "value"]],
-                            type:        "twoway",
-                            value:       parseExpression("host.value"),
+                            key:   "click",
+                            type:  "event",
+                            value: parseExpression("host.handler"),
+                        },
+                        {
+                            left:  "valueA",
+                            right: ["host", "value"],
+                            type:  "twoway",
                         },
                         {
                             key:         "valueB",
@@ -108,22 +174,16 @@ export default class TemplateParserSpec
                             value:       parseExpression("`Some ${'interpolation'} here`"),
                         },
                     ],
-                    directives: [],
-                    events:
-                    [
-                        { key: "click", value: parseExpression("host.handler") },
-                    ],
                     tag:  "SPAN",
                     type: "element",
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
@@ -132,10 +192,8 @@ export default class TemplateParserSpec
                                         value:       parseExpression("\"Empty\""),
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type: "fragment",
@@ -146,18 +204,16 @@ export default class TemplateParserSpec
                     value:       parseDestructuredPattern("{}"),
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
                                         attributes: [],
-                                        binds:      [],
                                         childs:
                                         [
                                             {
@@ -166,16 +222,12 @@ export default class TemplateParserSpec
                                                 value:       parseExpression("`${title}`"),
                                             },
                                         ],
-                                        directives: [],
-                                        events:     [],
                                         tag:        "H1",
                                         type:       "element",
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type: "fragment",
@@ -186,18 +238,16 @@ export default class TemplateParserSpec
                     value:       parseDestructuredPattern("{ title }"),
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
                                         attributes: [],
-                                        binds:      [],
                                         childs:
                                         [
                                             {
@@ -206,16 +256,12 @@ export default class TemplateParserSpec
                                                 value:       parseExpression("`${title}`"),
                                             },
                                         ],
-                                        directives: [],
-                                        events:     [],
-                                        tag:        "H1",
-                                        type:       "element",
+                                        tag:  "H1",
+                                        type: "element",
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type: "fragment",
@@ -227,10 +273,7 @@ export default class TemplateParserSpec
                 },
                 {
                     attributes: [],
-                    binds:      [],
                     childs:     [],
-                    directives: [],
-                    events:     [],
                     tag:        "HR",
                     type:       "element",
                 },
@@ -238,13 +281,13 @@ export default class TemplateParserSpec
                     branches:
                     [
                         {
-                            descriptor:
+                            expression:  parseExpression("host.status == 1"),
+                            fragment:
                             {
                                 childs:
                                 [
                                     {
                                         attributes: [],
-                                        binds:      [],
                                         childs:
                                         [
                                             {
@@ -253,25 +296,22 @@ export default class TemplateParserSpec
                                                 value:       parseExpression("'Active'"),
                                             },
                                         ],
-                                        directives: [],
-                                        events:     [],
-                                        tag:        "SPAN",
-                                        type:       "element",
+                                        tag:  "SPAN",
+                                        type: "element",
                                     },
                                 ],
                                 type: "fragment",
                             },
-                            expression:  parseExpression("host.status == 1"),
                             observables: [["host", "status"]],
                         },
                         {
-                            descriptor:
+                            expression:  parseExpression("host.status == 2"),
+                            fragment:
                             {
                                 childs:
                                 [
                                     {
                                         attributes: [],
-                                        binds:      [],
                                         childs:
                                         [
                                             {
@@ -280,25 +320,22 @@ export default class TemplateParserSpec
                                                 value:       parseExpression("'Waiting'"),
                                             },
                                         ],
-                                        directives: [],
-                                        events:     [],
-                                        tag:        "SPAN",
-                                        type:       "element",
+                                        tag:  "SPAN",
+                                        type: "element",
                                     },
                                 ],
                                 type: "fragment",
                             },
-                            expression:  parseExpression("host.status == 2"),
                             observables: [["host", "status"]],
                         },
                         {
-                            descriptor:
+                            expression:  parseExpression("true"),
+                            fragment:
                             {
                                 childs:
                                 [
                                     {
                                         attributes: [],
-                                        binds:      [],
                                         childs:
                                         [
                                             {
@@ -307,28 +344,24 @@ export default class TemplateParserSpec
                                                 value:       parseExpression("'Suspended'"),
                                             },
                                         ],
-                                        directives: [],
-                                        events:     [],
-                                        tag:        "SPAN",
-                                        type:       "element",
+                                        tag:  "SPAN",
+                                        type: "element",
                                     },
                                 ],
                                 type: "fragment",
                             },
-                            expression:  parseExpression("true"),
                             observables: [],
                         },
                     ],
                     type: "choice-statement",
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
@@ -337,10 +370,8 @@ export default class TemplateParserSpec
                                         value:       parseExpression("'Default Empty'"),
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type:   "fragment",
@@ -351,13 +382,12 @@ export default class TemplateParserSpec
                     value:       parseExpression("undefined"),
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
@@ -366,10 +396,8 @@ export default class TemplateParserSpec
                                         value:       parseExpression("`Default ${name}`"),
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type:   "fragment",
@@ -380,13 +408,12 @@ export default class TemplateParserSpec
                     value:       parseExpression("{ name: host.name }"),
                 },
                 {
-                    descriptor:
+                    fragment:
                     {
                         childs:
                         [
                             {
                                 attributes: [],
-                                binds:      [],
                                 childs:
                                 [
                                     {
@@ -395,10 +422,8 @@ export default class TemplateParserSpec
                                         value:       parseExpression("`Default ${name}`"),
                                     },
                                 ],
-                                directives: [],
-                                events:     [],
-                                tag:        "SPAN",
-                                type:       "element",
+                                tag:  "SPAN",
+                                type: "element",
                             },
                         ],
                         type:   "fragment",
@@ -410,22 +435,18 @@ export default class TemplateParserSpec
                 },
                 {
                     attributes: [],
-                    binds:      [],
                     childs:
                     [
                         {
                             attributes: [],
-                            binds:      [],
                             childs:
                             [
                                 {
                                     attributes: [],
-                                    binds:      [],
                                     childs:
                                     [
                                         {
                                             attributes: [],
-                                            binds:      [],
                                             childs:
                                             [
                                                 {
@@ -434,14 +455,11 @@ export default class TemplateParserSpec
                                                     value:       parseExpression("'Id'"),
                                                 },
                                             ],
-                                            directives: [],
-                                            events:     [],
-                                            tag:        "TH",
-                                            type:       "element",
+                                            tag:  "TH",
+                                            type: "element",
                                         },
                                         {
                                             attributes: [],
-                                            binds:      [],
                                             childs:
                                             [
                                                 {
@@ -450,14 +468,11 @@ export default class TemplateParserSpec
                                                     value:       parseExpression("'Name'"),
                                                 },
                                             ],
-                                            directives: [],
-                                            events:     [],
-                                            tag:        "TH",
-                                            type:       "element",
+                                            tag:  "TH",
+                                            type: "element",
                                         },
                                         {
                                             attributes: [],
-                                            binds:      [],
                                             childs:
                                             [
                                                 {
@@ -466,30 +481,24 @@ export default class TemplateParserSpec
                                                     value:       parseExpression("'Status'"),
                                                 },
                                             ],
-                                            directives: [],
-                                            events:     [],
-                                            tag:        "TH",
-                                            type:       "element",
+                                            tag:  "TH",
+                                            type: "element",
                                         },
                                     ],
-                                    directives: [],
-                                    events:     [],
-                                    tag:        "TR",
-                                    type:       "element",
+                                    tag:  "TR",
+                                    type: "element",
                                 },
                                 {
-                                    descriptor:
+                                    fragment:
                                     {
                                         childs:
                                         [
                                             {
-                                                attributes: [{ key: "onclick", value: "fn({ clicked })" }],
-                                                binds:      [],
+                                                attributes: [{ key: "onclick", type: "raw", value: "fn({ clicked })" }],
                                                 childs:
                                                 [
                                                     {
                                                         attributes: [],
-                                                        binds:      [],
                                                         childs:
                                                         [
                                                             {
@@ -498,14 +507,11 @@ export default class TemplateParserSpec
                                                                 value:       parseExpression("`${item.id}`"),
                                                             },
                                                         ],
-                                                        directives: [],
-                                                        events:     [],
-                                                        tag:        "TD",
-                                                        type:       "element",
+                                                        tag:  "TD",
+                                                        type: "element",
                                                     },
                                                     {
                                                         attributes: [],
-                                                        binds:      [],
                                                         childs:
                                                         [
                                                             {
@@ -514,14 +520,11 @@ export default class TemplateParserSpec
                                                                 value:       parseExpression("`${item.name}`"),
                                                             },
                                                         ],
-                                                        directives: [],
-                                                        events:     [],
-                                                        tag:        "TD",
-                                                        type:       "element",
+                                                        tag:  "TD",
+                                                        type: "element",
                                                     },
                                                     {
                                                         attributes: [],
-                                                        binds:      [],
                                                         childs:
                                                         [
                                                             {
@@ -530,16 +533,12 @@ export default class TemplateParserSpec
                                                                 value:       parseExpression("`${item.status}`"),
                                                             },
                                                         ],
-                                                        directives: [],
-                                                        events:     [],
-                                                        tag:        "TD",
-                                                        type:       "element",
+                                                        tag:  "TD",
+                                                        type: "element",
                                                     },
                                                 ],
-                                                directives: [],
-                                                events:     [],
-                                                tag:        "TR",
-                                                type:       "element",
+                                                tag:  "TR",
+                                                type: "element",
                                             },
                                         ],
                                         type: "fragment",
@@ -551,29 +550,21 @@ export default class TemplateParserSpec
                                     type:        "loop-statement",
                                 },
                             ],
-                            directives: [],
-                            events:     [],
-                            tag:        "TBODY",
-                            type:       "element",
+                            tag:  "TBODY",
+                            type: "element",
                         },
                     ],
-                    directives: [],
-                    events:     [],
-                    tag:        "TABLE",
-                    type:       "element",
+                    tag:  "TABLE",
+                    type: "element",
                 },
                 {
                     attributes: [],
-                    binds:      [],
                     childs:     [],
-                    directives: [],
-                    events:     [],
                     tag:        "HR",
                     type:       "element",
                 },
                 {
                     attributes: [],
-                    binds:      [],
                     childs:
                     [
                         {
@@ -582,14 +573,11 @@ export default class TemplateParserSpec
                             value:       parseExpression("'console.log({ window });'"),
                         },
                     ],
-                    directives: [],
-                    events:     [],
-                    tag:        "SCRIPT",
-                    type:       "element",
+                    tag:  "SCRIPT",
+                    type: "element",
                 },
                 {
                     attributes: [],
-                    binds:      [],
                     childs:
                     [
                         {
@@ -598,10 +586,8 @@ export default class TemplateParserSpec
                             value:       parseExpression("'h1 { color: red }'"),
                         },
                     ],
-                    directives: [],
-                    events:     [],
-                    tag:        "STYLE",
-                    type:       "element",
+                    tag:  "STYLE",
+                    type: "element",
                 },
                 {
                     type:  "comment",
@@ -613,9 +599,655 @@ export default class TemplateParserSpec
 
         const actual = TemplateParser.parse("x-component", template);
 
-        const a = stringfyFuncions(actual);
-        const e = stringfyFuncions(expected);
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
 
         chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposeIfAndFor(): void
+    {
+        const template = "<span #if=\"true\" #for=\"const item of items\">{item.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    branches:
+                    [
+                        {
+                            expression: parseExpression("true"),
+                            fragment:
+                            {
+                                childs:
+                                [
+                                    {
+                                        fragment:
+                                        {
+                                            childs:
+                                            [
+                                                {
+                                                    attributes: [],
+                                                    childs:
+                                                    [
+                                                        {
+                                                            observables: [["item", "value"]],
+                                                            type:        "text",
+                                                            value:       parseExpression("`${item.value}`"),
+                                                        },
+                                                    ],
+                                                    tag:  "SPAN",
+                                                    type: "element",
+                                                },
+                                            ],
+                                            type:   "fragment",
+                                        },
+                                        left:        parseDestructuredPattern("item"),
+                                        observables: [],
+                                        operator:    "of",
+                                        right:       parseExpression("items"),
+                                        type:        "loop-statement",
+                                    },
+                                ],
+                                type: "fragment",
+                            },
+                            observables: [],
+                        },
+                    ],
+                    type: "choice-statement",
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposeIfAndPlaceholder(): void
+    {
+        const template = "<span #if=\"true\" #placeholder:value=\"source\">Placeholder</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    branches:
+                    [
+                        {
+                            expression: parseExpression("true"),
+                            fragment:
+                            {
+                                childs:
+                                [
+                                    {
+                                        fragment:
+                                        {
+                                            childs:
+                                            [
+                                                {
+                                                    attributes: [],
+                                                    childs:
+                                                    [
+                                                        {
+                                                            observables: [],
+                                                            type:        "text",
+                                                            value:       parseExpression("'Placeholder'"),
+                                                        },
+                                                    ],
+                                                    tag:  "SPAN",
+                                                    type: "element",
+                                                },
+                                            ],
+                                            type:   "fragment",
+                                        },
+                                        key:         parseExpression("'value'"),
+                                        observables: { key: [], value: [] },
+                                        type:        "placeholder-statement",
+                                        value:       parseExpression("source"),
+                                    },
+                                ],
+                                type: "fragment",
+                            },
+                            observables: [],
+                        },
+                    ],
+                    type: "choice-statement",
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposeForAndPlaceholder(): void
+    {
+        const template = "<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                fragment:
+                                {
+                                    childs:
+                                    [
+                                        {
+                                            attributes: [],
+                                            childs:
+                                            [
+                                                {
+                                                    observables: [["source", "value"]],
+                                                    type:        "text",
+                                                    value:       parseExpression("`${source.value}`"),
+                                                },
+                                            ],
+                                            tag:  "SPAN",
+                                            type: "element",
+                                        },
+                                    ],
+                                    type:   "fragment",
+                                },
+                                key:         parseExpression("key"),
+                                observables: { key: [], value: [] },
+                                type:        "placeholder-statement",
+                                value:       parseExpression("source"),
+                            },
+                        ],
+                        type: "fragment",
+                    },
+                    left:        parseDestructuredPattern("[key, value]"),
+                    observables: [],
+                    operator:    "of",
+                    right:       parseExpression("items"),
+                    type:        "loop-statement",
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposeIfAndInject(): void
+    {
+        const template = "<span #if=\"true\" #inject:value=\"source\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    branches:
+                    [
+                        {
+                            expression: parseExpression("true"),
+                            fragment:
+                            {
+                                childs:
+                                [
+                                    {
+                                        fragment:
+                                        {
+                                            childs:
+                                            [
+                                                {
+                                                    attributes: [],
+                                                    childs:
+                                                    [
+                                                        {
+                                                            observables: [["source", "value"]],
+                                                            type:        "text",
+                                                            value:       parseExpression("`${source.value}`"),
+                                                        },
+                                                    ],
+                                                    tag:  "SPAN",
+                                                    type: "element",
+                                                },
+                                            ],
+                                            type:   "fragment",
+                                        },
+                                        key:         parseExpression("'value'"),
+                                        observables: { key: [], value: [] },
+                                        type:        "injection-statement",
+                                        value:       parseDestructuredPattern("source"),
+                                    },
+                                ],
+                                type: "fragment",
+                            },
+                            observables: [],
+                        },
+                    ],
+                    type: "choice-statement",
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposeForAndInject(): void
+    {
+        const template = "<span #for=\"const item of items\" #inject:value=\"source\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                fragment:
+                                {
+                                    childs:
+                                    [
+                                        {
+                                            attributes: [],
+                                            childs:
+                                            [
+                                                {
+                                                    observables: [["source", "value"]],
+                                                    type:        "text",
+                                                    value:       parseExpression("`${source.value}`"),
+                                                },
+                                            ],
+                                            tag:  "SPAN",
+                                            type: "element",
+                                        },
+                                    ],
+                                    type:   "fragment",
+                                },
+                                key:         parseExpression("'value'"),
+                                observables: { key: [], value: [] },
+                                type:        "injection-statement",
+                                value:       parseDestructuredPattern("source"),
+                            },
+                        ],
+                        type: "fragment",
+                    },
+                    left:        parseDestructuredPattern("item"),
+                    observables: [],
+                    operator:    "of",
+                    right:       parseExpression("items"),
+                    type:        "loop-statement",
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decompose(): void
+    {
+        const template = "<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                branches:
+                                [
+                                    {
+                                        expression: parseExpression("true"),
+                                        fragment:
+                                        {
+                                            childs:
+                                            [
+                                                {
+                                                    fragment:
+                                                    {
+                                                        childs:
+                                                        [
+                                                            {
+                                                                fragment:
+                                                                {
+                                                                    childs:
+                                                                    [
+                                                                        {
+                                                                            attributes:
+                                                                            [
+                                                                                {
+                                                                                    key:   "class",
+                                                                                    type:  "raw",
+                                                                                    value: "foo",
+                                                                                },
+                                                                            ],
+                                                                            childs:
+                                                                            [
+                                                                                {
+                                                                                    observables: [["source", "value"]],
+                                                                                    type:        "text",
+                                                                                    value:       parseExpression("`${source.value}`"),
+                                                                                },
+                                                                            ],
+                                                                            tag:  "SPAN",
+                                                                            type: "element",
+                                                                        },
+                                                                    ],
+                                                                    type:   "fragment",
+                                                                },
+                                                                left:        parseDestructuredPattern("item"),
+                                                                observables: [],
+                                                                operator:    "of",
+                                                                right:       parseExpression("items"),
+                                                                type:        "loop-statement",
+                                                            },
+                                                        ],
+                                                        type:   "fragment",
+                                                    },
+                                                    key:         parseExpression("'value'"),
+                                                    observables: { key: [], value: [] },
+                                                    type:        "placeholder-statement",
+                                                    value:       parseExpression("source"),
+                                                },
+                                            ],
+                                            type: "fragment",
+                                        },
+                                        observables: [],
+                                    },
+                                ],
+                                type: "choice-statement",
+                            },
+                        ],
+                        type: "fragment",
+                    },
+                    key:         parseExpression("'value'"),
+                    observables: { key: [], value: [] },
+                    type:        "injection-statement",
+                    value:       parseDestructuredPattern("source"),
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposePlaceholderWithPlaceholderKey(): void
+    {
+        const template = "<span #placeholder=\"source\" #placeholder-key=\"key\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                attributes: [],
+                                childs:
+                                [
+                                    {
+                                        observables: [["source", "value"]],
+                                        type:        "text",
+                                        value:       parseExpression("`${source.value}`"),
+                                    },
+                                ],
+                                tag:  "SPAN",
+                                type: "element",
+                            },
+                        ],
+                        type:   "fragment",
+                    },
+                    key:         parseExpression("key"),
+                    observables: { key: [], value: [] },
+                    type:        "placeholder-statement",
+                    value:       parseExpression("source"),
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public decomposePlaceholderAndInject(): void
+    {
+        const template = "<span #placeholder:value=\"source\" #inject:value=\"source\">{source.value}</span>";
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
+                {
+                    fragment:
+                    {
+                        childs:
+                        [
+                            {
+                                fragment:
+                                {
+                                    childs:
+                                    [
+                                        {
+                                            attributes: [],
+                                            childs:
+                                            [
+                                                {
+                                                    observables: [["source", "value"]],
+                                                    type:        "text",
+                                                    value:       parseExpression("`${source.value}`"),
+                                                },
+                                            ],
+                                            tag:  "SPAN",
+                                            type: "element",
+                                        },
+                                    ],
+                                    type: "fragment",
+                                },
+                                key:         parseExpression("'value'"),
+                                observables: { key: [], value: [] },
+                                type:        "injection-statement",
+                                value:       parseDestructuredPattern("source"),
+                            },
+                        ],
+                        type:   "fragment",
+                    },
+                    key:         parseExpression("'value'"),
+                    observables: { key: [], value: [] },
+                    type:        "placeholder-statement",
+                    value:       parseExpression("source"),
+                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldFail @test
+    public ErrorParsingTextNode(): void
+    {
+        const template = "<div>This is a invalid expression: {++true}</div>";
+
+        const message = "Parsing error in \"This is a invalid expression: {++true}\": Invalid left-hand side expression in prefix operation at position 33";
+        const stack   = "<x-component>\n   #shadow-root\n      <div>\n         This is a invalid expression: {++true}";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public invalidTwoWayDataBind(): void
+    {
+        const template = "<x-foo ::value='host.value1 || host.value2'></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host.value1 || host.value2\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host.value1 || host.value2\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public invalidTwoWayDataBindWithDinamicProperty(): void
+    {
+        const template = "<x-foo ::value=\"host[a + b]\"></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host[a + b]\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host[a + b]\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public invalidTwoWayDataBindWithOptionalProperty(): void
+    {
+        const template = "<x-foo ::value=\"host?.value\"></x-foo>";
+
+        const message = "Two way data bind cannot be applied to dynamic properties: \"host?.value\"";
+        const stack   = "<x-component>\n   #shadow-root\n      <x-foo ::value=\"host?.value\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public errorParsingForDirective(): void
+    {
+        const template = "<div #inject:items='items' #if='false'><span #placeholder:items='items' #if='true' #for='x item of items'></span></div>";
+
+        const message = "Parsing error in #for=\"x item of items\": Unexpected token item at position 2";
+        const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #placeholder:items=\"items\" #if=\"true\" #for=\"x item of items\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public errorParsingIfDirective(): void
+    {
+        const template = "<span #if='class'></span>";
+
+        const message = "Parsing error in #if=\"class\": Unexpected token class at position 0";
+        const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"class\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public errorParsingElseIfDirective(): void
+    {
+        const template = "<span #if='true'></span><span #else-if='class'></span>";
+
+        const message = "Parsing error in #else-if=\"class\": Unexpected token class at position 0";
+        const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"class\">";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public unexpectedElseIf(): void
+    {
+        const template = "<span #if='true'></span><span #for='const item of items'></span><span #else-if></span>";
+
+        const message = "Unexpected #else-if directive. #else-if must be used in an element next to an element that uses the #else-if directive.";
+        const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else-if>";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
+    }
+
+    @shouldFail @test
+    public unexpectedElse(): void
+    {
+        const template = "<span #if='true'></span><span #for='const item of items'></span><span #else></span>";
+
+        const message = "Unexpected #else directive. #else must be used in an element next to an element that uses the #if or #else-if directive.";
+        const stack   = "<x-component>\n   #shadow-root\n      ...2 other(s) node(s)\n      <span #else>";
+
+        const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
+        const expected = toRaw(new TemplateParseError(message, stack));
+
+        chai.assert.deepEqual(actual, expected);
     }
 }
