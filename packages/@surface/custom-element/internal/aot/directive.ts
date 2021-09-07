@@ -1,5 +1,5 @@
 import type { IDisposable, Subscription } from "@surface/core";
-import observe                            from "./observe.js";
+import { tryEvaluate, tryObserve }        from "./common.js";
 import type DirectiveContext              from "./types/directive-context.js";
 
 export default abstract class Directive implements IDisposable
@@ -12,7 +12,7 @@ export default abstract class Directive implements IDisposable
     {
         this.onBeforeBind?.();
 
-        this.subscription = observe(this.context.scope, this.context.observables, this.valueNotify.bind(this), true);
+        this.subscription = tryObserve(this.context.scope, this.context.observables, this.valueNotify.bind(this), true, this.context.source, this.context.stackTrace);
 
         this.valueNotify();
 
@@ -22,7 +22,7 @@ export default abstract class Directive implements IDisposable
     private valueNotify(): void
     {
         const oldValue = this.value;
-        const newValue = this.context.value(this.context.scope);
+        const newValue = tryEvaluate(this.context.scope, this.context.value, this.context.source, this.context.stackTrace);
 
         this.value = newValue;
 

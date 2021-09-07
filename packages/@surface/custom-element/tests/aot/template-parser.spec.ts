@@ -86,39 +86,13 @@ function toRaw(error: Error): RawError
 export default class TemplateParserSpec
 {
     @shouldPass @test
-    public analyze(): void
+    public parseElement(): void
     {
         const template =
         [
-            "<span foo bar=\"baz\" value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
-            "<span #inject>Empty</span>",
-            "<span #inject:title=\"{ title }\"><h1>{title}</h1></span>",
-            "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
-            "<hr>",
-            "<span #if=\"host.status == 1\">Active</span>",
-            "<!--Will be ignored-->",
-            "<span #else-if=\"host.status == 2\">Waiting</span>",
-            "Will be ignored and show warning",
-            "<span #else>Suspended</span>",
-            "<span #placeholder>Default Empty</span>",
-            "<span #placeholder:value=\"{ name: host.name }\">Default {name}</span>",
-            "<span #placeholder=\"{ name: host.name }\" #placeholder-key=\"host.dynamicPlaceholderKey\">Default {name}</span>",
-            "<table>",
-            "<tr>",
-            "<th>Id</th>",
-            "<th>Name</th>",
-            "<th>Status</th>",
-            "</tr>",
-            "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">",
-            "<td>{item.id}</td>",
-            "<td>{item.name}</td>",
-            "<td>{item.status}</td>",
-            "</tr>",
-            "</table>",
-            "<hr>",
-            "<script>console.log({ window });</script>",
-            "<style>h1 { color: red }</style>",
-            "<!--This is a comment-->",
+            " ",
+            "<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">Some {'interpolation'} here</span>",
+            " ",
         ].join("");
 
         const expected: Descriptor =
@@ -139,6 +113,19 @@ export default class TemplateParserSpec
                             value: "baz",
                         },
                         {
+                            key:         "show",
+                            observables: [],
+                            source:      "#show",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type:  "directive",
+                            value: parseExpression("undefined"),
+                        },
+                        {
                             key:   "value",
                             type:  "raw",
                             value: "",
@@ -146,37 +133,99 @@ export default class TemplateParserSpec
                         {
                             key:         "value",
                             observables: [["host", "name"]],
-                            type:        "interpolation",
-                            value:       parseExpression("`Hello ${host.name}`"),
+                            source:      "value=\"Hello {host.name}\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type:  "interpolation",
+                            value: parseExpression("`Hello ${host.name}`"),
                         },
                         {
-                            key:   "click",
+                            key:        "click",
+                            source:     "@click=\"host.handler\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
                             type:  "event",
                             value: parseExpression("host.handler"),
                         },
                         {
-                            left:  "valueA",
-                            right: ["host", "value"],
-                            type:  "twoway",
+                            left:       "valueA",
+                            right:      ["host", "value"],
+                            source:     "::value-a=\"host.value\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type: "twoway",
                         },
                         {
                             key:         "valueB",
                             observables: [["host", "x"], ["host", "y"]],
-                            type:        "oneway",
-                            value:       parseExpression("host.x + host.y"),
+                            source:      ":value-b=\"host.x + host.y\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                            ],
+                            type:  "oneway",
+                            value: parseExpression("host.x + host.y"),
                         },
                     ],
                     childs:
                     [
                         {
                             observables: [],
-                            type:        "text",
-                            value:       parseExpression("`Some ${'interpolation'} here`"),
+                            source:      "Some {'interpolation'} here",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
+                                ["Some {'interpolation'} here"],
+                            ],
+                            type:  "text",
+                            value: parseExpression("`Some ${'interpolation'} here`"),
                         },
                     ],
                     tag:  "SPAN",
                     type: "element",
                 },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseInjection(): void
+    {
+        const template =
+        [
+            "<span #inject>Empty</span>",
+            "<span #inject:title=\"{ title }\"><h1>{title}</h1></span>",
+            "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\"><h1>{title}</h1></span>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
                 {
                     fragment:
                     {
@@ -187,9 +236,8 @@ export default class TemplateParserSpec
                                 childs:
                                 [
                                     {
-                                        observables: [],
-                                        type:        "text",
-                                        value:       parseExpression("\"Empty\""),
+                                        type:  "text",
+                                        value: parseExpression("\"Empty\""),
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -198,8 +246,15 @@ export default class TemplateParserSpec
                         ],
                         type: "fragment",
                     },
-                    key:         parseExpression("'default'"),
-                    observables: { key: [], value: [] },
+                    key:          parseExpression("'default'"),
+                    observables:  { key: [], value: [] },
+                    source:       { key: "", value: "#inject" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #inject>"],
+                    ],
                     type:        "injection-statement",
                     value:       parseDestructuredPattern("{}"),
                 },
@@ -218,12 +273,21 @@ export default class TemplateParserSpec
                                         [
                                             {
                                                 observables: [],
-                                                type:        "text",
-                                                value:       parseExpression("`${title}`"),
+                                                source:      "{title}",
+                                                stackTrace:
+                                                [
+                                                    ["<x-component>"],
+                                                    ["#shadow-root"],
+                                                    ["...1 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
+                                                    ["<h1>"],
+                                                    ["{title}"],
+                                                ],
+                                                type:  "text",
+                                                value: parseExpression("`${title}`"),
                                             },
                                         ],
-                                        tag:        "H1",
-                                        type:       "element",
+                                        tag:  "H1",
+                                        type: "element",
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -234,8 +298,15 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("'title'"),
                     observables: { key: [], value: [] },
-                    type:        "injection-statement",
-                    value:       parseDestructuredPattern("{ title }"),
+                    source:      { key: "", value: "#inject:title=\"{ title }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...1 other(s) node(s)", "<span #inject:title=\"{ title }\">"],
+                    ],
+                    type:  "injection-statement",
+                    value: parseDestructuredPattern("{ title }"),
                 },
                 {
                     fragment:
@@ -252,6 +323,15 @@ export default class TemplateParserSpec
                                         [
                                             {
                                                 observables: [],
+                                                source:      "{title}",
+                                                stackTrace:
+                                                [
+                                                    ["<x-component>"],
+                                                    ["#shadow-root"],
+                                                    ["...2 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
+                                                    ["<h1>"],
+                                                    ["{title}"],
+                                                ],
                                                 type:        "text",
                                                 value:       parseExpression("`${title}`"),
                                             },
@@ -268,15 +348,44 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("host.dynamicInjectKey"),
                     observables: { key: [["host", "dynamicInjectKey"]], value: [] },
-                    type:        "injection-statement",
-                    value:       parseDestructuredPattern("{ title }"),
+                    source:      { key: "#inject-key=\"host.dynamicInjectKey\"", value: "#inject=\"{ title }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...2 other(s) node(s)", "<span #inject=\"{ title }\" #inject-key=\"host.dynamicInjectKey\">"],
+                    ],
+                    type:  "injection-statement",
+                    value: parseDestructuredPattern("{ title }"),
                 },
-                {
-                    attributes: [],
-                    childs:     [],
-                    tag:        "HR",
-                    type:       "element",
-                },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseChoice(): void
+    {
+        const template =
+        [
+            "<span #if=\"host.status == 1\">Active</span>",
+            "<!--Will be ignored-->",
+            "<span #else-if=\"host.status == 2\">Waiting</span>",
+            "Will be ignored and show warning",
+            "<span #else>Suspended</span>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
                 {
                     branches:
                     [
@@ -291,9 +400,8 @@ export default class TemplateParserSpec
                                         childs:
                                         [
                                             {
-                                                observables: [],
-                                                type:        "text",
-                                                value:       parseExpression("'Active'"),
+                                                type:  "text",
+                                                value: parseExpression("'Active'"),
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -303,6 +411,13 @@ export default class TemplateParserSpec
                                 type: "fragment",
                             },
                             observables: [["host", "status"]],
+                            source:      "#if=\"host.status == 1\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span #if=\"host.status == 1\">"],
+                            ],
                         },
                         {
                             expression:  parseExpression("host.status == 2"),
@@ -315,9 +430,8 @@ export default class TemplateParserSpec
                                         childs:
                                         [
                                             {
-                                                observables: [],
-                                                type:        "text",
-                                                value:       parseExpression("'Waiting'"),
+                                                type:  "text",
+                                                value: parseExpression("'Waiting'"),
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -327,6 +441,13 @@ export default class TemplateParserSpec
                                 type: "fragment",
                             },
                             observables: [["host", "status"]],
+                            source:      "#else-if=\"host.status == 2\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...1 other(s) node(s)", "<span #else-if=\"host.status == 2\">"],
+                            ],
                         },
                         {
                             expression:  parseExpression("true"),
@@ -339,9 +460,8 @@ export default class TemplateParserSpec
                                         childs:
                                         [
                                             {
-                                                observables: [],
-                                                type:        "text",
-                                                value:       parseExpression("'Suspended'"),
+                                                type:  "text",
+                                                value: parseExpression("'Suspended'"),
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -351,10 +471,43 @@ export default class TemplateParserSpec
                                 type: "fragment",
                             },
                             observables: [],
+                            source:      "#else",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["...2 other(s) node(s)", "<span #else>"],
+                            ],
                         },
                     ],
                     type: "choice-statement",
                 },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parsePlaceholder(): void
+    {
+        const template =
+        [
+            "<span #placeholder>Default Empty</span>",
+            "<span #placeholder:value=\"{ name: host.name }\">Default {name}</span>",
+            "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">Default {name}</span>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
                 {
                     fragment:
                     {
@@ -365,9 +518,8 @@ export default class TemplateParserSpec
                                 childs:
                                 [
                                     {
-                                        observables: [],
-                                        type:        "text",
-                                        value:       parseExpression("'Default Empty'"),
+                                        type:  "text",
+                                        value: parseExpression("'Default Empty'"),
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -378,8 +530,15 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("'default'"),
                     observables: { key: [], value: [] },
-                    type:        "placeholder-statement",
-                    value:       parseExpression("undefined"),
+                    source:      { key: "", value: "#placeholder" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #placeholder>"],
+                    ],
+                    type:  "placeholder-statement",
+                    value: parseExpression("undefined"),
                 },
                 {
                     fragment:
@@ -392,8 +551,16 @@ export default class TemplateParserSpec
                                 [
                                     {
                                         observables: [],
-                                        type:        "text",
-                                        value:       parseExpression("`Default ${name}`"),
+                                        source:      "Default {name}",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["...1 other(s) node(s)", "<span #placeholder:value=\"{ name: host.name }\">"],
+                                            ["Default {name}"],
+                                        ],
+                                        type:  "text",
+                                        value: parseExpression("`Default ${name}`"),
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -404,6 +571,13 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [["host", "name"]] },
+                    source:      { key: "", value: "#placeholder:value=\"{ name: host.name }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...1 other(s) node(s)", "<span #placeholder:value=\"{ name: host.name }\">"],
+                    ],
                     type:        "placeholder-statement",
                     value:       parseExpression("{ name: host.name }"),
                 },
@@ -418,21 +592,71 @@ export default class TemplateParserSpec
                                 [
                                     {
                                         observables: [],
-                                        type:        "text",
-                                        value:       parseExpression("`Default ${name}`"),
+                                        source:      "Default {name}",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["...2 other(s) node(s)", "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">"],
+                                            ["Default {name}"],
+                                        ],
+                                        type:  "text",
+                                        value: parseExpression("`Default ${name}`"),
                                     },
                                 ],
                                 tag:  "SPAN",
                                 type: "element",
                             },
                         ],
-                        type:   "fragment",
+                        type: "fragment",
                     },
                     key:         parseExpression("host.dynamicPlaceholderKey"),
                     observables: { key: [["host", "dynamicPlaceholderKey"]], value: [["host", "name"]] },
-                    type:        "placeholder-statement",
-                    value:       parseExpression("{ name: host.name }"),
+                    source:      { key: "#placeholder-key=\"host.dynamicPlaceholderKey\"", value: "#placeholder=\"{ name: host.name }\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["...2 other(s) node(s)", "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">"],
+                    ],
+                    type:  "placeholder-statement",
+                    value: parseExpression("{ name: host.name }"),
                 },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseLoop(): void
+    {
+        const template =
+        [
+            "<table>",
+            "<tr>",
+            "<th>Id</th>",
+            "<th>Name</th>",
+            "<th>Status</th>",
+            "</tr>",
+            "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">",
+            "<td>{item.id}</td>",
+            "<td>{item.name}</td>",
+            "<td>{item.status}</td>",
+            "</tr>",
+            "</table>",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
                 {
                     attributes: [],
                     childs:
@@ -450,9 +674,8 @@ export default class TemplateParserSpec
                                             childs:
                                             [
                                                 {
-                                                    observables: [],
-                                                    type:        "text",
-                                                    value:       parseExpression("'Id'"),
+                                                    type:  "text",
+                                                    value: parseExpression("'Id'"),
                                                 },
                                             ],
                                             tag:  "TH",
@@ -463,9 +686,8 @@ export default class TemplateParserSpec
                                             childs:
                                             [
                                                 {
-                                                    observables: [],
-                                                    type:        "text",
-                                                    value:       parseExpression("'Name'"),
+                                                    type:  "text",
+                                                    value: parseExpression("'Name'"),
                                                 },
                                             ],
                                             tag:  "TH",
@@ -476,9 +698,8 @@ export default class TemplateParserSpec
                                             childs:
                                             [
                                                 {
-                                                    observables: [],
-                                                    type:        "text",
-                                                    value:       parseExpression("'Status'"),
+                                                    type:  "text",
+                                                    value: parseExpression("'Status'"),
                                                 },
                                             ],
                                             tag:  "TH",
@@ -503,8 +724,19 @@ export default class TemplateParserSpec
                                                         [
                                                             {
                                                                 observables: [["item", "id"]],
-                                                                type:        "text",
-                                                                value:       parseExpression("`${item.id}`"),
+                                                                source:      "{item.id}",
+                                                                stackTrace:
+                                                                [
+                                                                    ["<x-component>"],
+                                                                    ["#shadow-root"],
+                                                                    ["<table>"],
+                                                                    ["<tbody>"],
+                                                                    ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                                    ["<td>"],
+                                                                    ["{item.id}"],
+                                                                ],
+                                                                type:  "text",
+                                                                value: parseExpression("`${item.id}`"),
                                                             },
                                                         ],
                                                         tag:  "TD",
@@ -516,8 +748,19 @@ export default class TemplateParserSpec
                                                         [
                                                             {
                                                                 observables: [["item", "name"]],
-                                                                type:        "text",
-                                                                value:       parseExpression("`${item.name}`"),
+                                                                source:      "{item.name}",
+                                                                stackTrace:
+                                                                [
+                                                                    ["<x-component>"],
+                                                                    ["#shadow-root"],
+                                                                    ["<table>"],
+                                                                    ["<tbody>"],
+                                                                    ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                                    ["...1 other(s) node(s)", "<td>"],
+                                                                    ["{item.name}"],
+                                                                ],
+                                                                type:  "text",
+                                                                value: parseExpression("`${item.name}`"),
                                                             },
                                                         ],
                                                         tag:  "TD",
@@ -529,8 +772,19 @@ export default class TemplateParserSpec
                                                         [
                                                             {
                                                                 observables: [["item", "status"]],
-                                                                type:        "text",
-                                                                value:       parseExpression("`${item.status}`"),
+                                                                source:      "{item.status}",
+                                                                stackTrace:
+                                                                [
+                                                                    ["<x-component>"],
+                                                                    ["#shadow-root"],
+                                                                    ["<table>"],
+                                                                    ["<tbody>"],
+                                                                    ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                                                    ["...2 other(s) node(s)", "<td>"],
+                                                                    ["{item.status}"],
+                                                                ],
+                                                                type:  "text",
+                                                                value: parseExpression("`${item.status}`"),
                                                             },
                                                         ],
                                                         tag:  "TD",
@@ -547,7 +801,16 @@ export default class TemplateParserSpec
                                     observables: [["host", "items"]],
                                     operator:    "of",
                                     right:       parseExpression("host.items"),
-                                    type:        "loop-statement",
+                                    source:      "#for=\"const item of host.items\"",
+                                    stackTrace:
+                                    [
+                                        ["<x-component>"],
+                                        ["#shadow-root"],
+                                        ["<table>"],
+                                        ["<tbody>"],
+                                        ["...1 other(s) node(s)", "<tr onclick=\"fn({ clicked })\" #for=\"const item of host.items\">"],
+                                    ],
+                                    type: "loop-statement",
                                 },
                             ],
                             tag:  "TBODY",
@@ -557,6 +820,33 @@ export default class TemplateParserSpec
                     tag:  "TABLE",
                     type: "element",
                 },
+            ],
+            type: "fragment",
+        };
+
+        const actual = TemplateParser.parse("x-component", template);
+
+        const a = stringifyExpressions(actual);
+        const e = stringifyExpressions(expected);
+
+        chai.assert.deepEqual(a, e);
+    }
+
+    @shouldPass @test
+    public parseStatic(): void
+    {
+        const template =
+        [
+            "<hr>",
+            "<script>console.log({ window });</script>",
+            "<style>h1 { color: red }</style>",
+            "<!--This is a comment-->",
+        ].join("");
+
+        const expected: Descriptor =
+        {
+            childs:
+            [
                 {
                     attributes: [],
                     childs:     [],
@@ -568,9 +858,8 @@ export default class TemplateParserSpec
                     childs:
                     [
                         {
-                            observables: [],
-                            type:        "text",
-                            value:       parseExpression("'console.log({ window });'"),
+                            type:  "text",
+                            value: parseExpression("'console.log({ window });'"),
                         },
                     ],
                     tag:  "SCRIPT",
@@ -581,9 +870,8 @@ export default class TemplateParserSpec
                     childs:
                     [
                         {
-                            observables: [],
-                            type:        "text",
-                            value:       parseExpression("'h1 { color: red }'"),
+                            type:  "text",
+                            value: parseExpression("'h1 { color: red }'"),
                         },
                     ],
                     tag:  "STYLE",
@@ -634,8 +922,16 @@ export default class TemplateParserSpec
                                                     [
                                                         {
                                                             observables: [["item", "value"]],
-                                                            type:        "text",
-                                                            value:       parseExpression("`${item.value}`"),
+                                                            source:      "{item.value}",
+                                                            stackTrace:
+                                                            [
+                                                                ["<x-component>"],
+                                                                ["#shadow-root"],
+                                                                ["<span #if=\"true\" #for=\"const item of items\">"],
+                                                                ["{item.value}"],
+                                                            ],
+                                                            type:  "text",
+                                                            value: parseExpression("`${item.value}`"),
                                                         },
                                                     ],
                                                     tag:  "SPAN",
@@ -648,12 +944,26 @@ export default class TemplateParserSpec
                                         observables: [],
                                         operator:    "of",
                                         right:       parseExpression("items"),
-                                        type:        "loop-statement",
+                                        source:      "#for=\"const item of items\"",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["<span #if=\"true\" #for=\"const item of items\">"],
+                                        ],
+                                        type: "loop-statement",
                                     },
                                 ],
                                 type: "fragment",
                             },
                             observables: [],
+                            source:      "#if=\"true\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span #if=\"true\" #for=\"const item of items\">"],
+                            ],
                         },
                     ],
                     type: "choice-statement",
@@ -698,9 +1008,8 @@ export default class TemplateParserSpec
                                                     childs:
                                                     [
                                                         {
-                                                            observables: [],
-                                                            type:        "text",
-                                                            value:       parseExpression("'Placeholder'"),
+                                                            type:  "text",
+                                                            value: parseExpression("'Placeholder'"),
                                                         },
                                                     ],
                                                     tag:  "SPAN",
@@ -711,6 +1020,13 @@ export default class TemplateParserSpec
                                         },
                                         key:         parseExpression("'value'"),
                                         observables: { key: [], value: [] },
+                                        source:      { key: "", value: "#placeholder:value=\"source\"" },
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["<span #if=\"true\" #placeholder:value=\"source\">"],
+                                        ],
                                         type:        "placeholder-statement",
                                         value:       parseExpression("source"),
                                     },
@@ -718,6 +1034,13 @@ export default class TemplateParserSpec
                                 type: "fragment",
                             },
                             observables: [],
+                            source:      "#if=\"true\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span #if=\"true\" #placeholder:value=\"source\">"],
+                            ],
                         },
                     ],
                     type: "choice-statement",
@@ -759,20 +1082,35 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     observables: [["source", "value"]],
-                                                    type:        "text",
-                                                    value:       parseExpression("`${source.value}`"),
+                                                    source:      "{source.value}",
+                                                    stackTrace:
+                                                    [
+                                                        ["<x-component>"],
+                                                        ["#shadow-root"],
+                                                        ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                                        ["{source.value}"],
+                                                    ],
+                                                    type:  "text",
+                                                    value: parseExpression("`${source.value}`"),
                                                 },
                                             ],
                                             tag:  "SPAN",
                                             type: "element",
                                         },
                                     ],
-                                    type:   "fragment",
+                                    type: "fragment",
                                 },
                                 key:         parseExpression("key"),
                                 observables: { key: [], value: [] },
-                                type:        "placeholder-statement",
-                                value:       parseExpression("source"),
+                                source:      { key: "#placeholder-key=\"key\"", value: "#placeholder=\"source\"" },
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                ],
+                                type:  "placeholder-statement",
+                                value: parseExpression("source"),
                             },
                         ],
                         type: "fragment",
@@ -781,7 +1119,14 @@ export default class TemplateParserSpec
                     observables: [],
                     operator:    "of",
                     right:       parseExpression("items"),
-                    type:        "loop-statement",
+                    source:      "#for=\"const [key, value] of items\"",
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
+                    ],
+                    type: "loop-statement",
                 },
             ],
             type: "fragment",
@@ -824,8 +1169,16 @@ export default class TemplateParserSpec
                                                     [
                                                         {
                                                             observables: [["source", "value"]],
-                                                            type:        "text",
-                                                            value:       parseExpression("`${source.value}`"),
+                                                            source:      "{source.value}",
+                                                            stackTrace:
+                                                            [
+                                                                ["<x-component>"],
+                                                                ["#shadow-root"],
+                                                                ["<span #if=\"true\" #inject:value=\"source\">"],
+                                                                ["{source.value}"],
+                                                            ],
+                                                            type:  "text",
+                                                            value: parseExpression("`${source.value}`"),
                                                         },
                                                     ],
                                                     tag:  "SPAN",
@@ -836,6 +1189,13 @@ export default class TemplateParserSpec
                                         },
                                         key:         parseExpression("'value'"),
                                         observables: { key: [], value: [] },
+                                        source:      { key: "", value: "#inject:value=\"source\"" },
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["<span #if=\"true\" #inject:value=\"source\">"],
+                                        ],
                                         type:        "injection-statement",
                                         value:       parseDestructuredPattern("source"),
                                     },
@@ -843,6 +1203,13 @@ export default class TemplateParserSpec
                                 type: "fragment",
                             },
                             observables: [],
+                            source:      "#if=\"true\"",
+                            stackTrace:
+                            [
+                                ["<x-component>"],
+                                ["#shadow-root"],
+                                ["<span #if=\"true\" #inject:value=\"source\">"],
+                            ],
                         },
                     ],
                     type: "choice-statement",
@@ -884,8 +1251,16 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     observables: [["source", "value"]],
-                                                    type:        "text",
-                                                    value:       parseExpression("`${source.value}`"),
+                                                    source:      "{source.value}",
+                                                    stackTrace:
+                                                    [
+                                                        ["<x-component>"],
+                                                        ["#shadow-root"],
+                                                        ["<span #for=\"const item of items\" #inject:value=\"source\">"],
+                                                        ["{source.value}"],
+                                                    ],
+                                                    type:  "text",
+                                                    value: parseExpression("`${source.value}`"),
                                                 },
                                             ],
                                             tag:  "SPAN",
@@ -896,8 +1271,15 @@ export default class TemplateParserSpec
                                 },
                                 key:         parseExpression("'value'"),
                                 observables: { key: [], value: [] },
-                                type:        "injection-statement",
-                                value:       parseDestructuredPattern("source"),
+                                source:      { key: "", value: "#inject:value=\"source\"" },
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["<span #for=\"const item of items\" #inject:value=\"source\">"],
+                                ],
+                                type:  "injection-statement",
+                                value: parseDestructuredPattern("source"),
                             },
                         ],
                         type: "fragment",
@@ -906,7 +1288,14 @@ export default class TemplateParserSpec
                     observables: [],
                     operator:    "of",
                     right:       parseExpression("items"),
-                    type:        "loop-statement",
+                    source:      "#for=\"const item of items\"",
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #for=\"const item of items\" #inject:value=\"source\">"],
+                    ],
+                    type: "loop-statement",
                 },
             ],
             type: "fragment",
@@ -966,8 +1355,16 @@ export default class TemplateParserSpec
                                                                             [
                                                                                 {
                                                                                     observables: [["source", "value"]],
-                                                                                    type:        "text",
-                                                                                    value:       parseExpression("`${source.value}`"),
+                                                                                    source:      "{source.value}",
+                                                                                    stackTrace:
+                                                                                    [
+                                                                                        ["<x-component>"],
+                                                                                        ["#shadow-root"],
+                                                                                        ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
+                                                                                        ["{source.value}"],
+                                                                                    ],
+                                                                                    type:  "text",
+                                                                                    value: parseExpression("`${source.value}`"),
                                                                                 },
                                                                             ],
                                                                             tag:  "SPAN",
@@ -980,20 +1377,41 @@ export default class TemplateParserSpec
                                                                 observables: [],
                                                                 operator:    "of",
                                                                 right:       parseExpression("items"),
-                                                                type:        "loop-statement",
+                                                                source:      "#for=\"const item of items\"",
+                                                                stackTrace:
+                                                                [
+                                                                    ["<x-component>"],
+                                                                    ["#shadow-root"],
+                                                                    ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
+                                                                ],
+                                                                type: "loop-statement",
                                                             },
                                                         ],
-                                                        type:   "fragment",
+                                                        type: "fragment",
                                                     },
                                                     key:         parseExpression("'value'"),
                                                     observables: { key: [], value: [] },
-                                                    type:        "placeholder-statement",
-                                                    value:       parseExpression("source"),
+                                                    source:      { key: "", value: "#placeholder:value=\"source\"" },
+                                                    stackTrace:
+                                                    [
+                                                        ["<x-component>"],
+                                                        ["#shadow-root"],
+                                                        ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
+                                                    ],
+                                                    type:  "placeholder-statement",
+                                                    value: parseExpression("source"),
                                                 },
                                             ],
                                             type: "fragment",
                                         },
                                         observables: [],
+                                        source:      "#if=\"true\"",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
+                                        ],
                                     },
                                 ],
                                 type: "choice-statement",
@@ -1003,8 +1421,15 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [] },
-                    type:        "injection-statement",
-                    value:       parseDestructuredPattern("source"),
+                    source:      { key: "", value: "#inject:value=\"source\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
+                    ],
+                    type:  "injection-statement",
+                    value: parseDestructuredPattern("source"),
                 },
             ],
             type: "fragment",
@@ -1021,7 +1446,7 @@ export default class TemplateParserSpec
     @shouldPass @test
     public decomposePlaceholderWithPlaceholderKey(): void
     {
-        const template = "<span #placeholder=\"source\" #placeholder-key=\"key\">{source.value}</span>";
+        const template = "<span #placeholder-key=\"key\" #placeholder=\"source\">{source.value}</span>";
 
         const expected: Descriptor =
         {
@@ -1038,8 +1463,16 @@ export default class TemplateParserSpec
                                 [
                                     {
                                         observables: [["source", "value"]],
-                                        type:        "text",
-                                        value:       parseExpression("`${source.value}`"),
+                                        source:      "{source.value}",
+                                        stackTrace:
+                                        [
+                                            ["<x-component>"],
+                                            ["#shadow-root"],
+                                            ["<span #placeholder-key=\"key\" #placeholder=\"source\">"],
+                                            ["{source.value}"],
+                                        ],
+                                        type:  "text",
+                                        value: parseExpression("`${source.value}`"),
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -1050,8 +1483,15 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("key"),
                     observables: { key: [], value: [] },
-                    type:        "placeholder-statement",
-                    value:       parseExpression("source"),
+                    source:      { key: "#placeholder-key=\"key\"", value: "#placeholder=\"source\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #placeholder-key=\"key\" #placeholder=\"source\">"],
+                    ],
+                    type:  "placeholder-statement",
+                    value: parseExpression("source"),
                 },
             ],
             type: "fragment",
@@ -1090,6 +1530,14 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     observables: [["source", "value"]],
+                                                    source:      "{source.value}",
+                                                    stackTrace:
+                                                    [
+                                                        ["<x-component>"],
+                                                        ["#shadow-root"],
+                                                        ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
+                                                        ["{source.value}"],
+                                                    ],
                                                     type:        "text",
                                                     value:       parseExpression("`${source.value}`"),
                                                 },
@@ -1102,6 +1550,13 @@ export default class TemplateParserSpec
                                 },
                                 key:         parseExpression("'value'"),
                                 observables: { key: [], value: [] },
+                                source:      { key: "", value: "#inject:value=\"source\"" },
+                                stackTrace:
+                                [
+                                    ["<x-component>"],
+                                    ["#shadow-root"],
+                                    ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
+                                ],
                                 type:        "injection-statement",
                                 value:       parseDestructuredPattern("source"),
                             },
@@ -1110,8 +1565,15 @@ export default class TemplateParserSpec
                     },
                     key:         parseExpression("'value'"),
                     observables: { key: [], value: [] },
-                    type:        "placeholder-statement",
-                    value:       parseExpression("source"),
+                    source:      { key: "", value: "#placeholder:value=\"source\"" },
+                    stackTrace:
+                    [
+                        ["<x-component>"],
+                        ["#shadow-root"],
+                        ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
+                    ],
+                    type:  "placeholder-statement",
+                    value: parseExpression("source"),
                 },
             ],
             type: "fragment",
@@ -1130,7 +1592,7 @@ export default class TemplateParserSpec
     {
         const template = "<div>This is a invalid expression: {++true}</div>";
 
-        const message = "Parsing error in \"This is a invalid expression: {++true}\": Invalid left-hand side expression in prefix operation at position 33";
+        const message = "Parsing error in 'This is a invalid expression: {++true}': Invalid left-hand side expression in prefix operation at position 33";
         const stack   = "<x-component>\n   #shadow-root\n      <div>\n         This is a invalid expression: {++true}";
 
         const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
@@ -1186,7 +1648,7 @@ export default class TemplateParserSpec
     {
         const template = "<div #inject:items='items' #if='false'><span #placeholder:items='items' #if='true' #for='x item of items'></span></div>";
 
-        const message = "Parsing error in #for=\"x item of items\": Unexpected token item at position 2";
+        const message = "Parsing error in '#for=\"x item of items\"': Unexpected token item at position 2";
         const stack   = "<x-component>\n   #shadow-root\n      <div #inject:items=\"items\" #if=\"false\">\n         <span #placeholder:items=\"items\" #if=\"true\" #for=\"x item of items\">";
 
         const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
@@ -1200,7 +1662,7 @@ export default class TemplateParserSpec
     {
         const template = "<span #if='class'></span>";
 
-        const message = "Parsing error in #if=\"class\": Unexpected token class at position 0";
+        const message = "Parsing error in '#if=\"class\"': Unexpected token class at position 0";
         const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"class\">";
 
         const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));
@@ -1214,7 +1676,7 @@ export default class TemplateParserSpec
     {
         const template = "<span #if='true'></span><span #else-if='class'></span>";
 
-        const message = "Parsing error in #else-if=\"class\": Unexpected token class at position 0";
+        const message = "Parsing error in '#else-if=\"class\"': Unexpected token class at position 0";
         const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #else-if=\"class\">";
 
         const actual   = tryAction(() => stringifyExpressions(TemplateParser.parse("x-component", template)));

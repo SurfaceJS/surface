@@ -1,10 +1,10 @@
 import { CancellationTokenSource, DisposableMetadata, assert } from "@surface/core";
 import type { IDisposable, Subscription }                      from "@surface/core";
 import { scheduler }                                           from "../../singletons.js";
-import type { DirectiveEntry }                                 from "../../types/index";
+import type { DirectiveEntry, StackTrace }                     from "../../types/index";
 import type Block                                              from "../block.js";
+import { tryEvaluate, tryEvaluatePattern, tryObserve }         from "../common.js";
 import TemplateMetadata                                        from "../metadata/template-metadata.js";
-import observe                                                 from "../observe.js";
 import type Evaluator                                          from "../types/evaluator.js";
 import type InjectionContext                                   from "../types/injection-context.js";
 import type NodeFactory                                        from "../types/node-fatctory.js";
@@ -16,11 +16,13 @@ type Context =
     directives:  Map<string, DirectiveEntry>,
     factory:     NodeFactory,
     host:        Node,
-    key:         Evaluator<string>,
+    key:         Evaluator,
     observables: [key: ObservablePath[], value: ObservablePath[]],
     parent:      Node,
     scope:       object,
     value:       Evaluator,
+    source?:     { key: string, value: string },
+    stackTrace?: StackTrace,
 };
 export default class PlaceholdeStatement implements IDisposable
 {
@@ -40,7 +42,7 @@ export default class PlaceholdeStatement implements IDisposable
     {
         this.metadata = TemplateMetadata.from(context.host);
 
-        this.keySubscription = observe(context.scope, context.observables[0], this.onKeyChange, true);
+        this.keySubscription = tryObserve(context.scope, context.observables[0], this.onKeyChange, true, context.source?.key, context.stackTrace);
 
         this.onKeyChange();
     }
@@ -75,7 +77,7 @@ export default class PlaceholdeStatement implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = observe(this.context.scope, this.context.observables[1], listener, true);
+        this.subscription = tryObserve(this.context.scope, this.context.observables[1], listener, true, this.context.source?.value, this.context.stackTrace);
 
         listener();
     };
@@ -88,7 +90,7 @@ export default class PlaceholdeStatement implements IDisposable
             this.metadata.placeholders.delete(this.key);
         }
 
-        this.key = this.context.key(this.context.scope);
+        this.key = String(tryEvaluate(this.context.scope, this.context.key, this.context.source?.key, this.context.stackTrace));
 
         this.metadata.defaults.set(this.key, this.applyLazyInjection);
         this.metadata.placeholders.set(this.key, this.inject);
@@ -111,8 +113,8 @@ export default class PlaceholdeStatement implements IDisposable
 
         this.context.block.clear();
 
-        const value          = this.context.value(this.context.scope);
-        const directiveScope = this.injectionContext.value(this.context.scope, value);
+        const value          = tryEvaluate(this.context.scope, this.context.value, this.context.source?.value, this.context.stackTrace);
+        const directiveScope = tryEvaluatePattern(this.context.scope, this.injectionContext.value, value, this.injectionContext.source, this.injectionContext.stackTrace);
         const scope          = { ...this.injectionContext.scope, ...directiveScope };
 
         const [content, activator] = this.injectionContext.factory();

@@ -2,6 +2,7 @@ import type { IDisposable }  from "@surface/core";
 import { typeGuard }         from "@surface/core";
 import { buildStackTrace }   from "../../common.js";
 import TemplateProcessError  from "../../errors/template-process-error.js";
+import type { StackTrace }   from "../../types/index.js";
 import type AttributeFactory from "../types/attribute-fatctory.js";
 import type DirectiveContext from "../types/directive-context";
 import type Evaluator        from "../types/evaluator.js";
@@ -9,7 +10,7 @@ import type ObservablePath   from "../types/observable-path.js";
 
 type DirectiveFactory = (context: DirectiveContext) => IDisposable;
 
-export default function directiveFactory(key: string, value: Evaluator, observables: ObservablePath[]): AttributeFactory
+export default function directiveFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope, directives) =>
     {
@@ -18,12 +19,18 @@ export default function directiveFactory(key: string, value: Evaluator, observab
 
         if (!handlerConstructor)
         {
-            throw new TemplateProcessError(`Unregistered directive #${key}.`, buildStackTrace([]));
+            throw new TemplateProcessError(`Unregistered directive #${key}.`, buildStackTrace(stackTrace ?? []));
         }
 
         const context: DirectiveContext =
         {
-            element, key, observables, scope, value,
+            element,
+            key,
+            observables,
+            scope,
+            source,
+            stackTrace,
+            value: evaluator,
         };
 
         if (typeGuard<DirectiveFactory>(handlerConstructor, !handlerConstructor.prototype))

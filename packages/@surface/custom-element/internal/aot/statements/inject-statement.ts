@@ -1,15 +1,15 @@
-import { CancellationTokenSource }        from "@surface/core";
-import type { IDisposable, Subscription } from "@surface/core";
-import { scheduler }                      from "../../singletons.js";
-import type { DirectiveEntry }            from "../../types/index.js";
-import type Block                         from "../block.js";
-import TemplateMetadata                   from "../metadata/template-metadata.js";
-import observe                            from "../observe.js";
-import type DestructuredEvaluator                       from "../types/destructured-evaluator.js";
-import type Evaluator                    from "../types/evaluator.js";
-import type InjectionContext              from "../types/injection-context.js";
-import type NodeFactory                       from "../types/node-fatctory";
-import type ObservablePath                from "../types/observable-path.js";
+import { CancellationTokenSource }         from "@surface/core";
+import type { IDisposable, Subscription }  from "@surface/core";
+import { scheduler }                       from "../../singletons.js";
+import type { DirectiveEntry, StackTrace } from "../../types/index.js";
+import type Block                          from "../block.js";
+import { tryEvaluate, tryObserve }         from "../common.js";
+import TemplateMetadata                    from "../metadata/template-metadata.js";
+import type DestructuredEvaluator          from "../types/destructured-evaluator.js";
+import type Evaluator                      from "../types/evaluator.js";
+import type InjectionContext               from "../types/injection-context.js";
+import type NodeFactory                    from "../types/node-fatctory";
+import type ObservablePath                 from "../types/observable-path.js";
 
 type Context =
 {
@@ -17,11 +17,13 @@ type Context =
     directives:  Map<string, DirectiveEntry>,
     factory:     NodeFactory,
     host:        Node,
-    key:         Evaluator<string>,
+    key:         Evaluator,
     observables: [key: ObservablePath[], value: ObservablePath[]],
     parent:      Node,
     scope:       object,
     value:       DestructuredEvaluator,
+    source?:     { key: string, value: string },
+    stackTrace?: StackTrace,
 };
 
 export default class InjectStatement implements IDisposable
@@ -40,8 +42,8 @@ export default class InjectStatement implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
-        this.keySubscription = observe(context.scope, context.observables[0], listener, true);
-        this.subscription    = observe(context.scope, context.observables[1], listener, true);
+        this.keySubscription = tryObserve(context.scope, context.observables[0], listener, true, context.source?.key, context.stackTrace);
+        this.subscription    = tryObserve(context.scope, context.observables[1], listener, true, context.source?.value, context.stackTrace);
 
         this.task();
     }
@@ -50,7 +52,7 @@ export default class InjectStatement implements IDisposable
     {
         this.disposeCurrentInjection();
 
-        this.key = this.context.key(this.context.scope);
+        this.key = String(tryEvaluate(this.context.scope, this.context.key, this.context.source?.key, this.context.stackTrace));
 
         const injectionContext: InjectionContext =
         {
@@ -59,6 +61,8 @@ export default class InjectStatement implements IDisposable
             host:       this.context.host,
             parent:     this.context.parent,
             scope:      this.context.scope,
+            source:     this.context.source?.value,
+            stackTrace: this.context.stackTrace,
             value:      this.context.value,
         };
 

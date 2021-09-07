@@ -1,15 +1,16 @@
-import observe               from "../observe.js";
+import type { StackTrace }   from "../../types/index.js";
+import { tryObserve }        from "../common.js";
 import type AttributeFactory from "../types/attribute-fatctory.js";
 import type Evaluator        from "../types/evaluator.js";
 import type ObservablePath   from "../types/observable-path.js";
 
-export default function interpolationFactory(key: string, value: Evaluator, observables: ObservablePath[]): AttributeFactory
+export default function interpolationFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {
-        const listener = (): void => element.setAttribute(key, `${value(scope)}`);
+        const listener = (): void => element.setAttribute(key, `${evaluator(scope)}`);
 
-        const subscription = observe(scope, observables, listener, true);
+        const subscription = tryObserve(scope, observables, listener, true, source, stackTrace);
 
         listener();
 

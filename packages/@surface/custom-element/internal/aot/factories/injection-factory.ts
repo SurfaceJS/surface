@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+import type { StackTrace }        from "../../types/index.js";
 import Block                      from "../block.js";
 import InjectStatement            from "../statements/inject-statement.js";
 import type Activator             from "../types/activator";
@@ -6,7 +8,7 @@ import type Evaluator             from "../types/evaluator.js";
 import type NodeFactory           from "../types/node-fatctory";
 import type ObservablePath        from "../types/observable-path";
 
-export default function injectionFactory(key: Evaluator<string>, value: DestructuredEvaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory): NodeFactory
+export default function injectionFactory(keyEvaluator: Evaluator, valueEvaluator: DestructuredEvaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {
@@ -24,11 +26,13 @@ export default function injectionFactory(key: Evaluator<string>, value: Destruct
                 directives,
                 factory,
                 host,
-                key,
+                key:   keyEvaluator,
                 observables,
                 parent,
                 scope,
-                value,
+                source,
+                stackTrace,
+                value: valueEvaluator,
             };
 
             return new InjectStatement(context);

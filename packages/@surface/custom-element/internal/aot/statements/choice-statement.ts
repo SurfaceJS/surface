@@ -3,7 +3,7 @@ import type { IDisposable, Subscription } from "@surface/core";
 import { scheduler }                      from "../../singletons.js";
 import type { DirectiveEntry }            from "../../types/index";
 import type Block                         from "../block.js";
-import observe                            from "../observe.js";
+import { tryEvaluate, tryObserve }        from "../common.js";
 import type BranchStatement               from "../types/branch-statement";
 
 type Context =
@@ -16,9 +16,11 @@ type Context =
     scope:      object,
 };
 
-const EXPRESSION  = 0;
+const EVALUATOR   = 0;
 const OBSERVABLES = 1;
 const FACTORY     = 2;
+const SOURCE      = 3;
+const STACK_TRACE = 4;
 
 export default class ChoiceStatement implements IDisposable
 {
@@ -36,7 +38,7 @@ export default class ChoiceStatement implements IDisposable
 
         for (const branch of this.context.branches)
         {
-            this.subscriptions.push(observe(context.scope, branch[OBSERVABLES], () => listener(), true));
+            this.subscriptions.push(tryObserve(context.scope, branch[OBSERVABLES], () => listener(), true, branch[SOURCE], branch[STACK_TRACE]));
         }
 
         listener();
@@ -46,7 +48,7 @@ export default class ChoiceStatement implements IDisposable
     {
         for (const branch of this.context.branches)
         {
-            if (branch[EXPRESSION](this.context.scope))
+            if (tryEvaluate(this.context.scope, branch[EVALUATOR], branch[SOURCE], branch[STACK_TRACE]))
             {
                 if (branch != this.currentBranch)
                 {

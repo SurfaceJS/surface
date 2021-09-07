@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Evaluator<T = unknown> = (scope: any) => T;
+type Evaluator = (scope: object) => unknown;
 
 export default Evaluator;

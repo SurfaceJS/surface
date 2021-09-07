@@ -270,6 +270,32 @@ export function isEsm(module: unknown): module is object
     return typeof module == "object" && module !== null && (!!Reflect.get(module, "__esModule") || Reflect.get(module as Object, Symbol.toStringTag) == "Module");
 }
 
+export function isReadonly(descriptor: PropertyDescriptor): boolean;
+export function isReadonly(target: object, key: string): boolean;
+export function isReadonly(...args: [PropertyDescriptor] | [object, string]): boolean
+{
+    const descriptor = args.length == 1 ? args[0] : getPropertyDescriptor(args[0], args[1]);
+
+    return descriptor?.get ? !descriptor.set : !(descriptor?.writable ?? false);
+}
+
+export function getPropertyDescriptor(target: object, key: string | symbol): PropertyDescriptor | null
+{
+    let prototype: object | null = target;
+
+    do
+    {
+        const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+
+        if (descriptor)
+        {
+            return descriptor;
+        }
+    } while (prototype = Reflect.getPrototypeOf(prototype));
+
+    return null;
+}
+
 export function getValue<T extends object, P extends ArrayPathOf<T, P>>(target: T, ...path: P): ArrayPathOfValue<T, P>;
 export function getValue(root: object, ...path: string[]): unknown
 {

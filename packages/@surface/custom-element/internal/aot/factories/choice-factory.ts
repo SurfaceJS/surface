@@ -1,9 +1,9 @@
 /* eslint-disable sort-keys */
 import Block                from "../block.js";
 import ChoiceStatement      from "../statements/choice-statement.js";
-import type Activator        from "../types/activator";
+import type Activator       from "../types/activator";
 import type BranchStatement from "../types/branch-statement";
-import type NodeFactory         from "../types/node-fatctory.js";
+import type NodeFactory     from "../types/node-fatctory.js";
 
 export default function choiceFactory(branches: BranchStatement[]): NodeFactory
 {

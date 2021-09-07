@@ -1,11 +1,12 @@
-import type { Delegate }      from "@surface/core";
-import { classMap, styleMap } from "../../common.js";
-import observe                from "../observe.js";
-import type AttributeFactory  from "../types/attribute-fatctory.js";
-import type Evaluator         from "../types/evaluator.js";
-import type ObservablePath    from "../types/observable-path.js";
+import type { Delegate }                          from "@surface/core";
+import { classMap, styleMap }                     from "../../common.js";
+import type { StackTrace }                        from "../../types/index.js";
+import { checkProperty, tryEvaluate, tryObserve } from "../common.js";
+import type AttributeFactory                      from "../types/attribute-fatctory.js";
+import type Evaluator                             from "../types/evaluator.js";
+import type ObservablePath                        from "../types/observable-path.js";
 
-export default function onewayFactory(key: string, value: Evaluator, observables: ObservablePath[]): AttributeFactory
+export default function onewayFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {
@@ -14,15 +15,17 @@ export default function onewayFactory(key: string, value: Evaluator, observables
         if (key == "class" || key == "style")
         {
             listener = key == "class"
-                ? () => element.setAttribute(key, classMap(value(scope) as Record<string, boolean>))
-                : () => element.setAttribute(key, styleMap(value(scope) as Record<string, boolean>));
+                ? () => element.setAttribute(key, classMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>))
+                : () => element.setAttribute(key, styleMap(tryEvaluate(scope, evaluator, source, stackTrace) as Record<string, boolean>));
         }
         else
         {
-            listener = () => void ((element as unknown as Record<string, unknown>)[key] = value(scope));
+            checkProperty(element, key, source, stackTrace);
+
+            listener = () => void ((element as unknown as Record<string, unknown>)[key] = tryEvaluate(scope, evaluator, source, stackTrace));
         }
 
-        const subscription = observe(scope, observables, listener, true);
+        const subscription = tryObserve(scope, observables, listener, true, source, stackTrace);
 
         listener();
 

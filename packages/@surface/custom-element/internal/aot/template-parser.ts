@@ -214,27 +214,29 @@ export default class TemplateParser
                     this.pushToStack(childNode, index - nonElementsCount);
                 }
 
+                const stackTrace = [...this.stackTrace];
+
                 if (typeGuard<Element>(childNode, childNode.nodeType == Node.ELEMENT_NODE))
                 {
                     if (childNode.hasAttribute(DirectiveType.ElseIf))
                     {
                         const message = `Unexpected ${DirectiveType.ElseIf} directive. ${DirectiveType.ElseIf} must be used in an element next to an element that uses the ${DirectiveType.ElseIf} directive.`;
 
-                        throwTemplateParseError(message, this.stackTrace);
+                        throwTemplateParseError(message, stackTrace);
                     }
 
                     if (childNode.hasAttribute(DirectiveType.Else))
                     {
                         const message = `Unexpected ${DirectiveType.Else} directive. ${DirectiveType.Else} must be used in an element next to an element that uses the ${DirectiveType.If} or ${DirectiveType.ElseIf} directive.`;
 
-                        throwTemplateParseError(message, this.stackTrace);
+                        throwTemplateParseError(message, stackTrace);
                     }
 
                     if (this.hasTemplateDirectives(childNode))
                     {
                         this.index = index;
 
-                        yield this.parseDirectives(childNode, nonElementsCount);
+                        yield this.parseDirectives(childNode, stackTrace, nonElementsCount);
 
                         index = this.index;
 
@@ -244,12 +246,12 @@ export default class TemplateParser
                     }
                     else
                     {
-                        yield this.parseElement(childNode);
+                        yield this.parseElement(childNode, stackTrace);
                     }
                 }
                 else
                 {
-                    yield this.parseTextNode(childNode as Text);
+                    yield this.parseTextNode(childNode as Text, stackTrace);
 
                     nonElementsCount++;
                 }
@@ -262,6 +264,7 @@ export default class TemplateParser
                 {
                     yield { type: "comment", value: childNode.textContent ?? "" };
                 }
+
                 nonElementsCount++;
             }
         }
@@ -290,11 +293,6 @@ export default class TemplateParser
             return node.nodeValue!;
         }
 
-        if (typeGuard<Comment>(node, node.nodeType == Node.COMMENT_NODE))
-        {
-            return `<!--${node.nodeValue!}-->`;
-        }
-
         const attributes = Array.from(node.attributes)
             .map(this.attributeToString)
             .join(" ");
@@ -309,38 +307,35 @@ export default class TemplateParser
         return { childs: this.enumerateParsedNodes(template.content), type: "fragment" };
     }
 
-    private *parseAttributes(element: Element): Iterable<AttributeDescritor>
+    private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeDescritor>
     {
-        // const stackTrace = element.attributes.length > 0 ? [...this.stackTrace] : [];
-
         for (let i = 0; i < element.attributes.length; i++)
         {
             const attribute = element.attributes[i];
 
+            const raw = this.attributeToString(attribute);
+
             if (attribute.name.startsWith("@"))
             {
                 const name              = attribute.name.replace(/^@/, "");
-                const rawExpression     = `${attribute.name}=\"${attribute.value}\"`;
-                const unknownExpression = this.tryParseExpression(parseExpression, attribute.value, rawExpression);
+                const unknownExpression = this.tryParseExpression(parseExpression, attribute.value, raw);
 
                 const expression = TypeGuard.isMemberExpression(unknownExpression) || TypeGuard.isArrowFunctionExpression(unknownExpression)
                     ? unknownExpression
                     : Expression.arrowFunction([], unknownExpression);
 
-                yield { key: name, type: "event", value: expression };
+                yield { key: name, source: raw, stackTrace, type: "event", value: expression };
             }
             else if (attribute.name.startsWith("#"))
             {
-                const name          = attribute.name.replace(/^#/, "");
-                const rawExpression = `${attribute.name}=\"${attribute.value}\"`;
-                const expression    = this.tryParseExpression(parseExpression, attribute.value || "undefined", rawExpression);
-                const observables   = ObserverVisitor.observe(expression);
+                const name        = attribute.name.replace(/^#/, "");
+                const expression  = this.tryParseExpression(parseExpression, attribute.value || "undefined", raw);
+                const observables = ObserverVisitor.observe(expression);
 
-                yield { key: name, observables, type: "directive", value: expression };
+                yield { key: name, observables, source: raw, stackTrace, type: "directive", value: expression };
             }
             else if (attribute.name.startsWith(":") || interpolation.test(attribute.value) && !(/^on\w/.test(attribute.name) && nativeEvents.has(attribute.name)))
             {
-                const raw             = this.attributeToString(attribute);
                 const name            = attribute.name.replace(/^::?/, "");
                 const key             = dashedToCamel(name);
                 const isTwoWay        = attribute.name.startsWith("::");
@@ -365,15 +360,15 @@ export default class TemplateParser
                 if (type == "interpolation")
                 {
                     yield { key: attribute.name, type: "raw", value: "" };
-                    yield { key: attribute.name, observables, type, value: expression };
+                    yield { key: attribute.name, observables, source: raw, stackTrace, type, value: expression };
                 }
                 else if (type == "twoway")
                 {
-                    yield { left: key, right: observables[0], type };
+                    yield { left: key, right: observables[0], source: raw, stackTrace, type };
                 }
                 else
                 {
-                    yield { key, observables, type, value: expression };
+                    yield { key, observables, source: raw, stackTrace, type, value: expression };
                 }
             }
             else
@@ -383,11 +378,9 @@ export default class TemplateParser
         }
     }
 
-    private parseDirectives(element: Element, nonElementsCount: number): Descriptor
+    private parseDirectives(element: Element, stackTrace: StackTrace, nonElementsCount: number): Descriptor
     {
         const [template, directive] = this.decomposeDirectives(element);
-
-        // const stackTrace = [...this.stackTrace];
 
         if (directive.type == DirectiveType.If)
         {
@@ -401,6 +394,8 @@ export default class TemplateParser
                 expression,
                 fragment,
                 observables: ObserverVisitor.observe(expression),
+                source:      directive.raw,
+                stackTrace,
             };
 
             branches.push(branchDescriptor);
@@ -452,6 +447,8 @@ export default class TemplateParser
                     expression,
                     fragment,
                     observables: ObserverVisitor.observe(expression),
+                    source:      simblingDirective.raw,
+                    stackTrace:  [...this.stackTrace],
                 };
 
                 branches.push(conditionalBranchDescriptor);
@@ -481,7 +478,9 @@ export default class TemplateParser
                 observables,
                 operator,
                 right,
-                type:        "loop-statement",
+                source:  directive.raw,
+                stackTrace,
+                type:   "loop-statement",
             };
 
             return loopDescriptor;
@@ -501,6 +500,8 @@ export default class TemplateParser
                 fragment,
                 key:         keyExpression,
                 observables: { key: keyObservables, value: observables },
+                source:         { key: rawKey, value: raw },
+                stackTrace,
                 type:        "placeholder-statement",
                 value:       expression,
             };
@@ -524,6 +525,8 @@ export default class TemplateParser
             fragment,
             key:         keyExpression,
             observables: { key: keyObservables, value: observables },
+            source:      { key: rawKey, value: raw },
+            stackTrace,
             type:        "injection-statement",
             value:       pattern,
         };
@@ -531,37 +534,35 @@ export default class TemplateParser
         return injectionDescriptor;
     }
 
-    private parseElement(element: Element): ElementDescriptor
+    private parseElement(element: Element, stackTrace: StackTrace): ElementDescriptor
     {
         const descriptor: ElementDescriptor =
         {
-            attributes: this.parseAttributes(element),
-            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE"
-                ? [{ observables: [], type: "text", value: Expression.literal(element.textContent) }]
-                : this.enumerateParsedNodes(element),
-            tag:    element.nodeName,
-            type:   "element",
+            attributes: this.parseAttributes(element, stackTrace),
+            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: "text", value: Expression.literal(element.textContent) }] : this.enumerateParsedNodes(element),
+            tag:        element.nodeName,
+            type:       "element",
         };
 
         return descriptor;
     }
 
-    private parseTextNode(node: Text): Descriptor
+    private parseTextNode(node: Text, stackTrace: StackTrace): Descriptor
     {
         assert(node.nodeValue);
 
         if (interpolation.test(node.nodeValue))
         {
-            const rawExpression = node.nodeValue;
-
-            const expression  = this.tryParseExpression(parseInterpolation, rawExpression, `"${rawExpression}"`);
+            const expression  = this.tryParseExpression(parseInterpolation, node.nodeValue, node.nodeValue);
             const observables = ObserverVisitor.observe(expression);
 
             const descriptor: Descriptor =
             {
                 observables,
-                type:       "text",
-                value: expression,
+                source: node.nodeValue,
+                stackTrace,
+                type:   "text",
+                value:  expression,
             };
 
             return descriptor;
@@ -569,9 +570,8 @@ export default class TemplateParser
 
         const descriptor: Descriptor =
         {
-            observables: [],
-            type:        "text",
-            value:       Expression.literal(scapeBrackets(node.nodeValue!)),
+            type:  "text",
+            value: Expression.literal(scapeBrackets(node.nodeValue!)),
         };
 
         return descriptor;
@@ -620,7 +620,7 @@ export default class TemplateParser
         {
             assert(error instanceof SyntaxError);
 
-            const message = `Parsing error in ${rawExpression}: ${error.message} at position ${error.index}`;
+            const message = `Parsing error in '${rawExpression}': ${error.message} at position ${error.index}`;
 
             throwTemplateParseError(message, this.stackTrace);
         }

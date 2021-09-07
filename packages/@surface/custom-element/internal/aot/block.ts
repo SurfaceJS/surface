@@ -108,12 +108,6 @@ export default class Block implements IDisposable
         }
     }
 
-    public insertAt(parent: Node & ParentNode, reference: Node): void
-    {
-        parent.replaceChild(this.end, reference);
-        parent.insertBefore(this.start, this.end);
-    }
-
     public setContent<T extends Node>(content: T, optimize: boolean = true): void
     {
         this.end.parentNode!.insertBefore(content, this.end);

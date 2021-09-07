@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable sort-keys */
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
@@ -10,6 +8,7 @@ import injectionFactory            from "../../internal/aot/factories/injection-
 import placeholderFactory          from "../../internal/aot/factories/placeholder-factory.js";
 import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
 import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
+import type Evaluator              from "../../internal/aot/types/evaluator.js";
 import { scheduler }               from "../../internal/singletons.js";
 
 @suite
@@ -29,9 +28,9 @@ export default class InjectionFactorySpec
             placeholderFactory
             (
                 () => "default",
-                (scope: Scope) => ({ item: scope.value }),
+                ((scope: Scope) => ({ item: scope.value })) as Evaluator,
                 [[], [["value"]]],
-                textNodeFactory((scope: Scope) => `Value: ${scope.value}`, [["value"]]),
+                textNodeFactory(((scope: Scope) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
             ),
         ])();
 
@@ -70,7 +69,7 @@ export default class InjectionFactorySpec
             () => "default",
             ((scope: Scope) => scope) as DestructuredEvaluator,
             [[], [["value"]]],
-            textNodeFactory((scope: Scope) => `Injected: ${scope.value}`, [["value"]]),
+            textNodeFactory(((scope: Scope) => `Injected: ${scope.value}`) as Evaluator, [["value"]]),
         )();
 
         host.appendChild(injectionContent);

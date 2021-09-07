@@ -1,3 +1,4 @@
+import type { StackTrace }        from "../../types/index.js";
 import Block                      from "../block.js";
 import LoopStatement              from "../statements/loop-statement.js";
 import type Activator             from "../types/activator";
@@ -6,7 +7,7 @@ import type Evaluator             from "../types/evaluator";
 import type NodeFactory           from "../types/node-fatctory";
 import type ObservablePath        from "../types/observable-path";
 
-export default function loopFactory(left: DestructuredEvaluator, operator: "in" | "of", right: Evaluator, observables: ObservablePath[], factory: NodeFactory): NodeFactory
+export default function loopFactory(leftEvaluator: DestructuredEvaluator, operator: "in" | "of", rightEvaluator: Evaluator, observables: ObservablePath[], factory: NodeFactory, source?: string, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {
@@ -24,12 +25,14 @@ export default function loopFactory(left: DestructuredEvaluator, operator: "in" 
                 directives,
                 factory,
                 host,
-                left,
+                left:  leftEvaluator,
                 observables,
                 operator,
                 parent,
-                right,
+                right: rightEvaluator,
                 scope,
+                source,
+                stackTrace,
             };
 
             return new LoopStatement(context);

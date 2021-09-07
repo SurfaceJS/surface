@@ -2,9 +2,9 @@
 import { CancellationTokenSource, DisposableMetadata } from "@surface/core";
 import type { Delegate, IDisposable, Subscription }    from "@surface/core";
 import { scheduler }                                   from "../../singletons.js";
-import type { DirectiveEntry }                         from "../../types/index";
+import type { DirectiveEntry, StackTrace }             from "../../types/index";
 import Block                                           from "../block.js";
-import observe                                         from "../observe.js";
+import { tryEvaluate, tryEvaluatePattern, tryObserve }                                  from "../common.js";
 import type DestructuredEvaluator                      from "../types/destructured-evaluator";
 import type Evaluator                                  from "../types/evaluator";
 import type NodeFactory                                from "../types/node-fatctory";
@@ -22,6 +22,8 @@ type Context =
     parent:      Node,
     right:       Evaluator,
     scope:       object,
+    source?:     string,
+    stackTrace?: StackTrace,
 };
 
 type CacheEntry = [unknown, Block, IDisposable];
@@ -100,7 +102,7 @@ export default class LoopStatement implements IDisposable
 
         const listener = (): void => void scheduler.enqueue(this.task, "normal", this.cancellationTokenSource.token);
 
-        this.subscription = observe(context.scope, context.observables, listener, true);
+        this.subscription = tryObserve(context.scope, context.observables, listener, true, context.source, context.stackTrace);
 
         listener();
     }
@@ -109,7 +111,7 @@ export default class LoopStatement implements IDisposable
     {
         if (this.cache.hasChanges(index, value))
         {
-            const directiveScope = this.context.left(this.context.scope, value);
+            const directiveScope = tryEvaluatePattern(this.context.scope, this.context.left, value, this.context.source, this.context.stackTrace);
             const scope          = { $index: index, ...this.context.scope, ...directiveScope };
 
             const [content, activator] = this.context.factory();
@@ -171,7 +173,7 @@ export default class LoopStatement implements IDisposable
             return;
         }
 
-        const elements = this.context.right(this.context.scope) as Iterable<unknown>;
+        const elements = tryEvaluate(this.context.scope, this.context.right, this.context.source, this.context.stackTrace) as Iterable<unknown>;
 
         if (elements[Symbol.iterator]().next().done)
         {

@@ -1,11 +1,13 @@
+import type { StackTrace } from "../../types/index.js";
 import Block               from "../block.js";
 import PlaceholdeStatement from "../statements/placeholder-statement.js";
-import type Activator       from "../types/activator";
-import type Evaluator     from "../types/evaluator";
-import type NodeFactory        from "../types/node-fatctory";
+import type Activator      from "../types/activator";
+import type Evaluator      from "../types/evaluator";
+import type NodeFactory    from "../types/node-fatctory";
 import type ObservablePath from "../types/observable-path";
 
-export default function placeholderFactory(key: Evaluator<string>, value: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory): NodeFactory
+// eslint-disable-next-line max-len
+export default function placeholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {
@@ -23,11 +25,13 @@ export default function placeholderFactory(key: Evaluator<string>, value: Evalua
                 directives,
                 factory,
                 host,
-                key,
+                key:   keyEvaluator,
                 observables,
                 parent,
                 scope,
-                value,
+                source,
+                stackTrace,
+                value: valueEvaluator,
             };
 
             return new PlaceholdeStatement(context);

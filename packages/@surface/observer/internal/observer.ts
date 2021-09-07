@@ -1,7 +1,6 @@
-import type { Delegate, Indexer, Subscription } from "@surface/core";
-import { getValue, hasValue, privatesFrom }     from "@surface/core";
-import { FieldInfo, MethodInfo, Type }          from "@surface/reflection";
-import Metadata                                 from "./metadata.js";
+import type { Delegate, Indexer, Subscription }                                from "@surface/core";
+import { getPropertyDescriptor, getValue, hasValue, isReadonly, privatesFrom } from "@surface/core";
+import Metadata                                                                from "./metadata.js";
 
 const ARRAY_METHODS = ["pop", "push", "reverse", "shift", "sort", "splice", "unshift"] as const;
 
@@ -100,13 +99,13 @@ export default class Observer<TValue = unknown>
 
     protected static observeProperty(root: object, key: string): void
     {
-        const member = Type.from(root).getMember(key);
+        const descriptor = getPropertyDescriptor(root, key);
 
-        if (!member)
+        if (!descriptor)
         {
             throw new Error(`Property "${key}" does not exists on type ${root.constructor.name}`);
         }
-        else if (member.descriptor.configurable && (member instanceof FieldInfo && !member.readonly || member instanceof MethodInfo))
+        else if (descriptor.configurable && !isReadonly(descriptor) || descriptor.value instanceof Function)
         {
             const action = (instance: object, newValue: unknown, oldValue: unknown): void =>
             {
@@ -124,21 +123,21 @@ export default class Observer<TValue = unknown>
                 }
             };
 
-            if (member.descriptor?.set)
+            if (descriptor?.set)
             {
                 Reflect.defineProperty
                 (
                     root,
                     key,
                     {
-                        configurable: member.descriptor.configurable,
-                        enumerable:   member.descriptor.enumerable,
-                        get:          member.descriptor.get,
+                        configurable: descriptor.configurable,
+                        enumerable:   descriptor.enumerable,
+                        get:          descriptor.get,
                         set(this: object, value: unknown)
                         {
-                            const oldValue = member.descriptor.get?.call(this);
+                            const oldValue = descriptor.get?.call(this);
 
-                            member.descriptor.set!.call(this, value);
+                            descriptor.set!.call(this, value);
 
                             if (!Object.is(value, oldValue))
                             {

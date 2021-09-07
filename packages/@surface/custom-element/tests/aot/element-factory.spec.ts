@@ -11,13 +11,14 @@ import interpolationFactory        from "../../internal/aot/factories/interpolat
 import onewayFactory               from "../../internal/aot/factories/oneway-factory.js";
 import twowayFactory               from "../../internal/aot/factories/twoway-factory.js";
 import type Activator              from "../../internal/aot/types/activator";
+import type Evaluator              from "../../internal/aot/types/evaluator.js";
 import customDirectiveFactory      from "./fixtures/custom-directive-factory.js";
 import CustomDirective             from "./fixtures/custom-directive.js";
 
-const directives = new Map();
+const globalCustomDirectives = new Map();
 
-directives.set("custom", CustomDirective);
-directives.set("custom-factory", customDirectiveFactory);
+globalCustomDirectives.set("custom", CustomDirective);
+globalCustomDirectives.set("custom-factory", customDirectiveFactory);
 
 @suite
 export default class ElementFactorySpec
@@ -47,7 +48,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [interpolationFactory("value", (scope: { host: { value: unknown } }) => scope.host.value, [["host", "value"]])],
+            [interpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "Hello World" } };
@@ -80,7 +81,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [onewayFactory("className", (scope: { host: { value: unknown } }) => scope.host.value, [["host", "value"]])],
+            [onewayFactory("className", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
@@ -152,7 +153,7 @@ export default class ElementFactorySpec
         (
             "div",
             undefined,
-            [eventFactory("click", (scope: { host: { click: Function } }) => scope.host.click.bind(scope.host))],
+            [eventFactory("click", ((scope: { host: { click: Function } }) => scope.host.click.bind(scope.host)) as Evaluator)],
         )() as [Element, Activator];
 
         let clicked = 0;
@@ -182,14 +183,14 @@ export default class ElementFactorySpec
             "div",
             undefined,
             [
-                directiveFactory("custom", (scope: Scope) => scope.host.value, [["host", "value"]]),
-                directiveFactory("custom-factory", (scope: Scope) => scope.host.value, [["host", "value"]]),
+                directiveFactory("custom", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
+                directiveFactory("custom-factory", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
             ],
         )() as [Element, Activator];
 
         const scope: Scope = { host: { value: "Hello World!!!" } };
 
-        const disposable = activator(document.body, element, scope, directives);
+        const disposable = activator(document.body, element, scope, globalCustomDirectives);
 
         chai.assert.equal(element.childNodes[0].textContent, "custom: Hello World!!!");
         chai.assert.equal(element.childNodes[1].textContent, "custom-factory: Hello World!!!");
@@ -210,7 +211,7 @@ export default class ElementFactorySpec
                 (
                     "span",
                     undefined,
-                    [interpolationFactory("value", (scope: { host: { value: unknown } }) => scope.host.value, [["host", "value"]])],
+                    [interpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
                 ),
             ],
         )() as [Element, Activator];

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable sort-keys */
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
@@ -11,6 +9,7 @@ import loopFactory                 from "../../internal/aot/factories/loop-facto
 import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
 import type Activator              from "../../internal/aot/types/activator";
 import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
+import type Evaluator              from "../../internal/aot/types/evaluator.js";
 import { scheduler }               from "../../internal/singletons.js";
 
 @suite
@@ -31,11 +30,11 @@ export default class LoopFactorySpec
                 (
                     ((_: Scope, value: unknown) => ({ item: value })) as DestructuredEvaluator,
                     "in",
-                    (scope: Scope) => scope.items,
+                    ((scope: Scope) => scope.items) as Evaluator,
                     [["items"]],
                     fragmentFactory
                     ([
-                        textNodeFactory((scope: any) => `Index: ${scope.item}`, [["item"]]),
+                        textNodeFactory(((scope: { item: string }) => `Index: ${scope.item}`) as Evaluator, [["item"]]),
                     ]),
                 ),
             ],

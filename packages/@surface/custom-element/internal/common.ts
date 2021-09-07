@@ -115,7 +115,7 @@ export function tryEvaluatePatternByTraceable(scope: object, value: unknown, tra
     return tryEvaluatePattern(scope, traceable.pattern, value, traceable.rawExpression, traceable.stackTrace);
 }
 
-export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace: StackTrace, lazy?: boolean): Subscription
+export function tryObserve(scope: object, observables: Observables, listener: Delegate<[unknown]>, rawExpression: string, stackTrace?: StackTrace, lazy?: boolean): Subscription
 {
     try
     {
@@ -125,7 +125,7 @@ export function tryObserve(scope: object, observables: Observables, listener: De
     {
         assert(error instanceof Error);
 
-        throwTemplateObservationError(`Observation error in ${rawExpression}: ${error.message}`, stackTrace);
+        throwTemplateObservationError(`Observation error in ${rawExpression}: ${error.message}`, stackTrace ?? []);
     }
 }
 

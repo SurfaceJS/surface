@@ -2,29 +2,31 @@
 // eslint-disable-next-line import/no-unassigned-import
 import "../fixtures/dom.js";
 
-import type { Delegate }                       from "@surface/core";
-import { resolveError, uuidv4 }                from "@surface/core";
-import { shouldFail, shouldPass, suite, test } from "@surface/test-suite";
-import chai                                    from "chai";
-import element                                 from "../../internal/aot/decorators/element.js";
-import LoopStatement                           from "../../internal/aot/statements/loop-statement.js";
-import TemplateCompiler                        from "../../internal/aot/template-compiler.js";
-import CustomElement                           from "../../internal/custom-element.js";
-import CustomStackError                        from "../../internal/errors/custom-stack-error.js";
-import TemplateEvaluationError                 from "../../internal/errors/template-evaluation-error.js";
-import { globalCustomDirectives, scheduler }   from "../../internal/singletons.js";
-import type { DirectiveEntry }                 from "../../internal/types/index.js";
-import customDirectiveFactory                  from "./fixtures/custom-directive-factory.js";
-import CustomDirective                         from "./fixtures/custom-directive.js";
+import type { Delegate }                        from "@surface/core";
+import { AggregateError, resolveError, uuidv4 } from "@surface/core";
+import { shouldFail, shouldPass, suite, test }  from "@surface/test-suite";
+import chai                                     from "chai";
+import element                                  from "../../internal/aot/decorators/element.js";
+import LoopStatement                            from "../../internal/aot/statements/loop-statement.js";
+import TemplateCompiler                         from "../../internal/aot/template-compiler.js";
+import CustomElement                            from "../../internal/custom-element.js";
+import CustomStackError                         from "../../internal/errors/custom-stack-error.js";
+import TemplateEvaluationError                  from "../../internal/errors/template-evaluation-error.js";
+import { scheduler }                            from "../../internal/singletons.js";
+import type { DirectiveEntry }                  from "../../internal/types/index.js";
+import customDirectiveFactory                   from "./fixtures/custom-directive-factory.js";
+import CustomDirective                          from "./fixtures/custom-directive.js";
+
+const globalCustomDirectives = new Map<string, DirectiveEntry>();
 
 // @ts-ignore
 LoopStatement.maximumAmount = 2;
 
 type RawError = { message: string } | Pick<CustomStackError, "message" | "stack">;
 
-class XComponent extends HTMLElement { }
+class YComponent extends HTMLElement { }
 
-window.customElements.define("x-component", XComponent);
+window.customElements.define("y-component", YComponent);
 
 globalCustomDirectives.set("custom", CustomDirective as unknown as DirectiveEntry);
 globalCustomDirectives.set("custom-factory", customDirectiveFactory as unknown as DirectiveEntry);
@@ -43,27 +45,27 @@ function tryAction(action: Delegate): RawError
     return toRaw(new CustomStackError("", ""));
 }
 
-// async function tryActionAsync(action: Delegate): Promise<RawError>
-// {
-//     try
-//     {
-//         action();
+async function tryActionAsync(action: Delegate): Promise<RawError>
+{
+    try
+    {
+        action();
 
-//         await scheduler.execution();
+        await scheduler.execution();
 
-//     }
-//     catch (error)
-//     {
-//         if (error instanceof AggregateError)
-//         {
-//             return toRaw(error.errors[0]);
-//         }
+    }
+    catch (error)
+    {
+        if (error instanceof AggregateError)
+        {
+            return toRaw(error.errors[0]);
+        }
 
-//         return toRaw(resolveError(error));
-//     }
+        return toRaw(resolveError(error));
+    }
 
-//     return toRaw(new CustomStackError("", ""));
-// }
+    return toRaw(new CustomStackError("", ""));
+}
 
 function toRaw(error: Error): RawError
 {
@@ -80,7 +82,7 @@ function toRaw(error: Error): RawError
 
 function createNode(): HTMLElement
 {
-    const node = document.createElement("x-component");
+    const node = document.createElement("y-component");
 
     node.attachShadow({ mode: "open" });
 
@@ -99,7 +101,7 @@ function compile(options: CompileOptions): void
 {
     if (options.shadowRoot)
     {
-        const [content, activator] = TemplateCompiler.compile(options.host.nodeName, options.shadowRoot)();
+        const [content, activator] = TemplateCompiler.compile(options.host.nodeName.toLowerCase(), options.shadowRoot)();
 
         options.host.shadowRoot!.appendChild(content);
 
@@ -110,7 +112,7 @@ function compile(options: CompileOptions): void
     {
         const parentHost: Node = options.parentHost ?? document.createElement("parent-host");
 
-        const [content, activator] = TemplateCompiler.compile(parentHost.nodeName, options.innerHTML)();
+        const [content, activator] = TemplateCompiler.compile(parentHost.nodeName.toLowerCase(), options.innerHTML)();
 
         options.host.appendChild(content);
 
@@ -118,48 +120,9 @@ function compile(options: CompileOptions): void
     }
 }
 
-// type NodeDescriptor = { host: Element, template: string, scope?: object };
-
-// function compile(...descriptors: [NodeDescriptor, ...NodeDescriptor[]]): void
-// {
-//     const activators: Delegate[] = [];
-
-//     let parent: Element = document.body;
-
-//     for (const descriptor of descriptors)
-//     {
-//         const [content, activator] = TemplateCompiler.compile("x-component", descriptor.template)();
-
-//         activators.unshift(() => activator(parent, descriptor.host, descriptor.scope ?? { host: descriptor.host }, globalCustomDirectives));
-
-//         descriptor.host.attachShadow({ mode: "open" });
-
-//         descriptor.host.shadowRoot!.appendChild(content);
-
-//         parent.appendChild(descriptor.host);
-
-//         parent = descriptor.host;
-//     }
-
-//     for (const activator of activators)
-//     {
-//         activator();
-//     }
-// }
-
 @suite
 export default class TemplateCompilerSpec
 {
-    // @test @shouldPass
-    // public elementWithoutAttributes(): void
-    // {
-    //     const host = createNode();
-
-    //     compile({ host, template });
-    // }
-
-    // #region skip
-
     @test @shouldPass
     public elementWithAttributes(): void
     {
@@ -187,7 +150,7 @@ export default class TemplateCompilerSpec
 
         chai.assert.equal(input.lang, "pt-br");
         chai.assert.equal(input.getAttribute("lang"), "pt-br");
-        chai.assert.equal(input.getAttribute("parent"), "X-COMPONENT");
+        chai.assert.equal(input.getAttribute("parent"), "Y-COMPONENT");
 
         host.lang = "en-us";
 
@@ -241,7 +204,7 @@ export default class TemplateCompilerSpec
 
         const span = host.shadowRoot!.firstElementChild as HTMLSpanElement;
 
-        chai.assert.equal(span.title, "X-COMPONENT");
+        chai.assert.equal(span.title, "Y-COMPONENT");
     }
 
     @test @shouldPass
@@ -558,7 +521,6 @@ export default class TemplateCompilerSpec
 
         chai.assert.equal(host.shadowRoot!.querySelector("span")!.textContent, "Value: 1");
     }
-    // #endregion skip
 
     @test @shouldPass
     public async templateWithInjectAndPlaceholderDirectiveWithScope(): Promise<void>
@@ -1662,10 +1624,10 @@ export default class TemplateCompilerSpec
     {
         const host = createNode();
 
-        const shadowRoot = "<span :name='host.foo()'></span>";
+        const shadowRoot = "<span :title='host.foo()'></span>";
 
-        const message = "Evaluation error in :name=\"host.foo()\": host.foo is not defined";
-        const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.foo()\">";
+        const message = "Evaluation error in ':title=\"host.foo()\"': host.foo is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      <span :title=\"host.foo()\">";
 
         const actual   = tryAction(() => compile({ host, shadowRoot }));
         const expected = toRaw(new CustomStackError(message, stack));
@@ -1673,491 +1635,430 @@ export default class TemplateCompilerSpec
         chai.assert.deepEqual(actual, expected);
     }
 
-    // @test @shouldFail
-    // public evaluationErrorEventBind(): void
-    // {
-    //     const host = createNode();
+    @test @shouldFail
+    public evaluationErrorEventBind(): void
+    {
+        const host = createNode();
 
-    //     const template = "<span @click=\"host.fn\"></span>";
+        const shadowRoot = "<span @click=\"host.deep.fn\"></span>";
 
-    //     const message = "Evaluation error in @click=\"host.fn\": host.fn is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span @click=\"host.fn\">";
+        const message = "Evaluation error in '@click=\"host.deep.fn\"': Cannot read property 'fn' of undefined";
+        const stack   = "<y-component>\n   #shadow-root\n      <span @click=\"host.deep.fn\">";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldPass
-    // public evaluationErrorCustomDirective(): void
-    // {
-    //     const host = createNode();
+    @test @shouldPass
+    public evaluationErrorCustomDirective(): void
+    {
+        const host = createNode();
 
-    //     const template = "<span #custom:directive=\"{ value }\"></span>";
+        const shadowRoot = "<span #custom=\"{ value }\"></span>";
 
-    //     const message = "Evaluation error in #custom:directive=\"{ value }\": value is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #custom:directive=\"{ value }\">";
+        const message = "Evaluation error in '#custom=\"{ value }\"': value is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      <span #custom=\"{ value }\">";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public evaluationErrorTextNodeInterpolation(): void
-    // {
-    //     const host = createNode();
+    @test @shouldFail
+    public evaluationErrorTextNodeInterpolation(): void
+    {
+        const host = createNode();
 
-    //     const template = "<span><h1>This is a text {host.interpolation()}</h1></span>";
+        const shadowRoot = "<span><h1>This is a text {host.interpolation()}</h1></span>";
 
-    //     const message = "Evaluation error in This is a text {host.interpolation()}: host.interpolation is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span>\n         <h1>\n            This is a text {host.interpolation()}";
+        const message = "Evaluation error in 'This is a text {host.interpolation()}': host.interpolation is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      <span>\n         <h1>\n            This is a text {host.interpolation()}";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async evaluationErrorChoiceDirective(): Promise<void>
-    // {
-    //     const host = createNode();
+    @test @shouldFail
+    public async evaluationErrorChoiceDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const template = "<h1>Title</h1><template #for='index of [1]' #if='host.isOk()'></template>";
+        const shadowRoot = "<h1>Title</h1><template #for='index of [1]' #if='host.isOk()'></template>";
 
-    //     const message = "Evaluation error in #if=\"host.isOk()\": host.isOk is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #for=\"index of [1]\" #if=\"host.isOk()\">";
+        const message = "Evaluation error in '#if=\"host.isOk()\"': host.isOk is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #for=\"index of [1]\" #if=\"host.isOk()\">";
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async evaluationErrorLoopDirective(): Promise<void>
-    // {
-    //     const host = createNode();
+    @test @shouldFail
+    public async evaluationErrorLoopDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const template = "<h1>Title</h1><span #for='index of host.elements()'></span>";
+        const shadowRoot = "<h1>Title</h1><span #for='index of host.elements()'></span>";
 
-    //     const message = "Evaluation error in #for=\"index of host.elements()\": host.elements is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"index of host.elements()\">";
+        const message = "Evaluation error in '#for=\"index of host.elements()\"': host.elements is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"index of host.elements()\">";
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async evaluationErrorDestructuredLoopDirective(): Promise<void>
-    // {
-    //     const host = createNode();
+    @test @shouldFail
+    public async evaluationErrorDestructuredLoopDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const template = "<h1>Title</h1><span #for='{ x = host.getValue() } of [{ }]'></span>";
+        const shadowRoot = "<h1>Title</h1><span #for='{ x = host.getValue() } of [{ }]'></span>";
 
-    //     const message = "Evaluation error in #for=\"{ x = host.getValue() } of [{ }]\": host.getValue is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"{ x = host.getValue() } of [{ }]\">";
+        const message = "Evaluation error in '#for=\"{ x = host.getValue() } of [{ }]\"': host.getValue is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <span #for=\"{ x = host.getValue() } of [{ }]\">";
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    // @test @shouldFail
-    // public async evaluationErrorPlaceholderDirective(): Promise<void>
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+    @test @shouldFail
+    public async evaluationErrorPlaceholderDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     host.innerHTML = "<template #inject:items=\"{ item: [key, value] }\"></template>";
+        const innerHTML  = "<template #inject:items=\"{ item: [key, value] }\"></template>";
+        const shadowRoot = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ item }\"></template></div>";
 
-    //     const template = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ item }\"></template></div>";
+        const message = "Evaluation error in '#placeholder:items=\"{ item }\"': item is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #placeholder:items=\"{ item }\">";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     compile({ host, template });
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const message = "Evaluation error in #placeholder:items=\"{ item }\": item is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <div class=\"foo\">\n         ...1 other(s) node(s)\n         <template #placeholder:items=\"{ item }\">";
+    @test @shouldFail
+    public async evaluationPlaceholderKeyDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const actual   = await tryActionAsync(() => compile(root, ""));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const shadowRoot = "<h1>Title</h1><template #placeholder #placeholder-key='key'></template>";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const message = "Evaluation error in '#placeholder-key=\"key\"': key is not defined";
+        const stack   = "<y-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #placeholder #placeholder-key=\"key\">";
 
-    // @test @shouldFail
-    // public async evaluationPlaceholderKeyDirective(): Promise<void>
-    // {
-    //     const host = createNode();
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const template = "<h1>Title</h1><template #placeholder #placeholder-key='key'></template>";
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const message = "Evaluation error in #placeholder-key=\"key\": key is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      ...1 other(s) node(s)\n      <template #placeholder #placeholder-key=\"key\">";
+    @test @shouldFail
+    public async evaluationErrorInjectDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const innerHTML  = "<template #inject:items=\"{ item: value = lastItem }\"></template>";
+        const shadowRoot = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ }\"></template></div>";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const message = "Evaluation error in '#inject:items=\"{ item: value = lastItem }\"': lastItem is not defined";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject:items=\"{ item: value = lastItem }\">";
 
-    // @test @shouldFail
-    // public async evaluationErrorInjectDirective(): Promise<void>
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     host.innerHTML = "<template #inject:items=\"{ item: value = lastItem }\"></template>";
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<div class=\"foo\"><span></span><template #placeholder:items=\"{ }\"></template></div>";
+    @test @shouldFail
+    public async evaluationErrorInjectKeyDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        const innerHTML  = "<template #inject #inject-key='key'></template>";
+        const shadowRoot = "<div class=\"foo\"><span></span><template #placeholder></template></div>";
 
-    //     compile({ host, template });
+        const message = "Evaluation error in '#inject-key=\"key\"': key is not defined";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject #inject-key=\"key\">";
 
-    //     const message = "Evaluation error in #inject:items=\"{ item: value = lastItem }\": lastItem is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject:items=\"{ item: value = lastItem }\">";
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const actual   = await tryActionAsync(() => compile(root, ""));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+    @test @shouldFail
+    public bindingErrorOneWayReadonlyProperty(): void
+    {
+        const host = createNode();
 
-    // @test @shouldFail
-    // public async evaluationErrorInjectKeyDirective(): Promise<void>
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        const shadowRoot = "<span :node-type='host.nodeType'></span>";
 
-    //     host.innerHTML = "<template #inject #inject-key='key'></template>";
+        const message = "Binding error in ':node-type=\"host.nodeType\"': Property \"nodeType\" of HTMLSpanElement is readonly";
+        const stack   = "<y-component>\n   #shadow-root\n      <span :node-type=\"host.nodeType\">";
 
-    //     const template = "<div class=\"foo\"><span></span><template #placeholder></template></div>";
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     compile({ host, template });
+    @test @shouldFail
+    public async bindingErrorOneWayReadonlyPropertyInsideTemplate(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const message = "Evaluation error in #inject-key=\"key\": key is not defined";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"key\">";
+        const shadowRoot = "<span #if='true' :node-type='host.value'></span>";
 
-    //     const actual   = await tryActionAsync(() => compile(root, ""));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in ':node-type=\"host.value\"': Property \"nodeType\" of HTMLSpanElement is readonly";
+        const stack   = "<y-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public bindingErrorOneWayReadonlyProperty(): void
-    // {
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span :node-type='host.value'></span>";
+    @test @shouldFail
+    public bindingErrorTwoWayReadonlyProperty(): void
+    {
+        const host = createNode();
 
-    //     const message = "Binding error in :node-type=\"host.value\": Property \"nodeType\" of <span> is readonly";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span :node-type=\"host.value\">";
+        Object.defineProperty(host, "value", { value: "", writable: false });
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const shadowRoot = "<span ::title='host.value'></span>";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const message = "Binding error in '::title=\"host.value\"': Property \"value\" of YComponent is readonly";
+        const stack   = "<y-component>\n   #shadow-root\n      <span ::title=\"host.value\">";
 
-    // @test @shouldFail
-    // public async bindingErrorOneWayReadonlyPropertyInsideTemplate(): Promise<void>
-    // {
-    //     const host = createNode();
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const template = "<span #if='true' :node-type='host.value'></span>";
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const message = "Binding error in :node-type=\"host.value\": Property \"nodeType\" of <span> is readonly";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #if=\"true\" :node-type=\"host.value\">";
+    @test @shouldFail
+    public async bindingErrorTwoWayReadonlyPropertyInsideTemplate(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        Object.defineProperty(host, "value", { value: "", writable: false });
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const shadowRoot = "<span #for='const letter in host.nodeName' #if='true' ::title='host.value'></span>";
 
-    // @test @shouldFail
-    // public bindingErrorTwoWayReadonlyProperty(): void
-    // {
-    //     const host = createNode();
+        const message = "Binding error in '::title=\"host.value\"': Property \"value\" of YComponent is readonly";
+        const stack   = "<y-component>\n   #shadow-root\n      <span #for=\"const letter in host.nodeName\" #if=\"true\" ::title=\"host.value\">";
 
-    //     Object.defineProperty(host, "value", { value: "", writable: false });
+        const actual   = await tryActionAsync(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const template = "<span ::value='host.value'></span>";
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const message = "Binding error in ::value=\"host.value\": Property \"value\" of XComponent is readonly";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span ::value=\"host.value\">";
+    @test @shouldFail
+    public bindingMissingPropertyErrorOneWayBinding(): void
+    {
+        const host = createNode();
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const shadowRoot = "<span :title='host.value1'></span>";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const message = "Binding error in ':title=\"host.value1\"': Property \"value1\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <span :title=\"host.value1\">";
 
-    // @test @shouldFail
-    // public async bindingErrorTwoWayReadonlyPropertyInsideTemplate(): Promise<void>
-    // {
-    //     const host = getHost<{ value?: string }>();
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     Object.defineProperty(host, "value", { value: "", writable: false });
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span #for='const letter in host.nodeName' #if='true' ::value='host.value'></span>";
+    @test @shouldFail
+    public bindingMissingPropertyErrorTwoWayBinding(): void
+    {
+        const host = createNode();
 
-    //     const message = "Binding error in ::value=\"host.value\": Property \"value\" of XComponent is readonly";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #for=\"const letter in host.nodeName\" #if=\"true\" ::value=\"host.value\">";
+        const shadowRoot = "<span ::title='host.value1'></span>";
 
-    //     const actual   = await tryActionAsync(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in '::title=\"host.value1\"': Property \"value1\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <span ::title=\"host.value1\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorOneWayBinding(): void
-    // {
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span :name='host.value1'></span>";
+    @test @shouldFail
+    public bindingErrorAttributeInterpolation(): void
+    {
+        const host = createNode();
 
-    //     const message = "Observation error in :name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span :name=\"host.value1\">";
+        const shadowRoot = "<span name='value: {host.value1}'></span>";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in 'name=\"value: {host.value1}\"': Property \"value1\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorTwoWayBinding(): void
-    // {
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span ::name='host.value1'></span>";
+    @test @shouldFail
+    public bindingErrorTextNodeInterpolation(): void
+    {
+        const host = createNode();
 
-    //     const message = "Binding error in ::name=\"host.value1\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span ::name=\"host.value1\">";
+        const shadowRoot = "<span>{host.value1}</span>";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in '{host.value1}': Property \"value1\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <span>\n         {host.value1}";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorAttributeInterpolation(): void
-    // {
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span name='value: {host.value1}'></span>";
+    @test @shouldFail
+    public async bindingErrorPlaceholderDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const message = "Observation error in name=\"value: {host.value1}\": Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span name=\"value: {host.value1}\">";
+        const innerHTML  = "<template #inject></template>";
+        const shadowRoot = "<template #placeholder:item=\"{ item: host.item }\"></template>";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in '#placeholder:item=\"{ item: host.item }\"': Property \"item\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <template #placeholder:item=\"{ item: host.item }\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorTextNodeInterpolation(): void
-    // {
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<span>{host.value1}</span>";
+    @test @shouldFail
+    public bindingErrorPlaceholderKeyDirective(): void
+    {
+        const host = createNode();
 
-    //     const message = "Observation error in {host.value1}: Property \"value1\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span>\n         {host.value1}";
+        const innerHTML  = "<template #inject></template>";
+        const shadowRoot = "<template #placeholder #placeholder-key=\"host.key\"></template>";
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Binding error in '#placeholder-key=\"host.key\"': Property \"key\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = tryAction(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorPlaceholderDirective(): void
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     host.innerHTML = "<template #inject></template>";
+    @test @shouldFail
+    public async bindingErrorInjectDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    //     const template = "<template #placeholder:item=\"{ item: host.item }\"></template>";
+        const innerHTML  = "<template #inject=\"{ item = host.item }\"></template>";
+        const shadowRoot = "<template #placeholder></template>";
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        const message = "Binding error in '#inject=\"{ item = host.item }\"': Property \"item\" does not exists on type HTMLElement";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject=\"{ item = host.item }\">";
 
-    //     const message = "Observation error in #placeholder:item=\"{ item: host.item }\": Property \"item\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder:item=\"{ item: host.item }\">";
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+    @test @shouldFail
+    public async observationErrorInjectKeyDirective(): Promise<void>
+    {
+        const host = createNode();
 
-    // @test @shouldFail
-    // public observationErrorPlaceholderKeyDirective(): void
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        const innerHTML  = "<template #inject #inject-key=\"host.key\"></template>";
+        const shadowRoot = "<template #placeholder></template>";
 
-    //     host.innerHTML = "<template #inject></template>";
+        const message = "Binding error in '#inject-key=\"host.key\"': Property \"key\" does not exists on type HTMLElement";
+        const stack   = "<parent-host>\n   #shadow-root\n      <template #inject #inject-key=\"host.key\">";
 
-    //     const template = "<template #placeholder #placeholder-key=\"host.key\"></template>";
+        const actual   = await tryActionAsync(() => compile({ host, innerHTML, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const message = "Observation error in #placeholder-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #placeholder #placeholder-key=\"host.key\">";
+    @test @shouldFail
+    public bindingErrorChoiceDirective(): void
+    {
+        const host = createNode();
 
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const shadowRoot = "<template #if=\"host.key\"></template>";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const message = "Binding error in '#if=\"host.key\"': Property \"key\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <template #if=\"host.key\">";
 
-    // @test @shouldFail
-    // public async observationErrorInjectDirective(): Promise<void>
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     host.innerHTML = "<template #inject=\"{ item = host.item }\"></template>";
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     const template = "<template #placeholder></template>";
+    @test @shouldFail
+    public bindingErrorLoopDirective(): void
+    {
+        const host = createNode();
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        const shadowRoot = "<template #for=\"const keys of host.key\"></template>";
 
-    //     compile({ host, template });
+        const message = "Binding error in '#for=\"const keys of host.key\"': Property \"key\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <template #for=\"const keys of host.key\">";
 
-    //     const message = "Observation error in #inject=\"{ item = host.item }\": Property \"item\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject=\"{ item = host.item }\">";
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     const actual   = await tryActionAsync(() => compile(root, ""));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+    @test @shouldFail
+    public bindingErrorCustomDirective(): void
+    {
+        const host = createNode();
 
-    // @test @shouldFail
-    // public async observationErrorInjectKeyDirective(): Promise<void>
-    // {
-    //     const root = createNode();
-    //     const host = createNode();
+        const shadowRoot = "<span #custom=\"host.key\"></span>";
 
-    //     host.innerHTML = "<template #inject #inject-key=\"host.key\"></template>";
+        const message = "Binding error in '#custom=\"host.key\"': Property \"key\" does not exists on type YComponent";
+        const stack   = "<y-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
 
-    //     const template = "<template #placeholder></template>";
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    //     root.shadowRoot.appendChild(host);
-    //     document.body.appendChild(root);
+        chai.assert.deepEqual(actual, expected);
+    }
 
-    //     compile({ host, template });
+    @shouldFail @test
+    public unresgisteredDirective(): void
+    {
+        const host = createNode();
 
-    //     const message = "Observation error in #inject-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <x-component>\n         <template #inject #inject-key=\"host.key\">";
+        const shadowRoot = "<div><div></div><section><span #foo='\"bar\"'></span></section></div>";
 
-    //     const actual   = await tryActionAsync(() => compile(root, ""));
-    //     const expected = toRaw(new CustomStackError(message, stack));
+        const message = "Unregistered directive #foo.";
+        const stack   = "<y-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"\"bar\"\">";
 
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        const actual   = tryAction(() => compile({ host, shadowRoot }));
+        const expected = toRaw(new CustomStackError(message, stack));
 
-    // @test @shouldFail
-    // public observationErrorChoiceDirective(): void
-    // {
-    //     const host = createNode();
-
-    //     const template = "<template #if=\"host.key\"></template>";
-
-    //     const message = "Observation error in #if=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #if=\"host.key\">";
-
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
-
-    //     chai.assert.deepEqual(actual, expected);
-    // }
-
-    // @test @shouldFail
-    // public observationErrorLoopDirective(): void
-    // {
-    //     const host = createNode();
-
-    //     const template = "<template #for=\"const keys of host.key\"></template>";
-
-    //     const message = "Observation error in #for=\"const keys of host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <template #for=\"const keys of host.key\">";
-
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
-
-    //     chai.assert.deepEqual(actual, expected);
-    // }
-
-    // @test @shouldFail
-    // public observationErrorCustomDirective(): void
-    // {
-    //     const host = createNode();
-
-    //     const template = "<span #custom=\"host.key\"></span>";
-
-    //     const message = "Observation error in #custom=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #custom=\"host.key\">";
-
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
-
-    //     chai.assert.deepEqual(actual, expected);
-    // }
-
-    // @test @shouldFail
-    // public observationErrorCustomKeyDirective(): void
-    // {
-    //     const host = createNode();
-
-    //     const template = "<span #custom #custom-key=\"host.key\"></span>";
-
-    //     const message = "Observation error in #custom-key=\"host.key\": Property \"key\" does not exists on type XComponent";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <span #custom #custom-key=\"host.key\">";
-
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
-
-    //     chai.assert.deepEqual(actual, expected);
-    // }
-
-    // @shouldFail @test
-    // public unresgisteredDirective(): void
-    // {
-    //     const host = createNode();
-
-    //     const template = "<div><div></div><section><span #foo='bar'></span></section></div>";
-
-    //     const message = "Unregistered directive #foo.";
-    //     const stack   = "<x-component>\n   #shadow-root\n      <div>\n         ...1 other(s) node(s)\n         <section>\n            <span #foo=\"bar\">";
-
-    //     const actual   = tryAction(() => compile(host, template));
-    //     const expected = toRaw(new CustomStackError(message, stack));
-
-    //     chai.assert.deepEqual(actual, expected);
-    // }
+        chai.assert.deepEqual(actual, expected);
+    }
 }

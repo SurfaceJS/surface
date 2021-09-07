@@ -32,19 +32,19 @@ export default class TemplateCompiler
                     rawattributes.push([attribute.key, attribute.value]);
                     break;
                 case "directive":
-                    factories.push(directiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables));
+                    factories.push(directiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "event":
-                    factories.push(eventFactory(attribute.key, scope => attribute.value.evaluate(scope)));
+                    factories.push(eventFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.source, attribute.stackTrace));
                     break;
                 case "interpolation":
-                    factories.push(interpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables));
+                    factories.push(interpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "oneway":
-                    factories.push(onewayFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables));
+                    factories.push(onewayFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "twoway":
-                    factories.push(twowayFactory(attribute.left, attribute.right));
+                    factories.push(twowayFactory(attribute.left, attribute.right, attribute.source, attribute.stackTrace));
                     break;
                 default:
                     break;
@@ -80,38 +80,46 @@ export default class TemplateCompiler
             case "text":
                 return textNodeFactory
                 (
-                    scope => String(descriptor.value.evaluate(scope)),
+                    scope => descriptor.value.evaluate(scope),
                     descriptor.observables,
+                    descriptor.source,
+                    descriptor.stackTrace,
                 );
             case "choice-statement":
                 return choiceFactory
                 (
-                    descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, TemplateCompiler.compileDescriptor(x.fragment)]),
+                    descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, TemplateCompiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
                 );
             case "loop-statement":
                 return loopFactory
                 (
-                    (scope, value) => descriptor.left.evaluate(scope, value) as object,
+                    (scope, value) => descriptor.left.evaluate(scope, value),
                     descriptor.operator,
                     scope => descriptor.right.evaluate(scope),
                     descriptor.observables,
                     TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    descriptor.source,
+                    descriptor.stackTrace,
                 );
             case "placeholder-statement":
                 return placeholderFactory
                 (
-                    scope => String(descriptor.key.evaluate(scope)),
+                    scope => descriptor.key.evaluate(scope),
                     scope => descriptor.value.evaluate(scope),
                     [descriptor.observables.key, descriptor.observables.value],
                     TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    descriptor.source,
+                    descriptor.stackTrace,
                 );
             case "injection-statement":
                 return injectionFactory
                 (
-                    scope => String(descriptor.key.evaluate(scope)),
+                    scope => descriptor.key.evaluate(scope),
                     (scope, value) => descriptor.value.evaluate(scope, value),
                     [descriptor.observables.key, descriptor.observables.value],
                     TemplateCompiler.compileDescriptor(descriptor.fragment),
+                    descriptor.source,
+                    descriptor.stackTrace,
                 );
             case "comment":
                 return commentFactory(descriptor.value);

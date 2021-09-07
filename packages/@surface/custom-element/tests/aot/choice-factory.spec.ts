@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable sort-keys */
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
@@ -8,7 +6,8 @@ import chai                        from "chai";
 import choiceFactory               from "../../internal/aot/factories/choice-factory.js";
 import elementFactory              from "../../internal/aot/factories/element-factory.js";
 import fragmentFactory             from "../../internal/aot/factories/fragment-factory.js";
-import type Activator               from "../../internal/aot/types/activator";
+import type Activator              from "../../internal/aot/types/activator";
+import type Evaluator              from "../../internal/aot/types/evaluator.js";
 import { scheduler }               from "../../internal/singletons.js";
 
 @suite
@@ -28,7 +27,7 @@ export default class ChoiceFactorySpec
                 choiceFactory
                 ([
                     [
-                        (scope: Scope) => scope.id == 1,
+                        ((scope: Scope) => scope.id == 1) as Evaluator,
                         [["id"]],
                         fragmentFactory
                         ([
@@ -36,7 +35,7 @@ export default class ChoiceFactorySpec
                         ]),
                     ],
                     [
-                        (scope: Scope) => scope.id == 2,
+                        ((scope: Scope) => scope.id == 2) as Evaluator,
                         [["id"]],
                         fragmentFactory
                         ([

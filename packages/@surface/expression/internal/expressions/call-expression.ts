@@ -1,4 +1,5 @@
 import { format, hasValue } from "@surface/core";
+import { getThisArg }       from "../common.js";
 import type ICallExpression from "../interfaces/call-expression";
 import type IChainElement   from "../interfaces/chain-element.js";
 import type IExpression     from "../interfaces/expression";
@@ -64,7 +65,7 @@ export default class CallExpression implements IExpression, IChainElement
 
     public evaluate(scope: object): unknown
     {
-        const fn = this.callee.evaluate(scope);
+        const [thisArg, fn] = getThisArg(this.callee, scope);
 
         if (this.optional && !hasValue(fn))
         {
@@ -94,7 +95,7 @@ export default class CallExpression implements IExpression, IChainElement
             }
         }
 
-        return fn(...$arguments);
+        return fn.apply(thisArg, $arguments);
     }
 
     public toString(): string

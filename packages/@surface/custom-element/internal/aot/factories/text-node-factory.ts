@@ -1,10 +1,11 @@
-import observe             from "../observe.js";
-import type Activator      from "../types/activator";
-import type Evaluator      from "../types/evaluator";
-import type NodeFactory    from "../types/node-fatctory";
-import type ObservablePath from "../types/observable-path";
+import type { StackTrace }         from "../../types/index.js";
+import { tryEvaluate, tryObserve } from "../common.js";
+import type Activator              from "../types/activator";
+import type Evaluator              from "../types/evaluator";
+import type NodeFactory            from "../types/node-fatctory";
+import type ObservablePath         from "../types/observable-path";
 
-export default function textNodeFactory(expression: Evaluator<string>, observables: ObservablePath[]): NodeFactory
+export default function textNodeFactory(evaluator: Evaluator, observables?: ObservablePath[], source?: string, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {
@@ -12,9 +13,9 @@ export default function textNodeFactory(expression: Evaluator<string>, observabl
 
         const activator: Activator = (_parent, _host, scope) =>
         {
-            const listener = (): void => void (node.nodeValue = expression(scope));
+            const listener = (): void => void (node.nodeValue = String(tryEvaluate(scope, evaluator, source, stackTrace)));
 
-            const subscription = observe(scope, observables, listener, true);
+            const subscription = tryObserve(scope, observables ?? [], listener, true, source, stackTrace);
 
             listener();
 
