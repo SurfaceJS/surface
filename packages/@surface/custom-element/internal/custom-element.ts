@@ -3,7 +3,7 @@ import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type ICustomElement                             from "./interfaces/custom-element";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
 import { globalCustomDirectives }                      from "./singletons.js";
-import type { DirectiveConstructor, DirectiveFactory } from "./types";
+import type { DirectiveConstructor, DirectiveFactory } from "./types/directive-entry.js";
 
 const CUSTOM_ELEMENT = Symbol("custom-element:instance");
 

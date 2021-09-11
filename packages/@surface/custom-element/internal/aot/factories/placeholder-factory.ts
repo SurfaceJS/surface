@@ -1,6 +1,6 @@
-import type { StackTrace } from "../../types/index.js";
-import Block               from "../block.js";
-import PlaceholdeStatement from "../statements/placeholder-statement.js";
+import type StackTrace     from "../../types/stack-trace";
+import Block               from "../directives/block.js";
+import PlaceholdeStatement from "../directives/placeholder-directive.js";
 import type Activator      from "../types/activator";
 import type Evaluator      from "../types/evaluator";
 import type NodeFactory    from "../types/node-fatctory";

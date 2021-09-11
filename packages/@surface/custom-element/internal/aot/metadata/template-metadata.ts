@@ -1,7 +1,7 @@
 import type { Delegate }     from "@surface/core";
 import type InjectionContext from "../types/injection-context";
 
-export const TEMPLATE_METADATA  = "__custom-element:template-metadata__";
+export const TEMPLATE_METADATA = Symbol("custom-element:template-metadata");
 
 export default class TemplateMetadata
 {

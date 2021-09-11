@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
-import type { StackTrace }        from "../../types/index.js";
-import Block                      from "../block.js";
-import InjectStatement            from "../statements/inject-statement.js";
+import type StackTrace            from "../../types/stack-trace";
+import Block                      from "../directives/block.js";
+import InjectStatement            from "../directives/inject-directive.js";
 import type Activator             from "../types/activator";
 import type DestructuredEvaluator from "../types/destructured-evaluator.js";
 import type Evaluator             from "../types/evaluator.js";

@@ -1,4 +1,4 @@
-import type { StackTrace }                   from "../../types/index.js";
+import StackTrace from "../../types/stack-trace";
 import { checkPath, checkProperty, tryBind } from "../common.js";
 import type AttributeFactory                 from "../types/attribute-fatctory.js";
 import type ObservablePath                   from "../types/observable-path.js";

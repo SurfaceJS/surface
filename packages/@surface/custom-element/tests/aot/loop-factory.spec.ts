@@ -1,16 +1,16 @@
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
-import elementFactory              from "../../internal/aot/factories/element-factory.js";
-import fragmentFactory             from "../../internal/aot/factories/fragment-factory.js";
-import loopFactory                 from "../../internal/aot/factories/loop-factory.js";
-import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
-import type Activator              from "../../internal/aot/types/activator";
-import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
-import type Evaluator              from "../../internal/aot/types/evaluator.js";
-import { scheduler }               from "../../internal/singletons.js";
+import { shouldPass, suite, test }  from "@surface/test-suite";
+import chai                         from "chai";
+import elementFactory               from "../../internal/aot/factories/element-factory.js";
+import fragmentFactory              from "../../internal/aot/factories/fragment-factory.js";
+import loopFactory                  from "../../internal/aot/factories/loop-factory.js";
+import textNodeInterpolationFactory from "../../internal/aot/factories/text-node-interpolation-factory.js";
+import type Activator               from "../../internal/aot/types/activator";
+import type DestructuredEvaluator   from "../../internal/aot/types/destructured-evaluator.js";
+import type Evaluator               from "../../internal/aot/types/evaluator.js";
+import { scheduler }                from "../../internal/singletons.js";
 
 @suite
 export default class LoopFactorySpec
@@ -34,7 +34,7 @@ export default class LoopFactorySpec
                     [["items"]],
                     fragmentFactory
                     ([
-                        textNodeFactory(((scope: { item: string }) => `Index: ${scope.item}`) as Evaluator, [["item"]]),
+                        textNodeInterpolationFactory(((scope: { item: string }) => `Index: ${scope.item}`) as Evaluator, [["item"]]),
                     ]),
                 ),
             ],

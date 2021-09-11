@@ -1,4 +1,4 @@
-import Directive from "../../internal/directives/directive.js";
+import Directive from "../../internal/directives/directive-legacy.js";
 
 export default class CustomDirective extends Directive
 {

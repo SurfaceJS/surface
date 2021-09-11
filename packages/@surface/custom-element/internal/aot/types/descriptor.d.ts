@@ -1,6 +1,6 @@
 /* eslint-disable import/exports-last */
 import type { IExpression, IPattern } from "@surface/expression";
-import type { StackTrace }            from "../../types/index.js";
+import type StackTrace                from "../../types/stack-trace";
 import type ObservablePath            from "./observable-path";
 
 export type RawAttributeDescritor =
@@ -82,6 +82,7 @@ export type EventDescritor =
     stackTrace: StackTrace,
     type:       "event",
     value:      IExpression,
+    context:    IExpression,
 };
 
 export type FragmentDescriptor =
@@ -132,7 +133,13 @@ export type PlaceholderStatementDescriptor =
 
 export type TextDescriptor =
 {
-    type:         "text",
+    type:  "text",
+    value: string,
+};
+
+export type TextInterpolationDescriptor =
+{
+    type:         "text-interpolation",
     value:        IExpression,
     observables?: ObservablePath[],
     source?:      string,
@@ -147,6 +154,7 @@ type Descriptor =
     | InjectionStatementDescriptor
     | LoopStatementDescriptor
     | PlaceholderStatementDescriptor
-    | TextDescriptor;
+    | TextDescriptor
+    | TextInterpolationDescriptor;
 
 export default Descriptor;

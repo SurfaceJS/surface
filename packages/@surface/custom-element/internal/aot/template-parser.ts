@@ -12,7 +12,7 @@ import { parseDestructuredPattern, parseExpression, parseForLoopStatement, parse
 import nativeEvents                                                                                               from "../parsers/native-events.js";
 import { interpolation }                                                                                          from "../parsers/patterns.js";
 import ObserverVisitor                                                                                            from "../reactivity/observer-visitor.js";
-import type { StackTrace }                                                                                        from "../types";
+import type StackTrace                                                                                            from "../types/stack-trace";
 import type Descriptor                                                                                            from "./types/descriptor.js";
 import type
 {
@@ -324,7 +324,9 @@ export default class TemplateParser
                     ? unknownExpression
                     : Expression.arrowFunction([], unknownExpression);
 
-                yield { key: name, source: raw, stackTrace, type: "event", value: expression };
+                const context = TypeGuard.isMemberExpression(expression) ? expression.object : Expression.literal(null);
+
+                yield { context, key: name, source: raw, stackTrace, type: "event", value: expression };
             }
             else if (attribute.name.startsWith("#"))
             {
@@ -539,7 +541,7 @@ export default class TemplateParser
         const descriptor: ElementDescriptor =
         {
             attributes: this.parseAttributes(element, stackTrace),
-            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: "text", value: Expression.literal(element.textContent) }] : this.enumerateParsedNodes(element),
+            childs:     element.nodeName == "SCRIPT" || element.nodeName == "STYLE" ? [{ type: "text", value: element.textContent ?? "" }] : this.enumerateParsedNodes(element),
             tag:        element.nodeName,
             type:       "element",
         };
@@ -561,7 +563,7 @@ export default class TemplateParser
                 observables,
                 source: node.nodeValue,
                 stackTrace,
-                type:   "text",
+                type:   "text-interpolation",
                 value:  expression,
             };
 
@@ -571,7 +573,7 @@ export default class TemplateParser
         const descriptor: Descriptor =
         {
             type:  "text",
-            value: Expression.literal(scapeBrackets(node.nodeValue!)),
+            value: scapeBrackets(node.nodeValue!),
         };
 
         return descriptor;

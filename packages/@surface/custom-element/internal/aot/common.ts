@@ -2,7 +2,7 @@ import type { Delegate, Subscription }                                          
 import { getPropertyDescriptor, getValue, isReadonly, resolveError }                    from "@surface/core";
 import { buildStackTrace, throwTemplateEvaluationError, throwTemplateObservationError } from "../common.js";
 import TemplateProcessError                                                             from "../errors/template-process-error.js";
-import type { StackTrace }                                                              from "../types/index.js";
+import type StackTrace                                                                  from "../types/stack-trace";
 import bind                                                                             from "./bind.js";
 import observe                                                                          from "./observe.js";
 import type DestructuredEvaluator                                                       from "./types/destructured-evaluator.js";
@@ -28,6 +28,16 @@ export function checkProperty(target: object, key: string, source: string | unde
             : `Binding error in '${source}': Property "${key}" does not exists on type ${target.constructor.name}`;
 
         throw new TemplateProcessError(message, buildStackTrace(stackTrace ?? []));
+    }
+}
+
+export function *enumerateRange(start: ChildNode, end: ChildNode): Iterable<ChildNode>
+{
+    let simbling: ChildNode | null = null;
+
+    while ((simbling = start.nextSibling) && simbling != end)
+    {
+        yield simbling;
     }
 }
 

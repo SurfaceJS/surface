@@ -10,6 +10,7 @@ import loopFactory                 from "./factories/loop-factory.js";
 import onewayFactory               from "./factories/oneway-factory.js";
 import placeholderFactory          from "./factories/placeholder-factory.js";
 import textNodeFactory             from "./factories/text-node-factory.js";
+import textNodeInterpolationFactory from "./factories/text-node-interpolation-factory.js";
 import twowayFactory               from "./factories/twoway-factory.js";
 import TemplateParser              from "./template-parser.js";
 import type AttributeFactory       from "./types/attribute-fatctory.js";
@@ -35,7 +36,7 @@ export default class TemplateCompiler
                     factories.push(directiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "event":
-                    factories.push(eventFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.source, attribute.stackTrace));
+                    factories.push(eventFactory(attribute.key, scope => attribute.value.evaluate(scope), scope => attribute.context?.evaluate(scope), attribute.source, attribute.stackTrace));
                     break;
                 case "interpolation":
                     factories.push(interpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
@@ -78,7 +79,9 @@ export default class TemplateCompiler
                     TemplateCompiler.mapChilds(descriptor.childs),
                 );
             case "text":
-                return textNodeFactory
+                return textNodeFactory(descriptor.value);
+            case "text-interpolation":
+                return textNodeInterpolationFactory
                 (
                     scope => descriptor.value.evaluate(scope),
                     descriptor.observables,

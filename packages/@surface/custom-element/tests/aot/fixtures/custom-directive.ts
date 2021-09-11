@@ -1,4 +1,4 @@
-import Directive from "../../../internal/aot/directive.js";
+import Directive from "../../../internal/aot/directives/directive.js";
 
 export default class CustomDirective extends Directive
 {

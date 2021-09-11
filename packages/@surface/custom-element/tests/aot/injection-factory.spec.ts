@@ -1,15 +1,15 @@
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
-import fragmentFactory             from "../../internal/aot/factories/fragment-factory.js";
-import injectionFactory            from "../../internal/aot/factories/injection-factory.js";
-import placeholderFactory          from "../../internal/aot/factories/placeholder-factory.js";
-import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
-import type DestructuredEvaluator  from "../../internal/aot/types/destructured-evaluator.js";
-import type Evaluator              from "../../internal/aot/types/evaluator.js";
-import { scheduler }               from "../../internal/singletons.js";
+import { shouldPass, suite, test }  from "@surface/test-suite";
+import chai                         from "chai";
+import fragmentFactory              from "../../internal/aot/factories/fragment-factory.js";
+import injectionFactory             from "../../internal/aot/factories/injection-factory.js";
+import placeholderFactory           from "../../internal/aot/factories/placeholder-factory.js";
+import textNodeInterpolationFactory from "../../internal/aot/factories/text-node-interpolation-factory.js";
+import type DestructuredEvaluator   from "../../internal/aot/types/destructured-evaluator.js";
+import type Evaluator               from "../../internal/aot/types/evaluator.js";
+import { scheduler }                from "../../internal/singletons.js";
 
 @suite
 export default class InjectionFactorySpec
@@ -30,7 +30,7 @@ export default class InjectionFactorySpec
                 () => "default",
                 ((scope: Scope) => ({ item: scope.value })) as Evaluator,
                 [[], [["value"]]],
-                textNodeFactory(((scope: Scope) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
+                textNodeInterpolationFactory(((scope: Scope) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
             ),
         ])();
 
@@ -69,7 +69,7 @@ export default class InjectionFactorySpec
             () => "default",
             ((scope: Scope) => scope) as DestructuredEvaluator,
             [[], [["value"]]],
-            textNodeFactory(((scope: Scope) => `Injected: ${scope.value}`) as Evaluator, [["value"]]),
+            textNodeInterpolationFactory(((scope: Scope) => `Injected: ${scope.value}`) as Evaluator, [["value"]]),
         )();
 
         host.appendChild(injectionContent);

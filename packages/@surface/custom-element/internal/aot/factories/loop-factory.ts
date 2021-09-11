@@ -1,6 +1,6 @@
-import type { StackTrace }        from "../../types/index.js";
-import Block                      from "../block.js";
-import LoopStatement              from "../statements/loop-statement.js";
+import type StackTrace            from "../../types/stack-trace";
+import Block                      from "../directives/block.js";
+import LoopStatement              from "../directives/loop-directive.js";
 import type Activator             from "../types/activator";
 import type DestructuredEvaluator from "../types/destructured-evaluator.js";
 import type Evaluator             from "../types/evaluator";

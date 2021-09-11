@@ -7,13 +7,13 @@ import { AggregateError, resolveError, uuidv4 } from "@surface/core";
 import { shouldFail, shouldPass, suite, test }  from "@surface/test-suite";
 import chai                                     from "chai";
 import element                                  from "../../internal/aot/decorators/element.js";
-import LoopStatement                            from "../../internal/aot/statements/loop-statement.js";
+import LoopStatement                            from "../../internal/aot/directives/loop-directive.js";
 import TemplateCompiler                         from "../../internal/aot/template-compiler.js";
 import CustomElement                            from "../../internal/custom-element.js";
 import CustomStackError                         from "../../internal/errors/custom-stack-error.js";
 import TemplateEvaluationError                  from "../../internal/errors/template-evaluation-error.js";
 import { scheduler }                            from "../../internal/singletons.js";
-import type { DirectiveEntry }                  from "../../internal/types/index.js";
+import type DirectiveEntry from "../../internal/types/directive-entry";
 import customDirectiveFactory                   from "./fixtures/custom-directive-factory.js";
 import CustomDirective                          from "./fixtures/custom-directive.js";
 

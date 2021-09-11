@@ -1,5 +1,5 @@
 import CustomElement from "../../internal/custom-element.js";
-import element       from "../../internal/decorators/element.js";
+import element       from "../../internal/decorators/element-legacy.js";
 
 const template =
 `

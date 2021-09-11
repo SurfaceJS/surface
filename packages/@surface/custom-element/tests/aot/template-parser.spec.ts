@@ -144,6 +144,7 @@ export default class TemplateParserSpec
                             value: parseExpression("`Hello ${host.name}`"),
                         },
                         {
+                            context:    parseExpression("host"),
                             key:        "click",
                             source:     "@click=\"host.handler\"",
                             stackTrace:
@@ -193,7 +194,7 @@ export default class TemplateParserSpec
                                 ["<span foo bar=\"baz\" #show value=\"Hello {host.name}\" @click=\"host.handler\" ::value-a=\"host.value\" :value-b=\"host.x + host.y\">"],
                                 ["Some {'interpolation'} here"],
                             ],
-                            type:  "text",
+                            type:  "text-interpolation",
                             value: parseExpression("`Some ${'interpolation'} here`"),
                         },
                     ],
@@ -237,7 +238,7 @@ export default class TemplateParserSpec
                                 [
                                     {
                                         type:  "text",
-                                        value: parseExpression("\"Empty\""),
+                                        value: "Empty",
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -282,7 +283,7 @@ export default class TemplateParserSpec
                                                     ["<h1>"],
                                                     ["{title}"],
                                                 ],
-                                                type:  "text",
+                                                type:  "text-interpolation",
                                                 value: parseExpression("`${title}`"),
                                             },
                                         ],
@@ -332,8 +333,8 @@ export default class TemplateParserSpec
                                                     ["<h1>"],
                                                     ["{title}"],
                                                 ],
-                                                type:        "text",
-                                                value:       parseExpression("`${title}`"),
+                                                type:  "text-interpolation",
+                                                value: parseExpression("`${title}`"),
                                             },
                                         ],
                                         tag:  "H1",
@@ -401,7 +402,7 @@ export default class TemplateParserSpec
                                         [
                                             {
                                                 type:  "text",
-                                                value: parseExpression("'Active'"),
+                                                value: "Active",
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -431,7 +432,7 @@ export default class TemplateParserSpec
                                         [
                                             {
                                                 type:  "text",
-                                                value: parseExpression("'Waiting'"),
+                                                value: "Waiting",
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -461,7 +462,7 @@ export default class TemplateParserSpec
                                         [
                                             {
                                                 type:  "text",
-                                                value: parseExpression("'Suspended'"),
+                                                value: "Suspended",
                                             },
                                         ],
                                         tag:  "SPAN",
@@ -519,7 +520,7 @@ export default class TemplateParserSpec
                                 [
                                     {
                                         type:  "text",
-                                        value: parseExpression("'Default Empty'"),
+                                        value: "Default Empty",
                                     },
                                 ],
                                 tag:  "SPAN",
@@ -559,7 +560,7 @@ export default class TemplateParserSpec
                                             ["...1 other(s) node(s)", "<span #placeholder:value=\"{ name: host.name }\">"],
                                             ["Default {name}"],
                                         ],
-                                        type:  "text",
+                                        type:  "text-interpolation",
                                         value: parseExpression("`Default ${name}`"),
                                     },
                                 ],
@@ -600,7 +601,7 @@ export default class TemplateParserSpec
                                             ["...2 other(s) node(s)", "<span #placeholder-key=\"host.dynamicPlaceholderKey\" #placeholder=\"{ name: host.name }\">"],
                                             ["Default {name}"],
                                         ],
-                                        type:  "text",
+                                        type:  "text-interpolation",
                                         value: parseExpression("`Default ${name}`"),
                                     },
                                 ],
@@ -675,7 +676,7 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     type:  "text",
-                                                    value: parseExpression("'Id'"),
+                                                    value: "Id",
                                                 },
                                             ],
                                             tag:  "TH",
@@ -687,7 +688,7 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     type:  "text",
-                                                    value: parseExpression("'Name'"),
+                                                    value: "Name",
                                                 },
                                             ],
                                             tag:  "TH",
@@ -699,7 +700,7 @@ export default class TemplateParserSpec
                                             [
                                                 {
                                                     type:  "text",
-                                                    value: parseExpression("'Status'"),
+                                                    value: "Status",
                                                 },
                                             ],
                                             tag:  "TH",
@@ -735,7 +736,7 @@ export default class TemplateParserSpec
                                                                     ["<td>"],
                                                                     ["{item.id}"],
                                                                 ],
-                                                                type:  "text",
+                                                                type:  "text-interpolation",
                                                                 value: parseExpression("`${item.id}`"),
                                                             },
                                                         ],
@@ -759,7 +760,7 @@ export default class TemplateParserSpec
                                                                     ["...1 other(s) node(s)", "<td>"],
                                                                     ["{item.name}"],
                                                                 ],
-                                                                type:  "text",
+                                                                type:  "text-interpolation",
                                                                 value: parseExpression("`${item.name}`"),
                                                             },
                                                         ],
@@ -783,7 +784,7 @@ export default class TemplateParserSpec
                                                                     ["...2 other(s) node(s)", "<td>"],
                                                                     ["{item.status}"],
                                                                 ],
-                                                                type:  "text",
+                                                                type:  "text-interpolation",
                                                                 value: parseExpression("`${item.status}`"),
                                                             },
                                                         ],
@@ -859,7 +860,7 @@ export default class TemplateParserSpec
                     [
                         {
                             type:  "text",
-                            value: parseExpression("'console.log({ window });'"),
+                            value: "console.log({ window });",
                         },
                     ],
                     tag:  "SCRIPT",
@@ -871,7 +872,7 @@ export default class TemplateParserSpec
                     [
                         {
                             type:  "text",
-                            value: parseExpression("'h1 { color: red }'"),
+                            value: "h1 { color: red }",
                         },
                     ],
                     tag:  "STYLE",
@@ -930,7 +931,7 @@ export default class TemplateParserSpec
                                                                 ["<span #if=\"true\" #for=\"const item of items\">"],
                                                                 ["{item.value}"],
                                                             ],
-                                                            type:  "text",
+                                                            type:  "text-interpolation",
                                                             value: parseExpression("`${item.value}`"),
                                                         },
                                                     ],
@@ -1009,7 +1010,7 @@ export default class TemplateParserSpec
                                                     [
                                                         {
                                                             type:  "text",
-                                                            value: parseExpression("'Placeholder'"),
+                                                            value: "Placeholder",
                                                         },
                                                     ],
                                                     tag:  "SPAN",
@@ -1090,7 +1091,7 @@ export default class TemplateParserSpec
                                                         ["<span #for=\"const [key, value] of items\" #placeholder-key=\"key\" #placeholder=\"source\">"],
                                                         ["{source.value}"],
                                                     ],
-                                                    type:  "text",
+                                                    type:  "text-interpolation",
                                                     value: parseExpression("`${source.value}`"),
                                                 },
                                             ],
@@ -1177,7 +1178,7 @@ export default class TemplateParserSpec
                                                                 ["<span #if=\"true\" #inject:value=\"source\">"],
                                                                 ["{source.value}"],
                                                             ],
-                                                            type:  "text",
+                                                            type:  "text-interpolation",
                                                             value: parseExpression("`${source.value}`"),
                                                         },
                                                     ],
@@ -1259,7 +1260,7 @@ export default class TemplateParserSpec
                                                         ["<span #for=\"const item of items\" #inject:value=\"source\">"],
                                                         ["{source.value}"],
                                                     ],
-                                                    type:  "text",
+                                                    type:  "text-interpolation",
                                                     value: parseExpression("`${source.value}`"),
                                                 },
                                             ],
@@ -1363,7 +1364,7 @@ export default class TemplateParserSpec
                                                                                         ["<span class=\"foo\" #inject:value=\"source\" #if=\"true\" #placeholder:value=\"source\" #for=\"const item of items\">"],
                                                                                         ["{source.value}"],
                                                                                     ],
-                                                                                    type:  "text",
+                                                                                    type:  "text-interpolation",
                                                                                     value: parseExpression("`${source.value}`"),
                                                                                 },
                                                                             ],
@@ -1471,7 +1472,7 @@ export default class TemplateParserSpec
                                             ["<span #placeholder-key=\"key\" #placeholder=\"source\">"],
                                             ["{source.value}"],
                                         ],
-                                        type:  "text",
+                                        type:  "text-interpolation",
                                         value: parseExpression("`${source.value}`"),
                                     },
                                 ],
@@ -1538,8 +1539,8 @@ export default class TemplateParserSpec
                                                         ["<span #placeholder:value=\"source\" #inject:value=\"source\">"],
                                                         ["{source.value}"],
                                                     ],
-                                                    type:        "text",
-                                                    value:       parseExpression("`${source.value}`"),
+                                                    type:  "text-interpolation",
+                                                    value: parseExpression("`${source.value}`"),
                                                 },
                                             ],
                                             tag:  "SPAN",

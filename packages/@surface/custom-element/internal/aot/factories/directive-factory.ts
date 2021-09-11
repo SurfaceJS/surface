@@ -2,7 +2,7 @@ import type { IDisposable }  from "@surface/core";
 import { typeGuard }         from "@surface/core";
 import { buildStackTrace }   from "../../common.js";
 import TemplateProcessError  from "../../errors/template-process-error.js";
-import type { StackTrace }   from "../../types/index.js";
+import StackTrace from "../../types/stack-trace";
 import type AttributeFactory from "../types/attribute-fatctory.js";
 import type DirectiveContext from "../types/directive-context";
 import type Evaluator        from "../types/evaluator.js";

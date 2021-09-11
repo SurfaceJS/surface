@@ -1,6 +1,6 @@
 import type { Indexer }        from "@surface/core";
 import type NodeFactory        from "../aot/types/node-fatctory.js";
-import type TemplateDescriptor from "../types/template-descriptor";
+import type TemplateDescriptor from "../types/template-descriptor-legacy";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 

@@ -6,7 +6,7 @@ import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
 import CustomElement               from "../internal/custom-element.js";
 import attribute                   from "../internal/decorators/attribute.js";
-import element                     from "../internal/decorators/element.js";
+import element                     from "../internal/decorators/element-legacy.js";
 import CustomDirective from "./fixtures/custom-directive.js";
 
 @suite

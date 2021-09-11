@@ -149,11 +149,13 @@ export default class ElementFactorySpec
     @test @shouldPass
     public events(): void
     {
+        type Scope = { host: { click: Function } };
+
         const [element, activator] = elementFactory
         (
             "div",
             undefined,
-            [eventFactory("click", ((scope: { host: { click: Function } }) => scope.host.click.bind(scope.host)) as Evaluator)],
+            [eventFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
         )() as [Element, Activator];
 
         let clicked = 0;

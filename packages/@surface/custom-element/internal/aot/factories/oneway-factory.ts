@@ -1,6 +1,6 @@
 import type { Delegate }                          from "@surface/core";
 import { classMap, styleMap }                     from "../../common.js";
-import type { StackTrace }                        from "../../types/index.js";
+import StackTrace from "../../types/stack-trace";
 import { checkProperty, tryEvaluate, tryObserve } from "../common.js";
 import type AttributeFactory                      from "../types/attribute-fatctory.js";
 import type Evaluator                             from "../types/evaluator.js";

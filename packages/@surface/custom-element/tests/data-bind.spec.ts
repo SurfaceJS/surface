@@ -3,7 +3,7 @@ import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import DataBind                    from "../internal/reactivity/data-bind.js";
+import DataBind                    from "../internal/reactivity/data-bind-legacy.js";
 import { scheduler }               from "../internal/singletons.js";
 
 @suite

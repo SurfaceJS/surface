@@ -1,13 +1,14 @@
-import type { StackTrace }   from "../../types/index.js";
+import type StackTrace       from "../../types/stack-trace";
 import { tryEvaluate }       from "../common.js";
 import type AttributeFactory from "../types/attribute-fatctory.js";
 import type Evaluator        from "../types/evaluator.js";
 
-export default function eventFactory(key: string, evaluator: Evaluator, source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function eventFactory(key: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator, source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {
-        const listener = tryEvaluate(scope, evaluator, source, stackTrace) as () => void;
+        const context  = tryEvaluate(scope, contextEvaluator, source, stackTrace) as object | undefined;
+        const listener = (tryEvaluate(scope, listenerEvaluator, source, stackTrace) as () => void).bind(context ?? element);
 
         element.addEventListener(key, listener);
 

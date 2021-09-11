@@ -1,14 +1,14 @@
 /* eslint-disable import/no-unassigned-import */
 import "../fixtures/dom.js";
 
-import { shouldPass, suite, test } from "@surface/test-suite";
-import chai                        from "chai";
-import elementFactory              from "../../internal/aot/factories/element-factory.js";
-import placeholderFactory          from "../../internal/aot/factories/placeholder-factory.js";
-import textNodeFactory             from "../../internal/aot/factories/text-node-factory.js";
-import type Activator              from "../../internal/aot/types/activator";
-import type Evaluator              from "../../internal/aot/types/evaluator.js";
-import { scheduler }               from "../../internal/singletons.js";
+import { shouldPass, suite, test }  from "@surface/test-suite";
+import chai                         from "chai";
+import elementFactory               from "../../internal/aot/factories/element-factory.js";
+import placeholderFactory           from "../../internal/aot/factories/placeholder-factory.js";
+import textNodeInterpolationFactory from "../../internal/aot/factories/text-node-interpolation-factory.js";
+import type Activator               from "../../internal/aot/types/activator";
+import type Evaluator               from "../../internal/aot/types/evaluator.js";
+import { scheduler }                from "../../internal/singletons.js";
 
 @suite
 export default class PlaceholderFactorySpec
@@ -29,7 +29,7 @@ export default class PlaceholderFactorySpec
                     () => "default",
                     ((scope: { value: string }) => ({ item: scope.value })) as Evaluator,
                     [[], [["value"]]],
-                    textNodeFactory(((scope: { value: string }) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
+                    textNodeInterpolationFactory(((scope: { value: string }) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
                 ),
             ],
         )() as [Element, Activator];
