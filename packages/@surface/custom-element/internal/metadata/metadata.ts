@@ -1,3 +1,5 @@
+import type Activator from "../types/activator.js";
+
 export const METADATA = Symbol("custom-element:metadata");
 
 export default class Metadata
@@ -5,7 +7,7 @@ export default class Metadata
     public isPropagatingCallback: boolean = false;
     public reflectingAttribute:   Set<string> = new Set();
 
-    public host?: Node;
+    public activator?: Activator;
 
     public static from(target: object): Metadata
     {

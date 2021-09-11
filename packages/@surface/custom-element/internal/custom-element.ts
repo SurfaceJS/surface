@@ -1,6 +1,7 @@
 import type { Constructor }                            from "@surface/core";
 import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type ICustomElement                             from "./interfaces/custom-element";
+import Metadata from "./metadata/metadata.js";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
 import { globalCustomDirectives }                      from "./singletons.js";
 import type { DirectiveConstructor, DirectiveFactory } from "./types/directive-entry.js";
@@ -31,21 +32,13 @@ export default class CustomElement extends HTMLElement implements ICustomElement
 
         const hookableMetadata = HookableMetadata.from(instance.constructor as Constructor<HTMLElement>);
 
-        if (staticMetadata.template)
-        {
-            const content = staticMetadata.template.content.cloneNode(true);
-
-            instance.shadowRoot.appendChild(content);
-        }
-        else if (staticMetadata.factory)
+        if (staticMetadata.factory)
         {
             const [content, activator] = staticMetadata.factory();
 
             instance.shadowRoot.appendChild(content);
 
-            // window.customElements.upgrade(instance.shadowRoot);
-
-            hookableMetadata.finishers.unshift(x => DisposableMetadata.from(this).add(activator(x.shadowRoot!, x, { host: x }, globalCustomDirectives)));
+            Metadata.from(instance).activator = activator;
         }
 
         hookableMetadata.initialize(instance);

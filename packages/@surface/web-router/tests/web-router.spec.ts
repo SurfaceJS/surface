@@ -102,7 +102,7 @@ const template =
             <a #to="'/about'"></a>
             <router-outlet></router-outlet>
         </template>
-        <template #else="host.fullscreen">
+        <template #else>
             <div>
                 Header
             </div>

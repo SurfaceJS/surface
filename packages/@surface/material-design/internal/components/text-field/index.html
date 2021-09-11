@@ -18,7 +18,7 @@
             <span
                 id             ="input"
                 contenteditable="true"
-                @bind         ="host.input = this"
+                @bind         ="e => host.input = e.target"
                 @input        ="host.handleInput"
                 @paste        ="host.handlePaste"
                 :text-content ="host.value"

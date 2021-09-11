@@ -1,5 +1,6 @@
-import type { Constructor, IDisposable }                from "@surface/core";
+import type { Constructor }                             from "@surface/core";
 import { Event, Lazy, assertGet, joinPaths, typeGuard } from "@surface/core";
+import { painting }                                     from "@surface/custom-element";
 import type { IScopedProvider }                         from "@surface/dependency-injection";
 import Container                                        from "@surface/dependency-injection";
 import { computed }                                     from "@surface/observer";
@@ -100,15 +101,17 @@ export default class WebRouter
         // istanbul ignore else
         if (outlet)
         {
-            (outlet as Partial<IDisposable>).dispose = () =>
-            {
-                if (this.context?.route == to)
-                {
-                    element.remove();
+            const router = this;
 
-                    this.connectToOutlet(parent, element, key, to, from, outletSelector, true);
+            outlet.remove = function(this: HTMLElement)
+            {
+                this.parentNode?.removeChild(this);
+
+                if (router.route == to)
+                {
+                    void painting().then(() => router.connectToOutlet(parent, element, key, to, from, outletSelector, true));
                 }
-            };
+            }.bind(outlet);
 
             outlets.set(key, outlet);
 

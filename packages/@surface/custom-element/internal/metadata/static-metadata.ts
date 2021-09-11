@@ -1,6 +1,6 @@
-import type { Indexer }        from "@surface/core";
-import type NodeFactory        from "../aot/types/node-fatctory.js";
-import type TemplateDescriptor from "../types/template-descriptor-legacy";
+import type { Indexer }    from "@surface/core";
+import type DirectiveEntry from "../types/directive-entry.js";
+import type NodeFactory    from "../types/node-fatctory.js";
 
 export const STATIC_METADATA = Symbol("custom-element:static-metadata");
 
@@ -11,9 +11,8 @@ export default class StaticMetadata
     public observedAttributes: string[]                                          = [];
     public styles:             CSSStyleSheet[]                                   = [];
 
-    public template?:   HTMLTemplateElement;
-    public factory?:    NodeFactory;
-    public descriptor!: TemplateDescriptor;
+    public directives: Map<string, DirectiveEntry> = new Map();
+    public factory?:   NodeFactory;
 
     public static from(target: Function): StaticMetadata
     {
@@ -36,6 +35,7 @@ export default class StaticMetadata
         clone.converters         = { ...this.converters };
         clone.observedAttributes = [...this.observedAttributes];
         clone.styles             = [...this.styles];
+        clone.directives         = new Map(this.directives);
 
         return clone;
     }

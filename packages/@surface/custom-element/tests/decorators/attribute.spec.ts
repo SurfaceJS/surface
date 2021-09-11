@@ -7,7 +7,7 @@ import chai                        from "chai";
 import { scheduler }               from "../../index.js";
 import CustomElement               from "../../internal/custom-element.js";
 import attribute                   from "../../internal/decorators/attribute.js";
-import element                     from "../../internal/decorators/element-legacy.js";
+import element                     from "../../internal/decorators/element.js";
 
 @suite
 export default class ElementDecoratorSpec
