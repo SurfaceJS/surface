@@ -39,7 +39,7 @@ export type DirectiveAttributeDescritor =
     value:       IExpression,
 };
 
-export type AttributeDescritor =
+export type AttributeBindDescritor =
     | DirectiveAttributeDescritor
     | EventDescritor
     | OneWayAttributeDescritor
@@ -69,7 +69,7 @@ export type ChoiceStatementDescriptor =
 
 export type ElementDescriptor =
 {
-    attributes: Iterable<AttributeDescritor>,
+    attributes: Iterable<AttributeBindDescritor>,
     childs:     Iterable<Descriptor>,
     tag:        string,
     type:       "element",

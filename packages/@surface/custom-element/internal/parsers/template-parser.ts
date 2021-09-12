@@ -11,7 +11,7 @@ import { buildStackTrace, scapeBrackets, throwTemplateParseError } from "../comm
 import ObserverVisitor                                             from "../reactivity/observer-visitor.js";
 import type
 {
-    AttributeDescritor,
+    AttributeBindDescritor,
     BranchDescriptor,
     ElementDescriptor,
     FragmentDescriptor,
@@ -25,6 +25,13 @@ import nativeEvents                                                             
 import { interpolation }                                                                        from "./patterns.js";
 
 const DECOMPOSED = Symbol("custom-element:decomposed");
+
+enum NodeType
+{
+    Element = 1,
+    Text    = 3,
+    Comment = 8,
+}
 
 enum DirectiveType
 {
@@ -52,12 +59,11 @@ type Directive  =
 
 export default class TemplateParser
 {
-    private readonly name:       string;
     private readonly stackTrace: StackTrace;
 
     private index: number = 0;
 
-    public constructor(name: string, stackTrace?: StackTrace)
+    public constructor(private readonly name: string, stackTrace?: StackTrace)
     {
         this.name = name;
 
@@ -69,7 +75,7 @@ export default class TemplateParser
         return new TemplateParser(name, stackTrace).parse(template);
     }
 
-    public static parse(name: string, template: string): Descriptor
+    public static parse(document: Document, name: string, template: string): Descriptor
     {
         const templateElement = document.createElement("template");
         templateElement.innerHTML = template;
@@ -207,7 +213,7 @@ export default class TemplateParser
         {
             const childNode = node.childNodes[index];
 
-            if (childNode.nodeType == Node.ELEMENT_NODE || childNode.nodeType == Node.TEXT_NODE)
+            if (childNode.nodeType == NodeType.Element || childNode.nodeType == NodeType.Text)
             {
                 if (!this.isDecomposed(childNode))
                 {
@@ -216,7 +222,7 @@ export default class TemplateParser
 
                 const stackTrace = [...this.stackTrace];
 
-                if (typeGuard<Element>(childNode, childNode.nodeType == Node.ELEMENT_NODE))
+                if (typeGuard<Element>(childNode, childNode.nodeType == NodeType.Element))
                 {
                     if (childNode.hasAttribute(DirectiveType.ElseIf))
                     {
@@ -260,7 +266,7 @@ export default class TemplateParser
             }
             else
             {
-                if (childNode.nodeType == Node.COMMENT_NODE)
+                if (childNode.nodeType == NodeType.Comment)
                 {
                     yield { type: "comment", value: childNode.textContent ?? "" };
                 }
@@ -288,7 +294,7 @@ export default class TemplateParser
     private nodeToString(node: Node): string;
     private nodeToString(node: (Element | Text)): string
     {
-        if (typeGuard<Text>(node, node.nodeType == Node.TEXT_NODE))
+        if (typeGuard<Text>(node, node.nodeType == NodeType.Text))
         {
             return node.nodeValue!;
         }
@@ -307,7 +313,7 @@ export default class TemplateParser
         return { childs: this.enumerateParsedNodes(template.content), type: "fragment" };
     }
 
-    private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeDescritor>
+    private *parseAttributes(element: Element, stackTrace: StackTrace): Iterable<AttributeBindDescritor>
     {
         for (let i = 0; i < element.attributes.length; i++)
         {
@@ -414,7 +420,7 @@ export default class TemplateParser
                 {
                     this.index++;
 
-                    if (node.nextSibling.nodeType == Node.TEXT_NODE && node.nextSibling.textContent?.trim() != "")
+                    if (node.nextSibling.nodeType == NodeType.Text && node.nextSibling.textContent?.trim() != "")
                     {
                         this.pushToStack(node.nextSibling, this.index - nonElementsCount);
 
@@ -597,7 +603,7 @@ export default class TemplateParser
     {
         if (content.firstChild && content.firstChild != content.firstElementChild)
         {
-            while (content.firstChild.nodeType == Node.TEXT_NODE && content.firstChild.textContent!.trim() == "")
+            while (content.firstChild.nodeType == NodeType.Text && content.firstChild.textContent!.trim() == "")
             {
                 content.firstChild.remove();
             }
@@ -605,7 +611,7 @@ export default class TemplateParser
 
         if (content.lastChild && content.lastChild != content.lastElementChild)
         {
-            while (content.lastChild.nodeType == Node.TEXT_NODE && content.lastChild.textContent!.trim() == "")
+            while (content.lastChild.nodeType == NodeType.Text && content.lastChild.textContent!.trim() == "")
             {
                 content.lastChild.remove();
             }

@@ -15,44 +15,44 @@ import createTwowayFactory                from "../factories/create-twoway-facto
 import TemplateParser                     from "../parsers/template-parser.js";
 import type AttributeFactory              from "../types/attribute-fatctory.js";
 import type Descriptor                    from "../types/descriptor.js";
-import type { AttributeDescritor }        from "../types/descriptor.js";
+import type { AttributeBindDescritor }        from "../types/descriptor.js";
 import type NodeFactory                   from "../types/node-fatctory.js";
 
 export default class TemplateCompiler
 {
-    private static mapAttributes(attributes: Iterable<AttributeDescritor>): [[string, string][], AttributeFactory[]]
+    private static mapAttributes(binds: Iterable<AttributeBindDescritor>): [[string, string][], AttributeFactory[]]
     {
-        const rawattributes: [string, string][] = [];
-        const factories:     AttributeFactory[] = [];
+        const attributes: [string, string][] = [];
+        const factories:  AttributeFactory[] = [];
 
-        for (const attribute of attributes)
+        for (const bind of binds)
         {
-            switch (attribute.type)
+            switch (bind.type)
             {
                 case "raw":
-                    rawattributes.push([attribute.key, attribute.value]);
+                    attributes.push([bind.key, bind.value]);
                     break;
                 case "directive":
-                    factories.push(createDirectiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createDirectiveFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case "event":
-                    factories.push(createEventFactory(attribute.key, scope => attribute.value.evaluate(scope), scope => attribute.context?.evaluate(scope), attribute.source, attribute.stackTrace));
+                    factories.push(createEventFactory(bind.key, scope => bind.value.evaluate(scope), scope => bind.context?.evaluate(scope), bind.source, bind.stackTrace));
                     break;
                 case "interpolation":
-                    factories.push(createInterpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createInterpolationFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case "oneway":
-                    factories.push(createOnewayFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createOnewayFactory(bind.key, scope => bind.value.evaluate(scope), bind.observables, bind.source, bind.stackTrace));
                     break;
                 case "twoway":
-                    factories.push(createTwowayFactory(attribute.left, attribute.right, attribute.source, attribute.stackTrace));
+                    factories.push(createTwowayFactory(bind.left, bind.right, bind.source, bind.stackTrace));
                     break;
                 default:
                     break;
             }
         }
 
-        return [rawattributes, factories];
+        return [attributes, factories];
     }
 
     private static mapChilds(childs: Iterable<Descriptor>): NodeFactory[]
@@ -137,7 +137,7 @@ export default class TemplateCompiler
 
     public static compile(name: string, template: string): NodeFactory
     {
-        const descriptor = TemplateParser.parse(name, template);
+        const descriptor = TemplateParser.parse(window.document, name, template);
 
         return TemplateCompiler.compileDescriptor(descriptor);
     }

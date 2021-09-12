@@ -5,9 +5,12 @@
     },
     "dependencies": {
         "@surface/core": "file:../core",
+        "@surface/custom-element": "file:../custom-element",
         "@surface/expression": "file:../expression",
         "@surface/observer": "file:../observer",
         "@surface/reflection": "file:../reflection",
+        "@types/jsdom": "^16.2.13",
+        "jsdom": "^17.0.0",
         "tslib": "^2.3.1"
     },
     "description": "Provides support of directives and data binding on custom elements.",
@@ -15,28 +18,26 @@
         "@surface/test-suite": "file:../test-suite",
         "@types/chai": "^4.2.21",
         "@types/chai-as-promised": "^7.1.4",
-        "@types/jsdom": "^16.2.13",
         "chai": "^4.3.4",
-        "chai-as-promised": "^7.1.1",
-        "jsdom": "^17.0.0"
-    },
-    "exports": {
-        ".": "./index.js",
-        "./factories": "./internal/factories/index.js",
-        "./internal/parsers/template-parser.js": "./internal/parsers/template-parser.js"
+        "chai-as-promised": "^7.1.1"
     },
     "homepage": "https://github.com/SurfaceJS/surface#readme",
     "keywords": [
         "surface",
         "typescript",
-        "webcomponents"
+        "webcomponents",
+        "webpack",
+        "loader"
     ],
     "license": "MIT",
     "main": "index.js",
-    "name": "@surface/custom-element",
+    "name": "@surface/custom-element-loader",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SurfaceJS/surface.git"
+    },
+    "peerDependencies": {
+        "webpack": "^5.52.1"
     },
     "sideEffects": false,
     "type": "module",
