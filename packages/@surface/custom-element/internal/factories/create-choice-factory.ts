@@ -1,11 +1,11 @@
 /* eslint-disable sort-keys */
-import Block                from "../directives/block.js";
-import ChoiceDirective      from "../directives/choice-directive.js";
-import type Activator       from "../types/activator";
+import Block             from "../directives/block.js";
+import ChoiceDirective   from "../directives/choice-directive.js";
+import type Activator    from "../types/activator";
 import type ChoiceBranch from "../types/choice-branch";
-import type NodeFactory     from "../types/node-fatctory.js";
+import type NodeFactory  from "../types/node-fatctory.js";
 
-export default function choiceFactory(branches: ChoiceBranch[]): NodeFactory
+export default function createChoiceFactory(branches: ChoiceBranch[]): NodeFactory
 {
     return () =>
     {

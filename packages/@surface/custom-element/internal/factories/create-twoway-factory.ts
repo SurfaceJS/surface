@@ -3,7 +3,7 @@ import type AttributeFactory                 from "../types/attribute-fatctory.j
 import type ObservablePath                   from "../types/observable-path.js";
 import type StackTrace                       from "../types/stack-trace";
 
-export default function twowayFactory(left: string, right: ObservablePath, source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function createTwowayFactory(left: string, right: ObservablePath, source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {

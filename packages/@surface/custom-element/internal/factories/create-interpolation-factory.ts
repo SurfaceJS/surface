@@ -4,7 +4,7 @@ import type Evaluator        from "../types/evaluator.js";
 import type ObservablePath   from "../types/observable-path.js";
 import type StackTrace       from "../types/stack-trace";
 
-export default function interpolationFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function createInterpolationFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {

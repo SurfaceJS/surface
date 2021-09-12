@@ -10,7 +10,7 @@ import type StackTrace       from "../types/stack-trace";
 
 type DirectiveFactory = (context: DirectiveContext) => IDisposable;
 
-export default function directiveFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function createDirectiveFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope, directives) =>
     {

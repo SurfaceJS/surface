@@ -1,7 +1,7 @@
 import type { Constructor }                            from "@surface/core";
 import { DisposableMetadata, HookableMetadata }        from "@surface/core";
 import type ICustomElement                             from "./interfaces/custom-element";
-import Metadata from "./metadata/metadata.js";
+import Metadata                                        from "./metadata/metadata.js";
 import StaticMetadata                                  from "./metadata/static-metadata.js";
 import { globalCustomDirectives }                      from "./singletons.js";
 import type { DirectiveConstructor, DirectiveFactory } from "./types/directive-entry.js";

@@ -1,15 +1,15 @@
 /* eslint-disable import/no-unassigned-import */
 import "./fixtures/dom.js";
 
-import { shouldPass, suite, test }  from "@surface/test-suite";
-import chai                         from "chai";
-import fragmentFactory              from "../internal/factories/fragment-factory.js";
-import injectionFactory             from "../internal/factories/injection-factory.js";
-import placeholderFactory           from "../internal/factories/placeholder-factory.js";
-import textNodeInterpolationFactory from "../internal/factories/text-node-interpolation-factory.js";
-import { scheduler }                from "../internal/singletons.js";
-import type DestructuredEvaluator   from "../internal/types/destructured-evaluator.js";
-import type Evaluator               from "../internal/types/evaluator.js";
+import { shouldPass, suite, test }        from "@surface/test-suite";
+import chai                               from "chai";
+import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
+import createInjectionFactory             from "../internal/factories/create-injection-factory.js";
+import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
+import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
+import { scheduler }                      from "../internal/singletons.js";
+import type DestructuredEvaluator         from "../internal/types/destructured-evaluator.js";
+import type Evaluator                     from "../internal/types/evaluator.js";
 
 @suite
 export default class InjectionFactorySpec
@@ -23,14 +23,14 @@ export default class InjectionFactorySpec
 
         host.attachShadow({ mode: "open" });
 
-        const [content, activator] = fragmentFactory
+        const [content, activator] = createFragmentFactory
         ([
-            placeholderFactory
+            createPlaceholderFactory
             (
                 () => "default",
                 ((scope: Scope) => ({ item: scope.value })) as Evaluator,
                 [[], [["value"]]],
-                textNodeInterpolationFactory(((scope: Scope) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
+                createTextNodeInterpolationFactory(((scope: Scope) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
             ),
         ])();
 
@@ -64,12 +64,12 @@ export default class InjectionFactorySpec
 
         chai.assert.deepEqual(actual1, expected1, "#1");
 
-        const [injectionContent, injectionActivator] = injectionFactory
+        const [injectionContent, injectionActivator] = createInjectionFactory
         (
             () => "default",
             ((scope: Scope) => scope) as DestructuredEvaluator,
             [[], [["value"]]],
-            textNodeInterpolationFactory(((scope: Scope) => `Injected: ${scope.value}`) as Evaluator, [["value"]]),
+            createTextNodeInterpolationFactory(((scope: Scope) => `Injected: ${scope.value}`) as Evaluator, [["value"]]),
         )();
 
         host.appendChild(injectionContent);

@@ -5,7 +5,7 @@ import type NodeFactory            from "../types/node-fatctory";
 import type ObservablePath         from "../types/observable-path";
 import type StackTrace             from "../types/stack-trace";
 
-export default function textNodeInterpolationFactory(evaluator: Evaluator, observables?: ObservablePath[], source?: string, stackTrace?: StackTrace): NodeFactory
+export default function createTextNodeInterpolationFactory(evaluator: Evaluator, observables?: ObservablePath[], source?: string, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {

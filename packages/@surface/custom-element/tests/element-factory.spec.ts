@@ -3,12 +3,12 @@ import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import directiveFactory            from "../internal/factories/directive-factory.js";
-import elementFactory              from "../internal/factories/element-factory.js";
-import eventFactory                from "../internal/factories/event-factory.js";
-import interpolationFactory        from "../internal/factories/interpolation-factory.js";
-import onewayFactory               from "../internal/factories/oneway-factory.js";
-import twowayFactory               from "../internal/factories/twoway-factory.js";
+import createDirectiveFactory      from "../internal/factories/create-directive-factory.js";
+import createElementFactory        from "../internal/factories/create-element-factory.js";
+import createEventFactory          from "../internal/factories/create-event-factory.js";
+import createInterpolationFactory  from "../internal/factories/create-interpolation-factory.js";
+import createOnewayFactory         from "../internal/factories/create-oneway-factory.js";
+import createTwowayFactory         from "../internal/factories/create-twoway-factory.js";
 import { scheduler }               from "../internal/singletons.js";
 import type Activator              from "../internal/types/activator";
 import type Evaluator              from "../internal/types/evaluator.js";
@@ -26,7 +26,7 @@ export default class ElementFactorySpec
     @test @shouldPass
     public tag(): void
     {
-        const [element] = elementFactory("div")();
+        const [element] = createElementFactory("div")();
 
         chai.assert.equal(element.nodeName, "DIV");
         chai.assert.instanceOf(element, HTMLElement);
@@ -35,7 +35,7 @@ export default class ElementFactorySpec
     @test @shouldPass
     public attributes(): void
     {
-        const [element] = elementFactory("div", [["foo", ""], ["bar", "bar"]])() as [Element, Activator];
+        const [element] = createElementFactory("div", [["foo", ""], ["bar", "bar"]])() as [Element, Activator];
 
         chai.assert.isTrue(element.hasAttribute("foo"));
         chai.assert.equal(element.getAttribute("bar"), "bar");
@@ -44,11 +44,11 @@ export default class ElementFactorySpec
     @test @shouldPass
     public async interpolation(): Promise<void>
     {
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
-            [interpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
+            [createInterpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "Hello World" } };
@@ -77,11 +77,11 @@ export default class ElementFactorySpec
     @test @shouldPass
     public async oneWay(): Promise<void>
     {
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
-            [onewayFactory("className", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
+            [createOnewayFactory("className", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
@@ -110,11 +110,11 @@ export default class ElementFactorySpec
     @test @shouldPass
     public async twoWay(): Promise<void>
     {
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
-            [twowayFactory("className", ["host", "value"])],
+            [createTwowayFactory("className", ["host", "value"])],
         )() as [Element, Activator];
 
         const scope = { host: { value: "my-class" } };
@@ -151,11 +151,11 @@ export default class ElementFactorySpec
     {
         type Scope = { host: { click: Function } };
 
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
-            [eventFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
+            [createEventFactory("click", ((scope: Scope) => scope.host.click) as Evaluator, ((scope: Scope) => scope.host.click) as Evaluator)],
         )() as [Element, Activator];
 
         let clicked = 0;
@@ -180,13 +180,13 @@ export default class ElementFactorySpec
     {
         type Scope = { host: { value: string } };
 
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
             [
-                directiveFactory("custom", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
-                directiveFactory("custom-factory", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
+                createDirectiveFactory("custom", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
+                createDirectiveFactory("custom-factory", ((scope: Scope) => scope.host.value) as Evaluator, [["host", "value"]]),
             ],
         )() as [Element, Activator];
 
@@ -203,17 +203,17 @@ export default class ElementFactorySpec
     @test @shouldPass
     public async childs(): Promise<void>
     {
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
             undefined,
             [
-                elementFactory
+                createElementFactory
                 (
                     "span",
                     undefined,
-                    [interpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
+                    [createInterpolationFactory("value", ((scope: { host: { value: unknown } }) => scope.host.value) as Evaluator, [["host", "value"]])],
                 ),
             ],
         )() as [Element, Activator];

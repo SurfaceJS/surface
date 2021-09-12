@@ -1,22 +1,22 @@
-import choiceFactory                from "../factories/choice-factory.js";
-import commentFactory               from "../factories/comment-factory.js";
-import directiveFactory             from "../factories/directive-factory.js";
-import elementFactory               from "../factories/element-factory.js";
-import eventFactory                 from "../factories/event-factory.js";
-import fragmentFactory              from "../factories/fragment-factory.js";
-import injectionFactory             from "../factories/injection-factory.js";
-import interpolationFactory         from "../factories/interpolation-factory.js";
-import loopFactory                  from "../factories/loop-factory.js";
-import onewayFactory                from "../factories/oneway-factory.js";
-import placeholderFactory           from "../factories/placeholder-factory.js";
-import textNodeFactory              from "../factories/text-node-factory.js";
-import textNodeInterpolationFactory from "../factories/text-node-interpolation-factory.js";
-import twowayFactory                from "../factories/twoway-factory.js";
-import TemplateParser               from "../parsers/template-parser.js";
-import type AttributeFactory        from "../types/attribute-fatctory.js";
-import type Descriptor              from "../types/descriptor.js";
-import type { AttributeDescritor }  from "../types/descriptor.js";
-import type NodeFactory             from "../types/node-fatctory.js";
+import createChoiceFactory                from "../factories/create-choice-factory.js";
+import createCommentFactory               from "../factories/create-comment-factory.js";
+import createDirectiveFactory             from "../factories/create-directive-factory.js";
+import createElementFactory               from "../factories/create-element-factory.js";
+import createEventFactory                 from "../factories/create-event-factory.js";
+import createFragmentFactory              from "../factories/create-fragment-factory.js";
+import createInjectionFactory             from "../factories/create-injection-factory.js";
+import createInterpolationFactory         from "../factories/create-interpolation-factory.js";
+import createLoopFactory                  from "../factories/create-loop-factory.js";
+import createOnewayFactory                from "../factories/create-oneway-factory.js";
+import createPlaceholderFactory           from "../factories/create-placeholder-factory.js";
+import createTextNodeFactory              from "../factories/create-text-node-factory.js";
+import createTextNodeInterpolationFactory from "../factories/create-text-node-interpolation-factory.js";
+import createTwowayFactory                from "../factories/create-twoway-factory.js";
+import TemplateParser                     from "../parsers/template-parser.js";
+import type AttributeFactory              from "../types/attribute-fatctory.js";
+import type Descriptor                    from "../types/descriptor.js";
+import type { AttributeDescritor }        from "../types/descriptor.js";
+import type NodeFactory                   from "../types/node-fatctory.js";
 
 export default class TemplateCompiler
 {
@@ -33,19 +33,19 @@ export default class TemplateCompiler
                     rawattributes.push([attribute.key, attribute.value]);
                     break;
                 case "directive":
-                    factories.push(directiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createDirectiveFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "event":
-                    factories.push(eventFactory(attribute.key, scope => attribute.value.evaluate(scope), scope => attribute.context?.evaluate(scope), attribute.source, attribute.stackTrace));
+                    factories.push(createEventFactory(attribute.key, scope => attribute.value.evaluate(scope), scope => attribute.context?.evaluate(scope), attribute.source, attribute.stackTrace));
                     break;
                 case "interpolation":
-                    factories.push(interpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createInterpolationFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "oneway":
-                    factories.push(onewayFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
+                    factories.push(createOnewayFactory(attribute.key, scope => attribute.value.evaluate(scope), attribute.observables, attribute.source, attribute.stackTrace));
                     break;
                 case "twoway":
-                    factories.push(twowayFactory(attribute.left, attribute.right, attribute.source, attribute.stackTrace));
+                    factories.push(createTwowayFactory(attribute.left, attribute.right, attribute.source, attribute.stackTrace));
                     break;
                 default:
                     break;
@@ -72,16 +72,16 @@ export default class TemplateCompiler
         switch (descriptor.type)
         {
             case "element":
-                return elementFactory
+                return createElementFactory
                 (
                     descriptor.tag,
                     ...TemplateCompiler.mapAttributes(descriptor.attributes),
                     TemplateCompiler.mapChilds(descriptor.childs),
                 );
             case "text":
-                return textNodeFactory(descriptor.value);
+                return createTextNodeFactory(descriptor.value);
             case "text-interpolation":
-                return textNodeInterpolationFactory
+                return createTextNodeInterpolationFactory
                 (
                     scope => descriptor.value.evaluate(scope),
                     descriptor.observables,
@@ -89,12 +89,12 @@ export default class TemplateCompiler
                     descriptor.stackTrace,
                 );
             case "choice-statement":
-                return choiceFactory
+                return createChoiceFactory
                 (
                     descriptor.branches.map(x => [scope => x.expression.evaluate(scope), x.observables, TemplateCompiler.compileDescriptor(x.fragment), x.source, x.stackTrace]),
                 );
             case "loop-statement":
-                return loopFactory
+                return createLoopFactory
                 (
                     (scope, value) => descriptor.left.evaluate(scope, value),
                     descriptor.operator,
@@ -105,7 +105,7 @@ export default class TemplateCompiler
                     descriptor.stackTrace,
                 );
             case "placeholder-statement":
-                return placeholderFactory
+                return createPlaceholderFactory
                 (
                     scope => descriptor.key.evaluate(scope),
                     scope => descriptor.value.evaluate(scope),
@@ -115,7 +115,7 @@ export default class TemplateCompiler
                     descriptor.stackTrace,
                 );
             case "injection-statement":
-                return injectionFactory
+                return createInjectionFactory
                 (
                     scope => descriptor.key.evaluate(scope),
                     (scope, value) => descriptor.value.evaluate(scope, value),
@@ -125,10 +125,10 @@ export default class TemplateCompiler
                     descriptor.stackTrace,
                 );
             case "comment":
-                return commentFactory(descriptor.value);
+                return createCommentFactory(descriptor.value);
             case "fragment":
             default:
-                return fragmentFactory
+                return createFragmentFactory
                 (
                     TemplateCompiler.mapChilds(descriptor.childs),
                 );

@@ -3,9 +3,9 @@ import "./fixtures/dom.js";
 
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import choiceFactory               from "../internal/factories/choice-factory.js";
-import elementFactory              from "../internal/factories/element-factory.js";
-import fragmentFactory             from "../internal/factories/fragment-factory.js";
+import createChoiceFactory         from "../internal/factories/create-choice-factory.js";
+import createElementFactory        from "../internal/factories/create-element-factory.js";
+import createFragmentFactory       from "../internal/factories/create-fragment-factory.js";
 import { scheduler }               from "../internal/singletons.js";
 import type Activator              from "../internal/types/activator";
 import type Evaluator              from "../internal/types/evaluator.js";
@@ -18,36 +18,36 @@ export default class ChoiceFactorySpec
     {
         type Scope = { id: number };
 
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
             undefined,
             [
-                choiceFactory
+                createChoiceFactory
                 ([
                     [
                         ((scope: Scope) => scope.id == 1) as Evaluator,
                         [["id"]],
-                        fragmentFactory
+                        createFragmentFactory
                         ([
-                            elementFactory("span", [["name", "IF"]]),
+                            createElementFactory("span", [["name", "IF"]]),
                         ]),
                     ],
                     [
                         ((scope: Scope) => scope.id == 2) as Evaluator,
                         [["id"]],
-                        fragmentFactory
+                        createFragmentFactory
                         ([
-                            elementFactory("span", [["name", "ELSE IF"]]),
+                            createElementFactory("span", [["name", "ELSE IF"]]),
                         ]),
                     ],
                     [
                         () => true,
                         [],
-                        fragmentFactory
+                        createFragmentFactory
                         ([
-                            elementFactory("span", [["name", "ELSE"]]),
+                            createElementFactory("span", [["name", "ELSE"]]),
                         ]),
                     ],
                 ]),

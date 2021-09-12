@@ -5,7 +5,7 @@ import type NodeFactory      from "../types/node-fatctory";
 
 type Attributes = [key: string, value: string];
 
-export default function elementFactory(tag: string, attributes?: Attributes[], attributesFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
+export default function createElementFactory(tag: string, attributes?: Attributes[], attributesFactories?: AttributeFactory[], childs?: NodeFactory[]): NodeFactory
 {
     return () =>
     {

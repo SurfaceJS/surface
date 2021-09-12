@@ -1,6 +1,6 @@
 import type NodeFactory from "../types/node-fatctory";
 
-export default function textNodeFactory(content: string): NodeFactory
+export default function createTextNodeFactory(content: string): NodeFactory
 {
     return () =>
     {

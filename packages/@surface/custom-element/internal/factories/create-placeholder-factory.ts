@@ -7,7 +7,7 @@ import type ObservablePath from "../types/observable-path";
 import type StackTrace     from "../types/stack-trace";
 
 // eslint-disable-next-line max-len
-export default function placeholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
+export default function createPlaceholderFactory(keyEvaluator: Evaluator, valueEvaluator: Evaluator, observables: [key: ObservablePath[], value: ObservablePath[]], factory: NodeFactory, source?: { key: string, value: string }, stackTrace?: StackTrace): NodeFactory
 {
     return () =>
     {

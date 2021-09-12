@@ -36,6 +36,7 @@
         { "path": "./packages/@surface/cli" },
         { "path": "./packages/@surface/core" },
         { "path": "./packages/@surface/custom-element" },
+        { "path": "./packages/@surface/custom-element-loader" },
         { "path": "./packages/@surface/dependency-injection" },
         { "path": "./packages/@surface/enumerable" },
         { "path": "./packages/@surface/expression" },

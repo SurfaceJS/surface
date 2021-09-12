@@ -1,0 +1,14 @@
+export { default as createChoiceFactory }                from "./create-choice-factory.js";
+export { default as createCommentFactory }               from "./create-comment-factory.js";
+export { default as createDirectiveFactory }             from "./create-directive-factory.js";
+export { default as createElementFactory }               from "./create-element-factory.js";
+export { default as createEventFactory }                 from "./create-event-factory.js";
+export { default as createFragmentFactory }              from "./create-fragment-factory.js";
+export { default as createInjectionFactory }             from "./create-injection-factory.js";
+export { default as createInterpolationFactory }         from "./create-interpolation-factory.js";
+export { default as createLoopFactory }                  from "./create-loop-factory.js";
+export { default as createOnewayFactory }                from "./create-oneway-factory.js";
+export { default as createPlaceholderFactory }           from "./create-placeholder-factory.js";
+export { default as createTextNodeFactory }              from "./create-text-node-factory.js";
+export { default as createTextNodeInterpolationFactory } from "./create-text-node-interpolation-factory.js";
+export { default as createTwowayFactory }                from "./create-twoway-factory.js";

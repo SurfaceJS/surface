@@ -1,14 +1,14 @@
 /* eslint-disable import/no-unassigned-import */
 import "./fixtures/dom.js";
 
-import { shouldPass, suite, test }  from "@surface/test-suite";
-import chai                         from "chai";
-import elementFactory               from "../internal/factories/element-factory.js";
-import placeholderFactory           from "../internal/factories/placeholder-factory.js";
-import textNodeInterpolationFactory from "../internal/factories/text-node-interpolation-factory.js";
-import { scheduler }                from "../internal/singletons.js";
-import type Activator               from "../internal/types/activator";
-import type Evaluator               from "../internal/types/evaluator.js";
+import { shouldPass, suite, test }        from "@surface/test-suite";
+import chai                               from "chai";
+import createElementFactory               from "../internal/factories/create-element-factory.js";
+import createPlaceholderFactory           from "../internal/factories/create-placeholder-factory.js";
+import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
+import { scheduler }                      from "../internal/singletons.js";
+import type Activator                     from "../internal/types/activator";
+import type Evaluator                     from "../internal/types/evaluator.js";
 
 @suite
 export default class PlaceholderFactorySpec
@@ -18,18 +18,18 @@ export default class PlaceholderFactorySpec
     {
         type Scope = { value: number };
 
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
             undefined,
             [
-                placeholderFactory
+                createPlaceholderFactory
                 (
                     () => "default",
                     ((scope: { value: string }) => ({ item: scope.value })) as Evaluator,
                     [[], [["value"]]],
-                    textNodeInterpolationFactory(((scope: { value: string }) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
+                    createTextNodeInterpolationFactory(((scope: { value: string }) => `Value: ${scope.value}`) as Evaluator, [["value"]]),
                 ),
             ],
         )() as [Element, Activator];

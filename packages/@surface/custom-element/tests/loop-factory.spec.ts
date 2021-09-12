@@ -1,16 +1,16 @@
 /* eslint-disable import/no-unassigned-import */
 import "./fixtures/dom.js";
 
-import { shouldPass, suite, test }  from "@surface/test-suite";
-import chai                         from "chai";
-import elementFactory               from "../internal/factories/element-factory.js";
-import fragmentFactory              from "../internal/factories/fragment-factory.js";
-import loopFactory                  from "../internal/factories/loop-factory.js";
-import textNodeInterpolationFactory from "../internal/factories/text-node-interpolation-factory.js";
-import { scheduler }                from "../internal/singletons.js";
-import type Activator               from "../internal/types/activator";
-import type DestructuredEvaluator   from "../internal/types/destructured-evaluator.js";
-import type Evaluator               from "../internal/types/evaluator.js";
+import { shouldPass, suite, test }        from "@surface/test-suite";
+import chai                               from "chai";
+import createElementFactory               from "../internal/factories/create-element-factory.js";
+import createFragmentFactory              from "../internal/factories/create-fragment-factory.js";
+import createLoopFactory                  from "../internal/factories/create-loop-factory.js";
+import createTextNodeInterpolationFactory from "../internal/factories/create-text-node-interpolation-factory.js";
+import { scheduler }                      from "../internal/singletons.js";
+import type Activator                     from "../internal/types/activator";
+import type DestructuredEvaluator         from "../internal/types/destructured-evaluator.js";
+import type Evaluator                     from "../internal/types/evaluator.js";
 
 @suite
 export default class LoopFactorySpec
@@ -20,21 +20,21 @@ export default class LoopFactorySpec
     {
         type Scope = { items: number[] };
 
-        const [element, activator] = elementFactory
+        const [element, activator] = createElementFactory
         (
             "div",
             undefined,
             undefined,
             [
-                loopFactory
+                createLoopFactory
                 (
                     ((_: Scope, value: unknown) => ({ item: value })) as DestructuredEvaluator,
                     "in",
                     ((scope: Scope) => scope.items) as Evaluator,
                     [["items"]],
-                    fragmentFactory
+                    createFragmentFactory
                     ([
-                        textNodeInterpolationFactory(((scope: { item: string }) => `Index: ${scope.item}`) as Evaluator, [["item"]]),
+                        createTextNodeInterpolationFactory(((scope: { item: string }) => `Index: ${scope.item}`) as Evaluator, [["item"]]),
                     ]),
                 ),
             ],

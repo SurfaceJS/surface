@@ -5,7 +5,7 @@ import type Evaluator                                                 from "../t
 import type ObservablePath                                            from "../types/observable-path.js";
 import type StackTrace                                                from "../types/stack-trace";
 
-export default function onewayFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function createOnewayFactory(key: string, evaluator: Evaluator, observables: ObservablePath[], source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {

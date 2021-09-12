@@ -3,7 +3,7 @@ import type AttributeFactory from "../types/attribute-fatctory.js";
 import type Evaluator        from "../types/evaluator.js";
 import type StackTrace       from "../types/stack-trace";
 
-export default function eventFactory(key: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator, source?: string, stackTrace?: StackTrace): AttributeFactory
+export default function createEventFactory(key: string, listenerEvaluator: Evaluator, contextEvaluator: Evaluator, source?: string, stackTrace?: StackTrace): AttributeFactory
 {
     return (element, scope) =>
     {
