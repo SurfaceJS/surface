@@ -63,16 +63,11 @@ export default class TemplateParser
 
     private index: number = 0;
 
-    public constructor(private readonly name: string, stackTrace?: StackTrace)
+    public constructor(private readonly document: Document, private readonly name: string, stackTrace?: StackTrace)
     {
         this.name = name;
 
         this.stackTrace = stackTrace ? [...stackTrace] : [[`<${name}>`], ["#shadow-root"]];
-    }
-
-    private static internalParse(name: string, template: HTMLTemplateElement, stackTrace: StackTrace): FragmentDescriptor
-    {
-        return new TemplateParser(name, stackTrace).parse(template);
     }
 
     public static parse(document: Document, name: string, template: string): Descriptor
@@ -80,7 +75,7 @@ export default class TemplateParser
         const templateElement = document.createElement("template");
         templateElement.innerHTML = template;
 
-        return new TemplateParser(name).parse(templateElement);
+        return new TemplateParser(document, name).parse(templateElement);
     }
 
     private attributeToString(attribute: Attr): string
@@ -119,7 +114,7 @@ export default class TemplateParser
 
         if (!isTemplate)
         {
-            const template = document.createElement("template");
+            const template = this.document.createElement("template");
             const clone    = element.cloneNode(true) as Element;
 
             for (const attribute of Array.from(clone.attributes).filter(x => directiveTypes.some(directive => x.name.startsWith(directive))))
@@ -395,7 +390,7 @@ export default class TemplateParser
             const branches: BranchDescriptor[] = [];
 
             const expression = this.tryParseExpression(parseExpression, directive.value, directive.raw);
-            const fragment = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const fragment = this.parseTemplate(template);
 
             const branchDescriptor: BranchDescriptor =
             {
@@ -448,7 +443,7 @@ export default class TemplateParser
                 this.index++;
 
                 const expression = this.tryParseExpression(parseExpression, value, simblingDirective.raw);
-                const fragment = TemplateParser.internalParse(this.name, simblingTemplate, this.stackTrace);
+                const fragment = this.parseTemplate(simblingTemplate);
 
                 const conditionalBranchDescriptor: BranchDescriptor =
                 {
@@ -476,7 +471,7 @@ export default class TemplateParser
 
             const { left, right, operator } = this.tryParseExpression(parseForLoopStatement, value, directive.raw);
 
-            const fragment    = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const fragment    = this.parseTemplate(template);
             const observables = ObserverVisitor.observe(right);
 
             const loopDescriptor: Descriptor =
@@ -501,7 +496,7 @@ export default class TemplateParser
             const expression     = this.tryParseExpression(parseExpression, `${value || "undefined"}`, raw);
             const keyObservables = ObserverVisitor.observe(keyExpression);
             const observables    = ObserverVisitor.observe(expression);
-            const fragment       = TemplateParser.internalParse(this.name, template, this.stackTrace);
+            const fragment       = this.parseTemplate(template);
 
             const placeholderDirective: PlaceholderStatementDescriptor =
             {
@@ -526,7 +521,7 @@ export default class TemplateParser
         const keyObservables = ObserverVisitor.observe(keyExpression);
         const observables    = ObserverVisitor.observe(pattern);
 
-        const fragment = TemplateParser.internalParse(this.name, template, this.stackTrace);
+        const fragment = this.parseTemplate(template);
 
         const injectionDescriptor: InjectionStatementDescriptor =
         {
@@ -553,6 +548,11 @@ export default class TemplateParser
         };
 
         return descriptor;
+    }
+
+    private parseTemplate(template: HTMLTemplateElement): FragmentDescriptor
+    {
+        return new TemplateParser(this.document, this.name, this.stackTrace).parse(template);
     }
 
     private parseTextNode(node: Text, stackTrace: StackTrace): Descriptor
