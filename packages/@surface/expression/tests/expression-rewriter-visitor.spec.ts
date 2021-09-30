@@ -3,7 +3,7 @@ import chai                                   from "chai";
 import Expression                             from "../internal/expression.js";
 import RegExpLiteral                          from "../internal/expressions/reg-exp-literal.js";
 import { validVisitors }                      from "./expression-visitor-expectations.js";
-import FixtureExpressionVisitor               from "./fixtures/fixture-expression-visitor.js";
+import FixtureExpressionRewriterVisitor       from "./fixtures/fixture-expression-rewriter-visitor.js";
 
 @suite
 export default class ExpressionVisitorSpec
@@ -13,7 +13,7 @@ export default class ExpressionVisitorSpec
     public visitsShouldWork(spec: { raw: string, value: string }): void
     {
         const expression = Expression.parse(spec.raw);
-        const visitor    = new FixtureExpressionVisitor();
+        const visitor    = new FixtureExpressionRewriterVisitor();
 
         visitor.visit(expression);
 
@@ -23,7 +23,7 @@ export default class ExpressionVisitorSpec
     @test @shouldPass
     public visitRegExpLiteral(): void
     {
-        const visitor = new FixtureExpressionVisitor();
+        const visitor = new FixtureExpressionRewriterVisitor();
 
         visitor.visit(new RegExpLiteral("\\d", "i"));
 

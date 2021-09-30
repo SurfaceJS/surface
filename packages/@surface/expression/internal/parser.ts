@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 
-import { format }           from "@surface/core";
+import { format }                  from "@surface/core";
 import { hasDuplicated }           from "./common.js";
 import AssignmentProperty          from "./elements/assignment-property.js";
 import Property                    from "./elements/property.js";

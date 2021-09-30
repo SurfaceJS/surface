@@ -84,12 +84,12 @@ export default abstract class Expression
         return expression;
     }
 
-    public static array(elements: IExpression[]): IArrayExpression
+    public static array(elements: (IExpression | ISpreadElement | null)[]): IArrayExpression
     {
         return new ArrayExpression(elements);
     }
 
-    public static arrayPattern(elements: IPattern[]): IArrayPattern
+    public static arrayPattern(elements: (IPattern | null)[]): IArrayPattern
     {
         return new ArrayPattern(elements);
     }
@@ -114,13 +114,9 @@ export default abstract class Expression
         return new AssignmentPattern(left, right);
     }
 
-    public static assignmentProperty(key: IIdentifier): IAssignmentProperty;
-    public static assignmentProperty(key: IExpression, value: IPattern, computed?: boolean): IAssignmentProperty;
-    public static assignmentProperty(...args: [IIdentifier] | [IExpression, IPattern, boolean?]): IAssignmentProperty
+    public static assignmentProperty(key: IExpression, value?: IPattern, computed?: boolean, shorthand?: boolean): IAssignmentProperty
     {
-        return args.length == 1
-            ? new AssignmentProperty(args[0], args[0], true, true)
-            : new AssignmentProperty(args[0], args[1], !!args[2], false);
+        return new AssignmentProperty(key, value ?? key as IIdentifier, computed ?? !value, shorthand ?? !value);
     }
 
     public static binary(left: IExpression, right: IExpression, operator: BinaryOperator): IBinaryExpression
@@ -133,7 +129,7 @@ export default abstract class Expression
         return new CallExpression(callee, $arguments ?? []);
     }
 
-    public static chainExpression(expression: IExpression): IChainExpression
+    public static chain(expression: IExpression): IChainExpression
     {
         return new ChainExpression(expression);
     }
@@ -168,7 +164,7 @@ export default abstract class Expression
         return new NewExpression(callee, $arguments ?? []);
     }
 
-    public static object(properties?: IProperty[]): IObjectExpression
+    public static object(properties?: (IProperty | ISpreadElement)[]): IObjectExpression
     {
         return new ObjectExpression(properties ?? []);
     }
@@ -188,13 +184,9 @@ export default abstract class Expression
         return new ParenthesizedExpression(argument);
     }
 
-    public static property(key: IIdentifier): IProperty;
-    public static property(key: IExpression, value: IExpression, computed?: boolean): IProperty;
-    public static property(...args: [IIdentifier] | [IExpression, IExpression, boolean?]): IProperty
+    public static property(key: IExpression, value?: IExpression, computed?: boolean, shorthand?: boolean): IProperty
     {
-        return args.length == 1
-            ? new Property(args[0], args[0], true, true)
-            : new Property(args[0], args[1], !!args[2], false);
+        return new Property(key, value ?? key as IIdentifier, computed ?? !value, shorthand ?? !value);
     }
 
     public static regex(pattern: string, flags: string): IRegExpLiteral

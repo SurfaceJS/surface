@@ -1,13 +1,13 @@
 // import { writeFileSync }           from "fs";
 import { shouldPass, suite, test } from "@surface/test-suite";
 import chai                        from "chai";
-import ModuleCompiler              from "../internal/module-compiler.js";
+import SourceGenerator             from "../internal/source-generator.js";
 
 @suite
-export default class ModuleCompilerSpec
+export default class SourceGeneratorSpec
 {
     @test @shouldPass
-    public compileEmpty(): void
+    public generateEmpty(): void
     {
         const expected =
         [
@@ -22,13 +22,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "", false);
+        const actual = SourceGenerator.generate("x-component", "", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithTextNode(): void
+    public generateWithTextNode(): void
     {
         const expected =
         [
@@ -46,13 +46,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "Hello World!!!", false);
+        const actual = SourceGenerator.generate("x-component", "Hello World!!!", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElement(): void
+    public generateWithElement(): void
     {
         const expected =
         [
@@ -73,13 +73,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributes(): void
+    public generateWithElementAndAttributes(): void
     {
         const expected =
         [
@@ -104,13 +104,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span foo bar=\"baz\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span foo bar=\"baz\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributesAndInterpolationBindDirective(): void
+    public generateWithElementAndAttributesAndInterpolationBindDirective(): void
     {
         const expected =
         [
@@ -145,13 +145,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span value=\"{host.value}\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span value=\"{host.value}\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributesAndEventBindDirective(): void
+    public generateWithElementAndAttributesAndEventBindDirective(): void
     {
         const expected =
         [
@@ -184,13 +184,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span @click=\"host.handler\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span @click=\"host.handler\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributesAndCustomBindDirective(): void
+    public generateWithElementAndAttributesAndCustomBindDirective(): void
     {
         const expected =
         [
@@ -223,13 +223,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span #show=\"host.show\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #show=\"host.show\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributesAndOneWayBindDirective(): void
+    public generateWithElementAndAttributesAndOneWayBindDirective(): void
     {
         const expected =
         [
@@ -262,13 +262,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span :value=\"host.value\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span :value=\"host.value\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithElementAndAttributesAndTwoWayBindDirective(): void
+    public generateWithElementAndAttributesAndTwoWayBindDirective(): void
     {
         const expected =
         [
@@ -300,13 +300,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span ::value=\"host.value\"></span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span ::value=\"host.value\"></span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithConditionalDirective(): void
+    public generateWithConditionalDirective(): void
     {
         const expected =
         [
@@ -372,13 +372,13 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #if=\"host.value\">Show</span><span #else>Hide</span>", false);
 
         chai.assert.equal(actual, expected);
     }
 
     @test @shouldPass
-    public compileWithLoopDirective(): void
+    public generateWithLoopDirective(): void
     {
         const expected =
         [
@@ -426,7 +426,7 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span #for=\"value of host.values\">Value: {value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #for=\"value of host.values\">Value: {value}</span>", false);
 
         // writeFileSync("test.js", actual);
 
@@ -434,7 +434,7 @@ export default class ModuleCompilerSpec
     }
 
     @test @shouldPass
-    public compileWithPlaceholderDirective(): void
+    public generateWithPlaceholderDirective(): void
     {
         const expected =
         [
@@ -481,7 +481,7 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span #placeholder=\"{ value: host.value }\">Value: {host.value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #placeholder=\"{ value: host.value }\">Value: {host.value}</span>", false);
 
         // writeFileSync("test.js", actual);
 
@@ -489,7 +489,7 @@ export default class ModuleCompilerSpec
     }
 
     @test @shouldPass
-    public compileWithInjectinDirective(): void
+    public generateWithInjectinDirective(): void
     {
         const expected =
         [
@@ -536,7 +536,7 @@ export default class ModuleCompilerSpec
             "export default factory;",
         ].join("\n");
 
-        const actual = ModuleCompiler.compile("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", false);
+        const actual = SourceGenerator.generate("x-component", "<span #Inject=\"{ value }\">Value: {value}</span>", false);
 
         // writeFileSync("test.js", actual);
 

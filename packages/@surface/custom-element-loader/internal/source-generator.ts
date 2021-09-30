@@ -27,7 +27,7 @@ const attributeFactoryMap: Record<Exclude<AttributeBindDescritor["type"], "raw">
     twoway:        "createTwowayFactory",
 };
 
-export default class ModuleCompiler
+export default class SourceGenerator
 {
     private identationLevel: number = 0;
 
@@ -36,11 +36,11 @@ export default class ModuleCompiler
     private constructor(private readonly production: boolean)
     { }
 
-    public static compile(name: string, template: string, production: boolean): string
+    public static generate(name: string, template: string, production: boolean): string
     {
         const descriptor = TemplateParser.parse(new JSDOM().window.document, name, template);
 
-        return new ModuleCompiler(production).compile(descriptor);
+        return new SourceGenerator(production).compile(descriptor);
     }
 
     private getIdentation(): string

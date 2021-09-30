@@ -1,7 +1,7 @@
 import ExpressionVisitor from "../../internal/expression-visitor.js";
 import type IExpression  from "../../internal/interfaces/expression.js";
 
-export default class FixtureVisitor extends ExpressionVisitor
+export default class FixtureExpressionVisitor extends ExpressionVisitor
 {
     private readonly visited: string[] = [];
 

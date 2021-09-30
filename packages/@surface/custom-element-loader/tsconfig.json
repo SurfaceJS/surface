@@ -14,7 +14,7 @@
     [
         "./internal",
         "./tests"
-    ],
+, "../expression/internal/expression-rewriter-visitor.d.ts"    ],
     "references":
     [
         { "path": "../core" },

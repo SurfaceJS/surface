@@ -61,8 +61,8 @@ export const expressionFactoriesExpected: ExpressionFactoryExpected[] =
         type:     NodeType.CallExpression,
     },
     {
-        factory:  (): INode => Expression.chainExpression(Expression.member(Expression.this(), Expression.identifier("value"), false, true)),
-        method:   Expression.chainExpression.name,
+        factory:  (): INode => Expression.chain(Expression.member(Expression.this(), Expression.identifier("value"), false, true)),
+        method:   Expression.chain.name,
         toString: "this?.value",
         type:     NodeType.ChainExpression,
     },
