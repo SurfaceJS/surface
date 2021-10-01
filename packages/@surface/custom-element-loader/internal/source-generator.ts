@@ -1,9 +1,11 @@
 /* eslint-disable max-lines-per-function */
-import TemplateParser                  from "@surface/custom-element/internal/parsers/template-parser.js";
-import type Descriptor                 from "@surface/custom-element/internal/types/descriptor";
+import TemplateParser                                    from "@surface/custom-element/internal/parsers/template-parser.js";
+import type Descriptor                                   from "@surface/custom-element/internal/types/descriptor";
 import type { AttributeBindDescritor, BranchDescriptor } from "@surface/custom-element/internal/types/descriptor";
-import type { IExpression, IPattern }  from "@surface/expression";
-import { JSDOM }                       from "jsdom";
+import type { IExpression, IPattern }                    from "@surface/expression";
+import { TypeGuard }                                     from "@surface/expression";
+import { JSDOM }                                         from "jsdom";
+import ScopeRewriterVisitor                              from "./scope-rewriter-visitor.js";
 
 const factoryMap: Record<Descriptor["type"], string> =
 {
@@ -181,12 +183,17 @@ export default class SourceGenerator
 
     private stringifyExpression(expression: IExpression): string
     {
-        return `scope => ${expression}`;
+        return `scope => ${ScopeRewriterVisitor.rewrite(expression)}`;
     }
 
-    private stringifyPattern(expression: IPattern): string
+    private stringifyPattern(pattern: IPattern): string
     {
-        return `scope => ${expression}`;
+        if (TypeGuard.isIdentifier(pattern))
+        {
+            return `scope => ({ ${pattern.name}: scope })`;
+        }
+
+        return `scope => { const ${pattern} = scope; return ${ScopeRewriterVisitor.collectScope(pattern)}; }`;
     }
 
     private compile(descriptor: Descriptor): string

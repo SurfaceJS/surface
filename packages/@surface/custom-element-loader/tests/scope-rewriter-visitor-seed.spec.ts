@@ -1,4 +1,4 @@
-const scopeRewriterVisitorSeed =
+export const expressionsSeed =
 [
     {
         expected: "this",
@@ -171,4 +171,79 @@ const scopeRewriterVisitorSeed =
     },
 ];
 
-export default scopeRewriterVisitorSeed;
+export const patternSeeds =
+[
+    {
+        expected: "{ value }",
+        source:   "{ value }",
+    },
+    {
+        expected: "{ value }",
+        source:   "{ value = 1 }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ value: alias }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ [name]: alias }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ value: alias = 1 }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ value: alias = fallback }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ [name]: alias = fallback }",
+    },
+    {
+        expected: "{ value }",
+        source:   "{ object: { value } }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ object: { value: alias } }",
+    },
+    {
+        expected: "{ alias }",
+        source:   "{ object: { value: alias = fallback } }",
+    },
+    {
+        expected: "{ values }",
+        source:   "{ ...values }",
+    },
+    {
+        expected: "{ value, values }",
+        source:   "{ value, ...values }",
+    },
+
+    {
+        expected: "{ value }",
+        source:   "[value]",
+    },
+    {
+        expected: "{ value }",
+        source:   "[value = 1]",
+    },
+    {
+        expected: "{ value }",
+        source:   "[, [value]]",
+    },
+    {
+        expected: "{ value }",
+        source:   "[, [value = fallback]]",
+    },
+    {
+        expected: "{ values }",
+        source:   "[...values]",
+    },
+    {
+        expected: "{ value, values }",
+        source:   "[value, ...values]",
+    },
+];

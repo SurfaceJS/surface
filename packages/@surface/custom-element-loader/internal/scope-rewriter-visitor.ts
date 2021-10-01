@@ -26,9 +26,27 @@ export default class ScopeRewriterVisitor extends ExpressionRewriterVisitor
         return new ScopeRewriterVisitor().visit(expression) as IExpression;
     }
 
+    public static collectScope(pattern: IPattern): IObjectExpression
+    {
+        return new ScopeRewriterVisitor().collectScope(pattern);
+    }
+
     private getScope(): Set<string> | undefined
     {
         return this.scopes.get(this.scopeIndex);
+    }
+
+    private collectScope(pattern: IPattern): IObjectExpression
+    {
+        const scope = this.createScope();
+
+        this.visit(pattern);
+
+        const properties = Array.from(scope).map(x => Expression.property(Expression.identifier(x)));
+
+        this.deleteScope();
+
+        return Expression.object(properties);
     }
 
     private createScope(): Set<string>
